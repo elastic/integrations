@@ -6,15 +6,14 @@ rule the audit uses and the remediation to apply.
 ## Contents
 
 - Why these exist
-- The two package-spec 3.7.0 constructs (the `columnar:` block, the readiness flag)
+- The `logsdb_columnar` setting (package-spec 3.7.0), and the declaration findings
 - Class A — rejected by Elasticsearch: A1 nested in nested, A2 `doc_values: false`
-  (A2b from ECS, A2c `store`, A2d invalid override, A2e misplaced override), A3
-  `copy_to`, A4 normalizer, A5 runtime fields (A5b `dynamic: runtime`), A6 stored
-  `_source`, A7 types without doc values
+  (A2b from ECS, A2c `store`), A3 `copy_to`, A4 normalizer, A5 runtime fields (A5b
+  `dynamic: runtime`), A6 stored `_source`, A7 types without doc values, A8 index sort
 - Class B — accepted but lossy: B1 `dynamic: false`, B2 `enabled: false`
 - Class C — behaviour changes: C1 no inverted index, C2 source shape (C2b objects
-  inside `nested`), C3 dynamic fields, C4 lowercase normalizer, C5
-  `columnar: {index: true}`
+  inside `nested`), C3 dynamic fields, C4 lowercase normalizer, C5 per-field
+  `index: true`
 - C6-C10 `_source` consumers: C6 transform scripts, C7 Kibana assets, C8 object
   arrays, C9 shipped detection rules, C10 `latest` transforms
 
@@ -30,88 +29,69 @@ Three classes:
 
 | Class | Meaning | Effect on status |
 | --- | --- | --- |
-| **A** | Elasticsearch rejects the index template at PUT time | `BLOCKED`, or `READY_AFTER_AUTO_FIX` when the fix is mechanical |
+| **A** | Elasticsearch rejects the index template at PUT time | `BLOCKED`, or `READY_AFTER_AUTO_FIX` when the package fix is mechanical |
 | **B** | Accepted, but data is permanently lost | `NEEDS_REVIEW` |
 | **C** | Accepted, behaviour changes | informational only |
 
 ---
 
-## The two package-spec 3.7.0 constructs
+## The `logsdb_columnar` setting (package-spec 3.7.0)
 
-Both of these are new in `format_version: "3.7.0"` and both are what the
-remediations below reach for. Read this before applying any fix.
-
-### 1. The field-level, mode-scoped `columnar:` block
+This is the shape agreed in the elastic/package-spec#1250 review: one setting,
+`elasticsearch.logsdb_columnar`, at two levels. Read this before applying any fix.
 
 ```yaml
-- name: event.original
-  external: ecs
-  columnar:
-    doc_values: true
-```
-
-Fleet applies the attributes inside `columnar:` **only** when the resolved index
-mode of the data stream is `logsdb_columnar` or `columnar` — exactly the pattern
-TSDB already uses for `dimension: true`, which Fleet only emits into the mapping
-when the mode is `time_series`.
-
-That mode scoping is the entire reason to prefer it. A bare `doc_values: true`
-changes the mapping for **every** install of that package version: logsdb and
-standard indices that have been happily not storing doc values for
-`event.original` suddenly start storing them, and those are the installs that get
-no benefit from it, because they still have `_source`. With the `columnar:` block
-the logsdb and standard mappings of the same package version are byte for byte
-what they are today, and only columnar installs see the override. The fix is
-free off-columnar, which is what makes it safe to ship to the whole user base
-during a tech preview.
-
-Valid keys:
-
-| Key | Valid values | Who writes it |
-| --- | --- | --- |
-| `doc_values` | `true` only | the remediation for A2 / A2b |
-| `index` | `true` | a human, per stream, for a field that a named dashboard or rule query filters on by exact value — see C5. The audit lists candidates; it never writes one |
-
-`columnar: {doc_values: false}` is invalid — see A2d.
-
-**Where the block may go: static leaf fields only.** Fleet applies `columnar`
-overrides when it builds the concrete mapping for a field. Two kinds of field
-never get that treatment:
-
-- a **dynamic-template field** — `type: object` (or `group`) carrying an
-  `object_type`, which Fleet turns into a `dynamic_templates` entry rather than
-  a named mapping;
-- anything inside **`multi_fields:`**.
-
-Fleet ignores a `columnar:` block in both places, and package-spec 3.7.0 rejects
-it there, so the package does not even build. See A2e. The practical consequence
-is for A2: on those two placements there is **no mode-scoped fix**, and a
-`doc_values: false` has to be deleted outright — which applies in every index
-mode, not only columnar. (A multi-field needs no fix in the first place; an
-`object_type` field does.)
-
-### 2. The stream-level readiness flag
-
-```yaml
-# data_stream/<ds>/manifest.yml
+# manifest.yml (package)
 elasticsearch:
-  columnar:
-    supported: true
+  logsdb_columnar: opt_in        # opt_in | default; absent = not ready
 ```
 
-**A manifest has one `elasticsearch:` key.** The readiness flag and the index sort are
-children of the same mapping, so they go in as one merged block — and that block is
-merged into whatever `elasticsearch:` the manifest already has (`index_mode`,
-`source_mode`, an existing `index_template`). Pasting a second `elasticsearch:`
-snippet is a duplicate key: YAML does not error, it keeps one of them and drops the
-other, and the migration silently loses either the flag or the sort.
+```yaml
+# data_stream/<name>/manifest.yml, for the exceptions only
+elasticsearch:
+  logsdb_columnar: unsupported   # opt_in | default | unsupported
+```
+
+- **Package level, per-stream overrides.** Fleet offers one toggle per integration and
+  stores the user's choice once per installation. A logs data stream added in a later
+  version picks up the existing choice. Most integrations are ready or not as a whole;
+  only exceptions such as `aws/waf` need a per-stream entry.
+- **Logs data streams only.** The package value is ignored for metrics and traces
+  streams, and a non-logs stream that sets it is a validation error
+  (`logsdb_columnar_not_logs`).
+- **Not `index_mode`.** `index_mode` is for a fixed mode the user cannot change
+  (`time_series`, which depends on dimension mappings). `logsdb_columnar` is a mode the
+  user chooses, and it only applies when `index_mode` is unset: setting both is a
+  validation error (`logsdb_columnar_with_index_mode`). There is no
+  `index_mode: logsdb_columnar` (`index_mode_columnar`), and no plain `columnar` mode
+  for integrations.
+- **`opt_in`** offers the toggle; LogsDB stays the default, and the user can turn
+  columnar off again. **`default`** applies to new installations only: existing data
+  streams keep their current mode, also when a package upgrade changes `opt_in` to
+  `default`. The tech preview writes `opt_in`; `default` is for later.
+- **`unsupported`** keeps a stream on LogsDB. A later package version can mark a stream
+  `unsupported` again (for example when new mappings need a feature columnar does not
+  support): Fleet moves it back to LogsDB at the next rollover and tells the user why.
+  Going back is low-risk — queries keep working, the user loses the storage and ingest
+  savings, not correctness — but it is a breaking change for the package: major version
+  bump and a `breaking-change` changelog entry.
+- **Mode changes take effect on the next rollover.**
+- **Nothing per field.** There is no field-level `columnar:` block. `doc_values: false`
+  (and `store: true`) is for Elasticsearch or Fleet to handle in columnar mode (A2,
+  A2c), and a field that needs an inverted index sets `index: true` itself, which
+  changes nothing on LogsDB.
+
+**A data stream manifest has one `elasticsearch:` key.** An `unsupported` override and
+the index sort are children of the same mapping, so they go in as one merged block —
+merged into whatever `elasticsearch:` the manifest already has. Pasting a second
+`elasticsearch:` snippet is a duplicate key: YAML does not error, it keeps one of them
+and silently drops the other.
 
 ```yaml
 # data_stream/<ds>/manifest.yml — the whole block, merged into the existing key
 elasticsearch:
-  columnar:
-    supported: true
-  index_template:              # only when an explicit sort was proposed
+  logsdb_columnar: unsupported   # only for a stream that stays on LogsDB
+  index_template:                # only when an explicit sort was proposed
     settings:
       index:
         sort:
@@ -119,41 +99,28 @@ elasticsearch:
           order: ["asc", "desc"]
 ```
 
-This asserts "this data stream is columnar-ready". The 3.7.0 validator enforces
-it: setting it while the stream still has a Class A blocker is a validation
-error. Fleet enables the per-stream columnar opt-in toggle for a stream that sets
-it (or that already declares a columnar `index_mode`).
+**The declaration findings.** The validator checks every logs data stream that ends up
+ready:
 
-`supported: true` and `index_mode: logsdb_columnar` are **different decisions**:
-
-| Declaration | Effect |
+| Code | When |
 | --- | --- |
-| `elasticsearch.columnar.supported: true` | The stream is ready. Fleet shows the opt-in toggle. logsdb stays the default; nothing changes for existing or new installs until a user turns it on, and the user can turn it off again. |
-| `elasticsearch.index_mode: logsdb_columnar` | Columnar is **forced** for every install of this package version: Fleet shows the toggle locked on (the API cannot turn it off either), and streams that already hold data switch at the next rollover on upgrade. |
+| `logsdb_columnar_with_blockers` | a stream takes `opt_in` or `default` (its own or the package's) while it still has a Class A finding. Fix the findings, or mark the stream `unsupported` |
+| `logsdb_columnar_with_index_mode` | a logs stream has `index_mode` and takes `opt_in` or `default` |
+| `logsdb_columnar_not_logs` | a non-logs data stream sets `logsdb_columnar` |
+| `index_mode_columnar` | a manifest sets `index_mode: logsdb_columnar` or `columnar` |
+| `logsdb_columnar_requires_spec_3_7` | the setting is used under a `format_version` older than 3.7.0, where it is an unknown property |
 
-For the tech-preview wave the answer is `supported: true` alone, with
-`index_mode` left unset: the rollout strategy is that users opt in and can opt out,
-and that an integration that already has data does not flip. Whether package-spec
-3.7.0 should allow a columnar `index_mode` at all is an open team decision.
-
-Both constructs are read by **Fleet**, not only by the spec validator, so both
-need a `conditions.kibana.version` of at least the first Kibana minor that ships
-that Fleet support. That is **9.6**, so write `"^9.6.0"` (on older Kibana the
-override and the flag are silently ignored, so the toggle is unavailable and any
-`doc_values: false` field will make a manual columnar opt-in fail).
+The setting is read by **Fleet**, not only by the spec validator, so it needs a
+`conditions.kibana.version` of at least the first Kibana minor that ships the Fleet
+support. That is **9.6**, so write `"^9.6.0"` (older Kibana silently ignores the
+setting, so the toggle is unavailable).
 
 **Replace the whole range, do not add a branch to it.** A package on
 `"^8.19.0 || ^9.1.0"` becomes `"^9.6.0"`, full stop — every `||` branch has to be
 9.6+, because one older branch is precisely what keeps Fleet offering this version to
-a stack that ignores both constructs. Dropping the older branches is the point of the
+a stack that ignores the setting. Dropping the older branches is the point of the
 declaration and its cost at the same time; if the package has to keep serving older
-stacks, it does not declare readiness on this release line. And both need
-`format_version: "3.7.0"` in the root
-manifest: declaring either one under an older spec version is
-`columnar_requires_spec_3_7`. Setting `supported: true` on a stream that still
-has a Class A finding is `columnar_supported_with_blockers` — the 3.7.0
-validator rejects it, and a user who did turn the toggle on would get a failed
-index template PUT.
+stacks, it does not declare readiness on this release line.
 
 ### The cost of declaring readiness
 
@@ -177,11 +144,9 @@ next to it). Fleet expands both into the same hierarchy.
 **Why.** Columnar supports one level of nesting: "columnar index modes support only
 a single level of nesting" (`NestedObjectMapper`). The index template PUT fails.
 
-Single-level `nested` is accepted, but it is reported separately as
-`nested_single_level` (severity *review*): `nested` queries still match within one
-element, but `_source` consumers see the columnar shape, and any `nested` field turns
-off columnar's batch indexing for the whole stream (`ShardBatchMapper`). Objects inside
-an element are the exception: see C2b.
+Single-level `nested` is supported. The audit reports it as `nested_single_level`
+(severity *info*), a note for `_source` consumers that expect the original structure:
+they get the columnar shape. Objects inside an element are a separate case: see C2b.
 
 **Remediation.** First check that no dashboard or detection rule runs a `nested`
 query on the inner path. Then, in order of preference:
@@ -199,7 +164,7 @@ query on the inner path. Then, in order of preference:
 3. If the pairing inside each inner element matters, build a single-level `nested`
    array in the ingest pipeline, one entry per (outer, inner) pair carrying both sets
    of keys.
-4. Or keep the stream on logsdb: the opt-in is per stream.
+4. Or keep the stream on LogsDB: mark it `elasticsearch.logsdb_columnar: unsupported`.
 
 All of 1–3 change the mapping for logsdb installs too, so this is never an automatic
 fix. On an existing data stream the type change applies at the next rollover: the
@@ -226,50 +191,18 @@ nor doc values are available, and columnar mode disables the `_ignored_source`
 fallback and forbids `synthetic_source_keep`, so the index template is rejected
 (`IndexMode.LOGSDB_COLUMNAR#validateMapping`).
 
-**Remediation.** Keep the existing `doc_values: false` and add the mode-scoped
-override beside it:
+**Remediation: no package change.** Per the package-spec#1250 review, packages do not
+override `doc_values` for columnar: either Elasticsearch accepts `doc_values: false` in
+columnar modes and keeps doc values anyway (preferred, since it also covers
+user-managed templates), or Fleet drops `doc_values: false` when it installs a data
+stream in columnar mode. Neither needs anything in the spec, and there is no
+field-level `columnar:` block. Once that is decided, the validator's `doc_values: false`
+error goes away too.
 
-```yaml
-- name: doppel.darkweb.cred_leaks_password
-  type: keyword
-  doc_values: false     # unchanged: still applies on logsdb and standard
-  columnar:
-    doc_values: true    # applied by Fleet only when the mode is columnar
-```
-
-Under columnar mode the field is stored as doc values anyway and there is no
-inverted index to pay for, so the original "save space by not indexing"
-motivation is gone *there* — but it is not gone on logsdb and standard, which is
-why the override is scoped rather than unconditional. Same package version, same
-mapping as today everywhere except columnar. Needs `format_version: "3.7.0"`.
-
-Deleting the `doc_values: false` line also unblocks columnar, and it is the right
-call if the attribute was never justified in the first place. It is the bigger
-change: it turns doc values on in every index mode, for every install of the new
-version. Prefer the scoped form unless you have decided you want that.
-
-**Two placements where the scoped form is not available.** Fleet only applies
-`columnar` overrides to static leaf fields, and package-spec 3.7.0 rejects the
-block anywhere else (A2e):
-
-- **`object_type` dynamic-template fields** (`type: object` with
-  `object_type: keyword`, and friends). Fleet renders these as a
-  `dynamic_templates` entry and never applies a `columnar:` block to them. The
-  only fix is to delete the `doc_values: false` itself, and it is mode-agnostic:
-  logsdb and standard installs of the new version get doc values too, and those
-  indices grow. If that cost is not acceptable, leave the field alone and keep
-  the data stream on logsdb — that is a legitimate outcome.
-- **`multi_fields:` entries.** Nothing to fix: multi-fields are exempt from the
-  reconstructability check to begin with (see the rule above), so a
-  `doc_values: false` there is not a blocker and the audit does not report one.
-  Do not add a `columnar:` block to "fix" it.
-
-`match_only_text` is an alternative for message-like content, but **only** for fields
-the package defines itself — elastic-package refuses to override the type of an
-`external: ecs` field unless it is on the `allowedTypeOverride` list.
-
-**`store: true` is not an option.** See A2c: Elasticsearch rejects `store` in columnar
-modes.
+Until then Elasticsearch rejects the columnar index template, so the stream is
+**BLOCKED**: if the package declares `logsdb_columnar`, mark the stream
+`logsdb_columnar: unsupported`. Do not delete the `doc_values: false` line to get around
+it, and do not reach for `store: true` (A2c).
 
 **Known in catalog (declared in source):** `doppel/alerts`
 (`doppel.darkweb.cred_leaks_password`), `withsecure_elements/incidents` and
@@ -311,42 +244,16 @@ ECS fields that carry `doc_values: false` (checked against ECS v8.11.0 and v9.3.
   `threat.indicator.file.`, `threat.enrichments.indicator.`,
   `threat.enrichments.indicator.file.`)
 
-**Remediation.** Override it locally with the mode-scoped block — package
-attributes win over imported ones, because elastic-package merges with
-`transformed.DeepUpdate(def)` (`internal/fields/dependency_manager.go`). Paste
-the whole entry into the data stream's ECS fields file
-(`data_stream/<ds>/fields/ecs.yml`, or wherever the package declares its
-`external: ecs` references):
-
-```yaml
-- name: event.original
-  external: ecs
-  columnar:
-    doc_values: true
-```
-
-Nothing else about the entry changes: ECS's own `doc_values: false` still lands
-in the built package and still applies on logsdb and standard, where
-`event.original` is a large raw blob that genuinely should not carry doc values
-and where `_source` makes them unnecessary. Only a columnar install gets the
-override. A plain `doc_values: true` would work too, but it would add doc values
-for `event.original` — often the single largest field in the document — to every
-logsdb install of the new version, in exchange for nothing. Needs
-`format_version: "3.7.0"`.
-
-Two things that do **not** work here:
-
-- `store: true` — rejected by Elasticsearch in columnar modes (A2c).
-- `type: match_only_text` — elastic-package forces the ECS type for an
-  `external: ecs` field unless the field is in `allowedTypeOverride`
-  (`dependency_manager.go`), and `event.original` is not.
+**Remediation: no package change**, as for A2. Elasticsearch or Fleet is to handle the
+`doc_values: false` ECS brings in, the same way as a declared one. Until then the stream
+is **BLOCKED**.
 
 **Where it surfaces.** `elastic-package lint` validates the package *source*, where
 the field has no `doc_values` at all, so it sees nothing. `elastic-package build`
 validates the *built zip*, where ECS has been resolved — that is where every affected
 package will fail, whatever spec version it declares.
 
-**Known in catalog:** 49 packages, 72 data streams. Run
+**Known in catalog:** about 50 packages and 75 data streams. Run
 `scripts/audit.py packages/ --catalog` for the current list.
 
 #### The dynamic path is *not* a blocker — packages that never declare the field
@@ -402,60 +309,13 @@ Elasticsearch refuses it while parsing the mapping
 `store: true` can never be the answer to A2 or A2b — the two settings are rejected by
 different checks, and swapping one for the other just trades one failure for another.
 
-**Remediation.** Remove `store: true`. The value is reconstructed from doc values;
-`fields` retrieval and `_source` retrieval keep working.
+**Remediation: no package change.** The package-spec#1250 review suggests the same
+handling as for `doc_values: false` (A2): Elasticsearch or Fleet. Until then the
+stream is **BLOCKED**.
 
 **Known in catalog:** none in a `type: logs` data stream. The only two occurrences
 (`cisco_meraki_metrics/device_health`, `panw_metrics/system`) are in `type: metrics`
 streams, which are out of scope.
-
-### A2d. `columnar: {doc_values: false}` — `columnar_doc_values_false`
-
-**Rule.** The field-level `columnar:` block sets `doc_values: false`.
-
-Invalid. The mode-scoped block exists only to turn attributes back **on** for
-columnar modes; `doc_values: false` scoped to columnar is the one combination
-that can never make sense, because columnar mode has no `_source` to fall back on
-and cannot reconstruct the field at all. package-spec 3.7.0 allows `true` only,
-so the package fails spec validation before Elasticsearch ever sees it.
-
-**Remediation.** Set `columnar.doc_values: true`, or delete the `columnar:`
-block. Deliberately **not** classified as an auto-fix: someone wrote `false` on
-purpose and the audit cannot tell whether they meant "this field must not have
-doc values" (in which case the stream is not a columnar candidate at all) or
-simply inverted the flag. Ask.
-
-A wrong *value* is this finding; a `columnar:` block in a place Fleet will never
-look at is A2e.
-
-**Known in catalog:** none.
-
-### A2e. `columnar:` where Fleet will not apply it — `columnar_override_misplaced`
-
-**Rule.** A field-level `columnar:` block on a field that declares `object_type`,
-or on a field inside `multi_fields:`.
-
-Fleet applies `columnar` overrides only to **static leaf fields**, the ones it
-turns into a named mapping. It skips a field it renders as a `dynamic_templates`
-entry (`type: object`/`group` with an `object_type`) and it skips everything
-under `multi_fields:`. package-spec 3.7.0 refuses the block in both places, so
-this does not even reach Fleet: the package fails validation first.
-
-The finding therefore means one of two things, and they need different answers:
-
-- the block was written to repair a `doc_values: false` on an **`object_type`**
-  field — the repair is not possible in scoped form; delete the
-  `doc_values: false` instead and accept that it applies in every index mode
-  (A2);
-- the block was written to repair a `doc_values: false` on a **multi-field** —
-  there was nothing to repair; multi-fields are exempt from the
-  reconstructability check.
-
-**Remediation.** Delete the `columnar:` block. Deliberately **not** an auto-fix:
-deleting it may re-expose the blocker it was meant to hide, so decide what the
-field should actually do first.
-
-**Known in catalog:** none — no package uses a field-level `columnar:` block yet.
 
 ### A3. `copy_to` — `copy_to`
 
@@ -609,6 +469,21 @@ Columnar mode never stores `_source`; these settings are a direct contradiction.
 JSON-schema validation rejects them before the columnar check runs. The check exists to
 guard against a future enum expansion.
 
+### A8. An explicit `index.sort` that does not fit — `index_sort_invalid`
+
+**Rule.** The data stream manifest declares `index.sort` and, per the package-spec#1250
+review, a columnar-ready stream's sort fields must be mapped, have doc values, and
+include `@timestamp`. A sort field that is not declared in the stream's fields, one
+with `doc_values: false`, or a sort without `@timestamp` is a finding. `host.name`
+counts as mapped: the logs profile adds its mapping when the package does not.
+
+**Remediation.** Fix the sort ([`sorting.md`](sorting.md)), or drop it and keep the
+logs profile default (`host.name`, `@timestamp`). The audit's own sort proposals
+already meet these conditions.
+
+**Known in catalog:** none in a `type: logs` data stream (only `synthetics` declares a
+sort, and it is out of scope).
+
 ---
 
 ## Class B — accepted but lossy
@@ -738,7 +613,8 @@ again on the stack you test with.
    `nested` query and nothing reads this part of `_source`.
 3. Map the objects as `type: flattened`: they stay with their element, but their
    sub-fields become untyped keywords.
-4. Keep the stream on logsdb until Elasticsearch fixes it.
+4. Keep the stream on LogsDB until Elasticsearch fixes it: mark it
+   `elasticsearch.logsdb_columnar: unsupported`.
 
 **Known in catalog:** 14 fields in 10 streams, among them `checkpoint/firewall`
 (`packets_dropped`: `source`, `destination`, …), `gcp/audit` (`authorization_info`,
@@ -760,29 +636,21 @@ a detection rule that string-compares the raw value — sees the normalized casi
 No change is required. If the original casing has to survive a read, keep the parent
 field raw and move the normalizer into `multi_fields:`.
 
-### C5. `columnar: {index: true}` — `columnar_index_true`
-
-**Rule.** A field whose mode-scoped `columnar:` block sets `index: true`, keeping
-an inverted index for that one field under columnar modes.
+### C5. Per-field inverted indexes — `index: true`
 
 **A per-stream human decision.** The rollout strategy asks, for each data stream
 made columnar-ready, which fields (if any) keep an inverted index, decided from the
-queries its dashboards and detection rules run. The audit reports an existing override
-as an informational finding and lists lookup candidates per stream; it never writes
-one. A human adds one when a named query filters on the field by exact value and the
-field is not in the sort key, and records that query in the PR.
+queries its dashboards and detection rules run. The audit lists lookup candidates per
+stream; it never writes one. A human adds one when a named query filters on the field
+by exact value and the field is not in the sort key, and records that query in the PR.
 
-**Which spelling.** Prefer the mode-scoped `columnar: {index: true}`: explicit, and a
-no-op on logsdb and standard installs. (A plain `index: true` is emitted by Fleet as
-is and is also the logsdb default for keyword fields, so it works too; which one the
-catalog standardizes on is an open team decision.) `index` is not valid on `wildcard`
-fields.
+**Spelling.** A plain `index: true` on the field itself, per the package-spec#1250
+review: LogsDB indexes keyword fields anyway, so it changes nothing there, and there
+is no columnar-specific block for it. `index` is not valid on `wildcard` fields.
 
-**What to do when you find one.** Look for the query it serves. If there is one,
-keep it and carry the reference forward. If there is not, remove it and reach for
-index sorting instead ([`sorting.md`](sorting.md)).
-
-**Known in catalog:** none.
+**What to do when you find one.** Look for the query it serves. If there is one, keep
+it and carry the reference forward. If there is not, reach for index sorting instead
+([`sorting.md`](sorting.md)).
 
 ---
 
@@ -829,8 +697,8 @@ reads doc values, not `_source`. The exception is a query that explicitly reques
 on the real document. The exception is the destination pipeline of a `latest`
 transform, which runs on the rebuilt `_source` the transform copies (C10).
 
-So a data stream should not be declared `elasticsearch.columnar.supported: true`
-until this review is done. It is a per-integration question about *consumers*, which
+So a data stream should not take `elasticsearch.logsdb_columnar` (its own or the
+package's) until this review is done. It is a per-integration question about *consumers*, which
 no mapping check can answer.
 
 ### Reading a negative result

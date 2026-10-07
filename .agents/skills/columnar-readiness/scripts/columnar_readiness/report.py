@@ -7,56 +7,87 @@ from collections import Counter
 from typing import Any, Dict, List, Optional, Tuple
 
 from .common import location
-from .constants import COLUMNAR_INDEX_MODES, STATUS_ORDER
+from .constants import STATUS_ORDER
 from .ecs import ecs_source
 from .rules import RULES_PACKAGE
-from .sorting import SUPPORTED_YAML_BODY, sort_yaml
+from .sorting import PACKAGE_OPT_IN_YAML, UNSUPPORTED_YAML_BODY, sort_yaml
 from .spec import (
     COLUMNAR_KIBANA_CONSTRAINT,
     COLUMNAR_KIBANA_NOTE,
     COLUMNAR_MIN_STACK_COST,
     DECLARATION_CODES,
+    LOGSDB_COLUMNAR_STREAM_VALUES,
 )
 
 
 def columnar_optin_label(stream: Dict[str, Any]) -> str:
-    """How (and whether) the data stream is already columnar-enabled.
+    """Whether the data stream is declared LogsDB columnar-ready, and where from.
 
-    Two independent declarations, and the difference matters:
-      * `elasticsearch.columnar.supported: true` — the stream is *ready*; Fleet
-        exposes the per-stream opt-in toggle, but logsdb stays the default.
-      * `elasticsearch.index_mode: logsdb_columnar` — columnar is *forced* for every
-        install of this package version: Fleet locks the toggle on (the API cannot
-        turn it off either), and existing streams switch at the next rollover.
+    `elasticsearch.logsdb_columnar` is set at package level (`opt_in | default`) and can
+    be overridden per data stream (`opt_in | default | unsupported`).
     """
-    mode = stream.get("index_mode")
-    parts: List[str] = []
-    if mode in COLUMNAR_INDEX_MODES:
-        parts.append(f"**columnar forced** via `index_mode: {mode}` — every install of this "
-                     f"package version is columnar, users cannot opt out, and existing "
-                     f"streams switch at the next rollover")
-    if stream.get("columnar_supported"):
-        parts.append("**declared ready** via `elasticsearch.columnar.supported: true` — "
-                     "Fleet offers the per-stream opt-in toggle; users have to turn it on")
-    if not parts:
-        return ("not declared (`elasticsearch.columnar.supported` unset, no columnar "
-                "`index_mode`) — Fleet offers no opt-in for this stream yet")
-    label = "; ".join(parts)
+    effective = stream.get("logsdb_columnar_effective")
+    source = ("this data stream" if stream.get("logsdb_columnar") in LOGSDB_COLUMNAR_STREAM_VALUES
+              else "the package")
+    if effective == "opt_in":
+        label = (f"**declared ready** (`logsdb_columnar: opt_in`, from {source}) — Fleet "
+                 "offers the integration's toggle; LogsDB stays the default until a user "
+                 "turns it on")
+    elif effective == "default":
+        label = (f"**declared default** (`logsdb_columnar: default`, from {source}) — new "
+                 "installations get LogsDB columnar; existing data streams keep their mode")
+    elif effective == "unsupported":
+        label = ("**marked unsupported** (`logsdb_columnar: unsupported` on this data "
+                 "stream) — it stays on LogsDB whatever the package declares")
+    else:
+        label = ("not declared (`elasticsearch.logsdb_columnar` is unset in the package and "
+                 "in this data stream) — Fleet offers no opt-in yet")
     blocking = [f for f in stream.get("findings", [])
                 if f["class"] == "A" and f["code"] not in DECLARATION_CODES]
-    if blocking:
-        code = (" (`columnar_supported_with_blockers`)"
-                if stream.get("columnar_supported_with_blockers") else "")
-        label += (f". **Inconsistent**{code}: the stream still has {len(blocking)} Class A "
-                  "finding(s), which the 3.7.0 columnar validator rejects — fix them or "
-                  "drop the declaration")
-    # Plumbing pointer only. The 9.6 minimum-stack cost is stated ONCE, in the
-    # package header: repeating it per data stream turned a one-stream report into
-    # three copies of the same paragraph, which is how a warning stops being read.
-    label += (f". Plumbing: `format_version: \"3.7.0\"` + "
-              f"`conditions.kibana.version: \"{COLUMNAR_KIBANA_CONSTRAINT}\"` — see the "
-              f"package header for the 9.6 minimum-stack cost")
+    if stream.get("columnar_enabled") and blocking:
+        label += (f". **Inconsistent** (`logsdb_columnar_with_blockers`): the stream still "
+                  f"has {len(blocking)} Class A finding(s), which the validator rejects — fix "
+                  "them or mark this data stream `logsdb_columnar: unsupported`")
+    if effective != "unsupported":
+        # Plumbing pointer only. The 9.6 minimum-stack cost is stated ONCE, in the package
+        # header: repeating it per data stream is how a warning stops being read.
+        label += (f". Plumbing: `format_version: \"3.7.0\"` + "
+                  f"`conditions.kibana.version: \"{COLUMNAR_KIBANA_CONSTRAINT}\"` — see the "
+                  f"package header for the 9.6 minimum-stack cost")
     return label
+
+
+def package_readiness_lines(result: Dict[str, Any]) -> List[str]:
+    """The package-level `elasticsearch.logsdb_columnar` line of the report header, with
+    the root-manifest snippet when the package does not declare it yet."""
+    in_scope = [ds for ds in result.get("data_streams") or [] if ds["status"] != "OUT_OF_SCOPE"]
+    if not in_scope:
+        return []
+    value = result.get("logsdb_columnar")
+    if value:
+        return [f"- Package readiness: `elasticsearch.logsdb_columnar: {value}` in "
+                f"`manifest.yml`. Fleet offers one toggle for the integration and stores the "
+                f"choice once per installation; each logs data stream below says whether it "
+                f"inherits the value"]
+    blocked = [ds["data_stream"] for ds in in_scope if ds["status"] == "BLOCKED"]
+    if len(blocked) == len(in_scope):
+        return ["- Package readiness: not declared, and nothing to declare yet: every logs "
+                "data stream is BLOCKED"]
+    review = [ds["data_stream"] for ds in in_scope if ds["status"] == "NEEDS_REVIEW"]
+    before = [part for part in (
+        "the review items are done" if review else "",
+        f"the BLOCKED data stream(s) ({', '.join(f'`{n}`' for n in blocked)}) carry "
+        f"`logsdb_columnar: unsupported`" if blocked else "") if part]
+    where = ("merge into the existing `elasticsearch:` key of `manifest.yml`"
+             if result.get("has_es_key") else "add to the root `manifest.yml`")
+    lead = f"once {' and '.join(before)}, {where}" if before else where
+    lines = [f"- Package readiness: not declared. To declare it, {lead} (tech-preview targets "
+             f"only). Fleet then offers one toggle for the integration:",
+             "",
+             "  ```yaml"]
+    lines.extend(f"  {ln}" for ln in PACKAGE_OPT_IN_YAML.rstrip("\n").split("\n"))
+    lines.extend(["  ```", ""])
+    return lines
 
 
 def kibana_condition_meets_columnar(condition: Any) -> bool:
@@ -83,9 +114,9 @@ def kibana_condition_meets_columnar(condition: Any) -> bool:
 def stream_manifest_block(s: Dict[str, Any]) -> Tuple[List[str], List[str]]:
     """(YAML body lines, notes) for the one `elasticsearch:` key of a stream manifest.
 
-    The readiness flag and the index sort live under the same `elasticsearch:`
-    mapping, so they are emitted merged — a reader who pastes two snippets gets a
-    duplicate key and loses one of them.
+    A `logsdb_columnar: unsupported` override and the index sort live under the same
+    `elasticsearch:` mapping, so they are emitted merged — a reader who pastes two
+    snippets gets a duplicate key and loses one of them.
 
     Anything the manifest already declares becomes a note ("already present") instead
     of a proposal: the audit is run again after the migration, and a report that still
@@ -95,14 +126,18 @@ def stream_manifest_block(s: Dict[str, Any]) -> Tuple[List[str], List[str]]:
     body: List[str] = []
     notes: List[str] = []
 
-    if s.get("columnar_supported"):
-        notes.append("`elasticsearch.columnar.supported: true` already present")
-    elif s["status"] in ("READY", "READY_AFTER_AUTO_FIX"):
-        body.extend(SUPPORTED_YAML_BODY.rstrip("\n").split("\n"))
+    own = s.get("logsdb_columnar")
+    if own is not None:
+        notes.append(f"`logsdb_columnar: {own}` already present")
+    elif s["status"] == "BLOCKED":
+        body.extend(UNSUPPORTED_YAML_BODY.rstrip("\n").split("\n"))
+        notes.append("while the findings below stand, this data stream stays on LogsDB when "
+                     "the package declares `logsdb_columnar`")
+    elif s["status"] == "NEEDS_REVIEW":
+        notes.append("after the review below, let it inherit the package's "
+                     "`logsdb_columnar`, or mark it `logsdb_columnar: unsupported`")
     else:
-        notes.append(f"`columnar.supported: true` is not proposed while this stream is "
-                     f"{s['status']} — the 3.7.0 validator rejects the flag until the "
-                     f"findings below are resolved")
+        notes.append("no `logsdb_columnar` here: it inherits the package-level declaration")
 
     sort = s["sort"]
     existing = s.get("existing_index_sort")
@@ -350,6 +385,7 @@ def md_package(result: Dict[str, Any]) -> str:
                 f"package must keep serving older stacks, do not declare readiness on this "
                 f"release line ({COLUMNAR_KIBANA_NOTE})")
         lines.append(f"- {COLUMNAR_MIN_STACK_COST}")
+    lines.extend(package_readiness_lines(result))
     if result.get("out_of_scope_reason"):
         lines.append(f"- Out of scope: {result['out_of_scope_reason']}")
     for err in result.get("errors", []):
@@ -583,32 +619,31 @@ def md_catalog(results: List[Dict[str, Any]], scanned: Optional[int] = None,
                      + ", ".join(f"`{p}`/{d}" for p, d in sorted(otel_streams)))
         lines.append("")
 
-    # Streams that already carry one of the package-spec 3.7.0 columnar
-    # declarations. Omitted entirely while the count is zero, so the section
-    # only appears once the rollout has actually landed somewhere.
-    supported = [(r["package"], s_["data_stream"]) for r in results for s_ in r["data_streams"]
-                 if s_.get("columnar_supported")]
-    default_mode = [(r["package"], s_["data_stream"]) for r in results for s_ in r["data_streams"]
-                    if s_.get("index_mode") in COLUMNAR_INDEX_MODES]
-    if supported or default_mode:
-        lines.append("## Already columnar-enabled")
+    # Streams that already carry a `logsdb_columnar` declaration (their own or the
+    # package's). Omitted entirely while the count is zero, so the section only
+    # appears once the rollout has actually landed somewhere.
+    declared: Dict[str, List[Tuple[str, str]]] = {}
+    for r in results:
+        for s_ in r["data_streams"]:
+            value = s_.get("logsdb_columnar_effective")
+            if value:
+                declared.setdefault(value, []).append((r["package"], s_["data_stream"]))
+    if declared:
+        lines.append("## Already declared (`elasticsearch.logsdb_columnar`)")
         lines.append("")
-        plural = lambda n: "data stream" if n == 1 else "data streams"  # noqa: E731
-        if supported:
-            lines.append(f"`elasticsearch.columnar.supported: true` — opt-in toggle offered, "
-                         f"logsdb still the default ({len(supported)} {plural(len(supported))}): "
-                         + ", ".join(f"`{p}`/{d}" for p, d in sorted(supported)))
-            lines.append("")
-        if default_mode:
-            lines.append(f"Columnar `index_mode` — columnar is forced: every install of the "
-                         f"version, the Fleet toggle is locked on, and existing streams switch "
-                         f"at the next rollover ({len(default_mode)} {plural(len(default_mode))}): "
-                         + ", ".join(f"`{p}`/{d}" for p, d in sorted(default_mode)))
-            lines.append("")
+        for value, meaning in (("opt_in", "Fleet offers the toggle; LogsDB stays the default"),
+                               ("default", "columnar for new installations only"),
+                               ("unsupported", "stays on LogsDB")):
+            streams = declared.get(value) or []
+            if streams:
+                lines.append(f"`{value}` — {meaning} ({count_of(len(streams), 'data stream')}): "
+                             + ", ".join(f"`{p}`/{d}" for p, d in sorted(streams)))
+                lines.append("")
 
-    BLOCKER_CODES = ["nested_in_nested", "unsupported_type", "source_mode_stored", "source_disabled"]
-    AUTOFIX_SRC_CODES = ["doc_values_false", "store_true", "copy_to", "keyword_normalizer",
-                         "dynamic_runtime"]
+    BLOCKER_CODES =     BLOCKER_CODES = ["nested_in_nested", "unsupported_type", "source_mode_stored", "source_disabled",
+                     "index_sort_invalid"]
+    PLATFORM_CODES = ["doc_values_false", "doc_values_false_ecs", "store_true"]
+    AUTOFIX_SRC_CODES = ["copy_to", "keyword_normalizer", "dynamic_runtime"]
     LOSS_CODES = ["dynamic_false_manifest", "dynamic_false_field", "dynamic_false_template",
                   "enabled_false"]
 
@@ -617,39 +652,24 @@ def md_catalog(results: List[Dict[str, Any]], scanned: Optional[int] = None,
     lines.append("")
     lines.extend(code_rows(BLOCKER_CODES) or ["(none)", ""])
 
-    npkg, nds, pkglist = union(BLOCKER_CODES + ["doc_values_false"])
-    lines.append("## Hard mapping errors declared in the package source "
+    npkg, nds, _ = union(PLATFORM_CODES)
+    lines.append("## Waiting on Elasticsearch or Fleet — no package change "
                  f"({npkg} packages, {nds} data streams)")
     lines.append("")
-    lines.append("Union of `nested_in_nested` and `doc_values_false`. This is the set the "
-                 "preliminary catalog analysis called *blocked*; under the status rules in "
-                 "`references/report-template.md` the `doc_values_false` ones are "
-                 "READY_AFTER_AUTO_FIX because the fix is mechanical: keep the existing "
-                 "`doc_values: false` and add a mode-scoped "
-                 "`columnar: {doc_values: true}` beside it, so logsdb and standard installs "
-                 "of the same package version are unchanged. (On the two placements Fleet "
-                 "does not apply overrides to — a `multi_fields:` entry, or an "
-                 "`object_type` dynamic-template field — there is no scoped form and the "
-                 "`doc_values: false` has to be deleted outright, in every index mode.)")
+    lines.append("`doc_values: false` (declared, or imported from ECS by `external: ecs`) and "
+                 "`store: true`. Elasticsearch rejects them in columnar mode today. Per the "
+                 "package-spec#1250 review, Elasticsearch or Fleet is to handle them, and the "
+                 "spec has no field-level override, so packages do not change these fields. "
+                 "Until then these data streams cannot go columnar: a package that declares "
+                 "`logsdb_columnar` marks them `unsupported`.")
     lines.append("")
-    lines.append(", ".join(f"`{p}`" for p in pkglist) or "(none)")
-    lines.append("")
+    lines.extend(code_rows(PLATFORM_CODES) or ["(none)", ""])
 
     npkg, nds, _ = union(AUTOFIX_SRC_CODES)
     lines.append("## Class A, mechanically fixable — declared in the package source "
                  f"({npkg} packages, {nds} data streams)")
     lines.append("")
     lines.extend(code_rows(AUTOFIX_SRC_CODES) or ["(none)", ""])
-
-    npkg, nds, _ = union(["doc_values_false_ecs"])
-    lines.append("## Class A, mechanically fixable — inherited from ECS "
-                 f"({npkg} packages, {nds} data streams)")
-    lines.append("")
-    lines.append("`external: ecs` imports `doc_values` from the ECS schema into the built "
-                 "package, so these never appear in the package source. See "
-                 "`references/blockers.md`.")
-    lines.append("")
-    lines.extend(code_rows(["doc_values_false_ecs"]) or ["(none)", ""])
 
     npkg, nds, pkglist = union(LOSS_CODES)
     lines.append(f"## Data-loss review — Class B ({npkg} packages, {nds} data streams)")
@@ -658,7 +678,7 @@ def md_catalog(results: List[Dict[str, Any]], scanned: Optional[int] = None,
     lines.append("")
     lines.extend(code_rows(LOSS_CODES))
 
-    REVIEW_CODES = ["nested_single_level", "nested_object_children", "runtime_field",
+    REVIEW_CODES = ["nested_object_children", "runtime_field",
                     "source_consumer_transform", "source_consumer_kibana"]
     npkg, nds, _ = union(REVIEW_CODES)
     lines.append(f"## Judgement calls — review ({npkg} packages, {nds} data streams)")
@@ -701,21 +721,22 @@ def md_catalog(results: List[Dict[str, Any]], scanned: Optional[int] = None,
     # Kept out of the blocker/auto-fix sections above on purpose: those count
     # mapping features, these count mistakes in the opt-in plumbing. Omitted
     # while empty, like "Already columnar-enabled".
-    DECLARATION_PROBLEM_CODES = ["columnar_supported_with_blockers",
-                                 "columnar_requires_spec_3_7",
-                                 "columnar_override_misplaced",
-                                 "columnar_doc_values_false"]
+    DECLARATION_PROBLEM_CODES = ["logsdb_columnar_with_blockers",
+                                 "logsdb_columnar_requires_spec_3_7",
+                                 "logsdb_columnar_with_index_mode",
+                                 "logsdb_columnar_not_logs",
+                                 "index_mode_columnar"]
     npkg, nds, _ = union(DECLARATION_PROBLEM_CODES)
     if npkg:
         lines.append("## Columnar declaration problems "
                      f"({npkg} packages, {nds} data streams)")
         lines.append("")
-        lines.append("Mistakes in the package-spec 3.7.0 opt-in plumbing itself, not in "
-                     "the mappings. See `references/blockers.md`.")
+        lines.append("Mistakes in the `elasticsearch.logsdb_columnar` declaration itself, not "
+                     "in the mappings. See `references/blockers.md`.")
         lines.append("")
         lines.extend(code_rows(DECLARATION_PROBLEM_CODES))
 
-    INFO_CODES = ["keyword_normalizer_lowercase", "object_array_flattening"]
+    INFO_CODES = ["nested_single_level", "keyword_normalizer_lowercase", "object_array_flattening"]
     npkg, nds, _ = union(INFO_CODES)
     lines.append("## Informational — Class C "
                  f"({npkg} packages, {nds} data streams)")

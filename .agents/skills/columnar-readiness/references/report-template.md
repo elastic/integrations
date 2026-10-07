@@ -19,40 +19,37 @@ Per data stream, worst finding wins. Package status is the worst of its streams.
 | Status | Meaning |
 | --- | --- |
 | `READY` | No mapping blocker found. **Not a validation result**: correctness and performance tests are still to do. The report prints this gloss next to the status. |
-| `READY_AFTER_AUTO_FIX` | Only Class A findings with a mechanical fix: `copy_to` → ingest pipeline, a non-`lowercase` `normalizer` → pipeline or multi-field, `store: true` → removed, `doc_values: false` → a mode-scoped `columnar: {doc_values: true}` override on the field (package-owned or `external: ecs` alike), `dynamic: runtime` → `dynamic: true`. |
-| `NEEDS_REVIEW` | A Class B data-loss finding (`dynamic: false`, `enabled: false`), a single-level `nested` field, a mapping-level runtime field, or a `_source` consumer: a transform script (`source_consumer_transform`), a `latest` transform (`source_consumer_latest_transform`), a Kibana asset (`source_consumer_kibana`) or a shipped detection rule (`source_consumer_detection_rule`). Needs a human decision before opting in. |
-| `BLOCKED` | `nested` inside `nested`, an unsupported field type, a stored-`_source` override, or an invalid `columnar: {doc_values: false}`. No mechanical fix. |
+| `READY_AFTER_AUTO_FIX` | Only Class A findings with a mechanical package fix: `copy_to` → ingest pipeline, a non-`lowercase` `normalizer` → pipeline or multi-field, `dynamic: runtime` → `dynamic: true`, or `logsdb_columnar` declared under a `format_version` below 3.7.0. |
+| `NEEDS_REVIEW` | A Class B data-loss finding (`dynamic: false`, `enabled: false`), objects inside a `nested` field (`nested_object_children`), a mapping-level runtime field, or a `_source` consumer: a transform script (`source_consumer_transform`), a `latest` transform (`source_consumer_latest_transform`), a Kibana asset (`source_consumer_kibana`) or a shipped detection rule (`source_consumer_detection_rule`). Needs a human decision before opting in. |
+| `BLOCKED` | `nested` inside `nested`, `doc_values: false` or `store: true` (no package change: they wait on Elasticsearch or Fleet), an unsupported field type, a stored-`_source` override, an explicit `index.sort` that does not fit, or a mistake in the `logsdb_columnar` declaration. |
 | `OUT_OF_SCOPE` | Not a `type: logs` data stream, a stream fed by an OpenTelemetry input (`otelcol`), or the package is `type: input`. |
 
-A field that already carries `columnar: {doc_values: true}` is **resolved**: the
-`doc_values_false` / `doc_values_false_ecs` finding is not raised, because Fleet
-supplies doc values for exactly the modes that need them. An existing
-`columnar: {index: true}` is reported as Class C (`columnar_index_true`, "confirm the
-query that needs it") and never affects the status.
-
-Two checks on the plumbing rather than the mappings:
-`columnar_requires_spec_3_7` (Class A, `auto_fix`) fires when either construct
+Two checks on the declaration rather than the mappings, both Class A:
+`logsdb_columnar_requires_spec_3_7` (`auto_fix`) fires when `elasticsearch.logsdb_columnar`
 appears while the root `format_version` is below 3.7.0 — bump it — and
-`columnar_override_misplaced` (Class A, `blocker`) fires on a field-level
-`columnar:` block that Fleet would never apply, i.e. on an `object_type`
-dynamic-template field or inside `multi_fields:`.
+`logsdb_columnar_with_blockers` (`blocker`) fires when a stream takes `opt_in` or
+`default` while it still has a Class A finding. `logsdb_columnar_with_index_mode`,
+`logsdb_columnar_not_logs` and `index_mode_columnar` cover the other validation errors
+of the setting (see [`blockers.md`](blockers.md)).
 
-**A package can be mixed** — `aws` has one blocked data stream (`waf`) and eighteen
-migratable ones. Opt in per data stream; never hold a whole package back for one
-stream.
+**A package can be mixed** — `aws` has one blocked data stream (`waf`) and nineteen
+others. The package declares `opt_in`; the blocked stream gets
+`logsdb_columnar: unsupported`. Never hold a whole package back for one stream.
 
 ## Per-stream lines
 
-**Columnar opt-in** reports how (and whether) the stream is already
-columnar-enabled. The two declarations are not interchangeable:
-`elasticsearch.columnar.supported: true` means Fleet offers the per-stream opt-in
-toggle while logsdb stays the default; a columnar `elasticsearch.index_mode` forces
-columnar for every install (toggle locked on, existing streams switch at the next
-rollover). Either one counts as columnar-enabled for reporting; in JSON they are
-`columnar_supported`, `index_mode` and the derived `columnar_enabled`. A stream that
-declares one while still carrying Class A findings is called out as inconsistent,
-and for `columnar.supported: true` that also raises
-`columnar_supported_with_blockers` (severity `blocker`).
+**Columnar opt-in** reports whether the stream takes `elasticsearch.logsdb_columnar`,
+and where from: `opt_in` (Fleet offers the integration's toggle; LogsDB stays the
+default), `default` (new installations get columnar; existing streams keep their mode),
+`unsupported` (stays on LogsDB), or not declared. The stream's own value wins over the
+package's. In JSON: `logsdb_columnar` (the stream's own value), `logsdb_columnar_effective`
+and the derived `columnar_enabled` (`opt_in` or `default`). A stream that takes `opt_in`
+or `default` while still carrying Class A findings is called out as inconsistent, and
+raises `logsdb_columnar_with_blockers` (severity `blocker`).
+
+The package header carries a **Package readiness** line: the package-level value, or,
+when it is not declared, the root-manifest snippet to add once the review items are done
+and the BLOCKED streams are marked `unsupported`.
 
 **Sort** is one of (JSON: `sort.class`):
 
@@ -135,6 +132,12 @@ proposed at all.
 - `elastic/detection-rules`: scanned `<dir>` (`rules/` and `hunting/`, <n> files) for `_source` readers | no checkout found (looked at `…`), so hunting queries were not scanned …
 - Kibana condition: `^8.19.0 || ^9.1.0` — declaring readiness means **replacing the whole range** with `conditions.kibana.version: "^9.6.0"` …
 - **Cost:** … raises this package's **minimum stack version to 9.6** …
+- Package readiness: <`elasticsearch.logsdb_columnar: opt_in` in `manifest.yml` | not declared. To declare it, … :>
+
+  ```yaml
+  elasticsearch:
+    logsdb_columnar: opt_in
+  ```
 
 | Data stream | Status | Findings | Index sort |
 | --- | --- | --- | --- |
@@ -144,19 +147,18 @@ proposed at all.
 
 - Inputs: `cel`, `httpjson`
 - Current `index_mode`: `unset (logsdb default)`
-- Columnar opt-in: <declared ready | columnar forced via `index_mode` | not declared>. Plumbing: …
+- Columnar opt-in: <declared ready | declared default | marked unsupported | not declared>. Plumbing: …
 - Sort: **<recommendation>** — <why>
 - `_source` consumers: <none found (…) | **<n> … (`<code>`)** — see the Class C findings below>; object arrays: …
 - Detection rules: <n> shipped rule(s) query this stream directly (…); <n> more match its indices without targeting it (…); <none reads | n read> `_source`. …
 - Alerting rule and SLO templates: <n> alerting rule template(s), <n> SLO template(s) shipped by this package query this stream (“<name>”, …). …
 - Lookup candidates for the `index: true` review, a starting point and not a recommendation ("none" is a valid decision): `source.ip` (high-risk lookup): 12 rules; …
 - Text sub-fields (they keep an inverted index in columnar; …): <n>, `user_agent.original.text`, …
-- Stream manifest: <merge … | add …>.
+- Stream manifest: <inherits the package-level declaration | stays on LogsDB … | after the review …>; <merge … | add …>.
 
   ```yaml
   elasticsearch:
-    columnar:
-      supported: true
+    logsdb_columnar: unsupported   # BLOCKED streams only
     index_template:
       settings:
         index:
@@ -249,11 +251,10 @@ Detection rules: <n> shipped rules scanned …
 
 OTel log streams out of scope until derived fields land (<n>): `<pkg>`/<ds>, …
 
-## Already columnar-enabled
+## Already declared (`elasticsearch.logsdb_columnar`)
 ## Blockers — Class A, no mechanical fix (<n> packages, <n> data streams)
-## Hard mapping errors declared in the package source (<n> packages, <n> data streams)
+## Waiting on Elasticsearch or Fleet — no package change (<n> packages, <n> data streams)
 ## Class A, mechanically fixable — declared in the package source
-## Class A, mechanically fixable — inherited from ECS
 ## Data-loss review — Class B (<n> packages, <n> data streams)
 ## Judgement calls — review (<n> packages, <n> data streams)
 ## `_source` readers outside the mappings — review (<n> packages, <n> data streams)
@@ -263,7 +264,7 @@ OTel log streams out of scope until derived fields land (<n>): `<pkg>`/<ds>, …
 ## Index sort
 ```
 
-The **Already columnar-enabled** section is omitted while both counts are zero.
+The **Already declared** section is omitted while no stream takes a value.
 Findings are grouped **by code**, not only by status, so a run can be diffed against
 a previous one even when the status rules change.
 
@@ -274,16 +275,16 @@ a previous one even when the status rules change.
 the package's own streams it reads, and, when that is empty, `flagged_on`, the
 `<package>/<ds>` streams elsewhere that carry its finding), `detection_rules_dir`,
 `detection_rules_scanned`, `detection_rules_repo` (`{"dir", "files", "looked_at"}`; absent
-with `--no-rules`), `spec_min_stack` (the stacks whose Fleet installs the package today)
-and `installs_on_8x`. Per finding (`line` is `null` when unknown, e.g. for JSON
+with `--no-rules`), `spec_min_stack` (the stacks whose Fleet installs the package today),
+`installs_on_8x` and `logsdb_columnar` (the package-level value, or `null`). Per finding (`line` is `null` when unknown, e.g. for JSON
 sources):
 
 ```json
 {
   "code": "doc_values_false",
   "class": "A",
-  "severity": "auto_fix",
-  "auto_fixable": true,
+  "severity": "blocker",
+  "auto_fixable": false,
   "field": "event.original",
   "where": "data_stream/incidents/fields/ecs.yml",
   "line": 12,
@@ -306,9 +307,10 @@ Per data stream, alongside `index_mode`:
 ```json
 {
   "index_name": "logs-gcp.audit-default",
-  "columnar_supported": true,
+  "logsdb_columnar": null,
+  "logsdb_columnar_effective": "opt_in",
   "columnar_enabled": true,
-  "columnar_supported_with_blockers": false,
+  "logsdb_columnar_with_blockers": false,
   "existing_index_sort": { "field": ["organization.id", "@timestamp"], "order": ["asc", "desc"] },
   "source_consumers": { "transform": 0, "latest_transform": 0, "kibana": 0,
                         "detection_rule": 1, "object_arrays": 0, "flattened_exempt": [] },

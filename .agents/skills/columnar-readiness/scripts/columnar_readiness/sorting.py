@@ -37,10 +37,11 @@ from .pipelines import PipelineFacts, TIER1_EVENT_EVIDENCE_FIELDS
 
 
 # The index sort as the CHILDREN of the stream manifest's `elasticsearch:` key. A
-# data stream manifest has exactly one `elasticsearch:` mapping, so the sort and the
-# `columnar.supported` flag are siblings inside it — the report therefore emits a
-# single merged block (`stream_manifest_block`). Two separate `elasticsearch:`
-# snippets are a duplicate key when pasted literally, and YAML keeps only the last.
+# data stream manifest has exactly one `elasticsearch:` mapping, so the sort and a
+# `logsdb_columnar: unsupported` override are siblings inside it — the report
+# therefore emits a single merged block (`stream_manifest_block`). Two separate
+# `elasticsearch:` snippets are a duplicate key when pasted literally, and YAML keeps
+# only the last.
 SORT_YAML_BODY = (
     "  index_template:\n"
     "    settings:\n"
@@ -49,8 +50,10 @@ SORT_YAML_BODY = (
 )
 SORT_YAML_HEADER = "elasticsearch:\n" + SORT_YAML_BODY
 
-# Same, for the stream-level readiness flag.
-SUPPORTED_YAML_BODY = "  columnar:\n    supported: true\n"
+# A data stream that stays on LogsDB while its package declares `logsdb_columnar`.
+UNSUPPORTED_YAML_BODY = "  logsdb_columnar: unsupported\n"
+# The package-level readiness declaration, in the root `manifest.yml`.
+PACKAGE_OPT_IN_YAML = "elasticsearch:\n  logsdb_columnar: opt_in\n"
 
 
 def sort_yaml(fields: List[str], orders: List[str], header: bool = True) -> str:

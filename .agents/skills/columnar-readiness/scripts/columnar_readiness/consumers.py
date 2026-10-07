@@ -258,9 +258,9 @@ def object_array_findings(ds_dir: str, ds_name: str, field_index: Dict[str, Dict
         "ingest pipelines (they run before indexing). What changes is what a `_source` "
         "reader sees — a transform or runtime field using `params._source`, Kibana code "
         "walking `_source`, an ES|QL query with `METADATA _source`, or a user reading "
-        "the JSON in Discover. Confirm those consumers before declaring this stream "
-        "`columnar.supported: true`; mapping the field as `nested` does not restore the "
-        "shape either (see `nested_single_level`).",
+        "the JSON in Discover. Confirm those consumers before declaring the package "
+        "`logsdb_columnar`; mapping the field as `nested` does not restore the shape "
+        "either (see `nested_single_level`).",
         f"data_stream/{ds_name}/sample_event.json", first)]
 
 

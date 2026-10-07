@@ -7,7 +7,6 @@ from typing import Any, Dict, Iterator, List, Tuple
 from .common import finding, is_false, is_true, line_of
 from .constants import ECS_DOC_VALUES_FALSE, FIELD_CHILD_KEYS, UNSUPPORTED_TYPES
 from .patches import patch
-from .spec import columnar_block
 
 
 def walk_fields(defs: Any, prefix: str = "", nested_depth: int = 0,
@@ -54,9 +53,6 @@ def has_runtime(fdef: Dict[str, Any]) -> bool:
 # The field attribute each check_field finding is about, so `file:line` points at it
 # (`doc_values: false`, not the `- name:` line). Codes not listed use the entry line.
 CODE_KEYS = {
-    "columnar_doc_values_false": "columnar",
-    "columnar_index_true": "columnar",
-    "columnar_override_misplaced": "columnar",
     "copy_to": "copy_to",
     "doc_values_false": "doc_values",
     "doc_values_false_ecs": "external",
@@ -73,30 +69,24 @@ CODE_KEYS = {
 }
 
 
+# `doc_values: false` and `store: true` are not package fixes: per the package-spec#1250
+# review, Elasticsearch (preferred, it also covers user-managed templates) or Fleet is
+# to handle them in columnar mode, and the spec has no field-level override for them.
+# Elasticsearch rejects both today, so the stream cannot go columnar until then.
+PLATFORM_PENDING = (
+    "No package change. Per the package-spec#1250 review, Elasticsearch (preferred, "
+    "since it also covers user-managed templates) or Fleet is to handle {what} in "
+    "columnar mode, and there is no field-level `columnar:` override in the spec. Until that lands, Elasticsearch rejects the columnar index "
+    "template, so this data stream cannot go columnar: if the package declares "
+    "`elasticsearch.logsdb_columnar`, mark this data stream "
+    "`logsdb_columnar: unsupported` in its manifest."
+)
+
+
 def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
                 in_multi_field: bool, rel_file: str) -> List[Dict[str, Any]]:
     out: List[Dict[str, Any]] = []
     ftype = fdef.get("type")
-
-    # package-spec 3.7.0 mode-scoped override block: only applied by Fleet when
-    # the resolved index mode is columnar, so it repairs a columnar blocker
-    # without touching logsdb/standard installs of the same package version.
-    #
-    # Fleet only applies it to **static leaf fields**. Two places it does not:
-    #   * a dynamic-template field — `type: object` (or `group`) with an
-    #     `object_type`, which Fleet renders as a `dynamic_templates` entry and
-    #     not as a concrete mapping;
-    #   * anything inside `multi_fields:`.
-    # package-spec 3.7.0 rejects a `columnar:` block in both places, so an
-    # override written there does not merely do nothing — it fails the build.
-    # Consequence for remediation: a `doc_values: false` on such a field cannot
-    # be repaired by a scoped override, it has to be deleted outright, which is
-    # mode-agnostic and therefore also costs storage on logsdb and standard.
-    columnar = columnar_block(fdef)
-    dynamic_template_field = fdef.get("object_type") is not None
-    columnar_override_allowed = not dynamic_template_field and not in_multi_field
-    columnar_doc_values_fix = (is_true(columnar.get("doc_values"))
-                               and columnar_override_allowed)
 
     # --- Class A: rejected by Elasticsearch -------------------------------- #
     if ftype == "nested":
@@ -125,8 +115,8 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
                 "three change the mapping for logsdb installs too. On an existing data stream the type "
                 "change takes effect at the next rollover: Fleet rolls the stream over when "
                 "the write index rejects the mapping (\"can't merge a non-nested mapping "
-                "... with a nested mapping\"). Or keep this stream on logsdb: the opt-in is "
-                "per stream.",
+                "... with a nested mapping\"). Or keep this stream on LogsDB: mark it "
+                "`elasticsearch.logsdb_columnar: unsupported` in its manifest.",
                 rel_file, flat))
             children = [str(c.get("name")) for c in fdef.get("fields") or []
                         if isinstance(c, dict) and c.get("name")]
@@ -145,122 +135,34 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
                      "first that nothing runs a `nested` query on this path, or a numeric or "
                      "date query on its sub-fields.")
         else:
-            # Single level nested is accepted but the flattened shape changes.
+            # Single-level nested is supported; per the package-spec#1250 review this is
+            # only a note for `_source` consumers that expect the original structure.
             out.append(finding(
-                "nested_single_level", "A", "review",
+                "nested_single_level", "C", "info",
                 f"`{flat}` is a single-level `nested` field.",
-                "Accepted by columnar mode, and `nested` queries keep matching within one "
-                "element: each element stays its own hidden document (objects inside an "
-                "element are the exception: `nested_object_children`). Two things to review: "
-                "consumers of `_source` see the columnar shape, and any mapping with a "
-                "`nested` field turns off columnar's batch indexing path for the whole "
-                "stream (`ShardBatchMapper`), so it does not get the ingest speed-up. Keep "
-                "it when queries need per-element matching; otherwise consider "
-                "`type: group`.",
+                "Supported by columnar mode. Note for `_source` consumers that expect the "
+                "original structure: they get the columnar shape (objects inside an element "
+                "are a separate case: `nested_object_children`).",
                 rel_file, flat))
 
     # Multi-fields are exempt from the reconstructability check
     # (`MappingLookup#firstFieldNotReconstructableFromDocValues` skips
     # `isMultiField(...)`), so only top-level fields matter here.
-    if is_false(fdef.get("doc_values")) and not in_multi_field and not columnar_doc_values_fix:
-        if dynamic_template_field:
-            # No scoped override is available here — see `columnar_override_allowed`.
-            remediation = (
-                "Delete the `doc_values: false` line. The mode-scoped "
-                "`columnar: {doc_values: true}` override is **not** an option on this "
-                f"field: it declares `object_type: {fdef.get('object_type')}`, so Fleet "
-                "renders it as a `dynamic_templates` entry and never applies a `columnar:` "
-                "block to it, and package-spec 3.7.0 rejects the block there outright "
-                "(`columnar_override_misplaced`). The removal is therefore mode-agnostic: "
-                "doc values come on for logsdb and standard installs of this package "
-                "version too, and those indices grow. If that cost is unacceptable, the "
-                "honest alternative is to leave the field alone and keep this data stream "
-                "on logsdb. `store: true` is NOT an alternative either: Elasticsearch "
-                "rejects `store` outright in columnar modes "
-                "(`FieldMapper.Builder#storeParam`)."
-            )
-        else:
-            remediation = (
-                "Keep `doc_values: false` and add the mode-scoped override next to it "
-                "(package-spec 3.7.0):\n"
-                f"    - name: {flat}\n"
-                "      ...\n"
-                "      doc_values: false      # kept: still applies to logsdb/standard\n"
-                "      columnar:\n"
-                "        doc_values: true\n"
-                "Fleet applies the `columnar:` block only when the resolved index mode is "
-                "`logsdb_columnar`/`columnar` (the same way `dimension: true` is only "
-                "emitted for `time_series`), so a logsdb or standard install of this same "
-                "package version keeps exactly today's storage profile — the fix costs "
-                "nothing off-columnar, which is why it is preferred over deleting the "
-                "line. Deleting `doc_values: false` outright also unblocks columnar, but "
-                "it turns doc values on in every mode and grows those indices. Requires "
-                "`format_version: \"3.7.0\"`. `store: true` is NOT an alternative: "
-                "Elasticsearch rejects `store` outright in columnar modes "
-                "(`FieldMapper.Builder#storeParam`). For message-like content "
-                "`match_only_text` also works, but only on fields the package defines "
-                "itself."
-            )
+    if is_false(fdef.get("doc_values")) and not in_multi_field:
         out.append(finding(
-            "doc_values_false", "A", "auto_fix",
-            f"`{flat}` sets `doc_values: false`; columnar mode cannot reconstruct it.",
-            remediation,
-            rel_file, flat))
-
-    if is_false(columnar.get("doc_values")):
-        out.append(finding(
-            "columnar_doc_values_false", "A", "blocker",
-            f"`{flat}` sets `columnar.doc_values: false`. That is not a valid value: the "
-            f"mode-scoped `columnar:` block exists only to turn doc values back ON for "
-            f"columnar modes, and a columnar index cannot reconstruct a field that has "
-            f"none. package-spec 3.7.0 allows `true` only.",
-            "Set `columnar.doc_values: true`, or delete the `columnar:` block. Whoever "
-            "wrote `false` meant something — find out what before flipping it, which is "
-            "why this is not treated as a mechanical fix.",
-            rel_file, flat))
-
-    if is_true(columnar.get("index")):
-        out.append(finding(
-            "columnar_index_true", "C", "info",
-            f"`{flat}` keeps an inverted index under columnar modes "
-            f"(`columnar.index: true`); confirm the query that needs it.",
-            "Per-field inverted indexes are a per-stream decision taken from the queries "
-            "the stream's dashboards and detection rules run, and \"none\" is a valid "
-            "answer. Keep this one if a named query filters on the field by exact value "
-            "and the field is not in the sort key (see the stream's lookup candidates); "
-            "record that query in the PR. Otherwise remove it: index sorting is the first "
-            "lever (`references/sorting.md`).",
-            rel_file, flat))
-
-    if columnar and not columnar_override_allowed:
-        placement = ("inside `multi_fields:`" if in_multi_field
-                     else f"a dynamic-template field (`object_type: "
-                          f"{fdef.get('object_type')}`)")
-        out.append(finding(
-            "columnar_override_misplaced", "A", "blocker",
-            f"`{flat}` carries a mode-scoped `columnar:` block on {placement}, where it "
-            f"does nothing. Fleet only applies `columnar` overrides to static leaf "
-            f"fields: it skips them for `multi_fields:` entries and for fields it renders "
-            f"as a `dynamic_templates` entry (`object_type`). package-spec 3.7.0 rejects "
-            f"the block in both places, so the package fails validation before the "
-            f"override ever gets a chance to be ignored.",
-            "Delete the `columnar:` block here. If it was added to repair a "
-            "`doc_values: false`: a multi-field needs no repair at all (multi-fields are "
-            "exempt from the reconstructability check, "
-            "`MappingLookup#firstFieldNotReconstructableFromDocValues`), and on an "
-            "`object_type` field the only fix is to delete the `doc_values: false` itself "
-            "— which applies in every index mode, not just columnar. Not treated as a "
-            "mechanical fix: deleting the block may re-expose the blocker it was meant to "
-            "hide, so decide what the field should actually do.",
+            "doc_values_false", "A", "blocker",
+            f"`{flat}` sets `doc_values: false`; columnar mode cannot reconstruct it, and "
+            f"Elasticsearch rejects the mapping today.",
+            PLATFORM_PENDING.format(what="`doc_values: false`"),
             rel_file, flat))
 
     if is_true(fdef.get("store")):
         out.append(finding(
-            "store_true", "A", "auto_fix",
+            "store_true", "A", "blocker",
             f"`{flat}` sets `store: true`, which Elasticsearch rejects in columnar modes "
             f"(`[store] cannot be enabled on field [...] in [logsdb_columnar] index mode`).",
-            "Remove `store: true`. The value is reconstructed from doc values, and "
-            "`fields`/`_source` retrieval keeps working.",
+            PLATFORM_PENDING.format(what="`store: true` (the review suggests the same "
+                                         "handling as for `doc_values: false`)"),
             rel_file, flat))
 
     if fdef.get("copy_to") is not None:
@@ -363,32 +265,14 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
     if fdef.get("external") == "ecs" and flat in ECS_DOC_VALUES_FALSE and not in_multi_field:
         # Only an explicit `doc_values: true` in the package overrides the imported
         # value: elastic-package merges with `transformed.DeepUpdate(def)`, so package
-        # attributes win. `store: true` is not an option (rejected by Elasticsearch),
-        # and `type: match_only_text` is not either — elastic-package forces the ECS
-        # type unless the field is in `allowedTypeOverride`.
-        if not is_true(fdef.get("doc_values")) and not columnar_doc_values_fix:
+        # attributes win.
+        if not is_true(fdef.get("doc_values")):
             out.append(finding(
-                "doc_values_false_ecs", "A", "auto_fix",
+                "doc_values_false_ecs", "A", "blocker",
                 f"`{flat}` is imported from ECS, which defines it with `doc_values: false`; "
                 f"elastic-package copies that into the built package.",
-                f"Add the mode-scoped override to the field entry in the package's ECS "
-                f"fields file:\n"
-                f"    - name: {flat}\n      external: ecs\n      columnar:\n"
-                f"        doc_values: true\n"
-                f"Package attributes win over the imported ECS ones "
-                f"(`transformed.DeepUpdate(def)`), and Fleet applies the `columnar:` block "
-                f"only when the resolved index mode is `logsdb_columnar`/`columnar` — so "
-                f"logsdb and standard installs of this same package version still get "
-                f"ECS's `doc_values: false` and store not one byte more. A plain "
-                f"`doc_values: true` would also unblock columnar, but it would turn doc "
-                f"values on for `{flat}` in every mode. Requires "
-                f"`format_version: \"3.7.0\"`."
-                + ("" if columnar_override_allowed else
-                   " NOTE: this entry declares `object_type`, so Fleet renders it as a "
-                   "`dynamic_templates` entry and will not apply a `columnar:` block to "
-                   "it, and package-spec 3.7.0 rejects the block there. Here the only "
-                   "fix is a plain `doc_values: true`, which applies in every index "
-                   "mode."),
+                PLATFORM_PENDING.format(what="`doc_values: false` (also when it is "
+                                             "imported from ECS)"),
                 rel_file, flat))
 
     for f in out:
@@ -447,8 +331,8 @@ def nested_object_children(entries: List[Tuple[Dict[str, Any], str, int, bool, s
             "(2) accept it, when nothing combines an element's own fields with these objects "
             "in one `nested` query and nothing reads this part of `_source`; (3) map the "
             "objects as `type: flattened`, which keeps them with their element but makes "
-            "their sub-fields untyped keywords; (4) keep the stream on logsdb until "
-            "Elasticsearch fixes it.",
+            "their sub-fields untyped keywords; (4) keep the stream on LogsDB until "
+            "Elasticsearch fixes it: mark it `elasticsearch.logsdb_columnar: unsupported`.",
             rel_file, path, line=line_of(fdef, "type")))
     return out
 

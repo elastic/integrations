@@ -9,20 +9,21 @@
       "Reports stubstatus as out of scope (metrics stream)",
       "States that READY means no mapping blocker was found, not that the stream is validated",
       "Mentions that declaring readiness raises the package's minimum stack to 9.6 and needs a backport line",
+      "Proposes elasticsearch.logsdb_columnar: opt_in in the root manifest.yml, with nothing per data stream",
       "Does not propose index_mode: logsdb_columnar"
     ]
   },
   {
     "skills": ["columnar-readiness"],
-    "query": "Migrate the anthropic audit data stream to columnar.",
-    "files": ["packages/anthropic"],
+    "query": "Migrate the canva package to columnar.",
+    "files": ["packages/canva"],
     "expected_behavior": [
       "Runs a baseline elastic-package lint before changing anything, then bumps only format_version to 3.7.0 and lints again",
-      "Fixes doc_values_false_ecs by adding columnar: {doc_values: true} next to the external: ecs reference to event.original in fields/ecs.yml, not a bare doc_values: true",
-      "Adds elasticsearch.columnar.supported: true and the proposed sort organization.id asc, @timestamp desc in a single elasticsearch: block of data_stream/audit/manifest.yml",
+      "Adds the proposed sort organization.id asc, @timestamp desc in the elasticsearch: block of data_stream/audit/manifest.yml",
+      "Declares elasticsearch.logsdb_columnar: opt_in in the root manifest.yml, not a per-stream flag, and no index_mode",
       "Replaces the whole conditions.kibana.version range with ^9.6.0 and bumps the major version",
       "Adds a changelog entry with a breaking-change item first and an enhancement item, with placeholder links",
-      "Does not add index_mode: logsdb_columnar and does not add any index: true",
+      "Does not add a field-level columnar: block or any index: true",
       "Runs lint, build, test pipeline (without -g) and test static, and re-runs the audit"
     ]
   },
@@ -37,7 +38,7 @@
       "Warns that type: group alone is not enough on columnar: the inner objects get detached from their outer element unless the pipeline sends them as dotted keys",
       "Mentions denormalizing in the ingest pipeline as the alternative that keeps per-item pairing, and that the change applies at the next rollover",
       "Shows the exact fields.yml change for each inner field (type: nested -> type: flattened, its fields: children dropped)",
-      "Notes that the opt-in is per data stream, so the rest of the package is not held back"
+      "Notes that while its only logs stream is blocked the package has nothing to declare, and that the stream can stay on LogsDB with logsdb_columnar: unsupported"
     ]
   },
   {
@@ -46,7 +47,8 @@
     "files": ["packages/tanium"],
     "expected_behavior": [
       "Reports threat_response as BLOCKED by nested inside nested, declared as dotted-name sibling entries (whats -> whats.intel_intra_ids, whats.artifact_activity.relevant_actions)",
-      "Reports the other streams separately (endpoint_config needs review for a single-level nested field; the rest are READY)",
+      "Reports the other five streams separately as READY (endpoint_config's single-level nested field is only a note)",
+      "Says the package can declare logsdb_columnar: opt_in once threat_response is marked logsdb_columnar: unsupported",
       "Flags that objects inside the whats and match.contexts elements would be split off on columnar (nested_object_children), even after the inner nested levels are fixed",
       "Does not treat the whole package as blocked"
     ]
@@ -89,7 +91,7 @@
     "query": "Which aws data streams can go columnar, and which carry the detection-rule testing work?",
     "files": ["packages/aws", "packages/security_detection_engine"],
     "expected_behavior": [
-      "Reports the package as BLOCKED only because of the waf stream (nested inside nested), and says the other aws logs streams can be declared on their own",
+      "Reports the package as BLOCKED only because of the waf stream (nested inside nested), and says the package can declare logsdb_columnar: opt_in with waf marked unsupported",
       "Gives the per-stream split (20 logs streams: 1 blocked, the rest needing review or ready) rather than treating the whole package as blocked",
       "Says the prebuilt aws rules land on cloudtrail (about 213), not on every aws stream, because rules are attributed by the dataset their query names",
       "Points at the exact file and line of the waf nested field (file:line)"
@@ -100,9 +102,9 @@
     "query": "Can the filestream input package use columnar?",
     "files": ["packages/filestream"],
     "expected_behavior": [
-      "Reports filestream as OUT_OF_SCOPE because package-spec 3.7.0 only adds elasticsearch.columnar to integration data streams, not to input packages",
+      "Reports filestream as OUT_OF_SCOPE because elasticsearch.logsdb_columnar is for integration packages, not input packages",
       "Still lists the informational finding: event.original imported from ECS with doc_values: false",
-      "Does not propose declaring columnar.supported on the input package",
+      "Does not propose declaring logsdb_columnar on the input package",
       "Says what would need to change first: package-spec support for input packages"
     ]
   },
@@ -111,9 +113,9 @@
     "query": "Can checkpoint firewall go columnar? What about the packets_dropped field?",
     "files": ["packages/checkpoint"],
     "expected_behavior": [
-      "Reports the firewall stream as NEEDS_REVIEW, with the event.original doc_values fix as auto-fixable",
+      "Reports the firewall stream as BLOCKED by event.original's doc_values: false from ECS, which needs no package change and waits on Elasticsearch or Fleet",
       "Explains that packets_dropped is nested and its elements hold objects (source, destination, ...), which columnar indexes apart from their element, so nested queries combining them stop matching and _source splits the elements",
-      "Offers the choices: the dotted-key script processor for the default pipeline (shown as a suggested change), accepting it when nothing combines those fields, flattened, or staying on logsdb",
+      "Offers the choices for packets_dropped: the dotted-key script processor for the default pipeline (shown as a suggested change), accepting it when nothing combines those fields, flattened, or marking the stream logsdb_columnar: unsupported",
       "Says this looks like an Elasticsearch bug to re-check on newer builds, not a design difference"
     ]
   }

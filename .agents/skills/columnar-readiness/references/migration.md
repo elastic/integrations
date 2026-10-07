@@ -1,9 +1,11 @@
 # Migrating a package
 
-Only when asked, and only for data streams whose status is `READY` (or
-`READY_AFTER_AUTO_FIX` once the fix is applied). Do the steps **in this order**: the
-two `lint` runs come first on purpose, so every finding is attributable to exactly
-one cause.
+Only when asked. Readiness is declared for the package (`elasticsearch.logsdb_columnar:
+opt_in`); every logs data stream takes it unless its own manifest says
+`logsdb_columnar: unsupported`, which is what the streams that are not `READY` (or
+`READY_AFTER_AUTO_FIX` once the fix is applied) get. Do the steps **in this order**: the
+two `lint` runs come first on purpose, so every finding is attributable to exactly one
+cause.
 
 ## Contents
 
@@ -12,7 +14,7 @@ one cause.
 - 1. Baseline `lint`
 - 2. Bump `format_version`, `lint` again (the spec-jump findings)
 - 3. Mechanical fixes
-- 4. Stream manifest: readiness flag and sort
+- 4. Manifests: `logsdb_columnar` and the sort
 - 5. Root manifest: Kibana floor and major bump
 - 6. Changelog
 - 7. Build and check
@@ -21,15 +23,15 @@ one cause.
 
 ## When a stream counts as ready
 
-`columnar.supported: true` is a claim about the stream, so write it only when all of
-these hold:
+A logs data stream takes the package's `opt_in` unless it is marked `unsupported`, so
+leave it unmarked only when all of these hold:
 
 1. **No blocker, and every review item looked at**: the audit's `_source` consumers and
    Detection rules lines are quoted in the PR, including the negative results.
 2. **Index sort settled**, from the queries the stream's dashboards and rules run. The
    sort applies to logsdb installs too, at their next rollover, so say so.
-3. **Indexed fields decided**: an explicit list of `columnar: {index: true}` fields,
-   possibly empty, each with the query that needs it (rollout rule 2).
+3. **Indexed fields decided**: an explicit list of `index: true` fields, possibly
+   empty, each with the query that needs it (rollout rule 2).
 4. **Tests pass in both modes**: `test pipeline` and `test static` as usual, and system
    tests on a columnar index (routes A to C in
    [`correctness-and-performance.md`](correctness-and-performance.md)).
@@ -51,11 +53,12 @@ Columnar migration: <pkg>
 - [ ] 1. Baseline `elastic-package lint` on the untouched package; keep the output
 - [ ] 2. `format_version: "3.7.0"` only, `lint` again, resolve every new finding
 - [ ] 3. Mechanical fixes from the audit (Class A auto_fix findings)
-- [ ] 4. `columnar.supported: true` (+ sort, if proposed) on each ready stream
+- [ ] 4. Sort (if proposed) per stream; `logsdb_columnar: unsupported` on the streams
+        that stay on LogsDB; `elasticsearch.logsdb_columnar: opt_in` in the root manifest
 - [ ] 5. `conditions.kibana.version: "^9.6.0"` + major version bump
 - [ ] 6. Changelog: breaking-change + enhancement (+ one for pipeline fixes)
 - [ ] 7. `lint`, `build`, `test pipeline`, `test static`; re-run the audit: the
-        Stream manifest line must read "already present"
+        Package readiness line shows `opt_in`
 ```
 
 ## 1. Baseline `lint`
@@ -112,56 +115,38 @@ pipeline runs in every index mode, see SKILL.md).
   processor when the original value is not needed.
 - A mapping-level runtime field → port the suggested `script` skeleton, then map a
   concrete type.
-- `store: true` → delete it.
 - `dynamic: runtime` → `dynamic: true`.
 - A `latest` transform over the stream → the suggested `dot_expander` as the first
   processor of its destination pipeline (in the package that owns the transform).
-- `doc_values: false`, declared by the package or inherited from `external: ecs` →
-  keep it and add the mode-scoped override:
+- Objects inside a `nested` field → the suggested dotted-key `script` processor (tag
+  `columnar_nested_dotted_<field>`), if that is the option picked.
 
-  ```yaml
-  - name: event.original
-    external: ecs
-    columnar:
-      doc_values: true
-  ```
-
-  ```yaml
-  # a package-owned field: keep the existing attribute, scope the fix
-  - name: doppel.darkweb.cred_leaks_password
-    type: keyword
-    index: false
-    doc_values: false
-    columnar:
-      doc_values: true
-  ```
-
-  Fleet applies the `columnar:` block only on a columnar install, so logsdb and
-  standard installs of the same version are unchanged. Look at why the author turned
-  doc values off: the override makes the field aggregatable in columnar.
+Not package fixes: `doc_values: false` (declared, or inherited from `external: ecs`) and
+`store: true` wait on Elasticsearch or Fleet (package-spec#1250 review). Leave those
+fields alone; the stream stays BLOCKED and gets `logsdb_columnar: unsupported` (step 4).
 
 The `copy_to`, normalizer and nested dotted-key fixes change what the pipeline emits,
 so pipeline test expectations have to be regenerated (step 7). Blocked streams (`nested_in_nested` and
-the other `blocker` findings) are not mechanical: see
-[`blockers.md`](blockers.md) A1 for the nested options, or leave the stream on logsdb.
+the other `blocker` findings) are not mechanical: see [`blockers.md`](blockers.md) A1
+for the nested options, or mark the stream `unsupported`.
 
-## 4. Stream manifest: readiness flag and sort
+## 4. Manifests: `logsdb_columnar` and the sort
 
-The readiness flag and the index sort are children of the manifest's **single**
-`elasticsearch:` key, so write them as one block. **Look at the manifest first**:
+**Data stream manifests.** An `unsupported` override and the index sort are children of
+the manifest's **single** `elasticsearch:` key, so write them as one block. **Look at
+the manifest first**:
 
 - it **already has** an `elasticsearch:` key → **merge** these children into it. A
   second `elasticsearch:` is a duplicate key: YAML does not error, it keeps one of them;
 - it has **no** `elasticsearch:` key (`nginx` `access` and `error`) → **add** it as a
   new top-level key, conventionally after `streams:`.
 
-The audit's **Stream manifest** line says which one applies:
+The audit's **Stream manifest** line says which one applies, and what goes in:
 
 ```yaml
 elasticsearch:
-  columnar:
-    supported: true
-  index_template:              # only when an explicit sort was proposed
+  logsdb_columnar: unsupported   # only for a stream that stays on LogsDB
+  index_template:                # only when an explicit sort was proposed
     settings:
       index:
         sort:
@@ -171,20 +156,30 @@ elasticsearch:
 
 With the default sort (`host.name asc, @timestamp desc`) the `index_template` half is
 omitted. An explicit sort lands in the `@package` component template, so it applies to
-logsdb and standard installs too, not only to columnar opt-ins; mention it in the
+LogsDB and standard installs too, not only to columnar opt-ins; mention it in the
 changelog. If the manifest already declares an explicit `index.sort`, leave it alone
 unless the dataset says otherwise.
 
-Leave non-ready streams untouched: the flag is per data stream, and the 3.7.0
-validator fails the build if it is set on a stream with a remaining blocker. Do not
-set it before the `_source` consumer review either (C6-C10): a detection rule, a
+A stream with a remaining blocker gets `unsupported`: the validator checks every logs
+data stream that ends up ready, and fails the build otherwise. A stream whose
+`_source` consumer review (C6-C10) is not done is not ready either: a detection rule, a
 transform or a runtime field reading `_source` does not fail, it quietly gets a
 different shape.
 
-**Do not add `index_mode: logsdb_columnar`.** It forces columnar on every install of
-the version: the toggle is locked on, users cannot opt out, and existing streams switch
-at the next rollover. That contradicts the rollout strategy; whether the spec should
-allow it at all is an open team decision.
+**The root manifest.** Then declare the package, as the audit's **Package readiness**
+line shows:
+
+```yaml
+elasticsearch:
+  logsdb_columnar: opt_in
+```
+
+Write `opt_in` for the tech preview: Fleet offers one toggle for the integration, and
+LogsDB stays the default. `default` (columnar for new installations) is for later.
+
+**There is no `index_mode: logsdb_columnar`.** `index_mode` is for a fixed mode the user
+cannot change (`time_series`), and setting it together with `logsdb_columnar` fails
+validation.
 
 ## 5. Root manifest: Kibana floor and major bump
 
@@ -193,12 +188,12 @@ Set `conditions.kibana.version: "^9.6.0"` and bump the **major** version.
 **Replace the whole range** — do not add a branch to it. A package on
 `"^8.19.0 || ^9.1.0"` becomes `"^9.6.0"`: every `||` branch has to be 9.6+, because a
 single older branch is what lets Fleet keep offering this version to a stack that
-ignores both columnar constructs. If the package has to keep serving older stacks, do
+ignores the setting. If the package has to keep serving older stacks, do
 not declare readiness on this release line.
 
 The constraint is about **Fleet**, not Elasticsearch (9.5 already has the index mode):
-Fleet parses `columnar.supported` to offer the toggle and applies the field-level
-overrides when it builds the mapping. On an older Kibana both are silently ignored.
+Fleet parses `elasticsearch.logsdb_columnar` to offer the toggle, and an older Kibana
+silently ignores it.
 
 **Why a major bump.** elastic/integrations treats a Kibana floor raise as a breaking
 change with a major version: `aws` 7.0.0, `aws_bedrock` 2.0.0, `aws_bedrock_agentcore`
@@ -218,13 +213,16 @@ a placeholder link the user must replace:
         for Kibana 8.x and 9.x below 9.6.0), required for columnar index mode support.
       type: breaking-change
       link: https://github.com/elastic/integrations/pull/XXXXX
-    - description: Declare columnar index mode support for the <ds> data stream(s),
-        enabling the per-data-stream logsdb_columnar opt-in in Fleet (tech preview).
+    - description: Declare LogsDB columnar support (logsdb_columnar opt_in), enabling
+        the integration's LogsDB columnar opt-in in Fleet (tech preview).
       type: enhancement
       link: https://github.com/elastic/integrations/pull/XXXXX
 ```
 
-Say *declare support for*: the package only sets `columnar.supported: true`. Add **one
+Say *declare support for*: the package only sets `logsdb_columnar: opt_in`. Marking a
+stream `unsupported` in a later version, once it was ready, is a breaking change of its
+own: Fleet moves it back to LogsDB at the next rollover, so it needs a major bump and a
+`breaking-change` entry. Add **one
 more entry** for anything fixed in step 2 or 3 that changes what the pipeline does
 (`on_failure` handlers, a `JSE00001` `remove`, a `copy_to` moved into the pipeline):
 
@@ -247,7 +245,7 @@ elastic-package test static
 - **This `lint` is the third run.** Anything new here was caused by the columnar edits:
   fix it, do not reach for `validation.yml`.
 - **`build` is not optional.** It validates the built zip, the only place the resolved
-  ECS attributes exist, so the only place an `external: ecs` override can be confirmed.
+  ECS attributes exist (an ECS-imported `doc_values: false` only shows there).
 - **`docs/README.md` is generated by `build`** from `_dev/build/docs/README.md`; never
   edit the generated file. `build` renders the README before it validates.
 - **`--skip-validation`** is acceptable **only** for a local `elastic-package install`,
@@ -255,9 +253,10 @@ elastic-package test static
   fix yet: `PSR00001` (a GA version on the unreleased 3.7.0 spec) or the
   `pull/XXXXX` changelog placeholder. Re-run without it before the PR. Never use it to
   get past a columnar finding.
-- **`test pipeline` with no `-g`**, unless a `copy_to` or normalizer fix moved logic
-  into the pipeline; then regenerate and read every hunk.
-- **Re-run the audit.** The Stream manifest line must now read "already present".
+- **`test pipeline` with no `-g`**, unless a `copy_to`, normalizer or nested dotted-key
+  fix moved logic into the pipeline; then regenerate and read every hunk.
+- **Re-run the audit.** The Package readiness line now shows `opt_in`, and each
+  `unsupported` stream's Stream manifest line reads "already present".
 
 Then validate on a stack: [`correctness-and-performance.md`](correctness-and-performance.md).
 
@@ -277,14 +276,11 @@ the 9.6 floor". Say this to the user before writing the change.
 
 ## Local tooling
 
-package-spec 3.7.0 is unreleased (`3.7.0-next`), so a stock `elastic-package` rejects
-`format_version: "3.7.0"`, `columnar.supported` and the field-level `columnar:` block:
-
-```
-found 2 validation errors
-  1. field format_version: Must validate one and only one schema (oneOf)
-  2. field elasticsearch.index_mode: elasticsearch.index_mode must be one of the following: ...
-```
+package-spec 3.7.0 is unreleased, so a stock `elastic-package` rejects
+`format_version: "3.7.0"` and `elasticsearch.logsdb_columnar`. The local package-spec
+checkout also has to carry the `logsdb_columnar` shape from the
+elastic/package-spec#1250 review: until that PR is reworked, its branch still has the
+earlier `columnar.supported` design and rejects the setting too.
 
 Build `elastic-package` against a local package-spec checkout:
 

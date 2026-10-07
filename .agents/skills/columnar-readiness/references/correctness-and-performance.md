@@ -51,8 +51,8 @@ Check that:
 
 - `index.mode` is `logsdb_columnar` — if the opt-in did not reach Elasticsearch the
   data stream silently stays on logsdb and every later measurement is meaningless.
-  With the tech-preview plumbing (`columnar.supported: true`, no `index_mode`) `logsdb`
-  is the *correct* answer until the stream is opted in (below);
+  With `logsdb_columnar: opt_in`, `logsdb` is the *correct* answer until the
+  integration is opted in (below);
 - `index.sort.field` / `index.sort.order` match the intended sort. If you relied on the
   default, verify it resolved to `host.name, @timestamp` and not to the
   `@timestamp`-only fallback.
@@ -62,16 +62,16 @@ the Elasticsearch error and report it.
 
 ### Kibana with the Fleet support
 
-No Kibana snapshot has the Fleet columnar support yet (it is on the
-`feat/columnar-index-mode` branch). Stock Kibana installs the package but ignores
-`columnar.supported`, the field-level `columnar:` overrides and any non-TSDB
-`index_mode`: the stream stays on logsdb and the toggle does not exist. Until the
-Fleet change ships:
+No Kibana supports `elasticsearch.logsdb_columnar` yet. The Fleet PR
+(elastic/kibana#292285, branch `feat/columnar-index-mode`) still implements the earlier
+design and has to follow the package-spec#1250 shape first. Stock Kibana installs the
+package but ignores the setting: the streams stay on logsdb and the toggle does not
+exist. Once a Kibana build with the reworked support exists:
 
 1. `elastic-package stack up` as above, then stop the docker Kibana
    (`docker stop elastic-package-stack-kibana-1`).
-2. Run Kibana from the branch (`yarn start`) against the stack's Elasticsearch, with
-   the stack's CA and the elastic-package service account token.
+2. Run that Kibana (`yarn start`) against the stack's Elasticsearch, with the stack's CA
+   and the elastic-package service account token.
 3. Install with the locally built `elastic-package`. Kibana's registry `spec.max` is
    still 3.6, so 3.7.0 packages only reach it through `elastic-package install`
    (upload), not through the registry.
@@ -80,55 +80,35 @@ Or use route C below, which works on any stock 9.5+ stack.
 
 ### Getting a columnar index locally
 
-`elasticsearch.columnar.supported: true` does **not** change the index mode. It tells
-Fleet the stream is ready, so Fleet offers the per-stream toggle; nothing is columnar
-until a user turns it on. `elastic-package` has no flag that flips that toggle, so a
-system test against a package that only declares `supported: true` runs on **logsdb**
-and proves nothing about columnar. Pick one route:
+`logsdb_columnar: opt_in` does **not** change the index mode. It tells Fleet the
+integration is ready, so Fleet offers its toggle; nothing is columnar until a user turns
+it on. `elastic-package` has no flag that flips that toggle, so a system test against a
+package that only declares `opt_in` runs on **logsdb** and proves nothing about
+columnar. Pick one route:
 
-**A. Temporarily declare the mode** (custom Kibana). Add the index mode to the stream
-manifest, keep the edit **uncommitted**, test, revert:
+**A. Temporarily declare `default`** (Kibana with the Fleet support). `default` gives
+new installations columnar, so set it in the root manifest, keep the edit
+**uncommitted**, install fresh, test, revert:
 
 ```yaml
-# data_stream/<ds>/manifest.yml — TEMPORARY, do not commit
+# manifest.yml — TEMPORARY, do not commit
 elasticsearch:
-  index_mode: logsdb_columnar      # local testing only
-  columnar:
-    supported: true                # this is the line that ships
+  logsdb_columnar: default         # local testing only; the line that ships is opt_in
 ```
 
 ```
 elastic-package install
 elastic-package test system
-git checkout -- data_stream/<ds>/manifest.yml   # revert before committing
+git checkout -- manifest.yml     # revert before committing
 ```
 
-Shipping `index_mode: logsdb_columnar` would force columnar on every install of the
-version, lock the toggle on and switch existing streams at the next rollover — a
-different decision from declaring the stream ready.
+`default` only applies to new installations: existing data streams keep their mode, so
+start from a package that is not installed yet.
 
-**B. Opt in through the Fleet API** (custom Kibana). Install the package unmodified,
-then set the same feature the toggle sets, on the package policy:
-
-```
-PUT kbn:/api/fleet/package_policies/<package_policy_id>
-{
-  ... the full package policy body ...,
-  "package": {
-    "name": "<pkg>", "version": "<version>",
-    "experimental_data_stream_features": [
-      { "data_stream": "logs-<pkg>.<ds>", "features": { "columnar": true } }
-    ]
-  }
-}
-```
-
-It goes through exactly the Fleet toggle path, including the field-level `columnar:`
-overrides. A stream whose package does not declare `columnar.supported` returns 400
-("not columnar-ready"). The opt-in requests a **lazy** rollover: the new backing index
-appears on the next indexed document, so `GET _data_stream/logs-<pkg>.<ds>` can show
-the old generation long after the opt-in succeeded. Verify with a write, or force it
-with `POST logs-<pkg>.<ds>/_rollover`.
+**B. Turn the integration's toggle on** (Kibana with the Fleet support), in Fleet. The
+mode changes at the next rollover: the new backing index appears on the next indexed
+document, so `GET _data_stream/logs-<pkg>.<ds>` can show the old generation for a
+while. Verify with a write, or force it with `POST logs-<pkg>.<ds>/_rollover`.
 
 **C. A `@custom` component template** (any stock 9.5+ stack). For packages without
 `doc_values: false` fields — no ECS `event.original` import, no package-owned one —
@@ -141,9 +121,9 @@ PUT _component_template/logs-<pkg>.<ds>@custom
 POST logs-<pkg>.<ds>-default/_rollover
 ```
 
-Fleet does not know about this mode, so it applies no field overrides: a
-`doc_values: false` field makes the PUT fail, which is itself a useful check. Delete
-the component template (and roll over) when done.
+Fleet does not know about this mode: a `doc_values: false` field makes the PUT fail
+(until Elasticsearch or Fleet handles it), which is itself a useful check. Delete the
+component template (and roll over) when done.
 
 Whatever the route, re-run the `GET _settings` check and confirm `index.mode` is
 `logsdb_columnar` on the **newest** backing index before believing any result.
@@ -283,7 +263,7 @@ stored source.
   modes.
 - **Storage** should drop; that is the point of the exercise.
 - If a lookup field is unacceptably slow and cannot be worked into the sort key, that
-  measurement is the evidence for a per-field `columnar: {index: true}`
+  measurement is the evidence for a per-field `index: true`
   ([`blockers.md`](blockers.md) C5).
 
 Elasticsearch-side improvements are in flight and will change these numbers (see the

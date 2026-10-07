@@ -1,4 +1,4 @@
-"""package-spec 3.7.0 columnar constructs: the override block, the readiness flag, spec and Kibana versions."""
+"""package-spec 3.7.0 `logsdb_columnar` setting, spec and Kibana versions."""
 
 from __future__ import annotations
 
@@ -7,56 +7,53 @@ from typing import Any, Dict, List, Optional, Tuple
 
 
 # --------------------------------------------------------------------------- #
-# package-spec 3.7.0 columnar constructs
+# How a package declares LogsDB columnar readiness (package-spec 3.7.0, as reshaped
+# by the elastic/package-spec#1250 review)
 #
-# 1. Field-level, mode-scoped override block. Fleet applies it ONLY when the
-#    resolved index mode is `logsdb_columnar` or `columnar` — the same way it
-#    only emits TSDB's `dimension: true` for `time_series`:
+# One setting, `elasticsearch.logsdb_columnar`, at two levels:
 #
-#        - name: event.original
-#          external: ecs
-#          columnar:
-#            doc_values: true    # only `true` is valid
+#     # manifest.yml (package)
+#     elasticsearch:
+#       logsdb_columnar: opt_in        # opt_in | default; absent = not ready
 #
-#    That mode scoping is the point: the same package version installed on a
-#    logsdb or standard stack keeps today's mapping byte for byte, so repairing
-#    a columnar blocker costs nothing on the installs that are not columnar.
+#     # data_stream/<name>/manifest.yml
+#     elasticsearch:
+#       logsdb_columnar: unsupported   # opt_in | default | unsupported
 #
-#    The block also accepts `index`, for a field whose exact-value lookups the
-#    stream's dashboards or detection rules depend on. Whether a stream needs any
-#    is a per-stream human decision ("none" is a valid answer): this audit lists
-#    lookup candidates from the rules and dashboards, and reports an existing
-#    override, but never writes one (rollout rule 2).
+# * It applies to `type: logs` data streams only: the package value is ignored for
+#   metrics and traces streams, and a non-logs stream that sets it is an error.
+# * It only applies when `index_mode` is unset. `index_mode` stays for fixed modes the
+#   user cannot change (`time_series`); setting both is an error. There is no
+#   `index_mode: logsdb_columnar`, and no plain `columnar` mode for integrations.
+# * Fleet offers one toggle per integration and stores the user's choice once per
+#   installation. `opt_in` offers it; `default` turns it on for new installations
+#   only: existing data streams keep their mode, also when a package upgrade changes
+#   `opt_in` to `default`.
+# * A later version can mark a data stream `unsupported` again. Fleet then moves it
+#   back to LogsDB at the next rollover and tells the user why. For the package that is
+#   a breaking change: major version bump and a `breaking-change` changelog entry.
+# * Mode changes take effect on the next rollover.
+# * There is no field-level `columnar:` block. `doc_values: false` (and `store: true`)
+#   is for Elasticsearch or Fleet to handle in columnar mode, not for every package;
+#   a field that needs an inverted index sets `index: true` itself, which changes
+#   nothing on LogsDB.
 #
-#    Fleet applies it to STATIC LEAF FIELDS ONLY. It does not apply it to a
-#    field it renders as a `dynamic_templates` entry (`type: object`/`group`
-#    with `object_type`), nor to anything under `multi_fields:`, and
-#    package-spec 3.7.0 rejects the block in both places. A `doc_values: false`
-#    there has no scoped fix: `columnar_override_misplaced`.
-#
-# 2. Stream-level readiness flag in `data_stream/<ds>/manifest.yml`:
-#
-#        elasticsearch:
-#          columnar:
-#            supported: true
-#
-#    The 3.7.0 validator enforces zero columnar blockers when it is set, and
-#    Fleet only offers the per-stream opt-in toggle for streams that set it (or
-#    that already declare a columnar `index_mode`).
-#
-# Both require `format_version: "3.7.0"` (`columnar_requires_spec_3_7`) and a
-# `conditions.kibana.version` of at least COLUMNAR_KIBANA_CONSTRAINT, because
-# both are read by Fleet and a Kibana without that support ignores them.
+# Using the setting needs `format_version: "3.7.0"` (`logsdb_columnar_requires_spec_3_7`)
+# and a `conditions.kibana.version` of at least COLUMNAR_KIBANA_CONSTRAINT, because
+# Fleet reads it and a Kibana without that support ignores it.
 # --------------------------------------------------------------------------- #
 
+LOGSDB_COLUMNAR_KEY = "logsdb_columnar"
+# Values a data stream may set; the package level allows the first two only.
+LOGSDB_COLUMNAR_STREAM_VALUES = ("opt_in", "default", "unsupported")
+LOGSDB_COLUMNAR_PACKAGE_VALUES = ("opt_in", "default")
 
-def columnar_block(container: Any) -> Dict[str, Any]:
-    """The mode-scoped `columnar:` block of a field definition or of the
-    `elasticsearch:` section of a data stream manifest ({} when absent)."""
-    if not isinstance(container, dict):
-        return {}
-    block = container.get("columnar")
-    return block if isinstance(block, dict) else {}
+
+def logsdb_columnar_value(es_section: Any) -> Optional[str]:
+    """`elasticsearch.logsdb_columnar` of a manifest, or None when unset."""
+    if not isinstance(es_section, dict) or es_section.get(LOGSDB_COLUMNAR_KEY) is None:
+        return None
+    return str(es_section.get(LOGSDB_COLUMNAR_KEY)).strip()
 
 
 def existing_index_sort(es_section: Any) -> Optional[Dict[str, List[str]]]:
@@ -92,25 +89,20 @@ def existing_index_sort(es_section: Any) -> Optional[Dict[str, List[str]]]:
     return {"field": listed(fields), "order": listed(orders) if orders is not None else []}
 
 
-# The package-spec version that introduced both columnar constructs.
+# The package-spec version that introduces `elasticsearch.logsdb_columnar`.
 COLUMNAR_SPEC_VERSION = (3, 7)
 
 # `conditions.kibana.version` a migrated package has to declare.
 #
-# The constraint is NOT about Elasticsearch: 9.5 already has the index mode.
-# It is about Fleet. Fleet has to (a) parse `elasticsearch.columnar.supported`
-# in order to offer the per-stream opt-in toggle at all, and (b) apply the
-# field-level `columnar:` overrides when it builds the mapping — on the install
-# path and on the toggle path. A Kibana without those changes silently ignores
-# both: the toggle is not offered, and a manual columnar opt-in still ships the
-# unpatched `doc_values: false`, so the index template PUT fails. So the
-# constraint must be at least the first Kibana minor that ships that Fleet
+# The constraint is NOT about Elasticsearch: 9.5 already has the index mode. It is
+# about Fleet, which has to parse `elasticsearch.logsdb_columnar` to offer the
+# toggle at all. A Kibana without that support silently ignores the setting. So
+# the constraint must be at least the first Kibana minor that ships the Fleet
 # support, which is 9.6.
 COLUMNAR_KIBANA_CONSTRAINT = "^9.6.0"
 COLUMNAR_KIBANA_NOTE = (
-    "the Fleet support ships in 9.6; on older Kibana the override and the flag are "
-    "silently ignored, so the toggle is unavailable and any `doc_values: false` field "
-    "will make a manual columnar opt-in fail"
+    "the Fleet support ships in 9.6; older Kibana silently ignores "
+    "`elasticsearch.logsdb_columnar`, so the toggle is unavailable"
 )
 
 # The constraint is not free, and this is the sentence the package owner has to read
@@ -123,7 +115,7 @@ COLUMNAR_KIBANA_NOTE = (
 # real, recurring maintenance cost, so readiness is declared deliberately, for the
 # packages chosen as tech-preview targets, and not swept across the catalog.
 COLUMNAR_MIN_STACK_COST = (
-    "**Cost:** declaring `columnar.supported` (and bumping `format_version` to "
+    "**Cost:** declaring `elasticsearch.logsdb_columnar` (and bumping `format_version` to "
     "`\"3.7.0\"`) raises this package's **minimum stack version to 9.6**. Users on an "
     "older stack stop receiving *any* further update to this package, so a bug fix for "
     "them needs a backport branch/release line. That makes it a **breaking change**: "
@@ -135,11 +127,17 @@ COLUMNAR_MIN_STACK_COST = (
     "catalog-wide."
 )
 
-# Finding codes that describe the columnar *declaration* itself rather than a
-# mapping feature Elasticsearch or the validator would reject on its own merits.
-# They are excluded when deciding whether a `columnar.supported: true` stream is
-# inconsistent, so the report does not accuse a declaration of blocking itself.
-DECLARATION_CODES = {"columnar_requires_spec_3_7", "columnar_supported_with_blockers"}
+# Finding codes that describe the `logsdb_columnar` *declaration* itself rather than
+# a mapping feature Elasticsearch or the validator would reject on its own merits.
+# They are excluded when deciding whether a declared-ready stream is inconsistent,
+# so the report does not accuse a declaration of blocking itself.
+DECLARATION_CODES = {
+    "logsdb_columnar_requires_spec_3_7",
+    "logsdb_columnar_with_blockers",
+    "logsdb_columnar_with_index_mode",
+    "logsdb_columnar_not_logs",
+    "index_mode_columnar",
+}
 
 
 def spec_version_tuple(raw: Any) -> Optional[Tuple[int, int]]:

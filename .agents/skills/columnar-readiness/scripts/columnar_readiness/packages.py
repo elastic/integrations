@@ -7,7 +7,7 @@ import os
 from collections import Counter
 from typing import Any, Dict, List, Optional, Tuple
 
-from .common import finding, is_true, line_of, load_yaml, worse
+from .common import finding, is_false, line_of, load_yaml, worse
 from .constants import COLUMNAR_INDEX_MODES, OTEL_INPUTS, TEXT_TYPES
 from .consumers import object_array_findings, source_consumer_findings
 from .ecs import ecs_schema
@@ -34,9 +34,11 @@ from .rules import (
 from .sorting import recommend_sort
 from .spec import (
     DECLARATION_CODES,
-    columnar_block,
+    LOGSDB_COLUMNAR_PACKAGE_VALUES,
+    LOGSDB_COLUMNAR_STREAM_VALUES,
     existing_index_sort,
     installs_on_8x,
+    logsdb_columnar_value,
     spec_min_stack,
     spec_supports_columnar,
 )
@@ -84,6 +86,11 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True,
     result["spec_min_stack"] = spec_min_stack(result["format_version"])
     result["installs_on_8x"] = installs_on_8x(result["format_version"],
                                               result["kibana_condition"])
+    # The package-level `elasticsearch.logsdb_columnar` (opt_in | default): every logs
+    # data stream takes it unless its own manifest overrides it.
+    package_es = manifest.get("elasticsearch") if isinstance(manifest.get("elasticsearch"), dict) else {}
+    result["logsdb_columnar"] = logsdb_columnar_value(package_es)
+    result["has_es_key"] = "elasticsearch" in manifest
 
     if result["type"] == "input":
         result["out_of_scope_reason"] = INPUT_PACKAGE_REASON
@@ -150,6 +157,9 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True,
                                    rules=attribution.get(ds_name),
                                    rules_scanned=bool(rule_set["rules"]), repo=repo,
                                    templates=query_templates.get(ds_name),
+                                   package_logsdb_columnar=(
+                                       result["logsdb_columnar"],
+                                       line_of(package_es, "logsdb_columnar")),
                                    pkg_name=result["package"])
         result["data_streams"].append(stream)
         status = worse(status, stream["status"])
@@ -173,9 +183,9 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True,
 FieldEntry = Tuple[Dict[str, Any], str, int, bool, str, str]
 
 INPUT_PACKAGE_REASON = (
-    "input package: package-spec 3.7.0 adds `elasticsearch.columnar` to integration data "
-    "streams only, so Fleet has nothing to offer an opt-in on. Its policy templates are "
-    "assessed for information")
+    "input package: `elasticsearch.logsdb_columnar` is for integration packages (the "
+    "package-spec#1250 review leans towards leaving input packages out), so Fleet has "
+    "nothing to offer an opt-in on. Its policy templates are assessed for information")
 
 
 def input_package_streams(pkg_dir: str, manifest: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -279,6 +289,7 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
                       rules_scanned: bool = False,
                       repo: Optional[Dict[str, Any]] = None,
                       templates: Optional[List[Dict[str, Any]]] = None,
+                      package_logsdb_columnar: Tuple[Optional[str], Optional[int]] = (None, None),
                       pkg_name: Optional[str] = None) -> Dict[str, Any]:
     rel = lambda p: os.path.relpath(p, pkg_dir)  # noqa: E731
     stream: Dict[str, Any] = {
@@ -286,9 +297,10 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
         "status": "OUT_OF_SCOPE",
         "type": None,
         "index_mode": None,
-        "columnar_supported": False,
+        "logsdb_columnar": None,
+        "logsdb_columnar_effective": None,
         "columnar_enabled": False,
-        "columnar_supported_with_blockers": False,
+        "logsdb_columnar_with_blockers": False,
         "existing_index_sort": None,
         "has_es_key": False,
         "inputs": [],
@@ -314,20 +326,34 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
     stream["has_es_key"] = "elasticsearch" in manifest
     es_section = manifest.get("elasticsearch") if isinstance(manifest.get("elasticsearch"), dict) else {}
     stream["index_mode"] = es_section.get("index_mode")
-    # package-spec 3.7.0 stream-level readiness flag. Fleet shows the per-stream
-    # opt-in toggle when it is set; a columnar `index_mode` forces columnar instead
-    # (the toggle is locked on and existing streams switch at the next rollover).
-    # Either one means "this stream is columnar-enabled" as far as this report is
-    # concerned.
-    stream["columnar_supported"] = is_true(columnar_block(es_section).get("supported"))
-    stream["columnar_enabled"] = bool(
-        stream["columnar_supported"] or stream["index_mode"] in COLUMNAR_INDEX_MODES
-    )
+    # `elasticsearch.logsdb_columnar` (package-spec 3.7.0): the data stream's own value
+    # wins over the package one, and only logs data streams take either.
+    own = logsdb_columnar_value(es_section)
+    own_line = line_of(es_section, "logsdb_columnar")
+    package_value, package_line = package_logsdb_columnar
+    stream["logsdb_columnar"] = own
     stream["existing_index_sort"] = existing_index_sort(es_section)
 
     if stream["type"] != "logs":
-        stream["out_of_scope_reason"] = f"data stream type is `{stream['type']}` (logs only)"
+        reason = f"data stream type is `{stream['type']}` (logs only)"
+        if own is not None:
+            reason += (f"; it sets `elasticsearch.logsdb_columnar: {own}`, which only logs "
+                       f"data streams may set: remove it")
+            stream["findings"].append(finding(
+                "logsdb_columnar_not_logs", "A", "blocker",
+                f"This `{stream['type']}` data stream sets `elasticsearch.logsdb_columnar: "
+                f"{own}`. The setting applies to logs data streams only, and the validator "
+                f"rejects it on any other type (the package-level value is ignored for them).",
+                "Remove `logsdb_columnar` from this data stream's manifest.",
+                rel(manifest_path), line=own_line))
+        stream["out_of_scope_reason"] = reason
         return stream
+
+    effective = (own if own in LOGSDB_COLUMNAR_STREAM_VALUES
+                 else package_value if package_value in LOGSDB_COLUMNAR_PACKAGE_VALUES
+                 else None)
+    stream["logsdb_columnar_effective"] = effective
+    stream["columnar_enabled"] = effective in ("opt_in", "default")
 
     stream["inputs"] = sorted({
         s.get("input") for s in (manifest.get("streams") or []) if isinstance(s, dict) and s.get("input")
@@ -338,7 +364,9 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
         stream["out_of_scope_reason"] = (
             f"OpenTelemetry input ({', '.join(f'`{i}`' for i in otel_inputs)}): OTel log "
             f"streams stay on LogsDB until logs sharing the same resource attributes can be "
-            f"clustered (derived fields), per the rollout strategy")
+            f"clustered (derived fields), per the rollout strategy"
+            + ("; the package declares `logsdb_columnar`, so mark this data stream "
+               "`logsdb_columnar: unsupported`" if stream["columnar_enabled"] else ""))
         return stream
 
     pkg_name = pkg_name or os.path.basename(pkg_dir)
@@ -346,13 +374,28 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
 
     findings = check_stream_manifest(manifest, rel(manifest_path))
 
-    # Every place the package uses one of the two package-spec 3.7.0 columnar
-    # constructs, for the `format_version` gate below.
-    columnar_construct_sites: List[str] = []
-    if columnar_block(es_section):
-        columnar_construct_sites.append(
-            f"`elasticsearch.columnar` ({rel(manifest_path)})")
+    mode = stream["index_mode"]
+    if mode in COLUMNAR_INDEX_MODES:
+        findings.append(finding(
+            "index_mode_columnar", "A", "blocker",
+            f"`elasticsearch.index_mode: {mode}` is not a package-spec value. `index_mode` "
+            f"is for a fixed mode the user cannot change (`time_series`); LogsDB columnar "
+            f"is declared with `elasticsearch.logsdb_columnar`, and there is no plain "
+            f"`columnar` mode for integrations.",
+            "Remove `index_mode` here, and declare `elasticsearch.logsdb_columnar: opt_in` "
+            "in the root `manifest.yml` (or on this data stream).",
+            rel(manifest_path), line=line_of(es_section, "index_mode")))
+    elif mode and stream["columnar_enabled"]:
+        findings.append(finding(
+            "logsdb_columnar_with_index_mode", "A", "blocker",
+            f"`index_mode: {mode}` and `logsdb_columnar: {effective}` both apply to this "
+            f"data stream. `logsdb_columnar` only applies when `index_mode` is unset, and the "
+            f"validator rejects the combination.",
+            "Mark this data stream `elasticsearch.logsdb_columnar: unsupported`, or drop "
+            "`index_mode`.",
+            rel(manifest_path), line=line_of(es_section, "index_mode")))
 
+    # Fields
     # Fields
     field_index: Dict[str, Dict[str, Any]] = {}
     # flat name -> the `fields/*.yml` that declared it. The *file* matters: a
@@ -372,8 +415,6 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
         if not in_mf:
             field_index.setdefault(flat, fdef)
             field_sources.setdefault(flat, fname)
-        if columnar_block(fdef):
-            columnar_construct_sites.append(f"`{flat}` ({rel_file})")
         path_depth = sum(1 for p in nested_paths if flat.startswith(p + "."))
         findings.extend(check_field(fdef, flat, max(depth, path_depth), in_mf, rel_file))
         # Text sub-fields keep an inverted index in columnar: input for the ECS `.text`
@@ -385,22 +426,45 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
                 text_subfields.add(f"{flat}.{sub}")
     findings.extend(nested_object_children(entries))
 
+    # --- index sort ------------------------------------------------------ #
+    # For a columnar-ready data stream the sort fields must be mapped, have doc
+    # values, and include `@timestamp` (package-spec#1250 review). `host.name` counts
+    # as mapped: the logs profile adds its mapping when the package does not.
+    existing = stream["existing_index_sort"]
+    if existing:
+        mapped = {flat for _, flat, _, _, _, _ in entries}
+        problems: List[str] = []
+        if "@timestamp" not in existing["field"]:
+            problems.append("`@timestamp` is not in it")
+        for name in existing["field"]:
+            fdef = field_index.get(name)
+            if name in ("@timestamp", "host.name") and name not in mapped:
+                continue
+            if name not in mapped:
+                problems.append(f"`{name}` is not mapped in this data stream")
+            elif fdef is not None and is_false(fdef.get("doc_values")):
+                problems.append(f"`{name}` has `doc_values: false`")
+        if problems:
+            findings.append(finding(
+                "index_sort_invalid", "A", "blocker",
+                f"The explicit `index.sort` (`{', '.join(existing['field'])}`) does not fit a "
+                f"columnar-ready data stream: {'; '.join(problems)}.",
+                "Sort fields must be mapped, have doc values, and include `@timestamp`. Fix "
+                "the sort, or leave it to the logs profile default "
+                "(`host.name`, `@timestamp`).",
+                rel(manifest_path), line=line_of(es_section, "index_template")))
+
     # --- package-spec version gate -------------------------------------- #
-    # Both constructs are new in package-spec 3.7.0. Declaring either one under
-    # an older `format_version` fails validation: the field-level `columnar:`
-    # block is an unknown property in the fields schema, and
-    # `elasticsearch.columnar` is an unknown property in the data stream
-    # manifest schema. It is the root manifest that decides, not the data stream.
-    if columnar_construct_sites and not spec_supports_columnar(format_version):
+    # `elasticsearch.logsdb_columnar` is new in package-spec 3.7.0: under an older
+    # `format_version` it is an unknown property. The root manifest decides.
+    sites = ([f"`elasticsearch.logsdb_columnar` (`{rel(manifest_path)}`)"] if own is not None else []) \
+        + (["`elasticsearch.logsdb_columnar` (`manifest.yml`)"] if package_value is not None else [])
+    if sites and not spec_supports_columnar(format_version):
         findings.append(finding(
-            "columnar_requires_spec_3_7", "A", "auto_fix",
-            f"The package declares a package-spec 3.7.0 columnar construct "
-            f"({', '.join(columnar_construct_sites[:4])}"
-            f"{', …' if len(columnar_construct_sites) > 4 else ''}) but the root "
-            f"`manifest.yml` says `format_version: {format_version}`. Both the "
-            f"field-level `columnar:` block and `elasticsearch.columnar` are new in "
-            f"package-spec 3.7.0, so the package fails validation as an unknown "
-            f"property.",
+            "logsdb_columnar_requires_spec_3_7", "A", "auto_fix",
+            f"The package declares {' and '.join(sites)}, but the root `manifest.yml` says "
+            f"`format_version: {format_version}`. `elasticsearch.logsdb_columnar` is new in "
+            f"package-spec 3.7.0, so the package fails validation as an unknown property.",
             "Bump `format_version` to `\"3.7.0\"` in the root `manifest.yml`, then run "
             "`elastic-package lint` immediately, before anything else: a multi-minor jump "
             "(3.4.x -> 3.7.0) turns on every validator added in between, so expect "
@@ -411,28 +475,28 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
             "rest, one comment each. Never exclude a columnar validator error.",
             "manifest.yml", line=format_version_line))
 
-    # --- `columnar.supported: true` with unresolved Class A findings ----- #
-    # The 3.7.0 validator rejects the declaration while a blocker remains, so
-    # this is a contradiction inside the package, not merely a readiness gap.
+    # --- declared ready with unresolved Class A findings ----------------- #
+    # The validator checks every logs data stream that ends up ready, and rejects the
+    # declaration while a blocker remains: a contradiction inside the package.
     blocking = [f for f in findings
                 if f["class"] == "A" and f["code"] not in DECLARATION_CODES]
-    if stream["columnar_supported"] and blocking:
-        stream["columnar_supported_with_blockers"] = True
+    if stream["columnar_enabled"] and blocking:
+        stream["logsdb_columnar_with_blockers"] = True
         codes = sorted({f["code"] for f in blocking})
+        from_stream = own in ("opt_in", "default")
         findings.append(finding(
-            "columnar_supported_with_blockers", "A", "blocker",
-            f"`elasticsearch.columnar.supported: true` asserts this data stream is "
-            f"columnar-ready, but it still has {len(blocking)} Class A finding(s) "
-            f"({', '.join('`%s`' % c for c in codes)}). The package-spec 3.7.0 columnar "
-            f"validator rejects the declaration while any of them remains, and a user who "
-            f"did manage to turn the Fleet toggle on would get a failed index template "
-            f"PUT.",
-            "Fix the Class A findings listed above, or drop "
-            "`elasticsearch.columnar.supported: true` from this data stream's manifest "
-            "until they are fixed. The flag is per data stream, so the other streams in "
-            "the package can keep it.",
-            f"data_stream/{ds_name}/manifest.yml",
-            line=line_of(manifest.get("elasticsearch"), "columnar")))
+            "logsdb_columnar_with_blockers", "A", "blocker",
+            f"`logsdb_columnar: {effective}` "
+            f"({'this data stream' if from_stream else 'the package, inherited by this data stream'}) "
+            f"declares it columnar-ready, but it still has {len(blocking)} Class A "
+            f"finding(s) ({', '.join('`%s`' % c for c in codes)}). The validator checks every "
+            f"logs data stream that ends up ready and rejects the declaration while any of "
+            f"them remains.",
+            "Fix the Class A findings listed above, or mark this data stream "
+            "`elasticsearch.logsdb_columnar: unsupported` in its manifest, so it stays on "
+            "LogsDB while the rest of the package opts in.",
+            rel(manifest_path) if from_stream else "manifest.yml",
+            line=own_line if from_stream else package_line))
 
     sample = load_sample_event(ds_dir)
     pipeline_arrays = scan_pipelines(ds_dir)
