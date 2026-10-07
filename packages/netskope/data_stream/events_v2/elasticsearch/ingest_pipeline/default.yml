@@ -378,16 +378,19 @@ processors:
       field: event.category
       tag: append_network_to_event_category_b4bbad38
       value: network
+      allow_duplicates: false
       if: ctx.netskope?.events_v2?.record_type == "network"
   - append:
       field: event.category
       tag: append_web_to_event_category
       value: web
+      allow_duplicates: false
       if: ctx.netskope?.events_v2?.record_type == "page" || ctx.netskope?.events_v2?.record_type == "application"
   - append:
       field: event.category
       tag: append_configuration_to_event_category
       value: configuration
+      allow_duplicates: false
       if: ctx.netskope?.events_v2?.record_type == "audit"
   - append:
       field: event.category
@@ -417,11 +420,13 @@ processors:
       field: event.type
       tag: append_allowed_to_event_type_38d190d6
       value: allowed
+      allow_duplicates: false
       if: ctx.netskope?.events_v2?.record_type == "network" && ctx.event?.action == 'allow'
   - append:
       field: event.type
       tag: append_denied_to_event_type_bf812c40
       value: denied
+      allow_duplicates: false
       if: ctx.netskope?.events_v2?.record_type == "network" && ctx.event?.action == 'block'
   - append:
       field: event.type
@@ -533,6 +538,7 @@ processors:
       tag: date_conn_endtime_f5e7e835
       target_field: netskope.events_v2.conn_endtime
       formats:
+        - ISO8601
         - epoch_second
       if: ctx.netskope?.events_v2?.conn_endtime != null && ctx.netskope.events_v2.conn_endtime != ''
       on_failure:
@@ -549,6 +555,7 @@ processors:
       tag: date_conn_starttime_711e6ff0
       target_field: netskope.events_v2.conn_starttime
       formats:
+        - ISO8601
         - epoch_second
       if: ctx.netskope?.events_v2?.conn_starttime != null && ctx.netskope.events_v2.conn_starttime != ''
       on_failure:
