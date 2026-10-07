@@ -8,7 +8,7 @@ This integration collects Nginx telemetry through OpenTelemetry Collector receiv
 
 - **Metrics** (`nginxreceiver.otel`) — stub_status request count, accepted and handled connections, and current connections by state (active, reading, writing, waiting), scraped by the [nginxreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/nginxreceiver)
 - **Access logs** (`nginx.access.otel`) — HTTP access log lines tailed by the [filelogreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver) and parsed by a transform processor into fields such as `http.request.method`, `http.response.status_code`, `url.original`, `url.path`, `source.address`, `network.protocol.version`, and `user_agent.name`
-- **Error logs** (`nginx.error.otel`) — error log lines tailed by the filelogreceiver, with multiline support, parsed into `severity_text`, `process.pid`, `process.thread.id`, and request details from the message (`source.address`, `http.request.method`)
+- **Error logs** (`nginx.error.otel`) — error log lines tailed by the filelogreceiver, with multiline support, parsed into `severity_text`, `process.pid`, `thread.id`, and request details from the message (`source.address`, `http.request.method`)
 
 Metrics and logs are stored with the native OTel schema — no field renaming or custom mapping is applied.
 
@@ -57,6 +57,7 @@ The Elastic Agent (or EDOT Collector) must be able to reach the Nginx `stub_stat
    - Click **Add Nginx (OpenTelemetry)**
    - Set **Nginx Status Endpoint** to your `stub_status` URL
    - Confirm the access and error log paths match your host
+   - Set **Timezone** on error logs to the Nginx host IANA zone if it is not UTC (error timestamps have no offset)
 
 ### Verify data
 
@@ -86,4 +87,4 @@ In **Discover**:
 | Signal | Data stream | Notes |
 |--------|-------------|--------|
 | Access logs | `logs-nginx.access.otel-*` | Combined access log format, parsed by `transform/parse_nginx_access` |
-| Error logs | `logs-nginx.error.otel-*` | Multiline entries start with `YYYY/MM/DD HH:MM:SS`, parsed by `transform/parse_nginx_error` |
+| Error logs | `logs-nginx.error.otel-*` | Multiline entries start with `YYYY/MM/DD HH:MM:SS` (no offset). Set **Timezone** to the Nginx host IANA zone so `@timestamp` is correct. |
