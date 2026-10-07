@@ -1,27 +1,64 @@
-- name: bhe
+- name: bloodhound_enterprise.health_check
   type: group
+  description: Case and alert sync progress for BloodHound Enterprise.
   fields:
-    - name: sync.step
-      type: keyword
+    - name: step
+      type: long
       description: Numeric sync workflow step that produced this event.
-    - name: sync.info
+    - name: info
       type: keyword
       description: Informational status message for the current sync step.
-    - name: sync.error
+    - name: error
       type: keyword
       description: Error message from a failed sync step.
-    - name: sync.bh_cases_found
+    - name: story
+      type: match_only_text
+      description: Human-readable narrative describing the current sync step.
+    - name: uri
+      type: keyword
+      description: Request path for the sync step.
+    - name: domain
+      type: keyword
+      description: BloodHound domain name associated with this step.
+    - name: bh_cases_found
       type: long
       description: Number of existing BloodHound Enterprise-tagged Kibana cases found for this tenant.
-    - name: sync.stale_count
+    - name: stale_count
       type: long
       description: Number of stale cases queued for deletion.
-    - name: sync.case_id
+    - name: case_id
       type: keyword
       description: Kibana case ID created or resolved during this step.
-    - name: sync.domains_after_filter
+    - name: case_key
+      type: keyword
+      description: Case title key used to match a BloodHound finding.
+    - name: case_part
+      type: long
+      description: Overflow case part number when a case reaches the alert limit.
+    - name: next_case_part
+      type: long
+      description: Overflow case part that will be opened next.
+    - name: domains_after_filter
       type: long
       description: Number of BloodHound Enterprise domains remaining after environment/zone filters.
-    - name: sync.story
+    - name: finding_count
+      type: long
+      description: Number of findings queued for case and alert sync.
+    - name: instance_index
+      type: long
+      description: Index of the next finding instance to attach.
+    - name: instances
+      type: long
+      description: Number of finding instances considered for alert attachment.
+    - name: pending
+      type: long
+      description: Number of alerts indexed and waiting to be attached.
+    - name: attached_count
+      type: long
+      description: Number of alerts attached to the case in this step.
+    - name: case_total_alerts
+      type: long
+      description: Total alerts on the Kibana case after attachment.
+    - name: deleted_case_id
       type: keyword
-      description: Human-readable narrative describing the current sync step.
+      description: Kibana case ID deleted as stale.

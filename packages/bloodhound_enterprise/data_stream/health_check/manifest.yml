@@ -7,6 +7,22 @@ streams:
     description: >-
       Synchronizes BloodHound Enterprise attack-path findings into Elastic Security Cases and Alerts. Emits sync-step metadata events to this data stream for troubleshooting.
     vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: Time to wait between full Case & Alert Sync cycles (e.g. 1h, 30m). During a single sync, steps still run back-to-back; this value only applies after a sync finishes.
+        default: 1h
+        multi: false
+        required: true
+        show_user: true
+      - name: details_limit
+        type: text
+        title: Details page size
+        description: BloodHound details page size used for offset pagination.
+        default: "500"
+        multi: false
+        required: true
+        show_user: false
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing
@@ -31,7 +47,7 @@ streams:
         multi: true
         show_user: false
         default:
-          - bloodhound_integration-health_check
+          - bloodhound_enterprise-health_check
       - name: processors
         type: yaml
         title: Processors
@@ -39,4 +55,4 @@ streams:
 elasticsearch:
   index_template:
     mappings:
-      dynamic: true
+      dynamic: false

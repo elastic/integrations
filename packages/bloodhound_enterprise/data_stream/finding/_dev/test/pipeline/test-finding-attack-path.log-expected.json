@@ -18,14 +18,19 @@
                 "impact_count": 12,
                 "impact_percentage": 0.85,
                 "is_inherited": false,
+                "principal": {
+                    "kind": "User"
+                },
                 "principal_hash": "dGVzdC1oYXNoLTE=",
-                "remediation": "Remove GenericAll rights from alice@example.corp on DOMAIN ADMINS."
+                "remediation": "Remove GenericAll rights from alice@example.corp on DOMAIN ADMINS.",
+                "target": {
+                    "kind": "Group"
+                }
             },
             "destination": {
                 "user": {
                     "id": "S-1-5-21-000000000-000000000-000000000-512",
-                    "name": "DOMAIN ADMINS@EXAMPLE.CORP",
-                    "type": "Group"
+                    "name": "DOMAIN ADMINS@EXAMPLE.CORP"
                 }
             },
             "ecs": {
@@ -40,6 +45,7 @@
                 "created": "2026-07-24T14:50:02.760Z",
                 "id": "100001",
                 "kind": "alert",
+                "original": "{\"id\":\"100001\",\"Finding\":\"T0GenericAll\",\"finding_type\":\"T0GenericAll\",\"category\":\"Tier Zero\",\"Severity\":\"critical\",\"Environment\":\"EXAMPLE.CORP\",\"FromPrincipal\":\"S-1-5-21-000000000-000000000-000000000-1100\",\"FromPrincipalName\":\"alice@example.corp\",\"FromPrincipalKind\":\"User\",\"ToPrincipal\":\"S-1-5-21-000000000-000000000-000000000-512\",\"ToPrincipalName\":\"DOMAIN ADMINS@EXAMPLE.CORP\",\"ToPrincipalKind\":\"Group\",\"ImpactPercentage\":0.85,\"ImpactCount\":12,\"ExposurePercentage\":0.42,\"ExposureCount\":120,\"AssetGroupTagID\":1,\"PrincipalHash\":\"dGVzdC1oYXNoLTE=\",\"Accepted\":false,\"IsInherited\":false,\"GraphURL\":\"https://bloodhound.example.com/ui/findings/100001\",\"created_at\":\"2026-07-24T14:50:02.760Z\",\"remediation\":\"Remove GenericAll rights from alice@example.corp on DOMAIN ADMINS.\",\"FromPrincipalProps\":{\"operatingsystem\":\"Windows Server 2022\"},\"attack_path_details\":{\"path_length\":2,\"relationships\":[\"GenericAll\",\"MemberOf\"]}}",
                 "severity": 4,
                 "type": [
                     "info"
@@ -55,8 +61,16 @@
                 "level": "critical"
             },
             "message": "BloodHound Finding: T0GenericAll (From alice@example.corp to DOMAIN ADMINS@EXAMPLE.CORP)",
+            "related": {
+                "user": [
+                    "alice@example.corp",
+                    "S-1-5-21-000000000-000000000-000000000-1100",
+                    "DOMAIN ADMINS@EXAMPLE.CORP",
+                    "S-1-5-21-000000000-000000000-000000000-512"
+                ]
+            },
             "rule": {
-                "name": "BloodHound Finding: T0GenericAll (From alice@example.corp to DOMAIN ADMINS@EXAMPLE.CORP)"
+                "name": "T0GenericAll"
             },
             "source": {
                 "domain": "EXAMPLE.CORP"
@@ -67,8 +81,7 @@
             "user": {
                 "domain": "EXAMPLE.CORP",
                 "id": "S-1-5-21-000000000-000000000-000000000-1100",
-                "name": "alice@example.corp",
-                "type": "User"
+                "name": "alice@example.corp"
             }
         },
         {
@@ -95,6 +108,7 @@
                 "created": "2026-07-25T09:15:30.000Z",
                 "id": "100002",
                 "kind": "alert",
+                "original": "{\"id\":\"100002\",\"Finding\":\"T0WriteDACL\",\"finding_type\":\"T0WriteDACL\",\"category\":\"Tier Zero\",\"severity\":\"low\",\"domain_name\":\"EXAMPLE.CORP\",\"principal\":{\"name\":\"bob.smith@example.corp\"},\"target\":{\"name\":\"BACKUP OPERATORS@EXAMPLE.CORP\"},\"impact_score\":1.5,\"graph_url\":\"https://bloodhound.example.com/ui/findings/100002\",\"created_at\":\"2026-07-25T09:15:30.000Z\",\"remediation\":{\"summary\":\"Remove WriteDACL from bob.smith@example.corp.\",\"documentation_url\":\"https://bloodhound.example.com/docs/remediation/write-dacl\"},\"title\":\"WriteDACL on Backup Operators\"}",
                 "severity": 1,
                 "type": [
                     "info"
@@ -104,9 +118,15 @@
             "log": {
                 "level": "low"
             },
-            "message": "BloodHound Finding: T0WriteDACL (From bob.smith@example.corp to BACKUP OPERATORS@EXAMPLE.CORP)",
+            "message": "WriteDACL on Backup Operators",
+            "related": {
+                "user": [
+                    "bob.smith@example.corp",
+                    "BACKUP OPERATORS@EXAMPLE.CORP"
+                ]
+            },
             "rule": {
-                "name": "BloodHound Finding: T0WriteDACL (From bob.smith@example.corp to BACKUP OPERATORS@EXAMPLE.CORP)",
+                "name": "T0WriteDACL",
                 "reference": "https://bloodhound.example.com/docs/remediation/write-dacl"
             },
             "source": {

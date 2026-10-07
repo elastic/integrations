@@ -30,6 +30,7 @@ state:
   kibana_url: {{kibana_url}}
   kibana_api_key: {{kibana_api_key}}
   elasticsearch_url: {{elasticsearch_url}}
+  kibana_space: "{{#if kibana_space}}{{kibana_space}}{{else}}default{{/if}}"
   details_limit: {{details_limit}}
   attach_batch_size: {{#if attach_batch_size}}{{attach_batch_size}}{{else}}100{{/if}}
   pending_alert_ids: []
@@ -108,7 +109,7 @@ program: |-
               (current_step == 1) ?
                 "/api/v2/available-domains"
               : (current_step == 2) ?
-                ("/api/cases/_find?perPage=100&page=" + string(state.case_page))
+                (((string(state.kibana_space) == "" || string(state.kibana_space) == "default") ? "" : "/s/" + string(state.kibana_space)) + "/api/cases/_find?perPage=100&page=" + string(state.case_page))
               : (current_step == 3) ?
                 ("/api/v2/domains/" + string(state.domains[int(state.domain_index)].id) + "/available-types?asset_group_tag_id=" + string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].id))
               : (current_step == 4) ?
@@ -118,15 +119,15 @@ program: |-
                   has(state.sync_mode) && string(state.sync_mode) == "cases_only"
                 ) ? "1" : string(state.details_limit)) + "&Accepted=eq%3Afalse&asset_group_tag_id=" + string(cur_finding._asset_group_tag_id))
               : (current_step == 6 && state.existing_case_titles.exists(t, t == case_key)) ?
-                ("/api/cases/" + string(state.existing_bh_cases.filter(c, c.title == case_key).map(c, c.id)[0]))
+                (((string(state.kibana_space) == "" || string(state.kibana_space) == "default") ? "" : "/s/" + string(state.kibana_space)) + "/api/cases/" + string(state.existing_bh_cases.filter(c, c.title == case_key).map(c, c.id)[0]))
               : (current_step == 6) ?
-                "/api/cases"
+                (((string(state.kibana_space) == "" || string(state.kibana_space) == "default") ? "" : "/s/" + string(state.kibana_space)) + "/api/cases")
               : (current_step == 7) ?
-                "/.alerts-security.alerts-default/_bulk"
+                ("/.alerts-security.alerts-" + ((string(state.kibana_space) == "") ? "default" : string(state.kibana_space)) + "/_bulk")
               : (current_step == 8) ?
-                ("/api/cases/" + string(state.current_case_id) + "/comments")
+                (((string(state.kibana_space) == "" || string(state.kibana_space) == "default") ? "" : "/s/" + string(state.kibana_space)) + "/api/cases/" + string(state.current_case_id) + "/comments")
               :
-                "/api/cases?ids=%5B%22" + string(state.cases_to_delete[int(state.delete_index)]) + "%22%5D"
+                ((string(state.kibana_space) == "" || string(state.kibana_space) == "default") ? "" : "/s/" + string(state.kibana_space)) + "/api/cases?ids=%5B%22" + string(state.cases_to_delete[int(state.delete_index)]) + "%22%5D"
             ).as(uri,
               (
   
@@ -360,6 +361,16 @@ program: |-
                               "Body": body_data,
                             }
                           ).do_request().as(resp,
+                            // Non-2xx stops the run before the body is read. A failed
+                            // discovery call must not look like an empty success, or step 9
+                            // can delete every case and step 6 can create duplicates.
+                            (int(resp.StatusCode) < 200 || int(resp.StatusCode) >= 300) ?
+                              state.with({
+                                "events": {"error": {"code": string(resp.StatusCode), "message": method + " " + uri + ": " + string(resp.Body)}},
+                                "step": current_step,
+                                "want_more": false,
+                              })
+                            :
                             bytes(
                               (string(resp.Body).startsWith("{") || string(resp.Body).startsWith("[")) ?
                                 string(resp.Body)
@@ -369,11 +380,6 @@ program: |-
   
                               (current_step == 1) ?
                                 (
-                                  (has(resp.StatusCode) && int(resp.StatusCode) == 401) ?
-                                    state.with({"events": [{"error": "BloodHound authentication failed (invalid token_id or token_key)", "_step": 1, "_status_code": int(resp.StatusCode), "_raw": string(resp.Body), "story": "Sync stopped because BloodHound API authentication failed. Please verify token_id and token_key."}], "step": 1, "want_more": false})
-                                  : (has(resp.StatusCode) && int(resp.StatusCode) == 403) ?
-                                    state.with({"events": [{"error": "BloodHound authorization failed (token lacks endpoint permissions)", "_step": 1, "_status_code": int(resp.StatusCode), "_raw": string(resp.Body), "story": "Sync stopped because BloodHound API denied access. Please verify token permissions."}], "step": 1, "want_more": false})
-                                  :
                                     (has(state.selected_environment) ? string(state.selected_environment) : "").as(selected_env,
                                       (has(state.bhe_zones) ? string(state.bhe_zones) : "").as(selected_zones,
                                         (has(parsed_body.data) && size(parsed_body.data) > 0) ?
@@ -442,8 +448,7 @@ program: |-
                                                         "existing_cases_all": [],
                                                         "domains": domains_list,
                                                         "want_more": true,
-                                                        "events": [
-                                                          {
+                                                        "events": [{"message": {
                                                             "_step": 1,
                                                             "_uri": uri,
                                                             "story": "Authentication succeeded for base_url " + string(state.base_url) + ". " + (
@@ -477,18 +482,18 @@ program: |-
                                                               :
                                                                 "BloodHound Enterprise zones input provided: '" + selected_zones + "', so fetching data only for matching zones. "
                                                             ) + "Fetched " + string(size(all_domains)) + " domains and retained " + string(size(domains_list)) + " after applying filters.",
-                                                          },
+                                                          }.encode_json()},
                                                         ],
                                                       }
                                                     )
                                                   :
-                                                    state.with({"events": [{"error": "No domains found after selected_environment/bhe_zones filters", "_step": 1, "story": "Sync stopped because no domains matched selected_environment '" + selected_env + "' and bhe_zones '" + selected_zones + "'."}], "step": 1, "want_more": false})
+                                                    state.with({"events": [{"message": {"error": "No domains found after selected_environment/bhe_zones filters", "_step": 1, "story": "Sync stopped because no domains matched selected_environment '" + selected_env + "' and bhe_zones '" + selected_zones + "'."}.encode_json()}], "step": 1, "want_more": false})
                                                 )
                                               )
                                             )
                                           )
                                         :
-                                          state.with({"events": [{"error": "No domains found", "_step": 1, "_raw": string(resp.Body), "story": "Sync stopped because the available-domains API returned no domains."}], "step": 1, "want_more": false})
+                                          state.with({"events": [{"message": {"error": "No domains found", "_step": 1, "story": "Sync stopped because the available-domains API returned no domains."}.encode_json()}], "step": 1, "want_more": false})
                                       )
                                     )
                                 )
@@ -511,7 +516,7 @@ program: |-
                                                 "case_page": cases_page_num + 1,
                                                 "existing_cases_all": existing_cases_merged,
                                                 "want_more": true,
-                                                "events": [{"_step": 2, "story": "Loaded Kibana cases page " + string(cases_page_num) + " (" + string(size(existing_cases_page)) + " cases). Loaded " + string(size(existing_cases_merged)) + " of " + string(cases_total) + " total before stale cleanup."}],
+                                                "events": [{"message": {"_step": 2, "story": "Loaded Kibana cases page " + string(cases_page_num) + " (" + string(size(existing_cases_page)) + " cases). Loaded " + string(size(existing_cases_merged)) + " of " + string(cases_total) + " total before stale cleanup."}.encode_json()}],
                                               }
                                             )
                                           :
@@ -549,7 +554,7 @@ program: |-
                                                   "details_skip": 0,
                                                   "instance_index": 0,
                                                   "want_more": true,
-                                                  "events": [{"_step": 2, "story": "Loaded all Kibana cases and isolated " + string(size(bh_cases)) + " cases for this BloodHound Enterprise tenant from " + string(size(existing_cases_merged)) + " total for reconciliation."}],
+                                                  "events": [{"message": {"_step": 2, "story": "Loaded all Kibana cases and isolated " + string(size(bh_cases)) + " cases for this BloodHound Enterprise tenant from " + string(size(existing_cases_merged)) + " total for reconciliation."}.encode_json()}],
                                                 }
                                               )
                                             )
@@ -594,7 +599,7 @@ program: |-
                                                   "all_current_keys": updated_all_keys,
                                                   "process_findings": updated_process_findings,
                                                   "want_more": true,
-                                                  "events": [{"_step": 3, "_uri": uri, "story": "Fetched finding types for domain '" + string(state.domains[int(state.domain_index)].name) + "' and BloodHound Enterprise zone '" + string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].name) + "'. Collected " + string(size(types_list)) + " types and queued " + string(size(updated_process_findings)) + " unique findings so far."}],
+                                                  "events": [{"message": {"_step": 3, "_uri": uri, "story": "Fetched finding types for domain '" + string(state.domains[int(state.domain_index)].name) + "' and BloodHound Enterprise zone '" + string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].name) + "'. Collected " + string(size(types_list)) + " types and queued " + string(size(updated_process_findings)) + " unique findings so far."}.encode_json()}],
                                                 }
                                               )
                                             : (int(state.domain_index) + 1 < size(state.domains)) ?
@@ -606,7 +611,7 @@ program: |-
                                                   "all_current_keys": updated_all_keys,
                                                   "process_findings": updated_process_findings,
                                                   "want_more": true,
-                                                  "events": [{"_step": 3, "_uri": uri, "story": "Fetched finding types for domain '" + string(state.domains[int(state.domain_index)].name) + "' and BloodHound Enterprise zone '" + string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].name) + "'. Collected " + string(size(types_list)) + " types and queued " + string(size(updated_process_findings)) + " unique findings so far."}],
+                                                  "events": [{"message": {"_step": 3, "_uri": uri, "story": "Fetched finding types for domain '" + string(state.domains[int(state.domain_index)].name) + "' and BloodHound Enterprise zone '" + string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].name) + "'. Collected " + string(size(types_list)) + " types and queued " + string(size(updated_process_findings)) + " unique findings so far."}.encode_json()}],
                                                 }
                                               )
                                             :
@@ -634,7 +639,7 @@ program: |-
                                                         "cases_to_delete": stale_ids,
                                                         "delete_index": 0,
                                                         "want_more": true,
-                                                        "events": [{"_step": 3, "finding_count": size(updated_process_findings), "stale_count": size(stale_ids), "story": "Finished discovery with " + string(size(updated_process_findings)) + " findings to process (" + (needs_cases ? "creating missing cases first, then attaching alerts" : "cases already exist; attaching missing alerts") + ") and " + string(size(stale_ids)) + " stale cases prepared for cleanup."}],
+                                                        "events": [{"message": {"_step": 3, "finding_count": size(updated_process_findings), "stale_count": size(stale_ids), "story": "Finished discovery with " + string(size(updated_process_findings)) + " findings to process (" + (needs_cases ? "creating missing cases first, then attaching alerts" : "cases already exist; attaching missing alerts") + ") and " + string(size(stale_ids)) + " stale cases prepared for cleanup."}.encode_json()}],
                                                       }
                                                     )
                                                   )
@@ -647,7 +652,7 @@ program: |-
                                                       "delete_index": 0,
                                                       "all_current_keys": updated_all_keys,
                                                       "want_more": true,
-                                                      "events": [{"_step": 3, "finding_count": 0, "stale_count": size(stale_ids), "story": "No active findings remained; moving to stale case deletion for " + string(size(stale_ids)) + " cases."}],
+                                                      "events": [{"message": {"_step": 3, "finding_count": 0, "stale_count": size(stale_ids), "story": "No active findings remained; moving to stale case deletion for " + string(size(stale_ids)) + " cases."}.encode_json()}],
                                                     }
                                                   )
                                                 :
@@ -658,7 +663,7 @@ program: |-
                                                       "process_findings": [],
                                                       "cases_to_delete": [],
                                                       "all_current_keys": [],
-                                                      "events": [{"_step": 3, "info": "All cases in sync, nothing to do", "story": "Sync finished early because existing cases already match current BloodHound findings."}],
+                                                      "events": [{"message": {"_step": 3, "info": "All cases in sync, nothing to do", "story": "Sync finished early because existing cases already match current BloodHound findings."}.encode_json()}],
                                                     }
                                                   )
                                               )
@@ -672,7 +677,7 @@ program: |-
                                         "step": 3,
                                         "tag_index": int(state.tag_index) + 1,
                                         "want_more": true,
-                                        "events": [{"info": "No types found, advancing tag", "_step": 3, "_domain": string(state.domains[int(state.domain_index)].name), "_raw": string(resp.Body), "story": "No finding types were returned for domain '" + string(state.domains[int(state.domain_index)].name) + "' current zone; advancing to the next tag."}],
+                                        "events": [{"message": {"info": "No types found, advancing tag", "_step": 3, "_domain": string(state.domains[int(state.domain_index)].name), "story": "No finding types were returned for domain '" + string(state.domains[int(state.domain_index)].name) + "' current zone; advancing to the next tag."}.encode_json()}],
                                       }
                                     )
                                   : (int(state.domain_index) + 1 < size(state.domains)) ?
@@ -682,7 +687,7 @@ program: |-
                                         "domain_index": int(state.domain_index) + 1,
                                         "tag_index": 0,
                                         "want_more": true,
-                                        "events": [{"info": "No types found, advancing domain", "_step": 3, "_domain": string(state.domains[int(state.domain_index)].name), "_raw": string(resp.Body), "story": "No finding types were returned for domain '" + string(state.domains[int(state.domain_index)].name) + "'; advancing to the next domain."}],
+                                        "events": [{"message": {"info": "No types found, advancing domain", "_step": 3, "_domain": string(state.domains[int(state.domain_index)].name), "story": "No finding types were returned for domain '" + string(state.domains[int(state.domain_index)].name) + "'; advancing to the next domain."}.encode_json()}],
                                       }
                                     )
                                   :
@@ -708,7 +713,7 @@ program: |-
                                               "cases_to_delete": stale_ids,
                                               "delete_index": 0,
                                               "want_more": true,
-                                              "events": [{"_step": 3, "finding_count": size(state.process_findings), "stale_count": size(stale_ids), "story": "Completed domain scan with " + string(size(state.process_findings)) + " findings to process (" + (needs_cases ? "creating missing cases first, then attaching alerts" : "cases already exist; attaching missing alerts") + ") and " + string(size(stale_ids)) + " stale cases for next steps."}],
+                                              "events": [{"message": {"_step": 3, "finding_count": size(state.process_findings), "stale_count": size(stale_ids), "story": "Completed domain scan with " + string(size(state.process_findings)) + " findings to process (" + (needs_cases ? "creating missing cases first, then attaching alerts" : "cases already exist; attaching missing alerts") + ") and " + string(size(stale_ids)) + " stale cases for next steps."}.encode_json()}],
                                             }
                                           )
                                         )
@@ -720,7 +725,7 @@ program: |-
                                             "cases_to_delete": stale_ids,
                                             "delete_index": 0,
                                             "want_more": true,
-                                            "events": [{"_step": 3, "stale_count": size(stale_ids), "story": "No active findings remained; moving directly to stale case deletion for " + string(size(stale_ids)) + " cases."}],
+                                            "events": [{"message": {"_step": 3, "stale_count": size(stale_ids), "story": "No active findings remained; moving directly to stale case deletion for " + string(size(stale_ids)) + " cases."}.encode_json()}],
                                           }
                                         )
                                       :
@@ -731,7 +736,7 @@ program: |-
                                             "process_findings": [],
                                             "cases_to_delete": [],
                                             "all_current_keys": [],
-                                            "events": [{"_step": 3, "info": "All cases in sync, nothing to do", "story": "Sync finished with no changes because everything is already in sync."}],
+                                            "events": [{"message": {"_step": 3, "info": "All cases in sync, nothing to do", "story": "Sync finished with no changes because everything is already in sync."}.encode_json()}],
                                           }
                                         )
                                     )
@@ -770,7 +775,7 @@ program: |-
                                         "process_findings": updated_findings,
                                         "details_skip": 0,
                                         "want_more": true,
-                                        "events": [{"_step": 4, "_uri": uri, "story": "Loaded finding metadata including title, descriptions, remediation, and references."}],
+                                        "events": [{"message": {"_step": 4, "_uri": uri, "story": "Loaded finding metadata including title, descriptions, remediation, and references."}.encode_json()}],
                                       }
                                     )
                                   )
@@ -826,7 +831,7 @@ program: |-
                                                     "alerts_on_case": 0,
                                                     "case_created": false,
                                                     "want_more": true,
-                                                    "events": [{"_step": 5, "_uri": uri, "story": "Fetched severity for finding type '" + string(cur_finding.type) + "' (" + string(has(parsed_body.count) ? int(parsed_body.count) : size(merged_instances)) + " instances). Creating the Kibana case now before attaching alerts."}],
+                                                    "events": [{"message": {"_step": 5, "_uri": uri, "story": "Fetched severity for finding type '" + string(cur_finding.type) + "' (" + string(has(parsed_body.count) ? int(parsed_body.count) : size(merged_instances)) + " instances). Creating the Kibana case now before attaching alerts."}.encode_json()}],
                                                   }
                                                 )
                                               : (int(state.details_skip) + size(parsed_body.data) < int(parsed_body.count)) ?
@@ -836,7 +841,7 @@ program: |-
                                                     "process_findings": updated_findings,
                                                     "details_skip": int(state.details_skip) + size(parsed_body.data),
                                                     "want_more": true,
-                                                    "events": [{"_step": 5, "_uri": uri, "story": "Fetched more instances for finding type '" + string(cur_finding.type) + "' in domain '" + string(cur_finding._domain_name) + "' and BloodHound Enterprise zone '" + string(cur_finding._asset_group_tag_name) + "'. Collected " + string(size(merged_instances)) + " of " + string(int(parsed_body.count)) + " instances so far."}],
+                                                    "events": [{"message": {"_step": 5, "_uri": uri, "story": "Fetched more instances for finding type '" + string(cur_finding.type) + "' in domain '" + string(cur_finding._domain_name) + "' and BloodHound Enterprise zone '" + string(cur_finding._asset_group_tag_name) + "'. Collected " + string(size(merged_instances)) + " of " + string(int(parsed_body.count)) + " instances so far."}.encode_json()}],
                                                   }
                                                 )
                                               :
@@ -849,7 +854,7 @@ program: |-
                                                     "case_part": 1,
                                                     "alerts_on_case": 0,
                                                     "want_more": true,
-                                                    "events": [{"_step": 5, "_uri": uri, "story": "Finished instance collection for finding type '" + string(cur_finding.type) + "' in domain '" + string(cur_finding._domain_name) + "' and BloodHound Enterprise zone '" + string(cur_finding._asset_group_tag_name) + "'. Total instances collected: " + string(size(merged_instances)) + "."}],
+                                                    "events": [{"message": {"_step": 5, "_uri": uri, "story": "Finished instance collection for finding type '" + string(cur_finding.type) + "' in domain '" + string(cur_finding._domain_name) + "' and BloodHound Enterprise zone '" + string(cur_finding._asset_group_tag_name) + "'. Total instances collected: " + string(size(merged_instances)) + "."}.encode_json()}],
                                                   }
                                                 )
                                             )
@@ -873,7 +878,7 @@ program: |-
                                           "case_part": 1,
                                           "alerts_on_case": 0,
                                           "want_more": true,
-                                          "events": [{"_step": 5, "_uri": uri, "info": "No instances found", "story": "No instances were returned for finding type '" + string(cur_finding.type) + "' in domain '" + string(cur_finding._domain_name) + "' and BloodHound Enterprise zone '" + string(cur_finding._asset_group_tag_name) + "', so sync continues without alert attachments."}],
+                                          "events": [{"message": {"_step": 5, "_uri": uri, "info": "No instances found", "story": "No instances were returned for finding type '" + string(cur_finding.type) + "' in domain '" + string(cur_finding._domain_name) + "' and BloodHound Enterprise zone '" + string(cur_finding._asset_group_tag_name) + "', so sync continues without alert attachments."}.encode_json()}],
                                         }
                                       )
                                     )
@@ -906,7 +911,7 @@ program: |-
                                             "existing_case_titles": state.existing_case_titles.exists(t, t == case_key) ? state.existing_case_titles : (state.existing_case_titles + [case_key]),
                                             "existing_bh_cases": state.existing_bh_cases.exists(c, c.id == resolved_case_id) ? state.existing_bh_cases : (state.existing_bh_cases + [{"id": resolved_case_id, "title": case_key, "tags": ["BloodHound Enterprise", tenant_tag]}]),
                                             "want_more": true,
-                                            "events": [{"_step": 6, "_uri": uri, "case_id": resolved_case_id, "case_key": case_key, "story": "Created case for finding type '" + string(cur_finding.type) + "'. Moving to the next finding to create remaining cases first."}],
+                                            "events": [{"message": {"_step": 6, "_uri": uri, "case_id": resolved_case_id, "case_key": case_key, "story": "Created case for finding type '" + string(cur_finding.type) + "'. Moving to the next finding to create remaining cases first."}.encode_json()}],
                                           }
                                         )
                                       :
@@ -924,7 +929,7 @@ program: |-
                                             "existing_case_titles": state.existing_case_titles.exists(t, t == case_key) ? state.existing_case_titles : (state.existing_case_titles + [case_key]),
                                             "existing_bh_cases": state.existing_bh_cases.exists(c, c.id == resolved_case_id) ? state.existing_bh_cases : (state.existing_bh_cases + [{"id": resolved_case_id, "title": case_key, "tags": ["BloodHound Enterprise", tenant_tag]}]),
                                             "want_more": true,
-                                            "events": [{"_step": 6, "_uri": uri, "case_id": resolved_case_id, "case_key": case_key, "story": "All new cases are created. Starting alert attachment pass for " + string(size(state.process_findings)) + " findings."}],
+                                            "events": [{"message": {"_step": 6, "_uri": uri, "case_id": resolved_case_id, "case_key": case_key, "story": "All new cases are created. Starting alert attachment pass for " + string(size(state.process_findings)) + " findings."}.encode_json()}],
                                           }
                                         )
                                     )
@@ -943,7 +948,7 @@ program: |-
                                         "pending_alert_ids": [],
                                         "pending_alert_indices": [],
                                         "want_more": true,
-                                        "events": [{"_step": 6, "_uri": uri, "case_id": resolved_case_id, "case_key": case_key, "case_part": int(state.case_part), "instance_index": int(state.instance_index), "instances": size(cur_finding._instances), "story": "Resolved the target case (create or reuse) and started indexing instance alerts for attachment."}],
+                                        "events": [{"message": {"_step": 6, "_uri": uri, "case_id": resolved_case_id, "case_key": case_key, "case_part": int(state.case_part), "instance_index": int(state.instance_index), "instances": size(cur_finding._instances), "story": "Resolved the target case (create or reuse) and started indexing instance alerts for attachment."}.encode_json()}],
                                       }
                                     )
                                   : (resolved_case_id != "") ?
@@ -959,7 +964,7 @@ program: |-
                                             "alerts_on_case": 0,
                                             "case_created": false,
                                             "want_more": true,
-                                            "events": [{"_step": 6, "_uri": uri, "case_id": resolved_case_id, "info": "No instances to attach", "story": "Case was resolved successfully, but this finding had no instances to attach as alerts."}],
+                                            "events": [{"message": {"_step": 6, "_uri": uri, "case_id": resolved_case_id, "info": "No instances to attach", "story": "Case was resolved successfully, but this finding had no instances to attach as alerts."}.encode_json()}],
                                           }
                                         )
                                       : (size(state.cases_to_delete) > 0) ?
@@ -968,7 +973,7 @@ program: |-
                                             "step": 9,
                                             "delete_index": 0,
                                             "want_more": true,
-                                            "events": [{"_step": 6, "_uri": uri, "case_id": resolved_case_id, "story": "Case processing finished and sync moved to stale case cleanup."}],
+                                            "events": [{"message": {"_step": 6, "_uri": uri, "case_id": resolved_case_id, "story": "Case processing finished and sync moved to stale case cleanup."}.encode_json()}],
                                           }
                                         )
                                       :
@@ -979,7 +984,7 @@ program: |-
                                             "process_findings": [],
                                             "cases_to_delete": [],
                                             "all_current_keys": [],
-                                            "events": [{"_step": 6, "_uri": uri, "case_id": resolved_case_id, "story": "Case processing finished and this sync run completed."}],
+                                            "events": [{"message": {"_step": 6, "_uri": uri, "case_id": resolved_case_id, "story": "Case processing finished and this sync run completed."}.encode_json()}],
                                           }
                                         )
                                     )
@@ -994,7 +999,7 @@ program: |-
                                         "alerts_on_case": 0,
                                         "case_created": false,
                                         "want_more": true,
-                                        "events": [{"error": "Case resolution failed", "_body": string(resp.Body), "_step": 6, "story": "Case creation or lookup failed, so sync skipped this finding and moved on."}],
+                                        "events": [{"message": {"error": "Case resolution failed", "_step": 6, "story": "Case creation or lookup failed, so sync skipped this finding and moved on."}.encode_json()}],
                                       }
                                     )
                                   : (size(state.cases_to_delete) > 0) ?
@@ -1003,7 +1008,7 @@ program: |-
                                         "step": 9,
                                         "delete_index": 0,
                                         "want_more": true,
-                                        "events": [{"error": "Case resolution failed", "_body": string(resp.Body), "_step": 6, "story": "Case creation or lookup failed, then sync moved to stale case deletion."}],
+                                        "events": [{"message": {"error": "Case resolution failed", "_step": 6, "story": "Case creation or lookup failed, then sync moved to stale case deletion."}.encode_json()}],
                                       }
                                     )
                                   :
@@ -1014,7 +1019,7 @@ program: |-
                                         "process_findings": [],
                                         "cases_to_delete": [],
                                         "all_current_keys": [],
-                                        "events": [{"error": "Case resolution failed", "_body": string(resp.Body), "_step": 6, "story": "Case creation or lookup failed and sync ended this run."}],
+                                        "events": [{"message": {"error": "Case resolution failed", "_step": 6, "story": "Case creation or lookup failed and sync ended this run."}.encode_json()}],
                                       }
                                     )
                                 )
@@ -1036,7 +1041,7 @@ program: |-
                                                 "pending_alert_ids": new_ids,
                                                 "pending_alert_indices": new_indices,
                                                 "want_more": true,
-                                                "events": [{"_step": 7, "_uri": uri, "pending": size(new_ids), "info": "Bulk indexed alerts", "story": "Bulk indexed " + string(size(new_ids)) + " alerts and attaching them to the case."}],
+                                                "events": [{"message": {"_step": 7, "_uri": uri, "pending": size(new_ids), "info": "Bulk indexed alerts", "story": "Bulk indexed " + string(size(new_ids)) + " alerts and attaching them to the case."}.encode_json()}],
                                               }
                                             )
                                           : (int(state.instance_index) < size(cur_finding._instances)) ?
@@ -1045,7 +1050,7 @@ program: |-
                                                 "step": 7,
                                                 "instance_index": int(state.instance_index) + 1,
                                                 "want_more": true,
-                                                "events": [{"error": "Alert bulk produced no ids", "_body": string(resp.Body), "_step": 7, "story": "Bulk alert indexing returned no usable ids; skipped one instance and continued."}],
+                                                "events": [{"message": {"error": "Alert bulk produced no ids", "_step": 7, "story": "Bulk alert indexing returned no usable ids; skipped one instance and continued."}.encode_json()}],
                                               }
                                             )
                                           : (int(state.finding_index) + 1 < size(state.process_findings)) ?
@@ -1061,7 +1066,7 @@ program: |-
                                                 "pending_alert_ids": [],
                                                 "pending_alert_indices": [],
                                                 "want_more": true,
-                                                "events": [{"error": "Alert bulk produced no ids", "_step": 7, "story": "Bulk alert indexing failed for this finding; moving to the next finding."}],
+                                                "events": [{"message": {"error": "Alert bulk produced no ids", "_step": 7, "story": "Bulk alert indexing failed for this finding; moving to the next finding."}.encode_json()}],
                                               }
                                             )
                                           :
@@ -1074,7 +1079,7 @@ program: |-
                                                 "all_current_keys": [],
                                                 "pending_alert_ids": [],
                                                 "pending_alert_indices": [],
-                                                "events": [{"error": "Alert bulk produced no ids", "_step": 7, "story": "Bulk alert indexing failed and no further work remained."}],
+                                                "events": [{"message": {"error": "Alert bulk produced no ids", "_step": 7, "story": "Bulk alert indexing failed and no further work remained."}.encode_json()}],
                                               }
                                             )
                                         )
@@ -1093,7 +1098,7 @@ program: |-
                                         "pending_alert_ids": [],
                                         "pending_alert_indices": [],
                                         "want_more": true,
-                                        "events": [{"error": "Alert bulk indexing failed", "_body": string(resp.Body), "_step": 7, "story": "Bulk alert indexing request failed; moving to the next finding."}],
+                                        "events": [{"message": {"error": "Alert bulk indexing failed", "_step": 7, "story": "Bulk alert indexing request failed; moving to the next finding."}.encode_json()}],
                                       }
                                     )
                                   :
@@ -1106,7 +1111,7 @@ program: |-
                                         "all_current_keys": [],
                                         "pending_alert_ids": [],
                                         "pending_alert_indices": [],
-                                        "events": [{"error": "Alert bulk indexing failed", "_body": string(resp.Body), "_step": 7, "story": "Bulk alert indexing failed and sync ended."}],
+                                        "events": [{"message": {"error": "Alert bulk indexing failed", "_step": 7, "story": "Bulk alert indexing failed and sync ended."}.encode_json()}],
                                       }
                                     )
                                 )
@@ -1126,7 +1131,7 @@ program: |-
                                                 "pending_alert_ids": [],
                                                 "pending_alert_indices": [],
                                                 "want_more": true,
-                                                "events": [{"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "case_total_alerts": parsed_body.totalAlerts, "next_case_part": int(state.case_part) + 1, "instance_index": int(state.instance_index), "info": "Case at 1000 alert limit, opening overflow case", "story": "Current case hit Kibana's 1000-alert limit, so sync opened an overflow case and continued from the same instance position."}],
+                                                "events": [{"message": {"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "case_total_alerts": parsed_body.totalAlerts, "next_case_part": int(state.case_part) + 1, "instance_index": int(state.instance_index), "info": "Case at 1000 alert limit, opening overflow case", "story": "Current case hit Kibana's 1000-alert limit, so sync opened an overflow case and continued from the same instance position."}.encode_json()}],
                                               }
                                             )
                                           : (int(state.finding_index) + 1 < size(state.process_findings)) ?
@@ -1142,7 +1147,7 @@ program: |-
                                                 "pending_alert_ids": [],
                                                 "pending_alert_indices": [],
                                                 "want_more": true,
-                                                "events": [{"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "case_total_alerts": parsed_body.totalAlerts, "story": "Attached the buffered alerts to the case and moved to the next finding."}],
+                                                "events": [{"message": {"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "case_total_alerts": parsed_body.totalAlerts, "story": "Attached the buffered alerts to the case and moved to the next finding."}.encode_json()}],
                                               }
                                             )
                                           : (size(state.cases_to_delete) > 0) ?
@@ -1153,7 +1158,7 @@ program: |-
                                                 "pending_alert_ids": [],
                                                 "pending_alert_indices": [],
                                                 "want_more": true,
-                                                "events": [{"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "story": "Attached the final alerts and moved to stale case cleanup."}],
+                                                "events": [{"message": {"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "story": "Attached the final alerts and moved to stale case cleanup."}.encode_json()}],
                                               }
                                             )
                                           :
@@ -1166,7 +1171,7 @@ program: |-
                                                 "all_current_keys": [],
                                                 "pending_alert_ids": [],
                                                 "pending_alert_indices": [],
-                                                "events": [{"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "info": "Sync complete", "story": "Attached the final alerts and completed the sync run."}],
+                                                "events": [{"message": {"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "info": "Sync complete", "story": "Attached the final alerts and completed the sync run."}.encode_json()}],
                                               }
                                             )
                                         )
@@ -1178,7 +1183,7 @@ program: |-
                                             "pending_alert_ids": [],
                                             "pending_alert_indices": [],
                                             "want_more": true,
-                                            "events": [{"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "case_total_alerts": parsed_body.totalAlerts, "story": "Attached the current batch and returned to indexing remaining instances for this finding."}],
+                                            "events": [{"message": {"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "case_total_alerts": parsed_body.totalAlerts, "story": "Attached the current batch and returned to indexing remaining instances for this finding."}.encode_json()}],
                                           }
                                         )
                                       : (int(state.finding_index) + 1 < size(state.process_findings)) ?
@@ -1194,7 +1199,7 @@ program: |-
                                             "pending_alert_ids": [],
                                             "pending_alert_indices": [],
                                             "want_more": true,
-                                            "events": [{"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "case_total_alerts": parsed_body.totalAlerts, "story": "Attachment completed for this finding and sync advanced to the next finding."}],
+                                            "events": [{"message": {"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "case_total_alerts": parsed_body.totalAlerts, "story": "Attachment completed for this finding and sync advanced to the next finding."}.encode_json()}],
                                           }
                                         )
                                       : (size(state.cases_to_delete) > 0) ?
@@ -1205,7 +1210,7 @@ program: |-
                                             "pending_alert_ids": [],
                                             "pending_alert_indices": [],
                                             "want_more": true,
-                                            "events": [{"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "story": "Attachment flow finished and sync moved to stale case deletion."}],
+                                            "events": [{"message": {"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "story": "Attachment flow finished and sync moved to stale case deletion."}.encode_json()}],
                                           }
                                         )
                                       :
@@ -1218,7 +1223,7 @@ program: |-
                                             "all_current_keys": [],
                                             "pending_alert_ids": [],
                                             "pending_alert_indices": [],
-                                            "events": [{"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "info": "Sync complete", "story": "Attachment flow finished and sync completed successfully."}],
+                                            "events": [{"message": {"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "info": "Sync complete", "story": "Attachment flow finished and sync completed successfully."}.encode_json()}],
                                           }
                                         )
                                     )
@@ -1229,7 +1234,7 @@ program: |-
                                         "pending_alert_ids": [],
                                         "pending_alert_indices": [],
                                         "want_more": true,
-                                        "events": [{"error": "Alert attach failed", "_body": string(resp.Body), "_step": 8, "story": "Case attachment failed for the current batch, so sync returned to indexing flow to continue safely."}],
+                                        "events": [{"message": {"error": "Alert attach failed", "_step": 8, "story": "Case attachment failed for the current batch, so sync returned to indexing flow to continue safely."}.encode_json()}],
                                       }
                                     )
                                   : (int(state.finding_index) + 1 < size(state.process_findings)) ?
@@ -1245,7 +1250,7 @@ program: |-
                                         "pending_alert_ids": [],
                                         "pending_alert_indices": [],
                                         "want_more": true,
-                                        "events": [{"error": "Alert attach failed", "_body": string(resp.Body), "_step": 8, "story": "Case attachment failed for this finding, so sync moved to the next finding."}],
+                                        "events": [{"message": {"error": "Alert attach failed", "_step": 8, "story": "Case attachment failed for this finding, so sync moved to the next finding."}.encode_json()}],
                                       }
                                     )
                                   :
@@ -1258,7 +1263,7 @@ program: |-
                                         "all_current_keys": [],
                                         "pending_alert_ids": [],
                                         "pending_alert_indices": [],
-                                        "events": [{"error": "Alert attach failed", "_body": string(resp.Body), "_step": 8, "story": "Case attachment failed and no additional work remained in this sync run."}],
+                                        "events": [{"message": {"error": "Alert attach failed", "_step": 8, "story": "Case attachment failed and no additional work remained in this sync run."}.encode_json()}],
                                       }
                                     )
                                 )
@@ -1272,7 +1277,7 @@ program: |-
                                             "step": 9,
                                             "delete_index": int(state.delete_index) + 1,
                                             "want_more": true,
-                                            "events": [{"error": "Stale case delete failed", "_step": 9, "deleted_case_id": string(state.cases_to_delete[int(state.delete_index)]), "_uri": uri, "_body": string(resp.Body), "story": "A stale case delete failed, so sync logged the error and continued cleanup for remaining stale cases."}],
+                                            "events": [{"message": {"error": "Stale case delete failed", "_step": 9, "deleted_case_id": string(state.cases_to_delete[int(state.delete_index)]), "_uri": uri, "story": "A stale case delete failed, so sync logged the error and continued cleanup for remaining stale cases."}.encode_json()}],
                                           }
                                         )
                                       :
@@ -1283,7 +1288,7 @@ program: |-
                                             "process_findings": [],
                                             "cases_to_delete": [],
                                             "all_current_keys": [],
-                                            "events": [{"error": "Stale case delete failed", "_step": 9, "deleted_case_id": string(state.cases_to_delete[int(state.delete_index)]), "_body": string(resp.Body), "story": "Stale case cleanup finished with at least one delete failure."}],
+                                            "events": [{"message": {"error": "Stale case delete failed", "_step": 9, "deleted_case_id": string(state.cases_to_delete[int(state.delete_index)]), "story": "Stale case cleanup finished with at least one delete failure."}.encode_json()}],
                                           }
                                         )
                                     )
@@ -1293,7 +1298,7 @@ program: |-
                                         "step": 9,
                                         "delete_index": int(state.delete_index) + 1,
                                         "want_more": true,
-                                        "events": [{"_step": 9, "deleted_case_id": string(state.cases_to_delete[int(state.delete_index)]), "_uri": uri, "story": "Deleted one stale case and continued cleanup for the remaining stale cases."}],
+                                        "events": [{"message": {"_step": 9, "deleted_case_id": string(state.cases_to_delete[int(state.delete_index)]), "_uri": uri, "story": "Deleted one stale case and continued cleanup for the remaining stale cases."}.encode_json()}],
                                       }
                                     )
                                   :
@@ -1304,7 +1309,7 @@ program: |-
                                         "process_findings": [],
                                         "cases_to_delete": [],
                                         "all_current_keys": [],
-                                        "events": [{"_step": 9, "deleted_case_id": string(state.cases_to_delete[int(state.delete_index)]), "info": "All stale cases deleted", "story": "Stale case cleanup is complete and the sync run is finished."}],
+                                        "events": [{"message": {"_step": 9, "deleted_case_id": string(state.cases_to_delete[int(state.delete_index)]), "info": "All stale cases deleted", "story": "Stale case cleanup is complete and the sync run is finished."}.encode_json()}],
                                       }
                                     )
                                 )

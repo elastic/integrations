@@ -7,7 +7,7 @@ source:
 description: "Collect BloodHound Enterprise attack-path findings into Elastic Security Cases and Alerts for investigation and remediation tracking."
 type: integration
 categories:
-  - custom
+  - security
 conditions:
   kibana:
     version: "^9.3.0"
@@ -32,9 +32,10 @@ policy_templates:
         enabled: true
       agentless:
         enabled: true
-        organization: custom
+        release: beta
+        organization: security
         division: engineering
-        team: custom-service-integrations
+        team: security-service-integrations
     inputs:
       - type: cel
         title: Collect BloodHound Enterprise findings via CEL
@@ -80,19 +81,18 @@ policy_templates:
             required: true
             show_user: true
             secret: true
-          - name: interval
-            type: text
-            title: Interval
-            description: Time to wait between full Case & Alert Sync cycles (e.g. 1h, 30m). Default 1h. During a single sync, steps still run back-to-back; this value only applies after a sync finishes.
-            default: 1h
-            multi: false
-            required: true
-            show_user: true
           - name: kibana_url
             type: text
             title: Kibana URL
-            description: URL the Elastic Agent uses to reach Kibana (e.g. https://elastic-package-stack-kibana-1:5601 for local stack)
-            default: https://elastic-package-stack-kibana-1:5601
+            description: URL the Elastic Agent uses to reach Kibana (for a local elastic-package stack this is https://elastic-package-stack-kibana-1:5601).
+            multi: false
+            required: true
+            show_user: true
+          - name: kibana_space
+            type: text
+            title: Kibana space
+            description: Kibana space where Cases and Security Alerts are written. Use default unless this policy should target another space. The packaged Attack Path Overview dashboard reads .alerts-security.alerts-default, so a non-default space needs a matching data view.
+            default: default
             multi: false
             required: true
             show_user: true
@@ -107,19 +107,10 @@ policy_templates:
           - name: elasticsearch_url
             type: text
             title: Elasticsearch URL
-            description: URL the Elastic Agent uses to reach Elasticsearch for alert indexing (e.g. https://elasticsearch:9200 for local stack)
-            default: https://elasticsearch:9200
+            description: URL the Elastic Agent uses to reach Elasticsearch for alert indexing (for a local elastic-package stack this is https://elasticsearch:9200).
             multi: false
             required: true
             show_user: true
-          - name: details_limit
-            type: text
-            title: Details page size
-            description: BloodHound details page size used for offset pagination.
-            default: "500"
-            multi: false
-            required: true
-            show_user: false
           - name: attach_batch_size
             type: text
             title: Alert attach batch size
@@ -143,7 +134,7 @@ policy_templates:
             required: false
             show_user: false
             default: |
-              verification_mode: none
+              #verification_mode: none
 owner:
   github: elastic/security-service-integrations
-  type: partner
+  type: elastic

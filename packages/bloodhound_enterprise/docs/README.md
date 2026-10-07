@@ -11,7 +11,7 @@ On a schedule it polls the BloodHound Enterprise API, creates and updates Kibana
 This integration requires:
 
 - Kibana `^9.3.0` (CEL features used by the Case & Alert Sync program)
-- Elastic Agent or Agentless deployment with the CEL input enabled
+- Elastic Agent or an Elastic Managed deployment with the CEL input enabled
 - Elastic Security with Cases enabled
 - Network connectivity from the agent to BloodHound Enterprise, Kibana, and Elasticsearch
 
@@ -49,13 +49,13 @@ This integration collects the following data:
 
 - An Elastic deployment with Fleet and Elastic Security (Cases) enabled
 - Kibana `^9.3.0`
-- Elastic Agent or Agentless support for the CEL input
+- Elastic Agent or Elastic Managed support for the CEL input
 
 ### From BloodHound Enterprise
 
 - A BloodHound Enterprise tenant URL (for example `https://yourtenant.bloodhoundenterprise.io`)
 - BloodHound Enterprise API **Token ID** and **Token Key** (Administration → API Keys in BloodHound Enterprise)
-- Network path from the Elastic Agent (or agentless runner) to the BloodHound Enterprise HTTPS endpoint
+- Network path from the Elastic Agent (or Elastic Managed runner) to the BloodHound Enterprise HTTPS endpoint
 
 ### From Kibana / Elasticsearch
 
@@ -65,13 +65,13 @@ This integration collects the following data:
 
 ## How do I deploy this integration?
 
-This integration supports both Elastic Agent-based and Agentless installations.
+This integration supports both Elastic Agent-based and Elastic Managed installations.
 
-### Agentless-based installation
+### Elastic Managed installation
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ### Agent-based installation
 
@@ -118,9 +118,10 @@ Assign this integration to an agent policy whose agents can reach BloodHound Ent
 | Token ID | Yes | BloodHound Enterprise API token ID |
 | Token Key | Yes | BloodHound Enterprise API token secret |
 | Kibana URL | Yes | URL the agent uses to reach Kibana |
+| Kibana space | Yes | Space for Cases and Alerts (default `default`). The packaged dashboard reads `.alerts-security.alerts-default` |
 | Kibana API Key | Yes | Encoded API key with Cases permissions |
 | Elasticsearch URL | Yes | URL the agent uses to reach Elasticsearch for alert indexing |
-| Interval | Yes | Delay between full sync cycles (default `1h`) |
+| Interval | Yes | Delay between full Case & Alert Sync cycles (default `1h`, set on that stream) |
 | Selected environment | No | Comma-separated domain names, or empty/`All`/`*` for all |
 | BloodHound Enterprise zones | No | Comma-separated zone names, or empty/`All`/`*` for all |
 
@@ -128,16 +129,20 @@ Assign this integration to an agent policy whose agents can reach BloodHound Ent
 6. Keep **Attack Path Findings** (`finding`) disabled unless you explicitly need raw finding documents.
 7. Select **Save and continue**.
 
-**Local elastic-package stack tip:** when the agent runs inside the elastic-package Docker network, use internal hostnames such as `https://elastic-package-stack-kibana-1:5601` and `https://elasticsearch:9200`. For agents on external hosts, use publicly reachable URLs.
+**Local elastic-package stack tip:** when the agent runs inside the elastic-package Docker network, use internal hostnames such as `https://elastic-package-stack-kibana-1:5601` and `https://elasticsearch:9200`. For agents on external hosts, use publicly reachable URLs. Do not leave those hostnames in a production policy; Kibana URL and Elasticsearch URL have no default.
+
+### Kibana space
+
+Case & Alert Sync writes Kibana Cases and Security Alerts into the configured Kibana space (`default` unless you change **Kibana space**). Non-default spaces use the `/s/<space>` Cases API prefix and the `.alerts-security.alerts-<space>` alert index. The packaged Attack Path Overview dashboard and data view are built for the default space. If you select another space, point a data view at `.alerts-security.alerts-<space>` or the dashboard stays empty.
 
 ### Validation
 
 After the first sync interval completes:
 
-1. **Fleet → Agents** — confirm the agent (or agentless deployment) is healthy and the integration reports no CEL/auth errors.
+1. **Fleet → Agents** — confirm the agent (or Elastic Managed deployment) is healthy and the integration reports no CEL/auth errors.
 2. **Security → Cases** — confirm cases tagged with `BloodHound Enterprise` plus the tenant slug derived from Base URL.
 3. Open a case and confirm related Security Alerts for at-risk principals are attached.
-4. Optional: in Discover, inspect `logs-bloodhound_enterprise.health_check-*` for sync-step events (`bhe.sync.step`, `bhe.sync.info`, `bhe.sync.error`).
+4. Optional: in Discover, inspect `logs-bloodhound_enterprise.health_check-*` for sync-step events (`bloodhound_enterprise.health_check.step`, `bloodhound_enterprise.health_check.info`, `bloodhound_enterprise.health_check.error`).
 5. Optional: open the **BloodHound Enterprise Attack Path Overview** dashboard and confirm alert visualizations populate.
 
 | Scenario | Expected behavior |
@@ -211,13 +216,26 @@ This is the `health_check` dataset. Events describe Case & Alert Sync steps for 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
-| bhe.sync.bh_cases_found | Number of existing BloodHound Enterprise-tagged Kibana cases found for this tenant. | long |
-| bhe.sync.case_id | Kibana case ID created or resolved during this step. | keyword |
-| bhe.sync.domains_after_filter | Number of BloodHound Enterprise domains remaining after environment/zone filters. | long |
-| bhe.sync.error | Error message from a failed sync step. | keyword |
-| bhe.sync.info | Informational status message for the current sync step. | keyword |
-| bhe.sync.stale_count | Number of stale cases queued for deletion. | long |
-| bhe.sync.step | Numeric CEL workflow step (1-9) that produced this event. | keyword |
+| bloodhound_enterprise.health_check.attached_count | Number of alerts attached to the case in this step. | long |
+| bloodhound_enterprise.health_check.bh_cases_found | Number of existing BloodHound Enterprise-tagged Kibana cases found for this tenant. | long |
+| bloodhound_enterprise.health_check.case_id | Kibana case ID created or resolved during this step. | keyword |
+| bloodhound_enterprise.health_check.case_key | Case title key used to match a BloodHound finding. | keyword |
+| bloodhound_enterprise.health_check.case_part | Overflow case part number when a case reaches the alert limit. | long |
+| bloodhound_enterprise.health_check.case_total_alerts | Total alerts on the Kibana case after attachment. | long |
+| bloodhound_enterprise.health_check.deleted_case_id | Kibana case ID deleted as stale. | keyword |
+| bloodhound_enterprise.health_check.domain | BloodHound domain name associated with this step. | keyword |
+| bloodhound_enterprise.health_check.domains_after_filter | Number of BloodHound Enterprise domains remaining after environment/zone filters. | long |
+| bloodhound_enterprise.health_check.error | Error message from a failed sync step. | keyword |
+| bloodhound_enterprise.health_check.finding_count | Number of findings queued for case and alert sync. | long |
+| bloodhound_enterprise.health_check.info | Informational status message for the current sync step. | keyword |
+| bloodhound_enterprise.health_check.instance_index | Index of the next finding instance to attach. | long |
+| bloodhound_enterprise.health_check.instances | Number of finding instances considered for alert attachment. | long |
+| bloodhound_enterprise.health_check.next_case_part | Overflow case part that will be opened next. | long |
+| bloodhound_enterprise.health_check.pending | Number of alerts indexed and waiting to be attached. | long |
+| bloodhound_enterprise.health_check.stale_count | Number of stale cases queued for deletion. | long |
+| bloodhound_enterprise.health_check.step | Numeric sync workflow step that produced this event. | long |
+| bloodhound_enterprise.health_check.story | Human-readable narrative describing the current sync step. | match_only_text |
+| bloodhound_enterprise.health_check.uri | Request path for the sync step. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
@@ -226,6 +244,8 @@ This is the `health_check` dataset. Events describe Case & Alert Sync steps for 
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text of the original event, copied from `message` before parsing. | keyword |
+| event.outcome | Whether the sync step succeeded or failed. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 
@@ -251,12 +271,13 @@ This is the `finding` dataset. Optional raw BloodHound attack-path finding docum
 | bloodhound_enterprise.impact_percentage | Percentage of domain impacted by attack path. | float |
 | bloodhound_enterprise.impact_score | Risk impact score assigned by BloodHound Enterprise (0.0 to 10.0). | float |
 | bloodhound_enterprise.is_inherited | Whether the relationship is inherited. | boolean |
+| bloodhound_enterprise.principal.kind | BloodHound principal kind for the source principal (User, Group, Computer). | keyword |
 | bloodhound_enterprise.principal_hash | Internal principal graph hash. | keyword |
-| bloodhound_enterprise.remediation | Summary of remediation steps recommended by BloodHound Enterprise. | keyword |
+| bloodhound_enterprise.remediation | Summary of remediation steps recommended by BloodHound Enterprise. | match_only_text |
+| bloodhound_enterprise.target.kind | BloodHound principal kind for the destination principal (User, Group, Computer). | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
-| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.user.id | Unique identifier of the user. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
@@ -269,12 +290,10 @@ This is the `finding` dataset. Optional raw BloodHound attack-path finding docum
 | event.id | Unique ID to describe the event. | keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.original | Raw text of the original event, copied from `message` before parsing. | keyword |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset. | long |

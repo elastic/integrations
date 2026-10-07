@@ -36,8 +36,14 @@
       type: boolean
       description: Whether the relationship is inherited.
     - name: remediation
-      type: keyword
+      type: match_only_text
       description: Summary of remediation steps recommended by BloodHound Enterprise.
+    - name: principal.kind
+      type: keyword
+      description: BloodHound principal kind for the source principal (User, Group, Computer).
+    - name: target.kind
+      type: keyword
+      description: BloodHound principal kind for the destination principal (User, Group, Computer).
     - name: attack_path
       type: group
       description: Attack path graph attributes.
@@ -48,18 +54,3 @@
         - name: relationships
           type: keyword
           description: List of edge relationship types in the attack path.
-- name: user
-  type: group
-  fields:
-    - name: type
-      type: keyword
-      description: BloodHound principal kind for the source principal (User, Group, Computer).
-- name: destination
-  type: group
-  fields:
-    - name: user
-      type: group
-      fields:
-        - name: type
-          type: keyword
-          description: BloodHound principal kind for the destination principal (User, Group, Computer).

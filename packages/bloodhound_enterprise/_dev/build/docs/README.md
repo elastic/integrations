@@ -11,7 +11,7 @@ On a schedule it polls the BloodHound Enterprise API, creates and updates Kibana
 This integration requires:
 
 - Kibana `^9.3.0` (CEL features used by the Case & Alert Sync program)
-- Elastic Agent or Agentless deployment with the CEL input enabled
+- Elastic Agent or an Elastic Managed deployment with the CEL input enabled
 - Elastic Security with Cases enabled
 - Network connectivity from the agent to BloodHound Enterprise, Kibana, and Elasticsearch
 
@@ -49,13 +49,13 @@ This integration collects the following data:
 
 - An Elastic deployment with Fleet and Elastic Security (Cases) enabled
 - Kibana `^9.3.0`
-- Elastic Agent or Agentless support for the CEL input
+- Elastic Agent or Elastic Managed support for the CEL input
 
 ### From BloodHound Enterprise
 
 - A BloodHound Enterprise tenant URL (for example `https://yourtenant.bloodhoundenterprise.io`)
 - BloodHound Enterprise API **Token ID** and **Token Key** (Administration → API Keys in BloodHound Enterprise)
-- Network path from the Elastic Agent (or agentless runner) to the BloodHound Enterprise HTTPS endpoint
+- Network path from the Elastic Agent (or Elastic Managed runner) to the BloodHound Enterprise HTTPS endpoint
 
 ### From Kibana / Elasticsearch
 
@@ -65,13 +65,13 @@ This integration collects the following data:
 
 ## How do I deploy this integration?
 
-This integration supports both Elastic Agent-based and Agentless installations.
+This integration supports both Elastic Agent-based and Elastic Managed installations.
 
-### Agentless-based installation
+### Elastic Managed installation
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ### Agent-based installation
 
@@ -118,9 +118,10 @@ Assign this integration to an agent policy whose agents can reach BloodHound Ent
 | Token ID | Yes | BloodHound Enterprise API token ID |
 | Token Key | Yes | BloodHound Enterprise API token secret |
 | Kibana URL | Yes | URL the agent uses to reach Kibana |
+| Kibana space | Yes | Space for Cases and Alerts (default `default`). The packaged dashboard reads `.alerts-security.alerts-default` |
 | Kibana API Key | Yes | Encoded API key with Cases permissions |
 | Elasticsearch URL | Yes | URL the agent uses to reach Elasticsearch for alert indexing |
-| Interval | Yes | Delay between full sync cycles (default `1h`) |
+| Interval | Yes | Delay between full Case & Alert Sync cycles (default `1h`, set on that stream) |
 | Selected environment | No | Comma-separated domain names, or empty/`All`/`*` for all |
 | BloodHound Enterprise zones | No | Comma-separated zone names, or empty/`All`/`*` for all |
 
@@ -128,16 +129,20 @@ Assign this integration to an agent policy whose agents can reach BloodHound Ent
 6. Keep **Attack Path Findings** (`finding`) disabled unless you explicitly need raw finding documents.
 7. Select **Save and continue**.
 
-**Local elastic-package stack tip:** when the agent runs inside the elastic-package Docker network, use internal hostnames such as `https://elastic-package-stack-kibana-1:5601` and `https://elasticsearch:9200`. For agents on external hosts, use publicly reachable URLs.
+**Local elastic-package stack tip:** when the agent runs inside the elastic-package Docker network, use internal hostnames such as `https://elastic-package-stack-kibana-1:5601` and `https://elasticsearch:9200`. For agents on external hosts, use publicly reachable URLs. Do not leave those hostnames in a production policy; Kibana URL and Elasticsearch URL have no default.
+
+### Kibana space
+
+Case & Alert Sync writes Kibana Cases and Security Alerts into the configured Kibana space (`default` unless you change **Kibana space**). Non-default spaces use the `/s/<space>` Cases API prefix and the `.alerts-security.alerts-<space>` alert index. The packaged Attack Path Overview dashboard and data view are built for the default space. If you select another space, point a data view at `.alerts-security.alerts-<space>` or the dashboard stays empty.
 
 ### Validation
 
 After the first sync interval completes:
 
-1. **Fleet → Agents** — confirm the agent (or agentless deployment) is healthy and the integration reports no CEL/auth errors.
+1. **Fleet → Agents** — confirm the agent (or Elastic Managed deployment) is healthy and the integration reports no CEL/auth errors.
 2. **Security → Cases** — confirm cases tagged with `BloodHound Enterprise` plus the tenant slug derived from Base URL.
 3. Open a case and confirm related Security Alerts for at-risk principals are attached.
-4. Optional: in Discover, inspect `logs-bloodhound_enterprise.health_check-*` for sync-step events (`bhe.sync.step`, `bhe.sync.info`, `bhe.sync.error`).
+4. Optional: in Discover, inspect `logs-bloodhound_enterprise.health_check-*` for sync-step events (`bloodhound_enterprise.health_check.step`, `bloodhound_enterprise.health_check.info`, `bloodhound_enterprise.health_check.error`).
 5. Optional: open the **BloodHound Enterprise Attack Path Overview** dashboard and confirm alert visualizations populate.
 
 | Scenario | Expected behavior |
