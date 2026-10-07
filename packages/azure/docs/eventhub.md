@@ -163,7 +163,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.resource.provider | Legacy name for the resource provider namespace, still populated. Prefer `azure.resource_provider.namespace`. | keyword |
 | azure.resource_group.name | Azure resource group name. | keyword |
 | azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
-| azure.subscription_id | Azure subscription ID. | keyword |
+| azure.subscription.id | Azure subscription ID. | keyword |
+| azure.subscription_id | Legacy flat name for the subscription ID, still populated. Prefer `azure.subscription.id`. | keyword |
 | azure.tenant.id | Azure tenant ID. | keyword |
 | azure.tenant_id | Legacy flat name for the tenant ID, still populated. Prefer `azure.tenant.id`. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |

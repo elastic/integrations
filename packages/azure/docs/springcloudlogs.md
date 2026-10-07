@@ -98,6 +98,9 @@ An example event for `springcloudlogs` looks as following:
                 "stream": "stdout"
             }
         },
+        "subscription": {
+            "id": "0E073EC1-C22F-4488-ADDE-DA35ED609CCD"
+        },
         "subscription_id": "0E073EC1-C22F-4488-ADDE-DA35ED609CCD",
         "resource_group": {
             "name": "TESTM"
@@ -180,7 +183,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.springcloudlogs.properties.thread | Thread | keyword |
 | azure.springcloudlogs.properties.type | Type | keyword |
 | azure.springcloudlogs.status | Status | keyword |
-| azure.subscription_id | Azure subscription ID. | keyword |
+| azure.subscription.id | Azure subscription ID. | keyword |
+| azure.subscription_id | Legacy flat name for the subscription ID, still populated. Prefer `azure.subscription.id`. | keyword |
 | azure.tenant.id | Azure tenant ID. | keyword |
 | azure.tenant_id | Legacy flat name for the tenant ID, still populated. Prefer `azure.tenant.id`. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |

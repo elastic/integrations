@@ -8,9 +8,8 @@ processors:
   - grok:
       tag: grok_azure_resource_id_a37ae5a2
       field: azure.resource_id
-      if: ctx.azure?.resource_id != null
       patterns:
-        - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource_group.name}/providers/%{PROVIDERNAME:azure.resource_provider.namespace}/namespaces/%{NAMESPACE:azure.resource.namespace}/authorizationRules/%{RULE:azure.resource.authorization_rule}
+        - (?i)/subscriptions/%{SUBID:azure.subscription.id}/resourceGroups/%{GROUPID:azure.resource_group.name}/providers/%{PROVIDERNAME:azure.resource_provider.namespace}/namespaces/%{NAMESPACE:azure.resource.namespace}/authorizationRules/%{RULE:azure.resource.authorization_rule}
       pattern_definitions:
         SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
         GROUPID: .+
@@ -21,9 +20,9 @@ processors:
   - grok:
       tag: grok_azure_resource_id_dec79cc0
       field: azure.resource_id
-      if: ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null
+      if: ctx.azure?.subscription?.id == null
       patterns:
-      - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource_group.name}/providers/%{PROVIDERNAME:azure.resource_provider.namespace}/%{NAME:azure.resource.name}
+        - (?i)/subscriptions/%{SUBID:azure.subscription.id}/resourceGroups/%{GROUPID:azure.resource_group.name}/providers/%{PROVIDERNAME:azure.resource_provider.namespace}/%{NAME:azure.resource.name}
       pattern_definitions:
         SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
         GROUPID: .+
@@ -33,9 +32,9 @@ processors:
   - grok:
       tag: grok_azure_resource_id_50c4712a
       field: azure.resource_id
-      if: ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null
+      if: ctx.azure?.subscription?.id == null
       patterns:
-        - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource_group.name}/providers/%{PROVIDERNAME:azure.resource_provider.namespace}/%{NAME:azure.resource.name}
+        - (?i)/subscriptions/%{SUBID:azure.subscription.id}/resourceGroups/%{GROUPID:azure.resource_group.name}/providers/%{PROVIDERNAME:azure.resource_provider.namespace}/%{NAME:azure.resource.name}
       pattern_definitions:
         SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
         GROUPID: .+
@@ -45,18 +44,18 @@ processors:
   - grok:
       tag: grok_azure_resource_id_f149bb55
       field: azure.resource_id
-      if: ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null
+      if: ctx.azure?.subscription?.id == null
       patterns:
-      - (?i)/providers/%{PROVIDER:azure.resource_provider.namespace}
+        - (?i)/providers/%{PROVIDER:azure.resource_provider.namespace}
       pattern_definitions:
         PROVIDER: .+
       ignore_failure: true
   - grok:
       tag: grok_azure_resource_id_6b41a6b7
       field: azure.resource_id
-      if: ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null
+      if: ctx.azure?.subscription?.id == null
       patterns:
-        - (?i)/subscriptions/%{SUBID:azure.subscription_id}/providers/%{PROVIDERNAME:azure.resource_provider.namespace}
+        - (?i)/subscriptions/%{SUBID:azure.subscription.id}/providers/%{PROVIDERNAME:azure.resource_provider.namespace}
       pattern_definitions:
         SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
         PROVIDERNAME: ([A-Za-z])\w+.([A-Za-z])\w+\/([A-Za-z][^\/])\w+
@@ -64,9 +63,9 @@ processors:
   - grok:
       tag: grok_azure_resource_id_ba700861
       field: azure.resource_id
-      if: ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null
+      if: ctx.azure?.subscription?.id == null
       patterns:
-        - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource_group.name}
+        - (?i)/subscriptions/%{SUBID:azure.subscription.id}/resourceGroups/%{GROUPID:azure.resource_group.name}
       pattern_definitions:
         SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
         GROUPID: .+
@@ -74,21 +73,11 @@ processors:
   - grok:
       tag: grok_azure_resource_id_0733b345
       field: azure.resource_id
-      if: ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null
+      if: ctx.azure?.subscription?.id == null
       patterns:
-        - (?i)/subscriptions/%{SUBID:azure.subscription_id}
+        - (?i)/subscriptions/%{SUBID:azure.subscription.id}
       pattern_definitions:
         SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
-      ignore_failure: true
-  - grok:
-      tag: grok_azure_resource_id_tenant_a9b8c7d6
-      field: azure.resource_id
-      if: ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null && ctx.azure?.tenant?.id == null
-      patterns:
-        - (?i)/tenants/%{TENANTID:azure.tenant.id}/providers/%{PROVIDERNAME:azure.resource_provider.namespace}
-      pattern_definitions:
-        TENANTID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
-        PROVIDERNAME: .+
       ignore_failure: true
   - rename:
       tag: rename_azure_resource_id_to_cloud_resource_id_4a05dbed
@@ -102,12 +91,17 @@ processors:
   - set:
       tag: set_cloud_account_id_91e76e66
       field: cloud.account.id
-      copy_from: azure.subscription_id
+      copy_from: azure.subscription.id
       ignore_empty_value: true
   # Backward compatibility (non-breaking): the pre-1.41.0 field names stay
   # populated alongside the new semantic-convention names, so existing `_source`
   # consumers, custom pipelines and saved objects keep working. Both sets are
   # concrete fields; neither is an alias.
+  - set:
+      tag: set_legacy_azure_subscription_id_3d6a0b58
+      field: azure.subscription_id
+      copy_from: azure.subscription.id
+      ignore_empty_value: true
   - set:
       tag: set_legacy_azure_resource_id_7c1f9a24
       field: azure.resource.id
@@ -147,6 +141,4 @@ on_failure:
       tag: append_error_message_fb774d38
       field: error.message
       value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
+        Processor '{{{ _ingest.on_failure_processor_type }}}' {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}' {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
