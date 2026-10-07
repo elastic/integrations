@@ -50,7 +50,7 @@ processors:
                 - set(severity_number, 22) where cache["log.level"] == "alert"
                 - set(severity_number, 23) where cache["log.level"] == "emerg"
                 - 'merge_maps(cache, ExtractPatterns(cache["message"], "client: (?P<client_address>[^,\\s]+)(?:, server: (?P<nginx_error_server>[^,\\s]+))?(?:, request: \"(?P<http_request_method>\\w+) (?P<url_original>\\S+) HTTP/(?P<http_version>[\\d.]+)\")?(?:, host: \"(?P<server_address>[^\"]+)\")?"), "upsert") where cache["message"] != nil'
-                - set(attributes["client.address"], cache["client_address"]) where cache["client_address"] != nil and cache["client_address"] != ""
+                - set(attributes["source.address"], cache["client_address"]) where cache["client_address"] != nil and cache["client_address"] != ""
                 - set(attributes["server.address"], cache["server_address"]) where cache["server_address"] != nil and cache["server_address"] != ""
                 - set(attributes["server.address"], cache["nginx_error_server"]) where attributes["server.address"] == nil and cache["nginx_error_server"] != nil and cache["nginx_error_server"] != ""
                 - set(attributes["http.request.method"], cache["http_request_method"]) where cache["http_request_method"] != nil and cache["http_request_method"] != ""
