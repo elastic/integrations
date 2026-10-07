@@ -10,7 +10,7 @@ stdout true
 uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
 
 -- assertion.jq --
-(del(.event.ingested) == $expected[0]) and (.event.ingested | test("^[0-9]{4}-[0-9]{2}-[0-9]{2}T.*Z$"))
+. == $expected[0]
 -- feed-error.json --
 {
   "@timestamp": "2026-08-14T10:05:00.000Z",
@@ -20,7 +20,7 @@ uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
   "error": {
     "code": "403",
     "id": "403 Forbidden",
-    "message": "GET LeakData feed: connector access is unavailable"
+    "message": "GET LeakData feed: 403 Forbidden"
   },
   "tags": [
     "forwarded",
@@ -36,7 +36,7 @@ uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
   "error": {
     "code": "403",
     "id": "403 Forbidden",
-    "message": "GET LeakData feed: connector access is unavailable"
+    "message": "GET LeakData feed: 403 Forbidden"
   },
   "tags": [
     "forwarded",

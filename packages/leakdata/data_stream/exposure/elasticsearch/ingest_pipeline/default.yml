@@ -1,6 +1,83 @@
 ---
 description: Normalize the allowlisted LeakData ECS alert document.
 processors:
+  - remove:
+      tag: remove_untrusted_original
+      field: event.original
+      ignore_missing: true
+  - rename:
+      tag: hold_feed_message
+      field: message
+      target_field: leakdata_raw_event
+      ignore_missing: true
+  - json:
+      tag: decode_feed_message
+      field: leakdata_raw_event
+      target_field: json
+      if: ctx.leakdata_raw_event != null
+  # The API emits a fixed allowlist. Fail closed if another endpoint or a
+  # changed response attempts to introduce fields before promotion or an
+  # optional event.original copy. Failure logs use a fixed message below.
+  - script:
+      tag: assert_feed_allowlist
+      if: ctx.json != null
+      lang: painless
+      source: |-
+        void checkKeys(Map value, List allowed) {
+          for (def key : value.keySet()) {
+            if (!allowed.contains(key)) throw new IllegalArgumentException('unexpected LeakData feed field');
+          }
+        }
+        void requireString(Map value, String key) {
+          if (!(value.get(key) instanceof String)) throw new IllegalArgumentException('invalid LeakData feed scalar');
+        }
+        void requireNumber(Map value, String key) {
+          if (!(value.get(key) instanceof Number)) throw new IllegalArgumentException('invalid LeakData feed scalar');
+        }
+        void requireStringList(Map value, String key) {
+          def items = value.get(key);
+          if (!(items instanceof List)) throw new IllegalArgumentException('invalid LeakData feed list');
+          for (def item : items) {
+            if (!(item instanceof String)) throw new IllegalArgumentException('invalid LeakData feed list item');
+          }
+        }
+        if (!(ctx.json instanceof Map) ||
+            !(ctx.json.ecs instanceof Map) ||
+            !(ctx.json.event instanceof Map) ||
+            !(ctx.json.observer instanceof Map) ||
+            !(ctx.json.rule instanceof Map) ||
+            !(ctx.json.leakdata instanceof Map) ||
+            !(ctx.json.leakdata.exposure instanceof Map) ||
+            !(ctx.json.tags instanceof List) ||
+            !(ctx.json.message instanceof String) ||
+            ctx.json.leakdata.exposure.contains_personal_data != false) {
+          throw new IllegalArgumentException('invalid LeakData feed shape');
+        }
+        checkKeys(ctx.json, ['@timestamp', 'ecs', 'event', 'message', 'observer', 'rule', 'tags', 'leakdata']);
+        checkKeys(ctx.json.ecs, ['version']);
+        checkKeys(ctx.json.event, ['id', 'kind', 'category', 'type', 'action', 'module', 'dataset', 'severity', 'risk_score', 'risk_score_norm', 'created']);
+        checkKeys(ctx.json.observer, ['vendor', 'product', 'type']);
+        checkKeys(ctx.json.rule, ['id', 'name', 'category', 'ruleset', 'version']);
+        checkKeys(ctx.json.leakdata, ['exposure']);
+        checkKeys(ctx.json.leakdata.exposure, ['finding_count', 'minimum_severity', 'maximum_severity', 'evidence_scope', 'contains_personal_data']);
+        requireString(ctx.json, '@timestamp');
+        requireString(ctx.json.ecs, 'version');
+        for (def key : ['id', 'kind', 'action', 'module', 'dataset', 'created']) requireString(ctx.json.event, key);
+        for (def key : ['severity', 'risk_score', 'risk_score_norm']) requireNumber(ctx.json.event, key);
+        requireStringList(ctx.json.event, 'category');
+        requireStringList(ctx.json.event, 'type');
+        if (ctx.json.event.module != 'leakdata' || ctx.json.event.dataset != 'leakdata.exposure') {
+          throw new IllegalArgumentException('invalid LeakData feed classification');
+        }
+        for (def key : ['vendor', 'product', 'type']) requireString(ctx.json.observer, key);
+        for (def key : ['id', 'name', 'category', 'ruleset', 'version']) requireString(ctx.json.rule, key);
+        requireNumber(ctx.json.leakdata.exposure, 'finding_count');
+        for (def key : ['minimum_severity', 'maximum_severity', 'evidence_scope']) requireString(ctx.json.leakdata.exposure, key);
+        for (def tag : ctx.json.tags) {
+          if (!(tag instanceof String) || !['leakdata', 'verified-exposure', 'privacy-minimized'].contains(tag)) {
+            throw new IllegalArgumentException('unexpected LeakData feed tag');
+          }
+        }
   - rename:
       tag: rename_feed_timestamp
       if: ctx.json != null
@@ -53,6 +130,16 @@ processors:
       field: json
       tag: remove_feed_wrapper
       ignore_missing: true
+  - rename:
+      field: leakdata_raw_event
+      target_field: event.original
+      tag: preserve_allowlisted_original
+      ignore_missing: true
+      if: ctx.error == null && ctx.tags != null && ctx.tags.contains('preserve_original_event')
+  - remove:
+      field: leakdata_raw_event
+      tag: remove_default_original
+      ignore_missing: true
   - set:
       field: event.module
       tag: set_event_module
@@ -62,20 +149,32 @@ processors:
       tag: set_event_dataset
       value: leakdata.exposure
   - set:
-      field: event.ingested
-      tag: set_event_ingested
-      value: '{{{_ingest.timestamp}}}'
-  - set:
       field: event.kind
       tag: classify_feed_error
       if: ctx.error != null
       value: pipeline_error
 on_failure:
+  - remove:
+      field:
+        - message
+        - event.original
+        - leakdata_raw_event
+        - json
+      tag: remove_failed_payload
+      ignore_missing: true
   - set:
       field: event.kind
       tag: classify_pipeline_error
       value: pipeline_error
-  - append:
+  - set:
+      field: event.module
+      tag: set_error_module
+      value: leakdata
+  - set:
+      field: event.dataset
+      tag: set_error_dataset
+      value: leakdata.exposure
+  - set:
       field: error.message
-      tag: append_pipeline_error
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed: {{{_ingest.on_failure_message}}}'
+      tag: set_generic_pipeline_error
+      value: LeakData feed event could not be parsed or was outside the allowlist.

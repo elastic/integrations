@@ -14,8 +14,8 @@ inputs:
             request(
               "GET",
               state.url.trim_right("/") + "/api/integrations/elastic-security/v1/events?" + {
-                "limit": [string(state.batch_size)],
-                "cursor": [state.?cursor.value.orValue("")],
+                "limit": [string(int(state.batch_size))],
+                ?"cursor": state.?cursor.value.optMap(v, [v]),
               }.format_query()
             ).with({
               "Header": {
@@ -27,18 +27,18 @@ inputs:
                 "events": {
                   "error": {
                     "code": string(resp.StatusCode),
-                    "id": string(resp.Status),
-                    "message": "GET LeakData feed: " + (
-                      size(resp.Body) != 0 ? string(resp.Body) : string(resp.Status)
-                    ),
+                    "id": resp.Status,
+                    // A response body is not guaranteed to honor the feed allowlist.
+                    // Keep errors actionable without indexing a reflected token/body.
+                    "message": "GET LeakData feed: " + resp.Status,
                   },
                 },
                 "want_more": false,
               })
             :
-              bytes(resp.Body).decode_json().as(body,
+              resp.Body.decode_json().as(body,
                 state.with({
-                  "events": body.events.map(e, {"json": e}),
+                  "events": body.events.map(e, {"message": e.encode_json()}),
                   "cursor": {"value": body.next_cursor},
                   "want_more": body.has_more && size(body.events) > 0,
                 })
@@ -49,6 +49,10 @@ inputs:
             fields:
                 - token
           resource.timeout: 30s
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
           resource.url: https://leakdata.example
           state:
             batch_size: 100

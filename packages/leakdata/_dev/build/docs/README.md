@@ -16,7 +16,7 @@ Your LeakData plan and Elastic deployment requirements apply separately. [Explor
 
 LeakData releases an alert only when an active personal-email monitor still has exact ownership verification, every represented source remains verified at the configured `high` or `critical` threshold, and the account still has the SIEM integration entitlement.
 
-The feed does not include an email address, monitor identifier, breach/source name, source URL, credential, password, exposed value, raw record, or `event.original`.
+The feed does not include an email address, monitor identifier, breach/source name, source URL, credential, password, exposed value, raw record, or `event.original`. The package removes its JSON message copy after parsing by default. If you opt in to **Preserve original event**, `event.original` contains a copy of only the same privacy-minimized feed event.
 
 ## Setup
 
@@ -25,6 +25,8 @@ The feed does not include an email address, monitor identifier, breach/source na
 3. Add this integration to a Fleet agent policy. Keep the default LeakData URL and paste the token into **Connector token**. Fleet stores this setting as a secret.
 4. Leave the poll interval at five minutes, or adjust it to suit your workflow. Keep the `forwarded` tag; you can add your own tags.
 5. After LeakData detects a new eligible exposure, use Discover to check `logs-leakdata.exposure-*` for the alert.
+
+Request tracing is disabled by default. Enable it only for a bounded diagnostic: local Elastic Agent trace files can include the Authorization header and response data, and should be removed afterwards. HTTP errors report the status without retaining the response body.
 
 An empty feed can be expected when there are no new eligible alerts. Check that the monitor is active, its email ownership remains verified and your account still has SIEM integration access before investigating the connection.
 
