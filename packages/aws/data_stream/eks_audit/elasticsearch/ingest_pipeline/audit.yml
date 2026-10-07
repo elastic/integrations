@@ -566,15 +566,10 @@ processors:
     value: kubernetes
 - set:
     tag: set_orchestrator_api_version
-    copy_from: aws.eks.audit.objectRef.apiVersion
-    field: orchestrator.api_version
-    if: ctx.aws?.eks?.audit?.objectRef?.apiVersion != null
-    ignore_empty_value: true
-- set:
-    tag: set_orchestrator_api_version_from_audit_envelope
+    description: Use the audit envelope version, matching the Kubernetes audit integration; the object version stays in objectRef.apiVersion.
     copy_from: aws.eks.audit.apiVersion
     field: orchestrator.api_version
-    if: ctx.orchestrator?.api_version == null && ctx.aws?.eks?.audit?.apiVersion != null
+    if: ctx.aws?.eks?.audit?.apiVersion != null
     ignore_empty_value: true
 - set:
     tag: set_orchestrator_resource_type
