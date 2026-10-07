@@ -980,7 +980,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.dstip | IP address where the destination app is hosted. | ip |
 | netskope.alert_v2.dstport | Destination port. | long |
 | netskope.alert_v2.dynamic_classification | URLs were categorized by NSURLC machine or not. | keyword |
-| netskope.alert_v2.edr_app | EDR app naem. Endpoint Detection and Response (EDR) applications monitor endpoints for suspicious activity and provide visibility into malware and other cyber threats. Netskope supports Carbon Black and CrowdStrike for EDR integrations. | keyword |
+| netskope.alert_v2.edr_app | EDR app name. Endpoint Detection and Response (EDR) applications monitor endpoints for suspicious activity and provide visibility into malware and other cyber threats. Netskope supports Carbon Black and CrowdStrike for EDR integrations. | keyword |
 | netskope.alert_v2.email_source | Email Source - values captured are respective Netskope Solutions. | keyword |
 | netskope.alert_v2.email_title | Email subject. | keyword |
 | netskope.alert_v2.employeeType | Custom attributes added by customer using ADImporter. | keyword |
@@ -1016,7 +1016,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.from_object | Source folder location used for the Scan. | keyword |
 | netskope.alert_v2.from_storage | Storage scan source. | keyword |
 | netskope.alert_v2.from_user | Email address used to login to the SAAS app. | keyword |
-| netskope.alert_v2.from_user_category | Category of the file contents shared deteted based on the Email address used to login to the SAAS app. | keyword |
+| netskope.alert_v2.from_user_category | Category of the file contents shared detected based on the Email address used to login to the SAAS app. | keyword |
 | netskope.alert_v2.fromlogs | Shows if the event was generated from the Risk Insights log. | keyword |
 | netskope.alert_v2.gateway | Network gateway name used at Customer's site. | keyword |
 | netskope.alert_v2.gid | Signal used by IPS service internally. | long |
@@ -1046,7 +1046,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.last_country | Last location (Country). Applies to only proximity anomaly alert. | keyword |
 | netskope.alert_v2.last_device | Last device name (Device Name in the first/older event). Applies to only proximity anomaly alert. | keyword |
 | netskope.alert_v2.last_location | Last location (City) of the user. Applies to only proximity anomaly alert. | keyword |
-| netskope.alert_v2.last_name | Last name of the user retrived from Organization Unit details. | keyword |
+| netskope.alert_v2.last_name | Last name of the user retrieved from Organization Unit details. | keyword |
 | netskope.alert_v2.last_region | Last region of the user. Applies to only proximity anomaly alert. | keyword |
 | netskope.alert_v2.last_timestamp | Last timestamp (timestamp in the first/older event). Applies to only proximity anomaly alert. | date |
 | netskope.alert_v2.legal_hold_profile_name | Legal Hold is a process that an organization uses to preserve all forms of relevant information when litigation is reasonably anticipated. A Legal Hold profile is used for specifying where the files need to be held for legal purposes when action of Legal Hold is taken. This field is the profile name added during configuration by admin. Legalhold fields are set when an entity (file, chat message, etc.) is legally held by CASB API. | keyword |
@@ -1075,7 +1075,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.malicious | Only exists if some HTTP transaction belonging to the page event resulted in a malsite alert. | keyword |
 | netskope.alert_v2.malsite_active | Since how many days malsite is Active. | keyword |
 | netskope.alert_v2.malsite_category | Category of malsite [Phishing / Botnet / Malicious URL, etc.] (array in API JSON). | keyword |
-| netskope.alert_v2.malsite_confidence | Confidence score attched with malsite detection. | long |
+| netskope.alert_v2.malsite_confidence | Confidence score attached with malsite detection. | long |
 | netskope.alert_v2.malsite_consecutive | How many times that malsite is seen. | keyword |
 | netskope.alert_v2.malsite_country | Malsite country code. | keyword |
 | netskope.alert_v2.malsite_first_seen | Malsite first seen timestamp. Time is epoch seconds format. | date |
@@ -1089,7 +1089,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.malsite_reputation | Reputation score of Malsite IP/Domain/URL as detected by Threat Scanning Service. | keyword |
 | netskope.alert_v2.malware_id | Unique id assigned to recognize the malware. | keyword |
 | netskope.alert_v2.malware_name | Name of the Malware detected. | keyword |
-| netskope.alert_v2.malware_profile | tss_profile name - profile which user has selected. Metdaa Data comes from WebUI which is a json structure but this field just denotes the profile name. | keyword |
+| netskope.alert_v2.malware_profile | tss_profile name - profile which user has selected. Metadata comes from WebUI which is a json structure but this field just denotes the profile name. | keyword |
 | netskope.alert_v2.malware_severity | Malware Severity category. | keyword |
 | netskope.alert_v2.malware_type | Type of malware detected. | keyword |
 | netskope.alert_v2.managed_app | Whether or not the app in question is managed. | keyword |
@@ -1122,7 +1122,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.modified_date | File modification date found during malware detection. Timestamp in epoch format. | date |
 | netskope.alert_v2.netskope_activity | Determines if the event is part of the known Netskope subnets Source IP to check for Netskope activity. | keyword |
 | netskope.alert_v2.netskope_pop | Netskope Data Plane name. | keyword |
-| netskope.alert_v2.network | Network indentifier name as detected by Netskope solutions. | keyword |
+| netskope.alert_v2.network | Network identifier name as detected by Netskope solutions. | keyword |
 | netskope.alert_v2.network_session_id | Network session ID used by NPA services. | keyword |
 | netskope.alert_v2.notify_template | Inline policy notify template definition. | keyword |
 | netskope.alert_v2.ns_activity | Represents the normalized activity type, mapping application-specific actions to standardized activity labels used by the system. | keyword |
@@ -1137,7 +1137,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.org | Search for events from a specific organization. Organization name is derived from the user ID. | keyword |
 | netskope.alert_v2.organization_unit | Org Units for which the event correlates to. This ties to user information extracted from Active Directory using the Directory Importer/AD Connector application. | keyword |
 | netskope.alert_v2.orig_ty | Event Type of original event. | keyword |
-| netskope.alert_v2.orignal_file_path | Orignal File path detected at the time of scans. If the file is moved, then keep original path of the file in this field. | keyword |
+| netskope.alert_v2.orignal_file_path | Original File path detected at the time of scans. If the file is moved, then keep original path of the file in this field. | keyword |
 | netskope.alert_v2.os | Operating system of the host who generated the event. | keyword |
 | netskope.alert_v2.os_details | Detailed OS version string. | keyword |
 | netskope.alert_v2.os_family | Operating system type of the end user's device. | keyword |
@@ -1150,7 +1150,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.page | The URL of the originating page. | keyword |
 | netskope.alert_v2.page_site | The Site name of the page events origin. | keyword |
 | netskope.alert_v2.parent_id | Parent ID ( event_id ) of an alert. | keyword |
-| netskope.alert_v2.password_type | The compromized breach events password type ( For ex : Plain / Text ). | keyword |
+| netskope.alert_v2.password_type | The compromised breach events password type ( For ex : Plain / Text ). | keyword |
 | netskope.alert_v2.pid | Process ID that is doing file processing ex:- A process that trigger the evaluation. | keyword |
 | netskope.alert_v2.policy | Name of the policy configured by an admin. | keyword |
 | netskope.alert_v2.policy_action | Endpoint DLP Policy action planned according to the policy. User can override the planned action or actual enforcement action might not be implemented. | keyword |
@@ -1215,7 +1215,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.scan_type | Generated during retroactive scan or new ongoing activity. | keyword |
 | netskope.alert_v2.scanner_result | TSS scan result outcome value. | keyword |
 | netskope.alert_v2.scopes | List of permissions for google apps. (array in API JSON). | keyword |
-| netskope.alert_v2.score | Denotes the UCI score impact on the user due to the alert raised. | keyword |
+| netskope.alert_v2.score | Denotes the UCI score impact on the user due to the alert raised. | long |
 | netskope.alert_v2.sender | Sender email information related to introspection's support for MS Teams app. | keyword |
 | netskope.alert_v2.serial | The serial number of the user's device. | keyword |
 | netskope.alert_v2.server_bytes | Total number of downloaded bytes from server to client. | long |
@@ -1281,7 +1281,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.true_filetype | true file type of the file is used to take decision to send the file to TSS/DLP analysis file. Filter lib finds the true file type of the file. | keyword |
 | netskope.alert_v2.true_obj_category | DLP incident object category ( ex Text ). | keyword |
 | netskope.alert_v2.true_obj_type | DLP incident object type. | keyword |
-| netskope.alert_v2.true_type_id | true file type of the file is used to take decision to send the file to TSS/DLP analysis file. Filter lib finds the true file type of the file. Id used for mapping true type of the file interanlly. | long |
+| netskope.alert_v2.true_type_id | true file type of the file is used to take decision to send the file to TSS/DLP analysis file. Filter lib finds the true file type of the file. Id used for mapping true type of the file internally. | long |
 | netskope.alert_v2.trust_computer_checked | Whether user's computer is trusted or not captured using Dialog box input while applying policies. | keyword |
 | netskope.alert_v2.tss-mode | Threat scan mode value used by threat scans service. | keyword |
 | netskope.alert_v2.tss_fail_reason | TSS is the malware detection engine for Netskope Threat Protection. This field indicates the reason why tss scan was failed to run. | keyword |
@@ -1336,8 +1336,8 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.usr_udf_supervisorid | Custom attributes added by customer using ADImporter. | keyword |
 | netskope.alert_v2.usr_udf_supervisorname | Custom attributes added by customer using ADImporter. | keyword |
 | netskope.alert_v2.vendor_id | Netskope's Vendor id. | keyword |
-| netskope.alert_v2.violating_user | Voilating user detected by DLP policies. | keyword |
-| netskope.alert_v2.violating_user_type | Type of Voilating user. | keyword |
+| netskope.alert_v2.violating_user | Violating user detected by DLP policies. | keyword |
+| netskope.alert_v2.violating_user_type | Type of Violating user. | keyword |
 | netskope.alert_v2.watchlist_name | Name given by admins while creating watchlist by selecting different filters on webUI. | keyword |
 | netskope.alert_v2.web_universal_connector | If The WEB event detection source was present or not. | keyword |
 | netskope.alert_v2.web_url | Endpoint configured by customer to fetch Filemeta scan etc. | keyword |
@@ -1990,7 +1990,7 @@ An example event for `events` looks as following:
 | netskope.events_v2.forward_to_proxy_profile | 'Forward to Proxy' is a feature to dynamically configure chain proxy endpoints, so that, traffic can be chained to another proxy based on a policy hit. This allows to re-direct traffic to appropriate destinations for services that have an explicit proxy endpoint (such as browser isolation, structured encryption etc.). forward_to_proxy_profile will be set if a forward to proxy policy is matched. The value will be a string that is the name of the profile selected in the policy. | keyword |
 | netskope.events_v2.forward_to_proxy_xau | 'Forward to Proxy' is a feature to dynamically configure chain proxy endpoints, so that, traffic can be chained to another proxy based on a policy hit. This allows to re-direct traffic to appropriate destinations for services that have an explicit proxy endpoint (such as browser isolation, structured encryption etc.). 'x_authenticated_user' is one of fields defined for 'Forward to Proxy' profile - When set, XAU header is attached and sent to the chain proxy service | keyword |
 | netskope.events_v2.from_user | Email address used to login to the SAAS app. | keyword |
-| netskope.events_v2.from_user_category | Category of the file contents shared deteted based on the Email address used to login to the SAAS app. | keyword |
+| netskope.events_v2.from_user_category | Category of the file contents shared detected based on the Email address used to login to the SAAS app. | keyword |
 | netskope.events_v2.fromlogs | Shows if the event was generated from the Risk Insights log. | keyword |
 | netskope.events_v2.hostname | User's Host name. | keyword |
 | netskope.events_v2.http_transaction_count | HTTP transaction count. | long |
@@ -2067,7 +2067,7 @@ An example event for `events` looks as following:
 | netskope.events_v2.modified | Timestamp corresponding to the modification time of the entity file, object etc. | date |
 | netskope.events_v2.netskope_activity | Determines if the event is part of the known Netskope subnets Source IP to check for Netskope activity. | keyword |
 | netskope.events_v2.netskope_pop | Netskope Data Plane name. | keyword |
-| netskope.events_v2.network | Network indentifier name as detected by Netskope solutions. | keyword |
+| netskope.events_v2.network | Network identifier name as detected by Netskope solutions. | keyword |
 | netskope.events_v2.network_session_id | Network session ID used by NPA services. | keyword |
 | netskope.events_v2.notify_template | Inline policy notify template definition. | keyword |
 | netskope.events_v2.ns_activity | Represents the normalized activity type, mapping application-specific actions to standardized activity labels used by the system. | keyword |
@@ -2082,7 +2082,7 @@ An example event for `events` looks as following:
 | netskope.events_v2.organization_unit | Org Units for which the event correlates to. This ties to user information extracted from Active Directory using the Directory Importer/AD Connector application. | keyword |
 | netskope.events_v2.orig_ty | Event Type of original event. | keyword |
 | netskope.events_v2.original_file_snapshot_id | The file identifier of saved original file. | keyword |
-| netskope.events_v2.orignal_file_path | Orignal File path detected at the time of scans. If the file is moved, then keep original path of the file in this field. | keyword |
+| netskope.events_v2.orignal_file_path | Original File path detected at the time of scans. If the file is moved, then keep original path of the file in this field. | keyword |
 | netskope.events_v2.os | Operating system of the host who generated the event. | keyword |
 | netskope.events_v2.os_details | Detailed OS version string. | keyword |
 | netskope.events_v2.os_family | Operating system type of the end user's device. | keyword |
@@ -2095,7 +2095,7 @@ An example event for `events` looks as following:
 | netskope.events_v2.page | The URL of the originating page. | keyword |
 | netskope.events_v2.page_site | The Site name of the page events origin. | keyword |
 | netskope.events_v2.parent_id | Parent ID ( event_id ) of an alert. | keyword |
-| netskope.events_v2.password_type | The compromized breach events password type ( For ex : Plain / Text ). | keyword |
+| netskope.events_v2.password_type | The compromised breach events password type ( For ex : Plain / Text ). | keyword |
 | netskope.events_v2.pid | Process ID that is doing file processing ex: A process that trigger the evaluation. | long |
 | netskope.events_v2.policy | Name of the policy configured by an admin. | keyword |
 | netskope.events_v2.policy_action | Endpoint DLP Policy action planned according to the policy. User can override the planned action or actual enforcement action might not be implemented. | keyword |
@@ -2107,7 +2107,7 @@ An example event for `events` looks as following:
 | netskope.events_v2.policy_version | Endpoint DLP Policy name configured version number. | keyword |
 | netskope.events_v2.pop_id | Netskope MPs/DPs unique id. | keyword |
 | netskope.events_v2.port | A string that identifies the port(s) used to transmit data to the printer. If a printer is connected to more than one port, the names of each port must be separated by commas (for example, LPT1:,LPT2:,LPT3:). | keyword |
-| netskope.events_v2.printer_identifier | Indentifier of the printer connected. such as printer name, manufacturer, driver name, printer port, location, or UNC path separated by a new line. | keyword |
+| netskope.events_v2.printer_identifier | Identifier of the printer connected. such as printer name, manufacturer, driver name, printer port, location, or UNC path separated by a new line. | keyword |
 | netskope.events_v2.process_cert_subject | the subject of the certificate that signed the process. | keyword |
 | netskope.events_v2.process_name | Endpoint process Name For example: native application for Printer on User's Laptop. | keyword |
 | netskope.events_v2.process_path | The path to the process that performed the action on the endpoint. | keyword |
@@ -2162,8 +2162,8 @@ An example event for `events` looks as following:
 | netskope.events_v2.smtp_block_reason | Provides the reason why SMTP email traffic was blocked by CFW, which treats SMTP like any other network traffic. | keyword |
 | netskope.events_v2.smtp_client_domain | SMTP client Identity | keyword |
 | netskope.events_v2.smtp_to | SMTP Proxy will parse the smtp_to field in the email and send them to DLP in the event object. List contains the The recipients from the SMTP envelope. | keyword |
-| netskope.events_v2.source_file_directory | File movement Souce Directory. Ex: File moving from laptop to USB then laptop's source file diretory name. | keyword |
-| netskope.events_v2.source_file_name | User's laptop souce file name. | keyword |
+| netskope.events_v2.source_file_directory | File movement Source Directory. Ex: File moving from laptop to USB then laptop's source file directory name. | keyword |
+| netskope.events_v2.source_file_name | User's laptop source file name. | keyword |
 | netskope.events_v2.source_file_path | Full file path on the user's device where the source file is located, as captured in Endpoint DLP events. | keyword |
 | netskope.events_v2.src_country | User's country's two-letter Country Code as determined by the Maxmind or IP2Location Geo Database. | keyword |
 | netskope.events_v2.src_geoip_src | Source from where the location of Source IP was derived. | long |
@@ -2182,7 +2182,7 @@ An example event for `events` looks as following:
 | netskope.events_v2.start_time | Capture NPA user's session start time. | date |
 | netskope.events_v2.status | Specific status name used by the enduser for DLP incidents. | keyword |
 | netskope.events_v2.sub_type | The type of EPDLP events. | keyword |
-| netskope.events_v2.supporting_data | Supporting data attached with audit events exaple IP, user_name etc. | flattened |
+| netskope.events_v2.supporting_data | Supporting data attached with audit events example IP, user_name etc. | flattened |
 | netskope.events_v2.suppression_end_time | When events are suppressed (like collaboration apps), then the suppression end time will be set and only one event will be send with suppression start time and end time and count of occurrence. | date |
 | netskope.events_v2.suppression_key | To limit the number of events. Example: Suppress block event for browse | keyword |
 | netskope.events_v2.suppression_start_time | When events are suppressed (like collaboration apps), then the suppression end time will be set and only one event will be send with suppression start time and end time and count of occurrence. | date |

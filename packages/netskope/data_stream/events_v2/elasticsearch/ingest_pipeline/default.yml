@@ -903,7 +903,14 @@ processors:
       field: netskope.events_v2.os_version
       tag: dissect_os_version_1412cb70
       pattern: '%{} %{host.os.version}'
+      ignore_missing: true
       ignore_failure: true
+  - set:
+      field: host.os.version
+      tag: set_host_os_version_fallback
+      copy_from: netskope.events_v2.os_version
+      ignore_empty_value: true
+      if: ctx.host?.os?.version == null
   - append:
       field: related.user
       tag: append_events_v2_owner_into_related_user_75863daf
@@ -1273,16 +1280,41 @@ processors:
       copy_from: netskope.events_v2.total_packets
       ignore_empty_value: true
   - set:
+      field: _tmp.url
+      tag: set_tmp_url_with_scheme
+      value: 'http://{{{netskope.events_v2.url}}}'
+      if: ctx.netskope?.events_v2?.url instanceof String && !ctx.netskope.events_v2.url.contains('://')
+  - set:
+      field: _tmp.url
+      tag: set_tmp_url_as_is
+      copy_from: netskope.events_v2.url
+      if: ctx.netskope?.events_v2?.url instanceof String && ctx.netskope.events_v2.url.contains('://')
+  - uri_parts:
+      field: _tmp.url
+      tag: uri_parts_url
+      keep_original: false
+      ignore_failure: true
+      if: ctx._tmp?.url != null
+  - remove:
+      field: url.scheme
+      tag: remove_synthesised_url_scheme
+      ignore_missing: true
+      if: ctx.netskope?.events_v2?.url instanceof String && !ctx.netskope.events_v2.url.contains('://')
+  - set:
       field: url.original
       tag: set_url_original_from_events_v2_url_a1165c7d
       copy_from: netskope.events_v2.url
       ignore_empty_value: true
-  - uri_parts:
-      field: url.original
-      tag: uri_parts_url_original
-      keep_original: true
-      ignore_failure: true
-      if: ctx.url?.original != null
+  - set:
+      field: url.domain
+      tag: set_url_domain_from_events_v2_domain
+      copy_from: netskope.events_v2.domain
+      ignore_empty_value: true
+      if: ctx.url?.domain == null && ctx.netskope?.events_v2?.domain != null
+  - remove:
+      field: _tmp
+      tag: remove_tmp
+      ignore_missing: true
   - append:
       field: related.hosts
       tag: append_url_domain_into_related_hosts

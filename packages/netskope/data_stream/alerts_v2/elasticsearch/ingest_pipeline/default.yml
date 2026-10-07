@@ -769,6 +769,20 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      field: netskope.alert_v2.score
+      tag: convert_score_to_long_a4f2c891
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_netskope_alert_v2_score_7e3b1d05
+            ignore_missing: true
+            field: netskope.alert_v2.score
+        - append:
+            tag: append_error_message_score_convert_9c8e4f2a
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
       field: netskope.alert_v2.server_bytes
       tag: convert_server_bytes_to_long_eef99110
       type: long
