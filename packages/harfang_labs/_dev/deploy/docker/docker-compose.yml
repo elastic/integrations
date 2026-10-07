@@ -1,0 +1,62 @@
+services:
+  harfang_labs-alert-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: harfang_labs-alert-mock
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-alert.yml
+  harfang_labs-threat-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: harfang_labs-threat-mock
+    ports:
+      - 8091
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8091'
+    command:
+      - http-server
+      - --addr=:8091
+      - --config=/files/config-threat.yml
+  harfang_labs-agent-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: harfang_labs-agent-mock
+    ports:
+      - 8092
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8092'
+    command:
+      - http-server
+      - --addr=:8092
+      - --config=/files/config-agent.yml
+  harfang_labs-event-tcp:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command:
+      - log
+      - --start-signal=SIGHUP
+      - --delay=5s
+      - --addr=elastic-agent:9514
+      - -p=tcp
+      - /sample_logs/harfang_labs-event.log
+  harfang_labs-event-udp:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command:
+      - log
+      - --start-signal=SIGHUP
+      - --delay=5s
+      - --addr=elastic-agent:9515
+      - -p=udp
+      - /sample_logs/harfang_labs-event.log

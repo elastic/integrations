@@ -1,0 +1,397 @@
+---
+description: Parse HarfangLab agent inventory events from CEL API collection.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+  - date:
+      field: json.lastseen
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: date_lastseen_timestamp
+      if: ctx.json?.lastseen != null
+  - date:
+      field: json.lastseen
+      target_field: harfang_labs.agent.last_seen
+      formats:
+        - ISO8601
+      tag: date_lastseen
+      if: ctx.json?.lastseen != null
+  - date:
+      field: json.firstseen
+      target_field: harfang_labs.agent.first_seen
+      formats:
+        - ISO8601
+      tag: date_firstseen
+      if: ctx.json?.firstseen != null
+  - date:
+      field: json.installdate
+      target_field: harfang_labs.agent.install_date
+      formats:
+        - ISO8601
+      tag: date_installdate
+      if: ctx.json?.installdate != null
+  - set:
+      field: agent.id
+      tag: set_agent_id
+      copy_from: json.id
+      override: true
+      if: ctx.json?.id != null
+  - remove:
+      field: json.id
+      tag: remove_json_id
+      ignore_missing: true
+  - set:
+      field: host.id
+      tag: set_host_id
+      copy_from: agent.id
+      if: ctx.agent?.id != null
+  - set:
+      field: harfang_labs.agent.id
+      tag: set_harfang_agent_id
+      copy_from: agent.id
+      if: ctx.agent?.id != null
+  - rename:
+      field: json.hostname
+      target_field: host.hostname
+      ignore_missing: true
+      tag: rename_host_hostname
+  - set:
+      field: host.name
+      tag: set_host_name
+      copy_from: host.hostname
+      if: ctx.host?.hostname != null
+  - rename:
+      field: json.dnsdomainname
+      target_field: host.domain
+      ignore_missing: true
+      tag: rename_host_dns_domain
+  - set:
+      field: host.domain
+      tag: set_host_domain_fallback
+      copy_from: json.domainname
+      if: ctx.host?.domain == null && ctx.json?.domainname != null
+  - rename:
+      field: json.ostype
+      target_field: host.os.platform
+      ignore_missing: true
+      tag: rename_host_os_platform
+  - lowercase:
+      field: host.os.platform
+      tag: lowercase_host_os_platform
+      ignore_missing: true
+      if: ctx.host?.os?.platform != null
+  - set:
+      field: host.os.type
+      tag: set_host_os_type_windows
+      value: windows
+      if: ctx.host?.os?.platform == 'windows'
+  - set:
+      field: host.os.type
+      tag: set_host_os_type_linux
+      value: linux
+      if: ctx.host?.os?.platform == 'linux'
+  - set:
+      field: host.os.type
+      tag: set_host_os_type_macos
+      value: macos
+      if: ctx.host?.os?.platform == 'darwin' || ctx.host?.os?.platform == 'macos'
+  - set:
+      field: host.os.name
+      tag: set_host_os_name_windows
+      value: Windows
+      if: ctx.host?.os?.platform == 'windows'
+  - set:
+      field: host.os.name
+      tag: set_host_os_name_linux
+      value: Linux
+      if: ctx.host?.os?.platform == 'linux'
+  - set:
+      field: host.os.name
+      tag: set_host_os_name_macos
+      value: macOS
+      if: ctx.host?.os?.platform == 'darwin' || ctx.host?.os?.platform == 'macos'
+  - rename:
+      field: json.osproducttype
+      target_field: host.os.full
+      ignore_missing: true
+      tag: rename_host_os_full
+  - rename:
+      field: json.osversion
+      target_field: host.os.version
+      ignore_missing: true
+      tag: rename_host_os_version
+  - rename:
+      field: json.osbuild
+      target_field: harfang_labs.agent.os_build
+      ignore_missing: true
+      tag: rename_os_build
+  - rename:
+      field: json.version
+      target_field: harfang_labs.agent.version
+      ignore_missing: true
+      tag: rename_agent_version
+  - set:
+      field: agent.type
+      tag: set_agent_type
+      value: harfang_labs
+  - set:
+      field: agent.name
+      tag: set_agent_name
+      value: harfang_labs
+  - set:
+      field: host.architecture
+      tag: set_host_architecture_x86_64
+      value: x86_64
+      if: ctx.json?.bitness == 'x64'
+  - set:
+      field: host.architecture
+      tag: set_host_architecture_x86
+      value: x86
+      if: ctx.json?.bitness == 'x86' || ctx.json?.bitness == 'x32'
+  - append:
+      field: host.ip
+      tag: append_internal_ip
+      value: '{{{json.ipaddress}}}'
+      allow_duplicates: false
+      if: ctx.json?.ipaddress != null
+  - append:
+      field: host.ip
+      tag: append_external_ip
+      value: '{{{json.external_ipaddress}}}'
+      allow_duplicates: false
+      if: ctx.json?.external_ipaddress != null
+  - set:
+      field: harfang_labs.agent.external_ip
+      tag: set_external_ip
+      copy_from: json.external_ipaddress
+      if: ctx.json?.external_ipaddress != null
+  - script:
+      lang: painless
+      tag: split_host_username
+      description: Split DOMAIN\user username into host.user.domain and host.user.name.
+      if: ctx.json?.username != null
+      source: |-
+        def username = ctx.json.username;
+        if (username == null) {
+          return;
+        }
+        ctx.host = ctx.host ?: [:];
+        ctx.host.user = ctx.host.user ?: [:];
+        int idx = username.indexOf('\\');
+        if (idx > 0) {
+          ctx.host.user.domain = username.substring(0, idx);
+          ctx.host.user.name = username.substring(idx + 1);
+        } else {
+          ctx.host.user.name = username;
+        }
+  - rename:
+      field: json.status
+      target_field: harfang_labs.agent.status
+      ignore_missing: true
+      tag: rename_agent_status
+  - rename:
+      field: json.online_status
+      target_field: harfang_labs.agent.online_status
+      ignore_missing: true
+      tag: rename_agent_online_status
+  - rename:
+      field: json.update_status
+      target_field: harfang_labs.agent.update_status
+      ignore_missing: true
+      tag: rename_agent_update_status
+  - rename:
+      field: json.cpu_count
+      target_field: harfang_labs.agent.cpu_count
+      ignore_missing: true
+      tag: rename_cpu_count
+  - rename:
+      field: json.cpu_frequency
+      target_field: harfang_labs.agent.cpu_frequency
+      ignore_missing: true
+      tag: rename_cpu_frequency
+  - rename:
+      field: json.total_memory
+      target_field: harfang_labs.agent.total_memory
+      ignore_missing: true
+      tag: rename_total_memory
+  - rename:
+      field: json.avg_cpu
+      target_field: harfang_labs.agent.avg_cpu
+      ignore_missing: true
+      tag: rename_avg_cpu
+  - rename:
+      field: json.avg_memory
+      target_field: harfang_labs.agent.avg_memory
+      ignore_missing: true
+      tag: rename_avg_memory
+  - rename:
+      field: json.isolation_state
+      target_field: harfang_labs.agent.isolation_state
+      ignore_missing: true
+      tag: rename_isolation_state
+  - rename:
+      field: json.isolation_policy
+      target_field: harfang_labs.agent.isolation_policy
+      ignore_missing: true
+      tag: rename_isolation_policy
+  - rename:
+      field: json.group_count
+      target_field: harfang_labs.agent.group_count
+      ignore_missing: true
+      tag: rename_group_count
+  - rename:
+      field: json.groups
+      target_field: harfang_labs.agent.groups
+      ignore_missing: true
+      tag: rename_groups
+  - script:
+      lang: painless
+      tag: set_groupname
+      description: Set primary group name from the first group membership entry.
+      if: ctx.harfang_labs?.agent?.groups instanceof List && !ctx.harfang_labs.agent.groups.isEmpty()
+      source: |-
+        def group = ctx.harfang_labs.agent.groups.get(0);
+        if (group != null && group.name != null) {
+          ctx.harfang_labs.agent.groupname = group.name;
+        }
+  - rename:
+      field: json.policy
+      target_field: harfang_labs.agent.policy
+      ignore_missing: true
+      tag: rename_policy
+  - set:
+      field: harfang_labs.agent.policy_name
+      tag: set_policy_name
+      copy_from: harfang_labs.agent.policy.name
+      if: ctx.harfang_labs?.agent?.policy?.name != null
+  - set:
+      field: harfang_labs.agent.policy_id
+      tag: set_policy_id
+      copy_from: harfang_labs.agent.policy.id
+      if: ctx.harfang_labs?.agent?.policy?.id != null
+  - rename:
+      field: json.effective_policy_id
+      target_field: harfang_labs.agent.effective_policy_id
+      ignore_missing: true
+      tag: rename_effective_policy_id
+  - rename:
+      field: json.effective_policy_revision
+      target_field: harfang_labs.agent.effective_policy_revision
+      ignore_missing: true
+      tag: rename_effective_policy_revision
+  - rename:
+      field: json.tenant
+      target_field: harfang_labs.agent.tenant
+      ignore_missing: true
+      tag: rename_tenant
+  - rename:
+      field: json.subnet
+      target_field: harfang_labs.agent.subnet
+      ignore_missing: true
+      tag: rename_subnet
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: host
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+  - set:
+      field: event.outcome
+      tag: set_event_outcome
+      value: success
+  - foreach:
+      field: host.ip
+      tag: append_host_ip_to_related
+      if: ctx.host?.ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_host_hostname_to_related
+      value: '{{{host.hostname}}}'
+      allow_duplicates: false
+      if: ctx.host?.hostname != null
+  - append:
+      field: related.hosts
+      tag: append_host_name_to_related
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - append:
+      field: related.user
+      tag: append_host_user_name_to_related
+      value: '{{{host.user.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.user?.name != null
+  - remove:
+      field:
+        - json
+        - _temp
+      ignore_missing: true
+      tag: remove_temp_fields
+  - append:
+      field: tags
+      tag: append_preserve_original_event_tag
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
