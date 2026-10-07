@@ -10,11 +10,11 @@ Use the Rapid7 InsightVM integration to collect and parse data from the REST API
 
 The Rapid7 InsightVM integration collects two type of events: Asset and Vulnerability.
 
-**Asset (Deprecated)** is used to get details related to inventory, assessment, and summary details of assets that the user has access to. See more details in the API documentation [here](https://help.rapid7.com/insightvm/en-us/api/integrations.html#operation/searchIntegrationAssets). It is deprecated in version `2.0.0`. Instead, use the `Asset Vulnerability` data stream for enriched vulnerability documents and improved mappings.
-
 **Asset Vulnerability** is used to gather and aggregate data on assets and vulnerabilities to support Native CDR Workflows.
 
 **Vulnerability** is used to retrieve all vulnerabilities that can be assessed. See more details in the API documentation [here](https://help.rapid7.com/insightvm/en-us/api/integrations.html#operation/searchIntegrationVulnerabilities).
+
+**Asset** - **DEPRECATED** since version `2.0.0`; it will be removed in a future release. It is used to get details related to inventory, assessment, and summary details of assets that the user has access to. See more details in the API documentation [here](https://help.rapid7.com/insightvm/en-us/api/integrations.html#operation/searchIntegrationAssets). Deactivate it and instead enable **Asset Vulnerability** in the **Collect Rapid7 InsightVM asset vulnerability events via API** input for enriched vulnerability documents and improved mappings.
 
 ## Requirements
 
@@ -59,16 +59,6 @@ For existing users of Rapid7 InsightVM integration, before upgrading to `2.0.0` 
 
 ## Logs Reference
 
-### asset
-
-This is the `asset` dataset.
-
-#### Example
-
-{{event "asset"}}
-
-{{fields "asset"}}
-
 ### asset_vulnerability
 
 This is the `asset_vulnerability` dataset.
@@ -88,3 +78,13 @@ This is the `vulnerability` dataset.
 {{event "vulnerability"}}
 
 {{fields "vulnerability"}}
+
+### asset (DEPRECATED)
+
+This is the `asset` dataset. It is deprecated in favour of the `asset_vulnerability` dataset above.
+
+#### Example
+
+{{event "asset"}}
+
+{{fields "asset"}}
