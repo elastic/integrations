@@ -22,5 +22,5 @@ Shared Cloud SQL metrics such as CPU, memory and disk are also emitted for Postg
 
 | Dashboard | Description |
 |-----------|-------------|
-| **[GCP OTel] Cloud SQL MySQL Overview** | Fleet view of Cloud SQL for MySQL instances. Availability, restarts and instance state over time, worst-first saturation, and top 10 instance trends for CPU, memory, disk, statement throughput and connections. |
-| **[GCP OTel] Cloud SQL MySQL Instance Detail** | One Cloud SQL for MySQL instance. CPU, memory, disk, connections, statement throughput and replication lag. Open it from the overview. |
+| **[GCP OTel] Cloud SQL MySQL Overview** | Fleet view of Cloud SQL for MySQL instances. Availability, partial downtime, CPU, memory and disk saturation, instance state and fleet queries per second over time, an instance list with region, free disk and failed logins, and top 10 instance trends for CPU, memory, disk, connections, queries per second and slow queries. |
+| **[GCP OTel] Cloud SQL MySQL Instance Detail** | One Cloud SQL for MySQL instance. Instance metadata with queries per second, slow query, buffer pool hit and connection usage KPIs, then availability, capacity against quotas, traffic and errors (slow queries, lock waits, deadlocks), connections and threads, I/O and cache, and replication. Open it from the overview. |
