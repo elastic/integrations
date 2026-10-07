@@ -147,6 +147,9 @@ An example event for `signinlogs` looks as following:
         "ip": "81.2.69.144"
     },
     "cloud": {
+        "account": {
+            "id": "8a4de8b5-095c-47d0-a96f-a75130c61d53"
+        },
         "provider": "azure",
         "resource_id": "/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam"
     },
@@ -394,6 +397,9 @@ An example event for `identity_protection` looks as following:
         "correlation_id": "ce0ed07f9ccf5be15e4b97d2979af6569b1f67db87ddc9b88b5bb743ea091e47"
     },
     "cloud": {
+        "account": {
+            "id": "5611623b-9128-461e-9d7f-a0d9c270ead2"
+        },
         "provider": "azure",
         "resource_id": "/tenants/5611623b-9128-461e-9d7f-a0d9c270ead2/providers/microsoft.aadiam"
     },
@@ -659,6 +665,9 @@ An example event for `provisioning` looks as following:
         "correlation_id": "54416401-eef2-461c-8de7-385dde2b3cba"
     },
     "cloud": {
+        "account": {
+            "id": "5611623b-9128-461e-9d7f-a0d9c270ead2"
+        },
         "provider": "azure",
         "resource_id": "/tenants/5611623b-9128-461e-9d7f-a0d9c270ead2/providers/Microsoft.aadiam"
     },
@@ -797,11 +806,18 @@ An example event for `auditlogs` looks as following:
     "azure.auditlogs.properties.target_resources.0.type": "Device",
     "azure.auditlogs.result_signature": "None",
     "azure.correlation.id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-    "cloud.resource_id": "/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam",
+    "azure.correlation_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
     "azure.resource_provider.namespace": "Microsoft.aadiam",
+    "azure.resource.id": "/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam",
+    "azure.resource.provider": "Microsoft.aadiam",
     "azure.tenant.id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "azure.tenant_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
     "cloud": {
-        "provider": "azure"
+        "account": {
+            "id": "8a4de8b5-095c-47d0-a96f-a75130c61d53"
+        },
+        "provider": "azure",
+        "resource_id": "/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam"
     },
     "data_stream": {
         "dataset": "azure.auditlogs",
