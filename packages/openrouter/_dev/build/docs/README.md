@@ -53,8 +53,8 @@ Elastic Agent must be installed. For more details, check the Elastic Agent
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| Collection interval | `6h` | How often the Analytics API is polled for new daily data. |
-| Initial lookback | `168h` (7 days) | How far back to collect data on the first run. |
+| Collection interval | `6h` | How often the Analytics API is polled for new daily data (10 minutes to 24 hours). |
+| Initial lookback | `168h` (7 days) | How far back to collect data on the first run (at least 1 hour). |
 | Dimensions | `model`, `api_key_id` | Up to 2 dimensions to group data by. |
 
 </details>
@@ -64,8 +64,8 @@ Elastic Agent must be installed. For more details, check the Elastic Agent
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| Collection interval | `1h` | How often the Analytics API is polled for new hourly data. |
-| Initial lookback | `168h` (7 days) | How far back to collect data on the first run. |
+| Collection interval | `1h` | How often the Analytics API is polled for new hourly data (10 minutes to 24 hours). |
+| Initial lookback | `168h` (7 days) | How far back to collect data on the first run (at least 1 hour). |
 | Dimensions | `model`, `api_key_id` | Up to 2 dimensions to group data by. |
 
 </details>

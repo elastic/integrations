@@ -105,7 +105,9 @@ program: |
                 // minimum span the (possibly truncated) rows are ingested as-is.
                 (body.?data.?metadata.?truncated.orValue(false) && (w.end - w.start).getSeconds() > 86400) ?
                   {
-                    "events": [],
+                    // want_more only continues the loop when events are published, so emit the
+                    // sentinel (dropped by the drop_event processor) to retry right away.
+                    "events": [{"message": "{\"_fake\":true}"}],
                     "cursor": {
                       "last_end": w.start.format(time_layout.RFC3339),
                       "span": string(max((w.end - w.start).getSeconds() / 2 / 86400 * 86400, 86400)) + "s",
