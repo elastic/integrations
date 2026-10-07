@@ -6,13 +6,16 @@ It includes the following datasets for retrieving logs:
 |            Dataset | TAXII2 Collection name      |
 |-------------------:|:----------------------------|
 | androidinfostealer | androidinfostealer stix 2.1 |
+|     androidthreats | androidthreats stix 2.1     |
 |                apt | apt stix 2.1                |
 |             botnet | botnet stix 2.1             |
 |                 cc | botnet.cc stix 2.1          |
+|         cryptoscam | cryptoscam stix 2.1         |
 |            domains | domain stix 2.1             |
 |   emailattachments | emailattachments stix 2.1   |
 |              files | file stix 2.1               |
 |                 ip | ip stix 2.1                 |
+|         ransomware | ransomware stix 2.1         |
 |                url | url stix 2.1                |
 
 ## Agentless Enabled Integration
@@ -29,13 +32,16 @@ Destinations indices are aliased to `logs-ti_eset_latest.<feed name>`.
 | Source Datastream                   | Destination Index Pattern                     | Destination Alias                      |
 |:------------------------------------|:----------------------------------------------|----------------------------------------|
 | `logs-ti_eset.androidinfostealer-*` | logs-ti_eset_latest.dest_androidinfostealer-* | logs-ti_eset_latest.androidinfostealer |
+| `logs-ti_eset.androidthreats-*`     | logs-ti_eset_latest.dest_androidthreats-*     | logs-ti_eset_latest.androidthreats     |
 | `logs-ti_eset.apt-*`                | logs-ti_eset_latest.dest_apt-*                | logs-ti_eset_latest.apt                |
 | `logs-ti_eset.botnet-*`             | logs-ti_eset_latest.dest_botnet-*             | logs-ti_eset_latest.botnet             |
 | `logs-ti_eset.cc-*`                 | logs-ti_eset_latest.dest_cc-*                 | logs-ti_eset_latest.cc                 |
+| `logs-ti_eset.cryptoscam-*`         | logs-ti_eset_latest.dest_cryptoscam-*         | logs-ti_eset_latest.cryptoscam         |
 | `logs-ti_eset.domains-*`            | logs-ti_eset_latest.dest_domains-*            | logs-ti_eset_latest.domains            |
 | `logs-ti_eset.emailattachments-*`   | logs-ti_eset_latest.dest_emailattachments-*   | logs-ti_eset_latest.emailattachments   |
 | `logs-ti_eset.files-*`              | logs-ti_eset_latest.dest_files-*              | logs-ti_eset_latest.files              |
 | `logs-ti_eset.ip-*`                 | logs-ti_eset_latest.dest_ip-*                 | logs-ti_eset_latest.ip                 |
+| `logs-ti_eset.ransomware-*`         | logs-ti_eset_latest.dest_ransomware-*         | logs-ti_eset_latest.ransomware         |
 | `logs-ti_eset.url-*`                | logs-ti_eset_latest.dest_url-*                | logs-ti_eset_latest.url                |
 
 ### ILM Policy
@@ -46,13 +52,16 @@ Data in these source indices will be deleted after a certain number of days from
 |                             Index | Deleted after | Expired after |
 |----------------------------------:|:--------------|---------------|
 | `logs-ti_eset.androidinfostealer` | 7d            | 48h           |
+|     `logs-ti_eset.androidthreats` | 7d            | 48h           |
 |                `logs-ti_eset.apt` | 365d          | 365d          |
 |             `logs-ti_eset.botnet` | 7d            | 48h           |
 |                 `logs-ti_eset.cc` | 7d            | 48h           |
+|         `logs-ti_eset.cryptoscam` | 7d            | 48h           |
 |            `logs-ti_eset.domains` | 7d            | 48h           |
 |   `logs-ti_eset.emailattachments` | 7d            | 48h           |
 |              `logs-ti_eset.files` | 7d            | 48h           |
 |                 `logs-ti_eset.ip` | 7d            | 48h           |
+|         `logs-ti_eset.ransomware` | 7d            | 48h           |
 |                `logs-ti_eset.url` | 7d            | 48h           |
 
 ## Requirements
@@ -78,6 +87,12 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 {{event "androidinfostealer"}}
 
+### Android Threats
+
+{{fields "androidthreats"}}
+
+{{event "androidthreats"}}
+
 ### Botnet
 
 {{fields "botnet"}}
@@ -89,6 +104,12 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 {{fields "cc"}}
 
 {{event "cc"}}
+
+### Crypto scam
+
+{{fields "cryptoscam"}}
+
+{{event "cryptoscam"}}
 
 ### Domains
 
@@ -119,6 +140,12 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 {{fields "apt"}}
 
 {{event "apt"}}
+
+### Ransomware
+
+{{fields "ransomware"}}
+
+{{event "ransomware"}}
 
 ### URL
 
