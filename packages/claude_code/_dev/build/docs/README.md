@@ -93,6 +93,7 @@ export OTEL_LOGS_EXPORTER=otlp
 export OTEL_TRACES_EXPORTER=otlp
 export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 export OTEL_EXPORTER_OTLP_ENDPOINT="<your-elastic-cloud-otlp-endpoint>"
+export OTEL_EXPORTER_OTLP_HEADERS="Authorization=ApiKey <your-api-key>"
 export OTEL_RESOURCE_ATTRIBUTES="data_stream.dataset=claude_code.events.otel"
 ```
 
