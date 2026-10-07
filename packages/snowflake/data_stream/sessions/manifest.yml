@@ -1,0 +1,111 @@
+title: "Sessions"
+type: logs
+streams:
+  - input: cel
+    title: Collect Snowflake sessions
+    description: Collect session lifecycle from SNOWFLAKE.ACCOUNT_USAGE.SESSIONS via the SQL API.
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: >-
+          How often to query SESSIONS. The view can lag by up to 3 hours, so polling faster than that does not make data fresher.
+        multi: false
+        required: true
+        show_user: true
+        default: 3h
+      - name: initial_interval
+        type: text
+        title: Initial interval
+        description: >-
+          How far back to query on the first run when no cursor exists. Supported units are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+      - name: lag_time
+        type: text
+        title: Lag time
+        description: >-
+          Snowflake documents that SESSIONS can lag by up to 180 minutes (3 hours). On each new SQL statement, the integration subtracts this duration from the stored watermark so late-arriving rows in the view are included. Actual latency may be less. See Snowflake [SESSIONS usage notes](https://docs.snowflake.com/en/sql-reference/account-usage/sessions). Supported units are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 3h
+      - name: batch_size
+        type: integer
+        title: Batch size
+        description: SQL LIMIT applied to each SESSIONS statement. Result partitions are still chosen by Snowflake.
+        multi: false
+        required: true
+        show_user: false
+        default: 10000
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: >-
+          HTTP timeout for submit, poll, and partition requests. Snowflake statement execution limits follow account or warehouse STATEMENT_TIMEOUT_IN_SECONDS.
+        multi: false
+        required: false
+        show_user: false
+        default: 90s
+      - name: resource_retry_max_attempts
+        type: text
+        title: Resource Retry Max Attempts
+        description: Maximum number of retries for the HTTP client. Default is "5".
+        multi: false
+        required: false
+        show_user: false
+      - name: resource_retry_wait_min
+        type: text
+        title: Resource Retry Wait Min
+        description: Minimum time to wait before a retry is attempted. Default is "1s".
+        multi: false
+        required: false
+        show_user: false
+      - name: resource_retry_wait_max
+        type: text
+        title: Resource Retry Wait Max
+        description: Maximum time to wait before a retry is attempted. Default is "60s".
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - snowflake-sessions
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        description: >-
+          The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+        multi: false
+        required: false
+        show_user: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        multi: false
+        required: false
+        show_user: false
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

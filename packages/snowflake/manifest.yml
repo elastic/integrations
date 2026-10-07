@@ -1,0 +1,79 @@
+format_version: "3.4.2"
+name: snowflake
+title: "Snowflake"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: Collect security telemetry from Snowflake ACCOUNT_USAGE views using the SQL API.
+type: integration
+categories:
+  - security
+  - cloud
+conditions:
+  kibana:
+    version: "^8.19.0 || ^9.1.0"
+  elastic:
+    subscription: "basic"
+screenshots:
+  - src: /img/snowflake-authentication-and-access-overview.png
+    title: Authentication and Access Overview Dashboard
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/Snowflake_Logo.svg
+    title: Snowflake logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: snowflake
+    title: Snowflake logs
+    description: Collect Snowflake ACCOUNT_USAGE logs via the SQL API.
+    inputs:
+      - type: cel
+        title: Collect Snowflake logs via SQL API
+        description: Collect login history, sessions, and grants from Snowflake ACCOUNT_USAGE using the SQL API.
+        vars:
+          - name: url
+            type: url
+            title: Account URL
+            description: >-
+              Snowflake account URL including scheme, for example `https://myorg-myaccount.snowflakecomputing.com`. PrivateLink hosts (`*.privatelink.snowflakecomputing.com`) are valid.
+            required: true
+            show_user: true
+          - name: role
+            type: text
+            title: Role
+            description: >-
+              Role passed in the SQL API request body. Must be granted to the user and hold the ACCOUNT_USAGE database roles plus warehouse USAGE.
+            required: true
+            show_user: true
+          - name: warehouse
+            type: text
+            title: Warehouse
+            description: Virtual warehouse passed in the SQL API request body. Each poll consumes credits on this warehouse.
+            required: true
+            show_user: true
+          - name: token
+            type: password
+            title: Token
+            description: Programmatic access token for the service user. Key-pair JWT is not supported.
+            required: true
+            show_user: true
+            secret: true
+          - name: ssl
+            type: yaml
+            title: SSL
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+            required: false
+            show_user: false
+            multi: false
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
+            required: false
+            show_user: false
+            multi: false
+owner:
+  github: elastic/security-service-integrations
+  type: elastic

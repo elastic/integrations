@@ -1,0 +1,244 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if resource_retry_max_attempts}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
+{{/if}}
+{{#if resource_retry_wait_min}}
+resource.retry.wait_min: {{resource_retry_wait_min}}
+{{/if}}
+{{#if resource_retry_wait_max}}
+resource.retry.wait_max: {{resource_retry_wait_max}}
+{{/if}}
+resource.url: {{url}}
+resource.headers:
+  Accept:
+    - application/json
+  Content-Type:
+    - application/json
+  User-Agent:
+    - elastic-snowflake/1.0
+state:
+  token: {{token}}
+  role: {{role}}
+  warehouse: {{warehouse}}
+  batch_size: {{batch_size}}
+  initial_interval: {{initial_interval}}
+  lag_time: {{lag_time}}
+  want_more: false
+redact:
+  fields:
+    - token
+program: |-
+  (state.?want_more.orValue(false) ? "GET" : "POST").as(
+    http_method,
+    (
+      (http_method == "GET") ?
+        (
+          (int(state.?cursor.next_partition.orValue(0)) > 0) ?
+            (
+              state.url.trim_right("/") + "/api/v2/statements/" + string(state.cursor.handle) + "?" + {
+                "partition": [string(int(state.cursor.next_partition))],
+              }.format_query()
+            )
+          :
+            state.url.trim_right("/") + "/api/v2/statements/" + string(state.cursor.handle)
+        )
+      :
+        state.url.trim_right("/") + "/api/v2/statements?" + {
+          "async": ["true"],
+          "requestId": [uuid()],
+        }.format_query()
+    ).as(request_url,
+      state.with(
+        request(
+          http_method,
+          request_url
+        ).with(
+          {
+            "Header": {
+              "Authorization": ["Bearer " + state.token],
+              "X-Snowflake-Authorization-Token-Type": ["PROGRAMMATIC_ACCESS_TOKEN"],
+              "Accept": ["application/json"],
+              "Content-Type": ["application/json"],
+            },
+            ?"Body": (http_method == "POST") ?
+              optional.of(
+                {
+                  "statement": "SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.LOGIN_HISTORY " + "WHERE EVENT_TIMESTAMP > ? " + "ORDER BY EVENT_TIMESTAMP ASC, EVENT_ID ASC " + "LIMIT " + string(state.batch_size),
+                  "warehouse": state.warehouse,
+                  "role": state.role,
+                  "bindings": {
+                    "1": {
+                      "type": "TEXT",
+                      "value": (state.?cursor.last_timestamp.orValue("") != "") ?
+                        (state.cursor.last_timestamp.parse_time("2006-01-02 15:04:05.000 -0700") - duration(state.lag_time)).format("2006-01-02 15:04:05.000 -0700")
+                      :
+                        (now - duration(state.initial_interval)).format("2006-01-02 15:04:05.000 -0700"),
+                    },
+                  },
+                  "parameters": {
+                    "TIMESTAMP_LTZ_OUTPUT_FORMAT": "YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM",
+                  },
+                }.encode_json()
+              )
+            :
+              optional.none(),
+          }
+        ).do_request().as(resp,
+          (resp.StatusCode == 202) ?
+            try(resp.Body.decode_json()).as(body,
+              (is_error(body) || string(body.?statementHandle.orValue("")) == "") ?
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": resp.Status,
+                      "message": http_method + " " + request_url + ": HTTP 202 without statementHandle",
+                    },
+                  },
+                  "want_more": false,
+                }
+              :
+                {
+                  "events": [{"retry": true}],
+                  "cursor": {
+                    ?"last_timestamp": (state.?cursor.last_timestamp.orValue("") != "") ? optional.of(string(state.cursor.last_timestamp)) : optional.none(),
+                    "handle": string(body.statementHandle),
+                    "next_partition": 0,
+                  },
+                  "want_more": true,
+                }
+            )
+          : (resp.StatusCode == 200) ?
+            try(resp.Body.decode_json()).as(body,
+              is_error(body) ?
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": resp.Status,
+                      "message": http_method + " " + request_url + ": failed to decode JSON",
+                    },
+                  },
+                  "want_more": false,
+                }
+              :
+                {
+                  "names": (size(body.?resultSetMetaData.rowType.orValue([])) > 0) ?
+                    body.resultSetMetaData.rowType.map(column, column.name)
+                  :
+                    state.?cursor.row_type.orValue([]),
+                  "rows": body.?data.orValue([]),
+                  "partition_count": (size(body.?resultSetMetaData.partitionInfo.orValue([])) > 0) ?
+                    size(body.resultSetMetaData.partitionInfo)
+                  :
+                    int(state.?cursor.partition_count.orValue(0)),
+                  "handle": string(body.?statementHandle.orValue(string(state.?cursor.handle.orValue("")))),
+                }.as(result,
+                  {
+                    "events": (size(result.rows) > 0) ?
+                      dyn(result.rows.map(row, {"message": result.names.zip(row).encode_json()}))
+                    : (int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count) ?
+                      dyn([{"retry": true}])
+                    :
+                      dyn([]),
+                    "cursor": {
+                      "last_timestamp": (size(result.rows) > 0) ?
+                        result.rows.map(row, result.names.zip(row)).map(record,
+                          (record.?EVENT_TIMESTAMP.orValue(null) == null) ? "" : string(record.EVENT_TIMESTAMP)
+                        ).filter(timestamp, timestamp != "").as(row_timestamps,
+                          (size(row_timestamps) > 0) ?
+                            (
+                              (state.?cursor.last_timestamp.orValue("") != "") ?
+                                (row_timestamps + [string(state.cursor.last_timestamp)]).max()
+                              :
+                                row_timestamps.max()
+                            )
+                          :
+                            state.?cursor.last_timestamp.orValue("")
+                        )
+                      :
+                        state.?cursor.last_timestamp.orValue(""),
+                    }.with(
+                      (int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count) ?
+                        {
+                          "handle": result.handle,
+                          "next_partition": int(state.?cursor.next_partition.orValue(0)) + 1,
+                          "row_type": result.names,
+                          "partition_count": result.partition_count,
+                        }
+                      :
+                        {}
+                    ),
+                    // want_more: remaining partitionInfo indexes — not size(events)
+                    "want_more": int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count,
+                  }
+                )
+            )
+          :
+            {
+              "events": (resp.StatusCode == 429 || resp.StatusCode >= 500) ?
+                dyn(
+                  {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": resp.Status,
+                      "message": http_method + " " + request_url + ": " + (
+                        (size(resp.Body) != 0) ?
+                          string(resp.Body)
+                        :
+                          resp.Status + " (" + string(resp.StatusCode) + ")"
+                      ),
+                    },
+                  }
+                )
+              :
+                dyn(
+                  [
+                    {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": resp.Status,
+                        "message": http_method + " " + request_url + ": " + (
+                          (size(resp.Body) != 0) ?
+                            string(resp.Body)
+                          :
+                            resp.Status + " (" + string(resp.StatusCode) + ")"
+                        ),
+                      },
+                    },
+                  ]
+                ),
+              "want_more": false,
+            }
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}
