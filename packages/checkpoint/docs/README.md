@@ -649,6 +649,7 @@ The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Beca
 | checkpoint.triggered_by | The name of the mechanism that triggered the Software Blade to enforce a protection. | keyword |
 | checkpoint.trusted_domain | In case of phishing event, the domain, which the attacker was impersonating. | keyword |
 | checkpoint.tunnel_protocol | Tunnel protocol. | keyword |
+| checkpoint.uid | Unique object identifier | keyword |
 | checkpoint.unique_detected_day | Detected virus for a specific host during the last day. | integer |
 | checkpoint.unique_detected_hour | Detected virus for a specific host during the last hour. | integer |
 | checkpoint.unique_detected_week | Detected virus for a specific host during the last week. | integer |
@@ -660,6 +661,7 @@ The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Beca
 | checkpoint.user_dn | User DN. | keyword |
 | checkpoint.usercheck |  | keyword |
 | checkpoint.usercheck_confirmation_level |  | keyword |
+| checkpoint.usercheck_incident_uid | Unique usercheck incident ID. | keyword |
 | checkpoint.usercheck_interaction_name |  | keyword |
 | checkpoint.vendor_list | The vendor name that provided the verdict for a malicious URL. | keyword |
 | checkpoint.verdict | TE engine verdict Possible values: Malicious/Benign/Error. | keyword |
@@ -734,7 +736,6 @@ The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Beca
 | destination.user.email | User email address. | keyword |
 | destination.user.full_name | User's full name, if available. | keyword |
 | destination.user.full_name.text | Multi-field of `destination.user.full_name`. | match_only_text |
-| destination.user.id | Unique identifier of the user. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
@@ -862,7 +863,6 @@ The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Beca
 | source.user.full_name | User's full name, if available. | keyword |
 | source.user.full_name.text | Multi-field of `source.user.full_name`. | match_only_text |
 | source.user.group.name | Name of the group. | keyword |
-| source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
@@ -874,7 +874,6 @@ The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Beca
 | user.full_name | User's full name, if available. | keyword |
 | user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
 | user.group.name | Name of the group. | keyword |
-| user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 | user_agent.name | Name of the user agent. | keyword |
