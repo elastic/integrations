@@ -21,6 +21,8 @@ resource.retry.wait_min: {{resource_retry_wait_min}}
 {{#if resource_retry_wait_max}}
 resource.retry.wait_max: {{resource_retry_wait_max}}
 {{/if}}
+resource.rate_limit.limit: 1
+resource.rate_limit.burst: 1
 resource.url: {{url}}
 resource.headers:
   Accept:
@@ -158,6 +160,7 @@ program: |-
                       size(body.resultSetMetaData.partitionInfo)
                     :
                       int(state.?cursor.partition_count.orValue(0)),
+                    "num_rows": int(body.?resultSetMetaData.numRows.orValue(state.?cursor.num_rows.orValue(0))),
                     "handle": string(body.?statementHandle.orValue(string(state.?cursor.handle.orValue("")))),
                   }.as(result,
                     result.rows.map(row, result.names.zip(row)).map(record,
@@ -170,7 +173,7 @@ program: |-
                           dyn(result.rows.map(row, {"message": result.names.zip(row).encode_json()}))
                         : (
                           int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count ||
-                          query == "created" || query == "deleted" && size(result.rows) == int(state.batch_size)
+                          query == "created" || query == "deleted" && int(result.num_rows) >= int(state.batch_size)
                         ) ?
                           dyn([{"retry": true}])
                         :
@@ -197,11 +200,11 @@ program: |-
                           // After a created page, continue created when LIMIT is full; otherwise run deleted.
                           "query": (int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count) ?
                             query
-                          : (query == "created" && size(result.rows) == int(state.batch_size)) ?
+                          : (query == "created" && int(result.num_rows) >= int(state.batch_size)) ?
                             "created"
                           : (query == "created") ?
                             "deleted"
-                          : (query == "deleted" && size(result.rows) == int(state.batch_size)) ?
+                          : (query == "deleted" && int(result.num_rows) >= int(state.batch_size)) ?
                             "deleted"
                           :
                             "created",
@@ -212,13 +215,14 @@ program: |-
                               "next_partition": int(state.?cursor.next_partition.orValue(0)) + 1,
                               "row_type": result.names,
                               "partition_count": result.partition_count,
+                              "num_rows": result.num_rows,
                             }
                           :
                             {}
                         ),
                         // want_more: remaining partitions, another created page, or the deleted statement
                         "want_more": int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count ||
-                        query == "created" || query == "deleted" && size(result.rows) == int(state.batch_size),
+                        query == "created" || query == "deleted" && int(result.num_rows) >= int(state.batch_size),
                       }
                     )
                   )

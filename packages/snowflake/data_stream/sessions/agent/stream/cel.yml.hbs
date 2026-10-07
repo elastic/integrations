@@ -21,6 +21,8 @@ resource.retry.wait_min: {{resource_retry_wait_min}}
 {{#if resource_retry_wait_max}}
 resource.retry.wait_max: {{resource_retry_wait_max}}
 {{/if}}
+resource.rate_limit.limit: 1
+resource.rate_limit.burst: 1
 resource.url: {{url}}
 resource.headers:
   Accept:
@@ -41,7 +43,7 @@ redact:
   fields:
     - token
 program: |-
-  (state.?want_more.orValue(false) ? "GET" : "POST").as(
+  ((state.?want_more.orValue(false) && string(state.?cursor.handle.orValue("")) != "") ? "GET" : "POST").as(
     http_method,
     (
       (http_method == "GET") ?
@@ -145,12 +147,16 @@ program: |-
                     size(body.resultSetMetaData.partitionInfo)
                   :
                     int(state.?cursor.partition_count.orValue(0)),
+                  "num_rows": int(body.?resultSetMetaData.numRows.orValue(state.?cursor.num_rows.orValue(0))),
                   "handle": string(body.?statementHandle.orValue(string(state.?cursor.handle.orValue("")))),
                 }.as(result,
                   {
                     "events": (size(result.rows) > 0) ?
                       dyn(result.rows.map(row, {"message": result.names.zip(row).encode_json()}))
-                    : (int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count) ?
+                    : (
+                      int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count ||
+                      int(result.num_rows) >= int(state.batch_size)
+                    ) ?
                       dyn([{"retry": true}])
                     :
                       dyn([]),
@@ -178,12 +184,14 @@ program: |-
                           "next_partition": int(state.?cursor.next_partition.orValue(0)) + 1,
                           "row_type": result.names,
                           "partition_count": result.partition_count,
+                          "num_rows": result.num_rows,
                         }
                       :
                         {}
                     ),
-                    // want_more: remaining partitionInfo indexes — not size(events)
-                    "want_more": int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count,
+                    // want_more: remaining partitions, or another statement when LIMIT was filled
+                    "want_more": int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count ||
+                    int(result.num_rows) >= int(state.batch_size),
                   }
                 )
             )
