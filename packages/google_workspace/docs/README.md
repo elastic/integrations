@@ -3211,7 +3211,7 @@ An example event for `chrome` looks as following:
 | google_workspace.chrome.user_agent | User agent event parameter. | keyword |
 | google_workspace.chrome.user_justification | A parameter that contains a justification message provided by users. | keyword |
 | google_workspace.chrome.virtual_device_id | Virtual device ID of the browser on which the event happened. | keyword |
-| input.type | Type of filebeat input. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | url.query | The field contains the entire query string, excluding the leading `?` character, such as "q=elasticsearch". If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 
@@ -3377,7 +3377,7 @@ An example event for `data_studio` looks as following:
 | google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
 | google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
-| input.type | Type of filebeat input. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 
 
@@ -3554,7 +3554,7 @@ An example event for `calendar` looks as following:
 | google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
 | google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
-| input.type | Type of filebeat input. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 
 
@@ -3703,7 +3703,7 @@ An example event for `chat` looks as following:
 | google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
 | google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
-| input.type | Type of filebeat input. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 
 
@@ -3852,7 +3852,7 @@ An example event for `vault` looks as following:
 | google_workspace.vault.resource_url | The document URL of the document view. | keyword |
 | google_workspace.vault.target_user | The targeted user (such as user put on hold). | keyword |
 | google_workspace.vault.type |  | keyword |
-| input.type | Type of filebeat input. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 
 
@@ -4052,7 +4052,7 @@ An example event for `meet` looks as following:
 | google_workspace.meet.target.user_count | Target user count. | long |
 | google_workspace.meet.type |  | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
-| input.type | Type of filebeat input. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 
 
