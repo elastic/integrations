@@ -70,16 +70,17 @@ CODE_KEYS = {
 
 
 # `doc_values: false` and `store: true` are not package fixes: per the package-spec#1250
-# review, Elasticsearch (preferred, it also covers user-managed templates) or Fleet is
-# to handle them in columnar mode, and the spec has no field-level override for them.
-# Elasticsearch rejects both today, so the stream cannot go columnar until then.
+# review the spec has no field-level override for them, and Fleet drops them from the
+# generated mappings when it installs a data stream in logsdb_columnar mode
+# (elastic/kibana#292285, tracked in elastic/kibana#296252). Elasticsearch itself still
+# rejects both, so the finding stays visible as a dependency on that Fleet release.
 PLATFORM_PENDING = (
-    "No package change. Per the package-spec#1250 review, Elasticsearch (preferred, "
-    "since it also covers user-managed templates) or Fleet is to handle {what} in "
-    "columnar mode, and there is no field-level `columnar:` override in the spec. Until that lands, Elasticsearch rejects the columnar index "
-    "template, so this data stream cannot go columnar: if the package declares "
-    "`elasticsearch.logsdb_columnar`, mark this data stream "
-    "`logsdb_columnar: unsupported` in its manifest."
+    "No package change. Elasticsearch rejects {what} in columnar modes and the spec has "
+    "no field-level override for it (package-spec#1250 review); Fleet drops {what} from "
+    "the generated mappings when it installs this data stream in `logsdb_columnar` mode "
+    "(elastic/kibana#292285, tracked in elastic/kibana#296252). The stream can go "
+    "columnar with that Fleet release; do not mark it `logsdb_columnar: unsupported` "
+    "for this reason."
 )
 
 
@@ -150,7 +151,7 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
     # `isMultiField(...)`), so only top-level fields matter here.
     if is_false(fdef.get("doc_values")) and not in_multi_field:
         out.append(finding(
-            "doc_values_false", "A", "blocker",
+            "doc_values_false", "A", "platform",
             f"`{flat}` sets `doc_values: false`; columnar mode cannot reconstruct it, and "
             f"Elasticsearch rejects the mapping today.",
             PLATFORM_PENDING.format(what="`doc_values: false`"),
@@ -158,7 +159,7 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
 
     if is_true(fdef.get("store")):
         out.append(finding(
-            "store_true", "A", "blocker",
+            "store_true", "A", "platform",
             f"`{flat}` sets `store: true`, which Elasticsearch rejects in columnar modes "
             f"(`[store] cannot be enabled on field [...] in [logsdb_columnar] index mode`).",
             PLATFORM_PENDING.format(what="`store: true` (the review suggests the same "
@@ -268,7 +269,7 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
         # attributes win.
         if not is_true(fdef.get("doc_values")):
             out.append(finding(
-                "doc_values_false_ecs", "A", "blocker",
+                "doc_values_false_ecs", "A", "platform",
                 f"`{flat}` is imported from ECS, which defines it with `doc_values: false`; "
                 f"elastic-package copies that into the built package.",
                 PLATFORM_PENDING.format(what="`doc_values: false` (also when it is "

@@ -43,7 +43,8 @@ def columnar_optin_label(stream: Dict[str, Any]) -> str:
         label = ("not declared (`elasticsearch.logsdb_columnar` is unset in the package and "
                  "in this data stream) — Fleet offers no opt-in yet")
     blocking = [f for f in stream.get("findings", [])
-                if f["class"] == "A" and f["code"] not in DECLARATION_CODES]
+                if f["class"] == "A" and f["severity"] != "platform"
+                and f["code"] not in DECLARATION_CODES]
     if stream.get("columnar_enabled") and blocking:
         label += (f". **Inconsistent** (`logsdb_columnar_with_blockers`): the stream still "
                   f"has {len(blocking)} Class A finding(s), which the validator rejects — fix "
@@ -657,11 +658,13 @@ def md_catalog(results: List[Dict[str, Any]], scanned: Optional[int] = None,
                  f"({npkg} packages, {nds} data streams)")
     lines.append("")
     lines.append("`doc_values: false` (declared, or imported from ECS by `external: ecs`) and "
-                 "`store: true`. Elasticsearch rejects them in columnar mode today. Per the "
-                 "package-spec#1250 review, Elasticsearch or Fleet is to handle them, and the "
-                 "spec has no field-level override, so packages do not change these fields. "
-                 "Until then these data streams cannot go columnar: a package that declares "
-                 "`logsdb_columnar` marks them `unsupported`.")
+                 "`store: true`. Elasticsearch rejects them in columnar modes, and per the "
+                 "package-spec#1250 review the spec has no field-level override, so packages "
+                 "do not change these fields: Fleet drops them from the generated mappings when "
+                 "it installs a data stream in `logsdb_columnar` mode (elastic/kibana#292285, "
+                 "tracked in elastic/kibana#296252). Do not mark these data streams "
+                 "`unsupported` for this reason; they are listed here only so the dependency "
+                 "on that Fleet release is visible.")
     lines.append("")
     lines.extend(code_rows(PLATFORM_CODES) or ["(none)", ""])
 

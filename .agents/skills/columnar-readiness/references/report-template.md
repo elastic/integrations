@@ -21,7 +21,7 @@ Per data stream, worst finding wins. Package status is the worst of its streams.
 | `READY` | No mapping blocker found. **Not a validation result**: correctness and performance tests are still to do. The report prints this gloss next to the status. |
 | `READY_AFTER_AUTO_FIX` | Only Class A findings with a mechanical package fix: `copy_to` → ingest pipeline, a non-`lowercase` `normalizer` → pipeline or multi-field, `dynamic: runtime` → `dynamic: true`, or `logsdb_columnar` declared under a `format_version` below 3.7.0. |
 | `NEEDS_REVIEW` | A Class B data-loss finding (`dynamic: false`, `enabled: false`), objects inside a `nested` field (`nested_object_children`), a mapping-level runtime field, or a `_source` consumer: a transform script (`source_consumer_transform`), a `latest` transform (`source_consumer_latest_transform`), a Kibana asset (`source_consumer_kibana`) or a shipped detection rule (`source_consumer_detection_rule`). Needs a human decision before opting in. |
-| `BLOCKED` | `nested` inside `nested`, `doc_values: false` or `store: true` (no package change: they wait on Elasticsearch or Fleet), an unsupported field type, a stored-`_source` override, an explicit `index.sort` that does not fit, or a mistake in the `logsdb_columnar` declaration. |
+| `BLOCKED` | `nested` inside `nested`, an unsupported field type, a stored-`_source` setting, an invalid `index.sort`, or a readiness declaration that contradicts the mappings. `doc_values: false` and `store: true` are **not** blockers: Fleet drops them at install time, so they carry severity `platform` and leave the status untouched. |
 | `OUT_OF_SCOPE` | Not a `type: logs` data stream, a stream fed by an OpenTelemetry input (`otelcol`), or the package is `type: input`. |
 
 Two checks on the declaration rather than the mappings, both Class A:
@@ -283,7 +283,7 @@ sources):
 {
   "code": "doc_values_false",
   "class": "A",
-  "severity": "blocker",
+  "severity": "platform",
   "auto_fixable": false,
   "field": "event.original",
   "where": "data_stream/incidents/fields/ecs.yml",
@@ -331,6 +331,6 @@ never move a status or a count).
 
 `existing_index_sort` is `null` when the manifest declares no sort. `source_consumers`
 is the C6-C10 scan result, including when every count is zero. `severity` is one of
-`blocker`, `review`, `auto_fix`, `info` and maps 1:1 onto the status table above. Use
+`blocker`, `review`, `auto_fix`, `info`, `platform` and maps onto the status table above (`platform` and `info` never move a status). Use
 `--format json` when feeding another tool; use the Markdown for humans and PR
 descriptions.

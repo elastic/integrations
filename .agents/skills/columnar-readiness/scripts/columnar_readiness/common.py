@@ -70,7 +70,7 @@ def is_true(value: Any) -> bool:
     return False
 
 
-SEVERITIES = ("blocker", "review", "auto_fix", "info")
+SEVERITIES = ("blocker", "review", "auto_fix", "info", "platform")
 
 
 def finding(code: str, klass: str, severity: str, message: str,

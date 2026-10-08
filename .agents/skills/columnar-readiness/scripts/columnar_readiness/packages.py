@@ -478,8 +478,11 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
     # --- declared ready with unresolved Class A findings ----------------- #
     # The validator checks every logs data stream that ends up ready, and rejects the
     # declaration while a blocker remains: a contradiction inside the package.
+    # Platform findings (doc_values: false, store: true) are Elasticsearch rejections that
+    # Fleet resolves at install time, so they do not contradict a readiness declaration.
     blocking = [f for f in findings
-                if f["class"] == "A" and f["code"] not in DECLARATION_CODES]
+                if f["class"] == "A" and f["severity"] != "platform"
+                and f["code"] not in DECLARATION_CODES]
     if stream["columnar_enabled"] and blocking:
         stream["logsdb_columnar_with_blockers"] = True
         codes = sorted({f["code"] for f in blocking})

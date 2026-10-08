@@ -192,17 +192,16 @@ fallback and forbids `synthetic_source_keep`, so the index template is rejected
 (`IndexMode.LOGSDB_COLUMNAR#validateMapping`).
 
 **Remediation: no package change.** Per the package-spec#1250 review, packages do not
-override `doc_values` for columnar: either Elasticsearch accepts `doc_values: false` in
-columnar modes and keeps doc values anyway (preferred, since it also covers
-user-managed templates), or Fleet drops `doc_values: false` when it installs a data
-stream in columnar mode. Neither needs anything in the spec, and there is no
-field-level `columnar:` block. Once that is decided, the validator's `doc_values: false`
-error goes away too.
+override `doc_values` for columnar and there is no field-level `columnar:` block; the
+spec validator does not report `doc_values: false` either. Fleet drops `doc_values: false`
+(and `store: true`) from the generated mappings when it installs a data stream in
+`logsdb_columnar` mode (elastic/kibana#292285, tracked in elastic/kibana#296252), and the
+package already requires the Kibana release that ships it (`^9.6.0`).
 
-Until then Elasticsearch rejects the columnar index template, so the stream is
-**BLOCKED**: if the package declares `logsdb_columnar`, mark the stream
-`logsdb_columnar: unsupported`. Do not delete the `doc_values: false` line to get around
-it, and do not reach for `store: true` (A2c).
+The finding therefore has severity **`platform`**: it does not change the stream status
+and does not contradict a readiness declaration, it only records the dependency on that
+Fleet release. Do not mark the stream `logsdb_columnar: unsupported` for it, do not
+delete the `doc_values: false` line, and do not reach for `store: true` (A2c).
 
 **Known in catalog (declared in source):** `doppel/alerts`
 (`doppel.darkweb.cred_leaks_password`), `withsecure_elements/incidents` and
@@ -244,9 +243,8 @@ ECS fields that carry `doc_values: false` (checked against ECS v8.11.0 and v9.3.
   `threat.indicator.file.`, `threat.enrichments.indicator.`,
   `threat.enrichments.indicator.file.`)
 
-**Remediation: no package change**, as for A2. Elasticsearch or Fleet is to handle the
-`doc_values: false` ECS brings in, the same way as a declared one. Until then the stream
-is **BLOCKED**.
+**Remediation: no package change**, as for A2: Fleet drops the `doc_values: false` ECS
+brings in the same way as a declared one. Severity `platform`, status unchanged.
 
 **Where it surfaces.** `elastic-package lint` validates the package *source*, where
 the field has no `doc_values` at all, so it sees nothing. `elastic-package build`
@@ -309,9 +307,9 @@ Elasticsearch refuses it while parsing the mapping
 `store: true` can never be the answer to A2 or A2b — the two settings are rejected by
 different checks, and swapping one for the other just trades one failure for another.
 
-**Remediation: no package change.** The package-spec#1250 review suggests the same
-handling as for `doc_values: false` (A2): Elasticsearch or Fleet. Until then the
-stream is **BLOCKED**.
+**Remediation: no package change**, as for A2: Fleet drops `store: true` from the
+generated mappings when it installs the stream in `logsdb_columnar` mode
+(elastic/kibana#292285). Severity `platform`, status unchanged.
 
 **Known in catalog:** none in a `type: logs` data stream. The only two occurrences
 (`cisco_meraki_metrics/device_health`, `panw_metrics/system`) are in `type: metrics`
@@ -681,7 +679,9 @@ is reconstructed from doc values, and:
 
 **Those four are the complete set of expected differences.** They were measured on
 `anthropic`, system-testing the same mock data twice — once on logsdb, once with a
-temporary `index_mode: logsdb_columnar` — and matching the 8 resulting documents on
+temporary package-level `logsdb_columnar: default` so the fresh test install lands on
+columnar (the former `index_mode: logsdb_columnar` route no longer validates) — and
+matching the 8 resulting documents on
 `event.id`: **zero value differences**, only shape. Anything else you see in such a
 diff — a changed value, a dropped field that is explicitly mapped, numeric precision
 loss, `null`/empty-string confusion — is a bug, not a columnar effect. The procedure

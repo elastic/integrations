@@ -212,9 +212,10 @@ detection rule and its remediation:
 **`doc_values: false` waits on the platform.** Elasticsearch rejects it in columnar
 mode today. Per the package-spec#1250 review, Elasticsearch (preferred, it also covers
 user-managed templates) or Fleet is to handle it, so packages do not change these
-fields and there is no field-level override. The same goes for `store: true`. Until
-then such a stream is BLOCKED: if the package declares `opt_in`, mark it
-`logsdb_columnar: unsupported`.
+fields and there is no field-level override. The same goes for `store: true`. Fleet
+drops both from the generated mappings when it installs the stream in `logsdb_columnar`
+mode (elastic/kibana#292285), so the finding is severity `platform`: it does not change
+the status, and the stream must **not** be marked `unsupported` for it.
 
 **The ECS trap.** `external: ecs` imports `doc_values` from the ECS schema at build
 time, and ECS defines `event.original` with `doc_values: false`. About 50 packages
