@@ -142,7 +142,7 @@ API key, then `SUM`. `blended_cost_per_million_tokens` is a rate: do not sum it,
 | openrouter.usage.credits_usage | Billable credits consumed (may differ from total_usage when BYOK). | double | gauge |
 | openrouter.usage.guardrail_invoked_count | Number of guardrail invocations in the period. | long | gauge |
 | openrouter.usage.model | LLM model identifier (for example openai/gpt-4o). | keyword |  |
-| openrouter.usage.openrouter_usage | OpenRouter routing fee component of total_usage. | double | gauge |
+| openrouter.usage.openrouter_usage | Cost in USD of requests billed to OpenRouter credits (regular keys, not BYOK). Part of total_usage. | double | gauge |
 | openrouter.usage.reasoning_tokens | Reasoning tokens consumed (for models that expose them). | long | gauge |
 | openrouter.usage.request_count | Number of API requests in the period. | long | gauge |
 | openrouter.usage.response_cached_count | Number of responses served from the response cache in the period. | long | gauge |
