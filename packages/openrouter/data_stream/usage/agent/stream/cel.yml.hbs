@@ -18,10 +18,6 @@ state:
   management_api_key: {{management_api_key}}
   initial_interval: {{initial_interval}}
   finalization_delay: {{finalization_delay}}
-  dimensions:
-  {{#each dimensions as |dim|}}
-    - {{dim}}
-  {{/each}}
   # Each request covers 30 days at daily granularity (safe under the 31-day span limit).
   # If the API reports a truncated result, the span is halved (down to 24h) and
   # persisted in the cursor.
@@ -31,7 +27,7 @@ redact:
     - management_api_key
 program: |
   // Usage stream: daily snapshot metrics (request count, tokens, cost) grouped by
-  // configured dimensions. Windowing issues 30-day chunks (halved when the API reports
+  // model and API key. Windowing issues 30-day chunks (halved when the API reports
   // a truncated result) to stay within the Analytics API's 31-day per-query span limit. The cursor stores raw RFC3339 timestamps so
   // today's in-progress bucket is re-polled every interval; dashboards use MAX→SUM
   // to aggregate across multiple documents for the same day.
@@ -72,7 +68,7 @@ program: |
                 "end": w.end.format(time_layout.RFC3339),
               },
               "granularity": "day",
-              "dimensions": state.dimensions,
+              "dimensions": ["model", "api_key_id"],
               "metrics": [
                 "request_count",
                 "byok_request_count",

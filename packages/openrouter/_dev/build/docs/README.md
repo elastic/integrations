@@ -55,7 +55,6 @@ Elastic Agent must be installed. For more details, check the Elastic Agent
 |---------|---------|-------------|
 | Collection interval | `6h` | How often the Analytics API is polled for new daily data (10 minutes to 24 hours). |
 | Initial lookback | `168h` (7 days) | How far back to collect data on the first run (at least 1 hour). |
-| Dimensions | `model`, `api_key_id` | Up to 2 dimensions to group data by. |
 
 </details>
 
@@ -66,7 +65,6 @@ Elastic Agent must be installed. For more details, check the Elastic Agent
 |---------|---------|-------------|
 | Collection interval | `1h` | How often the Analytics API is polled for new hourly data (10 minutes to 24 hours). |
 | Initial lookback | `168h` (7 days) | How far back to collect data on the first run (at least 1 hour). |
-| Dimensions | `model`, `api_key_id` | Up to 2 dimensions to group data by. |
 
 </details>
 
@@ -82,19 +80,19 @@ After deploying, verify data is flowing in **Discover**:
 |---|---|
 | Maximum rows per query | 10,000 |
 | Maximum dimensions per query | 2 |
-| Maximum query time span (latency/rate metrics or `provider` dimension) | 31 days |
-| Maximum query time span (volume/cost metrics, long-window dimensions only) | 365 days |
+| Maximum query time span (latency/rate metrics) | 31 days |
+| Maximum query time span (volume/cost metrics) | 365 days |
 
 The integration issues windowed requests (30 days for `usage`, 24 hours for `performance`)
-to stay safely within the 31-day span limit regardless of dimension selection. The first run
+to stay safely within the 31-day span limit. The first run
 backfills the whole initial lookback window by window, so a long lookback means many requests
 (for example, 90 days of `performance` data is 90 requests).
 If the API reports a truncated result (`metadata.truncated`), the window is halved and
 retried (down to 1 day for `usage`, 1 hour for `performance`). If a result is still
 truncated at the minimum window, the returned rows are ingested and the remainder is lost;
-reduce the number of distinct dimension values or use fewer dimensions.
+this happens only with a very large number of distinct models and API keys.
 
-Supported dimensions are `model`, `variant`, `api_key_id`, `workspace`, `app`, `user`, and `provider`.
+The data is always grouped by `model` and `api_key_id`; the grouping is not configurable.
 
 ## Troubleshooting
 
@@ -113,13 +111,12 @@ Supported dimensions are `model`, `variant`, `api_key_id`, `workspace`, `app`, `
 ### Usage
 
 The `usage` data stream collects daily snapshot metrics (request count, token consumption, cost)
-from the OpenRouter Analytics API. Each document represents the total for a given day and
-dimension combination. Metrics can be summed across dimensions (for example, total spend across all models).
+from the OpenRouter Analytics API. Each document represents the total for a given day, model and API key.
+Metrics can be summed across models and keys (for example, total spend across all models).
 
 The current day is polled again on every collection interval, so the same daily bucket can appear
-in several documents with growing totals. When aggregating, first take `MAX` per `@timestamp` and
-per dimension combination (include all dimension fields, because only the configured ones are set),
-then `SUM`. `blended_cost_per_million_tokens` is a rate: do not sum it, derive it from
+in several documents with growing totals. When aggregating, first take `MAX` per `@timestamp`, model and
+API key, then `SUM`. `blended_cost_per_million_tokens` is a rate: do not sum it, derive it from
 `total_usage / tokens_total` instead.
 
 #### Usage fields
@@ -134,7 +131,7 @@ throughput (averages and percentiles), plus cache, response-cache and guardrail 
 collects `request_count`, which is the only additive field.
 
 **Important:** Latency, throughput and rate metrics are averages, percentiles or ratios computed by
-the API for each row (hour and dimension combination). Never use `SUM` on them. To combine rows,
+the API for each row (hour, model and API key). Never use `SUM` on them. To combine rows,
 use a request-weighted average, `SUM(metric * request_count) / SUM(request_count)`, for the
 `avg_*` fields and the rates. For percentiles (`p50_*`, `p90_*`, `p95_*`, `p99_*`) use `MAX`,
 for example the worst `p99_latency`, or look at single rows: neither a plain nor a weighted

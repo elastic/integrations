@@ -18,10 +18,6 @@ state:
   management_api_key: {{management_api_key}}
   initial_interval: {{initial_interval}}
   finalization_delay: {{finalization_delay}}
-  dimensions:
-  {{#each dimensions as |dim|}}
-    - {{dim}}
-  {{/each}}
   # Each request covers exactly 24 hours (1 API call = 24 hourly buckets).
   window_span: "24h"
 redact:
@@ -29,7 +25,7 @@ redact:
     - management_api_key
 program: |
   // Performance stream: hourly non-additive metrics (latency, throughput, cache rate)
-  // grouped by model and provider. Each request covers exactly 24 hours, keeping the
+  // grouped by model and API key. Each request covers exactly 24 hours, keeping the
   // query span well within the Analytics API's 31-day limit for these metrics. If the API
   // reports a truncated result, the span is halved (down to 1h) and persisted in the cursor.
   state.with(
@@ -68,7 +64,7 @@ program: |
                 "end": w.end.format(time_layout.RFC3339),
               },
               "granularity": "hour",
-              "dimensions": state.dimensions,
+              "dimensions": ["model", "api_key_id"],
               "metrics": [
                 "p50_latency",
                 "p90_latency",

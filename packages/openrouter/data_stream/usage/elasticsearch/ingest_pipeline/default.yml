@@ -37,10 +37,8 @@ processors:
       target_field: json
       tag: parse_json
       if: ctx.event?.original != null
-  # The time field name varies by dimension selection:
-  #   date__day     — when dimensions do not include provider (e.g. [model])
-  #   created_at__day — when dimensions include provider (e.g. [model, provider])
-  # Try both patterns; whichever exists sets @timestamp.
+  # The API names the time field date__<granularity> or created_at__<granularity> depending on the
+  # query shape. Try both; whichever exists sets @timestamp.
   - date:
       field: json.date__day
       target_field: "@timestamp"
@@ -65,35 +63,10 @@ processors:
       ignore_missing: true
       tag: rename_model
   - rename:
-      field: json.provider
-      target_field: openrouter.usage.provider
-      ignore_missing: true
-      tag: rename_provider
-  - rename:
-      field: json.variant
-      target_field: openrouter.usage.variant
-      ignore_missing: true
-      tag: rename_variant
-  - rename:
       field: json.api_key_id
       target_field: openrouter.usage.api_key_id
       ignore_missing: true
       tag: rename_api_key_id
-  - rename:
-      field: json.workspace
-      target_field: openrouter.usage.workspace
-      ignore_missing: true
-      tag: rename_workspace
-  - rename:
-      field: json.app
-      target_field: openrouter.usage.app
-      ignore_missing: true
-      tag: rename_app
-  - rename:
-      field: json.user
-      target_field: openrouter.usage.user
-      ignore_missing: true
-      tag: rename_user
   # Numeric metrics: the API returns counts as JSON strings ("1", "42896").
   # Convert to long before mapping.
   - convert:
