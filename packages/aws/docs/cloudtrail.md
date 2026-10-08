@@ -268,6 +268,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.target.entity.id | Unique identifier for compute resources targeted by CloudTrail events. Includes EC2 instance IDs, EBS volume IDs, snapshot IDs, and AMI IDs. | keyword |
+| host.target.id | Bare EC2 instance ID (`i-...`) of the compute instance targeted by the event, matching the host id used by Cloud Asset Inventory. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | related.entity | A collection of all entity identifiers associated with the document.  If the document  contains multiple entities, identifiers for each will be included. Example identifiers include(but not limited to) cloud resource IDs, ARNs,  email addresses, and hostnames. | keyword |

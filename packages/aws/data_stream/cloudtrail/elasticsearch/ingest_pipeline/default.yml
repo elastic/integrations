@@ -955,6 +955,27 @@ processors:
           }
           if (!hostTargets.isEmpty()) {
             field("host.target.entity.id").set(new ArrayList(hostTargets));
+
+            // host.target.id carries only the bare EC2 instance ID (i-...), which is the
+            // host.id Cloud Asset Inventory uses. ARN-form targets are reduced to that ID;
+            // anything that is not an EC2 instance is left out.
+            def hostTargetIds = new TreeSet();
+            for (def hostTarget : hostTargets) {
+              String hostTargetId = hostTarget.toString();
+              if (hostTargetId.startsWith("arn:")) {
+                def arnParts = hostTargetId.splitOnToken(":");
+                if (arnParts.length < 6 || arnParts[2] != "ec2" || !arnParts[5].startsWith("instance/")) {
+                  continue;
+                }
+                hostTargetId = arnParts[5].substring("instance/".length());
+              }
+              if (hostTargetId.startsWith("i-")) {
+                hostTargetIds.add(hostTargetId);
+              }
+            }
+            if (!hostTargetIds.isEmpty()) {
+              field("host.target.id").set(new ArrayList(hostTargetIds));
+            }
           }
           if (!serviceTargets.isEmpty()) {
             field("service.target.entity.id").set(new ArrayList(serviceTargets));
@@ -974,6 +995,17 @@ processors:
           def userType = $("json.userIdentity.type", null);
           String actorStr = enrichCtx.actor.toString();
           boolean classified = false;
+
+          // user.entity.id is the IAM ARN Cloud Asset Inventory uses as the user id. For assumed
+          // roles that is the role ARN, not the per-session ARN, so every session of a role maps
+          // to one entity (the actor is the session ARN on most events).
+          def userEntityId = enrichCtx.actor;
+          if (userType == "AssumedRole") {
+            def roleArn = $("json.userIdentity.sessionContext.sessionIssuer.arn", null);
+            if (roleArn != null && roleArn != "") {
+              userEntityId = roleArn;
+            }
+          }
           
           // Check userType first (most reliable indicator)
           if (userType == "AWSService") {
@@ -986,7 +1018,7 @@ processors:
             classified = true;
           }
           else if (params.userIdentityTypes.containsKey(userType)) {
-            field("user.entity.id").set([ enrichCtx.actor ]);
+            field("user.entity.id").set([ userEntityId ]);
             classified = true;
           }
           
@@ -1006,7 +1038,7 @@ processors:
               // Classify based on resource type
               if (resourceType == "user" || resourceType == "role" || 
                   resourceType == "assumed-role" || resourceType == "federated-user") {
-                field("user.entity.id").set([ enrichCtx.actor ]);
+                field("user.entity.id").set([ userEntityId ]);
                 classified = true;
               } else if (resourceType == "instance") {
                 field("host.entity.id").set([ enrichCtx.actor ]);
@@ -1039,15 +1071,59 @@ processors:
       target_field: aws.cloudtrail.user_identity.type
       ignore_missing: true
       tag: rename_user_identity_type_122d0a3c
+  # Identify actors that are AWS services, not people: the identity type is AWSService, or the
+  # caller is a service-linked role (arn:aws:iam::<account>:role/aws-service-role/<service>/<role>).
+  # Never decided from invokedBy alone, which is also set on human console sign-ins
+  # (signin.amazonaws.com). The service is invokedBy, falling back to the service in the role path.
+  - script:
+      tag: script_aws_service_actor_93211d93
+      lang: painless
+      if: ctx.json?.userIdentity != null
+      source: |
+        def identity = ctx.json.userIdentity;
+        // userIdentity.type has already been renamed out of json at this point.
+        String identityType = ctx.aws?.cloudtrail?.user_identity?.type;
+        String invokedBy = identity.invokedBy;
+        String serviceName = null;
+        if (identityType == 'AWSService') {
+          serviceName = invokedBy;
+        } else if (identityType == 'AssumedRole') {
+          String issuerArn = identity.sessionContext?.sessionIssuer?.arn;
+          String marker = ':role/aws-service-role/';
+          int start = issuerArn == null ? -1 : issuerArn.indexOf(marker);
+          if (start >= 0) {
+            String rest = issuerArn.substring(start + marker.length());
+            int slash = rest.indexOf('/');
+            serviceName = invokedBy != null ? invokedBy : (slash > 0 ? rest.substring(0, slash) : null);
+          }
+        }
+        if (serviceName != null && serviceName != '') {
+          ctx._tmp = ctx._tmp ?: [:];
+          ctx._tmp.service_name = serviceName;
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_script_aws_service_actor
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_service_name_aws_service_actor_1408990a
+      field: service.name
+      copy_from: _tmp.service_name
+      ignore_empty_value: true
+      if: ctx._tmp?.service_name != null
+  # AWS-service actors are not users, so they do not get user.* fields.
   - rename:
       field: json.userIdentity.userName
       target_field: user.name
       ignore_missing: true
+      if: ctx._tmp?.service_name == null
       tag: rename_user_identity_user_name_iam_user_c30a296d
   - rename:
       field: json.userIdentity.principalId
       target_field: user.id
       ignore_missing: true
+      if: ctx._tmp?.service_name == null
       tag: rename_user_identity_principal_id_1f790b6f
   - rename:
       tag: rename_json_userIdentity_arn_to_aws_cloudtrail_user_identity_arn_02745565
@@ -1101,7 +1177,7 @@ processors:
       target_field: user.name
       ignore_missing: true
       override: true
-      if: ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole' || ctx.aws?.cloudtrail?.user_identity?.type == 'FederatedUser'
+      if: (ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole' || ctx.aws?.cloudtrail?.user_identity?.type == 'FederatedUser') && ctx._tmp?.service_name == null
       tag: rename_user_name_assumed_role_b771e356
   - rename:
       tag: rename_json_userIdentity_sessionContext_sessionIssuer_principalId_to_aws_cloudtrail_user_identity_session_context_session_issuer_principal_id_9cb05993
