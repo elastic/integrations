@@ -47,6 +47,22 @@ streams:
         show_user: false
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are shipped. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: custom
+        type: yaml
+        title: Custom configurations
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Additional filestream input options appended to the generated configuration. See the [filestream input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html) documentation for the available options. Be careful using this as it might break your configuration.
+        default: |
+          # Docker json-file log rotation deletes rotated files. Set close.on_state_change.removed
+          # to true to release the file handle as soon as the file is deleted, instead of waiting
+          # for the close.on_state_change.inactive timeout below. Lines not yet read from a deleted
+          # file are lost.
+          #close.on_state_change.removed: true
+          #close.on_state_change.inactive: 5m
+          #close.on_state_change.renamed: false
 # Ensures agents have permissions to write data to `logs-*-*`
 elasticsearch:
   dynamic_dataset: true
