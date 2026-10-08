@@ -33,10 +33,11 @@ program: |
     (now - duration(state.finalization_delay))
       .format("2006-01-02T15:00:00Z")
       .parse_time("2006-01-02T15:00:00Z").as(today,
-        // Resume from the cursor; on the first run start initial_interval ago. A long
+        // Resume from the cursor; on the first run start initial_interval before the
+        // finalized boundary, so even a 1h lookback covers one closed hour. A long
         // initial_interval is backfilled window by window.
         state.?cursor.last_end.optMap(ts, timestamp(ts)).orValue(
-          now - duration(state.initial_interval)
+          today - duration(state.initial_interval)
         ).format("2006-01-02T15:00:00Z").parse_time("2006-01-02T15:00:00Z").as(start,
           {
             "today": today,
