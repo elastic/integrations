@@ -1,0 +1,111 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects Kubernetes pod exec sessions whose decoded command line references cloud instance metadata endpoints or equivalent hostnames and paths. Workloads that reach the link-local metadata IP, AWS IMDS paths, GCP computeMetadata, Azure IMDS token routes, or encoded variants are often attempting to harvest role credentials, tokens, or instance attributes from the underlying node or hypervisor boundary. That behavior is high risk in multi-tenant and regulated environments because it can expose short-lived cloud credentials to code running inside a container. The rule classifies a coarse cloud target label and whether the string looks like credential retrieval versus lighter reconnaissance.",
+        "from": "now-6m",
+        "interval": "5m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Kubernetes Pod Exec Cloud Instance Metadata Access",
+        "note": "## Triage and analysis\n\n### Investigating Kubernetes Pod Exec Cloud Instance Metadata Access\n\nThis alert fires when an audited exec requestURI, after URL decoding and command reconstruction, matches patterns\nassociated with instance metadata services across AWS, GCP, and Azure. Use it to catch interactive or scripted access\nfrom inside a pod to metadata surfaces that should usually be blocked by network policy or not needed by application\ncode.\n\n### Possible investigation steps\n\n- Confirm the Kubernetes identity that performed exec: user name, groups, impersonation, source IP, and user agent.\n- Map the pod and namespace to a workload owner, image digest, and entrypoint; determine whether the container should\n  ever call metadata endpoints.\n- Inspect Esql.cloud_target and Esql.is_credential_theft in the alert document and expand the timeline for the same\n  identity for secret reads, IAM changes, or data egress.\n- Correlate with cloud audit logs on the node identity or instance profile for STS or token issuance around the event\n  time.\n\n### False positive analysis\n\n- Break-glass debugging from platform engineers may include curl to 169.254.169.254; validate change tickets and\n  bastion use.\n- Misconfigured agents or bootstrap scripts in bespoke images can touch metadata during startup; baseline approved\n  images and tune exclusions narrowly.\n\n### Response and remediation\n\n- If unauthorized, terminate the session, isolate the workload, revoke or rotate instance and workload credentials that\n  could have been read, and tighten RBAC on pods exec plus network policies that deny link-local metadata from pods.\n",
+        "query": "FROM logs-kubernetes.audit_logs-* metadata _id, _index, _version\n| WHERE kubernetes.audit.objectRef.subresource == \"exec\"\n  AND kubernetes.audit.requestURI LIKE \"*command=*\"\n| EVAL Esql.decoded_uri = URL_DECODE(kubernetes.audit.requestURI)\n| GROK Esql.decoded_uri \"%{DATA}/exec\\\\?%{DATA:raw_commands}&(?:container|stdin|stdout|stderr)=%{GREEDYDATA}\"\n| EVAL command = REPLACE(raw_commands, \"command=\", \"\")\n| EVAL command = REPLACE(command, \"&\", \" \")\n| EVAL Esql.executed_command = REPLACE(command, \"\\\\+\", \" \")\n| WHERE Esql.executed_command IS NOT NULL \n  AND Esql.executed_command RLIKE \"\"\".*(169\\.254\\.169\\.254|2852039166|0xa9fea9fe|/latest/api/token|/latest/meta-data|/latest/user-data|/latest/dynamic/instance-identity|computeMetadata/v1|metadata\\.google\\.internal|metadata/identity/oauth2/token|metadata/instance).*\"\"\"\n| EVAL Esql.cloud_target = CASE(\n    Esql.executed_command RLIKE \"\"\".*(169\\.254\\.169\\.254|2852039166|0xa9fea9fe|/latest/meta-data|/latest/api/token|/latest/user-data|/latest/dynamic).*\"\"\", \"AWS_IMDS\",\n    Esql.executed_command RLIKE \"\"\".*(computeMetadata/v1|metadata\\.google\\.internal).*\"\"\", \"GCP_METADATA\",\n    Esql.executed_command RLIKE \"\"\".*metadata/identity/oauth2/token.*\"\"\", \"AZURE_IMDS\",\n    \"UNKNOWN\"\n  )\n| EVAL Esql.is_credential_theft = CASE(\n    Esql.executed_command RLIKE \"\"\".*(security-credentials|/api/token|oauth2/token|service-accounts/.*/token).*\"\"\", \"yes\",\n    \"recon\"\n  )\n| KEEP Esql.*, user.name, user_agent.original, event.*, source.ip, kubernetes.audit.*, _id, _version, _index, data_stream.namespace\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1552/005/",
+            "https://hardenedsecurity.io/blog/aws-imds-vulnerabilities-and-mitigations/"
+        ],
+        "related_integrations": [
+            {
+                "package": "kubernetes",
+                "version": ">=1.80.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "command",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.subresource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestURI",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "raw_commands",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "a8e7d6c5-b4a3-2918-0f9e-8d7c6b5a4032",
+        "severity": "high",
+        "tags": [
+            "Data Source: Kubernetes",
+            "Data Source: Kubernetes API Server Audit Logs",
+            "Domain: Kubernetes",
+            "Platform: Kubernetes",
+            "Domain: Cloud",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Execution",
+            "Resources: Investigation Guide",
+            "Noise: Unknown",
+            "Performance: Normal",
+            "Profile: Recommended",
+            "Threat: IMDS Credential Theft",
+            "Rule Type: ES|QL",
+            "Domain: Containers"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.005",
+                                "name": "Cloud Instance Metadata API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/005/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1609",
+                        "name": "Container Administration Command",
+                        "reference": "https://attack.mitre.org/techniques/T1609/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 3
+    },
+    "id": "a8e7d6c5-b4a3-2918-0f9e-8d7c6b5a4032_3",
+    "type": "security-rule"
+}

@@ -1998,7 +1998,7 @@ An example event for `osquery_status` looks as following:
 #### latest_device
 * Description: Latest devices from Kolide. As devices get updated, this transform stores only the latest state of each device inside the destination index. Thus the transform's destination index contains only the latest state of the device.
 * Source Index: logs-kolide.device-\*
-* Destination Index: logs-kolide_latest.dest_device-1
+* Destination Index: logs-kolide_latest.dest_device-2
 
 **Exported fields**
 
@@ -2072,7 +2072,7 @@ An example event for `osquery_status` looks as following:
 #### latest_people
 * Description: Latest people from Kolide. As people get updated, this transform stores only the latest state of each person inside the destination index. Thus the transform's destination index contains only the latest state of the person.
 * Source Index: logs-kolide.people-\*
-* Destination Index: logs-kolide_latest.dest_people-1
+* Destination Index: logs-kolide_latest.dest_people-2
 
 **Exported fields**
 

@@ -20,6 +20,7 @@ import (
 	"github.com/cli/go-gh/v2"
 	"gopkg.in/yaml.v3"
 
+	"github.com/elastic/integrations/cmd/backport/assign"
 	"github.com/elastic/integrations/cmd/backport/backports"
 	"github.com/elastic/integrations/cmd/backport/backports/changelog"
 	"github.com/elastic/integrations/cmd/backport/backports/owners"
@@ -37,16 +38,17 @@ const ownersSourceBranch = "main"
 
 // Options controls the behaviour of Apply.
 type Options struct {
-	SHA         string // commit to cherry-pick (required)
-	Package     string // package name as in manifest.yml (required)
-	Target      string // "6.14", "6.x", or full "backport-aws-6.14" (required)
-	OpenPR      bool   // create a GitHub PR when true
-	DryRun      bool   // commit locally but skip push and PR creation
-	AsJSON      bool   // emit JSON output instead of human-readable text
-	Remote      string // git remote to fetch from and push to; default "origin"
-	PackagesDir string // path to packages dir; default "packages"
-	Repository  string // "org/repo" e.g. "elastic/integrations"
-	WorkDir     string // absolute path to the repository root; defaults to the current working directory
+	SHA            string // commit to cherry-pick (required)
+	Package        string // package name as in manifest.yml (required)
+	Target         string // "6.14", "6.x", or full "backport-aws-6.14" (required)
+	OpenPR         bool   // create a GitHub PR when true
+	DryRun         bool   // commit locally but skip push and PR creation
+	AsJSON         bool   // emit JSON output instead of human-readable text
+	Remote         string // git remote to fetch from and push to; default "origin"
+	PackagesDir    string // path to packages dir; default "packages"
+	Repository     string // "org/repo" e.g. "elastic/integrations"
+	WorkDir        string // absolute path to the repository root; defaults to the current working directory
+	OriginPRNumber string // number of the original main PR; used to resolve the backport PR assignee
 }
 
 // Result is the structured output of Apply.
@@ -193,7 +195,11 @@ func Apply(opts Options) (*Result, error) {
 		return nil, fmt.Errorf("pushing: %w", err)
 	}
 
-	prURL, err := maybeOpenPR(opts.OpenPR, workingBranch, branchName, opts.Package, changes[0].Description, newVersion, opts.SHA, repository)
+	var assignee string
+	if opts.OpenPR && !opts.DryRun {
+		assignee = assign.Resolve(opts.OriginPRNumber, repository)
+	}
+	prURL, err := maybeOpenPR(opts.OpenPR, workingBranch, branchName, opts.Package, changes[0].Description, newVersion, opts.SHA, repository, assignee)
 	if err != nil {
 		return nil, err
 	}
@@ -873,18 +879,23 @@ func sentinelURL(repository string) string {
 }
 
 // maybeOpenPR creates a GitHub PR if openPR is true, returning the PR URL.
-func maybeOpenPR(openPR bool, workingBranch, branchName, pkg, description, newVersion, sha, repository string) (string, error) {
+func maybeOpenPR(openPR bool, workingBranch, branchName, pkg, description, newVersion, sha, repository, assignee string) (string, error) {
 	if !openPR {
 		return "", nil
 	}
 	title := fmt.Sprintf("[%s] Backport %s (%s)", pkg, description, newVersion)
 	body := buildPRBody(sha, branchName, repository)
-	stdout, _, err := gh.Exec("pr", "create",
+	prArgs := []string{
+		"pr", "create",
 		"--base", branchName,
 		"--head", workingBranch,
 		"--title", title,
 		"--body", body,
-	)
+	}
+	if assignee != "" {
+		prArgs = append(prArgs, "--assignee", assignee)
+	}
+	stdout, _, err := gh.Exec(prArgs...)
 	if err != nil {
 		return "", fmt.Errorf("creating PR: %w", err)
 	}
