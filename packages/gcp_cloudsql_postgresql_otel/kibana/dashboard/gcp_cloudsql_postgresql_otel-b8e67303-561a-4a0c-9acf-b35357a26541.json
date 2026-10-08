@@ -4,7 +4,7 @@
         "owner": "u_w9ug9sRdGNqum7t7uZUQqn82LfM2PYAruNFUONJTYC0_0"
     },
     "attributes": {
-        "description": "Tier 2 detail dashboard scoped to a single Google Cloud SQL for PostgreSQL instance from metrics-gcp.cloudsql_postgresql.otel-*. Reached by drilling down from [GCP OTel] Cloud SQL PostgreSQL Overview, which applies an instance filter matching both database_id (instance metrics) and resource_id (Query Insights). Covers availability, capacity, traffic and errors, connections, I/O and cache, vacuum and wraparound, and Query Insights.",
+        "description": "Health of one Cloud SQL for PostgreSQL instance: availability, capacity, traffic, connections, I/O, vacuum, replication and Query Insights. Open it from the PostgreSQL overview.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [],
@@ -91,7 +91,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Navigation tile — returns to the Cloud SQL PostgreSQL overview dashboard, carrying the current time range.",
+                    "description": "Returns to the PostgreSQL overview.",
                     "drilldowns": [
                         {
                             "encode_url": false,
@@ -200,7 +200,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Navigation tile — opens this instance's raw metric documents in Discover for the current time range.",
+                    "description": "Opens this instance's metrics in Discover.",
                     "drilldowns": [
                         {
                             "encode_url": true,
@@ -229,7 +229,7 @@
                     "esql_query": [
                         "TS metrics-gcp.cloudsql_postgresql.otel-*\n| WHERE TRANGE(?_tstart, ?_tend) AND gcp.resource_type == \"cloudsql_database\"\n| STATS st = MAX(attributes.state) WHERE `cloudsql.googleapis.com/database/instance_state` == 1,\n        up = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/up`)), cores = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/cpu/reserved_cores`)),\n        memq = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/memory/quota`)), diskq = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/disk/quota`)),\n        disk = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/disk/utilization`)), cpu = (SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/cpu/utilization`)) / SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/cpu/utilization`))),\n        mem = (SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/memory/utilization`)) / SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/memory/utilization`))), conns = SUM(MAX_OVER_TIME(`cloudsql.googleapis.com/database/postgresql/num_backends`)),\n        r = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/uptime`)) WHERE `cloudsql.googleapis.com/database/uptime` \u003e 0 AND `cloudsql.googleapis.com/database/uptime` \u003c 55,\n        fo = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/available_for_failover`))\n  BY `@timestamp` = TBUCKET(1 minute), instance_id = database_id, project_id, region\n| STATS state = LAST(st, CASE(st IS NOT NULL, `@timestamp`, NULL)), last_up = LAST(up, CASE(up IS NOT NULL, `@timestamp`, NULL)),\n        last_reserved_cores = LAST(cores, CASE(cores IS NOT NULL, `@timestamp`, NULL)),\n        last_memory_quota = LAST(memq, CASE(memq IS NOT NULL, `@timestamp`, NULL)),\n        last_disk_quota = LAST(diskq, CASE(diskq IS NOT NULL, `@timestamp`, NULL)),\n        last_disk_utilization = LAST(disk, CASE(disk IS NOT NULL, `@timestamp`, NULL)),\n        avg_cpu_utilization = AVG(cpu), avg_memory_utilization = AVG(mem),\n        last_connections = LAST(conns, CASE(conns IS NOT NULL, `@timestamp`, NULL)),\n        restarts = COALESCE(SUM(r), 0), last_failover = LAST(fo, CASE(fo IS NOT NULL, `@timestamp`, NULL))\n  BY instance_id, project_id, region\n| SORT avg_cpu_utilization DESC\n| LIMIT 1"
                     ],
-                    "template": "\u003cstyle\u003e\n  body {\n    margin: 0;\n    padding: var(--cc-space-l);\n    box-sizing: border-box;\n    font-family: var(--cc-font-family);\n    color: var(--cc-color-text);\n    background: var(--cc-color-background);\n  }\n\n  .strip {\n    min-width: 0;\n  }\n\n  .panel-title {\n    font-size: 1rem;\n    font-weight: 600;\n    margin: 0 0 var(--cc-space-s) 0;\n  }\n\n  .ident {\n    min-width: 0;\n    display: flex;\n    flex-direction: column;\n    gap: var(--cc-space-s);\n  }\n\n  .meta-grid {\n    display: grid;\n    grid-template-columns: repeat(3, 1fr);\n    gap: var(--cc-space-l);\n    margin-top: var(--cc-space-xs);\n  }\n\n  .field {\n    display: flex;\n    flex-direction: column;\n    gap: var(--cc-space-xs);\n    min-width: 0;\n  }\n\n  .field-label {\n    font-size: 0.85rem;\n    color: var(--cc-color-text);\n    opacity: 0.6;\n  }\n\n  .field-value {\n    font-size: 1rem;\n    font-weight: 600;\n    word-break: break-all;\n  }\n\n  .empty {\n    font-size: 0.875rem;\n    color: var(--cc-color-text);\n    opacity: 0.6;\n  }\n\n  .cpu-ok { color: #24c292; }\n  .cpu-warn { color: #fcd883; }\n  .cpu-bad { color: #f6726a; }\n  .state-ok { color: #24c292; }\n  .state-bad { color: #f6726a; }\n\u003c/style\u003e\n\n{% if rows.size == 0 %}\n  \u003cdiv class=\"panel-title\"\u003eMetadata\u003c/div\u003e\n  \u003cdiv class=\"empty\"\u003eNo instance selected — drill down from the overview hexmap or instance table.\u003c/div\u003e\n{% else %}\n  {% for row in rows %}\n  \u003cdiv class=\"strip\"\u003e\n    \u003cdiv class=\"panel-title\"\u003eMetadata\u003c/div\u003e\n    \u003cdiv class=\"ident\"\u003e\n      \u003cdiv class=\"meta-grid\"\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eInstance ID\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"instance_id\"].value %}{{ row[\"instance_id\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eProject\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"project_id\"].value %}{{ row[\"project_id\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eRegion\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"region\"].value %}{{ row[\"region\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eState\u003c/div\u003e\n          {% if row[\"state\"].value %}\n            \u003cdiv class=\"field-value {% if row[\"state\"].value == \"RUNNING\" and row[\"last_up\"].value == 1 %}state-ok{% elsif row[\"state\"].value == \"MAINTENANCE\" or row[\"state\"].value == \"PENDING_CREATE\" %}cpu-warn{% else %}state-bad{% endif %}\"\u003e{{ row[\"state\"].value }}{% if row[\"last_up\"].value == 0 %} (down){% endif %}\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003ePartial-uptime minutes\u003c/div\u003e\n          {% if row[\"restarts\"].value != null %}\n            \u003cdiv class=\"field-value {% if row[\"restarts\"].value \u003e 0 %}state-bad{% else %}state-ok{% endif %}\"\u003e{{ row[\"restarts\"].value }}\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003evCPUs\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"last_reserved_cores\"].value %}{{ row[\"last_reserved_cores\"].value | round: 0 }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eRAM\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e\n            {% if row[\"last_memory_quota\"].value %}\n              {% assign b = row[\"last_memory_quota\"].value %}\n              {% if b \u003e= 1099511627776 %}{{ b | divided_by: 1099511627776.0 | round: 2 }} TB\n              {% elsif b \u003e= 1073741824 %}{{ b | divided_by: 1073741824.0 | round: 2 }} GB\n              {% elsif b \u003e= 1048576 %}{{ b | divided_by: 1048576.0 | round: 2 }} MB\n              {% else %}{{ b }} B{% endif %}\n            {% else %}—{% endif %}\n          \u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eAvg CPU\u003c/div\u003e\n          {% if row[\"avg_cpu_utilization\"].value != null %}\n            {% assign cpu = row[\"avg_cpu_utilization\"].value | times: 100.0 %}\n            \u003cdiv class=\"field-value {% if cpu \u003e= 90 %}cpu-bad{% elsif cpu \u003e= 70 %}cpu-warn{% else %}cpu-ok{% endif %}\"\u003e{{ cpu | round: 1 }}%\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eAvg memory\u003c/div\u003e\n          {% if row[\"avg_memory_utilization\"].value != null %}\n            {% assign mem = row[\"avg_memory_utilization\"].value | times: 100.0 %}\n            \u003cdiv class=\"field-value {% if mem \u003e= 90 %}cpu-bad{% elsif mem \u003e= 70 %}cpu-warn{% else %}cpu-ok{% endif %}\"\u003e{{ mem | round: 1 }}%\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eConnections\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"last_connections\"].value != null %}{{ row[\"last_connections\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eDisk size\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e\n            {% if row[\"last_disk_quota\"].value %}\n              {% assign b = row[\"last_disk_quota\"].value %}\n              {% if b \u003e= 1099511627776 %}{{ b | divided_by: 1099511627776.0 | round: 2 }} TB\n              {% elsif b \u003e= 1073741824 %}{{ b | divided_by: 1073741824.0 | round: 2 }} GB\n              {% elsif b \u003e= 1048576 %}{{ b | divided_by: 1048576.0 | round: 2 }} MB\n              {% else %}{{ b }} B{% endif %}\n            {% else %}—{% endif %}\n          \u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eDisk used\u003c/div\u003e\n          {% if row[\"last_disk_utilization\"].value != null %}\n            {% assign disk = row[\"last_disk_utilization\"].value | times: 100.0 %}\n            \u003cdiv class=\"field-value {% if disk \u003e= 90 %}cpu-bad{% elsif disk \u003e= 80 %}cpu-warn{% else %}cpu-ok{% endif %}\"\u003e{{ disk | round: 1 }}%\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eHA failover\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"last_failover\"].value == null %}Not configured{% elsif row[\"last_failover\"].value \u003e 0 %}\u003cspan class=\"state-ok\"\u003eReady\u003c/span\u003e{% else %}\u003cspan class=\"state-bad\"\u003eUnavailable\u003c/span\u003e{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n      \u003c/div\u003e\n    \u003c/div\u003e\n  \u003c/div\u003e\n  {% endfor %}\n{% endif %}"
+                    "template": "\u003cstyle\u003e\n  body {\n    margin: 0;\n    padding: var(--cc-space-l);\n    box-sizing: border-box;\n    font-family: var(--cc-font-family);\n    color: var(--cc-color-text);\n    background: var(--cc-color-background);\n  }\n\n  .strip {\n    min-width: 0;\n  }\n\n  .panel-title {\n    font-size: 1rem;\n    font-weight: 600;\n    margin: 0 0 var(--cc-space-s) 0;\n  }\n\n  .ident {\n    min-width: 0;\n    display: flex;\n    flex-direction: column;\n    gap: var(--cc-space-s);\n  }\n\n  .meta-grid {\n    display: grid;\n    grid-template-columns: repeat(3, 1fr);\n    gap: var(--cc-space-l);\n    margin-top: var(--cc-space-xs);\n  }\n\n  .field {\n    display: flex;\n    flex-direction: column;\n    gap: var(--cc-space-xs);\n    min-width: 0;\n  }\n\n  .field-label {\n    font-size: 0.85rem;\n    color: var(--cc-color-text);\n    opacity: 0.6;\n  }\n\n  .field-value {\n    font-size: 1rem;\n    font-weight: 600;\n    word-break: break-all;\n  }\n\n  .empty {\n    font-size: 0.875rem;\n    color: var(--cc-color-text);\n    opacity: 0.6;\n  }\n\n  .cpu-ok { color: #24c292; }\n  .cpu-warn { color: #fcd883; }\n  .cpu-bad { color: #f6726a; }\n  .state-ok { color: #24c292; }\n  .state-bad { color: #f6726a; }\n\u003c/style\u003e\n\n{% if rows.size == 0 %}\n  \u003cdiv class=\"panel-title\"\u003eMetadata\u003c/div\u003e\n  \u003cdiv class=\"empty\"\u003eNo instance selected — drill down from the overview hexmap or instance table.\u003c/div\u003e\n{% else %}\n  {% for row in rows %}\n  \u003cdiv class=\"strip\"\u003e\n    \u003cdiv class=\"panel-title\"\u003eMetadata\u003c/div\u003e\n    \u003cdiv class=\"ident\"\u003e\n      \u003cdiv class=\"meta-grid\"\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eInstance ID\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"instance_id\"].value %}{{ row[\"instance_id\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eProject\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"project_id\"].value %}{{ row[\"project_id\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eRegion\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"region\"].value %}{{ row[\"region\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eState\u003c/div\u003e\n          {% if row[\"state\"].value %}\n            \u003cdiv class=\"field-value {% if row[\"state\"].value == \"RUNNING\" and row[\"last_up\"].value == 1 %}state-ok{% elsif row[\"state\"].value == \"MAINTENANCE\" or row[\"state\"].value == \"PENDING_CREATE\" %}cpu-warn{% else %}state-bad{% endif %}\"\u003e{{ row[\"state\"].value }}{% if row[\"last_up\"].value == 0 %} (down){% endif %}\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003ePartial downtime minutes\u003c/div\u003e\n          {% if row[\"restarts\"].value != null %}\n            \u003cdiv class=\"field-value {% if row[\"restarts\"].value \u003e 0 %}state-bad{% else %}state-ok{% endif %}\"\u003e{{ row[\"restarts\"].value }}\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003evCPUs\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"last_reserved_cores\"].value %}{{ row[\"last_reserved_cores\"].value | round: 0 }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eRAM\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e\n            {% if row[\"last_memory_quota\"].value %}\n              {% assign b = row[\"last_memory_quota\"].value %}\n              {% if b \u003e= 1099511627776 %}{{ b | divided_by: 1099511627776.0 | round: 2 }} TB\n              {% elsif b \u003e= 1073741824 %}{{ b | divided_by: 1073741824.0 | round: 2 }} GB\n              {% elsif b \u003e= 1048576 %}{{ b | divided_by: 1048576.0 | round: 2 }} MB\n              {% else %}{{ b }} B{% endif %}\n            {% else %}—{% endif %}\n          \u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eAvg CPU\u003c/div\u003e\n          {% if row[\"avg_cpu_utilization\"].value != null %}\n            {% assign cpu = row[\"avg_cpu_utilization\"].value | times: 100.0 %}\n            \u003cdiv class=\"field-value {% if cpu \u003e= 90 %}cpu-bad{% elsif cpu \u003e= 70 %}cpu-warn{% else %}cpu-ok{% endif %}\"\u003e{{ cpu | round: 1 }}%\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eAvg memory\u003c/div\u003e\n          {% if row[\"avg_memory_utilization\"].value != null %}\n            {% assign mem = row[\"avg_memory_utilization\"].value | times: 100.0 %}\n            \u003cdiv class=\"field-value {% if mem \u003e= 90 %}cpu-bad{% elsif mem \u003e= 70 %}cpu-warn{% else %}cpu-ok{% endif %}\"\u003e{{ mem | round: 1 }}%\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eConnections\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"last_connections\"].value != null %}{{ row[\"last_connections\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eDisk size\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e\n            {% if row[\"last_disk_quota\"].value %}\n              {% assign b = row[\"last_disk_quota\"].value %}\n              {% if b \u003e= 1099511627776 %}{{ b | divided_by: 1099511627776.0 | round: 2 }} TB\n              {% elsif b \u003e= 1073741824 %}{{ b | divided_by: 1073741824.0 | round: 2 }} GB\n              {% elsif b \u003e= 1048576 %}{{ b | divided_by: 1048576.0 | round: 2 }} MB\n              {% else %}{{ b }} B{% endif %}\n            {% else %}—{% endif %}\n          \u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eDisk used\u003c/div\u003e\n          {% if row[\"last_disk_utilization\"].value != null %}\n            {% assign disk = row[\"last_disk_utilization\"].value | times: 100.0 %}\n            \u003cdiv class=\"field-value {% if disk \u003e= 90 %}cpu-bad{% elsif disk \u003e= 80 %}cpu-warn{% else %}cpu-ok{% endif %}\"\u003e{{ disk | round: 1 }}%\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eHA failover\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"last_failover\"].value == null %}Not configured{% elsif row[\"last_failover\"].value \u003e 0 %}\u003cspan class=\"state-ok\"\u003eReady\u003c/span\u003e{% else %}\u003cspan class=\"state-bad\"\u003eUnavailable\u003c/span\u003e{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n      \u003c/div\u003e\n    \u003c/div\u003e\n  \u003c/div\u003e\n  {% endfor %}\n{% endif %}"
                 },
                 "gridData": {
                     "h": 12,
@@ -316,7 +316,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Committed plus rolled-back transactions per second over the selected range: one-minute delta counts divided by the minutes the instance was reporting, the same method as the TPS chart.",
+                    "description": "Committed plus rolled-back transactions per second over the selected range.",
                     "title": "Transactions/s"
                 },
                 "gridData": {
@@ -449,7 +449,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Rolled-back transactions as a percentage of all transactions. Green \u003c 1%, yellow 1–5%, red ≥ 5%.",
+                    "description": "Rolled-back transactions as a share of all transactions. Green below 1%, amber from 1%, red from 5%.",
                     "title": "Rollback rate %"
                 },
                 "gridData": {
@@ -582,7 +582,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Share of block reads served from the buffer cache instead of disk. Google recommends keeping it above 99%; lower means the working set no longer fits in memory. Red \u003c 95%, yellow 95–99%, green ≥ 99%.",
+                    "description": "Share of block reads served from the buffer cache rather than disk. Google recommends staying above 99%. Red below 95%, amber from 95%, green from 99%.",
                     "title": "Buffer cache hit %"
                 },
                 "gridData": {
@@ -715,7 +715,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Share of the transaction ID space consumed (wraparound risk). At 100% PostgreSQL forces a read-only shutdown. Green \u003c 50%, yellow 50–80%, red ≥ 80%.",
+                    "description": "Share of transaction IDs consumed. At 100% PostgreSQL stops accepting writes to prevent wraparound. Green below 50%, amber from 50%, red from 80%.",
                     "title": "XID utilization %"
                 },
                 "gridData": {
@@ -974,7 +974,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Instance state reported by Cloud SQL in each time bucket (one-hot instance_state). A healthy instance shows a solid RUNNING band; MAINTENANCE, SUSPENDED or FAILED segments show when and for how long it was not serving.",
+                    "description": "Cloud SQL state of the instance over time. RUNNING is healthy; MAINTENANCE, RUNNABLE (stopped by the owner), SUSPENDED or FAILED mean the instance is not serving.",
                     "title": "Instance state over time"
                 },
                 "gridData": {
@@ -1122,8 +1122,8 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Lowest one-minute uptime sample in each time bucket. A flat line at 60 s is healthy; dips below 55 s mark a restart and gaps mean the instance reported nothing at all.",
-                    "title": "Uptime per bucket (restart detector)"
+                    "description": "Lowest `database/uptime` sample in each bucket: the seconds the instance was running within a minute. About 60 is a full minute; a clear dip is partial downtime (a start, stop or restart), and a gap means no data.",
+                    "title": "Lowest uptime per minute"
                 },
                 "gridData": {
                     "h": 10,
@@ -1295,7 +1295,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Average CPU utilization (left axis) against the reserved vCPU count (right axis). Sustained utilization above 80% means the tier is too small for the workload; a step in reserved cores marks a tier change.",
+                    "description": "Average CPU utilization (left axis) and reserved vCPUs (right axis). A step in reserved cores marks a tier change.",
                     "title": "CPU utilization vs reserved cores"
                 },
                 "gridData": {
@@ -1483,7 +1483,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Memory in use excluding buffer/cache (database/memory/usage), total memory in use including buffer/cache (database/memory/total_usage), and the instance memory quota, as defined in Google Cloud Monitoring. Memory utilization is usage divided by the quota. Usage approaching the quota line risks an out-of-memory restart; buffer/cache counted in total usage can be reclaimed by the operating system.",
+                    "description": "RAM in use excluding buffer/cache (`memory/usage`), total RAM in use including buffer/cache (`memory/total_usage`), and the memory quota.",
                     "title": "Memory usage vs quota"
                 },
                 "gridData": {
@@ -1649,7 +1649,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Bytes used on the data disk against the provisioned disk quota. The instance goes read-only when usage reaches the quota; enable automatic storage increase or resize well before the lines meet.",
+                    "description": "Data disk bytes used against the disk quota. Writes fail when the disk is full.",
                     "title": "Disk usage vs quota"
                 },
                 "gridData": {
@@ -1820,7 +1820,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Memory and disk utilization as a percentage of their quotas on one axis, for quickly spotting which resource is closer to its limit.",
+                    "description": "Memory and disk utilization as a percentage of their quotas.",
                     "title": "Memory and disk utilization"
                 },
                 "gridData": {
@@ -2022,7 +2022,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Committed and rolled-back transactions per second, from one-minute delta counts divided by the minutes that reported data in each bucket. A growing rollback band points at application errors, serialization failures or deadlocks.",
+                    "description": "Committed and rolled-back transactions per second.",
                     "title": "TPS by commit vs rollback"
                 },
                 "gridData": {
@@ -2168,7 +2168,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Rolled-back transactions as a percentage of all transactions in each bucket. Below 1% is normal; a sustained rise means the application is failing or retrying transactions.",
+                    "description": "Rolled-back transactions as a share of all transactions. Below 1% is normal.",
                     "title": "Rollback ratio"
                 },
                 "gridData": {
@@ -2439,7 +2439,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Statements executed per second by operation type (SELECT, INSERT, UPDATE, DELETE…). Use it to see whether a load change is read- or write-driven.",
+                    "description": "Statements executed per second by operation type (`postgresql/statements_executed_count`).",
                     "title": "Statements per second by operation type"
                 },
                 "gridData": {
@@ -2583,7 +2583,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Deadlocks detected in each time bucket. Any non-zero bar means two transactions blocked each other and one was aborted; correlate with the rollback ratio.",
+                    "description": "Deadlocks detected in each bucket (`postgresql/deadlock_count`).",
                     "title": "Deadlocks over time"
                 },
                 "gridData": {
@@ -2845,7 +2845,7 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Each PostgreSQL database inside this instance, sorted by transactions per second. Instance charts show the combined load; this splits it so you can see which database drives a spike, rollbacks, connection churn or temp-file spill. Rates use the minutes the instance was reporting, so they add up to the instance totals. postgres is the default administrative database, template1 is PostgreSQL's template, and cloudsqladmin is a Cloud SQL system database whose activity comes from Cloud SQL itself rather than your application.",
+                    "description": "Transactions, rollbacks, connections, cache hit ratio, deadlocks and temp-file spill for each database in the instance. cloudsqladmin is a Cloud SQL system database.",
                     "title": "Databases in this instance"
                 },
                 "gridData": {
@@ -3014,7 +3014,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Average backend connections by state (active, idle, idle in transaction…), summed across databases per minute. Many idle-in-transaction backends hold locks and block vacuum.",
+                    "description": "Connections by state, such as active, idle and idle in transaction (`postgresql/num_backends_by_state`).",
                     "title": "Backends by state"
                 },
                 "gridData": {
@@ -3148,7 +3148,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "New connections opened per second. A high rate relative to active backends means the application is not pooling connections, which wastes CPU on authentication and fork.",
+                    "description": "New connections per second (`postgresql/new_connection_count`). A high rate usually means the application is not pooling connections.",
                     "title": "New connections per second"
                 },
                 "gridData": {
@@ -3315,7 +3315,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Average number of backends waiting, by wait event type (Lock, LWLock, IO, Client…), summed across databases per minute. Lock waits point at contention; IO waits at an undersized disk or cache.",
+                    "description": "Backends waiting, by wait event type such as Lock, LWLock, IO or Client (`postgresql/backends_in_wait`).",
                     "title": "Backends in wait by wait event type"
                 },
                 "gridData": {
@@ -3462,7 +3462,7 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "The wait events with the most waiting backends on average over the selected range, with their type and backend type.",
+                    "description": "Wait events with the most waiting backends on average in the selected range.",
                     "title": "Top 10 wait events"
                 },
                 "gridData": {
@@ -3663,7 +3663,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Connection attempts per second split into succeeded and failed logins, from one-minute delta counts divided by the minutes the instance was reporting. A steady failed band usually means wrong credentials or a misconfigured client; a sudden spike can be a bad deploy or a brute-force attempt. Failed logins never show up as load elsewhere.",
+                    "description": "Connection attempts per second, split into succeeded and failed logins (`network/connection_attempt_count`).",
                     "title": "Connection attempts by outcome"
                 },
                 "gridData": {
@@ -3807,7 +3807,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Share of block reads served from shared buffers rather than disk. Google recommends staying above 99%; a falling ratio means the working set no longer fits in memory.",
+                    "description": "Share of block reads served from the buffer cache rather than disk. Google recommends staying above 99%.",
                     "title": "Buffer cache hit ratio"
                 },
                 "gridData": {
@@ -3973,7 +3973,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Blocks read per second, split into buffer cache hits and disk reads, from one-minute delta counts divided by the minutes that reported data.",
+                    "description": "Blocks read per second from the buffer cache and from disk (`postgresql/blocks_read_count`).",
                     "title": "Blocks read per second by source"
                 },
                 "gridData": {
@@ -4122,7 +4122,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Disk read and write operations per second, from one-minute delta counts divided by the minutes that reported data. IOPS limits scale with disk size; flat-topped lines suggest the limit is being hit.",
+                    "description": "Data disk read and write operations per second.",
                     "title": "Disk read and write IOPS"
                 },
                 "gridData": {
@@ -4289,7 +4289,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Disk read and write throughput in bytes per second, from one-minute delta counts divided by the minutes that reported data in each bucket.",
+                    "description": "Data disk read and write bytes per second.",
                     "title": "Disk throughput"
                 },
                 "gridData": {
@@ -4451,7 +4451,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Temporary files (left axis) and bytes (right axis) written in each bucket when sorts or hashes exceed work_mem. Frequent spills slow queries and consume disk; tune work_mem or the offending queries.",
+                    "description": "Temporary files (left axis) and bytes (right axis) written when sorts or hashes exceed work_mem.",
                     "title": "Temp file spill"
                 },
                 "gridData": {
@@ -4618,7 +4618,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Network bytes received and sent per second, from one-minute delta counts divided by the minutes that reported data. Egress spikes usually mean large result sets or replication catch-up.",
+                    "description": "Network bytes received and sent per second.",
                     "title": "Network in and out"
                 },
                 "gridData": {
@@ -4766,7 +4766,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Peak transaction ID utilization in each bucket; at 100% PostgreSQL stops accepting writes to prevent wraparound. It should saw-tooth down after each anti-wraparound vacuum.",
+                    "description": "Peak transaction ID utilization in each bucket. It should drop after each anti-wraparound vacuum; at 100% PostgreSQL stops accepting writes.",
                     "title": "XID utilization"
                 },
                 "gridData": {
@@ -4912,7 +4912,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Transaction IDs assigned versus frozen by vacuum in each bucket. Assigned persistently exceeding frozen means XID utilization is climbing.",
+                    "description": "Transaction IDs assigned and frozen by vacuum in each bucket (`postgresql/transaction_id_count`). Assigned staying above frozen means utilization is climbing.",
                     "title": "XIDs assigned vs frozen"
                 },
                 "gridData": {
@@ -5079,7 +5079,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Age, in transactions, of the oldest transaction of each type (running, prepared, replication slot, replica). Whatever holds the oldest XID blocks vacuum from freezing tuples.",
+                    "description": "Age of the oldest transaction not yet vacuumed, in transactions, by type: running, prepared, replication slot or replica.",
                     "title": "Oldest transaction age by type"
                 },
                 "gridData": {
@@ -5243,7 +5243,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "How many seconds this read replica is behind its primary, peak per time bucket. Near zero is healthy; a steady climb means the replica cannot replay changes as fast as the primary writes them, so reads from it are stale.",
+                    "description": "Seconds this read replica is behind its primary, peak per bucket (`replication/replica_lag`).",
                     "title": "Replica lag (this instance as a replica)"
                 },
                 "gridData": {
@@ -5414,7 +5414,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Bytes of WAL each replica still has to replay, peak per time bucket (replay_location, the end of the replication pipeline). Lag that keeps growing means the replica is falling behind; the primary must retain that WAL, which consumes its disk.",
+                    "description": "Bytes each replica still has to replay, peak per bucket (`postgresql/replication/replica_byte_lag`).",
                     "title": "Replay byte lag by replica (this instance as a primary)"
                 },
                 "gridData": {
@@ -5622,7 +5622,7 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Latest byte lag of each replica at every stage of the replication pipeline, in order: sent by the primary, written, flushed and replayed on the replica. The stage where the lag builds up shows the bottleneck: sent means the primary or network, write/flush means the replica's disk, replay means the replica's CPU or conflicting queries.",
+                    "description": "Latest byte lag of each replica at each stage: sent, write, flush and replay. The stage where lag builds up shows the bottleneck.",
                     "title": "Replicas of this instance"
                 },
                 "gridData": {
@@ -5638,7 +5638,7 @@
             },
             {
                 "embeddableConfig": {
-                    "content": "**Requires Query Insights.** These panels use the `cloudsql_instance_database` resource (`resource_id`, `database`) and CUMULATIVE counters aggregated with `SUM(RATE(...))`. They stay empty on instances where Query Insights is not enabled.",
+                    "content": "**Requires Query Insights.** These panels stay empty on instances where Query Insights is not enabled.",
                     "settings": {
                         "open_links_in_new_tab": true
                     }
@@ -5809,7 +5809,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Database load in seconds of query execution per second, by database (Query Insights). A value above the vCPU count means queries are queuing.",
+                    "description": "Query execution time per second by database (Query Insights). Above the vCPU count means queries are queuing.",
                     "title": "DB load by database"
                 },
                 "gridData": {
@@ -5978,7 +5978,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Database load by database user (Query Insights).",
+                    "description": "Query execution time per second by database user (Query Insights).",
                     "title": "DB load by user"
                 },
                 "gridData": {
@@ -6147,7 +6147,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Share of query execution time spent waiting on IO and on locks (Query Insights). A rising lock share means contention; a rising IO share means cache misses.",
+                    "description": "Share of query execution time spent on IO and on lock waits (Query Insights).",
                     "title": "IO and lock share of DB time"
                 },
                 "gridData": {
@@ -6316,7 +6316,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Lock wait time per second by lock type (Query Insights).",
+                    "description": "Lock wait time per second by lock type: lw, hw or buffer_pin (Query Insights).",
                     "title": "Lock time by lock type"
                 },
                 "gridData": {
@@ -6483,7 +6483,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Rows returned or affected per second by database (Query Insights).",
+                    "description": "Rows affected per second by database (Query Insights).",
                     "title": "Rows per second"
                 },
                 "gridData": {
@@ -6662,7 +6662,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Shared buffer hit ratio of queries per database user (Query Insights).",
+                    "description": "Share of shared-block accesses that were cache hits, by database user (Query Insights).",
                     "title": "Cache hit ratio by user"
                 },
                 "gridData": {
@@ -6792,7 +6792,7 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Client addresses and users generating the most database load (Query Insights).",
+                    "description": "Client addresses and users with the most query execution time (Query Insights).",
                     "title": "Top 10 client addresses by DB load"
                 },
                 "gridData": {
