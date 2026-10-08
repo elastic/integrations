@@ -1,6 +1,6 @@
 {
     "attributes": {
-        "description": "Tier 2 detail dashboard scoped to a single Google Cloud SQL for SQL Server instance from metrics-gcp.cloudsql_sqlserver.otel-*. Reached by drilling down from [GCP OTel] Cloud SQL - SQL Server Overview, which applies a database_id filter. Availability, capacity, traffic and errors, connections, locking and blocking, memory and I/O, high availability and replication. Only instances that report a SQL Server-specific metric (sqlserver/memory/page_life_expectancy) in the selected range are included, so MySQL and PostgreSQL instances sharing this data stream never appear.",
+        "description": "Health of one Cloud SQL for SQL Server instance: availability, capacity, traffic, connections, locking and blocking, memory and I/O, high availability and replication. Open it from the SQL Server overview.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {}
         },
@@ -81,7 +81,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Navigation tile — returns to the Cloud SQL - SQL Server overview dashboard, carrying the current time range.",
+                    "description": "Returns to the SQL Server overview.",
                     "drilldowns": [
                         {
                             "encode_url": false,
@@ -107,7 +107,7 @@
             },
             {
                 "embeddableConfig": {
-                    "description": "Name of the SQL Server instance in focus (the part of database_id after the colon), taken from the database_id filter applied by the overview drilldown.",
+                    "description": "Name of the selected instance.",
                     "esql_query": [
                         "TS metrics-gcp.cloudsql_sqlserver.otel-*\n| WHERE TRANGE(?_tstart, ?_tend) AND gcp.resource_type == \"cloudsql_database\"\n| STATS ss = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/sqlserver/memory/page_life_expectancy`)) BY database_id\n| WHERE ss \u003e 0\n| STATS instance_id = MAX(database_id)\n| EVAL instance_name = MV_LAST(SPLIT(instance_id, \":\"))\n| LIMIT 1"
                     ],
@@ -191,7 +191,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Navigation tile — opens this instance's raw metric documents in Discover for the current time range, carrying the dashboard filters.",
+                    "description": "Opens this instance's metrics in Discover.",
                     "drilldowns": [
                         {
                             "encode_url": true,
@@ -217,11 +217,11 @@
             },
             {
                 "embeddableConfig": {
-                    "description": "Identity and capacity of the SQL Server instance in focus: instance ID, project, region, latest Cloud SQL state, partial-uptime minutes (restarts) in the range, vCPUs, RAM and disk size, average CPU and memory utilization over the range, latest open connections, latest disk utilization and HA failover readiness. Problem values are coloured: state other than RUNNING, any partial-uptime minute, CPU or memory at 70% (amber) or 90% (red), disk at 80% (amber) or 90% (red). Only instances that report a SQL Server-specific metric (sqlserver/memory/page_life_expectancy) in the selected range are included, so MySQL and PostgreSQL instances sharing this data stream never appear.",
+                    "description": "Identity, state and capacity of the selected instance. Values outside healthy ranges are coloured.",
                     "esql_query": [
                         "TS metrics-gcp.cloudsql_sqlserver.otel-*\n| WHERE TRANGE(?_tstart, ?_tend) AND gcp.resource_type == \"cloudsql_database\"\n| STATS st = MAX(attributes.state) WHERE `cloudsql.googleapis.com/database/instance_state` == 1,\n        up = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/up`)), cores = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/cpu/reserved_cores`)),\n        memq = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/memory/quota`)), diskq = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/disk/quota`)),\n        disk = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/disk/utilization`)), cpu = (SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/cpu/utilization`)) / SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/cpu/utilization`))),\n        mem = (SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/memory/utilization`)) / SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/memory/utilization`))), conns = SUM(MAX_OVER_TIME(`cloudsql.googleapis.com/database/network/connections`)),\n        r = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/uptime`)) WHERE `cloudsql.googleapis.com/database/uptime` \u003e 0 AND `cloudsql.googleapis.com/database/uptime` \u003c 55,\n        fo = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/available_for_failover`)), ss = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/sqlserver/memory/page_life_expectancy`))\n  BY `@timestamp` = TBUCKET(1 minute), instance_id = database_id, project_id, region\n| STATS state = LAST(st, CASE(st IS NOT NULL, `@timestamp`, NULL)), last_up = LAST(up, CASE(up IS NOT NULL, `@timestamp`, NULL)),\n        last_reserved_cores = LAST(cores, CASE(cores IS NOT NULL, `@timestamp`, NULL)),\n        last_memory_quota = LAST(memq, CASE(memq IS NOT NULL, `@timestamp`, NULL)),\n        last_disk_quota = LAST(diskq, CASE(diskq IS NOT NULL, `@timestamp`, NULL)),\n        last_disk_utilization = LAST(disk, CASE(disk IS NOT NULL, `@timestamp`, NULL)),\n        avg_cpu_utilization = AVG(cpu), avg_memory_utilization = AVG(mem),\n        last_connections = LAST(conns, CASE(conns IS NOT NULL, `@timestamp`, NULL)),\n        restarts = COALESCE(SUM(r), 0), last_failover = LAST(fo, CASE(fo IS NOT NULL, `@timestamp`, NULL)), ss = SUM(ss)\n  BY instance_id, project_id, region\n| WHERE ss \u003e 0\n| SORT avg_cpu_utilization DESC\n| LIMIT 1"
                     ],
-                    "template": "\u003cstyle\u003e\n  body {\n    margin: 0;\n    padding: var(--cc-space-l);\n    box-sizing: border-box;\n    font-family: var(--cc-font-family);\n    color: var(--cc-color-text);\n    background: var(--cc-color-background);\n  }\n\n  .strip {\n    min-width: 0;\n  }\n\n  .panel-title {\n    font-size: 1rem;\n    font-weight: 600;\n    margin: 0 0 var(--cc-space-s) 0;\n  }\n\n  .ident {\n    min-width: 0;\n    display: flex;\n    flex-direction: column;\n    gap: var(--cc-space-s);\n  }\n\n  .meta-grid {\n    display: grid;\n    grid-template-columns: repeat(3, 1fr);\n    gap: var(--cc-space-l);\n    margin-top: var(--cc-space-xs);\n  }\n\n  .field {\n    display: flex;\n    flex-direction: column;\n    gap: var(--cc-space-xs);\n    min-width: 0;\n  }\n\n  .field-label {\n    font-size: 0.85rem;\n    color: var(--cc-color-text);\n    opacity: 0.6;\n  }\n\n  .field-value {\n    font-size: 1rem;\n    font-weight: 600;\n    word-break: break-all;\n  }\n\n  .empty {\n    font-size: 0.875rem;\n    color: var(--cc-color-text);\n    opacity: 0.6;\n  }\n\n  .cpu-ok { color: #24c292; }\n  .cpu-warn { color: #fcd883; }\n  .cpu-bad { color: #f6726a; }\n  .state-ok { color: #24c292; }\n  .state-bad { color: #f6726a; }\n\u003c/style\u003e\n\n{% if rows.size == 0 %}\n  \u003cdiv class=\"panel-title\"\u003eMetadata\u003c/div\u003e\n  \u003cdiv class=\"empty\"\u003eNo instance selected — drill down from the overview hexmap or instance table.\u003c/div\u003e\n{% else %}\n  {% for row in rows %}\n  \u003cdiv class=\"strip\"\u003e\n    \u003cdiv class=\"panel-title\"\u003eMetadata\u003c/div\u003e\n    \u003cdiv class=\"ident\"\u003e\n      \u003cdiv class=\"meta-grid\"\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eInstance ID\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"instance_id\"].value %}{{ row[\"instance_id\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eProject\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"project_id\"].value %}{{ row[\"project_id\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eRegion\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"region\"].value %}{{ row[\"region\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eState\u003c/div\u003e\n          {% if row[\"state\"].value %}\n            \u003cdiv class=\"field-value {% if row[\"state\"].value == \"RUNNING\" and row[\"last_up\"].value == 1 %}state-ok{% elsif row[\"state\"].value == \"MAINTENANCE\" or row[\"state\"].value == \"PENDING_CREATE\" %}cpu-warn{% else %}state-bad{% endif %}\"\u003e{{ row[\"state\"].value }}{% if row[\"last_up\"].value == 0 %} (down){% endif %}\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003ePartial-uptime minutes\u003c/div\u003e\n          {% if row[\"restarts\"].value != null %}\n            \u003cdiv class=\"field-value {% if row[\"restarts\"].value \u003e 0 %}state-bad{% else %}state-ok{% endif %}\"\u003e{{ row[\"restarts\"].value }}\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003evCPUs\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"last_reserved_cores\"].value %}{{ row[\"last_reserved_cores\"].value | round: 0 }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eRAM\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e\n            {% if row[\"last_memory_quota\"].value %}\n              {% assign b = row[\"last_memory_quota\"].value %}\n              {% if b \u003e= 1099511627776 %}{{ b | divided_by: 1099511627776.0 | round: 2 }} TB\n              {% elsif b \u003e= 1073741824 %}{{ b | divided_by: 1073741824.0 | round: 2 }} GB\n              {% elsif b \u003e= 1048576 %}{{ b | divided_by: 1048576.0 | round: 2 }} MB\n              {% else %}{{ b }} B{% endif %}\n            {% else %}—{% endif %}\n          \u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eAvg CPU\u003c/div\u003e\n          {% if row[\"avg_cpu_utilization\"].value != null %}\n            {% assign cpu = row[\"avg_cpu_utilization\"].value | times: 100.0 %}\n            \u003cdiv class=\"field-value {% if cpu \u003e= 90 %}cpu-bad{% elsif cpu \u003e= 70 %}cpu-warn{% else %}cpu-ok{% endif %}\"\u003e{{ cpu | round: 1 }}%\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eAvg memory\u003c/div\u003e\n          {% if row[\"avg_memory_utilization\"].value != null %}\n            {% assign mem = row[\"avg_memory_utilization\"].value | times: 100.0 %}\n            \u003cdiv class=\"field-value {% if mem \u003e= 90 %}cpu-bad{% elsif mem \u003e= 70 %}cpu-warn{% else %}cpu-ok{% endif %}\"\u003e{{ mem | round: 1 }}%\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eConnections\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"last_connections\"].value != null %}{{ row[\"last_connections\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eDisk size\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e\n            {% if row[\"last_disk_quota\"].value %}\n              {% assign b = row[\"last_disk_quota\"].value %}\n              {% if b \u003e= 1099511627776 %}{{ b | divided_by: 1099511627776.0 | round: 2 }} TB\n              {% elsif b \u003e= 1073741824 %}{{ b | divided_by: 1073741824.0 | round: 2 }} GB\n              {% elsif b \u003e= 1048576 %}{{ b | divided_by: 1048576.0 | round: 2 }} MB\n              {% else %}{{ b }} B{% endif %}\n            {% else %}—{% endif %}\n          \u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eDisk used\u003c/div\u003e\n          {% if row[\"last_disk_utilization\"].value != null %}\n            {% assign disk = row[\"last_disk_utilization\"].value | times: 100.0 %}\n            \u003cdiv class=\"field-value {% if disk \u003e= 90 %}cpu-bad{% elsif disk \u003e= 80 %}cpu-warn{% else %}cpu-ok{% endif %}\"\u003e{{ disk | round: 1 }}%\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eHA failover\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"last_failover\"].value == null %}Not configured{% elsif row[\"last_failover\"].value \u003e 0 %}\u003cspan class=\"state-ok\"\u003eReady\u003c/span\u003e{% else %}\u003cspan class=\"state-bad\"\u003eUnavailable\u003c/span\u003e{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n      \u003c/div\u003e\n    \u003c/div\u003e\n  \u003c/div\u003e\n  {% endfor %}\n{% endif %}"
+                    "template": "\u003cstyle\u003e\n  body {\n    margin: 0;\n    padding: var(--cc-space-l);\n    box-sizing: border-box;\n    font-family: var(--cc-font-family);\n    color: var(--cc-color-text);\n    background: var(--cc-color-background);\n  }\n\n  .strip {\n    min-width: 0;\n  }\n\n  .panel-title {\n    font-size: 1rem;\n    font-weight: 600;\n    margin: 0 0 var(--cc-space-s) 0;\n  }\n\n  .ident {\n    min-width: 0;\n    display: flex;\n    flex-direction: column;\n    gap: var(--cc-space-s);\n  }\n\n  .meta-grid {\n    display: grid;\n    grid-template-columns: repeat(3, 1fr);\n    gap: var(--cc-space-l);\n    margin-top: var(--cc-space-xs);\n  }\n\n  .field {\n    display: flex;\n    flex-direction: column;\n    gap: var(--cc-space-xs);\n    min-width: 0;\n  }\n\n  .field-label {\n    font-size: 0.85rem;\n    color: var(--cc-color-text);\n    opacity: 0.6;\n  }\n\n  .field-value {\n    font-size: 1rem;\n    font-weight: 600;\n    word-break: break-all;\n  }\n\n  .empty {\n    font-size: 0.875rem;\n    color: var(--cc-color-text);\n    opacity: 0.6;\n  }\n\n  .cpu-ok { color: #24c292; }\n  .cpu-warn { color: #fcd883; }\n  .cpu-bad { color: #f6726a; }\n  .state-ok { color: #24c292; }\n  .state-bad { color: #f6726a; }\n\u003c/style\u003e\n\n{% if rows.size == 0 %}\n  \u003cdiv class=\"panel-title\"\u003eMetadata\u003c/div\u003e\n  \u003cdiv class=\"empty\"\u003eNo instance selected — drill down from the overview hexmap or instance table.\u003c/div\u003e\n{% else %}\n  {% for row in rows %}\n  \u003cdiv class=\"strip\"\u003e\n    \u003cdiv class=\"panel-title\"\u003eMetadata\u003c/div\u003e\n    \u003cdiv class=\"ident\"\u003e\n      \u003cdiv class=\"meta-grid\"\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eInstance ID\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"instance_id\"].value %}{{ row[\"instance_id\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eProject\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"project_id\"].value %}{{ row[\"project_id\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eRegion\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"region\"].value %}{{ row[\"region\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eState\u003c/div\u003e\n          {% if row[\"state\"].value %}\n            \u003cdiv class=\"field-value {% if row[\"state\"].value == \"RUNNING\" and row[\"last_up\"].value == 1 %}state-ok{% elsif row[\"state\"].value == \"MAINTENANCE\" or row[\"state\"].value == \"PENDING_CREATE\" %}cpu-warn{% else %}state-bad{% endif %}\"\u003e{{ row[\"state\"].value }}{% if row[\"last_up\"].value == 0 %} (down){% endif %}\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003ePartial downtime minutes\u003c/div\u003e\n          {% if row[\"restarts\"].value != null %}\n            \u003cdiv class=\"field-value {% if row[\"restarts\"].value \u003e 0 %}state-bad{% else %}state-ok{% endif %}\"\u003e{{ row[\"restarts\"].value }}\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003evCPUs\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"last_reserved_cores\"].value %}{{ row[\"last_reserved_cores\"].value | round: 0 }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eRAM\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e\n            {% if row[\"last_memory_quota\"].value %}\n              {% assign b = row[\"last_memory_quota\"].value %}\n              {% if b \u003e= 1099511627776 %}{{ b | divided_by: 1099511627776.0 | round: 2 }} TB\n              {% elsif b \u003e= 1073741824 %}{{ b | divided_by: 1073741824.0 | round: 2 }} GB\n              {% elsif b \u003e= 1048576 %}{{ b | divided_by: 1048576.0 | round: 2 }} MB\n              {% else %}{{ b }} B{% endif %}\n            {% else %}—{% endif %}\n          \u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eAvg CPU\u003c/div\u003e\n          {% if row[\"avg_cpu_utilization\"].value != null %}\n            {% assign cpu = row[\"avg_cpu_utilization\"].value | times: 100.0 %}\n            \u003cdiv class=\"field-value {% if cpu \u003e= 90 %}cpu-bad{% elsif cpu \u003e= 70 %}cpu-warn{% else %}cpu-ok{% endif %}\"\u003e{{ cpu | round: 1 }}%\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eAvg memory\u003c/div\u003e\n          {% if row[\"avg_memory_utilization\"].value != null %}\n            {% assign mem = row[\"avg_memory_utilization\"].value | times: 100.0 %}\n            \u003cdiv class=\"field-value {% if mem \u003e= 90 %}cpu-bad{% elsif mem \u003e= 70 %}cpu-warn{% else %}cpu-ok{% endif %}\"\u003e{{ mem | round: 1 }}%\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eConnections\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"last_connections\"].value != null %}{{ row[\"last_connections\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eDisk size\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e\n            {% if row[\"last_disk_quota\"].value %}\n              {% assign b = row[\"last_disk_quota\"].value %}\n              {% if b \u003e= 1099511627776 %}{{ b | divided_by: 1099511627776.0 | round: 2 }} TB\n              {% elsif b \u003e= 1073741824 %}{{ b | divided_by: 1073741824.0 | round: 2 }} GB\n              {% elsif b \u003e= 1048576 %}{{ b | divided_by: 1048576.0 | round: 2 }} MB\n              {% else %}{{ b }} B{% endif %}\n            {% else %}—{% endif %}\n          \u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eDisk used\u003c/div\u003e\n          {% if row[\"last_disk_utilization\"].value != null %}\n            {% assign disk = row[\"last_disk_utilization\"].value | times: 100.0 %}\n            \u003cdiv class=\"field-value {% if disk \u003e= 90 %}cpu-bad{% elsif disk \u003e= 80 %}cpu-warn{% else %}cpu-ok{% endif %}\"\u003e{{ disk | round: 1 }}%\u003c/div\u003e\n          {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eHA failover\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"last_failover\"].value == null %}Not configured{% elsif row[\"last_failover\"].value \u003e 0 %}\u003cspan class=\"state-ok\"\u003eReady\u003c/span\u003e{% else %}\u003cspan class=\"state-bad\"\u003eUnavailable\u003c/span\u003e{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n      \u003c/div\u003e\n    \u003c/div\u003e\n  \u003c/div\u003e\n  {% endfor %}\n{% endif %}"
                 },
                 "gridData": {
                     "h": 12,
@@ -308,7 +308,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "T-SQL batches received per second over the selected range: one-minute delta counts divided by the minutes the instance was reporting, the same method as the batch requests chart. This is the instance's query throughput; compare it with its own history rather than an absolute target.",
+                    "description": "Transact-SQL batches received per second over the selected range (`sqlserver/transactions/batch_request_count`).",
                     "title": "Batch requests/s"
                 },
                 "gridData": {
@@ -440,7 +440,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Highest number of sessions blocked at the same time in the selected range (peak of the one-minute processes_blocked gauge). Any sustained blocking turns into user-visible latency and timeouts; see Locking and blocking below for the cause. Green 0, amber 1-4, red 5 or more.",
+                    "description": "Highest number of blocked processes at one time in the selected range (`sqlserver/connections/processes_blocked`). Green 0, amber 1–4, red 5 or more.",
                     "title": "Peak blocked processes"
                 },
                 "gridData": {
@@ -573,7 +573,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Average share of page lookups served from the SQL Server buffer pool without a disk read over the selected range. Healthy OLTP workloads stay above 99%; a lower ratio means the working set no longer fits in memory and reads go to disk. Red below 95%, amber 95-99%, green 99% or more.",
+                    "description": "Share of pages found in the buffer cache without a disk read (`sqlserver/memory/buffer_cache_hit_ratio`). Red below 95%, amber from 95%, green from 99%.",
                     "title": "Buffer cache hit %"
                 },
                 "gridData": {
@@ -662,7 +662,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Latest page life expectancy: how many seconds a data page is expected to stay in the buffer pool without being referenced. Judge it against this instance's own baseline and memory size, not a universal constant; a sharp drop means the buffer pool is being flushed (memory pressure or a large scan) and more reads will hit disk. Not coloured because there is no universal threshold.",
+                    "description": "Latest page life expectancy: seconds a page stays in the buffer pool without references. Compare it with this instance's usual value; a sharp drop means memory pressure.",
                     "title": "Page life expectancy"
                 },
                 "gridData": {
@@ -868,7 +868,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Cloud SQL state of the instance in each time bucket, from the one-hot instance_state metric (the state whose value is 1). A healthy instance is one solid green RUNNING band; amber is planned maintenance, red and grey mean the instance is not serving (FAILED, SUSPENDED, RUNNABLE = stopped by the owner). A bucket in which the state changed shows both states.",
+                    "description": "Cloud SQL state of the instance over time. RUNNING is healthy; MAINTENANCE, RUNNABLE (stopped by the owner), SUSPENDED or FAILED mean the instance is not serving.",
                     "title": "Instance state over time"
                 },
                 "gridData": {
@@ -996,8 +996,8 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Lowest one-minute uptime sample in each time bucket. A running instance reports 60 seconds every minute; a dip below 60 marks a restart, crash, failover or stop/start in that bucket, and a gap means the instance was down or not reporting.",
-                    "title": "Uptime per bucket (restart detector)"
+                    "description": "Lowest `database/uptime` sample in each bucket: the seconds the instance was running within a minute. About 60 is a full minute; a clear dip is partial downtime (a start, stop or restart), and a gap means no data.",
+                    "title": "Lowest uptime per minute"
                 },
                 "gridData": {
                     "h": 11,
@@ -1141,7 +1141,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Average vCPUs in use (CPU utilization × reserved cores) against the reserved vCPU count in each time bucket. When the used line runs close to the reserved line for long periods the instance is CPU-bound; confirm with the CPU run queue below and resize the tier or tune the expensive queries.",
+                    "description": "vCPUs in use (CPU utilization × reserved cores) against the reserved vCPUs.",
                     "title": "CPU usage vs reserved cores"
                 },
                 "gridData": {
@@ -1288,7 +1288,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Average memory in use (memory utilization × quota) against the instance memory quota in each time bucket, in GB. SQL Server holds most of its quota as buffer pool, so running close to the quota is normal; a sudden drop usually means a restart. Judge memory pressure with page life expectancy and memory grants pending rather than this line alone.",
+                    "description": "Memory in use (utilization × quota) against the memory quota, in GB. SQL Server keeps most of its quota as buffer pool, so running close to the quota is normal.",
                     "title": "Memory usage vs quota"
                 },
                 "gridData": {
@@ -1435,7 +1435,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Average data disk bytes used against the disk quota in each time bucket, in GB (the same averaging as the utilization chart). The gap between the lines is the remaining headroom; a steady climb (transaction log, tempdb, audit files) ends in a full disk, which stops all writes. Enable automatic storage increase or resize well before the lines meet.",
+                    "description": "Data disk used against the disk quota, in GB. Writes fail when the disk is full.",
                     "title": "Disk usage vs quota"
                 },
                 "gridData": {
@@ -1596,7 +1596,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Average CPU, memory and disk utilization in each time bucket, as a percentage of reserved cores, memory quota and disk quota. CPU above 80% sustained means the instance is CPU-bound; disk above 90% needs action before writes fail; high memory is normal for SQL Server and only a concern together with falling page life expectancy.",
+                    "description": "CPU, memory and disk utilization as a percentage of reserved cores, memory quota and disk quota.",
                     "title": "CPU, memory and disk utilization"
                 },
                 "gridData": {
@@ -1724,7 +1724,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "T-SQL batches received per second in each time bucket: one-minute delta counts divided by the minutes that reported data. This is the instance's query throughput. A sudden drop with flat CPU usually means clients cannot connect or are blocked; a sudden rise precedes CPU and connection saturation.",
+                    "description": "Transact-SQL batches received per second (`sqlserver/transactions/batch_request_count`).",
                     "title": "Batch requests per second"
                 },
                 "gridData": {
@@ -1874,7 +1874,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Transactions started per second in each time bucket, split by database. Cloud SQL reports the system databases (tempdb, master, model, msdb, mssqlsystemresource) by name and groups all user databases as other. Heavy tempdb traffic points at large sorts, hashes or temporary tables spilling to tempdb.",
+                    "description": "Transactions started per second by database (`sqlserver/transactions/transaction_count`). User databases are grouped as other.",
                     "title": "Transactions per second by database"
                 },
                 "gridData": {
@@ -2022,7 +2022,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Deadlocks detected in each time bucket, split by the type of resource that was locked (for example Key, Page, Object). Every deadlock kills one victim transaction, which the application sees as error 1205 and must retry. A steady stream points at inconsistent lock ordering or missing indexes on the resource type shown.",
+                    "description": "Lock requests that resulted in a deadlock, by locked resource type (`sqlserver/transactions/deadlock_count`).",
                     "title": "Deadlocks by locked resource"
                 },
                 "gridData": {
@@ -2200,7 +2200,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Connection attempts to the instance per second in each time bucket, split into succeeded and failed (Cloud SQL network/connection_attempt_count). Failed attempts mean wrong credentials, a bad deploy or a brute-force attempt; a surge of successful attempts without more batch requests points at poor connection pooling.",
+                    "description": "Connection attempts per second, split into succeeded and failed logins (`network/connection_attempt_count`).",
                     "title": "Connection attempts per second by login status"
                 },
                 "gridData": {
@@ -2328,7 +2328,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Average number of open client connections in each time bucket (Cloud SQL network/connections). Each connection costs memory and a worker thread; a steady climb usually means a connection leak or a pool that stopped reusing connections.",
+                    "description": "Open connections to the instance (`network/connections`).",
                     "title": "Open connections over time"
                 },
                 "gridData": {
@@ -2455,7 +2455,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "New SQL Server logins per second in each time bucket (pooled connection reuse is not counted). A high login rate relative to batch requests means the application opens a new connection per request; a spike after a deploy or failover is a reconnect storm.",
+                    "description": "Logins per second, excluding pooled connections (`sqlserver/connections/login_attempt_count`).",
                     "title": "Login attempts per second"
                 },
                 "gridData": {
@@ -2584,7 +2584,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Peak number of sessions blocked at the same time in each time bucket. Short spikes are normal under write contention; a plateau means a blocking chain, usually a long-running or idle-in-transaction session holding locks, and shows up as application timeouts.",
+                    "description": "Peak number of blocked processes in each bucket (`sqlserver/connections/processes_blocked`).",
                     "title": "Blocked processes over time"
                 },
                 "gridData": {
@@ -2761,7 +2761,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Lock requests that had to wait, per second, and the average wait per request in milliseconds, split by locked resource type. Rising average wait time is the most direct contention-latency signal SQL Server exposes; many short waits are normal, long waits mean queries are queued behind other transactions.",
+                    "description": "Lock requests that had to wait, per second, and the average wait per request in milliseconds, by locked resource type.",
                     "title": "Lock waits per second and average lock wait time by locked resource"
                 },
                 "gridData": {
@@ -2889,7 +2889,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Peak number of workers waiting for CPU in each time bucket, summed across all SQL Server schedulers. Persistent non-zero values mean queries are queuing for CPU; together with high CPU utilization this confirms CPU starvation, while high CPU with an empty run queue is just a busy, healthy server.",
+                    "description": "Peak number of workers waiting to be scheduled on the runnable queue (`sqlserver/schedulers/runnable_tasks`). Persistent non-zero values mean queries are waiting for CPU.",
                     "title": "CPU run queue (runnable tasks)"
                 },
                 "gridData": {
@@ -3017,7 +3017,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Peak number of queries waiting for a workspace memory grant (memory for sorts and hashes) in each time bucket. Healthy is 0; any sustained value means queries are stalled waiting for memory and is a strong memory-pressure signal.",
+                    "description": "Peak number of processes waiting for a workspace memory grant (`sqlserver/memory/memory_grants_pending`). Healthy is 0.",
                     "title": "Memory grants pending over time"
                 },
                 "gridData": {
@@ -3146,7 +3146,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Lowest page life expectancy in each time bucket: seconds a data page is expected to stay in the buffer pool. Compare with this instance's own baseline; a sharp drop (sawtooth collapse) means the buffer pool is being flushed by memory pressure or a large scan, and read IOPS will rise.",
+                    "description": "Lowest page life expectancy in each bucket: seconds a page stays in the buffer pool without references. A sharp drop means memory pressure or a large scan.",
                     "title": "Page life expectancy over time"
                 },
                 "gridData": {
@@ -3266,7 +3266,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Average share of page lookups served from the buffer pool without a disk read in each time bucket. Healthy OLTP workloads stay above 99%; a falling ratio means the working set no longer fits in memory and reads are going to disk.",
+                    "description": "Share of pages found in the buffer cache without a disk read. Healthy workloads stay above 99%.",
                     "title": "Buffer cache hit ratio"
                 },
                 "gridData": {
@@ -3408,7 +3408,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Data disk read and write operations per second in each time bucket, from one-minute delta counts divided by the minutes that reported data. Read IOPS rising together with falling page life expectancy means memory pressure; IOPS flat at a ceiling means the disk's IOPS cap is the bottleneck.",
+                    "description": "Data disk read and write operations per second.",
                     "title": "Disk read and write IOPS"
                 },
                 "gridData": {
@@ -3550,7 +3550,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Bytes per second received from and sent to clients in each time bucket. Outbound traffic far above inbound is normal for read-heavy workloads; a sudden jump in outbound bytes often means a query returning far more rows than intended.",
+                    "description": "Network bytes received and sent per second.",
                     "title": "Network in and out"
                 },
                 "gridData": {
@@ -3675,7 +3675,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Whether the HA standby is ready to take over (1 = failover possible, 0 = not possible) in each time bucket. Only regional (HA) instances report this metric, so the chart is empty for zonal instances and read replicas. A drop to 0 means the next zonal failure becomes an outage.",
+                    "description": "1 when failover is available on the instance, 0 when it is not (`available_for_failover`). Only high-availability instances report it.",
                     "title": "Available for failover over time"
                 },
                 "gridData": {
@@ -3821,7 +3821,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Automatic failover requests in each time bucket (HA instances) and the peak replication lag in seconds (read replicas). Any failover is a disruptive event even when it succeeds. Replica lag should stay small and non-negative; a growing lag means stale reads, and a negative value means replication has stopped. Empty for instances that are neither HA nor replicas.",
+                    "description": "Automatic failover requests (high-availability instances) and peak replica lag in seconds (read replicas). A negative lag means replication is inactive.",
                     "title": "Auto-failover requests and replica lag"
                 },
                 "gridData": {
