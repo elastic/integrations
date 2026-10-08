@@ -1,0 +1,51 @@
+format_version: "3.6.5"
+name: nginx_otel_integ
+title: "Nginx (OpenTelemetry)"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: >-
+  Collect metrics and logs from Nginx using the OTel nginxreceiver and filelogreceiver. Covers stub_status metrics plus access and error logs.
+type: integration
+group: nginx
+categories:
+  - observability
+  - web
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.4.0"
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/nginx_otel_logo.svg
+    title: Nginx OpenTelemetry logo
+    size: 32x32
+    type: image/svg+xml
+requires:
+  input:
+    - package: nginx_otel_input
+      version: "0.2.2"
+    - package: filelog_otel
+      version: "0.2.0"
+  content:
+    - package: nginx_otel
+      version: "0.6.1"
+policy_templates:
+  - name: nginx
+    title: Nginx logs and metrics
+    description: Collect stub_status metrics and access/error logs from Nginx using OpenTelemetry receivers
+    data_streams:
+      - metrics
+      - access
+      - error
+    inputs:
+      - package: nginx_otel_input
+        title: Nginx Metrics
+        description: Scrape Nginx stub_status metrics using the OTel Collector nginxreceiver
+      - package: filelog_otel
+        title: Nginx Logs
+        description: Tail Nginx access and error logs using the OTel Collector filelogreceiver
+owner:
+  type: elastic
+  github: elastic/obs-infraobs-integrations
