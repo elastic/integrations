@@ -10,7 +10,7 @@ On a schedule it polls the BloodHound Enterprise API, creates and updates Kibana
 
 This integration requires:
 
-- Kibana `^9.3.0` (CEL features used by the Case & Alert Sync program)
+- Kibana `^8.19.0 || ^9.1.0`
 - Elastic Agent or an Elastic Managed deployment with the CEL input enabled
 - Elastic Security with Cases enabled
 - Network connectivity from the agent to BloodHound Enterprise, Kibana, and Elasticsearch
@@ -32,7 +32,7 @@ Optional filters (`selected_environment`, `bhe_zones`) limit which domains and z
 
 This integration collects the following data:
 
-- **health_check**: Case & Alert Sync metadata events (domain discovery, case create/update/delete, alert attach) for troubleshooting. This is the primary stream.
+- **case_sync**: Case & Alert Sync metadata events (domain discovery, case create/update/delete, alert attach) for troubleshooting. This is the primary stream.
 - **finding**: Optional raw attack-path finding documents. Disabled by default. The Attack Path dashboard uses Security Alerts created by Case & Alert Sync, so this stream can stay off to avoid BloodHound API contention.
 
 ### Supported use cases
@@ -40,7 +40,7 @@ This integration collects the following data:
 - Track BloodHound Enterprise attack-path findings as Elastic Security Cases
 - Attach per-principal Security Alerts for investigation and remediation
 - Filter sync by environment/domain and BloodHound zone
-- Troubleshoot sync progress via `health_check` data-stream events
+- Troubleshoot sync progress via `case_sync` data-stream events
 - Visualize attack-path alerts with the bundled Attack Path Overview dashboard
 
 ## What do I need to use this integration?
@@ -48,7 +48,7 @@ This integration collects the following data:
 ### From Elastic
 
 - An Elastic deployment with Fleet and Elastic Security (Cases) enabled
-- Kibana `^9.3.0`
+- Kibana `^8.19.0 || ^9.1.0`
 - Elastic Agent or Elastic Managed support for the CEL input
 
 ### From BloodHound Enterprise
@@ -60,7 +60,7 @@ This integration collects the following data:
 ### From Kibana / Elasticsearch
 
 - A Kibana URL reachable from the Elastic Agent
-- A Kibana API key with Cases permissions (`read`, `write`, `create`, `delete`)
+- A Kibana API key that can manage Cases and index Security alerts (see below)
 - An Elasticsearch URL reachable from the agent (used when indexing Security Alerts)
 
 ## How do I deploy this integration?
@@ -83,19 +83,37 @@ Assign this integration to an agent policy whose agents can reach BloodHound Ent
 
 ### Create a Kibana API key
 
+The same API key is sent to the Kibana Cases API and to Elasticsearch `_bulk` for `.alerts-security.alerts-<space>`. A key with only Cases privileges cannot index alerts.
+
 1. In Kibana go to **Stack Management → API keys → Create API key**.
 2. Name it (for example `bloodhound-integration`).
-3. Grant Cases privileges, for example:
+3. Choose **Restrict privileges** and use a role descriptor that covers Cases, Security Solution access for attaching alerts, and the alerts index. Replace `default` with the Kibana space this policy writes to:
 
 ```json
 {
-  "bloodhound_cases": {
-    "cases": {
-      "cases": ["read", "write", "create", "delete"]
-    }
+  "bloodhound_sync": {
+    "cluster": [],
+    "indices": [
+      {
+        "names": [".alerts-security.alerts-*"],
+        "privileges": ["read", "write", "view_index_metadata"]
+      }
+    ],
+    "applications": [
+      {
+        "application": "kibana-.kibana",
+        "privileges": [
+          "feature_securitySolutionCasesV3.all",
+          "feature_siemV3.read"
+        ],
+        "resources": ["space:default"]
+      }
+    ]
   }
 }
 ```
+
+`feature_securitySolutionCasesV3.all` lets the program create, read, update, and delete cases and attach alerts. `feature_siemV3.read` grants the Security Solution access that attachment requires. On stacks where those feature ids are not listed, use the Cases **All** and Security **Read** feature privileges for the same space.
 
 4. Copy the encoded key value. You will not see it again.
 
@@ -119,13 +137,13 @@ Assign this integration to an agent policy whose agents can reach BloodHound Ent
 | Token Key | Yes | BloodHound Enterprise API token secret |
 | Kibana URL | Yes | URL the agent uses to reach Kibana |
 | Kibana space | Yes | Space for Cases and Alerts (default `default`). The packaged dashboard reads `.alerts-security.alerts-default` |
-| Kibana API Key | Yes | Encoded API key with Cases permissions |
+| Kibana API Key | Yes | Encoded API key used for both the Kibana Cases API and the Elasticsearch alerts index |
 | Elasticsearch URL | Yes | URL the agent uses to reach Elasticsearch for alert indexing |
 | Interval | Yes | Delay between full Case & Alert Sync cycles (default `1h`, set on that stream) |
 | Selected environment | No | Comma-separated domain names, or empty/`All`/`*` for all |
 | BloodHound Enterprise zones | No | Comma-separated zone names, or empty/`All`/`*` for all |
 
-5. Leave **Case & Alert Sync** (`health_check`) enabled.
+5. Leave **Case & Alert Sync** (`case_sync`) enabled.
 6. Keep **Attack Path Findings** (`finding`) disabled unless you explicitly need raw finding documents.
 7. Select **Save and continue**.
 
@@ -142,7 +160,7 @@ After the first sync interval completes:
 1. **Fleet → Agents** — confirm the agent (or Elastic Managed deployment) is healthy and the integration reports no CEL/auth errors.
 2. **Security → Cases** — confirm cases tagged with `BloodHound Enterprise` plus the tenant slug derived from Base URL.
 3. Open a case and confirm related Security Alerts for at-risk principals are attached.
-4. Optional: in Discover, inspect `logs-bloodhound_enterprise.health_check-*` for sync-step events (`bloodhound_enterprise.health_check.step`, `bloodhound_enterprise.health_check.info`, `bloodhound_enterprise.health_check.error`).
+4. Optional: in Discover, inspect `logs-bloodhound_enterprise.case_sync-*` for sync-step events (`bloodhound_enterprise.case_sync.step`, `bloodhound_enterprise.case_sync.info`, `bloodhound_enterprise.case_sync.error`).
 5. Optional: open the **BloodHound Enterprise Attack Path Overview** dashboard and confirm alert visualizations populate.
 
 | Scenario | Expected behavior |
@@ -158,7 +176,7 @@ After the first sync interval completes:
 |---------|----------------|
 | Auth failures against BloodHound | Token ID/Key, Base URL (no trailing slash), agent egress allowlist, clock skew for HMAC signatures |
 | Cases not created | Kibana URL from the agent network, API key Cases privileges, Case & Alert Sync enabled |
-| Alerts missing | Elasticsearch URL reachability, alert index privileges, attach/bulk errors in `health_check` events |
+| Alerts missing | Elasticsearch URL reachability, alert index privileges, attach/bulk errors in `case_sync` events |
 | Unexpected domains/zones | `selected_environment` / `bhe_zones` filters; unrecognized values fetch all |
 | Integration not listed | Package not uploaded or registry not refreshed; rebuild/upload or wait for EPR propagation |
 
@@ -207,40 +225,37 @@ This integration uses:
 
 ### Logs reference
 
-#### health_check
+#### case_sync
 
-This is the `health_check` dataset. Events describe Case & Alert Sync steps for troubleshooting (discovery, case lifecycle, alert attachment).
+This is the `case_sync` dataset. Events describe Case & Alert Sync steps for troubleshooting (discovery, case lifecycle, alert attachment).
 
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
-| bloodhound_enterprise.health_check.attached_count | Number of alerts attached to the case in this step. | long |
-| bloodhound_enterprise.health_check.bh_cases_found | Number of existing BloodHound Enterprise-tagged Kibana cases found for this tenant. | long |
-| bloodhound_enterprise.health_check.case_id | Kibana case ID created or resolved during this step. | keyword |
-| bloodhound_enterprise.health_check.case_key | Case title key used to match a BloodHound finding. | keyword |
-| bloodhound_enterprise.health_check.case_part | Overflow case part number when a case reaches the alert limit. | long |
-| bloodhound_enterprise.health_check.case_total_alerts | Total alerts on the Kibana case after attachment. | long |
-| bloodhound_enterprise.health_check.deleted_case_id | Kibana case ID deleted as stale. | keyword |
-| bloodhound_enterprise.health_check.domain | BloodHound domain name associated with this step. | keyword |
-| bloodhound_enterprise.health_check.domains_after_filter | Number of BloodHound Enterprise domains remaining after environment/zone filters. | long |
-| bloodhound_enterprise.health_check.error | Error message from a failed sync step. | keyword |
-| bloodhound_enterprise.health_check.finding_count | Number of findings queued for case and alert sync. | long |
-| bloodhound_enterprise.health_check.info | Informational status message for the current sync step. | keyword |
-| bloodhound_enterprise.health_check.instance_index | Index of the next finding instance to attach. | long |
-| bloodhound_enterprise.health_check.instances | Number of finding instances considered for alert attachment. | long |
-| bloodhound_enterprise.health_check.next_case_part | Overflow case part that will be opened next. | long |
-| bloodhound_enterprise.health_check.pending | Number of alerts indexed and waiting to be attached. | long |
-| bloodhound_enterprise.health_check.stale_count | Number of stale cases queued for deletion. | long |
-| bloodhound_enterprise.health_check.step | Numeric sync workflow step that produced this event. | long |
-| bloodhound_enterprise.health_check.story | Human-readable narrative describing the current sync step. | match_only_text |
-| bloodhound_enterprise.health_check.uri | Request path for the sync step. | keyword |
+| bloodhound_enterprise.case_sync.attached_count | Number of alerts attached to the case in this step. | long |
+| bloodhound_enterprise.case_sync.case_id | Kibana case ID created or resolved during this step. | keyword |
+| bloodhound_enterprise.case_sync.case_key | Case title key used to match a BloodHound finding. | keyword |
+| bloodhound_enterprise.case_sync.case_part | Overflow case part number when a case reaches the alert limit. | long |
+| bloodhound_enterprise.case_sync.case_total_alerts | Total alerts on the Kibana case after attachment. | long |
+| bloodhound_enterprise.case_sync.deleted_case_id | Kibana case ID deleted as stale. | keyword |
+| bloodhound_enterprise.case_sync.domain | BloodHound domain name associated with this step. | keyword |
+| bloodhound_enterprise.case_sync.error | Error message from a failed sync step. | keyword |
+| bloodhound_enterprise.case_sync.finding_count | Number of findings queued for case and alert sync. | long |
+| bloodhound_enterprise.case_sync.info | Informational status message for the current sync step. | keyword |
+| bloodhound_enterprise.case_sync.instance_index | Index of the next finding instance to attach. | long |
+| bloodhound_enterprise.case_sync.instances | Number of finding instances considered for alert attachment. | long |
+| bloodhound_enterprise.case_sync.next_case_part | Overflow case part that will be opened next. | long |
+| bloodhound_enterprise.case_sync.pending | Number of alerts indexed and waiting to be attached. | long |
+| bloodhound_enterprise.case_sync.stale_count | Number of stale cases queued for deletion. | long |
+| bloodhound_enterprise.case_sync.step | Numeric sync workflow step that produced this event. | long |
+| bloodhound_enterprise.case_sync.story | Human-readable narrative describing the current sync step. | match_only_text |
+| bloodhound_enterprise.case_sync.uri | Request path for the sync step. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | error.message | Error message. | match_only_text |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
@@ -264,6 +279,7 @@ This is the `finding` dataset. Optional raw BloodHound attack-path finding docum
 | bloodhound_enterprise.attack_path.length | Number of hops/edges in the attack path. | long |
 | bloodhound_enterprise.attack_path.relationships | List of edge relationship types in the attack path. | keyword |
 | bloodhound_enterprise.category | BloodHound finding category (e.g. zone/tag name). | keyword |
+| bloodhound_enterprise.domain_sid | Active Directory domain SID for the finding environment. This is an identifier, not the domain name. | keyword |
 | bloodhound_enterprise.exposure_count | Number of exposed domain objects. | long |
 | bloodhound_enterprise.exposure_percentage | Percentage of domain exposed to attack path. | float |
 | bloodhound_enterprise.finding_type | Type of BloodHound finding (e.g. AttackPath). | keyword |

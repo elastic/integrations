@@ -98,7 +98,8 @@ processors:
       source: |
         if (ctx.log != null && ctx.log.level != null) {
           def lvl = ctx.log.level.toString().toLowerCase();
-          if (lvl == 'moderate') { lvl = 'medium'; ctx.log.level = 'medium'; }
+          if (lvl == 'moderate') { lvl = 'medium'; }
+          ctx.log.level = lvl;
           if (lvl == 'critical') { ctx.event.severity = 4; }
           else if (lvl == 'high') { ctx.event.severity = 3; }
           else if (lvl == 'medium') { ctx.event.severity = 2; }
@@ -117,18 +118,11 @@ processors:
       copy_from: json.Environment
       ignore_empty_value: true
       if: ctx.source?.domain == null
-  - set:
-      field: source.domain
-      tag: set_source_domain_from_from_environment_id
-      copy_from: json.FromEnvironmentID
-      ignore_empty_value: true
-      if: ctx.source?.domain == null
-  - set:
-      field: source.domain
-      tag: set_source_domain_from_domain_sid
-      copy_from: json.DomainSID
-      ignore_empty_value: true
-      if: ctx.source?.domain == null
+  - rename:
+      field: json.DomainSID
+      target_field: bloodhound_enterprise.domain_sid
+      tag: rename_domain_sid
+      ignore_missing: true
   - set:
       field: user.domain
       tag: set_user_domain
@@ -265,7 +259,7 @@ processors:
       tag: parse_event_created
       formats:
         - ISO8601
-      ignore_failure: true
+      if: ctx.json?.created_at != null
   - rename:
       field: json.remediation
       target_field: bloodhound_enterprise.remediation

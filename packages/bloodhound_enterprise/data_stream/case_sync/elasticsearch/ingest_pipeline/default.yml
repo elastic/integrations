@@ -29,53 +29,49 @@ processors:
       if: ctx.event?.original != null
   - json:
       field: event.original
-      target_field: bloodhound_enterprise.health_check
+      target_field: bloodhound_enterprise.case_sync
       tag: parse_sync_json
       if: ctx.event?.original != null
   - rename:
-      field: bloodhound_enterprise.health_check._step
-      target_field: bloodhound_enterprise.health_check.step
+      field: bloodhound_enterprise.case_sync._step
+      target_field: bloodhound_enterprise.case_sync.step
       ignore_missing: true
       tag: rename_sync_step
   - rename:
-      field: bloodhound_enterprise.health_check._uri
-      target_field: bloodhound_enterprise.health_check.uri
+      field: bloodhound_enterprise.case_sync._uri
+      target_field: bloodhound_enterprise.case_sync.uri
       ignore_missing: true
       tag: rename_sync_uri
   - rename:
-      field: bloodhound_enterprise.health_check._domain
-      target_field: bloodhound_enterprise.health_check.domain
+      field: bloodhound_enterprise.case_sync._domain
+      target_field: bloodhound_enterprise.case_sync.domain
       ignore_missing: true
       tag: rename_sync_domain
   - remove:
       field:
-        - bloodhound_enterprise.health_check._raw
-        - bloodhound_enterprise.health_check._body
-        - bloodhound_enterprise.health_check._status_code
+        - bloodhound_enterprise.case_sync._raw
+        - bloodhound_enterprise.case_sync._body
+        - bloodhound_enterprise.case_sync._status_code
       ignore_missing: true
       tag: remove_raw_response_bodies
   - set:
       field: event.kind
       tag: set_event_kind
       value: event
-  - append:
-      field: event.category
-      tag: append_event_category
-      value: iam
-      allow_duplicates: false
   - set:
       field: event.outcome
       tag: set_event_outcome_failure
       value: failure
-      if: ctx.bloodhound_enterprise?.health_check?.error != null
+      if: ctx.bloodhound_enterprise?.case_sync?.error != null
   - set:
       field: event.outcome
       tag: set_event_outcome_success
       value: success
-      if: ctx.bloodhound_enterprise?.health_check?.error == null
+      if: ctx.bloodhound_enterprise?.case_sync?.error == null
 on_failure:
   - append:
       field: error.message
+      tag: append_error_message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
@@ -86,5 +82,6 @@ on_failure:
       value: pipeline_error
   - append:
       field: tags
+      tag: append_preserve_original_event
       value: preserve_original_event
       allow_duplicates: false

@@ -10,7 +10,7 @@ On a schedule it polls the BloodHound Enterprise API, creates and updates Kibana
 
 This integration requires:
 
-- Kibana `^9.3.0` (CEL features used by the Case & Alert Sync program)
+- Kibana `^8.19.0 || ^9.1.0`
 - Elastic Agent or an Elastic Managed deployment with the CEL input enabled
 - Elastic Security with Cases enabled
 - Network connectivity from the agent to BloodHound Enterprise, Kibana, and Elasticsearch
@@ -32,7 +32,7 @@ Optional filters (`selected_environment`, `bhe_zones`) limit which domains and z
 
 This integration collects the following data:
 
-- **health_check**: Case & Alert Sync metadata events (domain discovery, case create/update/delete, alert attach) for troubleshooting. This is the primary stream.
+- **case_sync**: Case & Alert Sync metadata events (domain discovery, case create/update/delete, alert attach) for troubleshooting. This is the primary stream.
 - **finding**: Optional raw attack-path finding documents. Disabled by default. The Attack Path dashboard uses Security Alerts created by Case & Alert Sync, so this stream can stay off to avoid BloodHound API contention.
 
 ### Supported use cases
@@ -40,7 +40,7 @@ This integration collects the following data:
 - Track BloodHound Enterprise attack-path findings as Elastic Security Cases
 - Attach per-principal Security Alerts for investigation and remediation
 - Filter sync by environment/domain and BloodHound zone
-- Troubleshoot sync progress via `health_check` data-stream events
+- Troubleshoot sync progress via `case_sync` data-stream events
 - Visualize attack-path alerts with the bundled Attack Path Overview dashboard
 
 ## What do I need to use this integration?
@@ -48,7 +48,7 @@ This integration collects the following data:
 ### From Elastic
 
 - An Elastic deployment with Fleet and Elastic Security (Cases) enabled
-- Kibana `^9.3.0`
+- Kibana `^8.19.0 || ^9.1.0`
 - Elastic Agent or Elastic Managed support for the CEL input
 
 ### From BloodHound Enterprise
@@ -60,7 +60,7 @@ This integration collects the following data:
 ### From Kibana / Elasticsearch
 
 - A Kibana URL reachable from the Elastic Agent
-- A Kibana API key with Cases permissions (`read`, `write`, `create`, `delete`)
+- A Kibana API key that can manage Cases and index Security alerts (see below)
 - An Elasticsearch URL reachable from the agent (used when indexing Security Alerts)
 
 ## How do I deploy this integration?
@@ -83,19 +83,37 @@ Assign this integration to an agent policy whose agents can reach BloodHound Ent
 
 ### Create a Kibana API key
 
+The same API key is sent to the Kibana Cases API and to Elasticsearch `_bulk` for `.alerts-security.alerts-<space>`. A key with only Cases privileges cannot index alerts.
+
 1. In Kibana go to **Stack Management → API keys → Create API key**.
 2. Name it (for example `bloodhound-integration`).
-3. Grant Cases privileges, for example:
+3. Choose **Restrict privileges** and use a role descriptor that covers Cases, Security Solution access for attaching alerts, and the alerts index. Replace `default` with the Kibana space this policy writes to:
 
 ```json
 {
-  "bloodhound_cases": {
-    "cases": {
-      "cases": ["read", "write", "create", "delete"]
-    }
+  "bloodhound_sync": {
+    "cluster": [],
+    "indices": [
+      {
+        "names": [".alerts-security.alerts-*"],
+        "privileges": ["read", "write", "view_index_metadata"]
+      }
+    ],
+    "applications": [
+      {
+        "application": "kibana-.kibana",
+        "privileges": [
+          "feature_securitySolutionCasesV3.all",
+          "feature_siemV3.read"
+        ],
+        "resources": ["space:default"]
+      }
+    ]
   }
 }
 ```
+
+`feature_securitySolutionCasesV3.all` lets the program create, read, update, and delete cases and attach alerts. `feature_siemV3.read` grants the Security Solution access that attachment requires. On stacks where those feature ids are not listed, use the Cases **All** and Security **Read** feature privileges for the same space.
 
 4. Copy the encoded key value. You will not see it again.
 
@@ -119,13 +137,13 @@ Assign this integration to an agent policy whose agents can reach BloodHound Ent
 | Token Key | Yes | BloodHound Enterprise API token secret |
 | Kibana URL | Yes | URL the agent uses to reach Kibana |
 | Kibana space | Yes | Space for Cases and Alerts (default `default`). The packaged dashboard reads `.alerts-security.alerts-default` |
-| Kibana API Key | Yes | Encoded API key with Cases permissions |
+| Kibana API Key | Yes | Encoded API key used for both the Kibana Cases API and the Elasticsearch alerts index |
 | Elasticsearch URL | Yes | URL the agent uses to reach Elasticsearch for alert indexing |
 | Interval | Yes | Delay between full Case & Alert Sync cycles (default `1h`, set on that stream) |
 | Selected environment | No | Comma-separated domain names, or empty/`All`/`*` for all |
 | BloodHound Enterprise zones | No | Comma-separated zone names, or empty/`All`/`*` for all |
 
-5. Leave **Case & Alert Sync** (`health_check`) enabled.
+5. Leave **Case & Alert Sync** (`case_sync`) enabled.
 6. Keep **Attack Path Findings** (`finding`) disabled unless you explicitly need raw finding documents.
 7. Select **Save and continue**.
 
@@ -142,7 +160,7 @@ After the first sync interval completes:
 1. **Fleet → Agents** — confirm the agent (or Elastic Managed deployment) is healthy and the integration reports no CEL/auth errors.
 2. **Security → Cases** — confirm cases tagged with `BloodHound Enterprise` plus the tenant slug derived from Base URL.
 3. Open a case and confirm related Security Alerts for at-risk principals are attached.
-4. Optional: in Discover, inspect `logs-bloodhound_enterprise.health_check-*` for sync-step events (`bloodhound_enterprise.health_check.step`, `bloodhound_enterprise.health_check.info`, `bloodhound_enterprise.health_check.error`).
+4. Optional: in Discover, inspect `logs-bloodhound_enterprise.case_sync-*` for sync-step events (`bloodhound_enterprise.case_sync.step`, `bloodhound_enterprise.case_sync.info`, `bloodhound_enterprise.case_sync.error`).
 5. Optional: open the **BloodHound Enterprise Attack Path Overview** dashboard and confirm alert visualizations populate.
 
 | Scenario | Expected behavior |
@@ -158,7 +176,7 @@ After the first sync interval completes:
 |---------|----------------|
 | Auth failures against BloodHound | Token ID/Key, Base URL (no trailing slash), agent egress allowlist, clock skew for HMAC signatures |
 | Cases not created | Kibana URL from the agent network, API key Cases privileges, Case & Alert Sync enabled |
-| Alerts missing | Elasticsearch URL reachability, alert index privileges, attach/bulk errors in `health_check` events |
+| Alerts missing | Elasticsearch URL reachability, alert index privileges, attach/bulk errors in `case_sync` events |
 | Unexpected domains/zones | `selected_environment` / `bhe_zones` filters; unrecognized values fetch all |
 | Integration not listed | Package not uploaded or registry not refreshed; rebuild/upload or wait for EPR propagation |
 
@@ -207,11 +225,11 @@ This integration uses:
 
 ### Logs reference
 
-#### health_check
+#### case_sync
 
-This is the `health_check` dataset. Events describe Case & Alert Sync steps for troubleshooting (discovery, case lifecycle, alert attachment).
+This is the `case_sync` dataset. Events describe Case & Alert Sync steps for troubleshooting (discovery, case lifecycle, alert attachment).
 
-{{fields "health_check"}}
+{{fields "case_sync"}}
 
 #### finding
 

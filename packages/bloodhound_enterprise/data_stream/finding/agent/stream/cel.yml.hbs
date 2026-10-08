@@ -15,8 +15,8 @@ state:
   token_id: {{token_id}}
   token_key: {{token_key}}
   base_url: {{base_url}}
-  selected_environment: {{selected_environment}}
-  bhe_zones: {{bhe_zones}}
+  selected_environment: "{{#if selected_environment}}{{selected_environment}}{{/if}}"
+  bhe_zones: "{{#if bhe_zones}}{{bhe_zones}}{{/if}}"
   details_limit: {{details_limit}}
   step: 1
   domains: []
@@ -80,8 +80,18 @@ program: |-
                           :
                             [{"id": "1", "name": "default"}],
                         }).as(all_domains,
-                          state.?selected_environment.orValue("").as(env,
-                            state.?bhe_zones.orValue("").as(zones,
+                          (
+                            (type(state.?selected_environment.orValue("")) == string) ?
+                              string(state.selected_environment)
+                            :
+                              ""
+                          ).as(env,
+                            (
+                              (type(state.?bhe_zones.orValue("")) == string) ?
+                                string(state.bhe_zones)
+                              :
+                                ""
+                            ).as(zones,
                               (
                                 env == "" || env == "*" || env.lowerAscii() == "all" ||
                                 !all_domains.exists(d, env.contains(string(d.name)))
@@ -217,6 +227,16 @@ program: |-
                       )
                     )
                 )
+              : (int(resp.StatusCode) >= 500 || int(resp.StatusCode) == 429) ?
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "message": "GET " + uri + ": " + string(resp.Status) + " (" + string(resp.StatusCode) + ")",
+                    },
+                  },
+                  "want_more": false,
+                }
               : (int(resp.StatusCode) == 401 || int(resp.StatusCode) == 403) ?
                 {
                   "events": {
@@ -225,6 +245,10 @@ program: |-
                       "message": "GET " + uri + ": " + string(resp.Status) + " (" + string(resp.StatusCode) + ")",
                     },
                   },
+                  "step": 1,
+                  "types": [],
+                  "type_index": 0,
+                  "skip": 0,
                   "want_more": false,
                 }
               :
@@ -237,6 +261,10 @@ program: |-
                       ),
                     },
                   },
+                  "step": 1,
+                  "types": [],
+                  "type_index": 0,
+                  "skip": 0,
                   "want_more": false,
                 }
             )
@@ -261,10 +289,10 @@ tags:
 publisher_pipeline.disable_host: true
 {{/contains}}
 processors:
-  - drop_event:
-      when:
-        equals:
-          retry: true
+- drop_event:
+    when:
+      equals:
+        retry: true
 {{#if processors}}
 {{processors}}
 {{/if}}

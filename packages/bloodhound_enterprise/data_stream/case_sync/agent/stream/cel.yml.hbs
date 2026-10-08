@@ -25,8 +25,8 @@ state:
   token_id: {{token_id}}
   token_key: {{token_key}}
   base_url: {{base_url}}
-  selected_environment: {{selected_environment}}
-  bhe_zones: {{bhe_zones}}
+  selected_environment: "{{#if selected_environment}}{{selected_environment}}{{/if}}"
+  bhe_zones: "{{#if bhe_zones}}{{bhe_zones}}{{/if}}"
   kibana_url: {{kibana_url}}
   kibana_api_key: {{kibana_api_key}}
   elasticsearch_url: {{elasticsearch_url}}
@@ -257,7 +257,7 @@ program: |-
                                                       :
                                                         ""
                                                     ).as(explorer_url,
-                                                      {"index": {"_id": alert_id}}.encode_json() + "\n" + {
+                                                      {"create": {"_id": alert_id}}.encode_json() + "\n" + {
                                                         "@timestamp": now.format("2006-01-02T15:04:05Z07:00"),
                                                         "event": {"kind": "signal", "category": ["intrusion_detection"], "type": ["info"], "module": "bloodhound", "action": string(cur_finding.type), "url": explorer_url},
                                                         "source": {"domain": string(cur_finding._domain_name)},
@@ -361,15 +361,36 @@ program: |-
                               "Body": body_data,
                             }
                           ).do_request().as(resp,
-                            // Non-2xx stops the run before the body is read. A failed
+                            // Non-2xx stops this interval before the body is read. A failed
                             // discovery call must not look like an empty success, or step 9
                             // can delete every case and step 6 can create duplicates.
                             (int(resp.StatusCode) < 200 || int(resp.StatusCode) >= 300) ?
-                              state.with({
-                                "events": {"error": {"code": string(resp.StatusCode), "message": method + " " + uri + ": " + string(resp.Body)}},
-                                "step": current_step,
-                                "want_more": false,
-                              })
+                              (
+                                (int(resp.StatusCode) >= 500 || int(resp.StatusCode) == 429) ?
+                                  state.with({
+                                    "events": {"error": {"code": string(resp.StatusCode), "message": method + " " + uri + ": " + string(resp.Body)}},
+                                    "step": current_step,
+                                    "want_more": false,
+                                  })
+                                :
+                                  state.with({
+                                    "events": {"error": {"code": string(resp.StatusCode), "message": method + " " + uri + ": " + string(resp.Body)}},
+                                    "step": 1,
+                                    "process_findings": [],
+                                    "cases_to_delete": [],
+                                    "all_current_keys": [],
+                                    "pending_alert_ids": [],
+                                    "pending_alert_indices": [],
+                                    "finding_index": 0,
+                                    "instance_index": 0,
+                                    "details_skip": 0,
+                                    "delete_index": 0,
+                                    "domain_index": 0,
+                                    "tag_index": 0,
+                                    "case_page": 1,
+                                    "want_more": false,
+                                  })
+                              )
                             :
                             bytes(
                               (string(resp.Body).startsWith("{") || string(resp.Body).startsWith("[")) ?
@@ -380,8 +401,8 @@ program: |-
   
                               (current_step == 1) ?
                                 (
-                                    (has(state.selected_environment) ? string(state.selected_environment) : "").as(selected_env,
-                                      (has(state.bhe_zones) ? string(state.bhe_zones) : "").as(selected_zones,
+                                    ((has(state.selected_environment) && type(state.selected_environment) == string) ? string(state.selected_environment) : "").as(selected_env,
+                                      ((has(state.bhe_zones) && type(state.bhe_zones) == string) ? string(state.bhe_zones) : "").as(selected_zones,
                                         (has(parsed_body.data) && size(parsed_body.data) > 0) ?
                                           parsed_body.data.map(d,
                                             {
@@ -580,15 +601,7 @@ program: |-
                                                 "_unique_key": "BloodHound Enterprise | " + string(state.domains[int(state.domain_index)].name) + " | " + string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].name) + " | " + t,
                                               }
                                             ).filter(f,
-                                              !state.process_findings.exists(existing, existing._unique_key == f._unique_key) &&
-                                              (
-                                                !state.existing_case_titles.exists(title,
-                                                  title == f._unique_key || title.startsWith(f._unique_key + " [")
-                                                ) || state.existing_bh_cases.exists(c,
-                                                  c.title == f._unique_key && (!has(c.totalAlerts) ||
-                                                  int(c.totalAlerts) == 0)
-                                                )
-                                              )
+                                              !state.process_findings.exists(existing, existing._unique_key == f._unique_key)
                                             )
                                           ).as(updated_process_findings,
                                             (int(state.tag_index) + 1 < size(state.domains[int(state.domain_index)].tags)) ?
@@ -834,14 +847,14 @@ program: |-
                                                     "events": [{"message": {"_step": 5, "_uri": uri, "story": "Fetched severity for finding type '" + string(cur_finding.type) + "' (" + string(has(parsed_body.count) ? int(parsed_body.count) : size(merged_instances)) + " instances). Creating the Kibana case now before attaching alerts."}.encode_json()}],
                                                   }
                                                 )
-                                              : (int(state.details_skip) + size(parsed_body.data) < int(parsed_body.count)) ?
+                                              : (size(parsed_body.data) > 0 && int(state.details_skip) + size(parsed_body.data) < int(parsed_body.?count.orValue(0))) ?
                                                 state.with(
                                                   {
                                                     "step": 5,
                                                     "process_findings": updated_findings,
                                                     "details_skip": int(state.details_skip) + size(parsed_body.data),
                                                     "want_more": true,
-                                                    "events": [{"message": {"_step": 5, "_uri": uri, "story": "Fetched more instances for finding type '" + string(cur_finding.type) + "' in domain '" + string(cur_finding._domain_name) + "' and BloodHound Enterprise zone '" + string(cur_finding._asset_group_tag_name) + "'. Collected " + string(size(merged_instances)) + " of " + string(int(parsed_body.count)) + " instances so far."}.encode_json()}],
+                                                    "events": [{"message": {"_step": 5, "_uri": uri, "story": "Fetched more instances for finding type '" + string(cur_finding.type) + "' in domain '" + string(cur_finding._domain_name) + "' and BloodHound Enterprise zone '" + string(cur_finding._asset_group_tag_name) + "'. Collected " + string(size(merged_instances)) + " of " + string(int(parsed_body.?count.orValue(size(merged_instances)))) + " instances so far."}.encode_json()}],
                                                   }
                                                 )
                                               :
@@ -1026,22 +1039,33 @@ program: |-
                               : (current_step == 7) ?
                                 (
                                   has(parsed_body.items) ?
-                                    parsed_body.items.filter(it,
-                                      has(it.index) && has(it.index._id) && (
-                                        !has(it.index.status) || int(it.index.status) < 300
-                                      )
-                                    ).as(ok_items,
-                                      ok_items.map(it, string(it.index._id)).as(new_ids,
-                                        ok_items.map(it, string(it.index._index)).as(new_indices,
-                                          (size(new_ids) > 0) ?
+                                    parsed_body.items.map(it,
+                                      has(it.create) ? it.create : (has(it.index) ? it.index : {})
+                                    ).as(ops,
+                                      ops.filter(op,
+                                        has(op._id) && (!has(op.status) || int(op.status) < 300)
+                                      ).as(ok_items,
+                                        ok_items.map(op, string(op._id)).as(new_ids,
+                                          ok_items.map(op, has(op._index) ? string(op._index) : "").as(new_indices,
+                                            (int(state.instance_index) + ((size(ops) > 0) ? size(ops) : 1)).as(next_instance_index,
+                                              (size(new_ids) > 0) ?
+                                                state.with(
+                                                  {
+                                                    "step": 8,
+                                                    "instance_index": next_instance_index,
+                                                    "pending_alert_ids": new_ids,
+                                                    "pending_alert_indices": new_indices,
+                                                    "want_more": true,
+                                                    "events": [{"message": {"_step": 7, "_uri": uri, "pending": size(new_ids), "info": "Bulk indexed alerts", "story": "Bulk indexed " + string(size(new_ids)) + " alerts and attaching them to the case."}.encode_json()}],
+                                                  }
+                                                )
+                                          : (size(ops) > 0 && next_instance_index < size(cur_finding._instances)) ?
                                             state.with(
                                               {
-                                                "step": 8,
-                                                "instance_index": int(state.instance_index) + size(new_ids),
-                                                "pending_alert_ids": new_ids,
-                                                "pending_alert_indices": new_indices,
+                                                "step": 7,
+                                                "instance_index": next_instance_index,
                                                 "want_more": true,
-                                                "events": [{"message": {"_step": 7, "_uri": uri, "pending": size(new_ids), "info": "Bulk indexed alerts", "story": "Bulk indexed " + string(size(new_ids)) + " alerts and attaching them to the case."}.encode_json()}],
+                                                "events": [{"message": {"_step": 7, "_uri": uri, "pending": 0, "info": "Alerts already indexed", "story": "Bulk create left existing alerts unchanged and continued with the remaining instances."}.encode_json()}],
                                               }
                                             )
                                           : (int(state.instance_index) < size(cur_finding._instances)) ?
@@ -1085,6 +1109,8 @@ program: |-
                                         )
                                       )
                                     )
+                                            )
+                                          )
                                   : (int(state.finding_index) + 1 < size(state.process_findings)) ?
                                     state.with(
                                       {
@@ -1139,6 +1165,7 @@ program: |-
                                               {
                                                 "step": 5,
                                                 "finding_index": int(state.finding_index) + 1,
+                                                "process_findings": state.process_findings.map(f, (f._unique_key == cur_finding._unique_key) ? f.with({"_instances": []}) : f),
                                                 "details_skip": 0,
                                                 "instance_index": 0,
                                                 "case_part": 1,
@@ -1155,6 +1182,7 @@ program: |-
                                               {
                                                 "step": 9,
                                                 "delete_index": 0,
+                                                "process_findings": state.process_findings.map(f, (f._unique_key == cur_finding._unique_key) ? f.with({"_instances": []}) : f),
                                                 "pending_alert_ids": [],
                                                 "pending_alert_indices": [],
                                                 "want_more": true,
@@ -1191,6 +1219,7 @@ program: |-
                                           {
                                             "step": 5,
                                             "finding_index": int(state.finding_index) + 1,
+                                            "process_findings": state.process_findings.map(f, (f._unique_key == cur_finding._unique_key) ? f.with({"_instances": []}) : f),
                                             "details_skip": 0,
                                             "instance_index": 0,
                                             "case_part": 1,
@@ -1207,6 +1236,7 @@ program: |-
                                           {
                                             "step": 9,
                                             "delete_index": 0,
+                                            "process_findings": state.process_findings.map(f, (f._unique_key == cur_finding._unique_key) ? f.with({"_instances": []}) : f),
                                             "pending_alert_ids": [],
                                             "pending_alert_indices": [],
                                             "want_more": true,
