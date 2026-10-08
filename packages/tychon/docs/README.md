@@ -128,24 +128,25 @@ TYCHON checks local browser configuration settings.
 | tychon.host.hardware.manufacturer | Host BIOS Manufacturer. | keyword |
 | tychon.host.hardware.owner | Host BIOS Owner. | keyword |
 | tychon.host.hardware.serial_number | Host BIOS Serial Number. | keyword |
-| tychon.host.hostname | Hostname. | keyword |
-| tychon.host.id | Host ID. | keyword |
-| tychon.host.ip | Host IP addresses. | ip |
+| tychon.host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| tychon.host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| tychon.host.ip | Host ip addresses. | ip |
 | tychon.host.ipv4 | Host IPv4 addresses. | ip |
 | tychon.host.ipv6 | Host IPv6 addresses. | keyword |
-| tychon.host.mac | Host mac addresses. | keyword |
+| tychon.host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | tychon.host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | tychon.host.oem.manufacturer | Host OEM Manufacturer. | keyword |
 | tychon.host.oem.model | Host OEM Model. | keyword |
 | tychon.host.os.build | Host OS Build. | keyword |
 | tychon.host.os.description | Host OS Description. | text |
-| tychon.host.os.family | Host OS Family. | keyword |
+| tychon.host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | tychon.host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| tychon.host.os.name | Host OS Name. | keyword |
+| tychon.host.os.name | Operating system name, without the version. | keyword |
+| tychon.host.os.name.text | Multi-field of `tychon.host.os.name`. | match_only_text |
 | tychon.host.os.organization | Host OS Organization. | keyword |
 | tychon.host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | tychon.host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
-| tychon.host.os.version | Host OS Version. | keyword |
+| tychon.host.os.version | Operating system version as a raw string. | keyword |
 | tychon.host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | tychon.host.uptime | Seconds the host has been up. | long |
 | tychon.host.workgroup | Host Workgroup Network Name. | keyword |
@@ -1194,6 +1195,7 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | tychon.host.memory.size | Host Memory Size. | long |
 | tychon.host.motherboard.chipset | Host Motherboard Chipset. | keyword |
 | tychon.host.motherboard.serial_number | Host Motherboard Serial Number. | keyword |
+| tychon.host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | tychon.host.oem.manufacturer | Host OEM Manufacturer. | keyword |
 | tychon.host.oem.model | Host OEM Model. | keyword |
 | tychon.host.os.build | Host OS Build. | keyword |
@@ -1206,7 +1208,9 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | tychon.host.os.name | Operating system name, without the version. | keyword |
 | tychon.host.os.name.text | Multi-field of `tychon.host.os.name`. | match_only_text |
 | tychon.host.os.organization | Host OS Organization. | keyword |
+| tychon.host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | tychon.host.os.supported_plan | Host Os Supported Plan. | keyword |
+| tychon.host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | tychon.host.os.vendor | Host Os Vendor. | keyword |
 | tychon.host.os.version | Operating system version as a raw string. | keyword |
 | tychon.host.risk.calculated_score | A risk classification score calculated by an internal system as part of entity analytics and entity risk scoring. | float |
@@ -1310,6 +1314,7 @@ The TYCHON script scans an endpoint's Network Adapter Configurations and returns
 | tychon.host.adapter.wifi.signal_percent | Signal strength to connected WIFI Router | integer |
 | tychon.host.adapter.wifi.ssid | The Connected WIFI Router SSID | keyword |
 | tychon.host.adapter.wins_server | The WINS Server attached to this adapter | ip |
+| tychon.host.architecture | Operating system architecture. | keyword |
 | tychon.host.biossn | Host BIOS Serial Number. | keyword |
 | tychon.host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | tychon.host.hardware.bios.name | Host BIOS Name. | keyword |
@@ -1324,15 +1329,18 @@ The TYCHON script scans an endpoint's Network Adapter Configurations and returns
 | tychon.host.ipv4 | Host IPv4 addresses. | ip |
 | tychon.host.ipv6 | Host IPv6 addresses. | keyword |
 | tychon.host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| tychon.host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | tychon.host.oem.manufacturer | Host OEM Manufacturer. | keyword |
 | tychon.host.oem.model | Host OEM Model. | keyword |
 | tychon.host.os.build | Host OS Build. | keyword |
 | tychon.host.os.description | Host OS Description. | text |
 | tychon.host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| tychon.host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | tychon.host.os.name | Operating system name, without the version. | keyword |
 | tychon.host.os.name.text | Multi-field of `tychon.host.os.name`. | match_only_text |
 | tychon.host.os.organization | Host OS Organization. | keyword |
 | tychon.host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| tychon.host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | tychon.host.os.version | Operating system version as a raw string. | keyword |
 | tychon.host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | tychon.host.uptime | Seconds the host has been up. | long |
