@@ -653,7 +653,7 @@ The `log` data stream collects all log types from the FortiGate firewall, includ
 | fortinet.firewall.shapingpolicyid | Traffic shaper policy ID | integer |
 | fortinet.firewall.signal | Wireless rogue API signal | integer |
 | fortinet.firewall.signalstrength | Signal strength | integer |
-| fortinet.firewall.sinr | Signal to interference and noise ratio | integer |
+| fortinet.firewall.sinr | Signal to interference and noise ratio | float |
 | fortinet.firewall.size | Email size in bytes | long |
 | fortinet.firewall.ski | x509 Subject Key Identifier | keyword |
 | fortinet.firewall.slamap | SLA map. | keyword |
