@@ -25,24 +25,25 @@ The XM Cyber integration collects the following types of data:
 | Data stream | Description | Endpoint |
 |---|---|---|
 | `audit_trail` | Audit Records | `/api/audit-trail/auditRecords` |
-| `vulnerability` | CVE records from XM Cyber's Vulnerability Risk Management (VRM) feed, including CVSS v2/v3/v4 scores, EPSS metrics, CISA KEV / in-the-wild exploitation flags, and per-CVE counts of devices, products, and critical assets at risk | `/api/v2/vrm/public/vulnerabilities` |
+| `vulnerability` | Open CVE records from XM Cyber's Vulnerability Risk Management (VRM) feed, including CVSS v2/v3/v4 scores, EPSS metrics, CISA KEV / Exploit-DB flags, vendor advisory URLs, and per-CVE counts of devices, products, and critical assets at risk | `/api/v2/vrm/public/vrmReport/vulnerabilities` |
 | `entity_inventory` | Inventory of entities (devices, identities, and cloud resources) tracked by XM Cyber, enriched with OS, network, agent, and cloud-account metadata. | `/api/entityInventory/entities` |
 | `risk_score` | Organization-level security grade (A–F), numeric risk score, trend data, and per-scenario breakdowns | `/api/scenarios/v2/scenarios/riskScore` |
-| `device` | Device inventory from XM Cyber VRM: identity (device id, name, type), network and directory context (IP, subnet, FQDN, domain, OU, OS), choke-point and critical-asset flags, aggregate vulnerability counts and max CVSS scores, XM Cyber risk score, per-device installed applications with active CVEs and remediation hints | `/api/v2/vrm/public/devices` |
-| `product` | **Product-level** aggregates from VRM: one event per software product with fleet-wide counts (devices where it appears, choke-point presence, affected critical assets, products critical assets at risk, vulnerability count), vendor, and reported operating systems. | `/api/v2/vrm/public/products` |
+| `device` | Device inventory from XM Cyber VRM: identity (device id, name, type), network and directory context (IP, subnet, FQDN, domain, OU, OS), choke-point level and critical-asset flag, aggregate vulnerability counts and max CVSS scores, and XM Cyber risk score | `/api/v2/vrm/public/vrmReport/devices` |
+| `product` | **Product-level** aggregates from VRM: one event per software product with fleet-wide counts (devices where it appears, choke-point presence, affected critical assets, products critical assets at risk, vulnerability count), vendor, and reported operating systems. | `/api/v2/vrm/public/vrmReport/products` |
+| `vulnerability_instance` | Per-device CVE instances from VRM: one event per device listing its installed product versions, each with vendor, version, file paths, active CVEs (and safe versions), and closed CVE IDs | `/api/v2/vrm/public/vrmReport/vulnerabilityInstances` |
 
 ### Supported use cases
 
 - **Audit and compliance monitoring**: Track administrative and user activity within your XM Cyber tenant — including console logins, sensor scan results, and configuration changes — and correlate it with the rest of your security telemetry to support compliance reviews and incident investigations.
-- **Risk-based vulnerability prioritization**: Rank CVEs by CVSS impact, EPSS exploit probability, and CISA KEV / in-the-wild exploitation flags to focus remediation effort where it actually reduces business risk.
+- **Risk-based vulnerability prioritization**: Rank open CVEs by CVSS impact, EPSS exploit probability, and CISA KEV / Exploit-DB flags to focus remediation effort where it actually reduces business risk.
 - **Attack-path-aware exposure analysis**: Correlate detected CVEs with XM Cyber's attack-technique simulations to identify which vulnerabilities act as choke points or stepping stones to crown-jewel assets.
 - **Asset and exposure visibility**: Maintain a unified inventory of the devices, identities, and cloud resources XM Cyber discovers across hybrid environments — with OS, network, agent, and cloud-account context — to support asset management, attack-surface monitoring, and prioritization of critical assets.
 - **Security posture tracking**: Monitor your organization's XM Cyber risk score over time and correlate score changes with security events.
 - **Hybrid device inventory**: Track which assets XM Cyber has discovered, how they are classified, and how they are labeled across on-premises and cloud footprints.
-- **Exposure-aware asset triage**: Use choke-point and critical-asset signals together with per-device vulnerability counts and max CVSS to prioritize which hosts warrant review first.
-- **Application-level context**: Inspect installed products under each device, including active CVEs, closed CVEs, and suggested safe versions where the API provides them.
-- **Software exposure across the fleet**: Rank products by `product_vulnerabilities`, `devices_found_on`, and `choke_points_found_on`, and slice by `product_operating_systems` to align remediation with platform mix.
+- **Exposure-aware asset triage**: Use choke-point level and critical-asset signals together with per-device vulnerability counts and max CVSS to prioritize which hosts warrant review first.
+- **Software exposure across the fleet**: Rank products by `product_vulnerabilities`, `devices_found_on`, and `choke_points_found_on`, and slice by `product_operating_system` to align remediation with platform mix.
 - **Critical-asset risk from products**: Use `affected_critical_assets` and `products_critical_assets_at_risk` with vendor and OS context to prioritize patch and upgrade work.
+- **Instance-level remediation**: Use `vulnerability_instance` to see which product version on which device still has an active CVE, and whether a safe version is already known.
 
 ## What do I need to use this integration?
 
@@ -158,31 +159,31 @@ An example event for `audit_trail` looks as following:
 {
     "@timestamp": "2023-01-03T19:13:54.358Z",
     "agent": {
-        "ephemeral_id": "55b27668-d54c-4a65-ade5-c33577da3ef7",
-        "id": "1799662a-7b8f-4bf6-8c4e-6ff0ac45f498",
-        "name": "elastic-agent-39650",
+        "ephemeral_id": "f5f3af84-3cc2-449f-9229-93d4e5bc51dc",
+        "id": "23583cd2-0340-47d1-8ec4-e48eaadf4eb9",
+        "name": "elastic-agent-99885",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "xm_cyber.audit_trail",
-        "namespace": "21331",
+        "namespace": "60399",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "1799662a-7b8f-4bf6-8c4e-6ff0ac45f498",
+        "id": "23583cd2-0340-47d1-8ec4-e48eaadf4eb9",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "event": {
         "action": "console-login",
         "agent_id_status": "verified",
         "dataset": "xm_cyber.audit_trail",
         "id": "64b2c3d4e5f60718293a4b5c",
-        "ingested": "2026-07-17T09:30:14Z",
+        "ingested": "2026-09-22T11:31:30Z",
         "kind": "event",
         "original": "{\"_id\":\"64b2c3d4e5f60718293a4b5c\",\"details\":\"john.doe@example.com Logged in via user\",\"eventSubType\":\"CONSOLE_LOGIN\",\"eventType\":\"ACCESS\",\"objectName\":\"User\",\"objectType\":\"USER\",\"tenant\":\"demo\",\"terminalId\":{\"hostname\":\"demo.clients.example.com\",\"ip\":\"192.0.2.0\"},\"timestamp\":\"2023-01-03T19:13:54.358Z\",\"userId\":{\"email\":\"john.doe@example.com\",\"name\":\"John Doe\"}}",
         "type": [
@@ -268,31 +269,37 @@ An example event for `audit_trail` looks as following:
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
+| xm_cyber.vulnerability.amazon_linux_url | Amazon Linux ALA/ALAS CVE URL, when applicable. | keyword |
 | xm_cyber.vulnerability.choke_point_found_on | Number of choke-point devices where the CVE was detected. | long |
 | xm_cyber.vulnerability.critical_assets_at_risk | Number of critical assets reachable via attack paths that include this CVE. | long |
 | xm_cyber.vulnerability.critical_assets_found_on | Number of critical-asset devices where the CVE was detected. | long |
-| xm_cyber.vulnerability.cvss2 | CVSS v2 base score. Null when the CVE has no v2 score. | double |
+| xm_cyber.vulnerability.cve_org_url | CVE.org record URL for the CVE. | keyword |
+| xm_cyber.vulnerability.cvss2 | CVSS v2 base score. `0` when the CVE has no v2 vector. | double |
 | xm_cyber.vulnerability.cvss2vector | CVSS v2 vector string. | keyword |
-| xm_cyber.vulnerability.cvss30 | CVSS v3.0 base score. Null when the CVE has no v3.0 score. | double |
-| xm_cyber.vulnerability.cvss31 | CVSS v3.1 base score. Null when the CVE has no v3.1 score. | double |
+| xm_cyber.vulnerability.cvss30 | CVSS v3.0 base score. `0` when the CVE has no v3.0 vector. | double |
+| xm_cyber.vulnerability.cvss31 | CVSS v3.1 base score. `0` when the CVE has no v3.1 vector. | double |
 | xm_cyber.vulnerability.cvss31vector | CVSS v3.1 vector string. | keyword |
 | xm_cyber.vulnerability.cvss3vector | CVSS v3.0 vector string. | keyword |
-| xm_cyber.vulnerability.cvss4 | CVSS v4 base score. Null when the CVE has no v4 score. | double |
+| xm_cyber.vulnerability.cvss4 | CVSS v4 base score. `0` when the CVE has no v4 vector. | double |
 | xm_cyber.vulnerability.cvss4vector | CVSS v4 vector string. | keyword |
+| xm_cyber.vulnerability.debian_url | Debian security tracker URL for the CVE, when applicable. | keyword |
 | xm_cyber.vulnerability.device_found_on | Number of devices on which the CVE was detected in the environment. | long |
 | xm_cyber.vulnerability.epss_percentile | Percentile of the current EPSS score — the proportion of all scored vulnerabilities at or below this score. | double |
 | xm_cyber.vulnerability.epss_probability | Probability of exploitation in the wild within 30 days, in the range 0..1. | double |
 | xm_cyber.vulnerability.epss_score | Raw EPSS exploitation likelihood score, in the range 0..1. | double |
-| xm_cyber.vulnerability.exploit_kit_exist | Whether an exploit kit is known to target this CVE. | boolean |
+| xm_cyber.vulnerability.first_detected | Timestamp of the first detection of the vulnerability. | date |
 | xm_cyber.vulnerability.has_attack_technique | Whether XM Cyber has built an attack-technique simulation for this vulnerability. | boolean |
 | xm_cyber.vulnerability.in_cisa_kev | Whether the vulnerability appears in CISA's Known Exploited Vulnerabilities (KEV) catalog. | boolean |
 | xm_cyber.vulnerability.in_exploit_db | Whether public exploit code exists in the Exploit-DB database. | boolean |
-| xm_cyber.vulnerability.is_exploited_in_the_wild | Whether real-world exploitation by attackers has been observed. | boolean |
+| xm_cyber.vulnerability.msrc_url | Microsoft Security Response Center URL for the CVE, when applicable. | keyword |
+| xm_cyber.vulnerability.nvd_url | National Vulnerability Database (NVD) URL for the CVE. | keyword |
+| xm_cyber.vulnerability.oracle_url | Oracle security CVE URL, when applicable. | keyword |
 | xm_cyber.vulnerability.products | Number of products affected by the CVE. | long |
 | xm_cyber.vulnerability.published_date | Date the CVE was first published in NVD. | date |
+| xm_cyber.vulnerability.red_hat_url | Red Hat security CVE URL, when applicable. | keyword |
 | xm_cyber.vulnerability.severity | Numeric severity score returned by the XM Cyber VRM API. | long |
-| xm_cyber.vulnerability.status | Current state of the vulnerability in the environment — "Active" or "Remediated". | keyword |
-| xm_cyber.vulnerability.technique_id | XM Cyber attack-technique identifier; populated only when has_attack_technique is true. | keyword |
+| xm_cyber.vulnerability.suse_url | SUSE security CVE URL, when applicable. | keyword |
+| xm_cyber.vulnerability.ubuntu_url | Ubuntu security CVE URL, when applicable. | keyword |
 
 
 ### Example event
@@ -303,26 +310,26 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-03T00:00:00.000Z",
+    "@timestamp": "2026-09-07T01:32:06.000Z",
     "agent": {
-        "ephemeral_id": "58f10044-9f61-445b-8531-faec6c08e68f",
-        "id": "f9a231ba-8bb8-419a-ac92-2725c170fb1b",
-        "name": "elastic-agent-17232",
+        "ephemeral_id": "58433550-4bc3-414f-8e32-cfeeb7ffa8cf",
+        "id": "2ced4344-3533-4032-a63e-4b65b1a8bcbb",
+        "name": "elastic-agent-73817",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "xm_cyber.vulnerability",
-        "namespace": "73891",
+        "namespace": "97053",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "f9a231ba-8bb8-419a-ac92-2725c170fb1b",
+        "id": "2ced4344-3533-4032-a63e-4b65b1a8bcbb",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -330,9 +337,9 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "xm_cyber.vulnerability",
-        "ingested": "2026-07-17T09:36:38Z",
+        "ingested": "2026-09-22T11:35:39Z",
         "kind": "event",
-        "original": "{\"chokePointFoundOn\":4,\"criticalAssetsAtRisk\":33,\"criticalAssetsFoundOn\":17,\"cve\":\"CVE-2016-0185\",\"cvss2\":9.3,\"cvss2Vector\":\"AV:N/AC:M/Au:N/C:C/I:C/A:C\",\"cvss30\":null,\"cvss31\":7.8,\"cvss31Vector\":\"CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H\",\"cvss3Vector\":null,\"cvss4\":null,\"cvss4Vector\":null,\"description\":\"Media Center in Microsoft Windows Vista SP2, Windows 7 SP1, and Windows 8.1 allows remote attackers to execute arbitrary code via a crafted Media Center link (aka .mcl) file, aka 'Windows Media Center Remote Code Execution Vulnerability.'\",\"deviceFoundOn\":17,\"epssPercentile\":0.99132,\"epssProbability\":0.80235,\"epssScore\":0.80235,\"exploitKitExist\":true,\"firstDetected\":\"2025-04-03T00:00:00.000Z\",\"hasAttackTechnique\":false,\"inCisaKev\":true,\"inExploitDb\":true,\"isExploitedInTheWild\":true,\"products\":1,\"publishedDate\":\"2016-05-11T00:00:00.000Z\",\"severity\":30,\"severityLevel\":\"High\",\"status\":\"Active\",\"techniqueId\":null}",
+        "original": "{\"AmazonLinuxURL\":\"https://explore.alas.aws.amazon.com/CVE-2013-6629.html\",\"CVEOrgURL\":\"https://www.cve.org/CVERecord?id=CVE-2013-6629\",\"DebianURL\":\"https://security-tracker.debian.org/tracker/CVE-2013-6629\",\"MSRCURL\":\"https://msrc.microsoft.com/update-guide/vulnerability/CVE-2013-6629\",\"NVDURL\":\"https://nvd.nist.gov/vuln/detail/CVE-2013-6629\",\"OracleURL\":\"\",\"RedHatURL\":\"https://access.redhat.com/security/cve/CVE-2013-6629\",\"SUSEURL\":\"https://www.suse.com/security/cve/CVE-2013-6629.html\",\"UbuntuURL\":\"\",\"chokePointFoundOn\":1,\"criticalAssetsAtRisk\":29,\"criticalAssetsFoundOn\":1,\"cve\":\"CVE-2013-6629\",\"cvss2\":5,\"cvss2Vector\":\"AV:N/AC:M/Au:N/C:P/I:N/A:N\",\"cvss30\":0,\"cvss31\":0,\"cvss31Vector\":\"\",\"cvss3Vector\":\"\",\"cvss4\":0,\"cvss4Vector\":\"\",\"description\":\"The get_sos function in jdmarker.c in libjpeg does not check for certain duplications of component data, which allows remote attackers to obtain sensitive information via a crafted JPEG image.\",\"deviceFoundOn\":18,\"epssPercentile\":0.95322,\"epssProbability\":0.10117,\"epssScore\":0.10117,\"firstDetected\":\"2025-04-03T00:00:00.000Z\",\"hasAttackTechnique\":false,\"inCisaKev\":false,\"inExploitDb\":false,\"lastDataUpdate\":\"2026-09-07T01:32:06.000Z\",\"products\":2,\"publishedDate\":\"2013-11-19T00:00:00.000Z\",\"severity\":20,\"severityLevel\":\"Medium\"}",
         "type": [
             "info"
         ]
@@ -347,37 +354,43 @@ An example event for `vulnerability` looks as following:
     ],
     "vulnerability": {
         "classification": "CVSS",
-        "description": "Media Center in Microsoft Windows Vista SP2, Windows 7 SP1, and Windows 8.1 allows remote attackers to execute arbitrary code via a crafted Media Center link (aka .mcl) file, aka 'Windows Media Center Remote Code Execution Vulnerability.'",
+        "description": "The get_sos function in jdmarker.c in libjpeg does not check for certain duplications of component data, which allows remote attackers to obtain sensitive information via a crafted JPEG image.",
         "enumeration": "CVE",
-        "id": "CVE-2016-0185",
+        "id": "CVE-2013-6629",
         "score": {
-            "base": 7.8,
-            "version": "3.1"
+            "base": 5,
+            "version": "2.0"
         },
-        "severity": "high"
+        "severity": "medium"
     },
     "xm_cyber": {
         "vulnerability": {
-            "choke_point_found_on": 4,
-            "critical_assets_at_risk": 33,
-            "critical_assets_found_on": 17,
-            "cvss2": 9.3,
-            "cvss2vector": "AV:N/AC:M/Au:N/C:C/I:C/A:C",
-            "cvss31": 7.8,
-            "cvss31vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
-            "device_found_on": 17,
-            "epss_percentile": 0.99132,
-            "epss_probability": 0.80235,
-            "epss_score": 0.80235,
-            "exploit_kit_exist": true,
+            "amazon_linux_url": "https://explore.alas.aws.amazon.com/CVE-2013-6629.html",
+            "choke_point_found_on": 1,
+            "critical_assets_at_risk": 29,
+            "critical_assets_found_on": 1,
+            "cve_org_url": "https://www.cve.org/CVERecord?id=CVE-2013-6629",
+            "cvss2": 5,
+            "cvss2vector": "AV:N/AC:M/Au:N/C:P/I:N/A:N",
+            "cvss30": 0,
+            "cvss31": 0,
+            "cvss4": 0,
+            "debian_url": "https://security-tracker.debian.org/tracker/CVE-2013-6629",
+            "device_found_on": 18,
+            "epss_percentile": 0.95322,
+            "epss_probability": 0.10117,
+            "epss_score": 0.10117,
+            "first_detected": "2025-04-03T00:00:00.000Z",
             "has_attack_technique": false,
-            "in_cisa_kev": true,
-            "in_exploit_db": true,
-            "is_exploited_in_the_wild": true,
-            "products": 1,
-            "published_date": "2016-05-11T00:00:00.000Z",
-            "severity": 30,
-            "status": "Active"
+            "in_cisa_kev": false,
+            "in_exploit_db": false,
+            "msrc_url": "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2013-6629",
+            "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2013-6629",
+            "products": 2,
+            "published_date": "2013-11-19T00:00:00.000Z",
+            "red_hat_url": "https://access.redhat.com/security/cve/CVE-2013-6629",
+            "severity": 20,
+            "suse_url": "https://www.suse.com/security/cve/CVE-2013-6629.html"
         }
     }
 }
@@ -767,11 +780,11 @@ An example event for `entity_inventory` looks as following:
 {
     "@timestamp": "2026-05-05T21:05:15.079Z",
     "agent": {
-        "ephemeral_id": "6db08d4c-f6f9-4c4d-addb-5d7b13059786",
-        "id": "a63b7488-f0c6-47bb-b9fa-723c4b23a358",
-        "name": "elastic-agent-97309",
+        "ephemeral_id": "2167a0bd-9733-462c-a6ca-9d7ce0c4e1a4",
+        "id": "f324639d-515c-4929-ba7d-6ef0d8c7a5de",
+        "name": "elastic-agent-41339",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "cloud": {
         "account": {
@@ -785,22 +798,22 @@ An example event for `entity_inventory` looks as following:
     },
     "data_stream": {
         "dataset": "xm_cyber.entity_inventory",
-        "namespace": "49491",
+        "namespace": "54902",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "a63b7488-f0c6-47bb-b9fa-723c4b23a358",
+        "id": "f324639d-515c-4929-ba7d-6ef0d8c7a5de",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "xm_cyber.entity_inventory",
         "id": "awsSsmParameter-arn:aws:ssm:us-east-1:000000000001:parameter/ExampleBuild/testKeys",
-        "ingested": "2026-07-17T09:32:46Z",
+        "ingested": "2026-09-22T11:33:09Z",
         "kind": "asset",
         "original": "{\"accountId\":\"000000000001\",\"accountName\":\"example-account\",\"arn\":\"arn:aws:ssm:us-east-1:000000000001:parameter/ExampleBuild/testKeys\",\"category\":\"Cloud\",\"customProperties\":{\"domainWorkgroup\":{\"data\":\"AWS/000000000001\",\"type\":\"domain\"},\"ouComputer\":\"AWS/000000000001/us-east-1/SSM/ParameterMetadata\",\"ouUser\":\"AWS/000000000001/SSM/ParameterMetadata\",\"subnetInfo\":\"AWS_000000000001_us-east-1\"},\"disabled\":false,\"displayName\":\"/ExampleBuild/testKeys\",\"entityDetails\":{\"id\":\"awsSsmParameter-arn:aws:ssm:us-east-1:000000000001:parameter/ExampleBuild/testKeys\",\"isAsset\":null,\"name\":\"/ExampleBuild/testKeys\",\"subType\":\"awsSsmParameter\",\"subTypeDisplayName\":\"AWS SSM Parameter\"},\"entityType\":\"AwsSsmParameterEntity\",\"id\":\"awsSsmParameter-arn:aws:ssm:us-east-1:000000000001:parameter/ExampleBuild/testKeys\",\"name\":\"/ExampleBuild/testKeys\",\"notIncludedInAttacks\":false,\"organizationId\":\"o-abc123def4\",\"region\":\"us-east-1\",\"ruleDisplayName\":\"000000000001 / /ExampleBuild/testKeys\",\"ssmParameterDataType\":\"text\",\"ssmParameterKeyId\":\"alias/aws/ssm\",\"ssmParameterLastModifiedDate\":\"2020-07-19T09:53:58.629Z\",\"ssmParameterLastModifiedUser\":\"arn:aws:sts::000000000001:assumed-role/AWSReservedSSO_ExampleAccess_0123456789abcdef/alice.johnson@example.org\",\"ssmParameterName\":\"/ExampleBuild/testKeys\",\"ssmParameterTier\":\"Standard\",\"ssmParameterType\":\"SecureString\",\"ssmParameterVersion\":1,\"status\":\"active\",\"type\":\"awsSsmParameter\",\"typeDisplayName\":\"AWS SSM Parameter\",\"useType\":\"Storage\",\"xmProviderAccount\":\"example-account\",\"xmUpdateTime\":\"2026-05-05T21:05:15.079Z\"}"
     },
@@ -912,31 +925,31 @@ An example event for `risk_score` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-07-17T09:35:28.559Z",
+    "@timestamp": "2026-09-22T11:34:46.227Z",
     "agent": {
-        "ephemeral_id": "3ab54312-695e-407e-a8a1-23a2d3825292",
-        "id": "488043c1-24f5-4a6c-b760-51eb4f84c770",
-        "name": "elastic-agent-33912",
+        "ephemeral_id": "42680ac4-2c38-4173-b79c-84bfc00424d0",
+        "id": "90c194d8-c1c5-412d-a903-0453fea7f1a3",
+        "name": "elastic-agent-31080",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "xm_cyber.risk_score",
-        "namespace": "52557",
+        "namespace": "79158",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "488043c1-24f5-4a6c-b760-51eb4f84c770",
+        "id": "90c194d8-c1c5-412d-a903-0453fea7f1a3",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "xm_cyber.risk_score",
-        "ingested": "2026-07-17T09:35:31Z",
+        "ingested": "2026-09-22T11:34:49Z",
         "kind": "event",
         "original": "{\"avgGraphData\":[{\"date\":\"2025-12-03T00:00:00.000Z\",\"grade\":\"A\",\"score\":95}],\"graphData\":{\"campaigns\":null,\"fromDate\":\"2025-12-02T00:00:00.000Z\",\"grade\":\"A\",\"score\":95,\"toDate\":\"2025-12-03T00:00:00.000Z\"},\"scenario\":{\"grade\":\"B\",\"id\":\"A101\",\"name\":\"(EX) Endpoint to Servers\",\"score\":82},\"stats\":{\"grade\":\"A\",\"score\":90,\"trend\":1}}"
     },
@@ -1000,19 +1013,6 @@ An example event for `risk_score` looks as following:
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | xm_cyber.device.affected_entities | Number of related entities affected for this device context. | long |
-| xm_cyber.device.apps.active_cves | CVE identifiers currently active for this application. | keyword |
-| xm_cyber.device.apps.active_cves_safe_version.cve | CVE identifier. | keyword |
-| xm_cyber.device.apps.active_cves_safe_version.safe_version | Vendor-recommended safe version for the CVE. | keyword |
-| xm_cyber.device.apps.affected_critical_assets | Number of critical assets affected by this application exposure. | long |
-| xm_cyber.device.apps.choke_point_found_on | Vendor count of choke-point occurrences for this app; may be sent as a numeric string (e.g. "4") from the API. | keyword |
-| xm_cyber.device.apps.closed_cves | CVE identifiers remediated or closed for this application. | keyword |
-| xm_cyber.device.apps.device_found_on | Number of devices where this application instance was observed. | long |
-| xm_cyber.device.apps.name | Application or product display name. | keyword |
-| xm_cyber.device.apps.product_operating_systems | Operating systems on which the product is reported. | keyword |
-| xm_cyber.device.apps.product_vulnerabilities | Count of vulnerabilities associated with the product. | long |
-| xm_cyber.device.apps.products_critical_assets_at_risk | Critical assets at risk attributed to this product context. | long |
-| xm_cyber.device.apps.vendor | Application vendor. | keyword |
-| xm_cyber.device.apps.version | Installed application version. | keyword |
 | xm_cyber.device.choke_point_level | Qualitative choke-point level (e.g. text tier from the API). | keyword |
 | xm_cyber.device.choke_point_score | Numeric choke-point score from XM Cyber. | long |
 | xm_cyber.device.critical_assets_at_risk | Count of critical assets at risk in relation to this device. | long |
@@ -1026,7 +1026,6 @@ An example event for `risk_score` looks as following:
 | xm_cyber.device.fqdn | Fully qualified domain name when present. | keyword |
 | xm_cyber.device.high_vulnerabilities | Count of high-severity vulnerabilities on the device. | long |
 | xm_cyber.device.ip_address | Primary IP address associated with the device. | ip |
-| xm_cyber.device.is_choke_point | Whether the device is classified as a choke point. | boolean |
 | xm_cyber.device.is_critical_asset | Whether the device is treated as a critical asset. | boolean |
 | xm_cyber.device.labels | Vendor-supplied labels attached to the device. | keyword |
 | xm_cyber.device.last_compromised | Timestamp of the last simulated or observed compromise when provided; may be absent. | date |
@@ -1054,17 +1053,17 @@ An example event for `device` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-05-12T21:54:01.641Z",
+    "@timestamp": "2026-09-07T01:32:06.000Z",
     "agent": {
-        "ephemeral_id": "3656849f-6c16-4078-9952-015995548e2d",
-        "id": "a9d23aad-91bc-4a14-9f62-f29ebf1c8ab1",
-        "name": "elastic-agent-40605",
+        "ephemeral_id": "c879fb95-ca15-43fa-85c6-b410fb02d6cf",
+        "id": "a48f02ea-221f-46e1-a630-ad21833a0a0c",
+        "name": "elastic-agent-69759",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "xm_cyber.device",
-        "namespace": "59928",
+        "namespace": "65930",
         "type": "logs"
     },
     "device": {
@@ -1072,12 +1071,12 @@ An example event for `device` looks as following:
         "type": "Workstation"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "a9d23aad-91bc-4a14-9f62-f29ebf1c8ab1",
+        "id": "a48f02ea-221f-46e1-a630-ad21833a0a0c",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1085,9 +1084,9 @@ An example event for `device` looks as following:
             "host"
         ],
         "dataset": "xm_cyber.device",
-        "ingested": "2026-07-17T09:31:25Z",
+        "ingested": "2026-09-22T11:32:19Z",
         "kind": "event",
-        "original": "{\"affectedEntities\":4,\"apps\":[{\"activeCves\":[\"CVE-2023-0001\"],\"activeCvesSafeVersion\":[{\"cve\":\"CVE-2023-0001\",\"safeVersion\":\"2.0.0\"}],\"affectedCriticalAssets\":0,\"chokePointFoundOn\":\"1\",\"closedCves\":[],\"deviceFoundOn\":2,\"name\":\"Example Product\",\"productOperatingSystems\":[\"Windows\"],\"productVulnerabilities\":3,\"productsCriticalAssetsAtRisk\":1,\"vendor\":\"VendorCo\",\"version\":\"1.2.3\"}],\"chokePointLevel\":\"Critical\",\"chokePointScore\":100,\"criticalAssetsAtRisk\":2,\"criticalVulnerabilities\":2,\"deviceId\":\"9000000000000000001\",\"deviceName\":\"host-01\",\"deviceType\":\"Workstation\",\"domain\":\"corp.example.com\",\"enitityVulnerabilities\":1,\"enrichmentLabels\":[\"enriched\"],\"fqdn\":\"hugh.corp.example.com\",\"highVulnerabilities\":5,\"ipAddress\":\"192.168.1.10\",\"isChokePoint\":true,\"isCriticalAsset\":true,\"labels\":[\"lab\",\"example-security-test\"],\"lastCompromised\":null,\"lastScan\":\"2026-05-12T21:54:01.641Z\",\"lowVulnerabilities\":3,\"maxCvssV2\":8,\"maxCvssV3\":9.1,\"maxCvssV31\":8.8,\"maxCvssV4\":7.2,\"mediumVulnerabilities\":10,\"os\":\"Windows 11\",\"ou\":\"OU=Workstations,DC=corp,DC=example,DC=com\",\"products\":5,\"riskScore\":75,\"subnet\":\"192.168.1.0/24\",\"type\":\"Endpoint\",\"unknownVulnerabilities\":0}",
+        "original": "{\"affectedEntities\":4,\"chokePointLevel\":\"Low\",\"chokePointScore\":38,\"criticalAssetsAtRisk\":2,\"criticalVulnerabilities\":2,\"deviceId\":\"9000000000000000001\",\"deviceName\":\"host-01\",\"deviceType\":\"Workstation\",\"domain\":\"corp.example.com\",\"enitityVulnerabilities\":1,\"enrichmentLabels\":[\"enriched\"],\"fqdn\":\"host-01.corp.example.com\",\"highVulnerabilities\":5,\"ipAddress\":\"175.16.199.0\",\"isCriticalAsset\":false,\"labels\":[\"lab\",\"example-security-test\"],\"lastCompromised\":\"2026-09-04T00:00:00.000Z\",\"lastDataUpdate\":\"2026-09-07T01:32:06.000Z\",\"lastScan\":\"2026-09-06T14:08:10.982Z\",\"lowVulnerabilities\":3,\"maxCvssV2\":8,\"maxCvssV3\":9.1,\"maxCvssV31\":8.8,\"maxCvssV4\":7.2,\"mediumVulnerabilities\":10,\"os\":\"Windows 11\",\"ou\":\"OU=Workstations,DC=corp,DC=example,DC=com\",\"products\":4,\"riskScore\":75,\"subnet\":\"175.16.199.0/24\",\"type\":\"agent\",\"unknownVulnerabilities\":0}",
         "type": [
             "info"
         ]
@@ -1097,9 +1096,9 @@ An example event for `device` looks as following:
         "hostname": "host-01",
         "id": "9000000000000000001",
         "ip": [
-            "192.168.1.10"
+            "175.16.199.0"
         ],
-        "name": "hugh.corp.example.com",
+        "name": "host-01.corp.example.com",
         "os": {
             "full": "Windows 11"
         },
@@ -1110,7 +1109,7 @@ An example event for `device` looks as following:
     },
     "related": {
         "ip": [
-            "192.168.1.10"
+            "175.16.199.0"
         ]
     },
     "tags": [
@@ -1120,10 +1119,6 @@ An example event for `device` looks as following:
     ],
     "vulnerability": {
         "classification": "CVSS",
-        "enumeration": "CVE",
-        "id": [
-            "CVE-2023-0001"
-        ],
         "score": {
             "base": 7.2,
             "version": "4.0"
@@ -1132,32 +1127,8 @@ An example event for `device` looks as following:
     "xm_cyber": {
         "device": {
             "affected_entities": 4,
-            "apps": [
-                {
-                    "active_cves": [
-                        "CVE-2023-0001"
-                    ],
-                    "active_cves_safe_version": [
-                        {
-                            "cve": "CVE-2023-0001",
-                            "safe_version": "2.0.0"
-                        }
-                    ],
-                    "affected_critical_assets": 0,
-                    "choke_point_found_on": "1",
-                    "device_found_on": 2,
-                    "name": "Example Product",
-                    "product_operating_systems": [
-                        "Windows"
-                    ],
-                    "product_vulnerabilities": 3,
-                    "products_critical_assets_at_risk": 1,
-                    "vendor": "VendorCo",
-                    "version": "1.2.3"
-                }
-            ],
-            "choke_point_level": "Critical",
-            "choke_point_score": 100,
+            "choke_point_level": "Low",
+            "choke_point_score": 38,
             "critical_assets_at_risk": 2,
             "critical_vulnerabilities": 2,
             "enitity_vulnerabilities": 1,
@@ -1165,12 +1136,13 @@ An example event for `device` looks as following:
                 "enriched"
             ],
             "high_vulnerabilities": 5,
-            "is_choke_point": true,
-            "is_critical_asset": true,
+            "is_critical_asset": false,
             "labels": [
                 "lab",
                 "example-security-test"
             ],
+            "last_compromised": "2026-09-04T00:00:00.000Z",
+            "last_scan": "2026-09-06T14:08:10.982Z",
             "low_vulnerabilities": 3,
             "max_cvss_v2": 8,
             "max_cvss_v3": 9.1,
@@ -1178,10 +1150,10 @@ An example event for `device` looks as following:
             "max_cvss_v4": 7.2,
             "medium_vulnerabilities": 10,
             "ou": "OU=Workstations,DC=corp,DC=example,DC=com",
-            "products": 5,
+            "products": 4,
             "risk_score": 75,
-            "subnet": "192.168.1.0/24",
-            "type": "Endpoint",
+            "subnet": "175.16.199.0/24",
+            "type": "agent",
             "unknown_vulnerabilities": 0
         }
     }
@@ -1209,7 +1181,7 @@ An example event for `device` looks as following:
 | xm_cyber.product.choke_points_found_on | Count of choke-point contexts where this product appears. | long |
 | xm_cyber.product.devices_found_on | Number of devices where this product is installed. | long |
 | xm_cyber.product.product_name | Product display name from the API. | keyword |
-| xm_cyber.product.product_operating_systems | OS strings where the product is reported | keyword |
+| xm_cyber.product.product_operating_system | OS strings where the product is reported. | keyword |
 | xm_cyber.product.product_vulnerabilities | Vulnerability count associated with this product. | long |
 | xm_cyber.product.products_critical_assets_at_risk | Critical assets at risk attributed to this product. | long |
 | xm_cyber.product.vendor | Software vendor when present. | keyword |
@@ -1223,33 +1195,33 @@ An example event for `product` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-07-17T09:34:07.437Z",
+    "@timestamp": "2026-09-07T01:32:06.000Z",
     "agent": {
-        "ephemeral_id": "ba92df7d-15fc-4978-b553-8d96400a02b1",
-        "id": "a7c561c8-1ad6-4955-aa5f-2969f60ec135",
-        "name": "elastic-agent-56475",
+        "ephemeral_id": "5e8be395-1dd3-4e0b-889f-5f1d1c6125b8",
+        "id": "a3117c18-3b87-420d-9a12-d75bf4a80e10",
+        "name": "elastic-agent-37269",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "xm_cyber.product",
-        "namespace": "16298",
+        "namespace": "97858",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "a7c561c8-1ad6-4955-aa5f-2969f60ec135",
+        "id": "a3117c18-3b87-420d-9a12-d75bf4a80e10",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "xm_cyber.product",
-        "ingested": "2026-07-17T09:34:10Z",
+        "ingested": "2026-09-22T11:33:59Z",
         "kind": "event",
-        "original": "{\"affectedCriticalAssets\":2,\"chokePointsFoundOn\":0,\"devicesFoundOn\":2,\"productName\":\"wget\",\"productOperatingSystems\":[\"Linux sles 12.5 Server\"],\"productVulnerabilities\":1,\"productsCriticalAssetsAtRisk\":0,\"vendor\":null}"
+        "original": "{\"affectedCriticalAssets\":3,\"chokePointsFoundOn\":0,\"devicesFoundOn\":8,\"lastDataUpdate\":\"2026-09-07T01:32:06.000Z\",\"productName\":\"windows remote desktop services\",\"productOperatingSystem\":[\"Windows 7 SP 1.0\",\"Windows Server 2012 R2\",\"Windows Server 2012 R2 (DC)\"],\"productVulnerabilities\":2,\"productsCriticalAssetsAtRisk\":29,\"vendor\":null}"
     },
     "input": {
         "type": "cel"
@@ -1261,15 +1233,148 @@ An example event for `product` looks as following:
     ],
     "xm_cyber": {
         "product": {
-            "affected_critical_assets": 2,
+            "affected_critical_assets": 3,
             "choke_points_found_on": 0,
-            "devices_found_on": 2,
-            "product_name": "wget",
-            "product_operating_systems": [
-                "Linux sles 12.5 Server"
+            "devices_found_on": 8,
+            "product_name": "windows remote desktop services",
+            "product_operating_system": [
+                "Windows 7 SP 1.0",
+                "Windows Server 2012 R2",
+                "Windows Server 2012 R2 (DC)"
             ],
-            "product_vulnerabilities": 1,
-            "products_critical_assets_at_risk": 0
+            "product_vulnerabilities": 2,
+            "products_critical_assets_at_risk": 29
+        }
+    }
+}
+```
+
+### Vulnerability Instance
+
+#### Vulnerability Instance fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
+| xm_cyber.vulnerability_instance.device_id | XM Cyber device identifier. | keyword |
+| xm_cyber.vulnerability_instance.product_versions.active_cves.cve | CVE identifier. | keyword |
+| xm_cyber.vulnerability_instance.product_versions.active_cves.safe_version | Vendor-recommended safe version when provided. | keyword |
+| xm_cyber.vulnerability_instance.product_versions.closed_cve_ids | CVE identifiers that have been closed for this product version. | keyword |
+| xm_cyber.vulnerability_instance.product_versions.file_paths | File paths associated with this product version on the device, when reported. | keyword |
+| xm_cyber.vulnerability_instance.product_versions.product_name | Product display name. | keyword |
+| xm_cyber.vulnerability_instance.product_versions.product_vendor | Software vendor. Empty in the API for about half of product versions. | keyword |
+| xm_cyber.vulnerability_instance.product_versions.version | Installed product version string. Can be free text such as "Not Available." | keyword |
+
+
+### Example event
+
+#### Vulnerability Instance
+
+An example event for `vulnerability_instance` looks as following:
+
+```json
+{
+    "@timestamp": "2026-09-07T01:32:06.000Z",
+    "agent": {
+        "ephemeral_id": "38b1b08a-48a4-47d4-b9e1-36051fca8ca2",
+        "id": "75e93feb-2d94-42db-a402-5093a963d384",
+        "name": "elastic-agent-35137",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "xm_cyber.vulnerability_instance",
+        "namespace": "95894",
+        "type": "logs"
+    },
+    "device": {
+        "id": "9000000000000000001"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "75e93feb-2d94-42db-a402-5093a963d384",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "vulnerability",
+            "host"
+        ],
+        "dataset": "xm_cyber.vulnerability_instance",
+        "ingested": "2026-09-23T07:17:56Z",
+        "kind": "event",
+        "original": "{\"deviceId\":\"9000000000000000001\",\"lastDataUpdate\":\"2026-09-07T01:32:06.000Z\",\"productVersions\":[{\"activeCves\":[{\"cve\":\"CVE-2021-34527\",\"safeVersion\":null}],\"closedCveIds\":[],\"filePaths\":[\"C:/Windows/System32/ntoskrnl.exe\"],\"productName\":\"windows print spooler\",\"productVendor\":\"\",\"version\":\"Not Available\"},{\"activeCves\":[{\"cve\":\"CVE-2021-24111\",\"safeVersion\":null},{\"cve\":\"CVE-2022-21911\",\"safeVersion\":null},{\"cve\":\"CVE-2022-26832\",\"safeVersion\":null}],\"closedCveIds\":[],\"filePaths\":[],\"productName\":\".net framework\",\"productVendor\":\"microsoft\",\"version\":\"4.8\"}]}",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "id": "9000000000000000001"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "xm_cyber-vulnerability_instance"
+    ],
+    "vulnerability": {
+        "enumeration": "CVE",
+        "id": [
+            "CVE-2021-34527",
+            "CVE-2021-24111",
+            "CVE-2022-21911",
+            "CVE-2022-26832"
+        ]
+    },
+    "xm_cyber": {
+        "vulnerability_instance": {
+            "product_versions": [
+                {
+                    "active_cves": [
+                        {
+                            "cve": "CVE-2021-34527"
+                        }
+                    ],
+                    "file_paths": [
+                        "C:/Windows/System32/ntoskrnl.exe"
+                    ],
+                    "product_name": "windows print spooler",
+                    "version": "Not Available"
+                },
+                {
+                    "active_cves": [
+                        {
+                            "cve": "CVE-2021-24111"
+                        },
+                        {
+                            "cve": "CVE-2022-21911"
+                        },
+                        {
+                            "cve": "CVE-2022-26832"
+                        }
+                    ],
+                    "product_name": ".net framework",
+                    "product_vendor": "microsoft",
+                    "version": "4.8"
+                }
+            ]
         }
     }
 }
@@ -1313,12 +1418,15 @@ These XM Cyber REST API endpoints are used by this integration:
 | `/api/auth` | POST | all | Exchange API key for Bearer access token |
 | `/api/refresh-token` | POST | all | Refresh an expired access token |
 | `/api/audit-trail/auditRecords` | GET | `audit_trail` | Audit Records |
-| `/api/v2/vrm/public/vulnerabilities` | GET | `vulnerabilities` | Paginated exposure rows (attack techniques / CVE context) |
+| `/api/v2/vrm/public/vrmReport/vulnerabilities` | GET | `vulnerability` | Paginated open CVE records (CVSS, EPSS, CISA KEV / Exploit-DB, advisory URLs) |
 | `/api/entityInventory/entities` | GET | `entity_inventory` | List entities (devices, identities, cloud resources) tracked by XM Cyber |
 | `/api/scenarios/v2/scenarios/riskScore` | GET | `risk_score` | Organization risk score and grade |
-| `/api/v2/vrm/public/devices` | GET | `device` | Paginated device inventory with vulnerability aggregates and per-application CVE context |
-| `/api/v2/vrm/public/products` | GET | `product` | Paginated product-level exposure aggregates (counts and OS list per product) |
+| `/api/v2/vrm/public/vrmReport/devices` | GET | `device` | Paginated device inventory with vulnerability aggregates |
+| `/api/v2/vrm/public/vrmReport/products` | GET | `product` | Paginated product-level exposure aggregates (counts and OS list per product) |
+| `/api/v2/vrm/public/vrmReport/vulnerabilityInstances` | GET | `vulnerability_instance` | Paginated device records with per-product-version active CVEs and safe versions |
 
 ### ILM Policy
 
-To facilitate vulnerability data stream-backed indices `.ds-logs-xm_cyber.vulnerability-*` is allowed to contain duplicates from each polling interval. ILM policies `logs-xm_cyber.vulnerability-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+The `device`, `product`, `vulnerability` and `vulnerability_instance` data streams collect a full snapshot of the XM Cyber VRM report on every polling interval. Each new report (identified by its `lastDataUpdate` timestamp) is indexed as a new set of documents, so the backing indices `.ds-logs-xm_cyber.device-*`, `.ds-logs-xm_cyber.product-*`, `.ds-logs-xm_cyber.vulnerability-*` and `.ds-logs-xm_cyber.vulnerability_instance-*` accumulate one copy of each record per report.
+
+To prevent unbounded growth, each of these data streams ships with its own ILM policy (`logs-xm_cyber.device-default_policy`, `logs-xm_cyber.product-default_policy`, `logs-xm_cyber.vulnerability-default_policy` and `logs-xm_cyber.vulnerability_instance-default_policy`) and a matching data stream lifecycle. Documents in these source indices are deleted `30 days` after they are ingested. The `latest_vulnerability` transform maintains the current view of each CVE in its own destination index, which is not affected by this retention.
