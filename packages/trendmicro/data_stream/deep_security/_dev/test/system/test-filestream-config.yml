@@ -5,7 +5,11 @@ data_stream:
   vars:
     paths:
       - "{{SERVICE_LOGS_DIR}}/trendmicro.log"
-    decode_trendmicro_timezone: UTC
+    tz_offset: UTC
+    processors: |
+      - drop_fields:
+          fields: ["trendmicro_test_missing_field"]
+          ignore_missing: true
 numeric_keyword_fields:
   - log.file.device_id
   - log.file.inode
