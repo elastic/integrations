@@ -163,6 +163,20 @@
     - description: Enable Identity Federation for Config, Inspector, aws-cloudwatch log streams, and all aws/metrics streams. Migrates Config (CEL) and Inspector (HTTPJSON) from hand-rolled SigV4 signing to the input's auth.aws configuration, adding Cloud Connectors support and fixing silent session-token breakage. Adds use_cloud_connectors to aws-cloudwatch and aws/metrics stream templates.
       type: enhancement
       link: https://github.com/elastic/integrations/pull/20527
+- version: "7.1.5"
+  changes:
+    - description: |
+        The changes below apply to the Security Hub CSPM data streams (`securityhub_findings`, `securityhub_findings_full_posture` and `securityhub_insights`) only.
+        Sign requests with the native `auth.aws` configuration instead of a hand-rolled SigV4 template. This adds support for session tokens, shared credentials files, credential profiles and assume-role (including `external_id`).
+        Migrate the Findings and Findings Full Posture data streams from the `httpjson` input to CEL via `run_as_cel`. The persisted Findings collection cursor is carried over, so collection resumes from where it stopped.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21898
+    - description: |
+        The fixes below apply to the Security Hub CSPM data streams only.
+        Fix intermittent `SignatureDoesNotMatch` (HTTP 403) errors in the Findings, Findings Full Posture and Insights data streams caused by the hand-rolled SigV4 template evaluating `now` separately for the `X-Amz-Date` header and the `Authorization` signature.
+        Fix `Invalid NextToken` errors (HTTP 400/403) when paginating large `GetFindings` result sets in the Findings data stream. The `UpdatedAt` window start is now pinned once per collection interval, so it cannot change between pages and invalidate the `NextToken`.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21898
 - version: "7.1.3"
   changes:
     - description: |
