@@ -79,7 +79,6 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: rule.name
-      if: ctx.netskope?.events_v2?.alert == "yes"
       tag: set_rule_name_from_alert_v2_alert_name_071e9da6
       copy_from: netskope.events_v2.alert_name
       ignore_empty_value: true
@@ -166,7 +165,6 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.url
-      if: ctx.netskope?.events_v2?.alert == "yes"
       tag: set_event_url_from_alert_v2_web_url_7e5955b3
       copy_from: netskope.events_v2.web_url
       ignore_empty_value: true
@@ -1565,6 +1563,20 @@ processors:
             tag: append_error_message_err_internal_collaborator_count_ac929c78
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.events_v2.metric_value
+      tag: convert_metric_value_to_long_metric_value_4c8e2b91
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_netskope_events_v2_metric_value_metric_value_4c8e2b91
+            ignore_missing: true
+            field: netskope.events_v2.metric_value
+        - append:
+            tag: append_error_message_err_metric_value_4c8e2b91
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: netskope.events_v2.modified
       tag: date_modified_modified_7baa5d00
@@ -1597,6 +1609,28 @@ processors:
             tag: append_error_message_err_num_sessions_fc7e6a67
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.events_v2.publisher_ip
+      tag: convert_publisher_ip_to_ip_a9f3e812
+      target_field: netskope.events_v2.publisher_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.netskope?.events_v2?.publisher_ip != ''
+      on_failure:
+        - remove:
+            tag: remove_netskope_events_v2_publisher_ip_a9f3e812
+            ignore_missing: true
+            field: netskope.events_v2.publisher_ip
+        - append:
+            tag: append_error_message_publisher_ip_a9f3e812
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_events_v2_publisher_ip_into_related_ip_a9f3e812
+      value: '{{{netskope.events_v2.publisher_ip}}}'
+      allow_duplicates: false
+      if: ctx.netskope?.events_v2?.publisher_ip != null
   - convert:
       field: netskope.events_v2.publisher_port
       tag: convert_publisher_port_to_long_publisher_port_494498d3

@@ -2062,7 +2062,7 @@ An example event for `events` looks as following:
 | netskope.events_v2.metric_name | Infrastructure events capture metadata about metrics emitted. This field contains information about Name of the metric. | keyword |
 | netskope.events_v2.metric_true_count | Number of metrics sent per event types. | keyword |
 | netskope.events_v2.metric_type | Type of metric captured in infrastructure event. | keyword |
-| netskope.events_v2.metric_value | Value of metric captured in infrastructure event. | keyword |
+| netskope.events_v2.metric_value | Value of metric captured in infrastructure event. | long |
 | netskope.events_v2.mime_type | A media type (also known as a Multipurpose Internet Mail Extensions or MIME type) indicates the nature and format of a document, file, or assortment of bytes. | keyword |
 | netskope.events_v2.modified | Timestamp corresponding to the modification time of the entity file, object etc. | date |
 | netskope.events_v2.netskope_activity | Determines if the event is part of the known Netskope subnets Source IP to check for Netskope activity. | keyword |
@@ -2116,7 +2116,7 @@ An example event for `events` looks as following:
 | netskope.events_v2.protocol | Protocol value used by applications. | keyword |
 | netskope.events_v2.protocol_port | Protocol Port used in NPA related applications. | keyword |
 | netskope.events_v2.publisher_cn | The publisher CName. | keyword |
-| netskope.events_v2.publisher_ip | The publisher a NPA component runs on customer premise which connects the cloud and customer private app. The IP is the ip address of the publisher connecting to the Netskope Pop. | keyword |
+| netskope.events_v2.publisher_ip | IP address of the NPA publisher connecting to the Netskope POP. | ip |
 | netskope.events_v2.publisher_name | The publisher name for the Network Events. It’s a NPA component runs on customer’s premise which connects the cloud and customer’s private app. | keyword |
 | netskope.events_v2.publisher_pop | The publisher a NPA component runs on customer premise which connects the cloud and customer private app. The POP is the Netskope Point of Presence closest to the publisher. | keyword |
 | netskope.events_v2.publisher_port | The publisher a NPA component runs on customer premise which connects the cloud and customer private app. The Port is the port number of the publisher connecting to the Netskope Pop. | long |
