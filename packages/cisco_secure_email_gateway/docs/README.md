@@ -221,6 +221,30 @@ To ensure optimal performance in high-volume email environments, consider the fo
 
 These inputs can be used with this integration:
 <details>
+<summary>cel</summary>
+
+## Setup
+
+For more details about the CEL input settings, check the [Filebeat documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html).
+
+Before configuring the CEL input, make sure you have:
+- Network connectivity to the target API endpoint
+- Valid authentication credentials (API keys, tokens, or certificates as required)
+- Appropriate permissions to read from the target data source
+
+### Collecting logs from CEL
+
+To configure the CEL input, you must specify the `request.url` value pointing to the API endpoint. The interval parameter controls how frequently requests are made and is the primary way to balance data freshness with API rate limits and costs. Authentication is often configured through the `request.headers` section using the appropriate method for the service.
+
+NOTE: To access the API service, make sure you have the necessary API credentials and that the Filebeat instance can reach the endpoint URL. Some services may require IP whitelisting or VPN access.
+
+To collect logs via API endpoint, configure the following parameters:
+
+- API Endpoint URL
+- API credentials (tokens, keys, or username/password)
+- Request interval (how often to fetch data)
+</details>
+<details>
 <summary>logfile</summary>
 
 ## Setup
@@ -679,6 +703,146 @@ An example event for `log` looks as following:
     ]
 }
 ```
+
+#### metrics
+
+The `metrics` data stream collects health and performance metrics from each configured ESA node via the `/esa/api/v2.0/health` REST API endpoint. Metrics include CPU load, RAM utilization, swap utilization, disk I/O, mail queue utilization, work queue depth, PVO quarantine message count, and resource conservation level.
+
+**REST API setup:** Enable the Cisco ESA AsyncOS API and ensure the configured user account has read access to the health endpoint. The API is available at `https://<esa-hostname>/esa/api/v2.0/`.
+
+##### metrics fields
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cisco_secure_email_gateway.metrics.cpu_load_pct | Percentage of CPU currently in use. | float | percent | gauge |
+| cisco_secure_email_gateway.metrics.disk_io_pct | Percentage of disk I/O capacity currently in use. | float | percent | gauge |
+| cisco_secure_email_gateway.metrics.pvo_quarantine_messages | Number of messages currently held in PVO quarantines. | long |  | gauge |
+| cisco_secure_email_gateway.metrics.queue_utilization_pct | Percentage of mail queue capacity currently in use. | float | percent | gauge |
+| cisco_secure_email_gateway.metrics.ram_utilization_pct | Percentage of RAM currently in use. | float | percent | gauge |
+| cisco_secure_email_gateway.metrics.resource_conservation | Resource conservation mode level (0 = normal operation). | long |  | gauge |
+| cisco_secure_email_gateway.metrics.swap_utilization_pct | Percentage of swap space currently in use. | float | percent | gauge |
+| cisco_secure_email_gateway.metrics.workqueue_messages | Number of messages currently in the work queue. | long |  | gauge |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.code | Error code describing the error. | keyword |  |  |
+| error.id | Unique identifier for the error. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.dataset | Event dataset. | constant_keyword |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |  |  |
+| event.module | Event module. | constant_keyword |  |  |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
+
+
+#### delivery_status
+
+The `delivery_status` data stream collects per-domain mail delivery status metrics from each configured ESA node via the `/esa/api/v2.0/health/delivery_status` REST API endpoint. Each event represents one destination domain and includes active recipients, delivered recipients, soft and hard bounce counts, and current outbound connections.
+
+**REST API setup:** Enable the Cisco ESA AsyncOS API and ensure the configured user account has read access to the health endpoints. The API is available at `https://<esa-hostname>/esa/api/v2.0/`.
+
+##### delivery_status fields
+
+**Exported fields**
+
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cisco_secure_email_gateway.delivery_status.active_recipients | Number of active recipients for this domain. | long | gauge |
+| cisco_secure_email_gateway.delivery_status.connections_out | Current outbound connections to this domain. | long | gauge |
+| cisco_secure_email_gateway.delivery_status.delivered_recipients | Number of successfully delivered recipients for this domain. | long | counter |
+| cisco_secure_email_gateway.delivery_status.destination_domain | Destination domain name. | keyword |  |
+| cisco_secure_email_gateway.delivery_status.hard_bounces | Number of hard bounces for this domain. | long | counter |
+| cisco_secure_email_gateway.delivery_status.latest_host_status | Latest connectivity status for the destination host. | keyword |  |
+| cisco_secure_email_gateway.delivery_status.soft_bounces | Number of soft bounces for this domain. | long | counter |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error.code | Error code describing the error. | keyword |  |
+| error.id | Unique identifier for the error. | keyword |  |
+| error.message | Error message. | match_only_text |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
+| event.dataset | Event dataset. | constant_keyword |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |  |
+| event.module | Event module. | constant_keyword |  |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
+| tags | List of keywords used to tag each event. | keyword |  |
+
+
+#### system_status
+
+The `system_status` data stream collects overall system status from each configured ESA node via the `/esa/api/v2.0/health/system_status` REST API endpoint. Data includes message rate statistics (1, 5, and 15-minute averages), system gauges (CPU, RAM, disk I/O, queue utilization, active recipients, connection counts), uptime counters, mail system status, and appliance version details.
+
+**REST API setup:** Enable the Cisco ESA AsyncOS API and ensure the configured user account has read access to the health endpoints. The API is available at `https://<esa-hostname>/esa/api/v2.0/`.
+
+##### system_status fields
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cisco_secure_email_gateway.system_status.counters.delivered_recipients_uptime | Total delivered recipients since system start. | long |  | counter |
+| cisco_secure_email_gateway.system_status.counters.dropped_messages_uptime | Total dropped messages since system start. | long |  | counter |
+| cisco_secure_email_gateway.system_status.counters.messages_received_uptime | Total messages received since system start. | long |  | counter |
+| cisco_secure_email_gateway.system_status.counters.rejected_recipients_uptime | Total rejected recipients since system start. | long |  | counter |
+| cisco_secure_email_gateway.system_status.counters.soft_bounced_events_uptime | Total soft bounce events since system start. | long |  | counter |
+| cisco_secure_email_gateway.system_status.counters.total_hard_bounces_uptime | Total hard bounces since system start. | long |  | counter |
+| cisco_secure_email_gateway.system_status.gauges.current_incoming_connections | Current number of incoming SMTP connections. | long |  | gauge |
+| cisco_secure_email_gateway.system_status.gauges.current_outgoing_connections | Current number of outgoing SMTP connections. | long |  | gauge |
+| cisco_secure_email_gateway.system_status.gauges.dest_objects_in_memory | Number of destination objects held in memory. | long |  | gauge |
+| cisco_secure_email_gateway.system_status.gauges.disk_io_utilization_pct | Disk I/O utilization percentage. | float | percent | gauge |
+| cisco_secure_email_gateway.system_status.gauges.msgs_in_quarantine | Number of messages in quarantine. | long |  | gauge |
+| cisco_secure_email_gateway.system_status.gauges.msgs_in_work_queue | Number of messages in the work queue. | long |  | gauge |
+| cisco_secure_email_gateway.system_status.gauges.overall_cpu_load_pct | Overall CPU load percentage. | float | percent | gauge |
+| cisco_secure_email_gateway.system_status.gauges.ram_utilization_pct | RAM utilization percentage. | float | percent | gauge |
+| cisco_secure_email_gateway.system_status.gauges.total_active_recipients | Total active recipients. | long |  | gauge |
+| cisco_secure_email_gateway.system_status.gauges.total_queue_utilized_pct | Total mail queue utilization percentage. | float | percent | gauge |
+| cisco_secure_email_gateway.system_status.mail_system_status.oldest_message | Age of the oldest message in the queue. | keyword |  |  |
+| cisco_secure_email_gateway.system_status.mail_system_status.system_status | Overall mail system status (e.g. Online, Offline). | keyword |  |  |
+| cisco_secure_email_gateway.system_status.mail_system_status.up_since | Human-readable system uptime string. | keyword |  |  |
+| cisco_secure_email_gateway.system_status.rates.delivered_recipients.fifteen_min | Delivered recipients per minute (15-minute average). | float |  | gauge |
+| cisco_secure_email_gateway.system_status.rates.delivered_recipients.five_min | Delivered recipients per minute (5-minute average). | float |  | gauge |
+| cisco_secure_email_gateway.system_status.rates.delivered_recipients.one_min | Delivered recipients per minute (1-minute average). | float |  | gauge |
+| cisco_secure_email_gateway.system_status.rates.hard_bounced_recipients.fifteen_min | Hard bounced recipients per minute (15-minute average). | float |  | gauge |
+| cisco_secure_email_gateway.system_status.rates.hard_bounced_recipients.five_min | Hard bounced recipients per minute (5-minute average). | float |  | gauge |
+| cisco_secure_email_gateway.system_status.rates.hard_bounced_recipients.one_min | Hard bounced recipients per minute (1-minute average). | float |  | gauge |
+| cisco_secure_email_gateway.system_status.rates.messages_received.fifteen_min | Messages received per minute (15-minute average). | float |  | gauge |
+| cisco_secure_email_gateway.system_status.rates.messages_received.five_min | Messages received per minute (5-minute average). | float |  | gauge |
+| cisco_secure_email_gateway.system_status.rates.messages_received.one_min | Messages received per minute (1-minute average). | float |  | gauge |
+| cisco_secure_email_gateway.system_status.rates.soft_bounced_events.fifteen_min | Soft bounced events per minute (15-minute average). | float |  | gauge |
+| cisco_secure_email_gateway.system_status.rates.soft_bounced_events.five_min | Soft bounced events per minute (5-minute average). | float |  | gauge |
+| cisco_secure_email_gateway.system_status.rates.soft_bounced_events.one_min | Soft bounced events per minute (1-minute average). | float |  | gauge |
+| cisco_secure_email_gateway.system_status.version.model | ESA hardware or virtual model identifier. | keyword |  |  |
+| cisco_secure_email_gateway.system_status.version.operating_system | AsyncOS version string. | keyword |  |  |
+| cisco_secure_email_gateway.system_status.version.raid_status | RAID status of the appliance. | keyword |  |  |
+| cisco_secure_email_gateway.system_status.version.serial_number | ESA serial number. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.code | Error code describing the error. | keyword |  |  |
+| error.id | Unique identifier for the error. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.dataset | Event dataset. | constant_keyword |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |  |  |
+| event.module | Event module. | constant_keyword |  |  |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
+
 
 ### Vendor documentation links
 
