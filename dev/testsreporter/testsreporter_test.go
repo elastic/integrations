@@ -85,7 +85,7 @@ func TestErrorsFromTest(t *testing.T) {
 					},
 					packageName: "sql_input",
 					dataStream:  "",
-					teams:       []string{"@elastic/obs-signals-integrations-approvers"},
+					teams:       []string{"@elastic/obs-signals-integrations-team"},
 				},
 				{
 					dataError: dataError{
@@ -99,7 +99,7 @@ func TestErrorsFromTest(t *testing.T) {
 					},
 					packageName: "sql_input",
 					dataStream:  "",
-					teams:       []string{"@elastic/obs-signals-integrations-approvers"},
+					teams:       []string{"@elastic/obs-signals-integrations-team"},
 				},
 			},
 		},

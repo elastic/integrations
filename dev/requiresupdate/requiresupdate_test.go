@@ -28,19 +28,19 @@ func TestResolveOwner(t *testing.T) {
 			title:      "CODEOWNERS only",
 			pkgPath:    "packages/aws",
 			fallback:   "",
-			wantOwners: []string{"elastic/obs-signals-integrations-approvers"},
+			wantOwners: []string{"elastic/obs-signals-integrations-team"},
 		},
 		{
 			title:      "CODEOWNERS agrees with manifest fallback",
 			pkgPath:    "packages/aws",
-			fallback:   "elastic/obs-signals-integrations-approvers",
-			wantOwners: []string{"elastic/obs-signals-integrations-approvers"},
+			fallback:   "elastic/obs-signals-integrations-team",
+			wantOwners: []string{"elastic/obs-signals-integrations-team"},
 		},
 		{
 			title:        "CODEOWNERS disagrees with manifest fallback",
 			pkgPath:      "packages/aws",
 			fallback:     "elastic/other-team",
-			wantOwners:   []string{"elastic/obs-signals-integrations-approvers"},
+			wantOwners:   []string{"elastic/obs-signals-integrations-team"},
 			wantMismatch: true,
 		},
 		{

@@ -22,8 +22,8 @@ func TestManifestOwnerFn(t *testing.T) {
 	}{
 		{
 			name:     "owner present",
-			manifest: "name: aws\nowner:\n  github: elastic/obs-signals-integrations-approvers\n",
-			expected: "elastic/obs-signals-integrations-approvers",
+			manifest: "name: aws\nowner:\n  github: elastic/obs-signals-integrations-team\n",
+			expected: "elastic/obs-signals-integrations-team",
 		},
 		{
 			name:          "owner missing",
@@ -64,22 +64,22 @@ func TestPlan(t *testing.T) {
 	}{
 		{
 			name:             "matched: owners already in sync, no-op",
-			current:          "/packages/aws @elastic/obs-signals-integrations-approvers\n",
-			main:             "/packages/aws @elastic/obs-signals-integrations-approvers\n",
+			current:          "/packages/aws @elastic/obs-signals-integrations-team\n",
+			main:             "/packages/aws @elastic/obs-signals-integrations-team\n",
 			pkgPath:          "/packages/aws",
 			existingSubPaths: []string{"/packages/aws/data_stream/cloudtrail"},
-			currentManifest:  "elastic/obs-signals-integrations-approvers",
-			mainManifest:     "elastic/obs-signals-integrations-approvers",
+			currentManifest:  "elastic/obs-signals-integrations-team",
+			mainManifest:     "elastic/obs-signals-integrations-team",
 			expectedPlan:     SyncPlan{},
 			expectedFound:    true,
 		},
 		{
 			name:             "mismatched: package owner changed on main",
-			current:          "/packages/aws @elastic/obs-signals-integrations-approvers\n",
+			current:          "/packages/aws @elastic/obs-signals-integrations-team\n",
 			main:             "/packages/aws @elastic/obs-ds-hosted-services\n",
 			pkgPath:          "/packages/aws",
 			existingSubPaths: []string{"/packages/aws/data_stream/cloudtrail"},
-			currentManifest:  "elastic/obs-signals-integrations-approvers",
+			currentManifest:  "elastic/obs-signals-integrations-team",
 			mainManifest:     "elastic/obs-ds-hosted-services",
 			expectedPlan: SyncPlan{
 				ManifestOwner: "elastic/obs-ds-hosted-services",
@@ -89,12 +89,12 @@ func TestPlan(t *testing.T) {
 		},
 		{
 			name:             "missing on main: package removed, plan skips cleanly",
-			current:          "/packages/aws @elastic/obs-signals-integrations-approvers\n",
+			current:          "/packages/aws @elastic/obs-signals-integrations-team\n",
 			main:             "/packages/other @elastic/obs-ds-hosted-services\n",
 			pkgPath:          "/packages/aws",
 			existingSubPaths: []string{"/packages/aws/data_stream/cloudtrail"},
-			currentManifest:  "elastic/obs-signals-integrations-approvers",
-			mainManifest:     "elastic/obs-signals-integrations-approvers",
+			currentManifest:  "elastic/obs-signals-integrations-team",
+			mainManifest:     "elastic/obs-signals-integrations-team",
 			expectedPlan:     SyncPlan{},
 			expectedFound:    false,
 		},
@@ -117,8 +117,8 @@ func TestPlan(t *testing.T) {
 			// invariant), inventing an owner for something nobody assigned
 			// is worse than surfacing the gap for a human to resolve.
 			name:    "main introduces an explicit override for one data stream; sibling data streams are left untouched",
-			current: "/packages/aws @elastic/obs-signals-integrations-approvers\n",
-			main:    "/packages/aws @elastic/obs-signals-integrations-approvers\n/packages/aws/data_stream/cloudtrail @elastic/security-service-integrations\n",
+			current: "/packages/aws @elastic/obs-signals-integrations-team\n",
+			main:    "/packages/aws @elastic/obs-signals-integrations-team\n/packages/aws/data_stream/cloudtrail @elastic/security-service-integrations\n",
 			pkgPath: "/packages/aws",
 			existingSubPaths: []string{
 				"/packages/aws/data_stream/cloudtrail",
@@ -134,22 +134,22 @@ func TestPlan(t *testing.T) {
 		},
 		{
 			name: "main consolidates a previously-split override back to the package level",
-			current: "/packages/aws @elastic/obs-signals-integrations-approvers\n" +
+			current: "/packages/aws @elastic/obs-signals-integrations-team\n" +
 				"/packages/aws/data_stream/cloudtrail @elastic/security-service-integrations\n",
-			main:             "/packages/aws @elastic/obs-signals-integrations-approvers\n",
+			main:             "/packages/aws @elastic/obs-signals-integrations-team\n",
 			pkgPath:          "/packages/aws",
 			existingSubPaths: []string{"/packages/aws/data_stream/cloudtrail"},
 			expectedPlan: SyncPlan{
 				SubPaths: map[string][]string{
-					"/packages/aws/data_stream/cloudtrail": {"@elastic/obs-signals-integrations-approvers"},
+					"/packages/aws/data_stream/cloudtrail": {"@elastic/obs-signals-integrations-team"},
 				},
 			},
 			expectedFound: true,
 		},
 		{
 			name:             "sub-path absent from this worktree is never touched",
-			current:          "/packages/aws @elastic/obs-signals-integrations-approvers\n",
-			main:             "/packages/aws @elastic/obs-signals-integrations-approvers\n/packages/aws/data_stream/newly_added @elastic/security-service-integrations\n",
+			current:          "/packages/aws @elastic/obs-signals-integrations-team\n",
+			main:             "/packages/aws @elastic/obs-signals-integrations-team\n/packages/aws/data_stream/newly_added @elastic/security-service-integrations\n",
 			pkgPath:          "/packages/aws",
 			existingSubPaths: []string{"/packages/aws/data_stream/cloudtrail"},
 			expectedPlan:     SyncPlan{},

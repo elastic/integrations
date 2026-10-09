@@ -232,7 +232,7 @@ func TestResolveManifestVersionConflict(t *testing.T) {
 				"<<<<<<< HEAD\n" +
 				"version: 6.14.2\n" +
 				"owner:\n" +
-				"  github: elastic/obs-signals-integrations-approvers\n" +
+				"  github: elastic/obs-signals-integrations-team\n" +
 				"=======\n" +
 				"version: 6.15.0\n" +
 				">>>>>>> abc1234 (Add feature)\n" +
@@ -241,7 +241,7 @@ func TestResolveManifestVersionConflict(t *testing.T) {
 				"<<<<<<< HEAD\n" +
 				"version: 6.14.2\n" +
 				"owner:\n" +
-				"  github: elastic/obs-signals-integrations-approvers\n" +
+				"  github: elastic/obs-signals-integrations-team\n" +
 				"=======\n" +
 				"version: 6.15.0\n" +
 				">>>>>>> abc1234 (Add feature)\n" +
