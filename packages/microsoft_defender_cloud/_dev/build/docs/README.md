@@ -38,6 +38,27 @@ Configure the Microsoft Defender for Cloud on Azure subscription. For more detai
 
 - [Configure continuous export to stream security events to your Azure Event Hub](https://learn.microsoft.com/en-us/azure/defender-for-cloud/continuous-export).
 
+##### Proxy Support
+
+When the Elastic Agent must reach Azure Event Hubs through an HTTP/HTTPS proxy, set the **Event Hubs transport protocol** to **AMQP-over-WebSockets**. This routes Event Hub traffic over HTTPS (port 443) instead of AMQP (port 5671), which allows the proxy to handle it. Selecting AMQP-over-WebSockets automatically sets the processor version to v2.
+
+**Requirements:**
+
+- Elastic Agent 8.19.10, 9.1.10, 9.2.4, or later.
+- Set `HTTPS_PROXY` and, if needed, `NO_PROXY` in the Elastic Agent process environment (for example, a systemd drop-in file or container environment variable). These variables apply to the entire agent process, not just this integration. Use `NO_PROXY` to exclude traffic that should bypass the proxy.
+
+**Proxy allowlist:** the proxy must allow HTTPS (port 443) connections to:
+
+- `*.servicebus.windows.net` — Event Hub traffic. Sovereign clouds use a different suffix (for example, `*.servicebus.usgovcloudapi.net` for Azure Government).
+- `*.blob.core.windows.net` — checkpoint storage. Sovereign clouds use the storage suffix derived from **Authority Host** (for example, `*.blob.core.usgovcloudapi.net` for Azure Government).
+- The authority host (default `login.microsoftonline.com`) — required for client secret authentication.
+
+**TLS-intercepting proxies:** if the proxy performs TLS interception, the corporate CA certificate must be present in the system trust store on the agent host.
+
+**Sovereign clouds:** users on Azure Government, Azure China, or Azure Germany must set the **Authority Host** to the correct login endpoint. Processor v2 derives the storage endpoint suffix from this setting. The **Resource Manager Endpoint** setting is used only by processor v1 and is ignored by v2.
+
+**Note on processor version:** selecting AMQP-over-WebSockets moves the processor from v1 to v2 if the agent was previously running v1. Existing checkpoints are migrated automatically. However, switching back to v1 afterwards resumes from stale v1 checkpoints and may cause duplicate events.
+
 #### 2. Collecting Data from Microsoft Defender for Endpoint API
 
 To allow the integration to ingest data from the Microsoft Defender API, you need to create a new application on your Azure domain. The procedure to create an application is found on the [Create a new Azure Application](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/exposed-apis-create-app-webapp) documentation page.
