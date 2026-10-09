@@ -1,0 +1,81 @@
+format_version: "3.6.0"
+name: openrouter
+title: OpenRouter
+version: "0.1.0"
+source:
+  license: "Elastic-2.0"
+description: >-
+  Collect API usage, cost, and performance metrics from the OpenRouter Analytics API.
+  Provides visibility into cross-provider LLM request volume, token consumption, spend,
+  latency percentiles, throughput, cache efficiency, and guardrail activity — broken
+  down by model and API key.
+type: integration
+categories:
+  - observability
+  - monitoring
+conditions:
+  kibana:
+    version: "^9.6.0"
+  elastic:
+    subscription: "basic"
+screenshots:
+  - src: /img/openrouter-usage-overview.png
+    title: OpenRouter Usage & Cost Overview
+    size: 1910x3909
+    type: image/png
+  - src: /img/openrouter-performance-overview.png
+    title: OpenRouter Performance Overview
+    size: 1910x2781
+    type: image/png
+icons:
+  - src: /img/openrouter-logo.svg
+    title: OpenRouter logo
+    size: 1024x802
+    type: image/svg+xml
+policy_templates:
+  - name: openrouter
+    title: OpenRouter Analytics
+    description: Collect OpenRouter API usage and performance metrics via Analytics API.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: observability
+        division: engineering
+        team: obs-infraobs-integrations
+    inputs:
+      - type: cel
+        title: Collect OpenRouter analytics via Management API
+        description: >-
+          Collecting usage and performance metrics from the OpenRouter Analytics API.
+          A Management API key is required (Account → Management Keys → New Key).
+        vars:
+          - name: url
+            type: text
+            title: API URL
+            description: Base URL of the OpenRouter API.
+            default: https://openrouter.ai/api/v1
+            required: true
+            show_user: false
+          - name: management_api_key
+            type: password
+            title: Management API Key
+            description: >-
+              OpenRouter Management API key. Create one at
+              https://openrouter.ai/settings/management-keys.
+            required: true
+            show_user: true
+            secret: true
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            description: >-
+              The request tracer logs HTTP requests and responses to the agent's
+              local filesystem for debugging. Enabling this compromises security
+              and should only be used for debugging.
+            default: false
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic
