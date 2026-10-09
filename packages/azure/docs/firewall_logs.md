@@ -178,7 +178,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.correlation_id | Correlation ID | keyword |
+| azure.correlation_id | Correlation ID. | keyword |
 | azure.firewall.action | Action taken by the firewall following the match with the network rule. | keyword |
 | azure.firewall.action_reason | Reason for the action performed by the firewall. | keyword |
 | azure.firewall.category | Category | keyword |
@@ -206,14 +206,14 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.firewall.rule_collection_group | Name of the rule collection group in which the triggered rule resides. | keyword |
 | azure.firewall.target_url | Request's target address URL. | keyword |
 | azure.firewall.web_category | Web Category identified for the requested FQDN (Azure Firewall Standard) or URL (Azure Firewall Premium). | keyword |
-| azure.resource.authorization_rule | Authorization rule | keyword |
-| azure.resource.group | Resource group | keyword |
-| azure.resource.id | Resource ID | keyword |
-| azure.resource.name | Name | keyword |
-| azure.resource.namespace | Resource type/namespace | keyword |
-| azure.resource.provider | Resource type/namespace | keyword |
-| azure.subscription_id | Azure subscription ID | keyword |
-| azure.tenant_id | tenant ID | keyword |
+| azure.resource.authorization_rule | Authorization rule. | keyword |
+| azure.resource.group | Resource group. | keyword |
+| azure.resource.id | Resource ID. | keyword |
+| azure.resource.name | Name. | keyword |
+| azure.resource.namespace | Resource type/namespace. | keyword |
+| azure.resource.provider | Resource type/namespace. | keyword |
+| azure.subscription_id | Azure subscription ID. | keyword |
+| azure.tenant_id | tenant ID. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
