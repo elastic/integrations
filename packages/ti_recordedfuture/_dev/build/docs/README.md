@@ -53,18 +53,27 @@ transform creates a destination index named
 unexpired IOCs. The destination index also has an alias
 `logs-ti_recordedfuture_latest.threat`. When setting up indicator match rules,
 use this latest destination index to avoid false positives from expired IOCs.
-Please refer to the [ILM Policy](#ilm-policy) section below for information on
+See [Data retention](#data-retention) for information on
 how source indices are managed to prevent unbounded growth.
 
 [elasticsearch_transforms]: https://www.elastic.co/docs/explore-analyze/transforms
 
-### ILM Policy
+### Data retention
 
-To facilitate IOC expiration, source datastream-backed indices
-`.ds-logs-ti_recordedfuture.threat-*` are allowed to contain duplicates from
-each polling interval. An ILM policy is added to these source indices to prevent
-unbounded growth. This means data in these source indices will be deleted after
-`5 days` from the ingestion date.
+Threat indicators are re-collected across polling intervals, and the latest transform keeps the active, deduplicated view in its destination index. The source data streams therefore hold repeated copies of the same indicators.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-ti_recordedfuture.threat-*` | `logs-ti_recordedfuture.threat-default_policy`: roll over after 2d, delete 3d after rollover | delete 5d after rollover |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-ti_recordedfuture.threat-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
 
 **NOTE:** For large risklist downloads, adjust the timeout setting so that the
 Agent has enough time to download and process the risklist.

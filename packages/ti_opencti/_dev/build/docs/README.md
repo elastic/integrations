@@ -140,7 +140,24 @@ The dashboards show only active indicators, except the Ingestion dashboard, whic
 
 Indicators that are never expired or revoked will not be removed from the indices of the latest indicators. If accumulation of indicators is a problem there, it can be managed upstream in OpenCTI, or by manually deleting indicators from those indices.
 
-To prevent unbounded growth of the source data stream `logs-ti_opencti.indicator-*`, it has an index lifecycle management (ILM) policy that deletes records 5 days after ingestion.
+See [Data retention](#data-retention) for how long the source data stream `logs-ti_opencti.indicator-*` keeps records.
+
+#### Data retention
+
+Threat indicators are re-collected across polling intervals, and the latest transform keeps the active, deduplicated view in its destination index. The source data streams therefore hold repeated copies of the same indicators.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-ti_opencti.indicator-*` | none, so the default `logs` policy applies (no deletion) | delete 5d after rollover |
+
+On self-managed and Elastic Cloud Hosted deployments this version of the package does not attach an ILM policy to the source data stream, so the default `logs` policy applies and documents are not deleted. The data stream lifecycle shipped with the package is not used there. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: no package policy is attached to `logs-ti_opencti.indicator-*`, so the default `logs` policy applies. To set a retention, create an ILM policy and add `index.lifecycle.name: <policy name>` to the `logs-ti_opencti.indicator@custom` component template. Fleet keeps `@custom` templates across package upgrades, and the change applies from the next rollover.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-ti_opencti.indicator-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
 
 #### Example
 
