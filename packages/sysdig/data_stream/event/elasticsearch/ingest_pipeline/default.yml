@@ -604,9 +604,14 @@ processors:
       ignore_empty_value: true
   - json:
       field: sysdig.event.content.fields.jevt.obj
-      tag: unpack_jevt_obj_parsed_caab8c3c
+      tag: json_unpack_jevt_obj_parsed_caab8c3c
       target_field: sysdig.event.content.fields.jevt.obj_parsed
       if: ctx.sysdig?.event?.content?.fields?.jevt?.obj instanceof String
+      on_failure:
+        - append:
+            tag: append_error_message_jevt_obj_d3a1c4e2
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: Parse date fields.
       tag: script_parse_date_fields_08e67810
@@ -1365,6 +1370,11 @@ processors:
       field: sysdig.event.labels.kubernetes.daemonSet.name
       tag: rename_labels_kubernetes_daemonSet_name_10f7ef70
       target_field: sysdig.event.labels.kubernetes.daemon_set.name
+      ignore_missing: true
+  - rename:
+      field: sysdig.event.labels.kubernetes.replicaSet.name
+      tag: rename_labels_kubernetes_replicaSet_name_fa9bebbb
+      target_field: sysdig.event.labels.kubernetes.replica_set.name
       ignore_missing: true
   - set:
       field: orchestrator.namespace
