@@ -24,14 +24,29 @@ output_permissions:
                     - auto_configure
                     - create_doc
 processors:
-    transform/componentid-0:
+    resourcedetection/componentid-0:
+        detectors:
+            - system
+        system:
+            hostname_sources:
+                - os
+    transform/componentid-1:
         error_mode: ignore
         log_statements:
             - context: log
               statements:
                 - set(log.body["@timestamp"], UnixMilli(log.time)) where log.body["@timestamp"] == nil
                 - set(log.body["tags"], ["preserve_original_event", "custom-tag-a", "custom-tag-b"])
-    transform/componentid-1:
+    transform/componentid-2:
+        error_mode: ignore
+        log_statements:
+            - context: log
+              statements:
+                - set(log.body["agent.name"], resource.attributes["host.name"])
+                - set(log.body["agent.name"], "${env:ELASTIC_AGENT_HOSTNAME:-}") where "${env:ELASTIC_AGENT_HOSTNAME:-}" != ""
+                - set(log.body["agent.type"], "otelcol")
+                - set(log.body["input.type"], "otelcol")
+    transform/componentid-3:
         log_statements:
             - context: log
               statements:
@@ -72,7 +87,9 @@ service:
             exporters:
                 - forward/componentid-0
             processors:
-                - transform/componentid-0
+                - resourcedetection/componentid-0
+                - transform/componentid-2
                 - transform/componentid-1
+                - transform/componentid-3
             receivers:
                 - akamai_siem/componentid-0

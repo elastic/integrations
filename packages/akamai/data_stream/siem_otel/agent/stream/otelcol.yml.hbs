@@ -34,6 +34,24 @@ receivers:
     storage: file_storage
 {{/if}}
 processors:
+  # Bodymap documents contain only the log body, so the agent.name, agent.type
+  # and input.type fields that Beats added to each event must be written into
+  # the body. agent.name follows Beats: the OS hostname, or the
+  # ELASTIC_AGENT_HOSTNAME override when it is set. The system detector fails
+  # collector startup if it cannot read OS metadata.
+  resourcedetection/agent:
+    detectors: [system]
+    system:
+      hostname_sources: [os]
+  transform/agent:
+    error_mode: ignore
+    log_statements:
+      - context: log
+        statements:
+          - set(log.body["agent.name"], resource.attributes["host.name"])
+          - set(log.body["agent.name"], "${env:ELASTIC_AGENT_HOSTNAME:-}") where "${env:ELASTIC_AGENT_HOSTNAME:-}" != ""
+          - set(log.body["agent.type"], "otelcol")
+          - set(log.body["input.type"], "otelcol")
   # Mirrors the CEL/Beats input `tags:` setting. The receiver emits bodymap-mode
   # logs, so tags must be written into the body map: in bodymap mode the
   # Elasticsearch exporter serializes only the body into the document (resource
@@ -71,4 +89,4 @@ service:
   pipelines:
     logs:
       receivers: [akamai_siem]
-      processors: [transform/tags]
+      processors: [resourcedetection/agent, transform/agent, transform/tags]
