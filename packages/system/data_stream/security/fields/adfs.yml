@@ -1,0 +1,68 @@
+- name: winlog.adfs
+  type: group
+  description: >-
+    Selected fields from AD FS Security audit events 1200-1210.
+    The XML remains in winlog.event_data.param2. winlog.user identifies
+    the audit-emitting service account, not necessarily the signing-in user.
+  fields:
+    - name: activity_id
+      type: keyword
+      description: Activity ID from winlog.event_data.param1. One activity may contain multiple sign-in attempts.
+    - name: audit_type
+      type: keyword
+      description: AuditType from the AD FS XML, such as FreshCredentials or AppToken.
+    - name: audit_result
+      type: keyword
+      description: AuditResult from the AD FS XML.
+    - name: failure_type
+      type: keyword
+      description: FailureType from the AD FS XML, if present.
+    - name: error_code
+      type: keyword
+      description: ErrorCode from the AD FS XML, if present and not N/A.
+    - name: user_id
+      type: keyword
+      description: Original UserId in the AD FS XML (UPN, DOMAIN\user, or another identifier).
+    - name: relying_party
+      type: keyword
+      description: Relying party to which the audit relates.
+    - name: claims_provider
+      type: keyword
+      description: Claims provider of the audited request.
+    - name: primary_auth
+      type: keyword
+      description: PrimaryAuth method from the AD FS XML, if present.
+    - name: mfa_performed
+      type: boolean
+      description: Whether AD FS itself performed MFA. Application-local MFA is not reflected here.
+    - name: mfa_method
+      type: keyword
+      description: MFA method used by AD FS, if present.
+    - name: auth_protocol
+      type: keyword
+      description: Authentication protocol from the request component.
+    - name: oauth_client_id
+      type: keyword
+      description: OAuth client ID from the AD FS audit, when available.
+    - name: oauth_grant
+      type: keyword
+      description: OAuth grant from the AD FS audit, when available.
+    - name: network_location
+      type: keyword
+      description: Intranet or extranet location as evaluated by AD FS.
+    - name: endpoint
+      type: keyword
+      description: AD FS endpoint path from the audited request.
+    - name: user_agent
+      type: keyword
+      ignore_above: 4096
+      description: User agent string from the AD FS request component.
+    - name: ip_address
+      type: keyword
+      ignore_above: 4096
+      description: >-
+        Original IpAddress value from the AD FS XML. It may contain more than one
+        address; source.ip is set to the first candidate when valid.
+    - name: current_bad_password_count
+      type: long
+      description: CurrentBadPasswordCount reported by AD FS extranet lockout event 1210, when present and numeric.
