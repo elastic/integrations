@@ -46,7 +46,7 @@ These data streams collect from the Wiz GraphQL API: Audit, Cloud Configuration 
 
 #### Get the credentials from Wiz
 
-1. In the Wiz portal, go to **Settings** > **Integrations** and add the Elastic integration using the Elastic integration tile. Follow the Wiz documentation for that integration.
+1. In the Wiz portal, go to **Settings** → **Integrations** and add the Elastic integration using the Elastic integration tile. Follow the Wiz documentation for that integration.
 2. Copy the values Wiz provides for the following fields in the Elastic integration settings:
    - **Client ID** - Client ID
    - **Client Secret** - Client Secret
