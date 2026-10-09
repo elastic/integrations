@@ -22,7 +22,7 @@ See [Akamai API get started](https://techdocs.akamai.com/siem-integration/refere
 API collection uses the native OpenTelemetry `akamai_siem` receiver behind the scenes. This is an internal backend detail and does not change the Akamai event data you collect.
 
 **Note**:
-- Events collected via the API carry fewer agent fields than events collected by the earlier Beats-based input. `agent.name` is the host name of the Elastic Agent (or the `ELASTIC_AGENT_HOSTNAME` override), and `agent.type` and `input.type` are `otelcol`. `agent.id`, `agent.version`, `agent.ephemeral_id` and the `elastic_agent.*` fields are not set, so `event.agent_id_status` is `missing`.
+- Events collected via the API carry fewer agent fields than events collected by the earlier Beats-based input. `agent.name` is the host name of the Elastic Agent (or the `ELASTIC_AGENT_HOSTNAME` override), and `agent.type` and `input.type` are `otelcol` (the CEL input used `filebeat` and `cel`). `agent.id`, `agent.version`, `agent.ephemeral_id` and the `elastic_agent.*` fields are not set, so `event.agent_id_status` is `missing`.
 - Cursor persistence is enabled by default, so collection resumes from where it left off after an Elastic Agent restart. It can be turned off via the "Persist Cursor" advanced option. Cursor persistence is also not guaranteed across stack upgrades and breaking changes. Whenever the cursor is unavailable, the integration re-fetches the configured Initial Interval window; replayed events are deduplicated by the ingest pipeline's `event.original` fingerprint as long as the data stream is still writing to the same backing index.
 
 ### To collect data from GCS Bucket, follow the steps below:
