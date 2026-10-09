@@ -1,7 +1,7 @@
 format_version: 3.6.4
 name: aws
 title: AWS
-version: 8.6.0
+version: 8.9.0
 description: Collect logs and metrics from Amazon Web Services (AWS) with Elastic Agent.
 type: integration
 categories:
@@ -122,7 +122,7 @@ var_groups:
         vars: [role_arn, supports_identity_federation]
         hide_in_deployment_modes: [default]
         provider: aws
-        iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-federated-identity-aws-9.6.0.yml
+        iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-federated-identity-wii-aws-9.6.0.yml&param_ElasticOrganizationId=ORGANIZATION_ID&param_ElasticCloudProvider=CLOUD_PROVIDER&param_ElasticCloudRegion=CLOUD_REGION&param_ElasticCloudEnvironment=CLOUD_ENVIRONMENT&param_ElasticResourceType=RESOURCE_TYPE&param_ElasticResourceId=RESOURCE_ID
       - name: direct_access_key
         title: Direct Access Keys
         vars: [access_key_id, secret_access_key]
@@ -425,6 +425,39 @@ policy_templates:
     icons:
       - src: /img/logo_ecs.svg
         title: AWS ECS logo
+        size: 32x32
+        type: image/svg+xml
+  - name: eks
+    title: Amazon EKS
+    description: Collect Amazon EKS Kubernetes API audit logs from CloudWatch with Elastic Agent.
+    data_streams:
+      - eks_audit
+    categories:
+      - security
+      - containers
+    inputs:
+      - type: aws-cloudwatch
+        title: Collect Amazon EKS audit logs from CloudWatch
+        description: Collect EKS kube-apiserver audit logs using the aws-cloudwatch input.
+        input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: CloudWatch Logs read access for EKS control-plane audit log collection.
+            permissions:
+              - name: logs:DescribeLogGroups
+              - name: logs:FilterLogEvents
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: security
+        division: engineering
+        team: security-service-integrations
+    icons:
+      - src: /img/logo_eks.svg
+        title: Amazon EKS logo
         size: 32x32
         type: image/svg+xml
   - name: elb
