@@ -1,0 +1,25 @@
+services:
+  # Push mode: replays sample events as webhook POSTs to the http_endpoint input.
+  harfanglab-http:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    volumes:
+      - ./sample_events:/sample_events:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_WEBHOOK_PROBE=false
+      - STREAM_ADDR=http://elastic-agent:8080/
+      - STREAM_WEBHOOK_HEADER=Authorization=abc123
+    command: log --start-signal=SIGHUP --delay=5s /sample_events/harfanglab-ndjson.log
+
+  # Pull mode: mock HarfangLab API served to the cel input.
+  harfanglab-api:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: harfanglab-api
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config.yml
