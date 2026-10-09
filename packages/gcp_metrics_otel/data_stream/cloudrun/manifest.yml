@@ -1,0 +1,32 @@
+title: "Google Cloud Run Metrics"
+type: metrics
+# Pins the dataset instead of inheriting the input package default. Without
+# this, Fleet falls back to <package>.<data_stream> and documents land in
+# metrics-gcp_metrics_otel.cloudrun.otel-*.
+dataset: gcp.cloudrun
+streams:
+  - package: googlecloudmonitor_input_otel
+    title: Google Cloud Run Metrics
+    description: >
+      Cloud Run metrics from Cloud Monitoring: request count and latency,
+      container startup latency, instance count, CPU and memory utilization,
+      request concurrency, billable instance time, CPU and memory allocation,
+      and network throughput.
+    template_path: stream.yml.hbs
+    vars:
+      # metrics_list and the inherited metric_descriptor_filters both render
+      # into the receiver's metrics_list, and a non-empty value there replaces
+      # the default set from agent/stream/stream.yml.hbs rather than adding to
+      # it. Additions go through additional_metrics instead. Both stay hidden,
+      # which is already the default for inherited vars.
+      - name: additional_metrics
+        type: text
+        title: Additional Metrics
+        required: false
+        multi: true
+        description: >
+          Extra Cloud Monitoring metric type names to collect in addition to the
+          Cloud Run metrics collected by default, for example
+          `run.googleapis.com/job/completed_execution_count`. Each entry must be
+          an exact metric type name.
+        show_user: true
