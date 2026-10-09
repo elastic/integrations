@@ -33,7 +33,7 @@ program: |
         },
     }).do_request().as(get_resp, get_resp.StatusCode == 200 ?
       get_resp.Body.decode_json().as(body,
-        body.count != 0 ?
+        has(body.count) && body.count != null && body.count != 0 ?
           {
             "audits": body.audits,
             "page_id": body.pageId,

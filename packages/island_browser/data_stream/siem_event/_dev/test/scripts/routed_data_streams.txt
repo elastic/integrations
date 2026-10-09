@@ -1,8 +1,9 @@
 # Verify SIEM v1 collection and routing from siem_event to audit and admin_actions.
 #
 # The mock SIEM API returns one batch with two NDJSON events (1 BrowserAudit,
-# 1 AdminAction), then an empty batch. The CEL program GETs the batch, POSTs
-# the pageId ack, and on the next in-cycle GET receives count=0.
+# 1 AdminAction), then an empty batch that omits count. The CEL program GETs
+# the batch, POSTs the pageId ack, and on the next in-cycle GET must stop
+# without publishing an error document.
 #
 # Expected: 1 document in island_browser.audit and 1 in island_browser.admin_actions.
 # The siem_event collector stream should retain no routed documents.
@@ -40,6 +41,9 @@ get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m
 cp stdout all_docs.json
 exec jq '.hits.total.value' all_docs.json
 stdout '^2$'
+
+# A follow-up response without count must not publish an error document.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 0 -confirm 15s -timeout 1m logs-island_browser.siem_event-*
 
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
 uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
@@ -91,7 +95,7 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
-          {"audits":"","pageId":"mock-page-empty","count":0,"lastAuditTimestamp":"2025-09-09T13:29:38.000Z"}
+          {"audits":"","pageId":"mock-page-empty","lastAuditTimestamp":"2025-09-09T13:29:38.000Z"}
   - path: /services/siem/api/v1/Audits/d89d0b41-97f2-4757-a7b4-729b8f30d3e9
     methods: [POST]
     request_headers:
