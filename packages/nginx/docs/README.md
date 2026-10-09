@@ -3,7 +3,7 @@
 Integration group for Nginx (prototype). It holds no policy templates, data streams, or assets. It points at one child integration per schema:
 
 - `ecs/` - `nginx` (Elastic Agent, ECS)
-- `otel/` - `nginx_otel_integ` (OpenTelemetry, default)
+- `otel/` - `nginx_otel_integration` (OpenTelemetry, default)
 
 Supporting packages live alongside: `otel_input/` (`nginx_otel_input`) and `otel_content/` (`nginx_otel`).
 
