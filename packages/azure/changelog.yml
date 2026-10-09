@@ -1,3 +1,13 @@
+- version: "1.41.0"
+  changes:
+    - description: "Align Azure fields with OTel semantic conventions: add `cloud.resource_id`, `cloud.account.id`, `cloud.region`, `azure.resource_group.name`, `azure.resource_provider.namespace`, `azure.subscription.id`, `azure.tenant.id`, and `azure.correlation.id` across all data streams. All changes are additive — legacy field names (`azure.resource.id`, `azure.resource.group`, `azure.resource.provider`, `azure.subscription_id`, `azure.tenant_id`, `azure.correlation_id`) remain concrete fields and continue to be populated with the same values. Promote previously unpromoted envelope fields (`tenantId`, `correlationId`, `location`) in several data streams."
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21629
+- version: "1.40.3"
+  changes:
+    - description: Consolidate the 12 per-data-stream copies of the shared ARM resource ID pipeline into two linked pipelines (`azure-shared-pipeline-resource` and `azure-shared-pipeline-tenant`), and make ARM resource ID parsing case-insensitive in every data stream so that mixed-case path segments such as `/resourcegroups/` are handled consistently. Parsed field names and values are otherwise unchanged.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21855
 - version: "1.40.2"
   changes:
     - description: Fix pipeline error in aadgraphactivitylogs and graphactivitylogs when Microsoft PII tags in requestUri cause the uri_parts processor to fail. Strip the markers into a temporary field before parsing so url fields and event.action are derived correctly; url.original retains the original value including the markers.

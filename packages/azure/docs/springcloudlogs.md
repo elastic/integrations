@@ -79,9 +79,9 @@ An example event for `springcloudlogs` looks as following:
     },
     "azure": {
         "resource": {
-            "group": "TESTM",
-            "id": "/SUBSCRIPTIONS/0E073EC1-C22F-4488-ADDE-DA35ED609CCD/RESOURCEGROUPS/TESTM/PROVIDERS/MICROSOFT.APPPLATFORM/SPRING/OBSSPRINCLOUD",
             "name": "OBSSPRINCLOUD",
+            "id": "/SUBSCRIPTIONS/0E073EC1-C22F-4488-ADDE-DA35ED609CCD/RESOURCEGROUPS/TESTM/PROVIDERS/MICROSOFT.APPPLATFORM/SPRING/OBSSPRINCLOUD",
+            "group": "TESTM",
             "provider": "MICROSOFT.APPPLATFORM/SPRING"
         },
         "springcloudlogs": {
@@ -98,10 +98,23 @@ An example event for `springcloudlogs` looks as following:
                 "stream": "stdout"
             }
         },
-        "subscription_id": "0E073EC1-C22F-4488-ADDE-DA35ED609CCD"
+        "subscription": {
+            "id": "0E073EC1-C22F-4488-ADDE-DA35ED609CCD"
+        },
+        "subscription_id": "0E073EC1-C22F-4488-ADDE-DA35ED609CCD",
+        "resource_group": {
+            "name": "TESTM"
+        },
+        "resource_provider": {
+            "namespace": "MICROSOFT.APPPLATFORM/SPRING"
+        }
     },
     "cloud": {
-        "provider": "azure"
+        "provider": "azure",
+        "resource_id": "/SUBSCRIPTIONS/0E073EC1-C22F-4488-ADDE-DA35ED609CCD/RESOURCEGROUPS/TESTM/PROVIDERS/MICROSOFT.APPPLATFORM/SPRING/OBSSPRINCLOUD",
+        "account": {
+            "id": "0E073EC1-C22F-4488-ADDE-DA35ED609CCD"
+        }
     },
     "data_stream": {
         "dataset": "azure.springcloudlogs",
@@ -145,13 +158,16 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.correlation_id | Correlation ID | keyword |
-| azure.resource.authorization_rule | Authorization rule | keyword |
-| azure.resource.group | Resource group | keyword |
-| azure.resource.id | Resource ID | keyword |
-| azure.resource.name | Name | keyword |
-| azure.resource.namespace | Resource type/namespace | keyword |
-| azure.resource.provider | Resource type/namespace | keyword |
+| azure.correlation.id | Correlation ID for grouping related operations. | keyword |
+| azure.correlation_id | Legacy flat name for the correlation ID, still populated. Prefer `azure.correlation.id`. | keyword |
+| azure.resource.authorization_rule | Authorization rule. | keyword |
+| azure.resource.group | Legacy name for the resource group, still populated. Prefer `azure.resource_group.name`. | keyword |
+| azure.resource.id | Legacy name for the ARM resource ID, still populated. Prefer `cloud.resource_id`. | keyword |
+| azure.resource.name | Resource name. | keyword |
+| azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
+| azure.resource.provider | Legacy name for the resource provider namespace, still populated. Prefer `azure.resource_provider.namespace`. | keyword |
+| azure.resource_group.name | Azure resource group name. | keyword |
+| azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
 | azure.springcloudlogs.category | Category | keyword |
 | azure.springcloudlogs.event_category | Event Category | keyword |
 | azure.springcloudlogs.log_format | ccpNamespace | keyword |
@@ -167,9 +183,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.springcloudlogs.properties.thread | Thread | keyword |
 | azure.springcloudlogs.properties.type | Type | keyword |
 | azure.springcloudlogs.status | Status | keyword |
-| azure.subscription_id | Azure subscription ID | keyword |
-| azure.tenant_id | tenant ID | keyword |
+| azure.subscription.id | Azure subscription ID. | keyword |
+| azure.subscription_id | Legacy flat name for the subscription ID, still populated. Prefer `azure.subscription.id`. | keyword |
+| azure.tenant.id | Azure tenant ID. | keyword |
+| azure.tenant_id | Legacy flat name for the tenant ID, still populated. Prefer `azure.tenant.id`. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

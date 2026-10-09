@@ -386,7 +386,18 @@ processors:
   - rename:
       tag: rename_azure_platformlogs_correlationId_to_azure_correlation_id_2c90e699
       field: azure.platformlogs.correlationId
-      target_field: azure.correlation_id
+      target_field: azure.correlation.id
+      ignore_missing: true
+  - rename:
+      tag: rename_azure_platformlogs_tenantId_to_azure_tenant_id_5e6f7a8b
+      field: azure.platformlogs.tenantId
+      target_field: azure.tenant.id
+      ignore_missing: true
+  - rename:
+      tag: rename_azure_platformlogs_TenantId_to_azure_tenant_id_9c0d1e2f
+      field: azure.platformlogs.TenantId
+      if: ctx.azure?.tenant?.id == null
+      target_field: azure.tenant.id
       ignore_missing: true
   - rename:
       tag: rename_azure_platformlogs_properties_statusCode_to_azure_platformlogs_properties_status_code_78ef0791
@@ -460,7 +471,7 @@ processors:
       ignore_failure: true
   - pipeline:
       tag: pipeline_azure_shared_pipeline_7877e1a4
-      name: '{{ IngestPipeline "azure-shared-pipeline" }}'
+      name: '{{ IngestPipeline "azure-shared-pipeline-resource" }}'
   - pipeline:
       tag: pipeline_springcloudlogs_inner_pipeline_3294151d
       if: "ctx?.azure_log_forwarder?.resource_type != null && (ctx?.azure_log_forwarder?.resource_type == 'Microsoft.AppPlatform/Spring'|| ctx?.azure_log_forwarder?.resource_type == 'MICROSOFT.APPPLATFORM/SPRING')"

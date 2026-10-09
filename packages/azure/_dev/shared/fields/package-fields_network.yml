@@ -1,42 +1,75 @@
+- name: cloud.resource_id
+  type: keyword
+  description: |
+    Fully-qualified Azure Resource Manager (ARM) resource ID.
 - name: azure
   type: group
   fields:
-    - name: subscription_id
-      type: keyword
-      description: |
-        Azure subscription ID
-    - name: correlation_id
-      type: keyword
-      description: |
-        Correlation ID
-    - name: tenant_id
-      type: keyword
-      description: |
-        tenant ID
-    - name: resource
+    - name: subscription
       type: group
       fields:
         - name: id
           type: keyword
           description: |
-            Resource ID
-        - name: group
+            Azure subscription ID.
+    - name: subscription_id
+      type: keyword
+      description: 'Legacy flat name for the subscription ID, still populated. Prefer `azure.subscription.id`.'
+    - name: tenant
+      type: group
+      fields:
+        - name: id
           type: keyword
           description: |
-            Resource group
-        - name: provider
+            Azure tenant ID.
+    - name: correlation
+      type: group
+      fields:
+        - name: id
           type: keyword
           description: |
-            Resource type/namespace
-        - name: namespace
-          type: keyword
-          description: |
-            Resource type/namespace
+            Correlation ID for grouping related operations.
+    - name: resource_group
+      type: group
+      fields:
         - name: name
           type: keyword
           description: |
-            Name
+            Azure resource group name.
+    - name: resource_provider
+      type: group
+      fields:
+        - name: namespace
+          type: keyword
+          description: |
+            Azure resource provider namespace (e.g., Microsoft.EventHub).
+    - name: resource
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: |
+            Resource name.
+        - name: namespace
+          type: keyword
+          description: |
+            Event Hub namespace parsed from the ARM resource ID.
         - name: authorization_rule
           type: keyword
-          description: |-
-            Authorization rule
+          description: |
+            Authorization rule.
+        - name: id
+          type: keyword
+          description: 'Legacy name for the ARM resource ID, still populated. Prefer `cloud.resource_id`.'
+        - name: group
+          type: keyword
+          description: 'Legacy name for the resource group, still populated. Prefer `azure.resource_group.name`.'
+        - name: provider
+          type: keyword
+          description: 'Legacy name for the resource provider namespace, still populated. Prefer `azure.resource_provider.namespace`.'
+    - name: tenant_id
+      type: keyword
+      description: 'Legacy flat name for the tenant ID, still populated. Prefer `azure.tenant.id`.'
+    - name: correlation_id
+      type: keyword
+      description: 'Legacy flat name for the correlation ID, still populated. Prefer `azure.correlation.id`.'
