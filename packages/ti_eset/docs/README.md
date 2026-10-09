@@ -292,6 +292,7 @@ An example event for `androidthreats` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | eset.id | The UID of the event object. | keyword |
 | eset.labels | Threat labels. | keyword |
+| eset.valid_from | Event start of validity. | date |
 | eset.valid_until | Event expiration date. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
@@ -335,6 +336,7 @@ An example event for `botnet` looks as following:
         "labels": [
             "malicious-activity"
         ],
+        "valid_from": "2023-10-18T02:05:09.000Z",
         "valid_until": "2023-10-20T02:05:09.000Z"
     },
     "event": {
@@ -396,6 +398,7 @@ An example event for `botnet` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | eset.id | The UID of the event object. | keyword |
 | eset.labels | Threat labels. | keyword |
+| eset.valid_from | Event start of validity. | date |
 | eset.valid_until | Event expiration date. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
@@ -439,6 +442,7 @@ An example event for `cc` looks as following:
         "labels": [
             "malicious-activity"
         ],
+        "valid_from": "2023-10-19T02:00:09.000Z",
         "valid_until": "2023-10-21T02:00:09.000Z"
     },
     "event": {
@@ -591,6 +595,7 @@ An example event for `cryptoscam` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | eset.id | The UID of the event object. | keyword |
 | eset.labels | Threat labels. | keyword |
+| eset.valid_from | Event start of validity. | date |
 | eset.valid_until | Event expiration date. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
@@ -634,6 +639,7 @@ An example event for `domains` looks as following:
         "labels": [
             "malicious-activity"
         ],
+        "valid_from": "2023-10-19T02:00:28.000Z",
         "valid_until": "2023-10-21T02:00:28.000Z"
     },
     "event": {
@@ -791,6 +797,7 @@ An example event for `emailattachments` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | eset.id | The UID of the event object. | keyword |
 | eset.labels | Threat labels. | keyword |
+| eset.valid_from | Event start of validity. | date |
 | eset.valid_until | Event expiration date. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
@@ -834,6 +841,7 @@ An example event for `files` looks as following:
         "labels": [
             "malicious-activity"
         ],
+        "valid_from": "2023-10-19T02:00:38.000Z",
         "valid_until": "2023-10-21T02:00:38.000Z"
     },
     "event": {
@@ -895,6 +903,7 @@ An example event for `files` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | eset.id | The UID of the event object. | keyword |
 | eset.labels | Threat labels. | keyword |
+| eset.valid_from | Event start of validity. | date |
 | eset.valid_until | Event expiration date. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
@@ -938,6 +947,7 @@ An example event for `ip` looks as following:
         "labels": [
             "malicious-activity"
         ],
+        "valid_from": "2023-10-19T02:20:06.000Z",
         "valid_until": "2023-10-21T02:20:06.000Z"
     },
     "event": {
@@ -1197,6 +1207,7 @@ An example event for `ransomware` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | eset.id | The UID of the event object. | keyword |
 | eset.labels | Threat labels. | keyword |
+| eset.valid_from | Event start of validity. | date |
 | eset.valid_until | Event expiration date. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
@@ -1240,6 +1251,7 @@ An example event for `url` looks as following:
         "labels": [
             "benign"
         ],
+        "valid_from": "2023-10-19T02:00:13.000Z",
         "valid_until": "2023-10-21T02:00:13.000Z"
     },
     "event": {
