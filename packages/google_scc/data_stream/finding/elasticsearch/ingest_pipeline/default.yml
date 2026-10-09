@@ -8,40 +8,41 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
       field: ecs.version
       value: 8.11.0
-      tag: set_ecs_version
-  
+      tag: set_ecs_version_6b2cef5e
+
   # parse the event JSON
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: 'json_decoding'
+      tag: json_decoding_c3a1053e
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_8075efaa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - drop:
       if: ctx.json?.listFindingsResults != null && ctx.json.listFindingsResults.isEmpty()
-      tag: drop_listFindingsResults
+      tag: drop_listFindingsResults_c212d63d
   - fingerprint:
       fields:
         - json.finding.eventTime
@@ -49,23 +50,23 @@ processors:
         - json.finding.name
         - json.finding.muteUpdateTime
         - json.finding.resourceName
-      tag: fingerprint_processor
+      tag: fingerprint_processor_81a78c4b
       target_field: _id
       ignore_missing: true
 
   - rename:
       field: json.resource
       target_field: json.finding.resource
-      tag: rename_resource
+      tag: rename_resource_b32dec70
       ignore_missing: true
   - rename:
       field: json.stateChange
       target_field: json.finding.stateChange
-      tag: rename_stateChange
+      tag: rename_stateChange_0a5522d7
       ignore_missing: true
   # rename to snake case
   - script:
-      tag: script_convert_camelcase_to_snake_case
+      tag: script_convert_camelcase_to_snake_case_c15daadd
       lang: painless
       description: Convert camelCase to snake_case
       source: |
@@ -122,94 +123,111 @@ processors:
   - date:
       field: google_scc.finding.event_time
       target_field: google_scc.finding.event_time
-      tag: date_finding_event_time
+      tag: date_finding_event_time_4745fb8e
       formats:
         - ISO8601
       if: ctx.google_scc?.finding?.event_time != null && ctx.google_scc.finding.event_time != ''
       on_failure:
         - remove:
+            tag: remove_google_scc_finding_event_time_d4a60c67
             field: google_scc.finding.event_time
         - append:
+            tag: append_error_message_fad3278a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: google_scc.finding.create_time
       target_field: google_scc.finding.create_time
-      tag: date_finding_createTime
+      tag: date_finding_createTime_5588caa1
       formats:
         - ISO8601
       if: ctx.google_scc?.finding?.create_time != null && ctx.google_scc.finding.create_time != ''
       on_failure:
         - remove:
+            tag: remove_google_scc_finding_create_time_1117d49a
             field: google_scc.finding.create_time
         - append:
+            tag: append_error_message_bc4a23db
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_connections_1b274adb
       field: google_scc.finding.connections
       if: ctx.google_scc?.finding?.connections instanceof List
       processor:
         convert:
           field: _ingest._value.destination_ip
           target_field: _ingest._value.destination.ip
-          tag: convert_destination_ip_to_ip
+          tag: convert_destination_ip_to_ip_a2199ab4
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_destination_ip_51200945
                 field: _ingest._value.destination_ip
             - append:
+                tag: append_error_message_8d3492d6
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_connections_c6bf161d
       field: google_scc.finding.connections
       if: ctx.google_scc?.finding?.connections instanceof List
       processor:
         convert:
           field: _ingest._value.destination_port
           target_field: _ingest._value.destination.port
-          tag: convert_destination_port_to_long
+          tag: convert_destination_port_to_long_58a6c0e3
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_destination_port_f92ca5d9
                 field: _ingest._value.destination_port
             - append:
+                tag: append_error_message_19c46b12
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_connections_4d765be3
       field: google_scc.finding.connections
       if: ctx.google_scc?.finding?.connections instanceof List
       processor:
         convert:
           field: _ingest._value.source_ip
           target_field: _ingest._value.source.ip
-          tag: convert_source_ip_to_ip
+          tag: convert_source_ip_to_ip_fc84924a
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_source_ip_977179cf
                 field: _ingest._value.source_ip
             - append:
+                tag: append_error_message_1c5f2274
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_connections_d1e9fcfb
       field: google_scc.finding.connections
       if: ctx.google_scc?.finding?.connections instanceof List
       processor:
         convert:
           field: _ingest._value.source_port
           target_field: _ingest._value.source.port
-          tag: convert_source_port_to_long
+          tag: convert_source_port_to_long_d53e93b7
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_source_port_8515e67a
                 field: _ingest._value.source_port
             - append:
+                tag: append_error_message_e8122e8d
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_connections_42af5588
       field: google_scc.finding.connections
       if: ctx.google_scc?.finding?.connections instanceof List
       processor:
@@ -219,560 +237,629 @@ processors:
             - _ingest._value.source_ip
             - _ingest._value.destination_port
             - _ingest._value.destination_ip
-          tag: remove_source_port_source_ip_destination_port_destination_ip
+          tag: remove_source_port_source_ip_destination_port_destination_ip_0722a566
           ignore_missing: true
   - rename:
       field: google_scc.finding.mitre_attack.additional_tactics
       target_field: google_scc.finding.mitre_attack.additional.tactics
-      tag: rename_finding_mitre_attack_additional_tactics
+      tag: rename_finding_mitre_attack_additional_tactics_645e2abd
       ignore_missing: true
   - rename:
       field: google_scc.finding.mitre_attack.primary_tactic
       target_field: google_scc.finding.mitre_attack.primary.tactic
-      tag: rename_finding_mitre_attack_primary_tactic
+      tag: rename_finding_mitre_attack_primary_tactic_c4de1b65
       ignore_missing: true
   - rename:
       field: google_scc.finding.mitre_attack.additional_techniques
       target_field: google_scc.finding.mitre_attack.additional.techniques
-      tag: rename_finding_mitre_attack_additional_techniques
+      tag: rename_finding_mitre_attack_additional_techniques_ee543ad3
       ignore_missing: true
   - rename:
       field: google_scc.finding.mitre_attack.primary_techniques
       target_field: google_scc.finding.mitre_attack.primary.techniques
-      tag: rename_finding_mitre_attack_primary_techniques
+      tag: rename_finding_mitre_attack_primary_techniques_f0f0278d
       ignore_missing: true
   - foreach:
+      tag: foreach_google_scc_finding_log_entries_62230acd
       field: google_scc.finding.log_entries
       if: ctx.google_scc?.finding?.log_entries instanceof List
       processor:
         date:
           field: _ingest._value.cloud_logging_entry.timestamp
           target_field: _ingest._value.cloud_logging_entry.timestamp
-          tag: date_finding_log_entries_cloud_logging_entry_timestamp
+          tag: date_finding_log_entries_cloud_logging_entry_timestamp_caece194
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_cloud_logging_entry_timestamp_32192f87
                 field: _ingest._value.cloud_logging_entry.timestamp
                 ignore_missing: true
   - convert:
       field: google_scc.finding.access.caller_ip
-      tag: convert_finding_access_caller_ip_to_ip
+      tag: convert_finding_access_caller_ip_to_ip_a021dce3
       type: ip
       ignore_missing: true
       if: ctx.google_scc?.finding?.access?.caller_ip != ''
       on_failure:
         - remove:
+            tag: remove_google_scc_finding_access_caller_ip_f4606b68
             field: google_scc.finding.access.caller_ip
         - append:
+            tag: append_error_message_245ddc14
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: google_scc.finding.access.principal_email
       target_field: google_scc.finding.access.principal.email
-      tag: rename_finding_access_principal_email
+      tag: rename_finding_access_principal_email_c9d2e5cd
       ignore_missing: true
   - rename:
       field: google_scc.finding.access.principal_subject
       target_field: google_scc.finding.access.principal.subject
-      tag: rename_finding_access_principal_subject
+      tag: rename_finding_access_principal_subject_6910bc5c
       ignore_missing: true
   - foreach:
+      tag: foreach_google_scc_finding_access_service_account_delegation_info_7daf7025
       field: google_scc.finding.access.service_account_delegation_info
       if: ctx.google_scc?.finding?.access?.service_account_delegation_info instanceof List
       processor:
         rename:
           field: _ingest._value.principal_email
           target_field: _ingest._value.principal.email
-          tag: rename_finding_access_service_account_delegation_info_principal_email
+          tag: rename_finding_access_service_account_delegation_info_principal_email_61cc1979
           ignore_missing: true
   - foreach:
+      tag: foreach_google_scc_finding_access_service_account_delegation_info_94239a7d
       field: google_scc.finding.access.service_account_delegation_info
       if: ctx.google_scc?.finding?.access?.service_account_delegation_info instanceof List
       processor:
         rename:
           field: _ingest._value.principal_subject
           target_field: _ingest._value.principal.subject
-          tag: rename_finding_access_service_account_delegation_info_principal_subject
+          tag: rename_finding_access_service_account_delegation_info_principal_subject_769e4053
           ignore_missing: true
   - rename:
       field: google_scc.finding.access.service_account_delegation_info
       target_field: google_scc.finding.access.service_account.delegation_info
-      tag: rename_finding_access_service_account_delegation_info
+      tag: rename_finding_access_service_account_delegation_info_c9718e86
       ignore_missing: true
   - rename:
       field: google_scc.finding.access.service_account_key_name
       target_field: google_scc.finding.access.service_account.key_name
-      tag: rename_finding_access_service_account_key_name
+      tag: rename_finding_access_service_account_key_name_0ab7acb2
       ignore_missing: true
   - rename:
       field: google_scc.finding.finding_class
       target_field: google_scc.finding.class
-      tag: rename_finding_finding_class
+      tag: rename_finding_finding_class_0b955224
       ignore_missing: true
   - rename:
       field: google_scc.finding.cloud_dlp_data_profile.data_profile
       target_field: google_scc.finding.cloud_dlp.data_profile.value
-      tag: rename_finding_cloud_dlp_data_profile_data_profile
+      tag: rename_finding_cloud_dlp_data_profile_data_profile_4f67c7cc
       ignore_missing: true
   - convert:
       field: google_scc.finding.cloud_dlp_inspection.full_scan
       target_field: google_scc.finding.cloud_dlp.inspection.full_scan
-      tag: convert_finding_cloud_dlp_inspection_full_scan_to_boolean
+      tag: convert_finding_cloud_dlp_inspection_full_scan_to_boolean_c6526b25
       type: boolean
       ignore_missing: true
       if: ctx.google_scc?.finding?.cloud_dlp_inspection?.full_scan != ''
       on_failure:
         - append:
+            tag: append_error_message_0c04f107
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: google_scc.finding.cloud_dlp_inspection.info_type_count
       target_field: google_scc.finding.cloud_dlp.inspection.info_type.count
-      tag: convert_finding_cloud_dlp_inspection_info_type_count_to_boolean
+      tag: convert_finding_cloud_dlp_inspection_info_type_count_to_boolean_b15cc6e0
       type: long
       ignore_missing: true
       if: ctx.google_scc?.finding?.cloud_dlp_inspection?.info_type_count != ''
       on_failure:
         - append:
+            tag: append_error_message_1ca51d7c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: google_scc.finding.cloud_dlp_inspection.info_type
       target_field: google_scc.finding.cloud_dlp.inspection.info_type.value
-      tag: rename_finding_cloud_dlp_inspection_info_type
+      tag: rename_finding_cloud_dlp_inspection_info_type_e4eefd83
       ignore_missing: true
   - rename:
       field: google_scc.finding.cloud_dlp_inspection.inspect_job
       target_field: google_scc.finding.cloud_dlp.inspection.inspect_job
-      tag: rename_finding_cloud_dlp_inspection_inspect_job
+      tag: rename_finding_cloud_dlp_inspection_inspect_job_51764d13
       ignore_missing: true
   - rename:
       field: google_scc.finding.contacts.billing.contacts
       target_field: google_scc.finding.contacts.billing
-      tag: rename_finding_contacts_billing_contacts
+      tag: rename_finding_contacts_billing_contacts_c6f14f24
       ignore_missing: true
       override: true
   - rename:
       field: google_scc.finding.contacts.legal.contacts
       target_field: google_scc.finding.contacts.legal
-      tag: rename_finding_contacts_legal_contacts
+      tag: rename_finding_contacts_legal_contacts_f4319fa4
       ignore_missing: true
       override: true
   - rename:
       field: google_scc.finding.contacts.security.contacts
       target_field: google_scc.finding.contacts.security
-      tag: rename_finding_contacts_security_contacts
+      tag: rename_finding_contacts_security_contacts_446265eb
       ignore_missing: true
       override: true
   - rename:
       field: google_scc.finding.contacts.all.contacts
       target_field: google_scc.finding.contacts.all
-      tag: rename_finding_contacts_all_contacts
+      tag: rename_finding_contacts_all_contacts_d6bc3945
       ignore_missing: true
       override: true
   - rename:
       field: google_scc.finding.contacts.product_updates.contacts
       target_field: google_scc.finding.contacts.product_updates
-      tag: rename_finding_contacts_product_updates_contacts
+      tag: rename_finding_contacts_product_updates_contacts_46dfca61
       ignore_missing: true
       override: true
   - rename:
       field: google_scc.finding.contacts.suspension.contacts
       target_field: google_scc.finding.contacts.suspension
-      tag: rename_finding_contacts_suspension_contacts
+      tag: rename_finding_contacts_suspension_contacts_f59e347f
       ignore_missing: true
       override: true
   - rename:
       field: google_scc.finding.contacts.technical.contacts
       target_field: google_scc.finding.contacts.technical
-      tag: rename_finding_contacts_technical_contacts
+      tag: rename_finding_contacts_technical_contacts_6b677979
       ignore_missing: true
       override: true
   - rename:
       field: google_scc.finding.contacts.technical_incidents.contacts
       target_field: google_scc.finding.contacts.technical_incidents
-      tag: rename_finding_contacts_technical_incidents_contacts
+      tag: rename_finding_contacts_technical_incidents_contacts_16bfd0c2
       ignore_missing: true
       override: true
   - foreach:
+      tag: foreach_google_scc_finding_files_ef8b6a41
       field: google_scc.finding.files
       if: ctx.google_scc?.finding?.files instanceof List
       processor:
         convert:
           field: _ingest._value.size
-          tag: convert_files_size_to_long
+          tag: convert_files_size_to_long_6c7413f4
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_size_90ddae24
                 field: _ingest._value.size
             - append:
+                tag: append_error_message_eb17a532
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_files_65acaecd
       field: google_scc.finding.files
       if: ctx.google_scc?.finding?.files instanceof List
       processor:
         convert:
           field: _ingest._value.hashed_size
-          tag: convert_files_hashed_size_to_long
+          tag: convert_files_hashed_size_to_long_af3d59ce
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_hashed_size_e05f05a3
                 field: _ingest._value.hashed_size
             - append:
+                tag: append_error_message_9bf3a0e9
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_files_437153fe
       field: google_scc.finding.files
       if: ctx.google_scc?.finding?.files instanceof List
       processor:
         convert:
           field: _ingest._value.partially_hashed
-          tag: convert_files_partially_hashed_to_boolean
+          tag: convert_files_partially_hashed_to_boolean_1c3c59f8
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_partially_hashed_7d3ac070
                 field: _ingest._value.partially_hashed
             - append:
+                tag: append_error_message_38c6f923
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_indicator_ip_addresses_7a614d28
       field: google_scc.finding.indicator.ip_addresses
       if: ctx.google_scc?.finding?.indicator?.ip_addresses instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_finding_indicator_ip_addresses_to_ip
+          tag: convert_finding_indicator_ip_addresses_to_ip_28775e4a
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_9bd047e5
                 field: _ingest._value
             - append:
+                tag: append_error_message_41b3fcbb
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_indicator_signatures_b6f927c8
       field: google_scc.finding.indicator.signatures
       if: ctx.google_scc?.finding?.indicator?.signatures instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_memory_hash_signature_detections_1aa96686
           field: _ingest._value.memory_hash_signature.detections
           ignore_missing: true
           processor:
             convert:
               field: _ingest._value.percent_pages_matched
-              tag: convert_finding_indicator_signatures_percent_pages_matched_to_long
+              tag: convert_finding_indicator_signatures_percent_pages_matched_to_long_8ca6cfe2
               type: long
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_percent_pages_matched_ac9927c1
                     field: _ingest._value.percent_pages_matched
                 - append:
+                    tag: append_error_message_028fec24
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}''Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_indicator_signatures_3dfcce68
       field: google_scc.finding.indicator.signatures
       if: ctx.google_scc?.finding?.indicator?.signatures instanceof List
       processor:
         rename:
           field: _ingest._value.yara_rule_signature.yara_rule
-          tag: rename_finding_indicator_signatures_yara_rule_signature_yara_rule
+          tag: rename_finding_indicator_signatures_yara_rule_signature_yara_rule_3f8559c8
           target_field: _ingest._value.yara.rule
           ignore_missing: true
   - convert:
       field: google_scc.finding.kernel_root_kit.unexpected_code_modification
       target_field: google_scc.finding.kernel_root_kit.unexpected.code_modification
-      tag: convert_finding_kernel_root_kit_unexpected_code_modification_to_boolean
+      tag: convert_finding_kernel_root_kit_unexpected_code_modification_to_boolean_d009e771
       type: boolean
       ignore_missing: true
       if: ctx.google_scc?.finding?.kernel_root_kit?.unexpected_code_modification != ''
       on_failure:
         - append:
+            tag: append_error_message_776675ed
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: google_scc.finding.kernel_root_kit.unexpected_ftrace_handler
       target_field: google_scc.finding.kernel_root_kit.unexpected.ftrace_handler
-      tag: convert_finding_kernel_root_kit_unexpected_ftrace_handler_to_boolean
+      tag: convert_finding_kernel_root_kit_unexpected_ftrace_handler_to_boolean_fd5bd181
       type: boolean
       ignore_missing: true
       if: ctx.google_scc?.finding?.kernel_root_kit?.unexpected_ftrace_handler != ''
       on_failure:
         - append:
+            tag: append_error_message_33f31e13
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: google_scc.finding.kernel_root_kit.unexpected_interrupt_handler
       target_field: google_scc.finding.kernel_root_kit.unexpected.interrupt_handler
-      tag: convert_finding_kernel_root_kit_unexpected_interrupt_handler_to_boolean
+      tag: convert_finding_kernel_root_kit_unexpected_interrupt_handler_to_boolean_4fbab528
       type: boolean
       ignore_missing: true
       if: ctx.google_scc?.finding?.kernel_root_kit?.unexpected_interrupt_handler != ''
       on_failure:
         - append:
+            tag: append_error_message_b607c991
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: google_scc.finding.kernel_root_kit.unexpected_kernel_code_pages
       target_field: google_scc.finding.kernel_root_kit.unexpected.kernel_code_pages
-      tag: convert_finding_kernel_root_kit_unexpected_kernel_code_pages_to_boolean
+      tag: convert_finding_kernel_root_kit_unexpected_kernel_code_pages_to_boolean_bac28ab8
       type: boolean
       ignore_missing: true
       if: ctx.google_scc?.finding?.kernel_root_kit?.unexpected_kernel_code_pages != ''
       on_failure:
         - append:
+            tag: append_error_message_cde9ddad
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: google_scc.finding.kernel_root_kit.unexpected_kprobe_handler
       target_field: google_scc.finding.kernel_root_kit.unexpected.kprobe_handler
-      tag: convert_finding_kernel_root_kit_unexpected_kprobe_handler_to_boolean
+      tag: convert_finding_kernel_root_kit_unexpected_kprobe_handler_to_boolean_be5c9fd2
       type: boolean
       ignore_missing: true
       if: ctx.google_scc?.finding?.kernel_root_kit?.unexpected_kprobe_handler != ''
       on_failure:
         - append:
+            tag: append_error_message_689162a3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: google_scc.finding.kernel_root_kit.unexpected_processes_in_runqueue
       target_field: google_scc.finding.kernel_root_kit.unexpected.processes_in_runqueue
-      tag: convert_finding_kernel_root_kit_unexpected_processes_in_runqueue_to_boolean
+      tag: convert_finding_kernel_root_kit_unexpected_processes_in_runqueue_to_boolean_9a8455d7
       type: boolean
       ignore_missing: true
       if: ctx.google_scc?.finding?.kernel_root_kit?.unexpected_processes_in_runqueue != ''
       on_failure:
         - append:
+            tag: append_error_message_0d7b43ed
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: google_scc.finding.kernel_root_kit.unexpected_read_only_data_modification
       target_field: google_scc.finding.kernel_root_kit.unexpected.read_only_data_modification
-      tag: convert_finding_kernel_root_kit_unexpected_read_only_data_modification_to_boolean
+      tag: convert_finding_kernel_root_kit_unexpected_read_only_data_modification_to_boolean_4dee5c06
       type: boolean
       ignore_missing: true
       if: ctx.google_scc?.finding?.kernel_root_kit?.unexpected_read_only_data_modification != ''
       on_failure:
         - append:
+            tag: append_error_message_1c238b79
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: google_scc.finding.kernel_root_kit.unexpected_system_call_handler
       target_field: google_scc.finding.kernel_root_kit.unexpected.system_call_handler
-      tag: convert_finding_kernel_root_kit_unexpected_system_call_handler_to_boolean
+      tag: convert_finding_kernel_root_kit_unexpected_system_call_handler_to_boolean_5aa4869c
       type: boolean
       ignore_missing: true
       if: ctx.google_scc?.finding?.kernel_root_kit?.unexpected_system_call_handler != ''
       on_failure:
         - append:
+            tag: append_error_message_aa88ff6d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: google_scc.finding.mute
       target_field: google_scc.finding.mute.state
-      tag: rename_finding_mute
+      tag: rename_finding_mute_9a9843b1
       ignore_missing: true
   - rename:
       field: google_scc.finding.mute_initiator
       target_field: google_scc.finding.mute.initiator
-      tag: rename_finding_mute_initiator
+      tag: rename_finding_mute_initiator_06270409
       ignore_missing: true
   - date:
       field: google_scc.finding.mute_update_time
       target_field: google_scc.finding.mute.update_time
-      tag: date_finding_mute_update_time
+      tag: date_finding_mute_update_time_11c218bc
       formats:
         - ISO8601
       if: ctx.google_scc?.finding?.mute_update_time != null && ctx.google_scc.finding.mute_update_time != ''
       on_failure:
         - append:
+            tag: append_error_message_b7ad7958
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: google_scc.finding.mute_info.static_mute.apply_time
       target_field: google_scc.finding.mute_info.static_mute.apply_time
-      tag: date_finding_mute_info_static_mute_apply_time
+      tag: date_finding_mute_info_static_mute_apply_time_0db15d0a
       formats:
         - ISO8601
       if: ctx.google_scc?.finding?.mute_info?.static_mute?.apply_time != null && ctx.google_scc.finding.mute_info.static_mute.apply_time != ''
       on_failure:
         - remove:
+            tag: remove_google_scc_finding_mute_info_static_mute_apply_time_71d224c1
             field: google_scc.finding.mute_info.static_mute.apply_time
         - append:
+            tag: append_error_message_c03d12b4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_mute_info_dynamic_mute_records_195618b3
       field: google_scc.finding.mute_info.dynamic_mute_records
       if: ctx.google_scc?.finding?.mute_info?.dynamic_mute_records instanceof List
       processor:
         date:
           field: _ingest._value.match_time
           target_field: _ingest._value.match_time
-          tag: date_finding_mute_info_dynamic_mute_records_match_time
+          tag: date_finding_mute_info_dynamic_mute_records_match_time_231c9bda
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_match_time_7a7236e9
                 field: _ingest._value.match_time
                 ignore_missing: true
   - foreach:
+      tag: foreach_google_scc_finding_processes_9c5faff1
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List
       processor:
         convert:
           field: _ingest._value.binary.size
-          tag: convert_finding_processes_binary_size_to_long
+          tag: convert_finding_processes_binary_size_to_long_b49f9cb6
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_binary_size_6ccb1730
                 field: _ingest._value.binary.size
             - append:
+                tag: append_error_message_fada823c
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_processes_1a4860f3
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List
       processor:
         convert:
           field: _ingest._value.binary.hashed_size
-          tag: convert_finding_processes_binary_hashed_size_to_long
+          tag: convert_finding_processes_binary_hashed_size_to_long_7fb5d5bc
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_binary_hashed_size_4407901d
                 field: _ingest._value.binary.hashed_size
             - append:
+                tag: append_error_message_1ce4370f
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_processes_f197957c
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List
       processor:
         convert:
           field: _ingest._value.binary.partially_hashed
-          tag: convert_finding_processes_binary_partially_hashed_to_boolean
+          tag: convert_finding_processes_binary_partially_hashed_to_boolean_5d8a0384
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_binary_partially_hashed_7984152e
                 field: _ingest._value.binary.partially_hashed
             - append:
+                tag: append_error_message_8df71897
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_processes_0e491fec
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_libraries_49c8a8cc
           field: _ingest._value.libraries
           ignore_missing: true
           processor:
             convert:
               field: _ingest._value.hashed_size
-              tag: convert_finding_processes_libraries_hashed_size_to_long
+              tag: convert_finding_processes_libraries_hashed_size_to_long_85329567
               type: long
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_hashed_size_65901949
                     field: _ingest._value.hashed_size
                 - append:
+                    tag: append_error_message_19313fa9
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_processes_e2b97c12
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_libraries_cd7ac417
           field: _ingest._value.libraries
           ignore_missing: true
           processor:
             convert:
               field: _ingest._value.size
-              tag: convert_finding_processes_libraries_size_to_long
+              tag: convert_finding_processes_libraries_size_to_long_69bf6a28
               type: long
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_size_88adb897
                     field: _ingest._value.size
                 - append:
+                    tag: append_error_message_482e5cdc
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_processes_b6537bbd
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_libraries_5e730b4d
           field: _ingest._value.libraries
           ignore_missing: true
           processor:
             convert:
               field: _ingest._value.partially_hashed
-              tag: convert_finding_processes_libraries_partially_hashed_to_boolean
+              tag: convert_finding_processes_libraries_partially_hashed_to_boolean_aeb44120
               type: boolean
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_partially_hashed_5f8aff00
                     field: _ingest._value.partially_hashed
                 - append:
+                    tag: append_error_message_49111ab5
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_processes_bf4abadd
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List
       processor:
         convert:
           field: _ingest._value.script.hashed_size
-          tag: convert_finding_processes_script_hashed_size_to_long
+          tag: convert_finding_processes_script_hashed_size_to_long_df3e66e4
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_script_hashed_size_50ab33ec
                 field: _ingest._value.script.hashed_size
             - append:
+                tag: append_error_message_71e3666c
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_processes_3ff9c9ab
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List
       processor:
         convert:
           field: _ingest._value.script.size
-          tag: convert_finding_processes_script_size_to_long
+          tag: convert_finding_processes_script_size_to_long_cd1832be
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_script_size_b425a6c1
                 field: _ingest._value.script.size
             - append:
+                tag: append_error_message_a8adb091
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_processes_44b17f2e
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List
       processor:
         convert:
           field: _ingest._value.script.partially_hashed
-          tag: convert_finding_processes_script_partially_hashed_to_boolean
+          tag: convert_finding_processes_script_partially_hashed_to_boolean_9d057407
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_script_partially_hashed_662a23f3
                 field: _ingest._value.script.partially_hashed
             - append:
+                tag: append_error_message_52815f61
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_google_scc_finding_processes_390e738e
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List
       processor:
         rename:
           field: _ingest._value.parent_pid
-          tag: rename_finding_processes_parent_pid
+          tag: rename_finding_processes_parent_pid_1cdb5db2
           target_field: _ingest._value.parent.pid
           ignore_missing: true
   # GCP meta fields namely - projectName,projectDisplayName,parentName,parentDisplayName,folders,cloudProvider,organization
@@ -781,248 +868,266 @@ processors:
   - rename:
       field: google_scc.finding.resource.folders
       target_field: google_scc.finding.resource.gcp_metadata.folders
-      tag: rename_resource_folders
+      tag: rename_resource_folders_c0e9d317
       ignore_missing: true
   - rename:
       field: google_scc.finding.resource.parent_display_name
       target_field: google_scc.finding.resource.gcp_metadata.parent_display_name
-      tag: rename_resource_parent_display_name
+      tag: rename_resource_parent_display_name_8965c033
       ignore_missing: true
   - rename:
       field: google_scc.finding.resource.parent_name
       target_field: google_scc.finding.resource.gcp_metadata.parent
-      tag: rename_resource_parent_name
+      tag: rename_resource_parent_name_a1f771a8
       ignore_missing: true
   - rename:
       field: google_scc.finding.resource.project_display_name
       target_field: google_scc.finding.resource.gcp_metadata.project_display_name
-      tag: rename_resource_project_display_name
+      tag: rename_resource_project_display_name_634398ce
       ignore_missing: true
   - rename:
       field: google_scc.finding.resource.project_name
       target_field: google_scc.finding.resource.gcp_metadata.project
-      tag: rename_resource_project_name
+      tag: rename_resource_project_name_c45b1449
       ignore_missing: true
   - rename:
       field: google_scc.finding.resource.organization
       target_field: google_scc.finding.resource.gcp_metadata.organization
-      tag: rename_resource_organization
+      tag: rename_resource_organization_eff17340
       ignore_missing: true
   - rename:
       field: google_scc.finding.security_marks.marks
       target_field: google_scc.finding.security_marks.value
-      tag: rename_finding_security_marks_marks
+      tag: rename_finding_security_marks_marks_1ef1a35f
       ignore_missing: true
   - rename:
       field: google_scc.finding.source_properties.supporting_data
       target_field: google_scc.finding.source_properties_supporting_data
-      tag: rename_finding_source_properties_supporting_data
+      tag: rename_finding_source_properties_supporting_data_dc03cfd8
       ignore_missing: true
   - convert:
       field: google_scc.finding.vulnerability.cve.cvssv3.base_score
-      tag: convert_finding_vulnerability_cve_cvssv3_base_score_to_float
+      tag: convert_finding_vulnerability_cve_cvssv3_base_score_to_float_2d4bff02
       type: float
       ignore_missing: true
       if: ctx.google_scc?.finding?.vulnerability?.cve?.cvssv3?.base_score != ''
       on_failure:
         - remove:
+            tag: remove_google_scc_finding_vulnerability_cve_cvssv3_base_score_99ddd8eb
             field: google_scc.finding.vulnerability.cve.cvssv3.base_score
         - append:
+            tag: append_error_message_a10a85c2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: google_scc.finding.vulnerability.cve.exploit_release_date
       target_field: google_scc.finding.vulnerability.cve.exploit_release_date
-      tag: date_finding_vulnerability_cve_exploit_release_date
+      tag: date_finding_vulnerability_cve_exploit_release_date_dd1b8c2e
       formats:
         - ISO8601
       if: ctx.google_scc?.finding?.vulnerability?.cve?.exploit_release_date != null && ctx.google_scc.finding.vulnerability.cve.exploit_release_date != ''
       on_failure:
         - remove:
+            tag: remove_google_scc_finding_vulnerability_cve_exploit_release_date_124be961
             field: google_scc.finding.vulnerability.cve.exploit_release_date
         - append:
+            tag: append_error_message_de217f00
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: google_scc.finding.vulnerability.cve.first_exploitation_date
       target_field: google_scc.finding.vulnerability.cve.first_exploitation_date
-      tag: date_finding_vulnerability_cve_first_exploitation_date
+      tag: date_finding_vulnerability_cve_first_exploitation_date_093e0c6a
       formats:
         - ISO8601
       if: ctx.google_scc?.finding?.vulnerability?.cve?.first_exploitation_date != null && ctx.google_scc.finding.vulnerability.cve.first_exploitation_date != ''
       on_failure:
         - remove:
+            tag: remove_google_scc_finding_vulnerability_cve_first_exploitation_date_23450d73
             field: google_scc.finding.vulnerability.cve.first_exploitation_date
         - append:
+            tag: append_error_message_4b7d9c1e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: google_scc.finding.vulnerability.cve.observed_in_the_wild
-      tag: convert_finding_vulnerability_cve_observed_in_the_wild_to_boolean
+      tag: convert_finding_vulnerability_cve_observed_in_the_wild_to_boolean_28dcb4c8
       type: boolean
       ignore_missing: true
       if: ctx.google_scc?.finding?.vulnerability?.cve?.observed_in_the_wild != ''
       on_failure:
         - remove:
+            tag: remove_google_scc_finding_vulnerability_cve_observed_in_the_wild_9f0cc880
             field: google_scc.finding.vulnerability.cve.observed_in_the_wild
         - append:
+            tag: append_error_message_a74fd8ec
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: google_scc.finding.vulnerability.cve.upstream_fix_available
-      tag: convert_finding_vulnerability_cve_upstream_fix_available_to_boolean
+      tag: convert_finding_vulnerability_cve_upstream_fix_available_to_boolean_a9b8aa31
       type: boolean
       ignore_missing: true
       if: ctx.google_scc?.finding?.vulnerability?.cve?.upstream_fix_available != ''
       on_failure:
         - remove:
+            tag: remove_google_scc_finding_vulnerability_cve_upstream_fix_available_f6f0465a
             field: google_scc.finding.vulnerability.cve.upstream_fix_available
         - append:
+            tag: append_error_message_df3c14fc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: google_scc.finding.vulnerability.cve.zero_day
-      tag: convert_finding_vulnerability_cve_zero_day_to_boolean
+      tag: convert_finding_vulnerability_cve_zero_day_to_boolean_47872895
       type: boolean
       ignore_missing: true
       if: ctx.google_scc?.finding?.vulnerability?.cve?.zero_day != ''
       on_failure:
         - remove:
+            tag: remove_google_scc_finding_vulnerability_cve_zero_day_e4de89a0
             field: google_scc.finding.vulnerability.cve.zero_day
         - append:
+            tag: append_error_message_d4e59adc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: google_scc.finding.vulnerability.cve.cvssv3.attack_complexity
       target_field: google_scc.finding.vulnerability.cve.cvssv3.attack.complexity
-      tag: rename_finding_vulnerability_cve_cvssv3_attack_complexity
+      tag: rename_finding_vulnerability_cve_cvssv3_attack_complexity_9bdacd1c
       ignore_missing: true
   - rename:
       field: google_scc.finding.vulnerability.cve.cvssv3.attack_vector
       target_field: google_scc.finding.vulnerability.cve.cvssv3.attack.vector
-      tag: rename_finding_vulnerability_cve_cvssv3_attack_vector
+      tag: rename_finding_vulnerability_cve_cvssv3_attack_vector_3a253c98
       ignore_missing: true
   - convert:
       field: google_scc.finding.vulnerability.provider_risk_score
-      tag: convert_finding_vulnerability_provider_risk_score_to_long
+      tag: convert_finding_vulnerability_provider_risk_score_to_long_7f54eb31
       type: long
       ignore_missing: true
       if: ctx.google_scc?.finding?.vulnerability?.provider_risk_score != ''
       on_failure:
         - remove:
+            tag: remove_google_scc_finding_vulnerability_provider_risk_score_1bb08f05
             field: google_scc.finding.vulnerability.provider_risk_score
         - append:
+            tag: append_error_message_fe37b6a8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: google_scc.finding.vulnerability.reachable
-      tag: convert_finding_vulnerability_reachable_to_boolean
+      tag: convert_finding_vulnerability_reachable_to_boolean_9001c562
       type: boolean
       ignore_missing: true
       if: ctx.google_scc?.finding?.vulnerability?.reachable != ''
       on_failure:
         - remove:
+            tag: remove_google_scc_finding_vulnerability_reachable_8ff4d940
             field: google_scc.finding.vulnerability.reachable
         - append:
+            tag: append_error_message_8b0673b0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: google_scc.finding.vulnerability.security_bulletin.submission_time
       target_field: google_scc.finding.vulnerability.security_bulletin.submission_time
-      tag: date_finding_vulnerability_security_bulletin_submission_time
+      tag: date_finding_vulnerability_security_bulletin_submission_time_0b46d9c0
       formats:
         - ISO8601
       if: ctx.google_scc?.finding?.vulnerability?.security_bulletin?.submission_time != null && ctx.google_scc.finding.vulnerability.security_bulletin.submission_time != ''
       on_failure:
         - remove:
+            tag: remove_google_scc_finding_vulnerability_security_bulletin_submission_time_938afefb
             field: google_scc.finding.vulnerability.security_bulletin.submission_time
         - append:
+            tag: append_error_message_60942d76
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-  # populate ECS fields
 
+  # populate ECS fields
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_event_time
+      tag: set_@timestamp_from_event_time_a6471f3e
       copy_from: google_scc.finding.event_time
       ignore_empty_value: true
   - set:
       field: message
-      tag: set_message
+      tag: set_message_3aeb81a3
       copy_from: google_scc.finding.description
       ignore_empty_value: true
 
   # event.*
   - set:
       field: event.kind
-      tag: set_event_kind_to_alert
+      tag: set_event_kind_to_alert_100fbf6a
       value: alert
       if: ctx.google_scc?.finding?.class == 'THREAT'
   - set:
       field: event.kind
-      tag: set_event_kind_to_state
+      tag: set_event_kind_to_state_21b08c86
       value: state
       if: ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
   - set:
       field: event.kind
-      tag: set_event_kind_to_event
+      tag: set_event_kind_to_event_bbdb2453
       value: event
       if: ctx.event?.kind == null
   - append:
       field: event.category
-      tag: append_vulnerability_into_event_category
+      tag: append_vulnerability_into_event_category_55442f4b
       value: vulnerability
       if: ctx.google_scc?.finding?.class == 'VULNERABILITY'
   - append:
       field: event.category
-      tag: append_threat_into_event_category
+      tag: append_threat_into_event_category_8e7618bd
       value: threat
       if: ctx.google_scc?.finding?.class == 'THREAT'
   - append:
       field: event.category
-      tag: append_configuration_into_event_category
+      tag: append_configuration_into_event_category_7dd877b0
       value: configuration
       if: ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
   - append:
       field: event.type
-      tag: append_indicator_into_event_type
+      tag: append_indicator_into_event_type_84672a2e
       value: indicator
       if: ctx.google_scc?.finding?.class == 'THREAT'
   - append:
       field: event.type
-      tag: append_info_into_event_type
+      tag: append_info_into_event_type_80bf1595
       value: info
       if: ctx.event?.type == null
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_success
+      tag: set_event_outcome_to_success_6f665b0a
       value: success
       if: ctx.google_scc?.finding?.state == 'INACTIVE' && ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_failure
+      tag: set_event_outcome_to_failure_93ba99c8
       value: failure
       if: ctx.google_scc?.finding?.state == 'ACTIVE' && ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_unknown
+      tag: set_event_outcome_to_unknown_4f0ba575
       value: unknown
       if: ctx.google_scc?.finding?.state == 'STATE_UNSPECIFIED' && ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
   - set:
       field: event.created
-      tag: set_event_created_from_create_time
+      tag: set_event_created_from_create_time_9cc6c6a0
       copy_from: google_scc.finding.create_time
       ignore_empty_value: true
   - set:
       field: event.id
-      tag: set_event_id_from_name
+      tag: set_event_id_from_name_77d16610
       copy_from: google_scc.finding.name
       ignore_empty_value: true
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: script_to_set_event_severity
+      tag: script_to_set_event_severity_f5308bc1
       if: ctx.google_scc?.finding?.severity != null
       source: |-
         def severity = ctx.google_scc.finding.severity;
@@ -1037,23 +1142,25 @@ processors:
           }
       on_failure:
         - append:
+            tag: append_error_message_36fdad6f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # observer.*
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_0766cfda
       value: Google Security Command Center
 
   # container.*
   - foreach:
+      tag: foreach_google_scc_finding_containers_61a844ba
       field: google_scc.finding.containers
       if: ctx.google_scc?.finding?.containers instanceof List
       processor:
         append:
           field: container.name
-          tag: append_finding_containers_name_to_conatiner_name
+          tag: append_finding_containers_name_to_conatiner_name_a5efa7d8
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
 
@@ -1063,166 +1170,177 @@ processors:
       field: google_scc.finding.resource.gcp_metadata.organization
       pattern: 'organizations/%{cloud.account.id}'
       if: ctx.google_scc?.finding?.resource?.gcp_metadata?.organization != ''
-      tag: dissect_to_extract_cloud_account_id
+      tag: dissect_to_extract_cloud_account_id_f858be1d
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_63714b6d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: cloud.account.id
-      tag: set_cloud_account_id_from_aws_metadata_account_id
+      tag: set_cloud_account_id_from_aws_metadata_account_id_2d4a1978
       copy_from: google_scc.finding.resource.aws_metadata.account.id
       ignore_empty_value: true
       if: ctx.cloud?.account?.id == null
   - set:
       field: cloud.instance.id
-      tag: set_cloud_instance_id_from_resource_name
+      tag: set_cloud_instance_id_from_resource_name_e76028e3
       copy_from: google_scc.finding.resource.name
       ignore_empty_value: true
       if: ctx.google_scc?.finding?.resource?.type == 'google.compute.Instance'
   - set:
       field: cloud.instance.name
-      tag: set_cloud_instance_name_from_resource_display_name
+      tag: set_cloud_instance_name_from_resource_display_name_eabf06a1
       copy_from: google_scc.finding.resource.display_name
       ignore_empty_value: true
       if: ctx.google_scc?.finding?.resource?.type == 'google.compute.Instance'
   - set:
       field: cloud.provider
-      tag: set_cloud_provider_to_gcp
+      tag: set_cloud_provider_to_gcp_9e5fe16e
       value: gcp
       if: ctx.google_scc?.finding?.resource?.cloud_provider == 'GOOGLE_CLOUD_PLATFORM'
   - set:
       field: cloud.provider
-      tag: set_cloud_provider_to_aws
+      tag: set_cloud_provider_to_aws_acc5958c
       value: aws
       if: ctx.google_scc?.finding?.resource?.cloud_provider == 'AMAZON_WEB_SERVICES'
   - set:
       field: cloud.provider
-      tag: set_cloud_provider_to_azure
+      tag: set_cloud_provider_to_azure_4d45db62
       value: azure
       if: ctx.google_scc?.finding?.resource?.cloud_provider == 'MICROSOFT_AZURE'
   - grok:
       field: google_scc.finding.resource.location
-      tag: grok_to_extract_cloud_region
+      tag: grok_to_extract_cloud_region_d5187333
       patterns:
         - '^%{DATA:cloud.region}-(?<_temp>.)$'
         - '^%{DATA:cloud.region}$'
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4e2a946d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: cloud.availability_zone
-      tag: set_cloud_availability_zone_from_resource_location
+      tag: set_cloud_availability_zone_from_resource_location_f81aee25
       copy_from: google_scc.finding.resource.location
       ignore_empty_value: true
   - set:
       field: cloud.project.id
-      tag: set_cloud_project_id_from_resource_gcp_metadata_project
+      tag: set_cloud_project_id_from_resource_gcp_metadata_project_bc640410
       copy_from: google_scc.finding.resource.gcp_metadata.project
       ignore_empty_value: true
   - set:
       field: cloud.project.name
-      tag: set_cloud_project_name_from_resource_gcp_metadata_project_display_name
+      tag: set_cloud_project_name_from_resource_gcp_metadata_project_display_name_4f010ef7
       copy_from: google_scc.finding.resource.gcp_metadata.project_display_name
       ignore_empty_value: true
   - set:
       field: cloud.service.name
-      tag: set_cloud_service_name_from_resource_service
+      tag: set_cloud_service_name_from_resource_service_e395c4b5
       copy_from: google_scc.finding.resource.service
       ignore_empty_value: true
 
   # host.*
   - set:
       field: host.name
-      tag: set_host_name_from_resource_name
+      tag: set_host_name_from_resource_name_2e99c57a
       copy_from: google_scc.finding.resource.name
       ignore_empty_value: true
       if: ctx.google_scc?.finding?.resource?.type == 'google.compute.Instance'
 
   # destination.*
   - foreach:
+      tag: foreach_google_scc_finding_connections_f835726e
       field: google_scc.finding.connections
       if: ctx.google_scc?.finding?.connections instanceof List
       processor:
         append:
           field: destination.ip
-          tag: append_destination_ip_to_destination_ip
+          tag: append_destination_ip_to_destination_ip_6332022a
           value: '{{{_ingest._value.destination.ip}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_connections_b3a171e6
       field: google_scc.finding.connections
       if: ctx.google_scc?.finding?.connections instanceof List
       processor:
         append:
           field: destination.port
-          tag: append_destination_port_to_destination_port
+          tag: append_destination_port_to_destination_port_9fdc3d45
           value: '{{{_ingest._value.destination.port}}}'
           allow_duplicates: false
   # We are not appending error.message when the convert processor fails because it generates an error related to an empty string.
   # An empty string is appended when google_scc.finding.connections[].destination.port is null in earlier processor.
   - foreach:
+      tag: foreach_destination_port_d457afd5
       field: destination.port
       if: ctx.destination?.port instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_destination_port_to_long
+          tag: convert_destination_port_to_long_31b97489
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_8519bd9a
                 field: _ingest._value
 
   # source.*
   - foreach:
+      tag: foreach_google_scc_finding_connections_04d4aade
       field: google_scc.finding.connections
       if: ctx.google_scc?.finding?.connections instanceof List
       processor:
         append:
           field: source.ip
-          tag: append_source_ip_to_source_ip
+          tag: append_source_ip_to_source_ip_e6d363c1
           value: '{{{_ingest._value.source.ip}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_connections_172b74be
       field: google_scc.finding.connections
       if: ctx.google_scc?.finding?.connections instanceof List
       processor:
         append:
           field: source.port
-          tag: append_source_port_to_source_port
+          tag: append_source_port_to_source_port_7d604873
           value: '{{{_ingest._value.source.port}}}'
           allow_duplicates: false
   # We are not appending error.message when the convert processor fails because it generates an error related to an empty string.
   # An empty string is appended when google_scc.finding.connections[].source.port is null in earlier processor.
   - foreach:
+      tag: foreach_source_port_4be95c9c
       field: source.port
       if: ctx.source?.port instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_source_port_to_long
+          tag: convert_source_port_to_long_f68ed565
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_a0002531
                 field: _ingest._value
 
   # network.*
   - foreach:
+      tag: foreach_google_scc_finding_connections_b249b289
       field: google_scc.finding.connections
       if: ctx.google_scc?.finding?.connections instanceof List
       processor:
         append:
           field: network.transport
-          tag: append_protocol_to_network_transport
+          tag: append_protocol_to_network_transport_db7201ef
           value: '{{{_ingest._value.protocol}}}'
           allow_duplicates: false
   - lowercase:
       field: network.transport
-      tag: lowercase_network_transport
+      tag: lowercase_network_transport_f67defdb
       ignore_missing: true
 
   # organization.*
@@ -1231,272 +1349,292 @@ processors:
       field: google_scc.finding.parent
       pattern: 'organizations/%{organization.id}/sources/%{google_scc.finding.source_id}'
       if: ctx.google_scc?.finding?.parent != ''
-      tag: dissect_to_extract_organization_id
+      tag: dissect_to_extract_organization_id_475d0f13
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0240d94f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # orchestrator.*
   - foreach:
+      tag: foreach_google_scc_finding_kubernetes_access_reviews_08520c7e
       field: google_scc.finding.kubernetes.access_reviews
       if: ctx.google_scc?.finding?.kubernetes?.access_reviews instanceof List
       processor:
         append:
           field: orchestrator.namespace
-          tag: append_kubernetes_access_reviews_ns_to_orchestrator_namespace
+          tag: append_kubernetes_access_reviews_ns_to_orchestrator_namespace_71f114ce
           value: '{{{_ingest._value.ns}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_kubernetes_access_reviews_50a1f89b
       field: google_scc.finding.kubernetes.access_reviews
       if: ctx.google_scc?.finding?.kubernetes?.access_reviews instanceof List
       processor:
         append:
           field: orchestrator.resource.name
-          tag: append_kubernetes_access_reviews_name_to_orchestrator_resource_name
+          tag: append_kubernetes_access_reviews_name_to_orchestrator_resource_name_4ac33be6
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_kubernetes_access_reviews_e0f50d28
       field: google_scc.finding.kubernetes.access_reviews
       if: ctx.google_scc?.finding?.kubernetes?.access_reviews instanceof List
       processor:
         append:
           field: orchestrator.api_version
-          tag: append_kubernetes_access_reviews_version_to_orchestrator_api_version
+          tag: append_kubernetes_access_reviews_version_to_orchestrator_api_version_00c6ee79
           value: '{{{_ingest._value.version}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_kubernetes_access_reviews_fef7fedd
       field: google_scc.finding.kubernetes.access_reviews
       if: ctx.google_scc?.finding?.kubernetes?.access_reviews instanceof List
       processor:
         append:
           field: orchestrator.resource.type
-          tag: append_kubernetes_access_reviews_resource_to_orchestrator_resource_type
+          tag: append_kubernetes_access_reviews_resource_to_orchestrator_resource_type_95429a41
           value: '{{{_ingest._value.resource}}}'
           allow_duplicates: false
   - set:
       field: orchestrator.type
-      tag: set_orchestrator_type_to_kubernetes
+      tag: set_orchestrator_type_to_kubernetes_2f32240a
       value: kubernetes
       if: ctx.google_scc?.finding?.kubernetes != null
 
   # file.*
   - foreach:
+      tag: foreach_google_scc_finding_files_672438eb
       field: google_scc.finding.files
       if: ctx.google_scc?.finding?.files instanceof List
       processor:
         append:
           field: file.path
-          tag: append_files_path_to_file_path
+          tag: append_files_path_to_file_path_54283f19
           value: '{{{_ingest._value.path}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_files_3b016fef
       field: google_scc.finding.files
       if: ctx.google_scc?.finding?.files instanceof List
       processor:
         append:
           field: file.size
-          tag: append_files_size_to_file_size
+          tag: append_files_size_to_file_size_78577347
           value: '{{{_ingest._value.size}}}'
           allow_duplicates: false
   # We are not appending error.message when the convert processor fails because it generates an error related to an empty string.
   # An empty string is appended when google_scc.finding.files[].size is null in earlier processor.
   - foreach:
+      tag: foreach_file_size_742f0b0f
       field: file.size
       if: ctx.file?.size instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_file_size_to_long
+          tag: convert_file_size_to_long_43b3de47
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_4b41e77d
                 field: _ingest._value
   - foreach:
+      tag: foreach_google_scc_finding_files_b96466c4
       field: google_scc.finding.files
       if: ctx.google_scc?.finding?.files instanceof List
       processor:
         append:
           field: file.hash.sha256
-          tag: append_files_sha256_to_file_hash_sha256
+          tag: append_files_sha256_to_file_hash_sha256_232bb124
           value: '{{{_ingest._value.sha256}}}'
           allow_duplicates: false
 
   # package.*
   - set:
       field: package.name
-      tag: set_package_name_from_vulnerability_offending_package_package_name
+      tag: set_package_name_from_vulnerability_offending_package_package_name_a85926f1
       copy_from: google_scc.finding.vulnerability.offending_package.package_name
       ignore_empty_value: true
   - set:
       field: package.version
-      tag: set_package_version_from_vulnerability_offending_package_package_version
+      tag: set_package_version_from_vulnerability_offending_package_package_version_6d80d254
       copy_from: google_scc.finding.vulnerability.offending_package.package_version
       ignore_empty_value: true
   - set:
       field: package.fixed_version
-      tag: set_package_fixed_version_from_vulnerability_fixed_package_package_version
+      tag: set_package_fixed_version_from_vulnerability_fixed_package_package_version_cadee375
       copy_from: google_scc.finding.vulnerability.fixed_package.package_version
       ignore_empty_value: true
 
   # process.*
   - foreach:
+      tag: foreach_google_scc_finding_processes_716f2d87
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List
       processor:
         append:
           field: process.parent.pid
-          tag: append_finding_processes_parent_pid_to_process_parent_pid
+          tag: append_finding_processes_parent_pid_to_process_parent_pid_a4d7cf37
           value: '{{{_ingest._value.parent.pid}}}'
           allow_duplicates: false
   # We are not appending error.message when the convert processor fails because it generates an error related to an empty string.
   # An empty string is appended when google_scc.finding.processes[].parent.pid is null in earlier processor.
   - foreach:
+      tag: foreach_process_parent_pid_07f44f04
       field: process.parent.pid
       if: ctx.process?.parent?.pid instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_process_parent_pid_to_long
+          tag: convert_process_parent_pid_to_long_dedaa397
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_5cfc4bb2
                 field: _ingest._value
   - foreach:
+      tag: foreach_google_scc_finding_processes_0d81c9eb
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List
       processor:
         append:
           field: process.pid
-          tag: append_finding_processes_pid_to_process_pid
+          tag: append_finding_processes_pid_to_process_pid_f6521279
           value: '{{{_ingest._value.pid}}}'
           allow_duplicates: false
   # We are not appending error.message when the convert processor fails because it generates an error related to an empty string.
   # An empty string is appended when google_scc.finding.processes[].pid is null in earlier processor.
   - foreach:
+      tag: foreach_process_pid_6bef8188
       field: process.pid
       if: ctx.process?.pid instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_process_pid_to_long
+          tag: convert_process_pid_to_long_4d06a68c
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_138773ea
                 field: _ingest._value
   - foreach:
+      tag: foreach_google_scc_finding_processes_e375d47b
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List
       processor:
         append:
           field: process.name
-          tag: append_finding_processes_name_to_process_name
+          tag: append_finding_processes_name_to_process_name_7932e7c1
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
 
   # resource.*
   - set:
       field: resource.id
-      tag: set_resource_id_from_resource_name
+      tag: set_resource_id_from_resource_name_7df9f40d
       copy_from: google_scc.finding.resource.name
       ignore_empty_value: true
   - set:
       field: resource.name
-      tag: set_resource_name_from_resource_display_name
+      tag: set_resource_name_from_resource_display_name_198e793d
       copy_from: google_scc.finding.resource.display_name
       ignore_empty_value: true
   - set:
       field: resource.type
-      tag: set_resource_type_from_resource_type
+      tag: set_resource_type_from_resource_type_582cc4cd
       copy_from: google_scc.finding.resource.type
       ignore_empty_value: true
 
   # result.*
   - set:
       field: result.evaluation
-      tag: set_result_evaluation_to_passed
+      tag: set_result_evaluation_to_passed_30f66d79
       value: passed
       if: ctx.google_scc?.finding?.state == 'INACTIVE' && ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
   - set:
       field: result.evaluation
-      tag: set_result_evaluation_to_failed
+      tag: set_result_evaluation_to_failed_dbe9e5b9
       value: failed
       if: ctx.google_scc?.finding?.state == 'ACTIVE' && ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
   - set:
       field: result.evaluation
-      tag: set_result_evaluation_to_unknown
+      tag: set_result_evaluation_to_unknown_325f606a
       value: unknown
       if: ctx.google_scc?.finding?.state == 'STATE_UNSPECIFIED' && ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
 
   # rule.*
   - set:
       field: rule.name
-      tag: set_rule_name_from_category
+      tag: set_rule_name_from_category_c72692c7
       copy_from: google_scc.finding.category
       ignore_empty_value: true
       if: ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
   - fingerprint:
       fields:
         - google_scc.finding.category
-      tag: fingerprint_rule_uuid
+      tag: fingerprint_rule_uuid_488fc439
       target_field: rule.uuid
       if: ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
       ignore_missing: true
   - set:
       field: rule.description
-      tag: set_rule_description_from_description
+      tag: set_rule_description_from_description_1976f7a6
       copy_from: google_scc.finding.description
       ignore_empty_value: true
       if: ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
   - set:
       field: rule.remediation
-      tag: set_rule_remediation_from_source_properties_recommendation
+      tag: set_rule_remediation_from_source_properties_recommendation_b68a8015
       copy_from: google_scc.finding.source_properties.recommendation
       ignore_empty_value: true
       if: ctx.google_scc?.finding?.class == 'MISCONFIGURATION'
 
   # threat.*
   - foreach:
+      tag: foreach_google_scc_finding_mitre_attack_additional_tactics_9c4e4b53
       field: google_scc.finding.mitre_attack.additional.tactics
       if: ctx.google_scc?.finding?.mitre_attack?.additional?.tactics instanceof List
       processor:
         append:
           field: threat.tactic.name
-          tag: append_additional_tactics_to_threat_tactic_name
+          tag: append_additional_tactics_to_threat_tactic_name_ede74136
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
       field: threat.tactic.name
-      tag: append_primary_tactics_to_threat_tactic_name
+      tag: append_primary_tactics_to_threat_tactic_name_b6cc0b0d
       value: '{{{google_scc.finding.mitre_attack.primary.tactic}}}'
       allow_duplicates: false
       if: ctx.google_scc?.finding?.mitre_attack?.primary?.tactic != null
   - foreach:
+      tag: foreach_google_scc_finding_mitre_attack_additional_techniques_45a0ff97
       field: google_scc.finding.mitre_attack.additional.techniques
       if: ctx.google_scc?.finding?.mitre_attack?.additional?.techniques instanceof List
       processor:
         append:
           field: threat.technique.name
-          tag: append_mitre_attack_additional_technique_to_threat_technique_name
+          tag: append_mitre_attack_additional_technique_to_threat_technique_name_9b16285e
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_mitre_attack_primary_techniques_dff63b58
       field: google_scc.finding.mitre_attack.primary.techniques
       if: ctx.google_scc?.finding?.mitre_attack?.primary?.techniques instanceof List
       processor:
         append:
           field: threat.technique.name
-          tag: append_mitre_attack_primary_technique_to_threat_technique_name
+          tag: append_mitre_attack_primary_technique_to_threat_technique_name_ae3c8e8b
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - script:
       lang: painless
       description: Set Threat Tactic ID and Threat Technique ID
-      tag: painless_set_threat_tactic_id_and_threat_technique_id
+      tag: painless_set_threat_tactic_id_and_threat_technique_id_3a5831c0
       # Threat Tactic Enums
       # https://cloud.google.com/security-command-center/docs/reference/rest/v1/organizations.sources.findings#Tactic
       # https://cloud.google.com/security-command-center/docs/reference/rest/v2/organizations.sources.findings#tactic
@@ -1674,6 +1812,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_fd790b0a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -1681,66 +1820,70 @@ processors:
   - set:
       field: url.original
       copy_from: google_scc.finding.external_uri
-      tag: set_url_original
+      tag: set_url_original_35f29a0d
       ignore_empty_value: true
   - uri_parts:
       field: url.original
       if: ctx.google_scc?.finding?.external_uri != null && ctx.google_scc.finding.external_uri != ''
-      tag: uri_parts_processor
+      tag: uri_parts_processor_7b60eb8c
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e9aa5c07
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # user.*
   - set:
       field: user.name
-      tag: set_user_name_from_access_user_name
+      tag: set_user_name_from_access_user_name_36122248
       copy_from: google_scc.finding.access.user_name
       ignore_empty_value: true
   - set:
       field: user.name
-      tag: set_user_name_from_database_user_name
+      tag: set_user_name_from_database_user_name_e9c01c90
       copy_from: google_scc.finding.database.user_name
       ignore_empty_value: true
       if: ctx.user?.name == null
   - set:
       field: user.id
-      tag: set_user_id_from_access_principal_email
+      tag: set_user_id_from_access_principal_email_49ea3cf0
       copy_from: google_scc.finding.access.principal.email
       ignore_empty_value: true
   - foreach:
+      tag: foreach_google_scc_finding_access_service_account_delegation_info_c6c0960b
       field: google_scc.finding.access.service_account_delegation_info
       if: ctx.google_scc?.finding?.access?.service_account_delegation_info instanceof List && ctx.user?.id == null
       processor:
         append:
           field: user.id
-          tag: append_access_service_account_delegation_info_principal_email_to_user_id
+          tag: append_access_service_account_delegation_info_principal_email_to_user_id_8c83382d
           value: '{{{_ingest._value.principal.email}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_data_access_events_741213a8
       field: google_scc.finding.data_access_events
       if: ctx.google_scc?.finding?.data_access_events instanceof List && ctx.user?.id == null
       processor:
         append:
           field: user.id
-          tag: append_data_access_events_principal_email_to_user_id
+          tag: append_data_access_events_principal_email_to_user_id_77800b84
           value: '{{{_ingest._value.principal_email}}}'
           allow_duplicates: false
   - set:
       field: user.email
-      tag: set_user_email_from_user_id
+      tag: set_user_email_from_user_id_321d32ca
       copy_from: user.id
       ignore_empty_value: true
       if: ctx.user?.name == null
   - foreach:
+      tag: foreach_google_scc_finding_iam_bindings_37a7b9a6
       field: google_scc.finding.iam_bindings
       if: ctx.google_scc?.finding?.iam_bindings instanceof List
       processor:
         append:
           field: user.roles
-          tag: append_iam_bindings_role_to_user_roles
+          tag: append_iam_bindings_role_to_user_roles_d2c8c1df
           value: '{{{_ingest._value.role}}}'
           allow_duplicates: false
 
@@ -1748,62 +1891,63 @@ processors:
   - set:
       field: vulnerability.classification
       value: CVSS
-      tag: set_vulnerability_classification
+      tag: set_vulnerability_classification_e23b8dbd
       if: ctx.google_scc?.finding?.class == 'VULNERABILITY'
   - set:
       field: vulnerability.enumeration
       value: CVE
-      tag: set_vulnerability_enumeration_to_CVE
+      tag: set_vulnerability_enumeration_to_CVE_12e234e8
       if: ctx.google_scc?.finding?.class == 'VULNERABILITY' && ctx.google_scc?.finding?.vulnerability?.cve?.id?.startsWith('CVE') == true
   - set:
       field: vulnerability.enumeration
       value: GHSA
-      tag: set_vulnerability_enumeration_to_GHSA
+      tag: set_vulnerability_enumeration_to_GHSA_a14b5a67
       if: ctx.google_scc?.finding?.class == 'VULNERABILITY' && ctx.google_scc?.finding?.vulnerability?.cve?.id?.startsWith('GHSA') == true
   - set:
       field: vulnerability.score.version
       value: '3.1'
-      tag: set_vulnerability_score_version
+      tag: set_vulnerability_score_version_4b20383e
       if: ctx.google_scc?.finding?.class == 'VULNERABILITY'
   - set:
       field: vulnerability.id
-      tag: set_vulnerability_id_from_vulnerability_cve_id
+      tag: set_vulnerability_id_from_vulnerability_cve_id_a77f568c
       copy_from: google_scc.finding.vulnerability.cve.id
       ignore_empty_value: true
   - append:
       field: vulnerability.category
-      tag: append_category_to_vulnerability_category
+      tag: append_category_to_vulnerability_category_fe95dfcd
       value: '{{{google_scc.finding.category}}}'
       allow_duplicates: false
       if: ctx.google_scc?.finding?.category != null && ctx.google_scc?.finding?.class == 'VULNERABILITY'
   - set:
       field: vulnerability.description
-      tag: set_vulnerability_description_from_description
+      tag: set_vulnerability_description_from_description_2ac120f8
       copy_from: google_scc.finding.description
       ignore_empty_value: true
       if: ctx.google_scc?.finding?.class == 'VULNERABILITY'
   - foreach:
+      tag: foreach_google_scc_finding_vulnerability_cve_references_54296b0e
       field: google_scc.finding.vulnerability.cve.references
       if: ctx.google_scc?.finding?.vulnerability?.cve?.references instanceof List
       processor:
         append:
           field: vulnerability.reference
-          tag: append_vulnerability_cve_references_uri_to_vulnerability_reference
+          tag: append_vulnerability_cve_references_uri_to_vulnerability_reference_dcc8db33
           value: '{{{_ingest._value.uri}}}'
           allow_duplicates: false
   - set:
       field: vulnerability.score.base
-      tag: set_vulnerability_score_base_from_vulnerability_cve_cvssv3_base_score
+      tag: set_vulnerability_score_base_from_vulnerability_cve_cvssv3_base_score_e1839b0b
       copy_from: google_scc.finding.vulnerability.cve.cvssv3.base_score
       ignore_empty_value: true
   - set:
       field: vulnerability.published_date
-      tag: set_vulnerability_published_date_from_vulnerability_cve_exploit_release_date
+      tag: set_vulnerability_published_date_from_vulnerability_cve_exploit_release_date_fb5f6f9f
       copy_from: google_scc.finding.vulnerability.cve.exploit_release_date
       ignore_empty_value: true
   - script:
       description: Map vulnerability.severity to CVSS standard
-      tag: script_to_map_severity_to_CVSS
+      tag: script_to_map_severity_to_CVSS_73efce24
       lang: painless
       if: ctx.google_scc?.finding?.severity != null && ctx.google_scc.finding.class == 'VULNERABILITY'
       source: >
@@ -1821,31 +1965,32 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_4885fd58
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: vulnerability.title
-      tag: set_vulnerability_title_from_package_name_package_version_vulnerability_id
+      tag: set_vulnerability_title_from_package_name_package_version_vulnerability_id_537a9e9b
       value: 'Vulnerability found in {{{package.name}}} {{{package.version}}} - {{{vulnerability.id}}}'
       if: ctx.package?.name != null && ctx.package?.version != null && ctx.vulnerability?.id != null
   - set:
       field: vulnerability.title
-      tag: set_vulnerability_title_from_package_name_package_version
+      tag: set_vulnerability_title_from_package_name_package_version_29972709
       value: 'Vulnerability found in {{{package.name}}} {{{package.version}}}'
       if: ctx.package?.name != null && ctx.package?.version != null && ctx.vulnerability?.title == null
   - set:
       field: vulnerability.title
-      tag: set_vulnerability_title_from_vulnerability_id
+      tag: set_vulnerability_title_from_vulnerability_id_ed068161
       value: 'Vulnerability found - {{{vulnerability.id}}}'
       if: ctx.vulnerability?.id != null && ctx.vulnerability?.title == null
   - set:
       field: vulnerability.scanner.vendor
-      tag: set_vulnerability_scanner_vendor
+      tag: set_vulnerability_scanner_vendor_8735a9fe
       value: Google Security Command Center
       if: ctx.google_scc?.finding?.class == 'VULNERABILITY'
   - set:
       field: vulnerability.cve
-      tag: set_vulnerability_cve_from_vulnerability_cve_id
+      tag: set_vulnerability_cve_from_vulnerability_cve_id_5e1ec7d3
       copy_from: google_scc.finding.vulnerability.cve.id
       ignore_empty_value: true
       if: ctx.google_scc?.finding?.class == 'VULNERABILITY' && ctx.google_scc?.finding?.vulnerability?.cve?.id?.startsWith('CVE') == true
@@ -1853,189 +1998,207 @@ processors:
   # related.*
   - append:
       field: related.hosts
-      tag: append_finding_resource_name_to_related_hosts
+      tag: append_finding_resource_name_to_related_hosts_6acc92a9
       value: '{{{google_scc.finding.resource.name}}}'
       allow_duplicates: false
       if: ctx.google_scc?.finding?.resource?.name != null && ctx.google_scc.finding.resource.type == 'google.compute.Instance'
   - foreach:
+      tag: foreach_google_scc_finding_connections_730bcc96
       field: google_scc.finding.connections
       if: ctx.google_scc?.finding?.connections instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_destination_ip_to_related_ip
+          tag: append_destination_ip_to_related_ip_64d18b46
           value: '{{{_ingest._value.destination.ip}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_connections_f82a1f44
       field: google_scc.finding.connections
       if: ctx.google_scc?.finding?.connections instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_source_ip_to_related_ip
+          tag: append_source_ip_to_related_ip_78e82fe7
           value: '{{{_ingest._value.source.ip}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_indicator_ip_addresses_3f303dc0
       field: google_scc.finding.indicator.ip_addresses
       if: ctx.google_scc?.finding?.indicator?.ip_addresses instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_finding_indicator_ip_addresses_related_ip
+          tag: append_finding_indicator_ip_addresses_related_ip_e418fb2b
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
       field: related.ip
-      tag: append_finding_access_caller_ip_to_related_ip
+      tag: append_finding_access_caller_ip_to_related_ip_ae093d96
       value: '{{{google_scc.finding.access.caller_ip}}}'
       allow_duplicates: false
       if: ctx.google_scc?.finding?.access?.caller_ip != null
   - append:
       field: related.user
-      tag: append_access_user_name_to_related_user
+      tag: append_access_user_name_to_related_user_2ba57666
       value: '{{{google_scc.finding.access.user_name}}}'
       allow_duplicates: false
       if: ctx.google_scc?.finding?.access?.user_name != null
   - append:
       field: related.user
-      tag: append_database_user_name_to_related_user
+      tag: append_database_user_name_to_related_user_f046ba41
       value: '{{{google_scc.finding.database.user_name}}}'
       allow_duplicates: false
       if: ctx.google_scc?.finding?.database?.user_name != null
   - append:
       field: related.user
-      tag: append_access_principal_email_to_related_user
+      tag: append_access_principal_email_to_related_user_d5cdedd7
       value: '{{{google_scc.finding.access.principal.email}}}'
       allow_duplicates: false
       if: ctx.google_scc?.finding?.access?.principal?.email != null
   - foreach:
+      tag: foreach_google_scc_finding_access_service_account_delegation_info_85850161
       field: google_scc.finding.access.service_account_delegation_info
       if: ctx.google_scc?.finding?.access?.service_account_delegation_info instanceof List
       processor:
         append:
           field: related.user
-          tag: append_access_service_account_delegation_info_principal_email_into_related_user
+          tag: append_access_service_account_delegation_info_principal_email_into_related_user_3e8d5e9b
           value: '{{{_ingest._value.principal.email}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_data_access_events_a9857acc
       field: google_scc.finding.data_access_events
       if: ctx.google_scc?.finding?.data_access_events instanceof List
       processor:
         append:
           field: related.user
-          tag: append_data_access_events_principal_email_into_related_user
+          tag: append_data_access_events_principal_email_into_related_user_82432208
           value: '{{{_ingest._value.principal_email}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_contacts_billing_d68bc0d1
       field: google_scc.finding.contacts.billing
       if: ctx.google_scc?.finding?.contacts?.billing instanceof List
       processor:
         append:
           field: related.user
-          tag: append_contacts_billing_email_into_related_user
+          tag: append_contacts_billing_email_into_related_user_3df6e529
           value: '{{{_ingest._value.email}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_contacts_legal_30a9452f
       field: google_scc.finding.contacts.legal
       if: ctx.google_scc?.finding?.contacts?.legal instanceof List
       processor:
         append:
           field: related.user
-          tag: append_contacts_legal_email_into_related_user
+          tag: append_contacts_legal_email_into_related_user_5f2825b6
           value: '{{{_ingest._value.email}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_contacts_security_30e22294
       field: google_scc.finding.contacts.security
       if: ctx.google_scc?.finding?.contacts?.security instanceof List
       processor:
         append:
           field: related.user
-          tag: append_contacts_security_email_into_related_user
+          tag: append_contacts_security_email_into_related_user_9f299b81
           value: '{{{_ingest._value.email}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_contacts_all_1d3e987d
       field: google_scc.finding.contacts.all
       if: ctx.google_scc?.finding?.contacts?.all instanceof List
       processor:
         append:
           field: related.user
-          tag: append_contacts_all_email_into_related_user
+          tag: append_contacts_all_email_into_related_user_21906cc9
           value: '{{{_ingest._value.email}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_contacts_product_updates_3956a39c
       field: google_scc.finding.contacts.product_updates
       if: ctx.google_scc?.finding?.contacts?.product_updates instanceof List
       processor:
         append:
           field: related.user
-          tag: append_contacts_product_updates_email_into_related_user
+          tag: append_contacts_product_updates_email_into_related_user_2b9a3fa7
           value: '{{{_ingest._value.email}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_contacts_suspension_9b47e711
       field: google_scc.finding.contacts.suspension
       if: ctx.google_scc?.finding?.contacts?.suspension instanceof List
       processor:
         append:
           field: related.user
-          tag: append_contacts_suspension_email_into_related_user
+          tag: append_contacts_suspension_email_into_related_user_70267b78
           value: '{{{_ingest._value.email}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_contacts_technical_10ffeeb5
       field: google_scc.finding.contacts.technical
       if: ctx.google_scc?.finding?.contacts?.technical instanceof List
       processor:
         append:
           field: related.user
-          tag: append_contacts_technical_email_into_related_user
+          tag: append_contacts_technical_email_into_related_user_d143b266
           value: '{{{_ingest._value.email}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_contacts_technical_incidents_a1247a35
       field: google_scc.finding.contacts.technical_incidents
       if: ctx.google_scc?.finding?.contacts?.technical_incidents instanceof List
       processor:
         append:
           field: related.user
-          tag: append_contacts_technical_incidents_email_into_related_user
+          tag: append_contacts_technical_incidents_email_into_related_user_0e31a32c
           value: '{{{_ingest._value.email}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_processes_d71833ca
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List
       processor:
         append:
           field: related.hash
-          tag: append_finding_processes_script_sha256_to_related_hash
+          tag: append_finding_processes_script_sha256_to_related_hash_56365049
           value: '{{{_ingest._value.script.sha256}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_processes_1bf5e6e6
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List
       processor:
         append:
           field: related.hash
-          tag: append_finding_processes_binary_sha256_to_related_hash
+          tag: append_finding_processes_binary_sha256_to_related_hash_f6faf9e1
           value: '{{{_ingest._value.binary.sha256}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_processes_2d054eaa
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_libraries_6b102812
           field: _ingest._value.libraries
           ignore_missing: true
           processor:
             append:
               field: related.hash
-              tag: append_finding_processes_libraries_sha256_to_related_hash
+              tag: append_finding_processes_libraries_sha256_to_related_hash_d6547d4c
               value: '{{{_ingest._value.sha256}}}'
               allow_duplicates: false
   - foreach:
+      tag: foreach_google_scc_finding_files_a8f800c7
       field: google_scc.finding.files
       if: ctx.google_scc?.finding?.files instanceof List
       processor:
         append:
           field: related.hash
-          tag: append_files_sha256_to_related_hash
+          tag: append_files_sha256_to_related_hash_d7f5f406
           value: '{{{_ingest._value.sha256}}}'
           allow_duplicates: false
 
@@ -2054,18 +2217,20 @@ processors:
         - google_scc.finding.kernel_root_kit.unexpected_read_only_data_modification
         - google_scc.finding.kernel_root_kit.unexpected_system_call_handler
         - google_scc.finding.mute_update_time
-      tag: remove_unwanted_fields
+      tag: remove_unwanted_fields_6bf5d8d5
       ignore_missing: true
   - foreach:
+      tag: foreach_google_scc_finding_vulnerability_cve_references_4141d886
       field: google_scc.finding.vulnerability.cve.references
       if: ctx.google_scc?.finding?.vulnerability?.cve?.references instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       processor:
         remove:
           field:
             - _ingest._value.uri
-          tag: remove_remove_duplicate_custom_fields_from_vulnerability_cve_references_array
+          tag: remove_remove_duplicate_custom_fields_from_vulnerability_cve_references_array_e69c5d44
           ignore_missing: true
   - foreach:
+      tag: foreach_google_scc_finding_connections_910090a9
       field: google_scc.finding.connections
       if: ctx.google_scc?.finding?.connections instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       processor:
@@ -2076,18 +2241,20 @@ processors:
             - _ingest._value.source.ip
             - _ingest._value.source.port
             - _ingest._value.protocol
-          tag: remove_remove_duplicate_custom_fields_from_connections_array
+          tag: remove_remove_duplicate_custom_fields_from_connections_array_c3b8f901
           ignore_missing: true
   - foreach:
+      tag: foreach_google_scc_finding_containers_f6afa16b
       field: google_scc.finding.containers
       if: ctx.google_scc?.finding?.containers instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       processor:
         remove:
           field:
             - _ingest._value.name
-          tag: remove_remove_duplicate_custom_fields_from_containers_array
+          tag: remove_remove_duplicate_custom_fields_from_containers_array_2d333525
           ignore_missing: true
   - foreach:
+      tag: foreach_google_scc_finding_files_d922432e
       field: google_scc.finding.files
       if: ctx.google_scc?.finding?.files instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       processor:
@@ -2096,9 +2263,10 @@ processors:
             - _ingest._value.path
             - _ingest._value.size
             - _ingest._value.sha256
-          tag: remove_remove_duplicate_custom_fields_from_files_array
+          tag: remove_remove_duplicate_custom_fields_from_files_array_d5c4342f
           ignore_missing: true
   - foreach:
+      tag: foreach_google_scc_finding_processes_2e294952
       field: google_scc.finding.processes
       if: ctx.google_scc?.finding?.processes instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       processor:
@@ -2107,18 +2275,20 @@ processors:
             - _ingest._value.name
             - _ingest._value.pid
             - _ingest._value.parent.pid
-          tag: remove_remove_duplicate_custom_fields_from_processes_array
+          tag: remove_remove_duplicate_custom_fields_from_processes_array_eff496a7
           ignore_missing: true
   - foreach:
+      tag: foreach_google_scc_finding_iam_bindings_79a23a2c
       field: google_scc.finding.iam_bindings
       if: ctx.google_scc?.finding?.iam_bindings instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       processor:
         remove:
           field:
             - _ingest._value.role
-          tag: remove_remove_duplicate_custom_fields_from_iam_bindings_array
+          tag: remove_remove_duplicate_custom_fields_from_iam_bindings_array_9587bf5c
           ignore_missing: true
   - foreach:
+      tag: foreach_google_scc_finding_kubernetes_access_reviews_c6a3b8f9
       field: google_scc.finding.kubernetes.access_reviews
       if: ctx.google_scc?.finding?.kubernetes?.access_reviews instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       processor:
@@ -2128,7 +2298,7 @@ processors:
             - _ingest._value.name
             - _ingest._value.version
             - _ingest._value.resource
-          tag: remove_remove_duplicate_custom_fields_from_kubernetes_access_reviews_array
+          tag: remove_remove_duplicate_custom_fields_from_kubernetes_access_reviews_array_98b46e63
           ignore_missing: true
   - remove:
       field:
@@ -2153,13 +2323,13 @@ processors:
         - google_scc.finding.external_uri
         - google_scc.finding.vulnerability.cve.id
         - google_scc.finding.vulnerability.cve.cvssv3.base_score
-      tag: remove_duplicate_custom_fields
+      tag: remove_duplicate_custom_fields_fb10675f
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
 
   # Cleanup
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -2186,26 +2356,29 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_7b8fa294
       field: error.message
-      value: |-
+      value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

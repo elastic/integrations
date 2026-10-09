@@ -19,29 +19,29 @@ processors:
   # down gates on source.ip != null so they cleanly skip when no valid IP exists.
   - convert:
       field: doppler.session.ip
-      tag: convert_source_ip
+      tag: convert_source_ip_f3d70cd4
       target_field: source.ip
       type: ip
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: doppler.session.method
-      tag: rename_session_method
+      tag: rename_session_method_ad564fc5
       target_field: doppler.secret_read.method
       ignore_missing: true
   - rename:
       field: doppler.session.browser
-      tag: rename_session_browser
+      tag: rename_session_browser_8117368e
       target_field: user_agent.name
       ignore_missing: true
   - rename:
       field: doppler.session.os
-      tag: rename_session_os
+      tag: rename_session_os_a99a46fd
       target_field: user_agent.os.name
       ignore_missing: true
   - remove:
       field: doppler.session
-      tag: remove_session
+      tag: remove_session_48efd825
       ignore_missing: true
   # Enrich the reader's IP with geo/ASN for impossible-travel, new-country, and
   # datacenter/hosting-exit detections on secret access. The guard skips the
@@ -50,7 +50,7 @@ processors:
   # flowing if the GeoIP database is unavailable.
   - geoip:
       field: source.ip
-      tag: geoip_source_ip
+      tag: geoip_source_ip_f5f34e17
       target_field: source.geo
       ignore_missing: true
       ignore_failure: true
@@ -58,7 +58,7 @@ processors:
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
-      tag: geoip_source_asn
+      tag: geoip_source_asn_4515791e
       target_field: source.as
       properties:
         - asn
@@ -68,27 +68,27 @@ processors:
       if: ctx.source?.ip != null
   - rename:
       field: source.as.asn
-      tag: rename_source_as_number
+      tag: rename_source_as_number_168bbbaf
       target_field: source.as.number
       ignore_missing: true
   - rename:
       field: source.as.organization_name
-      tag: rename_source_as_org
+      tag: rename_source_as_org_aa06a00b
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
       field: network.type
-      tag: set_network_type_ipv6
+      tag: set_network_type_ipv6_4797acca
       value: ipv6
       if: ctx.source?.ip != null && ctx.source.ip.contains(':')
   - set:
       field: network.type
-      tag: set_network_type_ipv4
+      tag: set_network_type_ipv4_32b8b9e6
       value: ipv4
       if: ctx.network?.type == null && ctx.source?.ip != null
   - append:
       field: related.ip
-      tag: append_related_ip
+      tag: append_related_ip_723473d3
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null
@@ -100,7 +100,7 @@ processors:
   ##
   - script:
       lang: painless
-      tag: reshape_secrets
+      tag: reshape_secrets_74f90956
       description: Expand the read secrets list and derive hunting arrays.
       if: ctx.doppler?.metadata?.secrets != null
       source: |-
@@ -144,7 +144,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            tag: append_reshape_secrets_error
+            tag: append_reshape_secrets_error_84e4ec9b
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               with tag '{{{ _ingest.on_failure_processor_tag }}}'
@@ -152,11 +152,11 @@ processors:
               failed with message '{{{ _ingest.on_failure_message }}}'
   - remove:
       field: doppler.metadata
-      tag: remove_metadata
+      tag: remove_metadata_6c91fb5d
       ignore_missing: true
   - script:
       lang: painless
-      tag: drop_null_values
+      tag: drop_null_values_235ed49c
       description: Drops null/empty values recursively.
       source: |-
         boolean drop(Object o) {
@@ -175,7 +175,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            tag: append_drop_null_values_error
+            tag: append_drop_null_values_error_d59f3c01
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               with tag '{{{ _ingest.on_failure_processor_tag }}}'
@@ -184,34 +184,34 @@ processors:
   - pipeline:
       name: logs-doppler.secret_read@custom
       ignore_missing_pipeline: true
-      tag: pipeline_logs_doppler_secret_read_custom
+      tag: pipeline_logs_doppler_secret_read_custom_9f8e872f
   # A processor above may have caught its own failure (appending to error.message)
   # and let the document continue. Reflect any such handled error in event.kind and
   # preserve the original event so the failure is still discoverable downstream.
   - append:
       field: tags
-      tag: append_preserve_original_event_on_error
+      tag: append_preserve_original_event_on_error_b6c08950
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
-      tag: set_event_kind_pipeline_error
+      tag: set_event_kind_pipeline_error_72b1902f
       value: pipeline_error
   - append:
       field: tags
-      tag: append_preserve_original_event_on_failure
+      tag: append_preserve_original_event_on_failure_279d5a5c
       value: preserve_original_event
       allow_duplicates: false
   - append:
       field: error.message
-      tag: append_pipeline_failure_message
+      tag: append_pipeline_failure_message_e6ec426f
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         with tag '{{{ _ingest.on_failure_processor_tag }}}'

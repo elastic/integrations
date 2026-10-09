@@ -2,29 +2,35 @@
 description: Pipeline for parsing specific fields related to loginwindow unloack events in Jamf Protect
 processors:
 
-##########################
-## ECS Event Specific ##
-##########################
+    ##########################
+    ## ECS Event Specific ##
+    ##########################
     - set:
+        tag: set_event_reason_e047e9c4
         field: event.reason
         value: A user has unlocked the screen from the Login Window
     - append:
+        tag: append_event_type_fffb7a5a
         field: event.type
         value: start
     - append:
+        tag: append_event_category_109b4d72
         field: event.category
-        value: authentication  
+        value: authentication
     - convert:
+        tag: convert_jamf_protect_telemetry_event_lw_session_unlock_graphical_session_id_to_jamf_protect_telemetry_graphical_authentication_username_0d476518
         field: jamf_protect.telemetry.event.lw_session_unlock.graphical_session_id
         target_field: jamf_protect.telemetry.graphical_authentication_username
         type: string
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_lw_session_unlock_username_to_user_name_bfd8916c
         field: jamf_protect.telemetry.event.lw_session_unlock.username
         target_field: user.name
         ignore_missing: true
-##########################
-## ECS Process ##
-##########################
+    ##########################
+    ## ECS Process ##
+    ##########################
     - pipeline:
+        tag: pipeline_object_process_0d75fa7a
         name: '{{ IngestPipeline "pipeline_object_process" }}'

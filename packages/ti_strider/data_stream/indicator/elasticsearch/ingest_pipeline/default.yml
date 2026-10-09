@@ -5,76 +5,92 @@ processors:
   # Event ECS fields #
   ####################
   - set:
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: "8.11.0"
   - set:
+      tag: set_event_kind_3410a97a
       field: event.kind
       value: enrichment
   - set:
+      tag: set_event_category_4675e36d
       field: event.category
       value: [threat]
   - set:
+      tag: set_event_type_acbc82af
       field: event.type
       value: [indicator]
 
   - rename:
+      tag: rename_message_to_event_original_7f1de011
       field: message
       target_field: event.original
       if: ctx.event?.original == null
       ignore_missing: true
 
   - rename:
+      tag: rename_md5_to_ti_strider_indicator_md5_a4750d98
       field: md5
       target_field: ti_strider.indicator.md5
-      
+
   - rename:
+      tag: rename_riskSignal_to_ti_strider_indicator_risk_signal_b4ea6d9c
       field: riskSignal
       target_field: ti_strider.indicator.risk_signal
-      
+
   - rename:
+      tag: rename_itemType_to_ti_strider_indicator_type_7636f9e8
       field: itemType
       target_field: ti_strider.indicator.type
-      
+
   - rename:
+      tag: rename_itemNamePrimary_to_ti_strider_indicator_name_primary_e3f2fab3
       field: itemNamePrimary
       target_field: ti_strider.indicator.name_primary
-     
+
   - rename:
+      tag: rename_itemNameSecondary_to_ti_strider_indicator_name_secondary_raw_42f4a3fd
       field: itemNameSecondary
       target_field: ti_strider.indicator.name_secondary_raw
-      
+
   - rename:
+      tag: rename_dates_added_to_ti_strider_indicator_dates_added_9683b38c
       field: dates_added
       target_field: ti_strider.indicator.dates_added
-      
+
   - rename:
+      tag: rename_isNew_to_ti_strider_indicator_is_new_72467f7b
       field: isNew
       target_field: ti_strider.indicator.is_new
   - script:
       lang: painless
-      tag: script-is_new-to-boolean
+      tag: script-is_new-to-boolean_520f8cec
       description: Convert is_new from 0/1 to boolean false/true.
       source: |
         if (ctx.ti_strider?.indicator?.is_new != null) {
           ctx.ti_strider.indicator.is_new = (ctx.ti_strider.indicator.is_new == 1);
         }
       
+
   - rename:
+      tag: rename_changes_to_ti_strider_indicator_changes_88611458
       field: changes
       target_field: ti_strider.indicator.changes
   - rename:
+      tag: rename_archive_to_ti_strider_indicator_archive_245ee24f
       field: archive
       target_field: ti_strider.indicator.archive
       ignore_missing: true
 
   - json:
+      tag: json_ti_strider_indicator_name_secondary_raw_to_ti_strider_indicator_name_secondary_357855f8
       field: ti_strider.indicator.name_secondary_raw
       target_field: ti_strider.indicator.name_secondary
       add_to_root: false
 
   - script:
       lang: painless
-      tag: script-default-expired_at
+      tag: script-default-expired_at_fb404def
       description: Set expires_at to now when indicator is archived (ti_strider.indicator.archive == 1), otherwise 90 days from ingestion.
       if: ctx['@timestamp'] != null
       source: |
@@ -85,18 +101,23 @@ processors:
           ctx.ti_strider.indicator.expires_at = now.plusDays(90);
         }
       
+
   - remove:
+      tag: remove_ti_strider_indicator_name_secondary_raw_5960dc66
       field: ti_strider.indicator.name_secondary_raw
   - remove:
+      tag: remove_event_original_0afd5d5d
       field: event.original
       if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
       ignore_missing: true
 
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_84cf3e0b
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -104,6 +125,7 @@ on_failure:
         {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
         failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

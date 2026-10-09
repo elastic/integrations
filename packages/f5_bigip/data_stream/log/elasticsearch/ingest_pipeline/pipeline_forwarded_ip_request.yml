@@ -1,0 +1,25 @@
+---
+description: >-
+  Validate a single address from the X-Forwarded-For header parsed out of the raw ASM request and add
+  it to related.ip. The raw values stay on their own keyword field as evidence, so only related.ip,
+  which is mapped as ip, needs the check; an unparseable value reaching it would make Elasticsearch
+  refuse the whole document. Called per array element from a foreach processor. This duplicates
+  pipeline_forwarded_ip_header_value rather than sharing one pipeline because Fleet rewrites only the
+  first reference to a given pipeline name in a file.
+processors:
+  - remove:
+      field: _tmp.valid_ip
+      tag: remove_stale_tmp_valid_ip
+      ignore_missing: true
+  - convert:
+      field: _ingest._value
+      tag: convert_request_forwarded_value_to_ip
+      target_field: _tmp.valid_ip
+      type: ip
+      ignore_failure: true
+  - append:
+      field: related.ip
+      tag: append_request_forwarded_ip_into_related_ip
+      value: '{{{_tmp.valid_ip}}}'
+      allow_duplicates: false
+      if: ctx._tmp?.valid_ip != null

@@ -2,33 +2,49 @@
 description: Pipeline for Jamf Compliance Reporter xprotect definitions version info event logs.
 processors:
   - rename:
+      tag: rename_json_event_attributes_BuildAliasOf_to_jamf_compliance_reporter_log_event_attributes_build_alias_of_536b64ca
       field: json.event_attributes.BuildAliasOf
       target_field: jamf_compliance_reporter.log.event_attributes.build_alias_of
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_BuildVersion_to_jamf_compliance_reporter_log_event_attributes_build_version_69ed7cb3
       field: json.event_attributes.BuildVersion
       target_field: jamf_compliance_reporter.log.event_attributes.build_version
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_CFBundleShortVersionString_to_jamf_compliance_reporter_log_event_attributes_cf_bundle_short_version_string_4564cdb8
       field: json.event_attributes.CFBundleShortVersionString
       target_field: jamf_compliance_reporter.log.event_attributes.cf_bundle_short_version_string
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_CFBundleVersion_to_jamf_compliance_reporter_log_event_attributes_cf_bundle_version_6c116330
       field: json.event_attributes.CFBundleVersion
       target_field: jamf_compliance_reporter.log.event_attributes.cf_bundle_version
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_ProjectName_to_jamf_compliance_reporter_log_event_attributes_project_name_43e5ffb9
       field: json.event_attributes.ProjectName
       target_field: jamf_compliance_reporter.log.event_attributes.project_name
       ignore_missing: true
   - rename:
+      tag: rename_json_event_attributes_SourceVersion_to_jamf_compliance_reporter_log_event_attributes_source_version_ba02e8f3
       field: json.event_attributes.SourceVersion
       target_field: jamf_compliance_reporter.log.event_attributes.source_version
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

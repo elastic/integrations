@@ -2,13 +2,15 @@
 description: Pipeline for processing BeyondTrust Password Safe Managed Systems.
 processors:
   - set:
+      tag: set_ecs_version_c157feff
       field: ecs.version
       value: '9.1.0'
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_35d11e6e
       if: ctx.error?.message != null && ctx.event?.original == null
       description: error message set and no data to process.
   - fingerprint:
+      tag: fingerprint_to_id_fd26f6c2
       description: >-
         This API does does not have a cursor.
         The integration collects all assets on each execution.
@@ -17,10 +19,11 @@ processors:
         - event.original
       target_field: _id
   - json:
-      tag: json_event_original
+      tag: json_event_original_eb105dd5
       field: event.original
       target_field: beyondinsight_password_safe.managedsystem
   - script:
+      tag: script_remove_null_values_empty_strings_1e4856d3
       description: Remove null values and empty strings from beyondinsight_password_safe.managedsystem.
       lang: painless
       source: |
@@ -29,7 +32,7 @@ processors:
           (entry.getValue() instanceof String && entry.getValue().isEmpty())
         );
   - script:
-      tag: script_numeric_id_to_string
+      tag: script_numeric_id_to_string_472cb3b2
       description: Convert numeric ID fields to strings.
       params:
         numeric_ids:
@@ -56,7 +59,7 @@ processors:
           }
         }
   - script:
-      tag: script_camel_to_snake_naming
+      tag: script_camel_to_snake_naming_431f553c
       description: Rename CapitalCamelCase-ish fields to lower_snake_case.
       params:
         field_mappings:
@@ -118,23 +121,29 @@ processors:
         }
         ctx.beyondinsight_password_safe.managedsystem = renamedFields;
   - set:
+      tag: set_event_kind_18c57bf4
       field: event.kind
       value: asset
   - append:
+      tag: append_event_category_576de059
       field: event.category
       value: iam
   - append:
+      tag: append_event_type_8a66ccaa
       field: event.type
       value: info
   - set:
+      tag: set_host_hostname_5e20ee83
       if: ctx.beyondinsight_password_safe?.managedsystem?.host_name != null
       field: host.hostname
       copy_from: beyondinsight_password_safe.managedsystem.host_name
   - set:
+      tag: set_host_name_1744ee31
       if: ctx.beyondinsight_password_safe?.managedsystem?.dns_name != null
       field: host.name
       copy_from: beyondinsight_password_safe.managedsystem.dns_name
   - gsub:
+      tag: gsub_beyondinsight_password_safe_managedsystem_dns_name_to_host_domain_81375555
       if: ctx.beyondinsight_password_safe?.managedsystem?.dns_name != null
       field: beyondinsight_password_safe.managedsystem.dns_name
       target_field: host.domain
@@ -142,15 +151,17 @@ processors:
       replacement: ''
       ignore_failure: true
   - set:
+      tag: set_user_email_7ef6d2bb
       if: ctx.beyondinsight_password_safe?.managedsystem?.contact_email != null
       field: user.email
       copy_from: beyondinsight_password_safe.managedsystem.contact_email
   - set:
+      tag: set_url_full_a594e144
       if: ctx.beyondinsight_password_safe?.managedsystem?.access_url != null
       field: url.full
       copy_from: beyondinsight_password_safe.managedsystem.access_url
   - script:
-      tag: script_ssh_key_enforcement_mode_enum
+      tag: script_ssh_key_enforcement_mode_enum_aabb3659
       if: ctx.beyondinsight_password_safe?.managedsystem?.ssh_key_enforcement_mode != null
       description: Convert ssh_key_enforcement_mode to its text meaning.
       lang: painless
@@ -165,55 +176,71 @@ processors:
           ctx.beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode = description;
         }
   - gsub:
+      tag: gsub_beyondinsight_password_safe_managedsystem_ip_address_658e8934
       if: ctx.beyondinsight_password_safe?.managedsystem?.ip_address != null
       description: Remove leading zeros from IP address octets.
       field: beyondinsight_password_safe.managedsystem.ip_address
       pattern: "\\b0+(\\d)"
       replacement: "$1"
   - convert:
+      tag: convert_beyondinsight_password_safe_managedsystem_ip_address_88fc4a55
       if: ctx.beyondinsight_password_safe?.managedsystem?.ip_address != null
       field: beyondinsight_password_safe.managedsystem.ip_address
       type: ip
       on_failure:
         - remove:
+            tag: remove_beyondinsight_password_safe_managedsystem_ip_address_35e9700c
             field: beyondinsight_password_safe.managedsystem.ip_address
   - append:
+      tag: append_host_ip_2ad62d71
       if: ctx.beyondinsight_password_safe?.managedsystem?.ip_address != null
       field: host.ip
       value: '{{{beyondinsight_password_safe.managedsystem.ip_address}}}'
       allow_duplicates: false
   - geoip:
+      tag: geoip_host_ip_to_host_geo_b6f95445
       field: host.ip
       target_field: host.geo
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_related_ip_ec5bf03a
       if: ctx.beyondinsight_password_safe?.managedsystem?.ip_address != null
       field: related.ip
       value: '{{{beyondinsight_password_safe.managedsystem.ip_address}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_8837f4ce
       if: ctx.beyondinsight_password_safe?.managedsystem?.host_name != null
       field: related.hosts
       value: '{{{beyondinsight_password_safe.managedsystem.host_name}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_a53dce86
       if: ctx.beyondinsight_password_safe?.managedsystem?.dns_name != null
       field: related.hosts
       value: '{{{beyondinsight_password_safe.managedsystem.dns_name}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_user_258a14d2
       if: ctx.beyondinsight_password_safe?.managedsystem?.contact_email != null
       field: related.user
       value: '{{{beyondinsight_password_safe.managedsystem.contact_email}}}'
       allow_duplicates: false
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

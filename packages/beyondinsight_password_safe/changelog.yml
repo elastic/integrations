@@ -1,3 +1,16 @@
+- version: "1.4.1"
+  changes:
+    - description: Fix Cookie request header construction. Raw Set-Cookie response values (including path, HttpOnly, and SameSite attributes) were stored in the cursor and replayed verbatim, causing attributes to be sent as bogus cookie pairs and multiple Cookie header lines to be emitted. RFC 6265 §5.4 forbids multiple Cookie header lines; ASP.NET commonly reads only the first. Attributes are now stripped and all cookies joined into a single header value.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21183
+    - description: Add session management. The integration previously never called POST /Auth/Signout, leaving server sessions open indefinitely. Each poll now reuses an existing session if it is within the TTL (15 minutes); otherwise the old session is signed out before a fresh sign-in.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21183
+- version: "1.4.0"
+  changes:
+    - description: Add tags to ingest pipeline processors and add `preserve_original_event` to pipeline-level `on_failure` handlers.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20572
 - version: "1.3.2"
   changes:
     - description: Set agentless deployment mode `release` field to `ga`.

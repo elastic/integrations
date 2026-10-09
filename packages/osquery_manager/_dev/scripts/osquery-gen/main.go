@@ -22,7 +22,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const githubTagsURL = "https://api.github.com/repos/%s/tags?per_page=100"
+const (
+	githubTagsURL          = "https://api.github.com/repos/%s/tags?per_page=100"
+	githubLatestReleaseURL = "https://api.github.com/repos/%s/releases/latest"
+)
 
 type versionConfig struct {
 	Version string `yaml:"version"`
@@ -68,6 +71,12 @@ type releaseTag struct {
 func main() {
 	cfgPath := flag.String("config", "config.yml", "Path to YAML config file.")
 	skipPackageCheck := flag.Bool("skip-package-check", false, "Skip elastic-package check (dev only).")
+	osqueryVersionOverride := flag.String("osquery-version", "", "Override osquery.version; use latest for the latest stable release.")
+	beatsPath := flag.String("beats-path", "", "Read extension specs from a local Beats checkout or specs directory.")
+	updateConfig := flag.Bool("update-config", false, "Write the resolved osquery version back to the config file after successful generation.")
+	updatePackage := flag.Bool("update-package", false, "Bump osquery_manager and add its changelog entry when the osquery version changes.")
+	changelogLink := flag.String("changelog-link", "", "Issue or pull request URL for a generated package changelog entry.")
+	kibanaVersion := flag.String("kibana-version", "", "Kibana version constraint for releases containing the upgraded osquery runtime.")
 	flag.Parse()
 
 	cfg, err := loadConfig(*cfgPath)
@@ -80,13 +89,20 @@ func main() {
 		log.Fatal("failed to detect integrations repo root")
 	}
 
-	osqueryVersion, err := resolveLatestPatch("osquery/osquery", cfg.Osquery.Version)
+	osqueryVersionSpec := cfg.Osquery.Version
+	if strings.TrimSpace(*osqueryVersionOverride) != "" {
+		osqueryVersionSpec = *osqueryVersionOverride
+	}
+	osqueryVersion, err := resolveLatestPatch("osquery/osquery", osqueryVersionSpec)
 	if err != nil {
 		log.Fatalf("resolve osquery version: %v", err)
 	}
-	beatsRef, err := resolveBeatsGitRef(cfg.Beats)
-	if err != nil {
-		log.Fatalf("resolve beats git ref: %v", err)
+	beatsRef := "local"
+	if strings.TrimSpace(*beatsPath) == "" {
+		beatsRef, err = resolveBeatsGitRef(cfg.Beats)
+		if err != nil {
+			log.Fatalf("resolve beats git ref: %v", err)
+		}
 	}
 	ecsVersionSpec, err := loadECSVersionSpecFromBuildYAML(outputRoot)
 	if err != nil {
@@ -98,10 +114,151 @@ func main() {
 	}
 
 	log.Printf("Resolved versions: osquery=%s beats=%s ecs=%s", osqueryVersion, beatsRef, ecsVersion)
-	if err := generateArtifacts(outputRoot, osqueryVersion, ecsVersion, beatsRef, cfg.ECS.KeepFields, !*skipPackageCheck); err != nil {
+	runCheck := !*skipPackageCheck
+	// Decide from the changelog so a corrected re-run still completes the bump after a
+	// prior run regenerated schemas (or wrote the changelog) but failed before finishing
+	// package metadata. Also re-enter when the changelog entry exists but the manifest
+	// version lags, so updatePackageMetadata can sync them.
+	alreadyReleased, err := changelogHasOsquerySchemaVersion(outputRoot, osqueryVersion)
+	if err != nil {
+		log.Fatalf("inspect changelog: %v", err)
+	}
+	needsManifestSync, err := manifestVersionLagsChangelog(outputRoot)
+	if err != nil {
+		log.Fatalf("compare manifest and changelog versions: %v", err)
+	}
+	shouldUpdatePackage := *updatePackage && (!alreadyReleased || needsManifestSync)
+	// Generate before bumping manifest/changelog so a failed generation does not leave
+	// package metadata partially updated. Run elastic-package check after metadata writes
+	// so validation covers the final package state.
+	if err := generateArtifacts(outputRoot, osqueryVersion, ecsVersion, beatsRef, *beatsPath, cfg.ECS.KeepFields, !shouldUpdatePackage && runCheck); err != nil {
 		log.Fatalf("generate artifacts: %v", err)
 	}
+	if shouldUpdatePackage {
+		if err := updatePackageMetadata(outputRoot, osqueryVersion, *changelogLink, *kibanaVersion); err != nil {
+			log.Fatalf("update package metadata: %v", err)
+		}
+		if runCheck {
+			if err := runElasticPackageCheck(outputRoot, "osquery_manager"); err != nil {
+				log.Fatalf("elastic-package check: %v", err)
+			}
+		}
+	}
+	if *updateConfig {
+		if err := updateConfigOsqueryVersion(*cfgPath, osqueryVersion); err != nil {
+			log.Fatalf("update config: %v", err)
+		}
+	}
 	log.Println("Done.")
+}
+
+func changelogHasOsquerySchemaVersion(repoRoot, osqueryVersion string) (bool, error) {
+	path := filepath.Join(repoRoot, "packages", "osquery_manager", "changelog.yml")
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return false, err
+	}
+	return changelogContainsOsquerySchemaVersion(string(b), osqueryVersion), nil
+}
+
+func changelogContainsOsquerySchemaVersion(changelog, osqueryVersion string) bool {
+	// Require a non-digit (or end) after the version so 5.23.1 does not match 5.23.10.
+	re := regexp.MustCompile(`description: Upgrade osquery schema artifacts to version ` + regexp.QuoteMeta(osqueryVersion) + `(?:[^0-9]|$)`)
+	return re.MatchString(changelog)
+}
+
+func manifestVersionLagsChangelog(repoRoot string) (bool, error) {
+	packageDir := filepath.Join(repoRoot, "packages", "osquery_manager")
+	manifest, err := os.ReadFile(filepath.Join(packageDir, "manifest.yml"))
+	if err != nil {
+		return false, err
+	}
+	manifestVersion := packageManifestVersionRE.FindSubmatch(manifest)
+	if manifestVersion == nil {
+		return false, fmt.Errorf("package version not found in %s", filepath.Join(packageDir, "manifest.yml"))
+	}
+	changelog, err := os.ReadFile(filepath.Join(packageDir, "changelog.yml"))
+	if err != nil {
+		return false, err
+	}
+	topVersion := changelogTopVersionRE.FindSubmatch(changelog)
+	if topVersion == nil {
+		return false, fmt.Errorf("top package version not found in %s", filepath.Join(packageDir, "changelog.yml"))
+	}
+	current := string(manifestVersion[1]) + "." + string(manifestVersion[2]) + "." + string(manifestVersion[3])
+	return current != string(topVersion[1]), nil
+}
+
+var (
+	// Accept unquoted or single/double-quoted package versions used across package manifests.
+	packageManifestVersionRE = regexp.MustCompile(`(?m)^version:\s*["']?([0-9]+)\.([0-9]+)\.([0-9]+)["']?\s*$`)
+	changelogTopVersionRE    = regexp.MustCompile(`(?m)^- version: "([0-9]+\.[0-9]+\.[0-9]+)"$`)
+)
+
+func updatePackageMetadata(repoRoot, osqueryVersion, changelogLink, kibanaVersion string) error {
+	manifestPath := filepath.Join(repoRoot, "packages", "osquery_manager", "manifest.yml")
+	manifest, err := os.ReadFile(manifestPath)
+	if err != nil {
+		return err
+	}
+	match := packageManifestVersionRE.FindSubmatch(manifest)
+	if match == nil {
+		return fmt.Errorf("package version not found in %s", manifestPath)
+	}
+
+	changelogPath := filepath.Join(repoRoot, "packages", "osquery_manager", "changelog.yml")
+	changelog, err := os.ReadFile(changelogPath)
+	if err != nil {
+		return err
+	}
+	header := "# newer versions go on top\n"
+	if !strings.HasPrefix(string(changelog), header) {
+		return fmt.Errorf("unexpected changelog header in %s", changelogPath)
+	}
+
+	kibanaVersion = strings.TrimSpace(kibanaVersion)
+	// Allow flexible indentation and single/double/unquoted constraints under kibana:.
+	kibanaVersionRE := regexp.MustCompile(`(?m)^([ \t]*kibana:[ \t]*\n[ \t]*version:)[ \t]*["']?[^"'#\n]+["']?[ \t]*$`)
+
+	if changelogContainsOsquerySchemaVersion(string(changelog), osqueryVersion) {
+		// Sync-only recovery path: changelog entry already exists. Kibana constraints are
+		// optional here; apply them only when explicitly provided.
+		if kibanaVersion != "" {
+			if !kibanaVersionRE.Match(manifest) {
+				return fmt.Errorf("Kibana version condition not found in %s", manifestPath)
+			}
+			manifest = kibanaVersionRE.ReplaceAll(manifest, []byte(`${1} "`+kibanaVersion+`"`))
+		} else {
+			log.Printf("warning: syncing manifest version from changelog without updating the Kibana constraint; re-run with -kibana-version if this recovery follows an interrupted bump")
+		}
+		topVersion := changelogTopVersionRE.FindSubmatch(changelog)
+		if topVersion == nil {
+			return fmt.Errorf("top package version not found in %s", changelogPath)
+		}
+		manifest = packageManifestVersionRE.ReplaceAll(manifest, []byte("version: "+string(topVersion[1])))
+		return os.WriteFile(manifestPath, manifest, 0o644)
+	}
+
+	if kibanaVersion == "" {
+		return errors.New("-kibana-version or KIBANA_VERSION is required to identify stack releases containing the upgraded osquery runtime")
+	}
+	if !kibanaVersionRE.Match(manifest) {
+		return fmt.Errorf("Kibana version condition not found in %s", manifestPath)
+	}
+	manifest = kibanaVersionRE.ReplaceAll(manifest, []byte(`${1} "`+kibanaVersion+`"`))
+	if !regexp.MustCompile(`^https://github\.com/[^/]+/[^/]+/(?:issues|pull)/[1-9][0-9]*$`).MatchString(strings.TrimSpace(changelogLink)) {
+		return errors.New("-changelog-link or CHANGELOG_LINK must be a GitHub issue or pull request URL with a positive number")
+	}
+	major, _ := strconv.Atoi(string(match[1]))
+	minor, _ := strconv.Atoi(string(match[2]))
+	nextVersion := fmt.Sprintf("%d.%d.0", major, minor+1)
+	entry := fmt.Sprintf("- version: %q\n  changes:\n    - description: Upgrade osquery schema artifacts to version %s; require Kibana %s so the upgraded runtime is available\n      type: enhancement\n      link: %s\n", nextVersion, osqueryVersion, kibanaVersion, strings.TrimSpace(changelogLink))
+	updated := header + entry + strings.TrimPrefix(string(changelog), header)
+	if err := os.WriteFile(changelogPath, []byte(updated), 0o644); err != nil {
+		return err
+	}
+	manifest = packageManifestVersionRE.ReplaceAll(manifest, []byte("version: "+nextVersion))
+	return os.WriteFile(manifestPath, manifest, 0o644)
 }
 
 func loadConfig(path string) (config, error) {
@@ -163,6 +320,9 @@ func findRepoRoot() string {
 
 func resolveLatestPatch(repo string, versionSpec string) (string, error) {
 	versionSpec = strings.TrimSpace(versionSpec)
+	if strings.EqualFold(versionSpec, "latest") {
+		return resolveLatestRelease(repo)
+	}
 	tags, err := fetchReleaseTags(repo)
 	if err != nil {
 		return "", err
@@ -194,6 +354,54 @@ func resolveLatestPatch(repo string, versionSpec string) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("no tags in %s match version prefix %q", repo, versionSpec)
+}
+
+func resolveLatestRelease(repo string) (string, error) {
+	body, err := downloadBytes(fmt.Sprintf(githubLatestReleaseURL, repo))
+	if err != nil {
+		return "", err
+	}
+	var release struct {
+		TagName string `json:"tag_name"`
+	}
+	if err := json.Unmarshal(body, &release); err != nil {
+		return "", err
+	}
+	version, ok := parseSemver(release.TagName)
+	if !ok {
+		return "", fmt.Errorf("latest release in %s has invalid tag %q", repo, release.TagName)
+	}
+	return version.String(), nil
+}
+
+func updateConfigOsqueryVersion(path, version string) error {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	lines := strings.SplitAfter(string(b), "\n")
+	inOsquery := false
+	updated := false
+	versionLine := regexp.MustCompile(`^(\s+version:\s*)["']?[^"'\s]+["']?(\s*(?:#.*)?(?:\n)?)$`)
+	for i, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if !inOsquery {
+			inOsquery = trimmed == "osquery:"
+			continue
+		}
+		if len(line) > 0 && line[0] != ' ' && line[0] != '\t' && trimmed != "" && !strings.HasPrefix(trimmed, "#") {
+			break
+		}
+		if versionLine.MatchString(line) {
+			lines[i] = versionLine.ReplaceAllString(line, `${1}"`+version+`"${2}`)
+			updated = true
+			break
+		}
+	}
+	if !updated {
+		return fmt.Errorf("osquery.version not found in %s", path)
+	}
+	return os.WriteFile(path, []byte(strings.Join(lines, "")), 0o644)
 }
 
 func fetchReleaseTags(repo string) ([]releaseTag, error) {
@@ -344,7 +552,7 @@ func resolveBeatsSpecsRef(versionSpec, resolvedPatch string) (string, error) {
 }
 
 func refHasBeatsSpecs(ref string) (bool, error) {
-	resp, err := http.Get(fmt.Sprintf(beatsSpecsAPI, ref))
+	resp, err := httpGet(fmt.Sprintf(beatsSpecsAPI, ref))
 	if err != nil {
 		return false, err
 	}
@@ -362,7 +570,7 @@ func refHasBeatsSpecs(ref string) (bool, error) {
 }
 
 func downloadBytes(url string) ([]byte, error) {
-	resp, err := http.Get(url)
+	resp, err := httpGet(url)
 	if err != nil {
 		return nil, err
 	}
@@ -372,6 +580,21 @@ func downloadBytes(url string) ([]byte, error) {
 		return nil, fmt.Errorf("GET %s: %d", url, resp.StatusCode)
 	}
 	return io.ReadAll(resp.Body)
+}
+
+func httpGet(url string) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	if strings.HasPrefix(url, "https://api.github.com/") {
+		req.Header.Set("Accept", "application/vnd.github+json")
+		req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
+		if token := strings.TrimSpace(os.Getenv("GITHUB_TOKEN")); token != "" {
+			req.Header.Set("Authorization", "Bearer "+token)
+		}
+	}
+	return http.DefaultClient.Do(req)
 }
 
 func closeBody(body io.Closer) {

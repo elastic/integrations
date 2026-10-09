@@ -2,270 +2,301 @@
 description: Pipeline for processing policy logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: 8.11.0
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
-      tag: 'json_decoding'
+      tag: json_decoding_c3a1053e
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_8075efaa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - drop:
+      tag: drop_eb865603
       if: ctx.json?.data != null && ctx.json.data.isEmpty()
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - convert:
       field: json.enabled
-      tag: 'convert_enabled_to_boolean'
+      tag: convert_enabled_to_boolean_ef2f4163
       target_field: bitwarden.policy.enabled
       type: boolean
       ignore_missing: true
       if: ctx.json?.enabled != ''
       on_failure:
         - append:
+            tag: append_error_message_8c9ffb11
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.autoEnrollEnabled
-      tag: 'convert_autoEnrollEnabled_to_string'
+      tag: convert_autoEnrollEnabled_to_string_eb94d9dc
       target_field: json.data.auto_enroll_enabled
       type: string
       ignore_missing: true
       if: ctx.json?.data?.autoEnrollEnabled != ''
       on_failure:
         - append:
+            tag: append_error_message_105ed68c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.capitalize
-      tag: 'convert_capitalize_to_string'
+      tag: convert_capitalize_to_string_0713185b
       type: string
       ignore_missing: true
       if: ctx.json?.data?.capitalize != ''
       on_failure:
         - append:
+            tag: append_error_message_3dd5b702
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.disableHideEmail
-      tag: 'convert_disableHideEmail_to_string'
+      tag: convert_disableHideEmail_to_string_e2c104f1
       target_field: json.data.disable_hide_email
       type: string
       ignore_missing: true
       if: ctx.json?.data?.disableHideEmail != ''
       on_failure:
         - append:
+            tag: append_error_message_145a8bfc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.includeNumber
-      tag: 'convert_includeNumber_to_string'
+      tag: convert_includeNumber_to_string_74167ab1
       target_field: json.data.include_number
       type: string
       ignore_missing: true
       if: ctx.json?.data?.includeNumber != ''
       on_failure:
         - append:
+            tag: append_error_message_41ad52e1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.minComplexity
-      tag: 'convert_minComplexity_to_string'
+      tag: convert_minComplexity_to_string_cf904761
       target_field: json.data.min.complexity
       type: string
       ignore_missing: true
       if: ctx.json?.data?.minComplexity != ''
       on_failure:
         - append:
+            tag: append_error_message_79f05e4a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.minLength
-      tag: 'convert_minLength_to_string'
+      tag: convert_minLength_to_string_b40cd28a
       target_field: json.data.min.length
       type: string
       ignore_missing: true
       if: ctx.json?.data?.minLength != ''
       on_failure:
         - append:
+            tag: append_error_message_2a0c4dba
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.minNumbers
-      tag: 'convert_minNumbers_to_string'
+      tag: convert_minNumbers_to_string_b6347295
       target_field: json.data.min.numbers
       type: string
       ignore_missing: true
       if: ctx.json?.data?.minNumbers != ''
       on_failure:
         - append:
+            tag: append_error_message_a0ccd5c6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.minNumberWords
-      tag: 'convert_minNumberWords_to_string'
+      tag: convert_minNumberWords_to_string_5ab4f6c2
       target_field: json.data.min.number_words
       type: string
       ignore_missing: true
       if: ctx.json?.data?.minNumberWords != ''
       on_failure:
         - append:
+            tag: append_error_message_358b10e3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.minSpecial
-      tag: 'convert_minSpecial_to_string'
+      tag: convert_minSpecial_to_string_c381efad
       target_field: json.data.min.special
       type: string
       ignore_missing: true
       if: ctx.json?.data?.minSpecial != ''
       on_failure:
         - append:
+            tag: append_error_message_8ef34828
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.minutes
-      tag: 'convert_minutes_to_string'
+      tag: convert_minutes_to_string_1d5f2dbe
       type: string
       ignore_missing: true
       if: ctx.json?.data?.minutes != ''
       on_failure:
         - append:
+            tag: append_error_message_e9b6fe1b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.requireLower
-      tag: 'convert_requireLower_to_string'
+      tag: convert_requireLower_to_string_626817e0
       target_field: json.data.require.lower
       type: string
       ignore_missing: true
       if: ctx.json?.data?.requireLower != ''
       on_failure:
         - append:
+            tag: append_error_message_5cfc3d10
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.requireNumbers
-      tag: 'convert_requireNumbers_to_string'
+      tag: convert_requireNumbers_to_string_184b3fc8
       target_field: json.data.require.numbers
       type: string
       ignore_missing: true
       if: ctx.json?.data?.requireNumbers != ''
       on_failure:
         - append:
+            tag: append_error_message_5a727e36
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.requireSpecial
-      tag: 'convert_requireSpecial_to_string'
+      tag: convert_requireSpecial_to_string_b76c4cb5
       target_field: json.data.require.special
       type: string
       ignore_missing: true
       if: ctx.json?.data?.requireSpecial != ''
       on_failure:
         - append:
+            tag: append_error_message_d0e194b8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.requireUpper
-      tag: 'convert_requireUpper_to_string'
+      tag: convert_requireUpper_to_string_2e6a9e22
       target_field: json.data.require.upper
       type: string
       ignore_missing: true
       if: ctx.json?.data?.requireUpper != ''
       on_failure:
         - append:
+            tag: append_error_message_a7c986ba
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.useLower
-      tag: 'convert_useLower_to_string'
+      tag: convert_useLower_to_string_b6e90ae9
       target_field: json.data.use.lower
       type: string
       ignore_missing: true
       if: ctx.json?.data?.useLower != ''
       on_failure:
         - append:
+            tag: append_error_message_eca97c0c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.useNumbers
-      tag: 'convert_useNumbers_to_string'
+      tag: convert_useNumbers_to_string_a5b99710
       target_field: json.data.use.numbers
       type: string
       ignore_missing: true
       if: ctx.json?.data?.useNumbers != ''
       on_failure:
         - append:
+            tag: append_error_message_7477408a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.useSpecial
-      tag: 'convert_useSpecial_to_string'
+      tag: convert_useSpecial_to_string_6a390fbb
       target_field: json.data.use.special
       type: string
       ignore_missing: true
       if: ctx.json?.data?.useSpecial != ''
       on_failure:
         - append:
+            tag: append_error_message_b61c7684
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.data.useUpper
-      tag: 'convert_useUpper_to_string'
+      tag: convert_useUpper_to_string_1640bd2d
       target_field: json.data.use.upper
       type: string
       ignore_missing: true
       if: ctx.json?.data?.useUpper != ''
       on_failure:
         - append:
+            tag: append_error_message_7baca54e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_data_defaultType_to_json_data_default_type_42defe87
       field: json.data.defaultType
       target_field: json.data.default_type
       ignore_missing: true
   - rename:
+      tag: rename_json_data_to_bitwarden_policy_data_94542cd6
       field: json.data
       target_field: bitwarden.policy.data
       ignore_missing: true
   - rename:
+      tag: rename_json_object_to_bitwarden_object_ecec642a
       field: json.object
       target_field: bitwarden.object
       ignore_missing: true
   - rename:
+      tag: rename_json_id_to_bitwarden_policy_id_1727b768
       field: json.id
       target_field: bitwarden.policy.id
       ignore_missing: true
   - convert:
       field: json.type
-      tag: 'convert_type_to_string'
+      tag: convert_type_to_string_41ab19fc
       target_field: bitwarden.policy.type.value
       type: string
       ignore_missing: true
       if: ctx.json?.type != ''
       on_failure:
         - append:
+            tag: append_error_message_c49c4afe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
+      tag: script_set_policy_types_d6b26d5d
       lang: painless
       ignore_failure: false
       if: ctx.bitwarden?.policy?.type?.value != null
@@ -292,6 +323,7 @@ processors:
           ctx.bitwarden.policy.type.put('name', params['PolicyType'][PolicyTypeValue]);
         }
   - remove:
+      tag: remove_e402b604
       field:
         - json
         - bitwarden.policy.data.autoEnrollEnabled
@@ -312,6 +344,7 @@ processors:
         - bitwarden.policy.data.useUpper
       ignore_missing: true
   - script:
+      tag: script_drops_null_empty_values_recursively_06971239
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -329,22 +362,27 @@ processors:
         }
         drop(ctx);
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_9b078312
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

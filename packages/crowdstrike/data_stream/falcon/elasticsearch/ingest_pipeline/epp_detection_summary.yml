@@ -2,38 +2,38 @@
 processors:
   # Handle case changes.
   - rename:
-      tag: rename_GrandParentCommandLine_GrandparentCommandLine
+      tag: rename_GrandParentCommandLine_GrandparentCommandLine_82f874ad
       field: crowdstrike.event.GrandParentCommandLine
       target_field: crowdstrike.event.GrandparentCommandLine
       ignore_failure: true
   - rename:
-      tag: rename_GrandParentImageFileName_GrandparentImageFileName
+      tag: rename_GrandParentImageFileName_GrandparentImageFileName_c0dcc57b
       field: crowdstrike.event.GrandParentImageFileName
       target_field: crowdstrike.event.GrandparentImageFileName
       ignore_failure: true
   - rename:
-      tag: rename_GrandParentImageFilePath_GrandparentImageFilePath
+      tag: rename_GrandParentImageFilePath_GrandparentImageFilePath_06eeb695
       field: crowdstrike.event.GrandParentImageFilePath
       target_field: crowdstrike.event.GrandparentImageFilePath
       ignore_failure: true
   # EppDetectionSummaryEvent renames
   - rename:
-      tag: rename_Hostname_ComputerName
+      tag: rename_Hostname_ComputerName_f242542c
       field: crowdstrike.event.Hostname
       target_field: crowdstrike.event.ComputerName
       ignore_failure: true
   - rename:
-      tag: rename_LogonDomain_MachineDomain
+      tag: rename_LogonDomain_MachineDomain_4ac60512
       field: crowdstrike.event.LogonDomain
       target_field: crowdstrike.event.MachineDomain
       ignore_failure: true
   - rename:
-      tag: rename_AgentId_SensorId
+      tag: rename_AgentId_SensorId_bfe21f1b
       field: crowdstrike.event.AgentId
       target_field: crowdstrike.event.SensorId
       ignore_failure: true
   - rename:
-      tag: rename_Name_DetectName
+      tag: rename_Name_DetectName_c7ca258d
       field: crowdstrike.event.Name
       target_field: crowdstrike.event.DetectName
       ignore_failure: true
@@ -41,7 +41,7 @@ processors:
   # EppDetectionSummaryEvent converts
   - convert:
       field: crowdstrike.event.LocalIPv6
-      tag: convert_crowdstrike_LocalIPv6_ip
+      tag: convert_crowdstrike_LocalIPv6_ip_9a344251
       type: ip
       if: ctx.crowdstrike?.event?.LocalIPv6 != null && ctx.crowdstrike.event.LocalIPv6 != ''
       on_failure:
@@ -55,7 +55,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: crowdstrike.event.FilesAccessed
-      tag: convert_crowdstrike_filesaccessed_timestamp_array
+      tag: convert_crowdstrike_filesaccessed_timestamp_array_50e05255
       if: ctx.crowdstrike?.event?.FilesAccessed instanceof List
       ignore_failure: true
       processor:
@@ -64,17 +64,19 @@ processors:
           target_field: _ingest._value.Timestamp
           formats:
             - UNIX
-          tag: convert_crowdstrike_filesaccessed_timestamp
+          tag: date_crowdstrike_filesaccessed_timestamp_0877bdd2
           on_failure:
             - remove:
+                tag: remove_ingest_value_Timestamp_656b382c
                 field: _ingest._value.Timestamp
                 ignore_failure: true
             - append:
+                tag: append_error_message_a2686bc3
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: crowdstrike.event.FilesWritten
-      tag: convert_crowdstrike_fileswritten_timestamp_array
+      tag: convert_crowdstrike_fileswritten_timestamp_array_bd4ceb9b
       if: ctx.crowdstrike?.event?.FilesWritten instanceof List
       ignore_failure: true
       processor:
@@ -83,28 +85,33 @@ processors:
           target_field: _ingest._value.Timestamp
           formats:
             - UNIX
-          tag: convert_crowdstrike_fileswritten_timestamp
+          tag: date_crowdstrike_fileswritten_timestamp_8dd8feed
           on_failure:
             - remove:
+                tag: remove_ingest_value_Timestamp_995a3d3f
                 field: _ingest._value.Timestamp
                 ignore_failure: true
             - append:
+                tag: append_error_message_2a507c4b
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - pipeline:
       name: '{{ IngestPipeline "detection_summary" }}'
-      tag: pipeline_detection_summary
+      tag: pipeline_detection_summary_9f214503
 
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
       value: |-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

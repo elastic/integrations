@@ -207,13 +207,24 @@ processors:
         }
 
         HashMap normalizeSettings(def task) {
-          def settingsBlock = asMap(task.get("settings"));
-          if (settingsBlock == null) {
+          if (!(task instanceof Map) || !task.containsKey("settings")) {
             return null;
           }
 
+          def settingsValue = task.get("settings");
+          def settingsBlock = asMap(settingsValue);
+          if (settingsBlock == null) {
+            // decode_xml represents an empty <Settings /> element as an empty
+            // scalar. Preserve non-empty malformed scalars as unknown.
+            if (text(settingsValue) != null) {
+              return null;
+            }
+            settingsBlock = new HashMap();
+          }
+
           HashMap settings = new HashMap();
-          putBool(settings, "enabled", settingsBlock, "enabled");
+          // Task Scheduler defaults an omitted Settings/Enabled element to true.
+          putBoolDefault(settings, "enabled", settingsBlock, "enabled", true);
           putBool(settings, "hidden", settingsBlock, "hidden");
           return settings;
         }

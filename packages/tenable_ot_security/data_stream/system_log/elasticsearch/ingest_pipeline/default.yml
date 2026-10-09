@@ -3,22 +3,25 @@ description: Pipeline for processing tenable ot security cloud system_log
 processors:
 
   - rename:
+      tag: rename_message_to_tenable_ot_security_system_log_ebc93f45
       field: message
       target_field: tenable_ot_security.system_log
 
   - fingerprint:
       fields:
         - tenable_ot_security.system_log
-      tag: fingerprinting
+      tag: fingerprinting_53003ce3
       target_field: "_id"
       on_failure:
         - append:
+            tag: append_error_message_88c41618
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-  #################### Scripts for processing input ####################
 
+  #################### Scripts for processing input ####################
   - script:
+      tag: script_drops_null_empty_values_recursively_53dd9140
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -38,7 +41,7 @@ processors:
 
   - script:
       description: Convert Additional Info keys to snake case.
-      tag: additional-info-keys-to-snake-case
+      tag: additional-info-keys-to-snake-case_a76d111f
       lang: painless
       source: |
         Map keysToSnakeCase(Map m) {
@@ -66,58 +69,71 @@ processors:
           ctx.tenable_ot_security.system_log = keysToSnakeCase(ctx.tenable_ot_security.system_log);
         }
 
-  #################### ECS fields ####################
 
+  #################### ECS fields ####################
   - set:
+      tag: set_event_kind_d452ef2c
       field: event.kind
       value: event
 
   - set:
+      tag: set_ecs_version_dbf680ba
       field: ecs.version
       value: "8.17.0"
 
   - append:
+      tag: append_event_category_0eb47497
       field: event.category
       value: iam
 
   - set:
+      tag: set_event_module_c6a78e99
       field: event.module
       value: tenable_ot_security
 
   - set:
+      tag: set_event_type_8bf4a5be
       field: event.type
       value: ["info"]
 
   - set:
+      tag: set_event_dataset_c8ccd251
       field: event.dataset
       value: tenable_ot_security.system_log
 
   - rename:
+     tag: rename_tenable_ot_security_system_log_message_to_message_c3c684a4
      target_field: message
      field: tenable_ot_security.system_log.message
 
   - set:
+     tag: set_timestamp_e8c8d0ff
      field: "@timestamp"
      copy_from: tenable_ot_security.system_log.time_stamp
      ignore_empty_value: true
   - remove:
+     tag: remove_tenable_ot_security_system_log_time_stamp_986e1d8f
      field: tenable_ot_security.system_log.time_stamp
      ignore_missing: true
 
   - rename:
+     tag: rename_tenable_ot_security_system_log_user_name_to_user_name_e1eabf34
      target_field: user.name
      field: tenable_ot_security.system_log.user_name
 
   - append:
+      tag: append_related_user_7d3a7fdb
       field: related.user
       value: "{{{user.name}}}"
       allow_duplicates: false
 
   - remove:
+      tag: remove_tenable_ot_security_system_log_4ce13023
       if: ctx.tenable_ot_security.system_log.isEmpty()
       field: tenable_ot_security.system_log
 
   - remove:
+      tag: remove_tenable_ot_security_865bfe73
       if: ctx.tenable_ot_security.isEmpty()
       field: tenable_ot_security
 
@@ -125,9 +141,16 @@ processors:
 
 on_failure:
   - append:
+      tag: append_error_message_9b078312
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
 
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

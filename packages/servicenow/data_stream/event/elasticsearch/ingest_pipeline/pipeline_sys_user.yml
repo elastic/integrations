@@ -3,11 +3,11 @@ description: Pipeline for processing SYS User, Group and Group Member logs.
 processors:
   - set:
       field: event.kind
-      tag: set_event_kind_to_asset_sys_user_group_member
+      tag: set_event_kind_to_asset_sys_user_group_member_50075a0b
       value: asset
   - append:
       field: event.type
-      tag: append_event_type_sys_user_group_member
+      tag: append_event_type_sys_user_group_member_858ce581
       value: group
       if: >-
         ctx.servicenow?.event?.table_name != null && (
@@ -16,157 +16,177 @@ processors:
         )
   - append:
       field: event.type
-      tag: append_event_type_sys_user_group_member
+      tag: append_event_type_sys_user_group_member_bbe2aae0
       value: user
       if: ctx.servicenow?.event?.table_name == 'sys_user'
   - append:
       field: event.category
-      tag: append_event_category
+      tag: append_event_category_0eb47497
       value: iam
   - convert:
       field: servicenow.event.exclude_manager.display_value
-      tag: convert_exclude_manager_display_value_to_boolean
+      tag: convert_exclude_manager_display_value_to_boolean_3ab883e2
       type: boolean
       ignore_missing: true
       if: ctx.servicenow?.event?.exclude_manager?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_exclude_manager_display_value_b8d627e1
             field: servicenow.event.exclude_manager.display_value
         - append:
+            tag: append_error_message_2a396dff
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: servicenow.event.exclude_manager.value
-      tag: convert_exclude_manager_value_to_boolean
+      tag: convert_exclude_manager_value_to_boolean_a53490b8
       type: boolean
       ignore_missing: true
       if: ctx.servicenow?.event?.exclude_manager?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_exclude_manager_value_f636580c
             field: servicenow.event.exclude_manager.value
         - append:
+            tag: append_error_message_47c1a712
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: servicenow.event.include_members.display_value
-      tag: convert_include_members_display_value_to_boolean
+      tag: convert_include_members_display_value_to_boolean_06409e2b
       type: boolean
       ignore_missing: true
       if: ctx.servicenow?.event?.include_members?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_include_members_display_value_96182c30
             field: servicenow.event.include_members.display_value
         - append:
+            tag: append_error_message_2435e3ff
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: servicenow.event.include_members.value
-      tag: convert_include_members_value_to_boolean
+      tag: convert_include_members_value_to_boolean_46bcd3a4
       type: boolean
       ignore_missing: true
       if: ctx.servicenow?.event?.include_members?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_include_members_value_e9b76151
             field: servicenow.event.include_members.value
         - append:
+            tag: append_error_message_f61a773d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: user.name
-      tag: set_user_name
+      tag: set_user_name_a4b32d9a
       copy_from: servicenow.event.user.display_value
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_servicenow_event_user_display_value_into_related_user
+      tag: append_servicenow_event_user_display_value_into_related_user_3fadf024
       value: '{{{servicenow.event.user.display_value}}}'
       allow_duplicates: false
       if: ctx.servicenow?.event?.user?.display_value != null
   - convert:
       field: servicenow.event.calendar_integration.value
-      tag: convert_calendar_integration_value_to_long
+      tag: convert_calendar_integration_value_to_long_bf81e6de
       type: long
       ignore_missing: true
       if: ctx.servicenow?.event?.calendar_integration?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_calendar_integration_value_6da031f4
             field: servicenow.event.calendar_integration.value
         - append:
+            tag: append_error_message_ae5ff177
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: servicenow.event.enable_multifactor_authn.display_value
-      tag: convert_enable_multifactor_authn_display_value_to_boolean
+      tag: convert_enable_multifactor_authn_display_value_to_boolean_0b3ae8d7
       type: boolean
       ignore_missing: true
       if: ctx.servicenow?.event?.enable_multifactor_authn?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_enable_multifactor_authn_display_value_6742ad21
             field: servicenow.event.enable_multifactor_authn.display_value
         - append:
+            tag: append_error_message_1b67f36e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: servicenow.event.enable_multifactor_authn.value
-      tag: convert_enable_multifactor_authn_value_to_boolean
+      tag: convert_enable_multifactor_authn_value_to_boolean_88ba5c28
       type: boolean
       ignore_missing: true
       if: ctx.servicenow?.event?.enable_multifactor_authn?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_enable_multifactor_authn_value_7b68ff38
             field: servicenow.event.enable_multifactor_authn.value
         - append:
+            tag: append_error_message_ff7a0ee3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: servicenow.event.failed_attempts.value
-      tag: convert_failed_attempts_value_to_long
+      tag: convert_failed_attempts_value_to_long_9ba95cbf
       type: long
       ignore_missing: true
       if: ctx.servicenow?.event?.failed_attempts?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_failed_attempts_value_405baffe
             field: servicenow.event.failed_attempts.value
         - append:
+            tag: append_error_message_ef7731bb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: servicenow.event.home_phone.display_value
-      tag: mask_home_phone_display_value
+      tag: mask_home_phone_display_value_6c195204
       value: 'REDACTED'
       if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.servicenow?.event?.home_phone?.display_value != null
   - set:
       field: servicenow.event.home_phone.value
-      tag: mask_home_phone_value
+      tag: mask_home_phone_value_4a3911a2
       value: 'REDACTED'
       if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.servicenow?.event?.home_phone?.value != null
   - convert:
       field: servicenow.event.internal_integration_user.display_value
-      tag: convert_internal_integration_user_display_value_to_boolean
+      tag: convert_internal_integration_user_display_value_to_boolean_09058cb2
       type: boolean
       ignore_missing: true
       if: ctx.servicenow?.event?.internal_integration_user?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_internal_integration_user_display_value_36d1a289
             field: servicenow.event.internal_integration_user.display_value
         - append:
+            tag: append_error_message_e382cc83
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: servicenow.event.internal_integration_user.value
-      tag: convert_internal_integration_user_value_to_boolean
+      tag: convert_internal_integration_user_value_to_boolean_e1d5559c
       type: boolean
       ignore_missing: true
       if: ctx.servicenow?.event?.internal_integration_user?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_internal_integration_user_value_6bcef058
             field: servicenow.event.internal_integration_user.value
         - append:
+            tag: append_error_message_de9bb6c2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.last_login.display_value
-      tag: date_last_login_display_value
+      tag: date_last_login_display_value_9a612257
       target_field: servicenow.event.last_login.display_value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -189,13 +209,15 @@ processors:
       if: ctx.servicenow?.event?.last_login?.display_value != null && ctx.servicenow.event.last_login.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_last_login_display_value_1aebd81b
             field: servicenow.event.last_login.display_value
         - append:
+            tag: append_error_message_841c64d2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.last_login.display_value
-      tag: date_last_login_display_value
+      tag: date_last_login_display_value_59a0834f
       target_field: servicenow.event.last_login.display_value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -218,13 +240,15 @@ processors:
       if: ctx.servicenow?.event?.last_login?.display_value != null && ctx.servicenow.event.last_login.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_last_login_display_value_ffd86cac
             field: servicenow.event.last_login.display_value
         - append:
+            tag: append_error_message_4289be37
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.last_login.value
-      tag: date_last_login_value
+      tag: date_last_login_value_87782626
       target_field: servicenow.event.last_login.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -247,13 +271,15 @@ processors:
       if: ctx.servicenow?.event?.last_login?.value != null && ctx.servicenow.event.last_login.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_last_login_value_c70bc720
             field: servicenow.event.last_login.value
         - append:
+            tag: append_error_message_ba61917d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.last_login.value
-      tag: date_last_login_value
+      tag: date_last_login_value_9db3000b
       target_field: servicenow.event.last_login.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -275,13 +301,15 @@ processors:
       if: ctx.servicenow?.event?.last_login?.value != null && ctx.servicenow.event.last_login.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_last_login_value_9ea18d7e
             field: servicenow.event.last_login.value
         - append:
+            tag: append_error_message_ab4226d0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.last_login_time.display_value
-      tag: date_last_login_time_display_value
+      tag: date_last_login_time_display_value_3698ddae
       target_field: servicenow.event.last_login_time.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -305,13 +333,15 @@ processors:
       if: ctx.servicenow?.event?.last_login_time?.display_value != null && ctx.servicenow.event.last_login_time.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_last_login_time_display_value_93f128f6
             field: servicenow.event.last_login_time.display_value
         - append:
+            tag: append_error_message_d9272203
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.last_login_time.display_value
-      tag: date_last_login_time_display_value
+      tag: date_last_login_time_display_value_b6befee7
       target_field: servicenow.event.last_login_time.display_value
       timezone: '{{{event.timezone}}}'
       formats:
@@ -335,13 +365,15 @@ processors:
       if: ctx.servicenow?.event?.last_login_time?.display_value != null && ctx.servicenow.event.last_login_time.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_last_login_time_display_value_616240a5
             field: servicenow.event.last_login_time.display_value
         - append:
+            tag: append_error_message_d0211b57
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.last_login_time.value
-      tag: date_last_login_time_value
+      tag: date_last_login_time_value_ca6e5b00
       target_field: servicenow.event.last_login_time.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -364,13 +396,15 @@ processors:
       if: ctx.servicenow?.event?.last_login_time?.value != null && ctx.servicenow.event.last_login_time.value != '' && ctx._conf?.date_format_preference == "ddMM"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_last_login_time_value_d9ea2a89
             field: servicenow.event.last_login_time.value
         - append:
+            tag: append_error_message_9c03ed09
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: servicenow.event.last_login_time.value
-      tag: date_last_login_time_value
+      tag: date_last_login_time_value_e587212a
       target_field: servicenow.event.last_login_time.value
       formats:
         - yyyy-MM-dd H:mm:ss
@@ -392,169 +426,189 @@ processors:
       if: ctx.servicenow?.event?.last_login_time?.value != null && ctx.servicenow.event.last_login_time.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
+            tag: remove_servicenow_event_last_login_time_value_c651da99
             field: servicenow.event.last_login_time.value
         - append:
+            tag: append_error_message_6e94983e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: servicenow.event.locked_out.display_value
-      tag: convert_locked_out_display_value_to_boolean
+      tag: convert_locked_out_display_value_to_boolean_6e928a1a
       type: boolean
       ignore_missing: true
       if: ctx.servicenow?.event?.locked_out?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_locked_out_display_value_7176f995
             field: servicenow.event.locked_out.display_value
         - append:
+            tag: append_error_message_57a2ea48
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: servicenow.event.locked_out.value
-      tag: convert_locked_out_value_to_boolean
+      tag: convert_locked_out_value_to_boolean_130fb90b
       type: boolean
       ignore_missing: true
       if: ctx.servicenow?.event?.locked_out?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_locked_out_value_4de0de0a
             field: servicenow.event.locked_out.value
         - append:
+            tag: append_error_message_36e5b1ce
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: servicenow.event.mobile_phone.value
-      tag: mask_mobile_phone_value
+      tag: mask_mobile_phone_value_0549ba25
       value: 'REDACTED'
       if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.servicenow?.event?.mobile_phone?.value != null
   - set:
       field: servicenow.event.mobile_phone.display_value
-      tag: mask_mobile_phone_display_value
+      tag: mask_mobile_phone_display_value_52ce3fc1
       value: 'REDACTED'
       if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.servicenow?.event?.mobile_phone?.display_value != null
   - convert:
       field: servicenow.event.notification.value
-      tag: convert_notification_value_to_long
+      tag: convert_notification_value_to_long_30b8461c
       target_field: servicenow.event.notification.value
       type: long
       ignore_missing: true
       if: ctx.servicenow?.event?.notification?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_notification_value_260de2da
             field: servicenow.event.notification.value
         - append:
+            tag: append_error_message_8775cab1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: servicenow.event.password_needs_reset.display_value
-      tag: convert_password_needs_reset_display_value_to_boolean
+      tag: convert_password_needs_reset_display_value_to_boolean_cc762267
       target_field: servicenow.event.password_needs_reset.display_value
       type: boolean
       ignore_missing: true
       if: ctx.servicenow?.event?.password_needs_reset?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_password_needs_reset_display_value_ccaea9e1
             field: servicenow.event.password_needs_reset.display_value
         - append:
+            tag: append_error_message_5330e5ee
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: servicenow.event.password_needs_reset.value
-      tag: convert_password_needs_reset_value_to_boolean
+      tag: convert_password_needs_reset_value_to_boolean_69a50202
       target_field: servicenow.event.password_needs_reset.value
       type: boolean
       ignore_missing: true
       if: ctx.servicenow?.event?.password_needs_reset?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_password_needs_reset_value_c42d90e7
             field: servicenow.event.password_needs_reset.value
         - append:
+            tag: append_error_message_448f4ba5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: servicenow.event.user_password.value
-      tag: mask_user_password_value
+      tag: mask_user_password_value_2b9e4ad1
       value: 'REDACTED'
       if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.servicenow?.event?.user_password?.value != null
   - convert:
       field: servicenow.event.vip.display_value
-      tag: convert_vip_display_value_to_boolean
+      tag: convert_vip_display_value_to_boolean_25d77134
       type: boolean
       ignore_missing: true
       if: ctx.servicenow?.event?.vip?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_vip_display_value_f343805c
             field: servicenow.event.vip.display_value
         - append:
+            tag: append_error_message_29673731
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: servicenow.event.vip.value
-      tag: convert_vip_value_to_boolean
+      tag: convert_vip_value_to_boolean_673aa03a
       type: boolean
       ignore_missing: true
       if: ctx.servicenow?.event?.vip?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_vip_value_01db67be
             field: servicenow.event.vip.value
         - append:
+            tag: append_error_message_6351a292
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: servicenow.event.web_service_access_only.display_value
-      tag: convert_web_service_access_only_display_value_to_boolean
+      tag: convert_web_service_access_only_display_value_to_boolean_f6dac106
       type: boolean
       ignore_missing: true
       if: ctx.servicenow?.event?.web_service_access_only?.display_value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_web_service_access_only_display_value_73a921a0
             field: servicenow.event.web_service_access_only.display_value
         - append:
+            tag: append_error_message_3c83d2b3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: servicenow.event.web_service_access_only.value
-      tag: convert_web_service_access_only_value_to_boolean
+      tag: convert_web_service_access_only_value_to_boolean_159a3d81
       type: boolean
       ignore_missing: true
       if: ctx.servicenow?.event?.web_service_access_only?.value != ''
       on_failure:
         - remove:
+            tag: remove_servicenow_event_web_service_access_only_value_6267b277
             field: servicenow.event.web_service_access_only.value
         - append:
+            tag: append_error_message_8676a465
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.user
-      tag: append_servicenow_event_user_name_display_value_into_related_user
+      tag: append_servicenow_event_user_name_display_value_into_related_user_1e81ab67
       value: '{{{servicenow.event.user_name.display_value}}}'
       allow_duplicates: false
       if: ctx.servicenow?.event?.user_name?.display_value != null
   - append:
       field: related.user
-      tag: 
-        append_servicenow_event_default_assignee_display_value_into_related_user
+      tag: append_servicenow_event_default_assignee_display_value_into_related_user_24f5b6e8
       value: '{{{servicenow.event.default_assignee.display_value}}}'
       allow_duplicates: false
       if: ctx.servicenow?.event?.default_assignee?.display_value != null
   - append:
       field: related.user
-      tag: append_servicenow_event_first_name_display_value_into_related_user
+      tag: append_servicenow_event_first_name_display_value_into_related_user_2ddadc88
       value: '{{{servicenow.event.first_name.display_value}}}'
       allow_duplicates: false
       if: ctx.servicenow?.event?.first_name?.display_value != null
   - append:
       field: related.user
-      tag: append_servicenow_event_last_name_display_value_into_related_user
+      tag: append_servicenow_event_last_name_display_value_into_related_user_edf9b5e7
       value: '{{{servicenow.event.last_name.display_value}}}'
       allow_duplicates: false
       if: ctx.servicenow?.event?.last_name?.display_value != null
   - append:
       field: related.user
-      tag: append_servicenow_event_middle_name_display_value_into_related_user
+      tag: append_servicenow_event_middle_name_display_value_into_related_user_095d6dd3
       value: '{{{servicenow.event.middle_name.display_value}}}'
       allow_duplicates: false
       if: ctx.servicenow?.event?.middle_name?.display_value != null
 on_failure:
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -564,5 +618,10 @@ on_failure:
         }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -3,22 +3,25 @@ description: Pipeline for processing tenable ot security cloud events
 processors:
 
   - rename:
+      tag: rename_message_to_tenable_ot_security_events_acb97815
       field: message
       target_field: tenable_ot_security.events
 
   - fingerprint:
       fields:
         - tenable_ot_security.events
-      tag: fingerprinting
+      tag: fingerprinting_eb9e5c91
       target_field: "_id"
       on_failure:
         - append:
+            tag: append_error_message_d776c448
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-  #################### Scripts for processing input ####################
 
+  #################### Scripts for processing input ####################
   - script:
+      tag: script_drops_null_empty_values_recursively_53dd9140
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -38,7 +41,7 @@ processors:
 
   - script:
       description: Convert Additional Info keys to snake case.
-      tag: additional-info-keys-to-snake-case
+      tag: additional-info-keys-to-snake-case_9db3c39c
       lang: painless
       source: |
         Map keysToSnakeCase(Map m) {
@@ -67,6 +70,7 @@ processors:
         }
 
   - script:
+      tag: script_recursively_normalize_every_occurrence_nodes_2272e807
       description: Recursively normalize every occurrence of 'nodes'.
       lang: painless
       source: |
@@ -101,67 +105,80 @@ processors:
           ctx.tenable_ot_security.events = normalize(ctx.tenable_ot_security.events);
         }
 
-  #################### ECS Fields ####################
 
+  #################### ECS Fields ####################
   - set:
+      tag: set_event_kind_d452ef2c
       field: event.kind
       value: event
 
   - set:
+      tag: set_ecs_version_dbf680ba
       field: ecs.version
       value: "8.17.0"
 
   - append:
+      tag: append_event_category_0eb47497
       field: event.category
       value: iam
 
   - set:
+      tag: set_event_module_c6a78e99
       field: event.module
       value: tenable_ot_security
 
   - set:
+      tag: set_event_type_8bf4a5be
       field: event.type
       value: ["info"]
 
   - set:
+      tag: set_event_dataset_e6497364
       field: event.dataset
       value: tenable_ot_security.events
 
   - set:
+     tag: set_timestamp_ae169d3c
      field: "@timestamp"
      copy_from: tenable_ot_security.events.time
      ignore_empty_value: true
 
   - set:
+      tag: set_event_id_cc4abe95
       field: event.id
       copy_from: tenable_ot_security.events.id
       ignore_empty_value: true
 
   - convert:
+      tag: convert_tenable_ot_security_events_src_ip_24d00912
       field: tenable_ot_security.events.src_ip
       type: ip
       if: ctx.tenable_ot_security.events?.src_ip != null && ctx.tenable_ot_security.events.src_ip != ''
       ignore_missing: true
 
   - append:
+      tag: append_source_ip_b6928f5c
       field: source.ip
       value: '{{{tenable_ot_security.events.src_ip}}}'
       if: ctx.tenable_ot_security.events?.src_ip != null || ctx.tenable_ot_security.events.src_ip != ''
       allow_duplicates: false
 
   - convert:
+      tag: convert_tenable_ot_security_events_dst_ip_8757948f
       field: tenable_ot_security.events.dst_ip
       type: ip
       if: ctx.tenable_ot_security.events?.dst_ip != null && ctx.tenable_ot_security.events.dst_ip != ''
       ignore_missing: true
 
   - append:
+      tag: append_destination_ip_ef1973f0
       field: destination.ip
       value: '{{{tenable_ot_security.events.dst_ip}}}'
       if: ctx.tenable_ot_security.events?.dst_ip != null || ctx.tenable_ot_security.events?.dst_ip != ''
       allow_duplicates: false
 
   - script:
+      tag: script_convert_mac_addresses_to_standard_160ca0b3
       description: Convert MAC addresses to standard notation.
       lang: painless
       source: |
@@ -180,38 +197,44 @@ processors:
         }
 
   - append:
+      tag: append_destination_mac_16883f95
       field: destination.mac
       value: '{{{tenable_ot_security.events.dst_mac}}}'
       if: ctx.tenable_ot_security.events?.dst_mac != null && ctx.tenable_ot_security.events.dst_mac != ''
       allow_duplicates: false
 
   - append:
+      tag: append_source_mac_0fd96e39
       field: source.mac
       value: '{{{tenable_ot_security.events.src_mac}}}'
       allow_duplicates: false
       if: ctx.tenable_ot_security.events?.src_mac != null && ctx.tenable_ot_security.events.src_mac != ''
 
   - append:
+      tag: append_network_protocol_00a9671c
       field: network.protocol
       value: '{{{tenable_ot_security.events.protocol_raw}}}'
       allow_duplicates: false
       if: ctx.tenable_ot_security.events?.protocol_raw != null && ctx.tenable_ot_security.events.protocol_raw != ''
 
   - append:
+      tag: append_related_user_61e21320
       field: related.user
       if: ctx.tenable_ot_security.events?.resolved_user != null && ctx.tenable_ot_security.events.resolved_user != ''
       value: "{{{tenable_ot_security.events.resolved_user}}}"
       allow_duplicates: false
 
-  #################### Override host.ip ####################
 
+  #################### Override host.ip ####################
   - append:
+      tag: append_host_ip_1692104a
       field: host.ip
       value: "{{{tenable_ot_security.events.src_ip}}}"
       allow_duplicates: false
       if: ctx.tenable_ot_security.events?.src_ip != null && ctx.tenable_ot_security.events.src_ip != ''
 
   - geoip:
+      tag: geoip_host_ip_to_host_geo_165841ea
       field: host.ip
       target_field: host.geo
       ignore_missing: true
@@ -221,9 +244,16 @@ processors:
 
 on_failure:
   - append:
+      tag: append_error_message_9b078312
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
 
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,56 @@
+{
+    "id": "supabase_otel-postgres-restarted",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when the PostgreSQL restart counter increases, meaning the database bounced. A point-in-time availability check can miss a restart entirely, so this rule catches the bounce even when pg_up never appeared as 0.",
+        "name": "[Supabase OTel] PostgreSQL restarted",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "postgresql",
+            "availability"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                },
+                {
+                    "id": "supabase_otel-7c6a2004-c517-4b50-b70a-2682b7a79228"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## PostgreSQL Restarted\n\nThe database bounced. Every connection was dropped, all pools were reset, and the cumulative `pg_stat_*` counters restarted from zero.\n\n### Triage Steps\n1. Establish whether this was planned (a compute-tier change or maintenance window) or unplanned.\n2. For unplanned restarts look for a host-level cause first: an OOM kill, a read-only filesystem, or a full data volume.\n3. Check whether the restart was preceded by connection exhaustion or a long-running transaction holding locks.\n4. Expect a period of elevated latency afterwards: the buffer cache is cold, so `pg_stat_database_blks_read_total` will rise relative to `blks_hit_total` until the working set is paged back in.\n\n### Tuning\n`INCREASE()` is reset-safe, so a database that bounced and reset its own counters is still counted correctly. Raise the threshold above 0 only if you run rolling maintenance that legitimately bounces the database on a schedule."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// postgresql_restarts_total is a counter. INCREASE() is reset-safe, so a database that\n// bounced (and therefore reset its own counters) is still counted correctly.\n| STATS `Restarts` = SUM(INCREASE(postgresql_restarts_total))\n    BY resource.attributes.supabase_project_ref\n// Any restart is worth investigating. Raise above 0 only if rolling maintenance is expected.\n| WHERE `Restarts` > 0"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.supabase_project_ref",
+            "termSize": 50
+        }
+    }
+}

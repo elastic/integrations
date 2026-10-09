@@ -1,10 +1,10 @@
 config_version: "2"
 interval: {{interval}}
 request.method: "POST"
-{{#if enable_request_tracer}}
-request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
-request.tracer.maxbackups: 5
-{{/if}}
+request.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+  maxbackups: 5
 {{#if url}}
 request.url: {{url}}/attributes/restSearch
 {{/if}}
@@ -49,40 +49,10 @@ request.transforms:
     target: body.returnFormat
     value: json
 {{#if daily_refetch}}
-# Daily refetch mode: every 24 hours, reset the request window to initial_interval to re-fetch all
-# attributes (picking up current decay scores). The decision is made here in the request transform,
-# where the cursor state is readable. The chosen refetch marker is echoed through url.params so the
-# cursor value template can persist it: httpjson evaluates cursor templates with an empty .cursor, so
-# the cursor field cannot read its own previous value, but it can read .last_response.url.params.
-- set:
-    target: body.timestamp
-    value: |-
-      [[- $dailyRefetchDuration := (parseDuration "24h") -]]
-      [[- $initialInterval := (parseDuration "-{{initial_interval}}") -]]
-      [[- $initialTimestamp := (now $initialInterval).Unix -]]
-      [[- $isDailyRefetch := true -]]
-      [[- if index .cursor "last_daily_refetch" -]]
-        [[- $lastRefetch := (parseDate .cursor.last_daily_refetch "RFC3339") -]]
-        [[- $nextRefetch := 0 -]]
-        [[- with $lastRefetch -]]
-          [[- $nextRefetch = .Add $dailyRefetchDuration -]]
-        [[- end -]]
-        [[- with $nextRefetch -]]
-          [[- if .Before now -]]
-            [[- $isDailyRefetch = true -]]
-          [[- else -]]
-            [[- $isDailyRefetch = false -]]
-          [[- end -]]
-        [[- end -]]
-      [[- end -]]
-      [[- if $isDailyRefetch -]]
-        [[- $initialTimestamp -]]
-      [[- else if index .cursor "timestamp" -]]
-        [[- .cursor.timestamp -]]
-      [[- else -]]
-        [[- $initialTimestamp -]]
-      [[- end -]]
-    default: '[[ (now (parseDuration "-{{initial_interval}}")).Unix ]]'
+# Refetch mode: every refetch_interval, reset the request window to initial_interval to re-fetch
+# all attributes (picking up current decay scores). The decision is made once, in the
+# url.params.daily_refetch_at transform below, against a single reading of now. body.timestamp then
+# follows that decision, so the request window and the persisted marker cannot disagree.
 - set:
     # Echo the refetch marker through url.params so the cursor value template can persist it: httpjson
     # evaluates cursor templates with an empty .cursor, so a cursor field cannot read its own previous
@@ -94,7 +64,8 @@ request.transforms:
     # parameter is ignored by the server. This mirrors the existing url.params.timestamp workaround.
     target: url.params.daily_refetch_at
     value: |-
-      [[- $dailyRefetchDuration := (parseDuration "24h") -]]
+      [[- $now := now -]]
+      [[- $dailyRefetchDuration := (parseDuration "{{refetch_interval}}") -]]
       [[- $isDailyRefetch := true -]]
       [[- if index .cursor "last_daily_refetch" -]]
         [[- $lastRefetch := (parseDate .cursor.last_daily_refetch "RFC3339") -]]
@@ -103,7 +74,7 @@ request.transforms:
           [[- $nextRefetch = .Add $dailyRefetchDuration -]]
         [[- end -]]
         [[- with $nextRefetch -]]
-          [[- if .Before now -]]
+          [[- if .Before $now -]]
             [[- $isDailyRefetch = true -]]
           [[- else -]]
             [[- $isDailyRefetch = false -]]
@@ -111,11 +82,27 @@ request.transforms:
         [[- end -]]
       [[- end -]]
       [[- if $isDailyRefetch -]]
-        [[- formatDate now "RFC3339" -]]
+        [[- formatDate $now "RFC3339" -]]
       [[- else -]]
         [[- .cursor.last_daily_refetch -]]
       [[- end -]]
     default: '[[ formatDate now "RFC3339" ]]'
+- set:
+    # Refetch from initial_interval exactly when the marker set above differs from the stored one.
+    target: body.timestamp
+    value: |-
+      [[- $lastRefetch := "" -]]
+      [[- with index .cursor "last_daily_refetch" -]]
+        [[- $lastRefetch = . -]]
+      [[- end -]]
+      [[- if ne (.url.Query.Get "daily_refetch_at") $lastRefetch -]]
+        [[- (now (parseDuration "-{{initial_interval}}")).Unix -]]
+      [[- else if index .cursor "timestamp" -]]
+        [[- .cursor.timestamp -]]
+      [[- else -]]
+        [[- (now (parseDuration "-{{initial_interval}}")).Unix -]]
+      [[- end -]]
+    default: '[[ (now (parseDuration "-{{initial_interval}}")).Unix ]]'
 {{else}}
 - set:
     target: body.timestamp
@@ -142,6 +129,15 @@ response.split:
   target: body.response.Attribute
   ignore_empty_value: true
   keep_parent: false
+{{#if daily_refetch}}
+  transforms:
+  - set:
+      # Stamp each attribute with the refetch cycle it was fetched in. The ingest pipeline includes
+      # this in the document _id, so each refetch writes new source documents carrying the current
+      # decay state instead of colliding with copies already in the write index.
+      target: body.daily_refetch_at
+      value: '[[.last_response.url.params.Get "daily_refetch_at"]]'
+{{/if}}
 response.request_body_on_pagination: true
 response.pagination:
 - set:

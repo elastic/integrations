@@ -7,104 +7,104 @@ processors:
   - append:
       field: event.category
       value: network
-      tag: append_network_category
+      tag: append_network_category_a9b06a9f
   - append:
       field: event.action
       value: firewall_match_event
-      tag: append_firewall_match_event
+      tag: append_firewall_match_event_3fc3a69f
   - append:
       field: event.type
       value:
         - start
         - connection
-      tag: append_start_connection_type
+      tag: append_start_connection_type_476b1f76
   - append:
       field: event.type
       value: allowed
-      tag: append_allowed_type
+      tag: append_allowed_type_67e01c4e
       if: ctx.crowdstrike?.event?.RuleAction != null && ctx.crowdstrike?.event?.RuleAction == "1"
   - set:
       field: _tmp_.action
       value: "Allowed"
-      tag: set_allowed_action
+      tag: set_allowed_action_146fc53e
       if: ctx.crowdstrike?.event?.RuleAction != null && ctx.crowdstrike?.event?.RuleAction == "1"
   - append:
       field: event.type
       value: denied
-      tag: append_denied_type
+      tag: append_denied_type_fd0a709e
       if: ctx.crowdstrike?.event?.RuleAction != null && ctx.crowdstrike?.event?.RuleAction == "2"
   - set:
       field: _tmp_.action
       value: "Blocked"
-      tag: set_blocked_action
+      tag: set_blocked_action_b2d65c78
       if: ctx.crowdstrike?.event?.RuleAction != null && ctx.crowdstrike?.event?.RuleAction == "2"
   - set:
       field: _tmp_.action
       value: "Unknown"
-      tag: set_unknown_action
+      tag: set_unknown_action_6c4973d1
       if: ctx._tmp_?.action == null
   - set:
       field: message
       value: "Firewall Rule: '{{{crowdstrike.event.RuleName}}}' triggered - Action: '{{{_tmp_.action}}}'"
-      tag: set_message
+      tag: set_message_fed62aca
       if: ctx.crowdstrike?.event?.RuleName != null
   - rename:
       field: crowdstrike.event.Ipv
       target_field: network.type
       ignore_missing: true
-      tag: rename_ipv
+      tag: rename_ipv_9ac14e1f
   - convert:
       field: crowdstrike.event.PID
       target_field: process.pid
       type: long
       ignore_missing: true
-      tag: convert_pid
+      tag: convert_pid_d07bec4e
   - set:
       value: '{{{crowdstrike.event.ImageFileName}}}'
       field: process.executable
       ignore_empty_value: true
-      tag: set_process_executable_to_image_file_name
+      tag: set_process_executable_to_image_file_name_b34e3111
   - remove:
       field: crowdstrike.event.ImageFileName
       ignore_missing: true
-      tag: remove_image_file_name
+      tag: remove_image_file_name_2cf808c6
   - rename:
       field: crowdstrike.event.RuleId
       target_field: rule.id
       ignore_missing: true
-      tag: rename_rule_id
+      tag: rename_rule_id_01ec8a4e
   - rename:
       field: crowdstrike.event.RuleName
       target_field: rule.name
       ignore_missing: true
-      tag: rename_rule_name
+      tag: rename_rule_name_7d268017
   - rename:
       field: crowdstrike.event.RuleGroupName
       target_field: rule.ruleset
       ignore_missing: true
-      tag: rename_rule_group_name
+      tag: rename_rule_group_name_0d0e4e90
   - rename:
       field: crowdstrike.event.RuleDescription
       target_field: rule.description
       ignore_missing: true
-      tag: rename_rule_description
+      tag: rename_rule_description_18106dcc
   - rename:
       field: crowdstrike.event.RuleFamilyID
       target_field: rule.category
       ignore_missing: true
-      tag: rename_rule_family_id
+      tag: rename_rule_family_id_1baad43f
   - rename:
       field: crowdstrike.event.HostName
       target_field: host.name
       ignore_missing: true
-      tag: rename_host_name
+      tag: rename_host_name_78f802e7
   - rename:
       field: crowdstrike.event.EventType
       target_field: event.code
       ignore_missing: true
-      tag: rename_event_type
+      tag: rename_event_type_a675ee30
   - script:
-        tag: script-set-network-direction
+        tag: script-set-network-direction_21d8d5e4
         description: Set network.direction
         lang: painless
         if: ctx.crowdstrike?.event?.ConnectionDirection != null
@@ -132,68 +132,71 @@ processors:
       field: crowdstrike.event.RemoteAddress
       target_field: source.ip
       ignore_missing: true
-      tag: rename_remote_address_to_source_ip
+      tag: rename_remote_address_to_source_ip_50705ffb
       if: ctx.crowdstrike?.event?.RemoteAddress != null && ctx.network?.direction == "ingress"
   - rename:
       field: crowdstrike.event.LocalAddress
       target_field: destination.ip
       ignore_missing: true
-      tag: rename_local_address_to_destination_ip
+      tag: rename_local_address_to_destination_ip_8c06b483
       if: ctx.crowdstrike?.event?.LocalAddress != null && ctx.network?.direction == "ingress"
   - convert:
       field: crowdstrike.event.LocalPort
       target_field: destination.port
       type: long
       ignore_missing: true
-      tag: convert_local_port_to_destination_port
+      tag: convert_local_port_to_destination_port_eab8306b
       if: ctx.crowdstrike?.event?.LocalPort != null && ctx.network?.direction == "ingress"
   - convert:
       field: crowdstrike.event.RemotePort
       target_field: source.port
       type: long
       ignore_missing: true
-      tag: convert_remote_port_to_source_port
+      tag: convert_remote_port_to_source_port_cefc3678
       if: ctx.crowdstrike?.event?.RemotePort != null && ctx.network?.direction == "ingress"
   - rename:
       field: crowdstrike.event.RemoteAddress
       target_field: destination.ip
       ignore_missing: true
-      tag: rename_remote_address_to_destination_ip
+      tag: rename_remote_address_to_destination_ip_63510b87
       if: ctx.crowdstrike?.event?.RemoteAddress != null && ctx.network?.direction == "egress"
   - rename:
       field: crowdstrike.event.LocalAddress
       target_field: source.ip
       ignore_missing: true
-      tag: rename_local_address_to_source_ip
+      tag: rename_local_address_to_source_ip_51277344
       if: ctx.crowdstrike?.event?.LocalAddress != null && ctx.network?.direction == "egress"
   - convert:
       field: crowdstrike.event.LocalPort
       target_field: source.port
       type: long
       ignore_missing: true
-      tag: convert_local_port_to_source_port
+      tag: convert_local_port_to_source_port_f0cc7185
       if: ctx.crowdstrike?.event?.LocalPort != null && ctx.network?.direction == "egress"
   - convert:
       field: crowdstrike.event.RemotePort
       target_field: destination.port
       type: long
       ignore_missing: true
-      tag: convert_remote_port_to_destination_port
+      tag: convert_remote_port_to_destination_port_34ee8f3d
       if: ctx.crowdstrike?.event?.RemotePort != null && ctx.network?.direction == "egress"
   - rename:
       field: crowdstrike.event.Platform
       target_field: host.os.platform
       ignore_missing: true
-      tag: rename_Platform
+      tag: rename_Platform_f7fdb6f1
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
       value: |-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -1,0 +1,127 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a successful PKINIT ticket-granting ticket request followed within five seconds on the same domain controller and source address by a successful user-to-user service-ticket request whose service SID matches the PKINIT principal SID. This sequence is consistent with the KDC-visible ticket requests used in an UnPAC-the-Hash attack, before client-side PAC credential decryption and NT hash recovery. The certificate used for PKINIT may have been obtained through CertiGhost or another certificate-abuse path.",
+        "from": "now-9m",
+        "index": [
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "winlog.computer_name",
+                "source.ip"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "PKINIT Followed by Same-Principal U2U Service Ticket",
+        "note": "## Triage and analysis\n\n### Investigating PKINIT Followed by Same-Principal U2U Service Ticket\n\nThe query uses `winlog.event_data.PreAuthType` value `16` for `PA-PK-AS-REQ`, the PKINIT pre-authentication request\ntype. Both accepted `winlog.event_data.TicketOptions` masks include `FORWARDABLE`, `RENEWABLE`, `CANONICALIZE`, and\n`ENC-TKT-IN-SKEY`; `ENC-TKT-IN-SKEY` is the option that identifies a user-to-user service-ticket request.\n`0x40810018` also includes `RENEWABLE-OK`, while `0x40810008` does not.\nControlled request profiles produced both masks, so `RENEWABLE-OK` is not required. Neither mask is suspicious by\nitself; the signal is the five-second same-domain-controller and source sequence with the 4768 `TargetSid` matching\nthe 4769 `ServiceSid`.\n\n#### Possible investigation steps\n\n- Did the 4769 requester match the PKINIT principal?\n  - Focus: `event.code`, `winlog.event_data.TargetUserName`, `winlog.event_data.TargetDomainName`, `winlog.event_data.TargetSid`, `winlog.event_data.ServiceSid`.\n  - Hint: Use Investigate in Timeline to review the matched 4768 and 4769 source events. Compare their `winlog.event_data.TargetUserName` values case-insensitively after removing any `@REALM` suffix, and compare `winlog.event_data.TargetDomainName`. Event 4769 exposes the requester name and domain, but not its SID; resolve ambiguous names through the directory before disposition.\n  - Implication: A resolved requester matching the 4768 principal supports the same-principal interpretation. Confirmed authorized UnPAC-the-Hash or PKINIT/U2U testing is a benign true positive. Keep a raw-name mismatch unresolved; if identity resolution and client or application evidence establish a different requester and unrelated events, close the alert as a false correlation.\n- Does the rule-shaped pattern recur for the same domain controller and source address?\n  - Focus: `winlog.computer_name`, `source.ip`, `@timestamp`, `winlog.event_data.TargetSid`, `winlog.event_data.ServiceSid`.\n  - Hint: Reconstruct each sequence manually by checking order, the five-second interval, and the stage-local SID values. The following Timeline investigation returns 24 hours of matching PKINIT and U2U candidates for the shared domain controller and source address, not principal-specific history. !{investigate{\"label\":\"Kerberos history for the same DC and source\",\"providers\":[[{\"excluded\":false,\"field\":\"winlog.computer_name\",\"queryType\":\"phrase\",\"value\":\"{{winlog.computer_name}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"source.ip\",\"queryType\":\"phrase\",\"value\":\"{{source.ip}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4768\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.PreAuthType\",\"queryType\":\"phrase\",\"value\":\"16\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.Status\",\"queryType\":\"phrase\",\"value\":\"0x0\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"winlog.computer_name\",\"queryType\":\"phrase\",\"value\":\"{{winlog.computer_name}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"source.ip\",\"queryType\":\"phrase\",\"value\":\"{{source.ip}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4769\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.Status\",\"queryType\":\"phrase\",\"value\":\"0x0\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.TicketOptions\",\"queryType\":\"phrase\",\"value\":\"0x40810008\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"winlog.computer_name\",\"queryType\":\"phrase\",\"value\":\"{{winlog.computer_name}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"source.ip\",\"queryType\":\"phrase\",\"value\":\"{{source.ip}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4769\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.Status\",\"queryType\":\"phrase\",\"value\":\"0x0\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.TicketOptions\",\"queryType\":\"phrase\",\"value\":\"0x40810018\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-24h/h\",\"relativeTo\":\"now\"}}\n  - Implication: Repeated valid pairs or different principals from the same source increase confidence in credential-recovery tooling. Recurrence does not prove client-side PAC decryption or NT hash recovery.\n- What related activity corroborates or expands the scope?\n  - Focus: `winlog.computer_name`, `source.ip`, `winlog.event_data.TargetUserName`, `winlog.event_data.TargetSid`, `winlog.event_data.ServiceSid`.\n  - Hint: After reviewing the matched source events, search available identity, endpoint, certificate, and alert telemetry for the source address, principal, and domain controller. Look for upstream certificate abuse, client tooling, repeated PKINIT/U2U activity, or follow-on authentication. Missing telemetry is unresolved, not benign.\n  - Implication: Upstream certificate abuse, relevant client execution, or follow-on credential use supports escalation and broader scoping. Their absence does not clear the matched sequence.\n\nEscalate unexplained or corroborated sequences with the matched source events and source/principal scope. Close as a benign true positive only for confirmed authorized UnPAC-the-Hash or PKINIT/U2U testing, or as a false positive when identity resolution and client or application evidence prove an unrelated cross-principal correlation. Preserve available evidence and escalate mixed or incomplete cases.\n\n### False positive analysis\n\nNo known false positives have been identified. Validate the 4769 requester against the matched 4768 principal because event 4769 does not expose the requester SID.\n\nAvoid exceptions based only on a domain controller or source address. EQL exceptions evaluate each sequence member independently and cannot express the cross-stage SID relationship.\n\n### Response and remediation\n\n- Preserve the alert, matched 4768/4769 source events, timestamps, identities, domain controller, and source address before disruptive action.\n- If the client endpoint is identified, collect relevant volatile process or memory evidence before isolation or process termination.\n- For confirmed malicious activity, contain the identified client and affected account with reversible controls where possible. Revoke a certificate only when evidence binds it to the activity, and rotate affected credentials when recovery or subsequent use is confirmed or the exposure assessment warrants it.\n- Document confirmed indicators, matched source-event values, and any logging gaps for the responsible detection or logging owners after scoping and containment.\n",
+        "query": "sequence by winlog.computer_name, source.ip with maxspan=5s\n  [authentication where host.os.type == \"windows\" and\n    event.code == \"4768\" and winlog.event_data.PreAuthType == \"16\" and\n    winlog.event_data.Status == \"0x0\"\n  ] by winlog.event_data.TargetSid\n  [authentication where host.os.type == \"windows\" and\n    event.code == \"4769\" and winlog.event_data.Status == \"0x0\" and\n    winlog.event_data.TicketOptions in (\"0x40810008\", \"0x40810018\")\n  ] by winlog.event_data.ServiceSid\n",
+        "references": [
+            "https://specterops.io/blog/2026/06/09/user-to-user-authentication-down-the-rabbit-hole-part-1/",
+            "https://dirkjanm.io/ntlm-relaying-to-ad-certificate-services/#obtaining-the-nt-hash-of-the-impersonated-computer-account",
+            "https://github.com/FalconForceTeam/FalconFriday/blob/c662a6a0dc5d973beb3abb673d4e8cdc193bf469/0xFF-0299-UnPAC_the_hash-Win.md",
+            "https://gist.github.com/H0j3n/a5ef2609b5f2944ac2390a191a534c26",
+            "https://github.com/dirkjanm/PKINITtools/blob/0f0cfa542b0348609ad494713e84744234b2d3b0/getnthash.py"
+        ],
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": ">=2.0.0"
+            },
+            {
+                "package": "windows",
+                "version": ">=3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.computer_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.PreAuthType",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.ServiceSid",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.Status",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.TargetSid",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.TicketOptions",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "04443c0e-9f23-4b61-996b-d8d6b0263bd2",
+        "setup": "## Setup\n\nAudit Kerberos Authentication Service and Audit Kerberos Service Ticket Operations must be enabled to generate the\nevents used by this rule.\n\nSetup instructions:\n\n- [Audit Kerberos Authentication Service](https://ela.st/audit-kerberos-authentication-service)\n- [Audit Kerberos Service Ticket Operations](https://ela.st/audit-kerberos-service-ticket-operations)\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Identity",
+            "Platform: Windows",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Rule Type: Event Correlation (EQL)",
+            "Use Case: Active Directory Monitoring",
+            "Data Source: Active Directory",
+            "Data Source: Windows Security Event Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1558",
+                        "name": "Steal or Forge Kerberos Tickets",
+                        "reference": "https://attack.mitre.org/techniques/T1558/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "04443c0e-9f23-4b61-996b-d8d6b0263bd2_1",
+    "type": "security-rule"
+}

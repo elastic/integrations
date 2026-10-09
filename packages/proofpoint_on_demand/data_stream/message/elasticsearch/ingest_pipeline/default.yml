@@ -3,27 +3,28 @@ description: Pipeline for processing message logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
@@ -31,294 +32,303 @@ processors:
         - json.guid
         - json.ts
         - json.msg.header.message-id
-      tag: fingerprint_message
+      tag: fingerprint_message_ffa16c5b
       target_field: _id
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_event_kind_to_event
+      tag: set_event_kind_to_event_d452ef2c
       value: event
   - append:
       field: event.category
-      tag: append_email_into_event_category
+      tag: append_email_into_event_category_0a688284
       value: email
   - append:
       field: event.type
-      tag: append_info_into_event_type
+      tag: append_info_into_event_type_5eab37e6
       value: info
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_cfe16424
       value: Proofpoint
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_31cc2997
       value: Proofpoint On Demand
   - set:
       field: observer.type
-      tag: set_observer_type
+      tag: set_observer_type_414de4ad
       value: mail-gateway
   - rename:
       field: json.action_dkimv
-      tag: rename_action_dkimv
+      tag: rename_action_dkimv_46a1ea40
       target_field: proofpoint_on_demand.message.action_dkimv
       ignore_missing: true
   - rename:
       field: json.action_dmarc
-      tag: rename_action_dmarc
+      tag: rename_action_dmarc_5f8670f5
       target_field: proofpoint_on_demand.message.action_dmarc
       ignore_missing: true
   - rename:
       field: json.action_spf
-      tag: rename_action_spf
+      tag: rename_action_spf_cd2eee02
       target_field: proofpoint_on_demand.message.action_spf
       ignore_missing: true
   - rename:
       field: json.connection.country
-      tag: rename_connection_country
+      tag: rename_connection_country_88e684b5
       target_field: proofpoint_on_demand.message.connection.country
       ignore_missing: true
   - convert:
       field: json.connection.helo
-      tag: convert_connection_helo_to_ip
+      tag: convert_connection_helo_to_ip_c660a6c9
       target_field: json.connection.helo_ip
       type: ip
       if: ctx.json?.connection?.ip != ''
       ignore_failure: true
   - rename:
       field: json.connection.helo
-      tag: rename_connection_helo
+      tag: rename_connection_helo_c47faaec
       target_field: proofpoint_on_demand.message.connection.helo
       ignore_missing: true
   - set:
       field: source.address
-      tag: set_source_address_from_message_connection_helo
+      tag: set_source_address_from_message_connection_helo_0098762e
       copy_from: proofpoint_on_demand.message.connection.helo
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_message_connection_helo_into_related_hosts
+      tag: append_message_connection_helo_into_related_hosts_84e509e6
       value: '{{{proofpoint_on_demand.message.connection.helo}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.message?.connection?.helo != null && ctx.json?.connection?.helo_ip == null
   - append:
       field: related.ip
-      tag: append_message_connection_helo_into_related_ip
+      tag: append_message_connection_helo_into_related_ip_4be75a92
       value: '{{{proofpoint_on_demand.message.connection.helo}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.message?.connection?.helo != null && ctx.json?.connection?.helo_ip != null
   - rename:
       field: json.connection.host
-      tag: rename_connection_host
+      tag: rename_connection_host_b3922547
       target_field: proofpoint_on_demand.message.connection.host
       ignore_missing: true
   - set:
       field: source.domain
-      tag: set_source_domain_from_message_connection_host
+      tag: set_source_domain_from_message_connection_host_5f92484b
       copy_from: proofpoint_on_demand.message.connection.host
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_message_connection_host_into_related_hosts
+      tag: append_message_connection_host_into_related_hosts_59d98888
       value: '{{{proofpoint_on_demand.message.connection.host}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.message?.connection?.host != null
   - convert:
       field: json.connection.ip
-      tag: convert_connection_ip_to_ip
+      tag: convert_connection_ip_to_ip_b1191ec6
       target_field: proofpoint_on_demand.message.connection.ip
       type: ip
       ignore_missing: true
       if: ctx.json?.connection?.ip != ''
       on_failure:
         - append:
+            tag: append_error_message_ffa1d6d6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip_from_message_connection_ip
+      tag: set_source_ip_from_message_connection_ip_2b5a8ba1
       copy_from: proofpoint_on_demand.message.connection.ip
       ignore_empty_value: true
   - geoip:
       field: source.ip
-      tag: geoip_source_ip
+      tag: geoip_source_ip_9a2d4d31
       target_field: source.geo
       ignore_missing: true
   - append:
       field: related.ip
-      tag: append_message_connection_ip_into_related_ip
+      tag: append_message_connection_ip_into_related_ip_e417514d
       value: '{{{proofpoint_on_demand.message.connection.ip}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.message?.connection?.ip != null
   - rename:
       field: json.connection.protocol
-      tag: rename_connection_protocol
+      tag: rename_connection_protocol_151b7b4a
       target_field: proofpoint_on_demand.message.connection.protocol
       ignore_missing: true
   - set:
       field: network.protocol
-      tag: set_network_protocol_to_smtp
+      tag: set_network_protocol_to_smtp_2c6d11b0
       value: smtp
       if: ctx.proofpoint_on_demand?.message?.connection?.protocol instanceof String && ctx.proofpoint_on_demand.message.connection.protocol.toLowerCase().contains('smtp')
   - rename:
       field: json.connection.resolveStatus
-      tag: rename_connection_resolveStatus
+      tag: rename_connection_resolveStatus_211fca0b
       target_field: proofpoint_on_demand.message.connection.resolve_status
       ignore_missing: true
   - rename:
       field: json.connection.sid
-      tag: rename_connection_sid
+      tag: rename_connection_sid_8b180dab
       target_field: proofpoint_on_demand.message.connection.sid
       ignore_missing: true
   - rename:
       field: json.connection.tls.inbound.cipher
-      tag: rename_connection_tls_inbound_cipher
+      tag: rename_connection_tls_inbound_cipher_6916d373
       target_field: proofpoint_on_demand.message.connection.tls.inbound.cipher
       ignore_missing: true
   - set:
       field: tls.cipher
-      tag: set_tls_cipher_from_message_connection_tls_inbound_cipher
+      tag: set_tls_cipher_from_message_connection_tls_inbound_cipher_874f6b06
       copy_from: proofpoint_on_demand.message.connection.tls.inbound.cipher
       ignore_empty_value: true
       if: ctx.proofpoint_on_demand?.message?.connection?.tls?.inbound?.cipher != 'NONE'
   - convert:
       field: json.connection.tls.inbound.cipherBits
-      tag: convert_connection_tls_inbound_cipherBits_to_long
+      tag: convert_connection_tls_inbound_cipherBits_to_long_bb290805
       target_field: proofpoint_on_demand.message.connection.tls.inbound.cipher_bits
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4e5b9d9a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.connection.tls.inbound.policy
-      tag: rename_connection_tls_inbound_policy
+      tag: rename_connection_tls_inbound_policy_38e29c6e
       target_field: proofpoint_on_demand.message.connection.tls.inbound.policy
       ignore_missing: true
   - rename:
       field: json.connection.tls.inbound.version
-      tag: rename_connection_tls_inbound_version
+      tag: rename_connection_tls_inbound_version_b977938d
       target_field: proofpoint_on_demand.message.connection.tls.inbound.version
       ignore_missing: true
   - dissect:
       field: proofpoint_on_demand.message.connection.tls.inbound.version
-      tag: dissect_tls_version_protocol_and_tls_version
+      tag: dissect_tls_version_protocol_and_tls_version_2dd19a51
       pattern: '%{tls.version_protocol}v%{tls.version}'
       ignore_failure: true
   - lowercase:
       field: tls.version_protocol
-      tag: lowercase_tls_version_protocol
+      tag: lowercase_tls_version_protocol_83b34b9e
       ignore_missing: true
   - rename:
       field: json.envelope.from
-      tag: rename_envelope_from
+      tag: rename_envelope_from_eb518c1c
       target_field: proofpoint_on_demand.message.envelope.from
       ignore_missing: true
   - set:
       field: email.sender.address
-      tag: set_email_sender_address_from_message_envelope_from
+      tag: set_email_sender_address_from_message_envelope_from_daa39a4b
       copy_from: proofpoint_on_demand.message.envelope.from
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_message_envelope_from_into_related_user
+      tag: append_message_envelope_from_into_related_user_c6bdb276
       value: '{{{proofpoint_on_demand.message.envelope.from}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.message?.envelope?.from != null
   - rename:
       field: json.envelope.fromHashed
-      tag: rename_envelope_fromHashed
+      tag: rename_envelope_fromHashed_95210920
       target_field: proofpoint_on_demand.message.envelope.from_hashed
       ignore_missing: true
   - foreach:
+      tag: foreach_json_envelope_rcpts_ad228241
       field: json.envelope.rcpts
       if: ctx.json?.envelope?.rcpts instanceof List
       processor:
         append:
           field: related.user
-          tag: append_envelope_rcpts_into_related_user
+          tag: append_envelope_rcpts_into_related_user_d5c27590
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
       field: json.envelope.rcpts
-      tag: rename_envelope_rcpts
+      tag: rename_envelope_rcpts_7ee21db0
       target_field: proofpoint_on_demand.message.envelope.rcpts
       ignore_missing: true
   - rename:
       field: json.envelope.rcptsHashed
-      tag: rename_envelope_rcptsHashed
+      tag: rename_envelope_rcptsHashed_90070179
       target_field: proofpoint_on_demand.message.envelope.rcpts_hashed
       ignore_missing: true
   - foreach:
+      tag: foreach_json_filter_actions_da0faab2
       field: json.filter.actions
       if: ctx.json?.filter?.actions instanceof List
       processor:
         convert:
           field: _ingest._value.isFinal
-          tag: convert_filter_actions_isFinal_to_boolean
+          tag: convert_filter_actions_isFinal_to_boolean_59540615
           target_field: _ingest._value.is_final
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_isFinal_0ddcd8f5
                 field: _ingest._value.isFinal
                 ignore_missing: true
             - append:
+                tag: append_error_message_64cb7bd6
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_filter_actions_869eb3d6
       field: json.filter.actions
       if: ctx.json?.filter?.actions instanceof List
       processor:
         remove:
           field: _ingest._value.isFinal
-          tag: remove_filter_actions
+          tag: remove_filter_actions_1f79f2f0
           ignore_missing: true
   - rename:
       field: json.filter.actions
-      tag: rename_filter_actions
+      tag: rename_filter_actions_a92c5814
       target_field: proofpoint_on_demand.message.filter.actions
       ignore_missing: true
   - rename:
       field: json.filter.currentFolder
-      tag: rename_filter_currentFolder
+      tag: rename_filter_currentFolder_0a77265a
       target_field: proofpoint_on_demand.message.filter.current_folder
       ignore_missing: true
   - rename:
       field: json.filter.disposition
-      tag: rename_filter_disposition
+      tag: rename_filter_disposition_2892fc54
       target_field: proofpoint_on_demand.message.filter.disposition
       ignore_missing: true
   - date:
       field: json.filter.startTime
-      tag: date_filter_startTime
+      tag: date_filter_startTime_9e71a0c5
       target_field: proofpoint_on_demand.message.filter.start_time
       formats:
         - ISO8601
       if: ctx.json?.filter?.startTime != null && ctx.json.filter.startTime != ''
       on_failure:
         - append:
+            tag: append_error_message_b2665f4a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
-      tag: set_event_start_from_message_filter_start_time
+      tag: set_event_start_from_message_filter_start_time_ac29f49b
       copy_from: proofpoint_on_demand.message.filter.start_time
       ignore_empty_value: true
   - convert:
       field: json.filter.durationSecs
-      tag: convert_filter_durationSecs_to_long
+      tag: convert_filter_durationSecs_to_long_c600512b
       target_field: proofpoint_on_demand.message.filter.duration_secs
       type: double
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ae454a24
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: Convert duration from seconds to nanoseconds.
-      tag: script_event_duration_s_to_ns
+      tag: script_event_duration_s_to_ns_e2d6be33
       lang: painless
       if: ctx.proofpoint_on_demand?.message?.filter?.duration_secs != null
       source: |
@@ -329,825 +339,870 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_af4e7b6d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.filter.isMsgEncrypted
-      tag: convert_filter_isMsgEncrypted_to_boolean
+      tag: convert_filter_isMsgEncrypted_to_boolean_542aba64
       target_field: proofpoint_on_demand.message.filter.is_msg_encrypted
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2ca8326f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.filter.isMsgReinjected
-      tag: convert_filter_isMsgReinjected_to_boolean
+      tag: convert_filter_isMsgReinjected_to_boolean_9b0c11f8
       target_field: proofpoint_on_demand.message.filter.is_msg_reinjected
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c68767d8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.filter.mid
-      tag: rename_filter_mid
+      tag: rename_filter_mid_f014db3e
       target_field: proofpoint_on_demand.message.filter.mid
       ignore_missing: true
   - set:
       field: email.local_id
-      tag: set_email_local_id_from_message_filter_mid
+      tag: set_email_local_id_from_message_filter_mid_b31eb328
       copy_from: proofpoint_on_demand.message.filter.mid
       ignore_empty_value: true
   - rename:
       field: json.filter.modules.av.virusNames
-      tag: rename_filter_modules_av_virusNames
+      tag: rename_filter_modules_av_virusNames_7c710bf2
       target_field: proofpoint_on_demand.message.filter.modules.av.virus_names
       ignore_missing: true
   - foreach:
+      tag: foreach_json_filter_modules_dkimv_c2185086
       field: json.filter.modules.dkimv
       if: ctx.json?.filter?.modules?.dkimv instanceof List
       processor:
         append:
           field: related.hosts
-          tag: append_filter_modules_dkimv_domain_into_related_hosts
+          tag: append_filter_modules_dkimv_domain_into_related_hosts_634a7a46
           value: '{{{_ingest._value.domain}}}'
           allow_duplicates: false
   - rename:
       field: json.filter.modules.dkimv
-      tag: rename_filter_modules_dkimv
+      tag: rename_filter_modules_dkimv_a65ee427
       target_field: proofpoint_on_demand.message.filter.modules.dkimv
       ignore_missing: true
   - foreach:
+      tag: foreach_json_filter_modules_dmarc_alignment_f56a6eb7
       field: json.filter.modules.dmarc.alignment
       if: ctx.json?.filter?.modules?.dmarc?.alignment instanceof List
       processor:
         rename:
           field: _ingest._value.fromDomain
-          tag: rename_filter_modules_dmarc_alignment_fromDomain
+          tag: rename_filter_modules_dmarc_alignment_fromDomain_1a2aea04
           target_field: _ingest._value.from_domain
           ignore_missing: true
   - foreach:
+      tag: foreach_json_filter_modules_dmarc_alignment_9add4e41
       field: json.filter.modules.dmarc.alignment
       if: ctx.json?.filter?.modules?.dmarc?.alignment instanceof List
       processor:
         append:
           field: related.hosts
-          tag: append_filter_modules_dmarc_alignment_from_domain_into_related_hosts
+          tag: append_filter_modules_dmarc_alignment_from_domain_into_related_hosts_6c4b1172
           value: '{{{_ingest._value.from_domain}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_filter_modules_dmarc_alignment_de06bf97
       field: json.filter.modules.dmarc.alignment
       if: ctx.json?.filter?.modules?.dmarc?.alignment instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_results_699f446f
           field: _ingest._value.results
           processor:
             rename:
               field: _ingest._value.identityOrg
-              tag: rename_filter_modules_dmarc_alignment_results_identityOrg
+              tag: rename_filter_modules_dmarc_alignment_results_identityOrg_88b67bf3
               target_field: _ingest._value.identity_org
               ignore_missing: true
   - rename:
       field: json.filter.modules.dmarc.alignment
-      tag: rename_filter_modules_dmarc_alignment
+      tag: rename_filter_modules_dmarc_alignment_e8490632
       target_field: proofpoint_on_demand.message.filter.modules.dmarc.alignment
       ignore_missing: true
   - foreach:
+      tag: foreach_json_filter_modules_dmarc_authResults_bbc3eeeb
       field: json.filter.modules.dmarc.authResults
       if: ctx.json?.filter?.modules?.dmarc?.authResults instanceof List
       processor:
         dot_expander:
           field: '*'
-          tag: dot_expander_filter_modules_dmarc_authResults_emailIdentities
+          tag: dot_expander_filter_modules_dmarc_authResults_emailIdentities_20a30b2f
           path: _ingest._value.emailIdentities
           ignore_failure: true
   - foreach:
+      tag: foreach_json_filter_modules_dmarc_authResults_be2797e4
       field: json.filter.modules.dmarc.authResults
       if: ctx.json?.filter?.modules?.dmarc?.authResults instanceof List
       processor:
         rename:
           field: _ingest._value.emailIdentities
-          tag: rename_filter_modules_dmarc_authResults_emailIdentities
+          tag: rename_filter_modules_dmarc_authResults_emailIdentities_21100efd
           target_field: _ingest._value.email_identities
           ignore_missing: true
   - foreach:
+      tag: foreach_json_filter_modules_dmarc_authResults_aed085d3
       field: json.filter.modules.dmarc.authResults
       if: ctx.json?.filter?.modules?.dmarc?.authResults instanceof List
       processor:
         rename:
           field: _ingest._value.email_identities.smtp.mailfromHashed
-          tag: rename_filter_modules_dmarc_authResults_email_identities_smtp_mailfromHashed
+          tag: rename_filter_modules_dmarc_authResults_email_identities_smtp_mailfromHashed_3ef2d31a
           target_field: _ingest._value.email_identities.smtp.mailfrom_hashed
           ignore_missing: true
   - foreach:
+      tag: foreach_json_filter_modules_dmarc_authResults_4b203b2c
       field: json.filter.modules.dmarc.authResults
       if: ctx.json?.filter?.modules?.dmarc?.authResults instanceof List
       processor:
         append:
           field: related.hosts
-          tag: append_filter_modules_dmarc_authResults_email_identities_header_from_into_related_hosts
+          tag: append_filter_modules_dmarc_authResults_email_identities_header_from_into_related_hosts_4f106e47
           value: '{{{_ingest._value.email_identities.header.from}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_filter_modules_dmarc_authResults_8051eb1f
       field: json.filter.modules.dmarc.authResults
       if: ctx.json?.filter?.modules?.dmarc?.authResults instanceof List
       processor:
         dot_expander:
           field: '*'
-          tag: dot_expander_filter_modules_dmarc_authResults_propspec
+          tag: dot_expander_filter_modules_dmarc_authResults_propspec_7315bc2b
           path: _ingest._value.propspec
           ignore_failure: true
   - rename:
       field: json.filter.modules.dmarc.authResults
-      tag: rename_filter_modules_dmarc_authResults
+      tag: rename_filter_modules_dmarc_authResults_122dfa1b
       target_field: proofpoint_on_demand.message.filter.modules.dmarc.auth_results
       ignore_missing: true
   - rename:
       field: json.filter.modules.dmarc.filterdResult
-      tag: rename_filter_modules_dmarc_filterdResult
+      tag: rename_filter_modules_dmarc_filterdResult_60909816
       target_field: proofpoint_on_demand.message.filter.modules.dmarc.filterd_result
       ignore_missing: true
   - rename:
       field: json.filter.modules.dmarc.records
-      tag: rename_filter_modules_dmarc_records
+      tag: rename_filter_modules_dmarc_records_9f6f1ab8
       target_field: proofpoint_on_demand.message.filter.modules.dmarc.records
       ignore_missing: true
   - rename:
       field: json.filter.modules.dmarc.srvid
-      tag: rename_filter_modules_dmarc_srvid
+      tag: rename_filter_modules_dmarc_srvid_067afdc2
       target_field: proofpoint_on_demand.message.filter.modules.dmarc.srvid
       ignore_missing: true
   - convert:
       field: json.filter.modules.pdr.v1.rscore
-      tag: convert_filter_modules_pdr_v1_rscore_to_long
+      tag: convert_filter_modules_pdr_v1_rscore_to_long_f530d6a2
       target_field: proofpoint_on_demand.message.filter.modules.pdr.v1.rscore
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4e05f28d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.filter.modules.pdr.v1.spamscore
-      tag: convert_filter_modules_pdr_v1_spamscore_to_long
+      tag: convert_filter_modules_pdr_v1_spamscore_to_long_6545b9ce
       target_field: proofpoint_on_demand.message.filter.modules.pdr.v1.spamscore
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_929891ee
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.filter.modules.pdr.v1.virusscore
-      tag: convert_filter_modules_pdr_v1_virusscore_to_long
+      tag: convert_filter_modules_pdr_v1_virusscore_to_long_86357189
       target_field: proofpoint_on_demand.message.filter.modules.pdr.v1.virusscore
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_067561ec
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.filter.modules.pdr.v2.response
-      tag: rename_filter_modules_pdr_v2_response
+      tag: rename_filter_modules_pdr_v2_response_0bde33f0
       target_field: proofpoint_on_demand.message.filter.modules.pdr.v2.response
       ignore_missing: true
   - convert:
       field: json.filter.modules.pdr.v2.rscore
-      tag: convert_filter_modules_pdr_v2_rscore_to_long
+      tag: convert_filter_modules_pdr_v2_rscore_to_long_da9eaad9
       target_field: proofpoint_on_demand.message.filter.modules.pdr.v2.rscore
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_28d0159e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.filter.modules.sandbox.errorStatus
-      tag: rename_filter_modules_sandbox_errorStatus
+      tag: rename_filter_modules_sandbox_errorStatus_b5943e9b
       target_field: proofpoint_on_demand.message.filter.modules.sandbox.error_status
       ignore_missing: true
   - rename:
       field: json.filter.modules.spam.triggeredClassifier
-      tag: rename_filter_modules_spam_triggeredClassifier
+      tag: rename_filter_modules_spam_triggeredClassifier_40d07374
       target_field: json.filter.modules.spam.triggered_classifier
       ignore_missing: true
   - rename:
       field: json.filter.modules.spam
-      tag: rename_filter_modules_spam
+      tag: rename_filter_modules_spam_2eba112c
       target_field: proofpoint_on_demand.message.filter.modules.spam
       ignore_missing: true
   - rename:
       field: json.filter.modules.spf.domain
-      tag: rename_filter_modules_spf_domain
+      tag: rename_filter_modules_spf_domain_563b77ab
       target_field: proofpoint_on_demand.message.filter.modules.spf.domain
       ignore_missing: true
   - append:
       field: related.hosts
-      tag: append_message_filter_modules_spf_domain_into_related_hosts
+      tag: append_message_filter_modules_spf_domain_into_related_hosts_8d1c8b3a
       value: '{{{proofpoint_on_demand.message.filter.modules.spf.domain}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.message?.filter?.modules?.spf?.domain != null
   - rename:
       field: json.filter.modules.spf.result
-      tag: rename_filter_modules_spf_result
+      tag: rename_filter_modules_spf_result_873ca852
       target_field: proofpoint_on_demand.message.filter.modules.spf.result
       ignore_missing: true
   - convert:
       field: json.filter.modules.urldefense.counts.maxLimit
-      tag: convert_filter_modules_urldefense_counts_maxLimit_to_long
+      tag: convert_filter_modules_urldefense_counts_maxLimit_to_long_d68a4e1f
       target_field: proofpoint_on_demand.message.filter.modules.urldefense.counts.max_limit
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_319c1ba9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.filter.modules.urldefense.counts.noRewriteIsContentTypeText
-      tag: convert_filter_modules_urldefense_counts_noRewriteIsContentTypeText_to_long
+      tag: convert_filter_modules_urldefense_counts_noRewriteIsContentTypeText_to_long_eaa06ba3
       target_field: proofpoint_on_demand.message.filter.modules.urldefense.counts.no_rewrite.is_content_type_text
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2b065470
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.filter.modules.urldefense.counts.noRewriteIsEmail
-      tag: convert_filter_modules_urldefense_counts_noRewriteIsEmail_to_long
+      tag: convert_filter_modules_urldefense_counts_noRewriteIsEmail_to_long_dff4c935
       target_field: proofpoint_on_demand.message.filter.modules.urldefense.counts.no_rewrite.is_email
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9fd9e770
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.filter.modules.urldefense.counts.noRewriteIsExcludedDomain
-      tag: convert_filter_modules_urldefense_counts_noRewriteIsExcludedDomain_to_long
+      tag: convert_filter_modules_urldefense_counts_noRewriteIsExcludedDomain_to_long_65f34838
       target_field: proofpoint_on_demand.message.filter.modules.urldefense.counts.no_rewrite.is_excluded_domain
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_64b3ed69
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.filter.modules.urldefense.counts.noRewriteIsLargeMsgPartSize
-      tag: convert_filter_modules_urldefense_counts_noRewriteIsLargeMsgPartSize_to_long
+      tag: convert_filter_modules_urldefense_counts_noRewriteIsLargeMsgPartSize_to_long_c77cb971
       target_field: proofpoint_on_demand.message.filter.modules.urldefense.counts.no_rewrite.is_large_msgpart_size
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_fad9bdc8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.filter.modules.urldefense.counts.noRewriteIsMaxLengthExceeded
-      tag: convert_filter_modules_urldefense_counts_noRewriteIsMaxLengthExceeded_to_long
+      tag: convert_filter_modules_urldefense_counts_noRewriteIsMaxLengthExceeded_to_long_16bbcd4e
       target_field: proofpoint_on_demand.message.filter.modules.urldefense.counts.no_rewrite.is_maxlength_exceeded
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f8fa8b56
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.filter.modules.urldefense.counts.noRewriteIsSchemeless
-      tag: convert_filter_modules_urldefense_counts_noRewriteIsSchemeless_to_long
+      tag: convert_filter_modules_urldefense_counts_noRewriteIsSchemeless_to_long_bc1c8aaf
       target_field: proofpoint_on_demand.message.filter.modules.urldefense.counts.no_rewrite.is_schemeless
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_bbc5d492
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.filter.modules.urldefense.counts.noRewriteIsUnsupportedScheme
-      tag: convert_filter_modules_urldefense_counts_noRewriteIsUnsupportedScheme_to_long
+      tag: convert_filter_modules_urldefense_counts_noRewriteIsUnsupportedScheme_to_long_e1ff1a7e
       target_field: proofpoint_on_demand.message.filter.modules.urldefense.counts.no_rewrite.is_unsupported_scheme
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_eab0d7ed
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.filter.modules.urldefense.counts.rewritten
-      tag: convert_filter_modules_urldefense_counts_rewritten_to_long
+      tag: convert_filter_modules_urldefense_counts_rewritten_to_long_627d45ed
       target_field: proofpoint_on_demand.message.filter.modules.urldefense.counts.rewritten
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ce4fe0f9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.filter.modules.urldefense.counts.total
-      tag: convert_filter_modules_urldefense_counts_total_to_long
+      tag: convert_filter_modules_urldefense_counts_total_to_long_dd681fc3
       target_field: proofpoint_on_demand.message.filter.modules.urldefense.counts.total
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_355f0137
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.filter.modules.urldefense.counts.unique
-      tag: convert_filter_modules_urldefense_counts_unique_to_long
+      tag: convert_filter_modules_urldefense_counts_unique_to_long_3c0d8ad0
       target_field: proofpoint_on_demand.message.filter.modules.urldefense.counts.unique
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_61293ea8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.filter.modules.urldefense.rewrittenUrls
-      tag: rename_filter_modules_urldefense_rewrittenUrls
+      tag: rename_filter_modules_urldefense_rewrittenUrls_8a0529bc
       target_field: proofpoint_on_demand.message.filter.modules.urldefense.rewritten_urls
       ignore_missing: true
   - convert:
       field: json.filter.modules.urldefense.version.engine
-      tag: convert_filter_modules_urldefense_version_engine_to_string
+      tag: convert_filter_modules_urldefense_version_engine_to_string_8d64880e
       target_field: proofpoint_on_demand.message.filter.modules.urldefense.version.engine
       type: string
       ignore_missing: true
   - convert:
       field: json.filter.modules.zerohour.score
-      tag: convert_filter_modules_zerohour_score_to_string
+      tag: convert_filter_modules_zerohour_score_to_string_6fd3c55d
       target_field: proofpoint_on_demand.message.filter.modules.zerohour.score
       type: string
       ignore_missing: true
   - convert:
       field: json.filter.msgSizeBytes
-      tag: convert_filter_msgSizeBytes_to_long
+      tag: convert_filter_msgSizeBytes_to_long_ca638a4a
       target_field: proofpoint_on_demand.message.filter.msg_size_bytes
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_af418a89
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.filter.origGuid
-      tag: rename_filter_origGuid
+      tag: rename_filter_origGuid_b9b4cdba
       target_field: proofpoint_on_demand.message.filter.orig_guid
       ignore_missing: true
   - rename:
       field: json.filter.pe.rcpts
-      tag: rename_filter_pe_rcpts
+      tag: rename_filter_pe_rcpts_f25b9d63
       target_field: proofpoint_on_demand.message.filter.pe.rcpts_object
       ignore_missing: true
       if: ctx.json?.filter?.pe?.rcpts instanceof HashMap
   - convert:
       field: json.filter.pe.rcpts
-      tag: convert_filter_pe_rcpts_to_string
+      tag: convert_filter_pe_rcpts_to_string_c5d661c1
       target_field: proofpoint_on_demand.message.filter.pe.rcpts
       type: string
       ignore_missing: true
   - rename:
       field: json.filter.qid
-      tag: rename_filter_qid
+      tag: rename_filter_qid_b92d68d5
       target_field: proofpoint_on_demand.message.filter.qid
       ignore_missing: true
   - rename:
       field: json.filter.quarantine.folder
-      tag: rename_filter_quarantine_folder
+      tag: rename_filter_quarantine_folder_2980de70
       target_field: proofpoint_on_demand.message.filter.quarantine.folder
       ignore_missing: true
   - rename:
       field: json.filter.quarantine.rule
-      tag: rename_filter_quarantine_rule
+      tag: rename_filter_quarantine_rule_de703ee3
       target_field: proofpoint_on_demand.message.filter.quarantine.rule
       ignore_missing: true
   - append:
       field: rule.name
-      tag: append_message_filter_quarantine_rule_into_rule_name
+      tag: append_message_filter_quarantine_rule_into_rule_name_1b699b51
       value: '{{{proofpoint_on_demand.message.filter.quarantine.rule}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.message?.filter?.quarantine?.rule != null
   - rename:
       field: json.filter.routeDirection
-      tag: rename_filter_routeDirection
+      tag: rename_filter_routeDirection_fc0e46ba
       target_field: proofpoint_on_demand.message.filter.route_direction
       ignore_missing: true
   - set:
       field: network.direction
-      tag: set_network_direction_from_message_filter_route_direction
+      tag: set_network_direction_from_message_filter_route_direction_d7f0bf0d
       copy_from: proofpoint_on_demand.message.filter.route_direction
       ignore_empty_value: true
   - lowercase:
       field: network.direction
-      tag: lowercase_network_direction
+      tag: lowercase_network_direction_793953d1
       ignore_missing: true
   - rename:
       field: json.filter.routes
-      tag: rename_filter_routes
+      tag: rename_filter_routes_719a5c4e
       target_field: proofpoint_on_demand.message.filter.routes
       ignore_missing: true
   - rename:
       field: json.filter.smime.rcpts
-      tag: rename_filter_smime_rcpts
+      tag: rename_filter_smime_rcpts_4ff341eb
       target_field: proofpoint_on_demand.message.filter.smime.rcpts
       ignore_missing: true
   - rename:
       field: json.filter.smime.signedRcpts
-      tag: rename_filter_smime_signedRcpts
+      tag: rename_filter_smime_signedRcpts_11c4efec
       target_field: proofpoint_on_demand.message.filter.smime.signed_rcpts
       ignore_missing: true
   - convert:
       field: json.filter.suborgs.rcpts
-      tag: convert_filter_suborgs_rcpts_to_string
+      tag: convert_filter_suborgs_rcpts_to_string_d2287ccd
       target_field: proofpoint_on_demand.message.filter.suborgs.rcpts
       type: string
       ignore_missing: true
   - convert:
       field: json.filter.suborgs.sender
-      tag: convert_filter_suborgs_sender_to_string
+      tag: convert_filter_suborgs_sender_to_string_55a731e1
       target_field: proofpoint_on_demand.message.filter.suborgs.sender
       type: string
       ignore_missing: true
   - convert:
       field: json.filter.throttleIp
-      tag: convert_filter_throttleIp_to_ip
+      tag: convert_filter_throttleIp_to_ip_28a66100
       target_field: proofpoint_on_demand.message.filter.throttle_ip
       type: ip
       ignore_missing: true
       if: ctx.json?.filter?.throttleIp != ''
       on_failure:
         - append:
+            tag: append_error_message_fffdff0d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_message_filter_throttle_ip_into_related_ip
+      tag: append_message_filter_throttle_ip_into_related_ip_93b29ceb
       value: '{{{proofpoint_on_demand.message.filter.throttle_ip}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.message?.filter?.throttle_ip != null
   - foreach:
+      tag: foreach_json_filter_verified_rcpts_a1eb2943
       field: json.filter.verified.rcpts
       if: ctx.json?.filter?.verified?.rcpts instanceof List
       processor:
         append:
           field: related.user
-          tag: append_filter_verified_rcpts_into_related_user
+          tag: append_filter_verified_rcpts_into_related_user_46678c77
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
       field: json.filter.verified.rcpts
-      tag: rename_filter_verified_rcpts
+      tag: rename_filter_verified_rcpts_c933e88e
       target_field: proofpoint_on_demand.message.filter.verified.rcpts
       ignore_missing: true
   - rename:
       field: json.filter.verified.rcptsHashed
-      tag: rename_filter_verified_rcptsHashed
+      tag: rename_filter_verified_rcptsHashed_07861cf8
       target_field: proofpoint_on_demand.message.filter.verified.rcpts_hashed
       ignore_missing: true
   - rename:
       field: json.final_action
-      tag: rename_final_action
+      tag: rename_final_action_9dd38b48
       target_field: proofpoint_on_demand.message.final_action
       ignore_missing: true
   - set:
       field: event.action
-      tag: set_event_action_from_message_final_action
+      tag: set_event_action_from_message_final_action_d099a445
       copy_from: proofpoint_on_demand.message.final_action
       ignore_empty_value: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - rename:
       field: json.final_module
-      tag: rename_final_module
+      tag: rename_final_module_3776604e
       target_field: proofpoint_on_demand.message.final_module
       ignore_missing: true
   - rename:
       field: json.final_rule
-      tag: rename_final_rule
+      tag: rename_final_rule_da1116b2
       target_field: proofpoint_on_demand.message.final_rule
       ignore_missing: true
   - append:
       field: rule.name
-      tag: append_proofpoint_on_demand_message_final_rule_into_rule_name
+      tag: append_proofpoint_on_demand_message_final_rule_into_rule_name_56036b1d
       value: '{{{proofpoint_on_demand.message.final_rule}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.message?.final_rule != null
   - rename:
       field: json.guid
-      tag: rename_guid
+      tag: rename_guid_7e9ea0e4
       target_field: proofpoint_on_demand.message.guid
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_message_guid
+      tag: set_event_id_from_message_guid_69e19988
       copy_from: proofpoint_on_demand.message.guid
       ignore_empty_value: true
   - rename:
       field: json.metadata.origin.data.agent
-      tag: rename_metadata_origin_data_agent
+      tag: rename_metadata_origin_data_agent_f6d39456
       target_field: proofpoint_on_demand.message.metadata.origin.data.agent
       ignore_missing: true
   - set:
       field: observer.hostname
-      tag: set_observer_hostname_from_message_metadata_origin_data_agent
+      tag: set_observer_hostname_from_message_metadata_origin_data_agent_231b017e
       copy_from: proofpoint_on_demand.message.metadata.origin.data.agent
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_metadata_origin_data_agent_into_related_hosts
+      tag: append_metadata_origin_data_agent_into_related_hosts_32e06504
       value: '{{{proofpoint_on_demand.message.metadata.origin.data.agent}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.message?.metadata?.origin?.data?.agent != null
   - rename:
       field: json.metadata.origin.data.cid
-      tag: rename_metadata_origin_data_cid
+      tag: rename_metadata_origin_data_cid_4b980c1a
       target_field: proofpoint_on_demand.message.metadata.origin.data.cid
       ignore_missing: true
   - set:
       field: observer.name
-      tag: set_observer_name_from_message_metadata_origin_data_cid
+      tag: set_observer_name_from_message_metadata_origin_data_cid_410308e9
       copy_from: proofpoint_on_demand.message.metadata.origin.data.cid
       ignore_empty_value: true
   - rename:
       field: json.metadata.origin.data.version
-      tag: rename_metadata_origin_data_version
+      tag: rename_metadata_origin_data_version_0dcbc439
       target_field: proofpoint_on_demand.message.metadata.origin.data.version
       ignore_missing: true
   - set:
       field: observer.version
-      tag: set_observer_version_from_message_metadata_origin_data_version
+      tag: set_observer_version_from_message_metadata_origin_data_version_1d93cc3f
       copy_from: proofpoint_on_demand.message.metadata.origin.data.version
       ignore_empty_value: true
   - rename:
       field: json.pps.agent
-      tag: rename_pps_agent
+      tag: rename_pps_agent_8dbfeb69
       target_field: proofpoint_on_demand.message.pps.agent
       ignore_missing: true
   - set:
       field: observer.hostname
-      tag: set_observer_hostname_from_pps_agent
+      tag: set_observer_hostname_from_pps_agent_e6912104
       copy_from: proofpoint_on_demand.message.pps.agent
       override: true
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_pps_agent_into_related_hosts
+      tag: append_pps_agent_into_related_hosts_d2448057
       value: '{{{proofpoint_on_demand.message.pps.agent}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.message?.pps?.agent != null
   - rename:
       field: json.pps.cid
-      tag: rename_pps_cid
+      tag: rename_pps_cid_f2deb9d6
       target_field: proofpoint_on_demand.message.pps.cid
       ignore_missing: true
   - set:
       field: observer.name
-      tag: set_observer_name_from_pps_cid
+      tag: set_observer_name_from_pps_cid_d4bc26ed
       copy_from: proofpoint_on_demand.message.pps.cid
       override: true
       ignore_empty_value: true
   - rename:
       field: json.pps.version
-      tag: rename_pps_version
+      tag: rename_pps_version_38190c42
       target_field: proofpoint_on_demand.message.pps.version
       ignore_missing: true
   - set:
       field: observer.version
-      tag: set_observer_version_from_pps_version
+      tag: set_observer_version_from_pps_version_015b1094
       copy_from: proofpoint_on_demand.message.pps.version
       override: true
       ignore_empty_value: true
   - foreach:
+      tag: foreach_json_msg_header_cc_fcc9adee
       field: json.msg.header.cc
       if: ctx.json?.msg?.header?.cc instanceof List
       processor:
         append:
           field: email.cc.address
-          tag: append_msg_header_cc_into_email_cc_address
+          tag: append_msg_header_cc_into_email_cc_address_7fab3b46
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_msg_header_cc_505baafb
       field: json.msg.header.cc
       if: ctx.json?.msg?.header?.cc instanceof List
       processor:
         append:
           field: related.user
-          tag: append_msg_header_cc_into_related_user
+          tag: append_msg_header_cc_into_related_user_e0941064
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
       field: json.msg.header.cc
-      tag: rename_msg_header_cc
+      tag: rename_msg_header_cc_e09a6e9a
       target_field: proofpoint_on_demand.message.msg.header.cc
       ignore_missing: true
   - foreach:
+      tag: foreach_json_msg_header_from_ce990724
       field: json.msg.header.from
       if: ctx.json?.msg?.header?.from instanceof List
       processor:
         append:
           field: email.from.address
-          tag: append_msg_header_from_into_email_from_address
+          tag: append_msg_header_from_into_email_from_address_c8c46168
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_msg_header_from_732a05b5
       field: json.msg.header.from
       if: ctx.json?.msg?.header?.from instanceof List
       processor:
         append:
           field: related.user
-          tag: append_msg_header_from_into_related_user
+          tag: append_msg_header_from_into_related_user_15dfee8e
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
       field: json.msg.header.from
-      tag: rename_msg_header_from
+      tag: rename_msg_header_from_d608a772
       target_field: proofpoint_on_demand.message.msg.header.from
       ignore_missing: true
   - rename:
       field: json.msg.header.fromHashed
-      tag: rename_msg_header_fromHashed
+      tag: rename_msg_header_fromHashed_6480458b
       target_field: proofpoint_on_demand.message.msg.header.from_hashed
       ignore_missing: true
   - rename:
       field: json.msg.header.message-id
-      tag: rename_msg_header_message-id
+      tag: rename_msg_header_message-id_7ed774a7
       target_field: proofpoint_on_demand.message.msg.header.message_id
       ignore_missing: true
   - foreach:
+      tag: foreach_proofpoint_on_demand_message_msg_header_message_id_e736fa11
       field: proofpoint_on_demand.message.msg.header.message_id
       if: ctx.proofpoint_on_demand?.message?.msg?.header?.message_id instanceof List
       processor:
         append:
           field: email.message_id
-          tag: append_msg_header_message_id_into_email_message_id
+          tag: append_msg_header_message_id_into_email_message_id_b869343c
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
       field: json.msg.header.reply-to
-      tag: rename_msg_header_reply-to
+      tag: rename_msg_header_reply-to_b13a51dd
       target_field: proofpoint_on_demand.message.msg.header.reply_to
       ignore_missing: true
   - foreach:
+      tag: foreach_proofpoint_on_demand_message_msg_header_reply_to_0d006883
       field: proofpoint_on_demand.message.msg.header.reply_to
       if: ctx.proofpoint_on_demand?.message?.msg?.header?.reply_to instanceof List
       processor:
         append:
           field: email.reply_to.address
-          tag: append_msg_header_reply_to_into_email_reply_to_address
+          tag: append_msg_header_reply_to_into_email_reply_to_address_3b1b2c08
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_proofpoint_on_demand_message_msg_header_reply_to_48f1c4ea
       field: proofpoint_on_demand.message.msg.header.reply_to
       if: ctx.proofpoint_on_demand?.message?.msg?.header?.reply_to instanceof List
       processor:
         append:
           field: related.user
-          tag: append_msg_header_reply_to_into_related_user
+          tag: append_msg_header_reply_to_into_related_user_3cdbfa6f
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
       field: json.msg.header.return-path
-      tag: rename_msg_header_return-path
+      tag: rename_msg_header_return-path_b2a0e4ee
       target_field: proofpoint_on_demand.message.msg.header.return_path
       ignore_missing: true
   - foreach:
+      tag: foreach_json_msg_header_subject_120d9c67
       field: json.msg.header.subject
       if: ctx.json?.msg?.header?.subject instanceof List
       processor:
         append:
           field: email.subject
-          tag: append_msg_header_subject_into_email_subject
+          tag: append_msg_header_subject_into_email_subject_9dcbabd8
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
       field: json.msg.header.subject
-      tag: rename_msg_header_subject
+      tag: rename_msg_header_subject_00111176
       target_field: proofpoint_on_demand.message.msg.header.subject
       ignore_missing: true
   - foreach:
+      tag: foreach_json_msg_header_to_290a8045
       field: json.msg.header.to
       if: ctx.json?.msg?.header?.to instanceof List
       processor:
         append:
           field: email.to.address
-          tag: append_msg_header_to_into_email_to_address
+          tag: append_msg_header_to_into_email_to_address_61906745
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_msg_header_to_426bf0ca
       field: json.msg.header.to
       if: ctx.json?.msg?.header?.to instanceof List
       processor:
         append:
           field: related.user
-          tag: append_msg_header_to_into_related_user
+          tag: append_msg_header_to_into_related_user_70022f56
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
       field: json.msg.header.to
-      tag: rename_msg_header_to
+      tag: rename_msg_header_to_e9218d7e
       target_field: proofpoint_on_demand.message.msg.header.to
       ignore_missing: true
   - rename:
       field: json.msg.header.toHashed
-      tag: rename_msg_header_toHashed
+      tag: rename_msg_header_toHashed_4bfc2aed
       target_field: proofpoint_on_demand.message.msg.header.to_hashed
       ignore_missing: true
   - rename:
       field: json.msg.lang
-      tag: rename_msg_lang
+      tag: rename_msg_lang_095cb040
       target_field: proofpoint_on_demand.message.msg.lang
       ignore_missing: true
   - rename:
       field: json.msg.normalizedHeader.fromHashed
-      tag: rename_msg_normalizedHeader_fromHashed
+      tag: rename_msg_normalizedHeader_fromHashed_d004ca84
       target_field: json.msg.normalizedHeader.from_hashed
       ignore_missing: true
   - rename:
       field: json.msg.normalizedHeader.message-id
-      tag: rename_msg_normalizedHeader_message-id
+      tag: rename_msg_normalizedHeader_message-id_9f8a98d7
       target_field: json.msg.normalizedHeader.message_id
       ignore_missing: true
   - rename:
       field: json.msg.normalizedHeader.reply-to
-      tag: rename_msg_normalizedHeader_reply-to
+      tag: rename_msg_normalizedHeader_reply-to_10c20a0e
       target_field: json.msg.normalizedHeader.reply_to
       ignore_missing: true
   - rename:
       field: json.msg.normalizedHeader.return-path
-      tag: rename_msg_normalizedHeader_return-path
+      tag: rename_msg_normalizedHeader_return-path_04e8d007
       target_field: json.msg.normalizedHeader.return_path
       ignore_missing: true
   - rename:
       field: json.msg.normalizedHeader.toHashed
-      tag: rename_msg_normalizedHeader_toHashed
+      tag: rename_msg_normalizedHeader_toHashed_9b49ddc5
       target_field: json.msg.normalizedHeader.to_hashed
       ignore_missing: true
   - rename:
       field: json.msg.normalizedHeader
-      tag: rename_msg_normalizedHeader
+      tag: rename_msg_normalizedHeader_70ef564e
       target_field: proofpoint_on_demand.message.msg.normalized_header
       ignore_missing: true
   - foreach:
+      tag: foreach_json_msg_parsedAddresses_cc_1da6fd65
       field: json.msg.parsedAddresses.cc
       if: ctx.json?.msg?.parsedAddresses?.cc instanceof List
       processor:
         append:
           field: related.user
-          tag: append_msg_parsedAddresses_cc_into_related_user
+          tag: append_msg_parsedAddresses_cc_into_related_user_538d31f2
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_msg_parsedAddresses_from_f8f706af
       field: json.msg.parsedAddresses.from
       if: ctx.json?.msg?.parsedAddresses?.from instanceof List
       processor:
         append:
           field: related.user
-          tag: append_msg_parsedAddresses_from_into_related_user
+          tag: append_msg_parsedAddresses_from_into_related_user_dbf6f818
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
       field: json.msg.parsedAddresses.fromHashed
-      tag: rename_msg_parsedAddresses_fromHashed
+      tag: rename_msg_parsedAddresses_fromHashed_3ccc4409
       target_field: json.msg.parsedAddresses.from_hashed
       ignore_missing: true
   - foreach:
+      tag: foreach_json_msg_parsedAddresses_to_e964c83a
       field: json.msg.parsedAddresses.to
       if: ctx.json?.msg?.parsedAddresses?.to instanceof List
       processor:
         append:
           field: related.user
-          tag: append_msg_parsedAddresses_to_into_related_user
+          tag: append_msg_parsedAddresses_to_into_related_user_e553c9b7
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
       field: json.msg.parsedAddresses.toHashed
-      tag: rename_msg_parsedAddresses_toHashed
+      tag: rename_msg_parsedAddresses_toHashed_1dd43c34
       target_field: json.msg.parsedAddresses.to_hashed
       ignore_missing: true
   - rename:
       field: json.msg.parsedAddresses
-      tag: rename_msg_parsedAddresses
+      tag: rename_msg_parsedAddresses_1e727fde
       target_field: proofpoint_on_demand.message.msg.parsed_addresses
       ignore_missing: true
   - convert:
       field: json.msg.sizeBytes
-      tag: convert_msg_sizeBytes_to_long
+      tag: convert_msg_sizeBytes_to_long_55ce7789
       target_field: proofpoint_on_demand.message.msg.size_bytes
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_08f577b6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
-      description: Map msgParts fields. 
+      description: Map msgParts fields.
       if: ctx.json?.msgParts instanceof List
       params:
         'dataBase64': 'database64'
@@ -1172,7 +1227,7 @@ processors:
         'textExtracted': 'text_extracted'
         'isRewritten': 'is_rewritten'
         'notRewrittenReason': 'not_rewritten_reason'
-      tag: script_to_map_fields_under_msgParts_object
+      tag: script_to_map_fields_under_msgParts_object_0328d1fd
       source: |
         def convertToLong(def value) {
           if (value instanceof String) {
@@ -1278,45 +1333,51 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_c5dec0a4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_email_attachments_7f15a33e
       field: email.attachments
       if: ctx.email?.attachments instanceof List
       processor:
         lowercase:
           field: _ingest._value.file.extension
-          tag: lowercase_email_attachments_file_extension
+          tag: lowercase_email_attachments_file_extension_ea997705
           ignore_missing: true
   - date:
       field: json.ts
-      tag: date_ts
+      tag: date_ts_93045b91
       target_field: proofpoint_on_demand.message.ts
       formats:
         - ISO8601
       if: ctx.json?.ts != null && ctx.json.ts != ''
       on_failure:
         - append:
+            tag: append_error_message_db669455
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_message_ts
+      tag: set_@timestamp_from_message_ts_6c92b2e5
       copy_from: proofpoint_on_demand.message.ts
       ignore_empty_value: true
   - foreach:
+      tag: foreach_proofpoint_on_demand_message_msg_parts_d7fae032
       field: proofpoint_on_demand.message.msg_parts
       if: ctx.proofpoint_on_demand?.message?.msg_parts instanceof List
       processor:
         foreach:
+          tag: foreach_ingest_value_urls_a578a94b
           field: _ingest._value.urls
           processor:
             remove:
               field: _ingest._value.url
-              tag: remove_custom_duplicate_fields_from_proofpoint_on_demand_message_msg_parts_urls
+              tag: remove_custom_duplicate_fields_from_proofpoint_on_demand_message_msg_parts_urls_61ddde6b
               ignore_missing: true
               if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - foreach:
+      tag: foreach_proofpoint_on_demand_message_msg_parts_b5798d82
       field: proofpoint_on_demand.message.msg_parts
       if: ctx.proofpoint_on_demand?.message?.msg_parts instanceof List
       processor:
@@ -1328,7 +1389,7 @@ processors:
             - _ingest._value.detected_size_bytes
             - _ingest._value.md5
             - _ingest._value.sha256
-          tag: remove_custom_duplicate_fields_from_proofpoint_on_demand_message_msg_parts
+          tag: remove_custom_duplicate_fields_from_proofpoint_on_demand_message_msg_parts_86a0498b
           ignore_missing: true
           if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
@@ -1350,15 +1411,15 @@ processors:
         - proofpoint_on_demand.message.msg.header.to
         - proofpoint_on_demand.message.msg.header.subject
         - proofpoint_on_demand.message.ts
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_645c0ffd
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_fe55341c
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -1377,23 +1438,26 @@ processors:
         drop(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_c25a0ec7
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

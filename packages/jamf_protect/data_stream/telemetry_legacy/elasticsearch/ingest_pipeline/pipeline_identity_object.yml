@@ -2,32 +2,38 @@
 description: Pipeline for Jamf Protect Telemetry identity_object audit logs.
 processors:
   - rename:
+      tag: rename_json_identity_cd_hash_to_jamf_protect_telemetry_identity_cd_hash_a9366b3b
       field: json.identity.cd_hash
       target_field: jamf_protect.telemetry.identity.cd_hash
       ignore_missing: true
   - append:
+      tag: append_related_hash_1f8b0198
       field: related.hash
       value: '{{{jamf_protect.telemetry.identity.cd_hash}}}'
       if: ctx.jamf_compliance_reporter?.log?.identity?.cd_hash != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_identity_signer_id_to_process_code_signature_signing_id_a1f12da8
       field: json.identity.signer_id
       target_field: process.code_signature.signing_id
       ignore_missing: true
   - convert:
+      tag: convert_json_identity_signer_id_truncated_to_jamf_protect_telemetry_identity_signer_id_truncated_e8b490c5
       field: json.identity.signer_id_truncated
       target_field: jamf_protect.telemetry.identity.signer.id_truncated
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_identity_signer_type_to_jamf_protect_telemetry_identity_signer_type_50bcc329
       field: json.identity.signer_type
       target_field: jamf_protect.telemetry.identity.signer.type
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_identity_team_id_to_process_code_signature_team_id_1390fb3f
       field: json.identity.team_id
       target_field: process.code_signature.team_id
       ignore_missing: true

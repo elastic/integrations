@@ -2,23 +2,27 @@
 description: Pipeline for processing Event Report logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - fingerprint:
+      tag: fingerprint_to_id_b44d2872
       fields:
         - json.IP_Address
         - json.Username
@@ -28,20 +32,25 @@ processors:
       target_field: '_id'
       ignore_missing: true
   - rename:
+      tag: rename_json_Action_to_lastpass_event_report_action_69f911e2
       field: json.Action
       target_field: lastpass.event_report.action
       ignore_missing: true
   - set:
+      tag: set_event_action_8bf755cd
       field: event.action
       copy_from: lastpass.event_report.action
       ignore_empty_value: true
   - lowercase:
+      tag: lowercase_event_action_9334b869
       field: event.action
       ignore_missing: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_category_d2f3d550
       field: event.category
       if: >-
         ctx.event?.action != null && (
@@ -54,6 +63,7 @@ processors:
         )
       value: [authentication]
   - set:
+      tag: set_event_category_a4de1d17
       field: event.category
       if: >-
         ctx.event?.action != null && (
@@ -63,6 +73,7 @@ processors:
         )
       value: [configuration]
   - set:
+      tag: set_event_category_7e8cfc56
       field: event.category
       if: >-
         ctx.event?.action != null && (
@@ -79,6 +90,7 @@ processors:
         )
       value: [iam]
   - set:
+      tag: set_event_type_8dad002d
       field: event.type
       if: >-
         ctx.event?.action != null && (
@@ -90,10 +102,12 @@ processors:
         )
       value: [start]
   - set:
+      tag: set_event_type_ef084da0
       field: event.type
       if: ctx.event?.action?.contains('make admin') == true
       value: [admin]
   - set:
+      tag: set_event_type_bee16e41
       field: event.type
       if: >-
         ctx.event?.action != null && (
@@ -110,6 +124,7 @@ processors:
         )
       value: [change]
   - set:
+      tag: set_event_type_5418f29c
       field: event.type
       if: >-
         ctx.event?.action != null && (
@@ -123,6 +138,7 @@ processors:
         )
       value: [creation]
   - set:
+      tag: set_event_type_c14d46f8
       field: event.type
       if: >-
         ctx.event?.action != null && (
@@ -137,6 +153,7 @@ processors:
         )
       value: [deletion]
   - set:
+      tag: set_event_type_3b9297fa
       field: event.type
       if: >-
         ctx.event?.action != null && (
@@ -145,6 +162,7 @@ processors:
         )
       value: [group, creation]
   - set:
+      tag: set_event_type_b08821ea
       field: event.type
       if: >-
         ctx.event?.action != null && (
@@ -158,6 +176,7 @@ processors:
         )
       value: [info]
   - set:
+      tag: set_event_outcome_1f489e0f
       field: event.outcome
       if: >-
         ctx.event?.action != null && (
@@ -201,10 +220,12 @@ processors:
         )
       value: success
   - set:
+      tag: set_event_outcome_c20d4e51
       field: event.outcome
       if: ctx.event?.action?.contains('failed login attempt') == true
       value: failure
   - set:
+      tag: set_event_outcome_42e772e3
       field: event.outcome
       if: >-
         ctx.event?.action != null && (
@@ -215,15 +236,18 @@ processors:
   # Set timezone based on config or locale. Defaults to US/Eastern due to
   # https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/api_event_reporting.html&_LANG=enus.
   - rename:
+      tag: rename__conf_tz_offset_to_event_timezone_1561f981
       field: _conf.tz_offset
       target_field: event.timezone
       if: ctx._conf?.tz_offset != null
       ignore_failure: true
   - set:
+      tag: set_event_timezone_5dd4d807
       field: event.timezone
       value: US/Eastern
       override: false
   - date:
+      tag: date_json_Time_to_lastpass_event_report_time_33f87d37
       field: json.Time
       if: ctx.json?.Time != null && ctx.json.Time != '' && ctx.event?.timezone != null
       target_field: lastpass.event_report.time
@@ -235,13 +259,16 @@ processors:
         - yyyy-MM-dd HH:mm:ssZZZZ
       on_failure:
         - append:
+            tag: append_error_message_e0251492
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_timestamp_c9be534a
       field: '@timestamp'
       copy_from: lastpass.event_report.time
       ignore_empty_value: true
   - convert:
+      tag: convert_json_IP_Address_to_lastpass_event_report_ip_7f8f2c37
       field: json.IP_Address
       target_field: lastpass.event_report.ip
       if: ctx.json?.IP_Address != ''
@@ -249,31 +276,38 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_46f3daaa
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_source_ip_48d07e36
       field: source.ip
       copy_from: lastpass.event_report.ip
       ignore_empty_value: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - rename:
+      tag: rename_json_Username_to_lastpass_event_report_user_name_3967cfd7
       field: json.Username
       target_field: lastpass.event_report.user_name
       ignore_missing: true
   - rename:
+      tag: rename_json_Data_to_lastpass_event_report_data_original_aad0292d
       field: json.Data
       target_field: lastpass.event_report.data.original
       ignore_missing: true
   - split:
+      tag: split_lastpass_event_report_data_original_to_lastpass_event_report_data_deleted_site_344765c4
       if: ctx.event?.action?.contains('deleted sites') == true
       field: lastpass.event_report.data.original
       separator: ','
       target_field: lastpass.event_report.data.deleted_site
       ignore_failure: true
   - split:
+      tag: split_lastpass_event_report_data_original_to_lastpass_event_report_data_user_email_f31adb40
       if: >-
         ctx.event?.action != null && (
           ctx.event.action.contains('employee invited') ||
@@ -285,6 +319,7 @@ processors:
       target_field: lastpass.event_report.data.user_email
       ignore_failure: true
   - script:
+        tag: script_separate_shared_folder_name_user_c42b5c04
         description: Separate Shared Folder Name and User Email with comma(',') in Limit Shared Folder Event Type.
         lang: painless
         source: |
@@ -294,24 +329,28 @@ processors:
             ctx._temp = str;
           }
   - grok:
+      tag: grok_lastpass_event_report_data_original_4f05c0d8
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('log in') == true
       patterns:
         - "^%{GREEDYDATA:lastpass.event_report.data.login_site}$"
       ignore_failure: true
   - grok:
+      tag: grok_lastpass_event_report_data_original_7fdcb29f
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('saml login') == true
       patterns:
         - "^%{GREEDYDATA:lastpass.event_report.data.saml_login}$"
       ignore_failure: true
   - grok:
+      tag: grok_lastpass_event_report_data_original_904310e2
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('failed login attempt') == true
       patterns:
         - "^%{GREEDYDATA:lastpass.event_report.data.failed_login}$"
       ignore_failure: true
   - grok:
+      tag: grok_lastpass_event_report_data_original_0f206e9d
       field: lastpass.event_report.data.original
       if: >-
         ctx.event?.action != null && (
@@ -325,12 +364,14 @@ processors:
         - "^%{EMAILADDRESS:lastpass.event_report.data.user_email}$"
       ignore_failure: true
   - grok:
+      tag: grok_lastpass_event_report_data_original_42574f3d
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('site added') == true
       patterns:
         - "^%{GREEDYDATA:lastpass.event_report.data.added_site}$"
       ignore_failure: true
   - grok:
+      tag: grok_lastpass_event_report_data_original_399541cc
       field: lastpass.event_report.data.original
       if: >-
         ctx.event?.action != null && (
@@ -341,6 +382,7 @@ processors:
         - "^%{DATA:lastpass.event_report.data.shared_folder_name}$"
       ignore_failure: true
   - grok:
+      tag: grok_lastpass_event_report_data_original_e289fb20
       field: lastpass.event_report.data.original
       if: >-
         ctx.event?.action != null && (
@@ -352,48 +394,56 @@ processors:
         - '^Secure Note\s+\(%{DATA:lastpass.event_report.data.secure_note}\)\s+from\s+%{DATA:lastpass.event_report.data.shared_folder_name}$'
       ignore_failure: true
   - grok:
+      tag: grok_lastpass_event_report_data_original_3187d099
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('edit secure note') == true
       patterns:
         - '^Secure Note\s+\(%{DATA:lastpass.event_report.data.secure_note}\)$'
       ignore_failure: true
   - grok:
+      tag: grok_lastpass_event_report_data_original_d6a637ec
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('add to shared folder') == true
       patterns:
         - "^'%{DATA:lastpass.event_report.data.shared_folder_name}'\\s+'%{EMAILADDRESS:lastpass.event_report.data.user_email}'$"
       ignore_failure: true
   - grok:
+      tag: grok_lastpass_event_report_data_original_d8dd77e0
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('create group') == true
       patterns:
         - "^'%{DATA:lastpass.event_report.data.group_name}'$"
       ignore_failure: true
   - grok:
+      tag: grok_lastpass_event_report_data_original_dbd8bfcb
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('adding user to group') == true
       patterns:
         - '^%{EMAILADDRESS:lastpass.event_report.data.user_email}\s+\-\s+%{DATA:lastpass.event_report.data.group_name}$'
       ignore_failure: true
   - grok:
+      tag: grok_lastpass_event_report_data_original_acdda5c0
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('created lastpass account') == true
       patterns:
         - '^%{EMAILADDRESS:lastpass.event_report.data.user_email}\s*-Shared-\s*%{DATA:lastpass.event_report.data.shared_folder_name}$'
       ignore_failure: true
   - grok:
+      tag: grok_lastpass_event_report_data_original_100a7758
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('update folder permissions') == true
       patterns:
         - "^'%{DATA:lastpass.event_report.data.shared_folder_name}'\\s+'%{EMAILADDRESS:lastpass.event_report.data.user_email}'\\s+'Read only:%{DATA:lastpass.event_report.data.shared_folder_user_permissions.read_only}\\s+Admin:%{DATA:lastpass.event_report.data.shared_folder_user_permissions.admin}\\s+Hide PW:%{DATA:lastpass.event_report.data.shared_folder_user_permissions.hide_password}'$"
       ignore_failure: true
   - grok:
+      tag: grok_lastpass_event_report_data_original_9100b99d
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('renamed shared folder') == true
       patterns:
         - "^'%{DATA:lastpass.event_report.data.shared_folder_name}'\\s+'%{DATA:lastpass.event_report.data.renamed_shared_folder_name}'$"
       ignore_failure: true
   - grok:
+      tag: grok_lastpass_event_report_data_original_fc136b7c
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('move to shared folder') == true
       patterns:
@@ -401,6 +451,7 @@ processors:
         - '^%{GREEDYDATA:lastpass.event_report.data.site}\s+to\s+%{DATA:lastpass.event_report.data.shared_folder_name}$'
       ignore_failure: true
   - grok:
+      tag: grok_lastpass_event_report_data_original_a685cb63
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('move from shared folder') == true
       patterns:
@@ -409,6 +460,7 @@ processors:
         - '^%{GREEDYDATA:lastpass.event_report.data.site}\s+from\s+%{DATA:lastpass.event_report.data.shared_folder_name}$'
       ignore_failure: true
   - grok:
+      tag: grok_lastpass_event_report_data_original_c2e95fcf
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('delete shared sites') == true
       patterns:
@@ -416,22 +468,26 @@ processors:
         - '^%{GREEDYDATA:lastpass.event_report.data.deleted_site}\s+from\s+%{DATA:lastpass.event_report.data.shared_folder_name}$'
       ignore_failure: true
   - grok:
+      tag: grok__temp_0084a285
       field: _temp
       if: ctx.event?.action?.contains('limit shared folder') == true
       patterns:
         - '^%{DATA:lastpass.event_report.data.shared_folder_name},%{EMAILADDRESS:lastpass.event_report.data.user_email}$'
       ignore_failure: true
   - grok:
+      tag: grok_lastpass_event_report_data_original_81ce440c
       field: lastpass.event_report.data.original
       if: ctx.event?.action?.contains('removed from shared folder') == true
       patterns:
         - "^'%{DATA:lastpass.event_report.data.shared_folder_name}'\\s+'%{EMAILADDRESS:lastpass.event_report.data.user_email}'$"
       ignore_failure: true
   - set:
+      tag: set_user_group_name_8e2b6cfd
       field: user.group.name
       copy_from: lastpass.event_report.data.group_name
       ignore_empty_value: true
   - foreach:
+      tag: foreach_lastpass_event_report_data_user_email_8f5196ee
       if: >-
         ctx.event?.action != null && (
           ctx.event.action.contains('employee invited') ||
@@ -441,6 +497,7 @@ processors:
       field: lastpass.event_report.data.user_email
       processor:
         append:
+          tag: append_user_email_7455447d
           field: user.email
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -448,6 +505,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_user_email_a0e20214
       if: >-
         ctx.event?.action == null || !(
           ctx.event.action.contains('employee invited') ||
@@ -460,15 +518,18 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_user_email_b9a7f4e6
       field: user.email
       value:
         - '{{{lastpass.event_report.user_name}}}'
       allow_duplicates: false
       ignore_failure: true
   - foreach:
+      tag: foreach_user_email_6d2203b4
       field: user.email
       processor:
         append:
+          tag: append_related_user_77327c83
           field: related.user
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -476,17 +537,20 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_related_ip_30d15214
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - remove:
+      tag: remove_ef4e960b
       field:
         - json
         - _temp
       ignore_missing: true
   - remove:
+      tag: remove_57c826fd
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - lastpass.event_report.time
@@ -498,6 +562,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
+        tag: script_drops_null_empty_values_recursively_a3eb5add
         description: Drops null/empty values recursively.
         lang: painless
         source: |
@@ -516,12 +581,18 @@ processors:
           dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

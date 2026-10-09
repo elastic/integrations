@@ -3,143 +3,176 @@ description: Pipeline for Google Cloud Firewall Logs
 
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - community_id:
+      tag: community_id_46d7956f
       source_ip: json.jsonPayload.connection.src_ip
       source_port: json.jsonPayload.connection.src_port
       destination_ip: json.jsonPayload.connection.dest_ip
       destination_port: json.jsonPayload.connection.dest_port
       iana_number: json.jsonPayload.connection.protocol
   - date:
+      tag: date_json_timestamp_e111e976
       field: json.timestamp
       timezone: UTC
       formats:
         - ISO8601
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_7afdca3c
       field: event.category
       value: network
   - set:
+      tag: set_event_action_69a06be7
       field: event.action
       value: firewall-rule
   - set:
+      tag: set_cloud_provider_62c5e42e
       field: cloud.provider
       value: gcp
   - set:
+      tag: set_log_logger_01230fab
       field: log.logger
       copy_from: json.logName
       ignore_failure: true
   - set:
+      tag: set_network_name_dd708766
       field: network.name
       copy_from: json.resource.labels.subnetwork_name
       ignore_failure: true
   - set:
+      tag: set_event_id_efd37a25
       field: event.id
       copy_from: json.insertId
       ignore_empty_value: true
       ignore_failure: true
   - lowercase:
+      tag: lowercase_json_jsonPayload_disposition_fb062e4c
       field: json.jsonPayload.disposition
       if: ctx?.json?.jsonPayload?.disposition != null
   - append:
+      tag: append_event_type_d5282502
       field: event.type
       value: '{{json.jsonPayload.disposition}}'
       if: ctx?.json?.jsonPayload?.disposition != null
   - append:
+      tag: append_event_type_ab8d9d0e
       field: event.type
       value: connection
   - set:
+      tag: set_network_direction_6b8ae95b
       field: network.direction
       value: inbound
       if: ctx?.json?.jsonPayload?.rule_details?.direction == "INGRESS"
   - set:
+      tag: set_network_direction_2bb385cc
       field: network.direction
       value: outbound
       if: ctx?.json?.jsonPayload?.rule_details?.direction == "EGRESS"
   - set:
+      tag: set_network_direction_f672f5c9
       field: network.direction
       value: unknown
       if: ctx?.network?.direction == null
   - set:
+      tag: set__jsonPayload_src_vpc_fea93931
       field: _jsonPayload.src_vpc
       copy_from: json.jsonPayload.vpc
       if: ctx?.network?.direction == "outbound"
       ignore_failure: true
   - set:
+      tag: set__jsonPayload_src_instance_3c8adb4f
       field: _jsonPayload.src_instance
       copy_from: json.jsonPayload.instance
       if: ctx?.network?.direction == "outbound"
       ignore_failure: true
   - set:
+      tag: set__jsonPayload_src_location_d346c487
       field: _jsonPayload.src_location
       copy_from: json.jsonPayload.location
       if: ctx?.network?.direction == "outbound"
       ignore_failure: true
   - set:
+      tag: set__jsonPayload_dest_vpc_d562441e
       field: _jsonPayload.dest_vpc
       copy_from: json.jsonPayload.remote_vpc
       if: ctx?.network?.direction == "outbound"
       ignore_failure: true
   - set:
+      tag: set__jsonPayload_dest_instance_7560ca28
       field: _jsonPayload.dest_instance
       copy_from: json.jsonPayload.remote_instance
       if: ctx?.network?.direction == "outbound"
       ignore_failure: true
   - set:
+      tag: set__jsonPayload_dest_location_f6456040
       field: _jsonPayload.dest_location
       copy_from: json.jsonPayload.remote_location
       if: ctx?.network?.direction == "outbound"
       ignore_failure: true
   - set:
+      tag: set__jsonPayload_dest_vpc_ae81acea
       field: _jsonPayload.dest_vpc
       copy_from: json.jsonPayload.vpc
       if: ctx?.network?.direction == "inbound"
       ignore_failure: true
   - set:
+      tag: set__jsonPayload_dest_instance_94854328
       field: _jsonPayload.dest_instance
       copy_from: json.jsonPayload.instance
       if: ctx?.network?.direction == "inbound"
       ignore_failure: true
   - set:
+      tag: set__jsonPayload_dest_location_7a87b440
       field: _jsonPayload.dest_location
       copy_from: json.jsonPayload.location
       if: ctx?.network?.direction == "inbound"
       ignore_failure: true
   - set:
+      tag: set__jsonPayload_src_vpc_2299c961
       field: _jsonPayload.src_vpc
       copy_from: json.jsonPayload.remote_vpc
       if: ctx?.network?.direction == "inbound"
       ignore_failure: true
   - set:
+      tag: set__jsonPayload_src_instance_edebfabb
       field: _jsonPayload.src_instance
       copy_from: json.jsonPayload.remote_instance
       if: ctx?.network?.direction == "inbound"
       ignore_failure: true
   - set:
+      tag: set__jsonPayload_src_location_1724ba3b
       field: _jsonPayload.src_location
       copy_from: json.jsonPayload.remote_location
       if: ctx?.network?.direction == "inbound"
       ignore_failure: true
   - set:
+      tag: set_network_iana_number_1bb4e74b
       field: network.iana_number
       copy_from: json.jsonPayload.connection.protocol
       ignore_failure: true
   - convert:
+      tag: convert_network_iana_number_b5dcb911
       field: network.iana_number
       type: string
       ignore_missing: true
   - script:
+      tag: script_aaef8fa9
       lang: painless
       ignore_failure: true
       if: ctx?.network?.iana_number != null
@@ -169,125 +202,153 @@ processors:
             ctx.network.transport = 'sctp';
         }
   - set:
+      tag: set_destination_address_3f9e1c04
       field: destination.address
       copy_from: json.jsonPayload.connection.dest_ip
       ignore_failure: true
   - set:
+      tag: set_destination_port_48df1199
       field: destination.port
       copy_from: json.jsonPayload.connection.dest_port
       ignore_failure: true
   - set:
+      tag: set_source_address_a1ff7ced
       field: source.address
       copy_from: json.jsonPayload.connection.src_ip
       ignore_failure: true
   - set:
+      tag: set_source_port_0090c682
       field: source.port
       copy_from: json.jsonPayload.connection.src_port
       ignore_failure: true
   - rename:
+      tag: rename__jsonPayload_src_instance_vm_name_to_source_domain_a1cf65f1
       field: _jsonPayload.src_instance.vm_name
       target_field: source.domain
       ignore_missing: true
   - rename:
+      tag: rename__jsonPayload_dest_instance_vm_name_to_destination_domain_595698ea
       field: _jsonPayload.dest_instance.vm_name
       target_field: destination.domain
       ignore_missing: true
   - rename:
+      tag: rename__jsonPayload_dest_location_asn_to_destination_as_number_39012dd0
       field: _jsonPayload.dest_location.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename__jsonPayload_dest_location_continent_to_destination_geo_continent_name_b0ee6f70
       field: _jsonPayload.dest_location.continent
       target_field: destination.geo.continent_name
       ignore_missing: true
   - rename:
+      tag: rename__jsonPayload_dest_location_country_to_destination_geo_country_name_6827c0e4
       field: _jsonPayload.dest_location.country
       target_field: destination.geo.country_name
       ignore_missing: true
   - rename:
+      tag: rename__jsonPayload_dest_location_region_to_destination_geo_region_name_ddff3830
       field: _jsonPayload.dest_location.region
       target_field: destination.geo.region_name
       ignore_missing: true
   - rename:
+      tag: rename__jsonPayload_dest_location_city_to_destination_geo_city_name_4d8f9698
       field: _jsonPayload.dest_location.city
       target_field: destination.geo.city_name
       ignore_missing: true
   - rename:
+      tag: rename__jsonPayload_src_location_asn_to_source_as_number_53b97437
       field: _jsonPayload.src_location.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename__jsonPayload_src_location_continent_to_source_geo_continent_name_c432ef71
       field: _jsonPayload.src_location.continent
       target_field: source.geo.continent_name
       ignore_missing: true
   - rename:
+      tag: rename__jsonPayload_src_location_country_to_source_geo_country_name_b3890879
       field: _jsonPayload.src_location.country
       target_field: source.geo.country_name
       ignore_missing: true
   - rename:
+      tag: rename__jsonPayload_src_location_region_to_source_geo_region_name_3669d90f
       field: _jsonPayload.src_location.region
       target_field: source.geo.region_name
       ignore_missing: true
   - rename:
+      tag: rename__jsonPayload_src_location_city_to_source_geo_city_name_cd692cc1
       field: _jsonPayload.src_location.city
       target_field: source.geo.city_name
       ignore_missing: true
   - rename:
+      tag: rename__jsonPayload_dest_instance_to_gcp_destination_instance_1b5fe576
       field: _jsonPayload.dest_instance
       target_field: gcp.destination.instance
       ignore_missing: true
   - rename:
+      tag: rename__jsonPayload_dest_vpc_to_gcp_destination_vpc_ecae5db6
       field: _jsonPayload.dest_vpc
       target_field: gcp.destination.vpc
       ignore_missing: true
   - rename:
+      tag: rename__jsonPayload_src_instance_to_gcp_source_instance_afb3e97b
       field: _jsonPayload.src_instance
       target_field: gcp.source.instance
       ignore_missing: true
   - rename:
+      tag: rename__jsonPayload_src_vpc_to_gcp_source_vpc_f032135d
       field: _jsonPayload.src_vpc
       target_field: gcp.source.vpc
       ignore_missing: true
   - rename:
+      tag: rename_json_jsonPayload_rule_details_reference_to_rule_name_bb616be5
       field: json.jsonPayload.rule_details.reference
       target_field: rule.name
       ignore_missing: true
 
   - set:
+      tag: set_source_ip_1d3ed944
       field: source.ip
       value: "{{source.address}}"
       if: ctx?.source?.address != null
       ignore_failure: true
   - set:
+      tag: set_destination_ip_2567920d
       field: destination.ip
       value: "{{destination.address}}"
       if: ctx?.destination?.address != null
       ignore_failure: true
   - convert:
+      tag: convert_gcp_source_instance_project_id_to_cloud_project_id_3cf3531b
       field: gcp.source.instance.project_id
       target_field: cloud.project.id
       type: string
       ignore_missing: true
       if: ctx?.network?.direction == "outbound"
   - convert:
+      tag: convert_gcp_source_instance_vm_name_to_cloud_instance_name_26bbd735
       field: gcp.source.instance.vm_name
       target_field: cloud.instance.name
       type: string
       ignore_missing: true
       if: ctx?.network?.direction == "outbound"
   - convert:
+      tag: convert_gcp_source_instance_region_to_cloud_region_ececb5a4
       field: gcp.source.instance.region
       target_field: cloud.region
       type: string
       ignore_missing: true
       if: ctx?.network?.direction == "outbound"
   - convert:
+      tag: convert_gcp_source_instance_zone_to_cloud_availability_zone_f2b9ef0e
       field: gcp.source.instance.zone
       target_field: cloud.availability_zone
       type: string
       ignore_missing: true
       if: ctx?.network?.direction == "outbound"
   - convert:
+      tag: convert_gcp_source_vpc_subnetwork_name_to_network_name_b36e992b
       field: gcp.source.vpc.subnetwork_name
       target_field: network.name
       type: string
@@ -295,30 +356,35 @@ processors:
       ignore_failure: true
       if: ctx?.network?.direction == "outbound"
   - convert:
+      tag: convert_gcp_destination_instance_project_id_to_cloud_project_id_ca298ca7
       field: gcp.destination.instance.project_id
       target_field: cloud.project.id
       type: string
       ignore_missing: true
       if: ctx?.network?.direction == "inbound"
   - convert:
+      tag: convert_gcp_destination_instance_vm_name_to_cloud_instance_name_3f774beb
       field: gcp.destination.instance.vm_name
       target_field: cloud.instance.name
       type: string
       ignore_missing: true
       if: ctx?.network?.direction == "inbound"
   - convert:
+      tag: convert_gcp_destination_instance_region_to_cloud_region_23ec5daa
       field: gcp.destination.instance.region
       target_field: cloud.region
       type: string
       ignore_missing: true
       if: ctx?.network?.direction == "inbound"
   - convert:
+      tag: convert_gcp_destination_instance_zone_to_cloud_availability_zone_625d2a14
       field: gcp.destination.instance.zone
       target_field: cloud.availability_zone
       type: string
       ignore_missing: true
       if: ctx?.network?.direction == "inbound"
   - convert:
+      tag: convert_gcp_destination_vpc_subnetwork_name_to_network_name_9eef67bd
       field: gcp.destination.vpc.subnetwork_name
       target_field: network.name
       type: string
@@ -326,36 +392,44 @@ processors:
       ignore_failure: true
       if: ctx?.network?.direction == "inbound"
   - set:
+      tag: set_network_direction_14948af4
       field: network.direction
       value: internal
       if: ctx?.gcp?.source?.instance == ctx?.gcp?.destination?.instance
   - set:
+      tag: set_network_type_409f99d1
       field: network.type
       value: ipv4
-      if: ctx?.source?.ip != null && ctx?.source?.ip.contains(".") 
+      if: ctx?.source?.ip != null && ctx?.source?.ip.contains(".")
   - set:
+      tag: set_network_type_3a24ca9a
       field: network.type
       value: ipv6
       if: ctx?.source?.ip != null && !ctx?.source?.ip.contains(".")
   - set:
+      tag: set_gcp_firewall_rule_details_b37c34ee
       field: gcp.firewall.rule_details
       copy_from: json.jsonPayload.rule_details
       ignore_failure: true
   - append:
+      tag: append_related_ip_c40a2e39
       field: related.ip
       value: "{{source.ip}}"
       allow_duplicates: false
       if: ctx?.source?.ip != null && ctx?.source?.ip != ""
   - append:
+      tag: append_related_ip_b730887a
       field: related.ip
       value: "{{destination.ip}}"
       allow_duplicates: false
       if: ctx?.destination?.ip != null && ctx?.destination?.ip != ""
   - rename:
+      tag: rename_json_to_gcp_firewall_flattened_5c64c5b8
       field: json
       target_field: gcp.firewall.flattened
       if: ctx.json != null && ctx._conf?.keep_json == true
   - remove:
+      tag: remove_f2d436c9
       field:
         - gcp.firewall.connection
         - gcp.firewall.dest_location
@@ -367,15 +441,18 @@ processors:
       ignore_missing: true
   # IP Geolocation Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_ab5e2968
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -384,6 +461,7 @@ processors:
         - organization_name
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -392,25 +470,39 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

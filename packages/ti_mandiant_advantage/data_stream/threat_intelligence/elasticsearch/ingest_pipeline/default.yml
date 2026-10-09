@@ -2,45 +2,56 @@
 description: Pipeline for processing Mandiant IOCs.
 processors:
 - rename:
+      tag: rename_message_to_event_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
 - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
 - set:
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: 8.11.0
 - set:
+      tag: set_event_type_acbc82af
       field: event.type
       value: ["indicator"]
 - set:
+      tag: set_event_kind_3410a97a
       field: event.kind
       value: enrichment
 - set:
+      tag: set_event_category_4675e36d
       field: event.category
       value: ["threat"]
 - set:
+      tag: set_event_module_f6665d1c
       field: event.module
       value: ti_mandiant_advantage_threat_intelligence
 - json:
+      tag: json_event_original_to_json_93ceb325
       field: event.original
       target_field: json
       ignore_failure: true
 - drop:
+      tag: drop_6f9c8237
       if: ctx.json?.content != null && ctx.json.content.isEmpty()
 - set:
+    tag: set_threat_feed_name_d11df23d
     field: threat.feed.name
     value: "Mandiant Threat Intelligence"
 - rename:
+      tag: rename_json_last_updated_to_json_last_update_date_b72e7c2d
       field: json.last_updated
       target_field: json.last_update_date
       ignore_missing: true
 - date:
+      tag: date_json_last_update_date_to_threat_indicator_modified_at_15d6e7c9
       field: json.last_update_date
       target_field: threat.indicator.modified_at
       if: ctx.json?.last_update_date != null
@@ -48,38 +59,47 @@ processors:
       - ISO8601
       on_failure:
         - append:
+              tag: append_error_message_d7381b9a
               field: error.message
               value: '{{{_ingest.on_failure_message}}}'
         - remove:
+              tag: remove_json_last_update_date_07ce99b0
               field: json.last_update_date
 - set:
+      tag: set_timestamp_22a44f7a
       field: '@timestamp'
       copy_from: threat.indicator.modified_at
       on_failure:
         - set:
+              tag: set_timestamp_7586a659
               field: '@timestamp'
               copy_from: _ingest.timestamp
 - uri_parts:
+      tag: uri_parts_json_value_to_threat_indicator_url_cd658b29
       field: json.value
       target_field: threat.indicator.url
       if: ctx.json?.type == 'url'
       on_failure:
         - set:
+              tag: set_threat_indicator_url_original_8b63e287
               field: threat.indicator.url.original
               value: '{{{json.value}}}'
               ignore_empty_value: true
               if: ctx.json?.type == 'url' && !ctx.containsKey('threat.indicator.url')
               ignore_failure: true
 - set:
+      tag: set_threat_indicator_url_full_98c9ef97
       field: threat.indicator.url.full
       value: '{{{threat.indicator.url.original}}}'
       ignore_empty_value: true
       ignore_failure: true
 - set:
+      tag: set_threat_indicator_type_4dd93ad5
       field: threat.indicator.type
       value: url
       if: ctx.json?.type == 'url'
 - script:
+      tag: script_maps_ioc_type_field_ff7fba20
       lang: painless
       if: ctx.json?.type != null
       description: Maps IOC type field to Mandiant Threat Intelligence values (threat.indicator.type).
@@ -114,10 +134,12 @@ processors:
           set(ctx, mapping.target, value);
       on_failure:
         - append:
+              tag: append_error_message_632185ba
               field: error.message
               value: >-
                   Unable to determine indicator type from "{{{json.type}}}": {{{_ingest.on_failure_message}}}
 - script:
+    tag: script_populates_sha1_sha256_hash_values_a6317692
     lang: painless
     if: "ctx.json?.type == 'md5' && ctx.json?.associated_hashes instanceof List && ctx.json?.associated_hashes.size() > 0"
     description: Populates SHA1 and SHA256 hash values for hash indicator types, if they exist
@@ -143,36 +165,44 @@ processors:
       ctx.json.hashes = hashes;
     on_failure:
     - append:
+        tag: append_error_message_5d8932f7
         field: error.message
         value: >-
           Unable to extract sha1 and sha256 information for "{{{json.type}}}": {{{_ingest.on_failure_message}}}
 - convert:
+      tag: convert_threat_indicator_ip_6cc198bf
       field: threat.indicator.ip
       type: ip
       ignore_missing: true
       on_failure:
         - append:
+              tag: append_error_message_a69fca3b
               field: error.message
               value: '{{{_ingest.on_failure_message}}}'
         - remove:
+              tag: remove_509530f1
               field:
               - threat.indicator.ip
               - json.value
 - append:
+      tag: append_related_ip_404cef03
       field: related.ip
       value: '{{{threat.indicator.ip}}}'
       ignore_failure: true
       allow_duplicates: false
 - rename:
+      tag: rename_json_hashes_to_related_hash_5e4a3cf5
       field: json.hashes
       target_field: related.hash
       ignore_missing: true
 - geoip:
+      tag: geoip_threat_indicator_ip_to_threat_indicator_geo_0574277f
       field: threat.indicator.ip
       target_field: threat.indicator.geo
       ignore_missing: true
       ignore_failure: true
 - geoip:
+      tag: geoip_threat_indicator_ip_to_threat_indicator_as_27f634a8
       field: threat.indicator.ip
       target_field: threat.indicator.as
       database_file: GeoLite2-ASN.mmdb
@@ -182,26 +212,32 @@ processors:
       ignore_missing: true
       ignore_failure: true
 - rename:
+      tag: rename_threat_indicator_as_asn_to_threat_indicator_as_number_f5473d8b
       field: threat.indicator.as.asn
       target_field: threat.indicator.as.number
       ignore_missing: true
 - rename:
+      tag: rename_threat_indicator_as_organization_name_to_threat_indicator_as_organization_name_831a25ce
       field: threat.indicator.as.organization_name
       target_field: threat.indicator.as.organization.name
       ignore_missing: true
 - convert:
+      tag: convert_json_mscore_to_event_risk_score_3ab3f1d6
       field: json.mscore
       target_field: event.risk_score
       ignore_missing: true
       type: float
       on_failure:
         - append:
+              tag: append_error_message_a80aa46c
               field: error.message
               value: '{{{_ingest.on_failure_message}}}'
         - remove:
+              tag: remove_json_mscore_99b94973
               field: json.mscore
 
 - date:
+      tag: date_json_last_seen_to_threat_indicator_last_seen_74c92fde
       field: json.last_seen
       target_field: threat.indicator.last_seen
       if: ctx.json?.last_seen != null
@@ -209,11 +245,14 @@ processors:
       - ISO8601
       on_failure:
         - append:
+              tag: append_error_message_842ae581
               field: error.message
               value: '{{{_ingest.on_failure_message}}}'
         - remove:
+              tag: remove_json_last_seen_1a4b1316
               field: json.last_seen
 - date:
+      tag: date_json_first_seen_to_threat_indicator_first_seen_d2699903
       field: json.first_seen
       target_field: threat.indicator.first_seen
       if: ctx.json?.first_seen != null
@@ -221,18 +260,22 @@ processors:
       - ISO8601
       on_failure:
         - append:
+              tag: append_error_message_8eb940b0
               field: error.message
               value: '{{{_ingest.on_failure_message}}}'
         - remove:
+              tag: remove_json_first_seen_9b3b31b0
               field: json.first_seen
 
 - set:
+      tag: set_threat_indicator_confidence_932904f8
       field: threat.indicator.confidence
       copy_from: json.mscore
       ignore_empty_value: true
       ignore_failure: true
 
 - script:
+    tag: script_extract_providers_categories_tlp_895d1a5e
     if: "ctx.json?.sources != null && ctx.json?.sources instanceof List && ctx.json?.sources.size() > 0"
     lang: painless
     description: "Extract providers, categories and TLP from source"
@@ -273,6 +316,7 @@ processors:
         ctx.tlp_color = "RED";
       }
 - script:
+    tag: script_extract_threat_group_malware_information_a8f3b558
     if: "ctx.json?.attributed_associations != null && ctx.json?.attributed_associations instanceof List && ctx.json?.attributed_associations.size() > 0"
     lang: painless
     description: "Extract threat group and malware information from source"
@@ -316,6 +360,7 @@ processors:
         ctx.threat.software.name = software;
       }
 - script:
+    tag: script_restructure_misp_fields_f3b295ae
     lang: painless
     description: Restructure MISP fields
     if: ctx.json?.misp != null
@@ -334,28 +379,34 @@ processors:
       ctx.json["misp_warning_list_hits"] = positive;
       ctx.json["misp_warning_list_misses"] = negative;
 - remove:
+    tag: remove_json_misp_37ff5490
     field: json.misp
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_json_to_mandiant_threat_intelligence_ioc_5c50775b
     field: json
     target_field: mandiant.threat_intelligence.ioc
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_indicator_categories_to_mandiant_threat_intelligence_ioc_categories_a69653a7
     field: indicator_categories
     target_field: mandiant.threat_intelligence.ioc.categories
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_tlp_color_to_threat_indicator_marking_tlp_2e5ceca5
     field: tlp_color
     target_field: threat.indicator.marking.tlp
     ignore_missing: true
     ignore_failure: true
 - set:
+    tag: set_threat_indicator_marking_tlp_version_e08a61c3
     field: threat.indicator.marking.tlp_version
     value: "2.0"
 - script:
+      tag: script_normalize_confidence_level_d261a15c
       lang: painless
       if: ctx.threat?.indicator?.confidence != null
       description: Normalize confidence level.
@@ -376,6 +427,7 @@ processors:
           }
       ignore_failure: true
 - script:
+      tag: script_processor_iterates_over_whole_document_99ba6cdb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: >
@@ -394,6 +446,7 @@ processors:
           drop(ctx);
       ignore_failure: true
 - fingerprint:
+      tag: fingerprint_to_id_48a62b3b
       description: >
         Fingerprint the event.original value in attempt to prevent the same
         event from being indexed more than once under connection failures or
@@ -406,27 +459,32 @@ processors:
       ignore_missing: true
       ignore_failure: true
 - append:
+      tag: append_event_kind_acc297e3
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
 - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+        tag: append_error_message_d916120d
         field: error.message
         value: >-
           Processor '{{{ _ingest.on_failure_processor_type }}}'
           {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
           {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
+        tag: append_event_kind_b01027bf
         field: event.kind
         value: pipeline_error
         allow_duplicates: false
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -2,39 +2,47 @@
 description: Pipeline for processing Event logs.
 processors:
   - set:
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_ab1166ce
       field: event.kind
       value: alert
   - set:
+      tag: set_event_category_4675e36d
       field: event.category
       value: [threat]
   - set:
+      tag: set_event_type_acbc82af
       field: event.type
       value: [indicator]
   - rename:
+      tag: rename_message_to_event_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
-      tag: 'json_decoding'
+      tag: json_decoding_c3a1053e
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_09c9e9da
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - drop:
+      tag: drop_5ebaa6cd
       if: ctx.json?.data != null && ctx.json.data.isEmpty()
   - fingerprint:
+      tag: fingerprint_to_id_49b72ed4
       fields:
         - json.id
         - json.attributes.timestamp
@@ -44,95 +52,108 @@ processors:
       ignore_missing: true
   - date:
       field: json.attributes.timestamp
-      tag: 'date_set_timestamp'
+      tag: date_set_timestamp_ca7046cd
       formats:
         - ISO8601
       if: ctx.json?.attributes?.timestamp != null && ctx.json.attributes.timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_60ffef18
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.attributes.timestamp
-      tag: 'date_timestamp'
+      tag: date_timestamp_51e25099
       target_field: trellix_epo_cloud.event.attributes.timestamp
       formats:
         - ISO8601
       if: ctx.json?.attributes?.timestamp != null && ctx.json.attributes.timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_10a93ad7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_attributes_targethostname_to_trellix_epo_cloud_event_attributes_target_hostname_dace76b2
       field: json.attributes.targethostname
       target_field: trellix_epo_cloud.event.attributes.target.hostname
       ignore_missing: true
   - set:
+      tag: set_destination_domain_7cdc5ab2
       field: destination.domain
       copy_from: trellix_epo_cloud.event.attributes.target.hostname
       if: ctx.trellix_epo_cloud?.event?.attributes?.target?.hostname?.toLowerCase() != 'none'
       ignore_empty_value: true
   - append:
+      tag: append_related_hosts_c49d5bbf
       field: related.hosts
       value: '{{{destination.domain}}}'
       if: ctx.destination?.domain != null
       allow_duplicates: false
   - registered_domain:
       field: destination.domain
-      tag: 'registered_domain_for_destination_domain'
+      tag: registered_domain_for_destination_domain_cbda9143
       target_field: destination
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9d7aafc0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.attributes.targetipv4
-      tag: 'convert_targetipv4_to_ip'
+      tag: convert_targetipv4_to_ip_713e8c34
       target_field: trellix_epo_cloud.event.attributes.target.ipv4
       type: ip
       ignore_missing: true
       if: ctx.json?.attributes?.targetipv4 != ''
       on_failure:
         - append:
+            tag: append_error_message_743ca5c6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_3e367494
       field: related.ip
       value: '{{{trellix_epo_cloud.event.attributes.target.ipv4}}}'
       allow_duplicates: false
       if: ctx.trellix_epo_cloud?.event?.attributes?.target?.ipv4 != null
   - set:
+      tag: set_destination_ip_f3dc4e70
       field: destination.ip
       copy_from: trellix_epo_cloud.event.attributes.target.ipv4
       ignore_empty_value: true
   - gsub:
       field: json.attributes.targetipv6
-      tag: 'gsub_targetipv6_remove_forward_slash'
+      tag: gsub_targetipv6_remove_forward_slash_bc6d134e
       pattern: '/'
       replacement: ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3e8def43
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.attributes.targetipv6
-      tag: 'convert_targetipv6_to_ip'
+      tag: convert_targetipv6_to_ip_1ba7ebd2
       target_field: trellix_epo_cloud.event.attributes.target.ipv6
       type: ip
       ignore_missing: true
       if: ctx.json?.attributes?.targetipv6 != ''
       on_failure:
         - append:
+            tag: append_error_message_9ee0a496
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_d058b0c3
       field: related.ip
       value: '{{{trellix_epo_cloud.event.attributes.target.ipv6}}}'
       allow_duplicates: false
       if: ctx.trellix_epo_cloud?.event?.attributes?.target?.ipv6 != null
   - append:
+      tag: append_destination_ip_6225bd72
       field: destination.ip
       value: '{{{trellix_epo_cloud.event.attributes.target.ipv6}}}'
       allow_duplicates: false
@@ -140,169 +161,202 @@ processors:
   - gsub:
       field: json.attributes.targetmac
       if: ctx.json?.attributes?.targetmac?.toLowerCase() != 'none'
-      tag: 'gsub_targetmac'
+      tag: gsub_targetmac_3c10f966
       pattern: '(..)(?!$)'
       replacement: '$1-'
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_190bbd90
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uppercase:
+      tag: uppercase_json_attributes_targetmac_9924681a
       field: json.attributes.targetmac
       if: ctx.json?.attributes?.targetmac?.toLowerCase() != 'none'
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_targetmac_to_trellix_epo_cloud_event_attributes_target_mac_e17bfb45
       field: json.attributes.targetmac
       target_field: trellix_epo_cloud.event.attributes.target.mac
       ignore_missing: true
   - set:
+      tag: set_destination_mac_a282dd6b
       field: destination.mac
       copy_from: trellix_epo_cloud.event.attributes.target.mac
       if: ctx.trellix_epo_cloud?.event?.attributes?.target?.mac?.toLowerCase() != 'none'
       ignore_empty_value: true
   - convert:
       field: json.attributes.targetport
-      tag: 'convert_targetport_to_long'
+      tag: convert_targetport_to_long_bb04af6f
       target_field: trellix_epo_cloud.event.attributes.target.port
       type: long
       ignore_missing: true
       if: ctx.json?.attributes?.targetport != ''
       on_failure:
         - append:
+            tag: append_error_message_c2919d0d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_destination_port_f3c256d5
       field: destination.port
       copy_from: trellix_epo_cloud.event.attributes.target.port
       ignore_empty_value: true
   - rename:
+      tag: rename_json_attributes_targetusername_to_trellix_epo_cloud_event_attributes_target_user_name_bf37ee9a
       field: json.attributes.targetusername
       target_field: trellix_epo_cloud.event.attributes.target.user_name
       ignore_missing: true
   - set:
+      tag: set_destination_user_name_9b6b68cf
       field: destination.user.name
       copy_from: trellix_epo_cloud.event.attributes.target.user_name
       if: ctx.trellix_epo_cloud?.event?.attributes?.target?.user_name?.toLowerCase() != 'none'
       ignore_empty_value: true
   - append:
+      tag: append_related_user_910c8a0f
       field: related.user
       value: '{{{destination.user.name}}}'
       if: ctx.destination?.user?.name != null
       allow_duplicates: false
   - rename:
+      tag: rename_json_id_to_trellix_epo_cloud_event_id_def91325
       field: json.id
       target_field: trellix_epo_cloud.event.id
       ignore_missing: true
   - set:
+      tag: set_event_id_e67152f4
       field: event.id
       copy_from: trellix_epo_cloud.event.id
       if: ctx.trellix_epo_cloud?.event?.id?.toLowerCase() != 'none'
       ignore_empty_value: true
   - rename:
+      tag: rename_json_links_self_to_trellix_epo_cloud_event_links_self_8c5434c1
       field: json.links.self
       target_field: trellix_epo_cloud.event.links.self
       ignore_missing: true
   - set:
+      tag: set_event_reference_cf698914
       field: event.reference
       copy_from: trellix_epo_cloud.event.links.self
       if: ctx.trellix_epo_cloud?.event?.links?.self?.toLowerCase() != 'none'
       ignore_empty_value: true
   - convert:
       field: json.attributes.threatseverity
-      tag: convert_threatseverity_to_long
+      tag: convert_threatseverity_to_long_910b05a0
       target_field: trellix_epo_cloud.event.attributes.threat.severity
       type: long
       ignore_missing: true
       if: ctx.json?.attributes?.threatseverity != ''
       on_failure:
         - append:
+            tag: append_error_message_d2c0666d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_severity_82b8a5ad
       field: event.severity
       copy_from: trellix_epo_cloud.event.attributes.threat.severity
       ignore_empty_value: true
   - rename:
+      tag: rename_json_attributes_targetfilename_to_trellix_epo_cloud_event_attributes_target_file_name_fe390c9e
       field: json.attributes.targetfilename
       target_field: trellix_epo_cloud.event.attributes.target.file_name
       ignore_missing: true
   - set:
+      tag: set_file_name_7eb422e9
       field: file.name
       copy_from: trellix_epo_cloud.event.attributes.target.file_name
       if: ctx.trellix_epo_cloud?.event?.attributes?.target?.file_name?.toLowerCase() != 'none'
       ignore_empty_value: true
   - rename:
+      tag: rename_json_attributes_sourcefilepath_to_trellix_epo_cloud_event_attributes_source_file_path_29711140
       field: json.attributes.sourcefilepath
       target_field: trellix_epo_cloud.event.attributes.source.file_path
       ignore_missing: true
   - set:
+      tag: set_file_path_a8f9484d
       field: file.path
       copy_from: trellix_epo_cloud.event.attributes.source.file_path
       if: ctx.trellix_epo_cloud?.event?.attributes?.source?.file_path?.toLowerCase() != 'none'
       ignore_empty_value: true
   - rename:
+      tag: rename_json_attributes_sourceprocesshash_to_trellix_epo_cloud_event_attributes_source_process_hash_7fd783e1
       field: json.attributes.sourceprocesshash
       target_field: trellix_epo_cloud.event.attributes.source.process.hash
       ignore_missing: true
   - append:
+      tag: append_related_hash_5d7360d7
       field: related.hash
       value: '{{{trellix_epo_cloud.event.attributes.source.process.hash}}}'
       if: ctx.trellix_epo_cloud?.event?.attributes?.source?.process?.hash != null && ctx.trellix_epo_cloud.event.attributes.source.process.hash.toLowerCase() != 'none'
       allow_duplicates: false
   - set:
+      tag: set_process_hash_md5_317b3aaa
       field: process.hash.md5
       value: '{{{trellix_epo_cloud.event.attributes.source.process.hash}}}'
       if: ctx.trellix_epo_cloud?.event?.attributes?.source?.process?.hash != null && ctx.trellix_epo_cloud.event.attributes.source.process.hash.length() == 32
   - set:
+      tag: set_process_hash_sha1_c9c340bf
       field: process.hash.sha1
       value: '{{{trellix_epo_cloud.event.attributes.source.process.hash}}}'
       if: ctx.trellix_epo_cloud?.event?.attributes?.source?.process?.hash != null && ctx.trellix_epo_cloud.event.attributes.source.process.hash.length() == 40
   - set:
+      tag: set_process_hash_sha256_346d41e7
       field: process.hash.sha256
       value: '{{{trellix_epo_cloud.event.attributes.source.process.hash}}}'
       if: ctx.trellix_epo_cloud?.event?.attributes?.source?.process?.hash != null && ctx.trellix_epo_cloud.event.attributes.source.process.hash.length() == 64
   - set:
+      tag: set_process_hash_sha512_d3354490
       field: process.hash.sha512
       value: '{{{trellix_epo_cloud.event.attributes.source.process.hash}}}'
       if: ctx.trellix_epo_cloud?.event?.attributes?.source?.process?.hash != null && ctx.trellix_epo_cloud.event.attributes.source.process.hash.length() == 128
   - rename:
+      tag: rename_json_attributes_sourceprocessname_to_trellix_epo_cloud_event_attributes_source_process_name_8f2e3069
       field: json.attributes.sourceprocessname
       target_field: trellix_epo_cloud.event.attributes.source.process.name
       ignore_missing: true
   - set:
+      tag: set_process_name_77bc8672
       field: process.name
       copy_from: trellix_epo_cloud.event.attributes.source.process.name
       if: ctx.trellix_epo_cloud?.event?.attributes?.source?.process?.name?.toLowerCase() != 'none'
       ignore_empty_value: true
   - rename:
+      tag: rename_json_attributes_sourceurl_to_trellix_epo_cloud_event_attributes_source_url_018f75c6
       field: json.attributes.sourceurl
       target_field: trellix_epo_cloud.event.attributes.source.url
       ignore_missing: true
   - set:
+      tag: set_source_address_ad84cf5d
       field: source.address
       copy_from: trellix_epo_cloud.event.attributes.source.url
       if: ctx.trellix_epo_cloud?.event?.attributes?.source?.url?.toLowerCase() != 'none'
       ignore_empty_value: true
   - registered_domain:
       field: source.address
-      tag: 'registered_domain_for_source_address'
+      tag: registered_domain_for_source_address_eb9079a4
       target_field: source
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0cc5af7c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_attributes_sourcehostname_to_trellix_epo_cloud_event_attributes_source_hostname_d4123a29
       field: json.attributes.sourcehostname
       target_field: trellix_epo_cloud.event.attributes.source.hostname
       ignore_missing: true
   - set:
+      tag: set_source_domain_03d25173
       field: source.domain
       copy_from: trellix_epo_cloud.event.attributes.source.hostname
       if: ctx.trellix_epo_cloud?.event?.attributes?.source?.hostname?.toLowerCase() != 'none'
       ignore_empty_value: true
   - append:
+      tag: append_related_hosts_d6019724
       field: related.hosts
       value: '{{{source.domain}}}'
       if: ctx.source?.domain != null
@@ -310,59 +364,67 @@ processors:
   - registered_domain:
       field: source.domain
       target_field: source
-      tag: 'registered_domain_for_source_domain'
+      tag: registered_domain_for_source_domain_717b5816
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ec320a78
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.attributes.sourceipv4
-      tag: convert_sourceipv4_to_ip
+      tag: convert_sourceipv4_to_ip_48f0992f
       target_field: trellix_epo_cloud.event.attributes.source.ipv4
       type: ip
       ignore_missing: true
       if: ctx.json?.attributes?.sourceipv4 != ''
       on_failure:
         - append:
+            tag: append_error_message_0febe47a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_e3a9711c
       field: related.ip
       value: '{{{trellix_epo_cloud.event.attributes.source.ipv4}}}'
       allow_duplicates: false
       if: ctx.trellix_epo_cloud?.event?.attributes?.source?.ipv4 != null
   - set:
+      tag: set_source_ip_8dfd93b1
       field: source.ip
       copy_from: trellix_epo_cloud.event.attributes.source.ipv4
       ignore_empty_value: true
   - gsub:
       field: json.attributes.sourceipv6
-      tag: 'gsub_sourceipv6_remove_forward_slash'
+      tag: gsub_sourceipv6_remove_forward_slash_f4c8273f
       pattern: '/'
       replacement: ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e310929d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.attributes.sourceipv6
-      tag: convert_sourceipv6_to_ip
+      tag: convert_sourceipv6_to_ip_eee9648f
       target_field: trellix_epo_cloud.event.attributes.source.ipv6
       type: ip
       ignore_missing: true
       if: ctx.json?.attributes?.sourceipv6 != ''
       on_failure:
         - append:
+            tag: append_error_message_0f186bf2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_5fecc619
       field: related.ip
       value: '{{{trellix_epo_cloud.event.attributes.source.ipv6}}}'
       allow_duplicates: false
       if: ctx.trellix_epo_cloud?.event?.attributes?.source?.ipv6 != null
   - append:
+      tag: append_source_ip_95b0f0eb
       field: source.ip
       value: '{{{trellix_epo_cloud.event.attributes.source.ipv6}}}'
       allow_duplicates: false
@@ -370,75 +432,91 @@ processors:
   - gsub:
       field: json.attributes.sourcemac
       if: ctx.json?.attributes?.sourcemac?.toLowerCase() != 'none'
-      tag: 'gsub_sourcemac'
+      tag: gsub_sourcemac_d917b325
       pattern: '(..)(?!$)'
       replacement: '$1-'
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_11c6b07d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uppercase:
+      tag: uppercase_json_attributes_sourcemac_5cf98247
       field: json.attributes.sourcemac
       if: ctx.json?.attributes?.sourcemac?.toLowerCase() != 'none'
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_sourcemac_to_trellix_epo_cloud_event_attributes_source_mac_4c9a938a
       field: json.attributes.sourcemac
       target_field: trellix_epo_cloud.event.attributes.source.mac
       ignore_missing: true
   - set:
+      tag: set_source_mac_f46122a3
       field: source.mac
       copy_from: trellix_epo_cloud.event.attributes.source.mac
       if: ctx.trellix_epo_cloud?.event?.attributes?.source?.mac?.toLowerCase() != 'none'
       ignore_empty_value: true
   - rename:
+      tag: rename_json_attributes_sourceusername_to_trellix_epo_cloud_event_attributes_source_user_name_8d7237d7
       field: json.attributes.sourceusername
       target_field: trellix_epo_cloud.event.attributes.source.user_name
       ignore_missing: true
   - set:
+      tag: set_source_user_name_098c9664
       field: source.user.name
       copy_from: trellix_epo_cloud.event.attributes.source.user_name
       if: ctx.trellix_epo_cloud?.event?.attributes?.source?.user_name?.toLowerCase() != 'none'
       ignore_empty_value: true
   - append:
+      tag: append_related_user_c251b047
       field: related.user
       value: '{{{source.user.name}}}'
       if: ctx.source?.user?.name != null
       allow_duplicates: false
   - rename:
+      tag: rename_json_attributes_threatactiontaken_to_trellix_epo_cloud_event_attributes_threat_action_taken_b6395905
       field: json.attributes.threatactiontaken
       target_field: trellix_epo_cloud.event.attributes.threat.action_taken
       ignore_missing: true
   - set:
+      tag: set_threat_indicator_description_8fcdf3c6
       field: threat.indicator.description
       copy_from: trellix_epo_cloud.event.attributes.threat.action_taken
       if: ctx.trellix_epo_cloud?.event?.attributes?.threat?.action_taken?.toLowerCase() != 'none'
       ignore_empty_value: true
   - rename:
+      tag: rename_json_attributes_agentguid_to_trellix_epo_cloud_event_attributes_agent_guid_217ef173
       field: json.attributes.agentguid
       target_field: trellix_epo_cloud.event.attributes.agent.guid
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_analyzer_to_trellix_epo_cloud_event_attributes_analyzer_value_2b183616
       field: json.attributes.analyzer
       target_field: trellix_epo_cloud.event.attributes.analyzer.value
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_analyzerdatversion_to_trellix_epo_cloud_event_attributes_analyzer_dat_version_b819656e
       field: json.attributes.analyzerdatversion
       target_field: trellix_epo_cloud.event.attributes.analyzer.dat_version
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_analyzerdetectionmethod_to_trellix_epo_cloud_event_attributes_analyzer_detection_method_41ef7a82
       field: json.attributes.analyzerdetectionmethod
       target_field: trellix_epo_cloud.event.attributes.analyzer.detection_method
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_analyzerengineversion_to_trellix_epo_cloud_event_attributes_analyzer_engine_version_9ecca305
       field: json.attributes.analyzerengineversion
       target_field: trellix_epo_cloud.event.attributes.analyzer.engine_version
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_analyzerhostname_to_trellix_epo_cloud_event_attributes_analyzer_hostname_769309b3
       field: json.attributes.analyzerhostname
       target_field: trellix_epo_cloud.event.attributes.analyzer.hostname
       ignore_missing: true
   - append:
+      tag: append_related_hosts_24e5a4b6
       field: related.hosts
       value: '{{{trellix_epo_cloud.event.attributes.analyzer.hostname}}}'
       if: ctx.trellix_epo_cloud?.event?.attributes?.analyzer?.hostname != null && ctx.trellix_epo_cloud.event.attributes.analyzer.hostname.toLowerCase() != 'none'
@@ -446,50 +524,56 @@ processors:
   - registered_domain:
       field: trellix_epo_cloud.event.attributes.analyzer.hostname
       target_field: trellix_epo_cloud.event.attributes.analyzer
-      tag: 'registered_domain_for_analyzer_hostname'
+      tag: registered_domain_for_analyzer_hostname_49855d1b
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3c2ea914
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.attributes.analyzeripv4
-      tag: convert_analyzeripv4_to_ip
+      tag: convert_analyzeripv4_to_ip_37d2e7b3
       target_field: trellix_epo_cloud.event.attributes.analyzer.ipv4
       type: ip
       ignore_missing: true
       if: ctx.json?.attributes?.analyzeripv4 != ''
       on_failure:
         - append:
+            tag: append_error_message_acab8abb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_74e27575
       field: related.ip
       value: '{{{trellix_epo_cloud.event.attributes.analyzer.ipv4}}}'
       allow_duplicates: false
       if: ctx.trellix_epo_cloud?.event?.attributes?.analyzer?.ipv4 != null
   - gsub:
       field: json.attributes.analyzeripv6
-      tag: 'gsub_analyzeripv6_remove_forward_slash'
+      tag: gsub_analyzeripv6_remove_forward_slash_1e6d1d0e
       pattern: '/'
       replacement: ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_62f951c3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.attributes.analyzeripv6
-      tag: convert_analyzeripv6_to_ip
+      tag: convert_analyzeripv6_to_ip_e780c3df
       target_field: trellix_epo_cloud.event.attributes.analyzer.ipv6
       type: ip
       ignore_missing: true
       if: ctx.json?.attributes?.analyzeripv6 != ''
       on_failure:
         - append:
+            tag: append_error_message_2c0d9e81
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_aede3c47
       field: related.ip
       value: '{{{trellix_epo_cloud.event.attributes.analyzer.ipv6}}}'
       allow_duplicates: false
@@ -497,123 +581,145 @@ processors:
   - gsub:
       field: json.attributes.analyzermac
       if: ctx.json?.attributes?.analyzermac?.toLowerCase() != 'none'
-      tag: 'gsub_analyzermac'
+      tag: gsub_analyzermac_cccdbc08
       pattern: '(..)(?!$)'
       replacement: '$1-'
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_53e56f45
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uppercase:
+      tag: uppercase_json_attributes_analyzermac_66c614cd
       field: json.attributes.analyzermac
       if: ctx.json?.attributes?.analyzermac?.toLowerCase() != 'none'
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_analyzermac_to_trellix_epo_cloud_event_attributes_analyzer_mac_432ab49f
       field: json.attributes.analyzermac
       target_field: trellix_epo_cloud.event.attributes.analyzer.mac
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_analyzername_to_trellix_epo_cloud_event_attributes_analyzer_name_61cecbdd
       field: json.attributes.analyzername
       target_field: trellix_epo_cloud.event.attributes.analyzer.name
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_analyzerversion_to_trellix_epo_cloud_event_attributes_analyzer_version_303f87d0
       field: json.attributes.analyzerversion
       target_field: trellix_epo_cloud.event.attributes.analyzer.version
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_autoguid_to_trellix_epo_cloud_event_attributes_auto_guid_0d6e5476
       field: json.attributes.autoguid
       target_field: trellix_epo_cloud.event.attributes.auto_guid
       ignore_missing: true
   - date:
       field: json.attributes.detectedutc
-      tag: 'date_detectedutc'
+      tag: date_detectedutc_04025757
       target_field: trellix_epo_cloud.event.attributes.detected_utc
       formats:
         - UNIX_MS
       if: ctx.json?.attributes?.detectedutc != null && ctx.json.attributes.detectedutc != ''
       on_failure:
         - append:
+            tag: append_error_message_c7b0a9c3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_attributes_nodepath_to_trellix_epo_cloud_event_attributes_node_path_1d10773a
       field: json.attributes.nodepath
       target_field: trellix_epo_cloud.event.attributes.node.path
       ignore_missing: true
   - date:
       field: json.attributes.receivedutc
-      tag: 'date_receivedutc'
+      tag: date_receivedutc_4158a36d
       target_field: trellix_epo_cloud.event.attributes.received_utc
       formats:
         - UNIX_MS
       if: ctx.json?.attributes?.receivedutc != null && ctx.json.attributes.receivedutc != ''
       on_failure:
         - append:
+            tag: append_error_message_99aa97c0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_attributes_sourceprocesssigned_to_trellix_epo_cloud_event_attributes_source_process_signed_0221b115
       field: json.attributes.sourceprocesssigned
       target_field: trellix_epo_cloud.event.attributes.source.process.signed
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_sourceprocesssigner_to_trellix_epo_cloud_event_attributes_source_process_signer_b97eaa9f
       field: json.attributes.sourceprocesssigner
       target_field: trellix_epo_cloud.event.attributes.source.process.signer
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_targethash_to_trellix_epo_cloud_event_attributes_target_hash_771b8550
       field: json.attributes.targethash
       target_field: trellix_epo_cloud.event.attributes.target.hash
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_targetprocessname_to_trellix_epo_cloud_event_attributes_target_process_name_0eaeaf88
       field: json.attributes.targetprocessname
       target_field: trellix_epo_cloud.event.attributes.target.process_name
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_targetprotocol_to_trellix_epo_cloud_event_attributes_target_protocol_554e95ce
       field: json.attributes.targetprotocol
       target_field: trellix_epo_cloud.event.attributes.target.protocol
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_threatcategory_to_trellix_epo_cloud_event_attributes_threat_category_d81ae8b5
       field: json.attributes.threatcategory
       target_field: trellix_epo_cloud.event.attributes.threat.category
       ignore_missing: true
   - convert:
       field: json.attributes.threateventid
-      tag: convert_threateventid_to_string
+      tag: convert_threateventid_to_string_5afadb53
       target_field: trellix_epo_cloud.event.attributes.threat.event.id
       type: string
       ignore_missing: true
       if: ctx.json?.attributes?.threateventid != ''
       on_failure:
         - append:
+            tag: append_error_message_399d3066
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.attributes.threathandled
-      tag: convert_threathandled_to_boolean
+      tag: convert_threathandled_to_boolean_64e1afc6
       target_field: trellix_epo_cloud.event.attributes.threat.handled
       type: boolean
       ignore_missing: true
       if: ctx.json?.attributes?.threathandled != ''
       on_failure:
         - append:
+            tag: append_error_message_4d8094dc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_attributes_threatname_to_trellix_epo_cloud_event_attributes_threat_name_f73c17f8
       field: json.attributes.threatname
       target_field: trellix_epo_cloud.event.attributes.threat.name
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_threattype_to_trellix_epo_cloud_event_attributes_threat_type_87e4e467
       field: json.attributes.threattype
       target_field: trellix_epo_cloud.event.attributes.threat.type
       ignore_missing: true
   - rename:
+      tag: rename_json_type_to_trellix_epo_cloud_type_30381a2d
       field: json.type
       target_field: trellix_epo_cloud.type
       ignore_missing: true
   - remove:
+      tag: remove_f3d169b2
       field:
         - json
       ignore_missing: true
   - remove:
+      tag: remove_fcb95526
       field:
         - trellix_epo_cloud.event.attributes.timestamp
         - trellix_epo_cloud.event.attributes.target.hostname
@@ -638,6 +744,7 @@ processors:
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
+      tag: script_drops_null_empty_values_recursively_f7d226c9
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -655,22 +762,27 @@ processors:
         }
         drop(ctx);
   - set:
+      tag: set_event_kind_4fd8ffa8
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_9b078312
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

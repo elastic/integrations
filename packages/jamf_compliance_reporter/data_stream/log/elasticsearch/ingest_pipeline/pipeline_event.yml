@@ -2,132 +2,176 @@
 description: Pipeline for Jamf Compliance Reporter event logs.
 processors:
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_jamf_compliance_reporter_log_dataset_cfa1b036
       field: jamf_compliance_reporter.log.dataset
       value: event
   - append:
+      tag: append_event_category_8a525c81
       field: event.category
       value: process
   - set:
+      tag: set_host_os_type_074dd92b
       field: host.os.type
       value: macos
   - append:
+      tag: append_event_type_1057d615
       field: event.type
       value: info
       if: '!["UNIFIED_LOG_EVENT","XPROTECT_EVENT_LOG"].contains(ctx.json?.header?.event_name)'
   - convert:
+      tag: convert_json__event_score_to_jamf_compliance_reporter_log_event_score_3cb39b47
       field: json._event_score
       target_field: jamf_compliance_reporter.log.event_score
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_58844c12
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_header_event_name_to_event_action_99289c09
       field: json.header.event_name
       target_field: event.action
       ignore_missing: true
   - lowercase:
+      tag: lowercase_event_action_9334b869
       field: event.action
       ignore_missing: true
   - date:
+      tag: date_json_header_time_seconds_epoch_726cfcbc
       field: json.header.time_seconds_epoch
       if: ctx.json?.header?.time_seconds_epoch != 0
       formats:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_3be7c1d1
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_host_info_host_name_to_host_hostname_b155f2aa
       field: json.host_info.host_name
       target_field: host.hostname
       ignore_missing: true
   - append:
+      tag: append_related_hosts_e6462550
       field: related.hosts
       value: '{{{host.hostname}}}'
       if: ctx.host?.hostname != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_host_info_host_uuid_to_jamf_compliance_reporter_log_host_info_host_uuid_73fc6247
       field: json.host_info.host_uuid
       target_field: jamf_compliance_reporter.log.host_info.host.uuid
       ignore_missing: true
   - rename:
+      tag: rename_json_host_info_osversion_to_host_os_version_d3d10e97
       field: json.host_info.osversion
       target_field: host.os.version
       ignore_missing: true
   - append:
+      tag: append_host_mac_ddef4d66
       field: host.mac
       value: '{{{json.host_info.primary_mac_address}}}'
       if: ctx.json?.host_info?.primary_mac_address != null
       allow_duplicates: false
       ignore_failure: true
   - gsub:
+      tag: gsub_host_mac_d1faae6a
       field: host.mac
       pattern: '[-:.]'
       replacement: '-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_host_mac_73cd4413
       field: host.mac
       ignore_missing: true
   - rename:
+      tag: rename_json_host_info_serial_number_to_host_id_02030592
       field: json.host_info.serial_number
       target_field: host.id
       ignore_missing: true
   # NOTE: ctx.event is initialized by an earlier processor
   - pipeline:
+      tag: pipeline_audio_video_device_event_4e8e6521
       name: '{{ IngestPipeline "pipeline_audio_video_device_event" }}'
       if: ctx.event.action == 'audio_video_device_event'
   - pipeline:
+      tag: pipeline_audit_class_verification_event_25e1db21
       name: '{{ IngestPipeline "pipeline_audit_class_verification_event" }}'
       if: ctx.event.action == 'audit_class_verification_event'
   - pipeline:
+      tag: pipeline_compliance_reporter_tamper_event_file_d051078b
       name: '{{ IngestPipeline "pipeline_compliance_reporter_tamper_event_and_file_event_info" }}'
       if: '["compliance_reporter_tamper_event", "file_event"].contains(ctx.event.action)'
   - pipeline:
+      tag: pipeline_gatekeeper_info_event_4f37cfd5
       name: '{{ IngestPipeline "pipeline_gatekeeper_info_event" }}'
       if: ctx.event.action == 'gatekeeper_info_event'
   - pipeline:
+      tag: pipeline_gatekeeper_manual_overrides_a21c17ab
       name: '{{ IngestPipeline "pipeline_gatekeeper_manual_overrides" }}'
       if: ctx.event.action == 'gatekeeper_manual_overrides'
   - pipeline:
+      tag: pipeline_gatekeeper_quarantine_log_7deb2ac5
       name: '{{ IngestPipeline "pipeline_gatekeeper_quarantine_log" }}'
       if: ctx.event.action == 'gatekeeper_quarantine_log'
   - pipeline:
+      tag: pipeline_hardware_event_a993ada5
       name: '{{ IngestPipeline "pipeline_hardware_event" }}'
       if: ctx.event.action == 'hardware_event'
   - pipeline:
+      tag: pipeline_license_info_event_4892e065
       name: '{{ IngestPipeline "pipeline_license_info_event" }}'
       if: ctx.event.action == 'license_info_event'
   - pipeline:
+      tag: pipeline_preference_list_event_29a77bf5
       name: '{{ IngestPipeline "pipeline_preference_list_event" }}'
       if: ctx.event.action == 'preference_list_event'
   - pipeline:
+      tag: pipeline_print_event_information_d9d5eaf5
       name: '{{ IngestPipeline "pipeline_print_event_information" }}'
       if: ctx.event.action == 'print_event_information'
   - pipeline:
+      tag: pipeline_prohibited_app_blocked_8898d77d
       name: '{{ IngestPipeline "pipeline_prohibited_app_blocked" }}'
       if: ctx.event.action == 'prohibited_app_blocked'
   - pipeline:
+      tag: pipeline_signal_event_7152110d
       name: '{{ IngestPipeline "pipeline_signal_event" }}'
       if: ctx.event.action == 'signal_event'
   - pipeline:
+      tag: pipeline_unified_log_event_72f5a3d3
       name: '{{ IngestPipeline "pipeline_unified_log_event" }}'
       if: ctx.event.action == 'unified_log_event'
   - pipeline:
+      tag: pipeline_xprotect_definitions_version_info_6f8ee6e3
       name: '{{ IngestPipeline "pipeline_xprotect_definitions_version_info" }}'
       if: ctx.event.action == 'xprotect_definitions_version_info'
   - pipeline:
+      tag: pipeline_xprotect_event_log_eb72550d
       name: '{{ IngestPipeline "pipeline_xprotect_event_log" }}'
       if: ctx.event.action == 'xprotect_event_log'
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -3,31 +3,31 @@ description: Pipeline for processing device dataset.
 processors:
   - append:
       field: event.category
-      tag: append_event_category_host
+      tag: append_event_category_host_5098f71a
       value: host
   - append:
       field: event.type
-      tag: append_event_type_info
+      tag: append_event_type_info_5eab37e6
       value: info
   - set:
       field: asset.category
-      tag: set_asset_category
+      tag: set_asset_category_3ebede69
       value: entity
   - set:
       field: asset.type
-      tag: set_asset_type
+      tag: set_asset_type_4daf8399
       value: microsoft_entra_id_device
 
   - rename:
       field: azure_ad
-      tag: rename_azure_ad
+      tag: rename_azure_ad_a22c4bc0
       target_field: entityanalytics_entra_id.device
       ignore_missing: true
   ##############################################################################
   # rename to snake case
   ##############################################################################
   - script:
-      tag: script_convert_camelcase_to_snake_case
+      tag: script_convert_camelcase_to_snake_case_f89f9ff4
       lang: painless
       description: Convert camelCase to snake_case
       source: |
@@ -82,274 +82,274 @@ processors:
         }
   - convert:
       field: entityanalytics_entra_id.device.account_enabled
-      tag: convert_accountEnabled_to_boolean
+      tag: convert_accountEnabled_to_boolean_59fa2454
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
-            tag: on_failure_remove_convert_accountEnabled_to_boolean
+            tag: on_failure_remove_convert_accountEnabled_to_boolean_e33aae9d
             field: entityanalytics_entra_id.device.account_enabled
         - append:
-            tag: on_failure_append_convert_accountEnabled_to_boolean
+            tag: on_failure_append_convert_accountEnabled_to_boolean_9ab8c5bb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: asset.status
       value: enabled
-      tag: set_asset_status_to_enabled
+      tag: set_asset_status_to_enabled_9fbb8f82
       if: ctx.entityanalytics_entra_id?.device?.account_enabled == true
   - set:
       field: asset.status
       value: disabled
-      tag: set_asset_status_to_disabled
+      tag: set_asset_status_to_disabled_00a3577e
       if: ctx.entityanalytics_entra_id?.device?.account_enabled == false
   - foreach:
-      tag: foreach_convert_alternativeSecurityIds_type_to_long
+      tag: foreach_convert_alternativeSecurityIds_type_to_long_bf9a1d5a
       field: entityanalytics_entra_id.device.alternative_security_ids
       if: ctx.entityanalytics_entra_id?.device?.alternative_security_ids instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.type
-          tag: convert_alternativeSecurityIds_type_to_long
+          tag: convert_alternativeSecurityIds_type_to_long_8a9fcb33
           type: long
           ignore_missing: true
           on_failure:
             - remove:
-                tag: on_failure_remove_convert_alternativeSecurityIds_type_to_long
+                tag: on_failure_remove_convert_alternativeSecurityIds_type_to_long_5e3e54f1
                 field: _ingest._value.type
                 ignore_missing: true
             - append:
-                tag: on_failure_append_convert_alternativeSecurityIds_type_to_long
+                tag: on_failure_append_convert_alternativeSecurityIds_type_to_long_dfb286c7
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: entityanalytics_entra_id.device.approximate_last_sign_in_date_time
-      tag: date_approximate_last_sign_in_date_time
+      tag: date_approximate_last_sign_in_date_time_0e9b56bf
       target_field: entityanalytics_entra_id.device.approximate_last_sign_in_date_time
       formats:
         - ISO8601
       if: ctx.entityanalytics_entra_id?.device?.approximate_last_sign_in_date_time != null && ctx.entityanalytics_entra_id.device.approximate_last_sign_in_date_time != ''
       on_failure:
         - remove:
-            tag: on_failure_remove_date_approximate_last_sign_in_date_time
+            tag: on_failure_remove_date_approximate_last_sign_in_date_time_6a99676d
             field: entityanalytics_entra_id.device.approximate_last_sign_in_date_time
             ignore_missing: true
         - append:
-            tag: on_failure_append_date_approximate_last_sign_in_date_time
+            tag: on_failure_append_date_approximate_last_sign_in_date_time_c8e24f89
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.entity.lifecycle.last_activity
       copy_from: entityanalytics_entra_id.device.approximate_last_sign_in_date_time
-      tag: set_host_entity_lifecycle_last_activity
+      tag: set_host_entity_lifecycle_last_activity_c62befed
       ignore_empty_value: true
   - date:
       field: entityanalytics_entra_id.device.compliance_expiration_date_time
-      tag: date_compliance_expiration_date_time
+      tag: date_compliance_expiration_date_time_e82b5ec8
       target_field: entityanalytics_entra_id.device.compliance_expiration_date_time
       formats:
         - ISO8601
       if: ctx.entityanalytics_entra_id?.device?.compliance_expiration_date_time != null && ctx.entityanalytics_entra_id.device.compliance_expiration_date_time != ''
       on_failure:
         - remove:
-            tag: on_failure_remove_date_compliance_expiration_date_time
+            tag: on_failure_remove_date_compliance_expiration_date_time_552e955d
             field: entityanalytics_entra_id.device.compliance_expiration_date_time
             ignore_missing: true
         - append:
-            tag: on_failure_append_date_compliance_expiration_date_time
+            tag: on_failure_append_date_compliance_expiration_date_time_02889ca2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: entityanalytics_entra_id.device.device_category
-      tag: rename_deviceCategory
+      tag: rename_deviceCategory_4db8bb31
       target_field: entityanalytics_entra_id.device.category
       ignore_missing: true
   - rename:
       field: entityanalytics_entra_id.device.device_id
-      tag: rename_deviceId
+      tag: rename_deviceId_88328c5c
       target_field: entityanalytics_entra_id.device.d_id
       ignore_missing: true
   - rename:
       field: entityanalytics_entra_id.device.device_metadata
-      tag: rename_deviceMetadata
+      tag: rename_deviceMetadata_9026ed28
       target_field: entityanalytics_entra_id.device.metadata
       ignore_missing: true
   - rename:
       field: entityanalytics_entra_id.device.device_ownership
-      tag: rename_deviceOwnership
+      tag: rename_deviceOwnership_84b90388
       target_field: entityanalytics_entra_id.device.ownership
       ignore_missing: true
   - convert:
       field: entityanalytics_entra_id.device.device_version
-      tag: convert_deviceVersion_to_string
+      tag: convert_deviceVersion_to_string_6d96faa3
       target_field: entityanalytics_entra_id.device.version
       type: string
       ignore_missing: true
       on_failure:
         - append:
-            tag: on_failure_append_convert_deviceVersion_to_string
+            tag: on_failure_append_convert_deviceVersion_to_string_a09346d6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: asset.version
       copy_from: entityanalytics_entra_id.device.version
-      tag: set_asset_version
+      tag: set_asset_version_1496c750
       ignore_empty_value: true
   - append:
       field: related.hosts
       value: "{{{entityanalytics_entra_id.device.display_name}}}"
-      tag: append_display_name_into_related_hosts
+      tag: append_display_name_into_related_hosts_92a88457
       allow_duplicates: false
       if: ctx.entityanalytics_entra_id?.device?.display_name != null
   - set:
       field: asset.name
       copy_from: entityanalytics_entra_id.device.display_name
-      tag: set_asset_name
+      tag: set_asset_name_f1e3a7a2
       ignore_empty_value: true
   - set:
       field: host.name
       copy_from: entityanalytics_entra_id.device.display_name
-      tag: set_host_name
+      tag: set_host_name_b8d4a192
       ignore_empty_value: true
   - convert:
       field: entityanalytics_entra_id.device.is_compliant
-      tag: convert_isCompliant_to_boolean
+      tag: convert_isCompliant_to_boolean_9dce1d46
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
-            tag: on_failure_remove_convert_isCompliant_to_boolean
+            tag: on_failure_remove_convert_isCompliant_to_boolean_06f363ff
             field: entityanalytics_entra_id.device.is_compliant
         - append:
-            tag: on_failure_append_convert_isCompliant_to_boolean
+            tag: on_failure_append_convert_isCompliant_to_boolean_d3dbac5f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: entityanalytics_entra_id.device.is_managed
-      tag: convert_isManaged_to_boolean
+      tag: convert_isManaged_to_boolean_5a14f57d
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
-            tag: on_failure_remove_convert_isManaged_to_boolean
+            tag: on_failure_remove_convert_isManaged_to_boolean_5dac7c4d
             field: entityanalytics_entra_id.device.is_managed
         - append:
-            tag: on_failure_append_convert_isManaged_to_boolean
+            tag: on_failure_append_convert_isManaged_to_boolean_83b8fdaf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: asset.is_managed
       copy_from: entityanalytics_entra_id.device.is_managed
-      tag: set_asset_is_managed
+      tag: set_asset_is_managed_5cd27e15
       ignore_empty_value: true
   - set:
       field: host.entity.attributes.managed
       copy_from: entityanalytics_entra_id.device.is_managed
-      tag: set_host_entity_attributes_managed
+      tag: set_host_entity_attributes_managed_3e3984b9
       ignore_empty_value: true
   - set:
       field: asset.vendor
       copy_from: entityanalytics_entra_id.device.manufacturer
-      tag: set_asset_vendor
+      tag: set_asset_vendor_bd37c7b4
       ignore_empty_value: true
   - set:
       field: asset.model
       copy_from: entityanalytics_entra_id.device.model
-      tag: set_asset_model
+      tag: set_asset_model_2a5f376c
       ignore_empty_value: true
   - date:
       field: entityanalytics_entra_id.device.on_premises_last_sync_date_time
-      tag: date_on_premises_last_sync_date_time
+      tag: date_on_premises_last_sync_date_time_7af77315
       target_field: entityanalytics_entra_id.device.on_premises_last_sync_date_time
       formats:
         - ISO8601
       if: ctx.entityanalytics_entra_id?.device?.on_premises_last_sync_date_time != null && ctx.entityanalytics_entra_id.device.on_premises_last_sync_date_time != ''
       on_failure:
         - remove:
-            tag: on_failure_remove_date_on_premises_last_sync_date_time
+            tag: on_failure_remove_date_on_premises_last_sync_date_time_736cbd22
             field: entityanalytics_entra_id.device.on_premises_last_sync_date_time
             ignore_missing: true
         - append:
-            tag: on_failure_append_date_on_premises_last_sync_date_time
+            tag: on_failure_append_date_on_premises_last_sync_date_time_15d00107
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: asset.last_updated
       copy_from: entityanalytics_entra_id.device.on_premises_last_sync_date_time
-      tag: set_asset_last_updated
+      tag: set_asset_last_updated_de39c2ba
       ignore_empty_value: true
   - set:
       field: asset.last_seen
       copy_from: entityanalytics_entra_id.device.on_premises_last_sync_date_time
-      tag: set_asset_last_seen
+      tag: set_asset_last_seen_8a0ee89b
       ignore_empty_value: true
   - convert:
       field: entityanalytics_entra_id.device.on_premises_sync_enabled
-      tag: convert_onPremisesSyncEnabled_to_boolean
+      tag: convert_onPremisesSyncEnabled_to_boolean_0a1aabc7
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
-            tag: on_failure_remove_convert_onPremisesSyncEnabled_to_boolean
+            tag: on_failure_remove_convert_onPremisesSyncEnabled_to_boolean_b0526633
             field: entityanalytics_entra_id.device.on_premises_sync_enabled
         - append:
-            tag: on_failure_append_convert_onPremisesSyncEnabled_to_boolean
+            tag: on_failure_append_convert_onPremisesSyncEnabled_to_boolean_cd0b8e10
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.os.type
       copy_from: entityanalytics_entra_id.device.operating_system
-      tag: set_host_os_type
+      tag: set_host_os_type_758bb4e8
       ignore_empty_value: true
   - lowercase:
       field: host.os.type
-      tag: lowercase_host_os_type
+      tag: lowercase_host_os_type_b90026f8
       ignore_missing: true
   - set:
       field: host.os.version
       copy_from: entityanalytics_entra_id.device.operating_system_version
-      tag: set_host_os_version
+      tag: set_host_os_version_8e9aa361
       ignore_empty_value: true
   - date:
       field: entityanalytics_entra_id.device.registration_date_time
-      tag: date_registration_date_time
+      tag: date_registration_date_time_b5513ffd
       target_field: entityanalytics_entra_id.device.registration_date_time
       formats:
         - ISO8601
       if: ctx.entityanalytics_entra_id?.device?.registration_date_time != null && ctx.entityanalytics_entra_id.device.registration_date_time != ''
       on_failure:
         - remove:
-            tag: on_failure_remove_date_registration_date_time
+            tag: on_failure_remove_date_registration_date_time_5e740767
             field: entityanalytics_entra_id.device.registration_date_time
             ignore_missing: true
         - append:
-            tag: on_failure_append_date_registration_date_time
+            tag: on_failure_append_date_registration_date_time_469107c8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: asset.first_seen
       copy_from: entityanalytics_entra_id.device.registration_date_time
-      tag: set_asset_first_seen
+      tag: set_asset_first_seen_5792be8e
       ignore_empty_value: true
   - set:
       field: asset.tags
       copy_from: entityanalytics_entra_id.device.system_labels
-      tag: set_asset_tags
+      tag: set_asset_tags_41ad9dfb
       ignore_empty_value: true
   - foreach:
-      tag: foreach_rename_device_registered_owners_userPrincipalName
+      tag: foreach_rename_device_registered_owners_userPrincipalName_a4cd1d8d
       field: device.registered_owners
       if: ctx.device?.registered_owners instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.userPrincipalName
-          tag: rename_device_registered_owners_userPrincipalName
+          tag: rename_device_registered_owners_userPrincipalName_23bd7e62
           target_field: _ingest._value.user_principal_name
           ignore_missing: true
   - foreach:
-      tag: foreach_append_device_registered_owners_user_principal_name_into_related_user
+      tag: foreach_append_device_registered_owners_user_principal_name_into_related_user_83bce5fe
       field: device.registered_owners
       if: ctx.device?.registered_owners instanceof List
       ignore_failure: true
@@ -357,10 +357,10 @@ processors:
         append:
           field: related.user
           value: "{{{_ingest._value.user_principal_name}}}"
-          tag: append_device_registered_owners_user_principal_name_into_related_user
+          tag: append_device_registered_owners_user_principal_name_into_related_user_0bf88ced
           allow_duplicates: false
   - foreach:
-      tag: foreach_append_device_registered_owners_mail_into_related_user
+      tag: foreach_append_device_registered_owners_mail_into_related_user_ef79e53d
       field: device.registered_owners
       if: ctx.device?.registered_owners instanceof List
       ignore_failure: true
@@ -368,21 +368,21 @@ processors:
         append:
           field: related.user
           value: "{{{_ingest._value.mail}}}"
-          tag: append_device_registered_owners_mail_into_related_user
+          tag: append_device_registered_owners_mail_into_related_user_0f86cbdd
           allow_duplicates: false
   - foreach:
-      tag: foreach_rename_device_registered_owners_displayName
+      tag: foreach_rename_device_registered_owners_displayName_b1dd8dad
       field: device.registered_owners
       if: ctx.device?.registered_owners instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.displayName
-          tag: rename_device_registered_owners_displayName
+          tag: rename_device_registered_owners_displayName_c5f5ba8c
           target_field: _ingest._value.display_name
           ignore_missing: true
   - foreach:
-      tag: foreach_append_device_registered_owners_display_name_into_related_user
+      tag: foreach_append_device_registered_owners_display_name_into_related_user_ef2b27b8
       field: device.registered_owners
       if: ctx.device?.registered_owners instanceof List
       ignore_failure: true
@@ -390,65 +390,65 @@ processors:
         append:
           field: related.user
           value: "{{{_ingest._value.display_name}}}"
-          tag: append_device_registered_owners_display_name_into_related_user
+          tag: append_device_registered_owners_display_name_into_related_user_cff558ff
           allow_duplicates: false
   - foreach:
-      tag: foreach_rename_device_registered_owners_givenName
+      tag: foreach_rename_device_registered_owners_givenName_109c5e42
       field: device.registered_owners
       if: ctx.device?.registered_owners instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.givenName
-          tag: rename_device_registered_owners_givenName
+          tag: rename_device_registered_owners_givenName_31ad3a6a
           target_field: _ingest._value.given_name
           ignore_missing: true
   - foreach:
-      tag: foreach_rename_device_registered_owners_jobTitle
+      tag: foreach_rename_device_registered_owners_jobTitle_a689bb3c
       field: device.registered_owners
       if: ctx.device?.registered_owners instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.jobTitle
-          tag: rename_device_registered_owners_jobTitle
+          tag: rename_device_registered_owners_jobTitle_8756f14b
           target_field: _ingest._value.job_title
           ignore_missing: true
   - foreach:
-      tag: foreach_rename_device_registered_owners_mobilePhone
+      tag: foreach_rename_device_registered_owners_mobilePhone_9703d12f
       field: device.registered_owners
       if: ctx.device?.registered_owners instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.mobilePhone
-          tag: rename_device_registered_owners_mobilePhone
+          tag: rename_device_registered_owners_mobilePhone_86228e93
           target_field: _ingest._value.mobile_phone
           ignore_missing: true
   - foreach:
-      tag: foreach_rename_device_registered_owners_businessPhones
+      tag: foreach_rename_device_registered_owners_businessPhones_5ce074a6
       field: device.registered_owners
       if: ctx.device?.registered_owners instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.businessPhones
-          tag: rename_device_registered_owners_businessPhones
+          tag: rename_device_registered_owners_businessPhones_ed0583dd
           target_field: _ingest._value.business_phones
           ignore_missing: true
   - foreach:
-      tag: foreach_rename_device_registered_users_userPrincipalName
+      tag: foreach_rename_device_registered_users_userPrincipalName_6774a9af
       field: device.registered_users
       if: ctx.device?.registered_users instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.userPrincipalName
-          tag: rename_device_registered_users_userPrincipalName
+          tag: rename_device_registered_users_userPrincipalName_450084d7
           target_field: _ingest._value.user_principal_name
           ignore_missing: true
   - foreach:
-      tag: foreach_append_device_registered_users_principal_name_into_related_user
+      tag: foreach_append_device_registered_users_principal_name_into_related_user_36f6fd66
       field: device.registered_users
       if: ctx.device?.registered_users instanceof List
       ignore_failure: true
@@ -456,10 +456,10 @@ processors:
         append:
           field: related.user
           value: "{{{_ingest._value.user_principal_name}}}"
-          tag: append_device_registered_users_principal_name_into_related_user
+          tag: append_device_registered_users_principal_name_into_related_user_d3b4fca9
           allow_duplicates: false
   - foreach:
-      tag: foreach_append_device_registered_users_mail_into_related_user
+      tag: foreach_append_device_registered_users_mail_into_related_user_c4096643
       field: device.registered_users
       if: ctx.device?.registered_users instanceof List
       ignore_failure: true
@@ -467,21 +467,21 @@ processors:
         append:
           field: related.user
           value: "{{{_ingest._value.mail}}}"
-          tag: append_device_registered_users_mail_into_related_user
+          tag: append_device_registered_users_mail_into_related_user_d6f79075
           allow_duplicates: false
   - foreach:
-      tag: foreach_rename_device_registered_users_displayName
+      tag: foreach_rename_device_registered_users_displayName_bdd11b30
       field: device.registered_users
       if: ctx.device?.registered_users instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.displayName
-          tag: rename_device_registered_users_displayName
+          tag: rename_device_registered_users_displayName_5ab31aab
           target_field: _ingest._value.display_name
           ignore_missing: true
   - foreach:
-      tag: foreach_append_device_registered_users_display_name_into_related_user
+      tag: foreach_append_device_registered_users_display_name_into_related_user_dbdb13e2
       field: device.registered_users
       if: ctx.device?.registered_users instanceof List
       ignore_failure: true
@@ -489,104 +489,104 @@ processors:
         append:
           field: related.user
           value: "{{{_ingest._value.display_name}}}"
-          tag: append_device_registered_users_display_name_into_related_user
+          tag: append_device_registered_users_display_name_into_related_user_d2c94a8a
           allow_duplicates: false
   - foreach:
-      tag: foreach_rename_device_registered_users_givenName
+      tag: foreach_rename_device_registered_users_givenName_9e7e7cfa
       field: device.registered_users
       if: ctx.device?.registered_users instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.givenName
-          tag: rename_device_registered_users_givenName
+          tag: rename_device_registered_users_givenName_35d6cbfb
           target_field: _ingest._value.given_name
           ignore_missing: true
   - foreach:
-      tag: foreach_rename_device_registered_users_jobTitle
+      tag: foreach_rename_device_registered_users_jobTitle_0f7ac1c3
       field: device.registered_users
       if: ctx.device?.registered_users instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.jobTitle
-          tag: rename_device_registered_users_jobTitle
+          tag: rename_device_registered_users_jobTitle_ebb59b3c
           target_field: _ingest._value.job_title
           ignore_missing: true
   - foreach:
-      tag: foreach_rename_device_registered_users_mobilePhone
+      tag: foreach_rename_device_registered_users_mobilePhone_4a2c8f10
       field: device.registered_users
       if: ctx.device?.registered_users instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.mobilePhone
-          tag: rename_device_registered_users_mobilePhone
+          tag: rename_device_registered_users_mobilePhone_c389ed81
           target_field: _ingest._value.mobile_phone
           ignore_missing: true
   - foreach:
-      tag: foreach_rename_device_registered_users_businessPhones
+      tag: foreach_rename_device_registered_users_businessPhones_d02b47df
       field: device.registered_users
       if: ctx.device?.registered_users instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.businessPhones
-          tag: rename_device_registered_users_businessPhones
+          tag: rename_device_registered_users_businessPhones_a9149db2
           target_field: _ingest._value.business_phones
           ignore_missing: true
   - set:
       field: entityanalytics_entra_id.device.id
       copy_from: device.id
-      tag: set_entityanalytics_entra_id_device_id
+      tag: set_entityanalytics_entra_id_device_id_8c1d0508
       ignore_empty_value: true
   - append:
       field: related.hosts
       value: "{{{entityanalytics_entra_id.device.id}}}"
-      tag: append_id_into_related_hosts
+      tag: append_id_into_related_hosts_36517c83
       allow_duplicates: false
       if: ctx.entityanalytics_entra_id?.device?.id != null
   - set:
       field: asset.id
       copy_from: device.id
-      tag: set_asset_id
+      tag: set_asset_id_51e6b61c
       ignore_empty_value: true
   - set:
       field: host.id
       copy_from: device.id
-      tag: set_host_id
+      tag: set_host_id_873aafc8
       ignore_empty_value: true
   - set:
       field: entityanalytics_entra_id.device.group
       copy_from: device.group
-      tag: set_entityanalytics_entra_id_device_group
+      tag: set_entityanalytics_entra_id_device_group_6c60dd47
       ignore_empty_value: true
   - set:
       field: asset.group
       copy_from: device.group
-      tag: set_asset_group
+      tag: set_asset_group_efe46832
       ignore_empty_value: true
   - set:
       field: entityanalytics_entra_id.device.registered_users
       copy_from: device.registered_users
-      tag: set_entityanalytics_entra_id_device_registered_users
+      tag: set_entityanalytics_entra_id_device_registered_users_07b520c3
       ignore_empty_value: true
   - set:
       field: entityanalytics_entra_id.device.registered_owners
       copy_from: device.registered_owners
-      tag: set_entityanalytics_entra_id_device_registered_owners
+      tag: set_entityanalytics_entra_id_device_registered_owners_15e6eca4
       ignore_empty_value: true
 on_failure:
   - append:
-      tag: pipeline_error
+      tag: pipeline_error_0841b325
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: pipeline_error_kind
+      tag: pipeline_error_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: pipeline_error_preserve_original_event
+      tag: pipeline_error_preserve_original_event_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

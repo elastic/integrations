@@ -8,106 +8,106 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_1d854002
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
-            tag: append_error_message_json_parse
+            tag: append_error_message_json_parse_b006b7b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
       fields:
         - event.original
-      tag: fingerprint_identity_protection_assessment
+      tag: fingerprint_identity_protection_assessment_5df148ab
       target_field: _id
       ignore_missing: true
   - rename:
       field: json
-      tag: rename_json_to_crowdstrike
+      tag: rename_json_to_crowdstrike_87a2a2ee
       target_field: crowdstrike.idp
       ignore_missing: true
 
   # Event categorization
   - set:
       field: event.kind
-      tag: set_event_kind_to_event
+      tag: set_event_kind_to_event_3d50a019
       value: state
       if: ctx.crowdstrike?.idp != null
   - append:
       field: event.category
-      tag: append_event_category_threat
+      tag: append_event_category_threat_0f0742c9
       value: configuration
       allow_duplicates: false
       if: ctx.crowdstrike?.idp != null
   - append:
       field: event.type
-      tag: append_event_type_info
+      tag: append_event_type_info_e3b779b7
       value: info
       allow_duplicates: false
       if: ctx.crowdstrike?.idp != null
   - set:
       field: event.action
-      tag: set_event_action_identity_protection_assessment
+      tag: set_event_action_identity_protection_assessment_3a4d107d
       value: identity_protection_assessment
       if: ctx.crowdstrike?.idp?.security_assessment != null
 
   # Normalize API field names to snake_case under crowdstrike.idp.security_assessment
   - rename:
       field: crowdstrike.idp.security_assessment.overallScore
-      tag: rename_overallScore_to_overall_score
+      tag: rename_overallScore_to_overall_score_60df5cb5
       target_field: crowdstrike.idp.security_assessment.overall_score
       ignore_missing: true
   - rename:
       field: crowdstrike.idp.security_assessment.overallScoreLevel
-      tag: rename_overallScoreLevel_to_overall_score_level
+      tag: rename_overallScoreLevel_to_overall_score_level_9ca35bb5
       target_field: crowdstrike.idp.security_assessment.overall_score_level
       ignore_missing: true
   - convert:
       field: crowdstrike.idp.security_assessment.overall_score
-      tag: convert_overall_score_to_double
+      tag: convert_overall_score_to_double_d65cf10b
       type: double
       target_field: event.risk_score
       ignore_missing: true
       on_failure:
         - remove:
-            tag: remove_invalid_overall_score
+            tag: remove_invalid_overall_score_e82ffdaa
             field: crowdstrike.idp.security_assessment.overall_score
             ignore_missing: true
         - append:
-            tag: append_error_message_convert_overall_score
+            tag: append_error_message_convert_overall_score_accfc35f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - script:
       description: Map risk_score (0-1) to ECS event.risk_score_norm (0-100).
-      tag: script_set_event_risk_score_norm_from_risk_score
+      tag: script_set_event_risk_score_norm_from_risk_score_cf781ccd
       lang: painless
       if: ctx.event?.risk_score != null
       source: |-
@@ -116,13 +116,13 @@ processors:
         ctx.event.risk_score_norm = (long) Math.round(v * 100.0);
       on_failure:
         - append:
-            tag: append_error_message_risk_score_script
+            tag: append_error_message_risk_score_script_7cd16558
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - script:
       description: Map overallScoreLevel to ECS event.severity.
-      tag: script_set_event_severity_from_overall_score_level
+      tag: script_set_event_severity_from_overall_score_level_beca67ba
       lang: painless
       if: ctx.crowdstrike?.idp?.security_assessment?.overall_score_level != null
       source: |-
@@ -142,13 +142,13 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_severity_script
+            tag: append_error_message_severity_script_09850b75
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - script:
       description: Normalize assessmentFactors array keys to snake_case.
-      tag: script_normalize_assessment_factors
+      tag: script_normalize_assessment_factors_5550ecb9
       lang: painless
       if: ctx.crowdstrike?.idp?.security_assessment?.assessmentFactors != null
       source: |-
@@ -177,27 +177,27 @@ processors:
         sa.put('assessment_factors', out);
       on_failure:
         - append:
-            tag: append_error_message_assessment_factors_script
+            tag: append_error_message_assessment_factors_script_c5592aab
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # ECS copies
   - set:
       field: user.domain
-      tag: set_user_domain_from_crowdstrike_idp_domain
+      tag: set_user_domain_from_crowdstrike_idp_domain_91a27d1a
       copy_from: crowdstrike.idp.domain
       ignore_empty_value: true
       if: ctx.crowdstrike?.idp?.domain != null
   - append:
       field: related.hosts
-      tag: append_domain_into_related_hosts
+      tag: append_domain_into_related_hosts_0004fb89
       value: '{{{crowdstrike.idp.domain}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.idp?.domain != null
 
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_47584e1d
       lang: painless
       source: |
         void handleMap(Map map) {
@@ -223,42 +223,44 @@ processors:
         handleMap(ctx);
   - set:
       field: crowdstrike.idp.security_assessment.assessment_factors_nested
-      tag: set_assessment_factors_nested_from_assessment_factors
+      tag: set_assessment_factors_nested_from_assessment_factors_f307a25c
       copy_from: crowdstrike.idp.security_assessment.assessment_factors
       ignore_empty_value: true
       if: ctx._conf?.enable_nested_assessment_factors == true && ctx.crowdstrike?.idp?.security_assessment?.assessment_factors != null
       description: Duplicates assessment factors into a nested field to enable correlated queries on risk_factor_type, likelihood, and severity.
   - remove:
       field: _conf
-      tag: remove_conf
+      tag: remove_conf_f834c49b
       ignore_missing: true
   - remove:
       field:
         - crowdstrike.idp.domain
         - crowdstrike.idp.security_assessment.overall_score
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_e6395ba0
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_preserve_original_on_error
+      tag: append_tags_preserve_original_on_error_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

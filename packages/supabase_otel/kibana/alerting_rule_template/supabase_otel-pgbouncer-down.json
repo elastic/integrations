@@ -1,0 +1,53 @@
+{
+    "id": "supabase_otel-pgbouncer-down",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when the PgBouncer availability gauge reports 0 for a Supabase project. With the dedicated pooler down, clients fall back to connecting directly to PostgreSQL and can exhaust the connection budget within minutes.",
+        "name": "[Supabase OTel] PgBouncer is down",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "pgbouncer",
+            "availability"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## PgBouncer Down\n\nPgBouncer is the dedicated connection pooler colocated with the database. It multiplexes many client connections onto a small number of PostgreSQL backends. When it stops, clients either fail to connect or bypass it entirely.\n\n### Triage Steps\n1. Confirm PostgreSQL itself is healthy — PgBouncer reporting down while `pg_up` is 1 points at the pooler process, not the database.\n2. Watch direct connections for a spike, which indicates clients are bypassing the pooler and eating the shared budget: `TS metrics-supabase.metrics.otel-* | STATS direct = MAX(LAST_OVER_TIME(direct_connection_stats_connection_count)) BY resource.attributes.supabase_project_ref`\n3. Check whether pools were administratively stopped rather than crashed via `pgbouncer_databases_paused` and `pgbouncer_databases_disabled`.\n4. Check host memory and OOM kills — the pooler shares the node with everything else.\n\n### Tuning\nPgBouncer series only exist when the dedicated pooler is enabled. Projects using the shared Supavisor pooler instead produce no rows here and the rule stays silent."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// pgbouncer_up is a gauge: 1 = the pooler answered its admin console, 0 = it did not.\n// MIN() across series so one unhealthy scrape target is not masked by a healthy one.\n| STATS `PgBouncer Up` = MIN(LAST_OVER_TIME(pgbouncer_up))\n    BY resource.attributes.supabase_project_ref\n// Projects on the shared Supavisor pooler emit no pgbouncer_* series at all, so this\n// query returns no rows for them rather than a false breach.\n| WHERE `PgBouncer Up` == 0"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.supabase_project_ref",
+            "termSize": 50
+        }
+    }
+}

@@ -3,11 +3,11 @@ description: Pipeline for processing Microsoft Entra ID entities.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
 
   - script:
-      tag: script_add_event_original
+      tag: script_add_event_original_3ce2d07c
       lang: painless
       description: Add "event.original"
       if: ctx.tags != null && ctx.tags.contains('preserve_original_event')
@@ -18,31 +18,31 @@ processors:
           ctx.event.original = stringified_orig;
         }
   - remove:
-      tag: remove_event_action
+      tag: remove_event_action_e899ad7c
       field: event.action
       if: ctx.event?.action != "started" && ctx.event?.action != "completed"
       ignore_missing: true
 
-# Drop data(devices) based on the selected dataset "users".
+  # Drop data(devices) based on the selected dataset "users".
   - drop:
-      tag: drop_devices_dataset
+      tag: drop_devices_dataset_b722ddfd
       if: ctx.device?.id != null && ctx.tags.contains('users-entities')
-# Drop data(users) based on the selected dataset "devices".
+  # Drop data(users) based on the selected dataset "devices".
   - drop:
-      tag: drop_users_dataset
+      tag: drop_users_dataset_28120b26
       if: ctx.user?.id != null && ctx.tags.contains('devices-entities')
 
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_50075a0b
       value: asset
   - pipeline:
       name: '{{ IngestPipeline "device" }}'
-      tag: pipeline_to_device
+      tag: pipeline_to_device_200d3737
       if: ctx.device?.id != null
   - pipeline:
       name: '{{ IngestPipeline "user" }}'
-      tag: pipeline_to_user
+      tag: pipeline_to_user_1cd30e62
       if: ctx.user?.id != null
 
   - remove:
@@ -75,11 +75,11 @@ processors:
         - entityanalytics_entra_id.device.registration_date_time
         - entityanalytics_entra_id.device.system_labels
         - entityanalytics_entra_id.device.id
-      tag: remove_duplicate_custom_fields
+      tag: remove_duplicate_custom_fields_8d716b21
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - foreach:
-      tag: foreach_remove_duplicate_device_registered_users
+      tag: foreach_remove_duplicate_device_registered_users_b856c12a
       field: entityanalytics_entra_id.device.registered_users
       if: ctx.entityanalytics_entra_id?.device?.registered_users instanceof List
       ignore_failure: true
@@ -95,11 +95,11 @@ processors:
             - _ingest._value.job_title
             - _ingest._value.mobile_phone
             - _ingest._value.business_phones
-          tag: remove_duplicate_custom_fields_from_device_registered_users
+          tag: remove_duplicate_custom_fields_from_device_registered_users_8bd962c9
           ignore_missing: true
           if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - foreach:
-      tag: foreach_remove_duplicate_device_registered_owners
+      tag: foreach_remove_duplicate_device_registered_owners_42e74771
       field: entityanalytics_entra_id.device.registered_owners
       if: ctx.entityanalytics_entra_id?.device?.registered_owners instanceof List
       ignore_failure: true
@@ -115,39 +115,39 @@ processors:
             - _ingest._value.job_title
             - _ingest._value.mobile_phone
             - _ingest._value.business_phones
-          tag: remove_duplicate_custom_fields_from_device_registered_owners
+          tag: remove_duplicate_custom_fields_from_device_registered_owners_129cea92
           ignore_missing: true
           if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - foreach:
-      tag: foreach_remove_duplicate_device_group
+      tag: foreach_remove_duplicate_device_group_a84f9090
       field: entityanalytics_entra_id.device.group
       if: ctx.entityanalytics_entra_id?.device?.group instanceof List
       ignore_failure: true
       processor:
         remove:
           field:
-            -  _ingest._value.id
+            - _ingest._value.id
             - _ingest._value.name
-          tag: remove_duplicate_custom_fields_from_device_group
+          tag: remove_duplicate_custom_fields_from_device_group_674f7f28
           ignore_missing: true
           if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - foreach:
-      tag: foreach_remove_duplicate_user_group
+      tag: foreach_remove_duplicate_user_group_c0f75631
       field: entityanalytics_entra_id.user.group
       if: ctx.entityanalytics_entra_id?.user?.group instanceof List
       ignore_failure: true
       processor:
         remove:
           field:
-            -  _ingest._value.id
+            - _ingest._value.id
             - _ingest._value.name
-          tag: remove_duplicate_custom_fields_from_user_group
+          tag: remove_duplicate_custom_fields_from_user_group_80c1c2ce
           ignore_missing: true
           if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
       lang: painless
       description: Drops null/empty values recursively.
-      tag: painless_remove_null
+      tag: painless_remove_null_f6a89620
       source: |-
         boolean drop(Object object) {
           if (object == null || object == '') {
@@ -165,26 +165,26 @@ processors:
 
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
-      tag: append_preserve_original_event_on_error
+      tag: append_preserve_original_event_on_error_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
-      tag: pipeline_error
+      tag: pipeline_error_0841b325
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: pipeline_error_kind
+      tag: pipeline_error_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: pipeline_error_preserve_original_event
+      tag: pipeline_error_preserve_original_event_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

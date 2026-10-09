@@ -3,27 +3,27 @@ processors:
   - set:
       field: event.kind
       value: alert
-      tag: set_event_kind
+      tag: set_event_kind_ab1166ce
   - append:
       field: event.category
       value: malware
-      tag: append_malware_category
+      tag: append_malware_category_00df95f0
   - append:
       field: event.type
       value: info
-      tag: append_info_type
+      tag: append_info_type_5eab37e6
   - rename:
       field: crowdstrike.event.UserName
       target_field: user.name
       ignore_missing: true
-      tag: rename_user_name
+      tag: rename_user_name_ab44b1da
   - date:
       field: crowdstrike.event.ProcessStartTime
       target_field: process.start
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_process_start_time_ms
+      tag: date_process_start_time_ms_1c4c2d80
       if: 'ctx.crowdstrike?.event?.ProcessStartTime != null && String.valueOf(ctx.crowdstrike.event.ProcessStartTime).length() >= 12'
   - date:
       field: crowdstrike.event.ProcessStartTime
@@ -31,7 +31,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX
-      tag: date_process_start_time
+      tag: date_process_start_time_94dc05ee
       if: 'ctx.crowdstrike?.event?.ProcessStartTime != null && String.valueOf(ctx.crowdstrike.event.ProcessStartTime).length() <= 11'
   - date:
       field: crowdstrike.event.ProcessEndTime
@@ -39,7 +39,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_process_end_time_ms
+      tag: date_process_end_time_ms_5418190e
       if: 'ctx.crowdstrike?.event?.ProcessEndTime != null && String.valueOf(ctx.crowdstrike.event.ProcessEndTime).length() >= 12'
   - date:
       field: crowdstrike.event.ProcessEndTime
@@ -47,54 +47,54 @@ processors:
       timezone: UTC
       formats:
         - UNIX
-      tag: date_process_end_time
+      tag: date_process_end_time_ca231049
       if: 'ctx.crowdstrike?.event?.ProcessEndTime != null && String.valueOf(ctx.crowdstrike.event.ProcessEndTime).length() <= 11'
   - rename:
       field: crowdstrike.event.LocalIP
       target_field: source.ip
       ignore_missing: true
-      tag: rename_local_ip
+      tag: rename_local_ip_22d08a32
       if: ctx.crowdstrike?.event?.LocalIP != null && ctx.crowdstrike?.event?.LocalIP != ""
   - rename:
       field: crowdstrike.event.ProcessId
       target_field: process.pid
       ignore_missing: true
-      tag: rename_process_id
+      tag: rename_process_id_ffc72dd0
   - split:
       field: crowdstrike.event.HostGroups
       separator: ','
       ignore_missing: true
-      tag: split_host_groups
+      tag: split_host_groups_5f7cc781
   - rename:
       field: crowdstrike.event.ParentProcessId
       target_field: process.parent.pid
       ignore_missing: true
-      tag: rename_parent_process_id
+      tag: rename_parent_process_id_72d1c368
   - rename:
       field: crowdstrike.event.ParentImageFileName
       target_field: process.parent.executable
       ignore_missing: true
-      tag: rename_parent_image_file_name
+      tag: rename_parent_image_file_name_ce933051
       if: ctx.process?.parent?.executable == null
   - rename:
       field: crowdstrike.event.PatternDispositionDescription
       target_field: event.action
       ignore_missing: true
-      tag: rename_pattern_disposition_description
+      tag: rename_pattern_disposition_description_272cbde7
   - rename:
       field: crowdstrike.event.FalconHostLink
       target_field: event.reference
       ignore_missing: true
-      tag: rename_falcon_host_link
+      tag: rename_falcon_host_link_7d3b772f
   - rename:
       field: crowdstrike.event.DetectDescription
       target_field: message
       ignore_missing: true
-      tag: rename_detect_description
+      tag: rename_detect_description_ddcdd7d9
   - set:
       field: rule.description
       copy_from: message
-      tag: set_rule_description
+      tag: set_rule_description_cd529b3d
       if: ctx.message != null
   - set:
       tag: set_process_name_0cc9dd81
@@ -105,108 +105,111 @@ processors:
       field: crowdstrike.event.MachineDomain
       target_field: host.domain
       ignore_missing: true
-      tag: rename_machine_domain
+      tag: rename_machine_domain_6f8f3888
   - rename:
       field: crowdstrike.event.ComputerName
       target_field: host.name
       ignore_missing: true
-      tag: rename_computer_name
+      tag: rename_computer_name_09970320
   - rename:
       field: crowdstrike.event.SHA256String
       target_field: file.hash.sha256
       ignore_missing: true
-      tag: rename_sha256_string
+      tag: rename_sha256_string_a456e9c0
   - rename:
       field: crowdstrike.event.MD5String
       target_field: file.hash.md5
       ignore_missing: true
-      tag: rename_md5_string
+      tag: rename_md5_string_abd2d4c5
   - rename:
       field: crowdstrike.event.SHA1String
       target_field: file.hash.sha1
       ignore_missing: true
-      tag: rename_sha1_string
+      tag: rename_sha1_string_d834f9e7
   - append:
       field: related.hash
       value: "{{{file.hash.sha1}}}"
       allow_duplicates: false
-      tag: append_sha1_hash
+      tag: append_sha1_hash_833e653f
       if: ctx.file?.hash?.sha1 != null && ctx.file?.hash?.sha1 != ""
   - append:
       field: related.hash
       value: "{{{file.hash.sha256}}}"
       allow_duplicates: false
-      tag: append_sha256_hash
+      tag: append_sha256_hash_ae084cbb
       if: ctx.file?.hash?.sha256 != null && ctx.file?.hash?.sha256 != ""
   - append:
       field: related.hash
       value: "{{{file.hash.md5}}}"
       allow_duplicates: false
-      tag: append_md5_hash
+      tag: append_md5_hash_470a8bc2
       if: ctx.file?.hash?.md5 != null && ctx.file?.hash?.md5 != ""
   - rename:
       field: crowdstrike.event.FileName
       target_field: file.name
       ignore_missing: true
-      tag: rename_file_name
+      tag: rename_file_name_ad269878
   - rename:
       field: crowdstrike.event.FilePath
       target_field: file.path
       ignore_missing: true
-      tag: rename_file_path
+      tag: rename_file_path_f7472db2
   - rename:
       field: crowdstrike.event.DetectName
       target_field: rule.name
       ignore_missing: true
-      tag: rename_detect_name
+      tag: rename_detect_name_e7b04914
   - rename:
       field: crowdstrike.event.DetectId
       target_field: rule.id
       ignore_missing: true
-      tag: rename_detect_id
+      tag: rename_detect_id_a74b89ee
   - rename:
       field: crowdstrike.event.MacAddress
       target_field: host.mac
       ignore_missing: true
-      tag: rename_mac_address
+      tag: rename_mac_address_01fb2666
       if: ctx.crowdstrike?.event?.MacAddress != null
   - uppercase:
       field: host.mac
       ignore_missing: true
-      tag: uppercase_mac_address
+      tag: uppercase_mac_address_1ebb0ad0
       if: ctx.host?.mac != null
 
 # Threat fields: the default pipeline sets threat.framework from the threat.* fields.
   - append:
       field: threat.technique.name
       value: "{{{crowdstrike.event.Technique}}}"
-      tag: append_technique_name
+      tag: append_technique_name_a3e26449
       if: ctx.crowdstrike?.event?.Technique != null
   - append:
       field: threat.technique.id
       value: "{{{crowdstrike.event.TechniqueId}}}"
-      tag: append_technique_id
+      tag: append_technique_id_2de189a2
       if: ctx.crowdstrike?.event?.TechniqueId != null
   - append:
       field: threat.tactic.name
       value: "{{{crowdstrike.event.Tactic}}}"
-      tag: append_tactic_name
+      tag: append_tactic_name_369a6cb5
       if: ctx.crowdstrike?.event?.Tactic != null
   - append:
       field: threat.tactic.id
       value: "{{{crowdstrike.event.TacticId}}}"
-      tag: append_tactic_id
+      tag: append_tactic_id_d732fb38
       if: ctx.crowdstrike?.event?.TacticId != null
 
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
       value: |-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
