@@ -15,7 +15,10 @@ It includes the following datasets for retrieving logs:
 |   emailattachments | emailattachments stix 2.1   |
 |              files | file stix 2.1               |
 |                 ip | ip stix 2.1                 |
+|        phishingurl | phishingurl stix 2.1        |
 |         ransomware | ransomware stix 2.1         |
+|            scamurl | scamurl stix 2.1            |
+|           smishing | smishing stix 2.1           |
 |                url | url stix 2.1                |
 
 ## Agentless Enabled Integration
@@ -41,7 +44,10 @@ Destinations indices are aliased to `logs-ti_eset_latest.<feed name>`.
 | `logs-ti_eset.emailattachments-*`   | logs-ti_eset_latest.dest_emailattachments-*   | logs-ti_eset_latest.emailattachments   |
 | `logs-ti_eset.files-*`              | logs-ti_eset_latest.dest_files-*              | logs-ti_eset_latest.files              |
 | `logs-ti_eset.ip-*`                 | logs-ti_eset_latest.dest_ip-*                 | logs-ti_eset_latest.ip                 |
+| `logs-ti_eset.phishingurl-*`        | logs-ti_eset_latest.dest_phishingurl-*        | logs-ti_eset_latest.phishingurl        |
 | `logs-ti_eset.ransomware-*`         | logs-ti_eset_latest.dest_ransomware-*         | logs-ti_eset_latest.ransomware         |
+| `logs-ti_eset.scamurl-*`            | logs-ti_eset_latest.dest_scamurl-*            | logs-ti_eset_latest.scamurl            |
+| `logs-ti_eset.smishing-*`           | logs-ti_eset_latest.dest_smishing-*           | logs-ti_eset_latest.smishing           |
 | `logs-ti_eset.url-*`                | logs-ti_eset_latest.dest_url-*                | logs-ti_eset_latest.url                |
 
 ### ILM Policy
@@ -61,7 +67,10 @@ Data in these source indices will be deleted after a certain number of days from
 |   `logs-ti_eset.emailattachments` | 7d            | 48h           |
 |              `logs-ti_eset.files` | 7d            | 48h           |
 |                 `logs-ti_eset.ip` | 7d            | 48h           |
+|        `logs-ti_eset.phishingurl` | 7d            | 48h           |
 |         `logs-ti_eset.ransomware` | 7d            | 48h           |
+|            `logs-ti_eset.scamurl` | 7d            | 48h           |
+|           `logs-ti_eset.smishing` | 7d            | 48h           |
 |                `logs-ti_eset.url` | 7d            | 48h           |
 
 ## Requirements
@@ -135,6 +144,12 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 {{event "ip"}}
 
+### Phishing URL
+
+{{fields "phishingurl"}}
+
+{{event "phishingurl"}}
+
 ### APT
 
 {{fields "apt"}}
@@ -146,6 +161,18 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 {{fields "ransomware"}}
 
 {{event "ransomware"}}
+
+### Scam URL
+
+{{fields "scamurl"}}
+
+{{event "scamurl"}}
+
+### SMS phishing
+
+{{fields "smishing"}}
+
+{{event "smishing"}}
 
 ### URL
 
