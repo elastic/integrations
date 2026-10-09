@@ -100,6 +100,7 @@ The following event types are supported for CrowdStrike Event Streams (whether y
 - IncidentSummaryEvent
 - UserActivityAuditEvent
 - AuthActivityAuditEvent
+- APIActivityAuditEvent
 - FirewallMatchEvent
 - RemoteResponseSessionStartEvent
 - RemoteResponseSessionEndEvent
