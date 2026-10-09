@@ -1,0 +1,104 @@
+{
+    "id": "bloodhound_enterprise-records-over-time",
+    "type": "lens",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.9.0",
+    "attributes": {
+        "title": "[Logs BloodHound Enterprise] Records over time",
+        "description": "BloodHound alert volume over time from case/alert sync",
+        "visualizationType": "lnsXY",
+        "state": {
+            "visualization": {
+                "legend": {
+                    "isVisible": true,
+                    "position": "right"
+                },
+                "valueLabels": "hide",
+                "fittingFunction": "Linear",
+                "axisTitlesVisibilitySettings": {
+                    "x": false,
+                    "yLeft": true,
+                    "yRight": true
+                },
+                "preferredSeriesType": "area",
+                "layers": [
+                    {
+                        "layerId": "layer_time",
+                        "accessors": [
+                            "col_count_time"
+                        ],
+                        "position": "top",
+                        "seriesType": "area",
+                        "layerType": "data",
+                        "xAccessor": "col_time",
+                        "yConfig": [
+                            {
+                                "forAccessor": "col_count_time",
+                                "color": "#5465FF",
+                                "axisMode": "left"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "query": {
+                "language": "kuery",
+                "query": "kibana.alert.rule.name:\"BloodHound Enterprise\""
+            },
+            "filters": [],
+            "datasourceStates": {
+                "formBased": {
+                    "layers": {
+                        "layer_time": {
+                            "columns": {
+                                "col_time": {
+                                    "label": "@timestamp",
+                                    "dataType": "date",
+                                    "operationType": "date_histogram",
+                                    "sourceField": "@timestamp",
+                                    "isBucketed": true,
+                                    "params": {
+                                        "interval": "auto",
+                                        "includeEmptyRows": true,
+                                        "dropPartials": false
+                                    }
+                                },
+                                "col_count_time": {
+                                    "label": "Count of records",
+                                    "dataType": "number",
+                                    "operationType": "count",
+                                    "isBucketed": false,
+                                    "sourceField": "___records___",
+                                    "params": {
+                                        "emptyAsNull": true
+                                    }
+                                }
+                            },
+                            "columnOrder": [
+                                "col_time",
+                                "col_count_time"
+                            ],
+                            "incompleteColumns": {},
+                            "sampling": 1
+                        }
+                    }
+                },
+                "indexpattern": {
+                    "layers": {}
+                },
+                "textBased": {
+                    "layers": {}
+                }
+            },
+            "internalReferences": [],
+            "adHocDataViews": {}
+        }
+    },
+    "references": [
+        {
+            "id": "bloodhound_enterprise-alerts",
+            "name": "indexpattern-datasource-layer-layer_time",
+            "type": "index-pattern"
+        }
+    ]
+}

@@ -1,0 +1,105 @@
+{
+    "id": "bloodhound_enterprise-records-by-domain",
+    "type": "lens",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.9.0",
+    "attributes": {
+        "title": "[Logs BloodHound Enterprise] Records by domain",
+        "description": "Distribution of BloodHound alerts by domain",
+        "visualizationType": "lnsXY",
+        "state": {
+            "visualization": {
+                "legend": {
+                    "isVisible": true,
+                    "position": "right"
+                },
+                "valueLabels": "hide",
+                "preferredSeriesType": "bar_horizontal",
+                "layers": [
+                    {
+                        "layerId": "layer_panel_by_domain",
+                        "accessors": [
+                            "count_panel_by_domain"
+                        ],
+                        "position": "top",
+                        "seriesType": "bar_horizontal",
+                        "layerType": "data",
+                        "xAccessor": "terms_panel_by_domain"
+                    }
+                ]
+            },
+            "query": {
+                "language": "kuery",
+                "query": "kibana.alert.rule.name:\"BloodHound Enterprise\""
+            },
+            "filters": [],
+            "datasourceStates": {
+                "formBased": {
+                    "layers": {
+                        "layer_panel_by_domain": {
+                            "columns": {
+                                "terms_panel_by_domain": {
+                                    "label": "Domain",
+                                    "customLabel": true,
+                                    "dataType": "string",
+                                    "operationType": "terms",
+                                    "sourceField": "source.domain",
+                                    "isBucketed": true,
+                                    "params": {
+                                        "size": 10,
+                                        "orderBy": {
+                                            "type": "column",
+                                            "columnId": "count_panel_by_domain"
+                                        },
+                                        "orderDirection": "desc",
+                                        "otherBucket": true,
+                                        "missingBucket": false,
+                                        "parentFormat": {
+                                            "id": "terms"
+                                        },
+                                        "include": [],
+                                        "exclude": [],
+                                        "includeIsRegex": false,
+                                        "excludeIsRegex": false,
+                                        "accuracyMode": true
+                                    }
+                                },
+                                "count_panel_by_domain": {
+                                    "label": "Count of records",
+                                    "dataType": "number",
+                                    "operationType": "count",
+                                    "isBucketed": false,
+                                    "sourceField": "___records___",
+                                    "params": {
+                                        "emptyAsNull": true
+                                    }
+                                }
+                            },
+                            "columnOrder": [
+                                "terms_panel_by_domain",
+                                "count_panel_by_domain"
+                            ],
+                            "incompleteColumns": {},
+                            "sampling": 1
+                        }
+                    }
+                },
+                "indexpattern": {
+                    "layers": {}
+                },
+                "textBased": {
+                    "layers": {}
+                }
+            },
+            "internalReferences": [],
+            "adHocDataViews": {}
+        }
+    },
+    "references": [
+        {
+            "id": "bloodhound_enterprise-alerts",
+            "name": "indexpattern-datasource-layer-layer_panel_by_domain",
+            "type": "index-pattern"
+        }
+    ]
+}

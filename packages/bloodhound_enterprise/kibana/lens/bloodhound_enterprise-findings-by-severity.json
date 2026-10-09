@@ -1,0 +1,177 @@
+{
+    "id": "bloodhound_enterprise-findings-by-severity",
+    "type": "lens",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.9.0",
+    "attributes": {
+        "title": "[Logs BloodHound Enterprise] Records by severity",
+        "description": "Distribution of BloodHound alerts by severity",
+        "visualizationType": "lnsPie",
+        "state": {
+            "visualization": {
+                "shape": "donut",
+                "layers": [
+                    {
+                        "layerId": "layer_panel_by_severity",
+                        "primaryGroups": [
+                            "terms_panel_by_severity"
+                        ],
+                        "metrics": [
+                            "count_panel_by_severity"
+                        ],
+                        "numberDisplay": "percent",
+                        "categoryDisplay": "default",
+                        "legendDisplay": "default",
+                        "nestedLegend": false,
+                        "layerType": "data",
+                        "colorMapping": {
+                            "assignments": [
+                                {
+                                    "rules": [
+                                        {
+                                            "type": "matchExactString",
+                                            "value": "critical"
+                                        }
+                                    ],
+                                    "color": {
+                                        "type": "colorCode",
+                                        "colorCode": "#EA1412"
+                                    },
+                                    "touched": true
+                                },
+                                {
+                                    "rules": [
+                                        {
+                                            "type": "matchExactString",
+                                            "value": "high"
+                                        }
+                                    ],
+                                    "color": {
+                                        "type": "colorCode",
+                                        "colorCode": "#F46036"
+                                    },
+                                    "touched": true
+                                },
+                                {
+                                    "rules": [
+                                        {
+                                            "type": "matchExactString",
+                                            "value": "medium"
+                                        }
+                                    ],
+                                    "color": {
+                                        "type": "colorCode",
+                                        "colorCode": "#5465FF"
+                                    },
+                                    "touched": true
+                                },
+                                {
+                                    "rules": [
+                                        {
+                                            "type": "matchExactString",
+                                            "value": "low"
+                                        }
+                                    ],
+                                    "color": {
+                                        "type": "colorCode",
+                                        "colorCode": "#05CE8B"
+                                    },
+                                    "touched": true
+                                }
+                            ],
+                            "specialAssignments": [
+                                {
+                                    "rules": [
+                                        {
+                                            "type": "other"
+                                        }
+                                    ],
+                                    "color": {
+                                        "type": "loop"
+                                    },
+                                    "touched": false
+                                }
+                            ],
+                            "paletteId": "eui_amsterdam_color_blind",
+                            "colorMode": {
+                                "type": "categorical"
+                            }
+                        }
+                    }
+                ]
+            },
+            "query": {
+                "language": "kuery",
+                "query": "kibana.alert.rule.name:\"BloodHound Enterprise\""
+            },
+            "filters": [],
+            "datasourceStates": {
+                "formBased": {
+                    "layers": {
+                        "layer_panel_by_severity": {
+                            "columns": {
+                                "terms_panel_by_severity": {
+                                    "label": "Severity",
+                                    "customLabel": true,
+                                    "dataType": "string",
+                                    "operationType": "terms",
+                                    "sourceField": "kibana.alert.severity",
+                                    "isBucketed": true,
+                                    "params": {
+                                        "size": 10,
+                                        "orderBy": {
+                                            "type": "column",
+                                            "columnId": "count_panel_by_severity"
+                                        },
+                                        "orderDirection": "desc",
+                                        "otherBucket": true,
+                                        "missingBucket": false,
+                                        "parentFormat": {
+                                            "id": "terms"
+                                        },
+                                        "include": [],
+                                        "exclude": [],
+                                        "includeIsRegex": false,
+                                        "excludeIsRegex": false,
+                                        "accuracyMode": true
+                                    }
+                                },
+                                "count_panel_by_severity": {
+                                    "label": "Count of records",
+                                    "dataType": "number",
+                                    "operationType": "count",
+                                    "isBucketed": false,
+                                    "sourceField": "___records___",
+                                    "params": {
+                                        "emptyAsNull": true
+                                    }
+                                }
+                            },
+                            "columnOrder": [
+                                "terms_panel_by_severity",
+                                "count_panel_by_severity"
+                            ],
+                            "incompleteColumns": {},
+                            "sampling": 1
+                        }
+                    }
+                },
+                "indexpattern": {
+                    "layers": {}
+                },
+                "textBased": {
+                    "layers": {}
+                }
+            },
+            "internalReferences": [],
+            "adHocDataViews": {}
+        }
+    },
+    "references": [
+        {
+            "id": "bloodhound_enterprise-alerts",
+            "name": "indexpattern-datasource-layer-layer_panel_by_severity",
+            "type": "index-pattern"
+        }
+    ]
+}
