@@ -71,6 +71,37 @@ To configure the integration to pull threat intelligence from an ISAC feed, foll
 
 Once the integration is running and pulling data, it automatically maps threat indicator fields from STIX to ECS. Verify that the imported indicators (e.g. IPs, domains, hashes) align with your detection rules.
 
+### Collecting indicators from IsMalicious
+
+[IsMalicious](https://ismalicious.com/api-docs) exposes STIX 2.1 indicator collections over TAXII 2.1. Use this package's native TAXII input. An additional vendor polling connector or custom CEL program is not required for standard indicator ingestion.
+
+1. Obtain feed access and the API key/secret pair from your IsMalicious account. Individual API-check access is different from feed access. TAXII feeds require a Pro or Enterprise subscription.
+2. Discover the API root at `https://api.ismalicious.com/taxii`, then list the collections at `https://api.ismalicious.com/taxii/api-root/collections`. Authenticate these requests with HTTP Basic: the API key as username and API secret as password. Select the actual readable collection ID returned to your account.
+3. Add the **Custom Threat Intelligence** integration in Fleet and enable the RESTful API stream. Configure:
+
+   | Setting | Value |
+   | --- | --- |
+   | URL API endpoint | `https://api.ismalicious.com/taxii/api-root/collections/<COLLECTION_ID>/objects` |
+   | Enable TAXII 2.1 | Enabled |
+   | Restrict STIX 2.1 format | Enabled |
+   | Basic Auth Username | Your IsMalicious API key |
+   | Basic Auth Password | Your IsMalicious API secret |
+   | API Key / API Key Type | Leave unset when using Basic authentication |
+   | Accept header value | `application/taxii+json;version=2.1` |
+   | Content-Type header value | `application/taxii+json;version=2.1` |
+
+   `<COLLECTION_ID>` is a placeholder, not a literal ID. For example, a readable `malicious-ips` collection has the objects URL `https://api.ismalicious.com/taxii/api-root/collections/malicious-ips/objects`. Confirm collection availability in authenticated discovery instead of assuming your account can read every collection. Configure a separate stream/instance for each collection you need.
+4. Choose the initial interval and polling interval according to collection size and your detection requirements, and verify the agent is healthy. TAXII pagination automatically follows the server's `next` token. Optionally use **Limit** to set the maximum objects requested per page. If a high-volume initial import exceeds the CEL execution limit, see [Maximum Pages Per Interval](#exceeding-maximum-number-of-cel-executions). Start with a bounded interval before expanding the import.
+5. Validate the mapped indicator value/type, provider attribution and timestamps in the ingested events, and verify the latest-indicator transform runs. Use `logs-ti_custom_latest.indicator` for indicator match rules, rather than the source data stream that retains historical versions.
+
+Keep credentials out of URLs, exported policy examples and logs. The package's generic **API Key** option uses `Authorization` token authentication. It is not the same as IsMalicious's `X-API-KEY` header. Use the Basic pair above unless you intentionally configure a different supported authentication path.
+
+This input consumes the STIX indicators, not the provider's `/check` reputation-response JSON. `confidence` in STIX is confidence, not a risk score. Do not manufacture confidence from custom provider risk fields or infer malicious detections by counting contextual source rows. Standard indicator fields are mapped by the existing STIX pipelines. Unsupported extensions require a separately validated custom mapping.
+
+The package honors `revoked` and `valid_until` when those updates are supplied in the feed. A source silently removing an object does not by itself prove the previously ingested IOC has been revoked. Review the provider's withdrawal semantics and set an appropriate orphan-IOC expiration before using the data for automated actions. This configuration adds intelligence for matching and investigation. It does not define an automatic blocking policy.
+
+For HTTP 401/403, check the complete key/secret pair and feed access. For 429, reduce polling and retry after the provider's indicated delay. Inspect agent errors and ingestion gaps instead of treating a failed poll as an empty or clean collection.
+
 ### Expiration of Indicators of Compromise (IOCs)
 
 The Custom Threat Intelligence integration supports IOC expiration. The ingested IOCs expire after certain duration. Based on the [STIX 2.1 reference](https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html), the following options are available to determine the expiration of indicators:
