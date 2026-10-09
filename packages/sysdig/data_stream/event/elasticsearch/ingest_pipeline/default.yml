@@ -245,6 +245,26 @@ processors:
       tag: rename_content_fields_ct_user_3898db5a
       target_field: sysdig.event.content.fields.ct.user.value
       ignore_missing: true
+  - script:
+      description: Normalize Kubernetes audit URI parameters to avoid field mapping conflicts.
+      tag: script_normalize_ka_uri_params_ac76b1ae
+      lang: painless
+      if: ctx.sysdig?.event?.content?.fields instanceof Map
+      source: |
+        def fields = ctx.sysdig.event.content.fields;
+        def prefix = 'ka.uri.param[';
+        def uriParams = new HashMap();
+
+        for (def key : new ArrayList(fields.keySet())) {
+            if (key.startsWith(prefix) && key.endsWith(']')) {
+            def name = key.substring(prefix.length(), key.length() - 1);
+            uriParams[name] = fields.remove(key);
+            }
+        }
+
+        if (!uriParams.isEmpty()) {
+            fields['ka.uri_params'] = uriParams;
+        }
   - dot_expander:
       field: '*'
       tag: dot_expander_content_fields_7b61db18
@@ -582,6 +602,16 @@ processors:
       tag: set_process_pid_from_content_fields_proc_pid_6751ddf0
       copy_from: sysdig.event.content.fields.proc.pid
       ignore_empty_value: true
+  - json:
+      field: sysdig.event.content.fields.jevt.obj
+      tag: json_unpack_jevt_obj_parsed_caab8c3c
+      target_field: sysdig.event.content.fields.jevt.obj_parsed
+      if: ctx.sysdig?.event?.content?.fields?.jevt?.obj instanceof String
+      on_failure:
+        - append:
+            tag: append_error_message_jevt_obj_d3a1c4e2
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: Parse date fields.
       tag: script_parse_date_fields_08e67810
@@ -1089,6 +1119,13 @@ processors:
       tag: rename_labels_c9d1222c
       target_field: sysdig.event.labels
       ignore_missing: true
+  - script:
+      description: Preserve container.image label as container.image.name before dot expansion.
+      tag: script_rename_container_image_label_f60f2ce9
+      lang: painless
+      if: ctx.sysdig?.event?.labels instanceof Map && ctx.sysdig.event.labels.containsKey('container.image')
+      source: |
+        ctx.sysdig.event.labels['container.image.name'] = ctx.sysdig.event.labels.remove('container.image');
   - dot_expander:
       field: '*'
       tag: dot_expander_labels_ab468b9b
@@ -1333,6 +1370,11 @@ processors:
       field: sysdig.event.labels.kubernetes.daemonSet.name
       tag: rename_labels_kubernetes_daemonSet_name_10f7ef70
       target_field: sysdig.event.labels.kubernetes.daemon_set.name
+      ignore_missing: true
+  - rename:
+      field: sysdig.event.labels.kubernetes.replicaSet.name
+      tag: rename_labels_kubernetes_replicaSet_name_fa9bebbb
+      target_field: sysdig.event.labels.kubernetes.replica_set.name
       ignore_missing: true
   - set:
       field: orchestrator.namespace
