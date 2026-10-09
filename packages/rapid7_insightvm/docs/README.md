@@ -10,11 +10,11 @@ Use the Rapid7 InsightVM integration to collect and parse data from the REST API
 
 The Rapid7 InsightVM integration collects two type of events: Asset and Vulnerability.
 
-**Asset (Deprecated)** is used to get details related to inventory, assessment, and summary details of assets that the user has access to. See more details in the API documentation [here](https://help.rapid7.com/insightvm/en-us/api/integrations.html#operation/searchIntegrationAssets). It is deprecated in version `2.0.0`. Instead, use the `Asset Vulnerability` data stream for enriched vulnerability documents and improved mappings.
-
 **Asset Vulnerability** is used to gather and aggregate data on assets and vulnerabilities to support Native CDR Workflows.
 
 **Vulnerability** is used to retrieve all vulnerabilities that can be assessed. See more details in the API documentation [here](https://help.rapid7.com/insightvm/en-us/api/integrations.html#operation/searchIntegrationVulnerabilities).
+
+**Asset** - **DEPRECATED** since version `2.0.0`; it will be removed in a future release. It is used to get details related to inventory, assessment, and summary details of assets that the user has access to. See more details in the API documentation [here](https://help.rapid7.com/insightvm/en-us/api/integrations.html#operation/searchIntegrationAssets). Deactivate it and instead enable **Asset Vulnerability** in the **Collect Rapid7 InsightVM asset vulnerability events via API** input for enriched vulnerability documents and improved mappings.
 
 ## Requirements
 
@@ -58,219 +58,6 @@ For existing users of Rapid7 InsightVM integration, before upgrading to `2.0.0` 
 3. Because the latest copy of vulnerabilities is now indexed in two places, i.e., in both source and destination indices, users must anticipate storage requirements accordingly.
 
 ## Logs Reference
-
-### asset
-
-This is the `asset` dataset.
-
-#### Example
-
-An example event for `asset` looks as following:
-
-```json
-{
-    "@timestamp": "2026-03-16T12:08:09.236Z",
-    "agent": {
-        "ephemeral_id": "76ec2ae7-3746-4270-a2fe-1b60749b72dc",
-        "id": "aa20cb69-aca0-43ea-a4fe-15175ccd455b",
-        "name": "elastic-agent-40804",
-        "type": "filebeat",
-        "version": "8.19.4"
-    },
-    "data_stream": {
-        "dataset": "rapid7_insightvm.asset",
-        "namespace": "93360",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "elastic_agent": {
-        "id": "aa20cb69-aca0-43ea-a4fe-15175ccd455b",
-        "snapshot": false,
-        "version": "8.19.4"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "category": [
-            "host"
-        ],
-        "created": "2026-03-16T12:08:09.236Z",
-        "dataset": "rapid7_insightvm.asset",
-        "ingested": "2026-03-16T12:08:12Z",
-        "kind": "state",
-        "original": "{\"assessed_for_policies\":false,\"assessed_for_vulnerabilities\":true,\"critical_vulnerabilities\":0,\"exploits\":0,\"id\":\"452534235-25a7-40a3-9321-28ce0b5cc90e-default-asset-199\",\"ip\":\"10.1.0.128\",\"last_assessed_for_vulnerabilities\":\"2020-03-20T19:19:42.611Z\",\"last_scan_end\":\"2020-03-20T19:19:42.611Z\",\"last_scan_start\":\"2020-03-20T19:18:13.611Z\",\"malware_kits\":0,\"moderate_vulnerabilities\":2,\"new\":[],\"os_architecture\":\"x86_64\",\"os_description\":\"CentOS Linux 2.6.18\",\"os_family\":\"Linux\",\"os_name\":\"Linux\",\"os_system_name\":\"CentOS Linux\",\"os_type\":\"General\",\"os_vendor\":\"CentOS\",\"os_version\":\"2.6.18\",\"remediated\":[],\"risk_score\":0,\"severe_vulnerabilities\":0,\"tags\":[{\"name\":\"lab\",\"type\":\"SITE\"}],\"total_vulnerabilities\":2}",
-        "type": [
-            "info"
-        ]
-    },
-    "host": {
-        "architecture": "x86_64",
-        "id": "452534235-25a7-40a3-9321-28ce0b5cc90e-default-asset-199",
-        "ip": [
-            "10.1.0.128"
-        ],
-        "os": {
-            "family": "Linux",
-            "full": "CentOS Linux 2.6.18",
-            "name": "Linux",
-            "version": "2.6.18"
-        },
-        "risk": {
-            "static_score": 0
-        }
-    },
-    "input": {
-        "type": "httpjson"
-    },
-    "rapid7": {
-        "insightvm": {
-            "asset": {
-                "assessed_for_policies": false,
-                "assessed_for_vulnerabilities": true,
-                "critical_vulnerabilities": 0,
-                "exploits": 0,
-                "id": "452534235-25a7-40a3-9321-28ce0b5cc90e-default-asset-199",
-                "ip": "10.1.0.128",
-                "last_assessed_for_vulnerabilities": "2020-03-20T19:19:42.611Z",
-                "last_scan_end": "2020-03-20T19:19:42.611Z",
-                "last_scan_start": "2020-03-20T19:18:13.611Z",
-                "malware_kits": 0,
-                "moderate_vulnerabilities": 2,
-                "os": {
-                    "architecture": "x86_64",
-                    "description": "CentOS Linux 2.6.18",
-                    "family": "Linux",
-                    "name": "Linux",
-                    "system_name": "CentOS Linux",
-                    "type": "General",
-                    "vendor": "CentOS",
-                    "version": "2.6.18"
-                },
-                "risk_score": 0,
-                "severe_vulnerabilities": 0,
-                "tags": [
-                    {
-                        "name": "lab",
-                        "type": "SITE"
-                    }
-                ],
-                "tags_nested": [
-                    {
-                        "name": "lab",
-                        "type": "SITE"
-                    }
-                ],
-                "total_vulnerabilities": 2
-            }
-        }
-    },
-    "related": {
-        "ip": [
-            "10.1.0.128"
-        ]
-    },
-    "tags": [
-        "preserve_original_event",
-        "preserve_duplicate_custom_fields",
-        "forwarded",
-        "rapid7_insightvm-asset"
-    ]
-}
-```
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
-| input.type | Type of Filebeat input. | keyword |
-| log.offset | Log offset. | long |
-| rapid7.insightvm.asset.assessed_for_policies | Whether an asset was assessed for policies. | boolean |
-| rapid7.insightvm.asset.assessed_for_vulnerabilities | Whether an asset was assessed for vulnerabilities. | boolean |
-| rapid7.insightvm.asset.credential_assessments.port | The port the authentication was used on. | long |
-| rapid7.insightvm.asset.credential_assessments.protocol | The protocol the authentication was used on. | keyword |
-| rapid7.insightvm.asset.credential_assessments.status | The authentication of the last scan performed. | keyword |
-| rapid7.insightvm.asset.credential_assessments_nested.port | The port the authentication was used on. | long |
-| rapid7.insightvm.asset.credential_assessments_nested.protocol | The protocol the authentication was used on. | keyword |
-| rapid7.insightvm.asset.credential_assessments_nested.status | The authentication of the last scan performed. | keyword |
-| rapid7.insightvm.asset.critical_vulnerabilities | The count of critical vulnerability findings. | long |
-| rapid7.insightvm.asset.exploits | The count of known unique exploits that can be used to exploit vulnerabilities on the asset. | long |
-| rapid7.insightvm.asset.host_name | The host name (local or FQDN). | keyword |
-| rapid7.insightvm.asset.id | The identifier of the asset. | keyword |
-| rapid7.insightvm.asset.ip | The IPv4 or IPv6 address. | ip |
-| rapid7.insightvm.asset.last_assessed_for_vulnerabilities | The time at which an asset was assessed for vulnerabilities. | date |
-| rapid7.insightvm.asset.last_scan_end | The time at which the last scan of the asset ended. | date |
-| rapid7.insightvm.asset.last_scan_start | The time at which the last scan of the asset started. | date |
-| rapid7.insightvm.asset.mac | The Media Access Control (MAC) address. The format is six groups of two hexadecimal digits separated by colons. | keyword |
-| rapid7.insightvm.asset.malware_kits | The count of known unique malware kits that can be used to attack vulnerabilities on the asset. | long |
-| rapid7.insightvm.asset.moderate_vulnerabilities | The count of moderate vulnerability findings. | long |
-| rapid7.insightvm.asset.new.check_id | The identifier of the vulnerability check. | keyword |
-| rapid7.insightvm.asset.new.first_found | The first time the vulnerability was discovered. | date |
-| rapid7.insightvm.asset.new.key | The identifier of the assessment key. | keyword |
-| rapid7.insightvm.asset.new.last_found | The most recent time the vulnerability was discovered. | date |
-| rapid7.insightvm.asset.new.port | For services vulnerabilities, the port that is vulnerable. | long |
-| rapid7.insightvm.asset.new.proof | The identifier of the vulnerability proof. | keyword |
-| rapid7.insightvm.asset.new.protocol | For services vulnerabilities, the protocol that is vulnerable. | keyword |
-| rapid7.insightvm.asset.new.solution.fix | The solution fix for the vulnerability. | keyword |
-| rapid7.insightvm.asset.new.solution.id | The identifier of the solution for the vulnerability. | keyword |
-| rapid7.insightvm.asset.new.solution.summary | The summary for the solution for the vulnerability. | keyword |
-| rapid7.insightvm.asset.new.solution.type | The solution type for the vulnerability. | keyword |
-| rapid7.insightvm.asset.new.status | Enum: "EXCEPTION_VULN_EXPL" "UNEXPECTED_ERR" "NOT_VULN_DONT_STORE" "SUPERSEDED" "EXCEPTION_VULN_POTL" "VULNERABLE_EXPL" "OVERRIDDEN_VULN_VERS" "SKIPPED_DISABLED" "VULNERABLE_VERS" "VULNERABLE_POTENTIAL" "SKIPPED_VERS" "EXCEPTION_VULN_VERS" "NOT_VULNERABLE" "UNKNOWN" "SKIPPED_DOS" The status of the vulnerability finding. | keyword |
-| rapid7.insightvm.asset.new.vulnerability_id | The identifier of the vulnerability. | keyword |
-| rapid7.insightvm.asset.os.architecture | The architecture of the operating system. | keyword |
-| rapid7.insightvm.asset.os.description | The description of the operating system (containing vendor, family, product, version and architecture in a single string). | keyword |
-| rapid7.insightvm.asset.os.family | The family of the operating system. | keyword |
-| rapid7.insightvm.asset.os.name | The name of the operating system. | keyword |
-| rapid7.insightvm.asset.os.system_name | A combination of vendor and family (with redundancies removed), suitable for grouping. | keyword |
-| rapid7.insightvm.asset.os.type | The type of operating system. | keyword |
-| rapid7.insightvm.asset.os.vendor | The vendor of the operating system. | keyword |
-| rapid7.insightvm.asset.os.version | The version of the operating system. | keyword |
-| rapid7.insightvm.asset.remediated.check_id | The identifier of the vulnerability check. | keyword |
-| rapid7.insightvm.asset.remediated.first_found | The first time the vulnerability was discovered. | date |
-| rapid7.insightvm.asset.remediated.key | The identifier of the assessment key. | keyword |
-| rapid7.insightvm.asset.remediated.last_found | The most recent time the vulnerability was discovered. | date |
-| rapid7.insightvm.asset.remediated.port | For services vulnerabilities, the port that is vulnerable. | long |
-| rapid7.insightvm.asset.remediated.proof | The identifier of the vulnerability proof. | keyword |
-| rapid7.insightvm.asset.remediated.protocol | For services vulnerabilities, the protocol that is vulnerable. | keyword |
-| rapid7.insightvm.asset.remediated.solution.fix | The solution fix for the vulnerability. | keyword |
-| rapid7.insightvm.asset.remediated.solution.id | The identifier of the solution for the vulnerability. | keyword |
-| rapid7.insightvm.asset.remediated.solution.summary | The summary for the solution for the vulnerability. | keyword |
-| rapid7.insightvm.asset.remediated.solution.type | The solution type for the vulnerability. | keyword |
-| rapid7.insightvm.asset.remediated.status | Enum: "EXCEPTION_VULN_EXPL" "UNEXPECTED_ERR" "NOT_VULN_DONT_STORE" "SUPERSEDED" "EXCEPTION_VULN_POTL" "VULNERABLE_EXPL" "OVERRIDDEN_VULN_VERS" "SKIPPED_DISABLED" "VULNERABLE_VERS" "VULNERABLE_POTENTIAL" "SKIPPED_VERS" "EXCEPTION_VULN_VERS" "NOT_VULNERABLE" "UNKNOWN" "SKIPPED_DOS" The status of the vulnerability finding. | keyword |
-| rapid7.insightvm.asset.remediated.vulnerability_id | The identifier of the vulnerability. | keyword |
-| rapid7.insightvm.asset.risk_score | The risk score (with criticality adjustments) of the asset. | double |
-| rapid7.insightvm.asset.same.check_id | The identifier of the vulnerability check. | keyword |
-| rapid7.insightvm.asset.same.first_found | The first time the vulnerability was discovered. | date |
-| rapid7.insightvm.asset.same.key | The identifier of the assessment key. | keyword |
-| rapid7.insightvm.asset.same.last_found | The most recent time the vulnerability was discovered. | date |
-| rapid7.insightvm.asset.same.port | For services vulnerabilities, the port that is vulnerable. | long |
-| rapid7.insightvm.asset.same.proof | The identifier of the vulnerability proof. | keyword |
-| rapid7.insightvm.asset.same.protocol | For services vulnerabilities, the protocol that is vulnerable. | keyword |
-| rapid7.insightvm.asset.same.reintroduced | The time the vulnerability was reintroduced on the asset after having been remediated. | date |
-| rapid7.insightvm.asset.same.solution.fix | The solution fix for the vulnerability. | keyword |
-| rapid7.insightvm.asset.same.solution.id | The identifier of the solution for the vulnerability. | keyword |
-| rapid7.insightvm.asset.same.solution.summary | The summary for the solution for the vulnerability. | keyword |
-| rapid7.insightvm.asset.same.solution.type | The solution type for the vulnerability. | keyword |
-| rapid7.insightvm.asset.same.status | Enum: "EXCEPTION_VULN_EXPL" "UNEXPECTED_ERR" "NOT_VULN_DONT_STORE" "SUPERSEDED" "EXCEPTION_VULN_POTL" "VULNERABLE_EXPL" "OVERRIDDEN_VULN_VERS" "SKIPPED_DISABLED" "VULNERABLE_VERS" "VULNERABLE_POTENTIAL" "SKIPPED_VERS" "EXCEPTION_VULN_VERS" "NOT_VULNERABLE" "UNKNOWN" "SKIPPED_DOS" The status of the vulnerability finding. | keyword |
-| rapid7.insightvm.asset.same.vulnerability_id | The identifier of the vulnerability. | keyword |
-| rapid7.insightvm.asset.severe_vulnerabilities | The count of severe vulnerability findings. | long |
-| rapid7.insightvm.asset.tags.name | The stored value. | keyword |
-| rapid7.insightvm.asset.tags.type | The type of information stored and displayed. For sites, the value is "SITE". | keyword |
-| rapid7.insightvm.asset.tags_nested.name | The stored value. | keyword |
-| rapid7.insightvm.asset.tags_nested.type | The type of information stored and displayed. For sites, the value is "SITE". | keyword |
-| rapid7.insightvm.asset.total_vulnerabilities | The total count of vulnerability findings. | long |
-| rapid7.insightvm.asset.type | Enum: "hypervisor" "mobile" "guest" "physical" "unknown" The type of asset. | keyword |
-| rapid7.insightvm.asset.unique_identifiers.id | The unique identifier. | keyword |
-| rapid7.insightvm.asset.unique_identifiers.source | The source of the unique identifier. | keyword |
-| rapid7.insightvm.asset.unique_identifiers_nested.id | The unique identifier. | keyword |
-| rapid7.insightvm.asset.unique_identifiers_nested.source | The source of the unique identifier. | keyword |
-
 
 ### asset_vulnerability
 
@@ -882,3 +669,216 @@ An example event for `vulnerability` looks as following:
 | rapid7.insightvm.vulnerability.severity | Enum: "critical" "low" "severe" "informational" "none" "moderate" The severity of the vulnerability. | keyword |
 | rapid7.insightvm.vulnerability.severity_score | The severity score of the vulnerability, on a scale of 0-10. | long |
 | rapid7.insightvm.vulnerability.title | The title (summary) of the vulnerability. | keyword |
+
+
+### asset (DEPRECATED)
+
+This is the `asset` dataset. It is deprecated in favour of the `asset_vulnerability` dataset above.
+
+#### Example
+
+An example event for `asset` looks as following:
+
+```json
+{
+    "@timestamp": "2026-03-16T12:08:09.236Z",
+    "agent": {
+        "ephemeral_id": "76ec2ae7-3746-4270-a2fe-1b60749b72dc",
+        "id": "aa20cb69-aca0-43ea-a4fe-15175ccd455b",
+        "name": "elastic-agent-40804",
+        "type": "filebeat",
+        "version": "8.19.4"
+    },
+    "data_stream": {
+        "dataset": "rapid7_insightvm.asset",
+        "namespace": "93360",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "aa20cb69-aca0-43ea-a4fe-15175ccd455b",
+        "snapshot": false,
+        "version": "8.19.4"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "host"
+        ],
+        "created": "2026-03-16T12:08:09.236Z",
+        "dataset": "rapid7_insightvm.asset",
+        "ingested": "2026-03-16T12:08:12Z",
+        "kind": "state",
+        "original": "{\"assessed_for_policies\":false,\"assessed_for_vulnerabilities\":true,\"critical_vulnerabilities\":0,\"exploits\":0,\"id\":\"452534235-25a7-40a3-9321-28ce0b5cc90e-default-asset-199\",\"ip\":\"10.1.0.128\",\"last_assessed_for_vulnerabilities\":\"2020-03-20T19:19:42.611Z\",\"last_scan_end\":\"2020-03-20T19:19:42.611Z\",\"last_scan_start\":\"2020-03-20T19:18:13.611Z\",\"malware_kits\":0,\"moderate_vulnerabilities\":2,\"new\":[],\"os_architecture\":\"x86_64\",\"os_description\":\"CentOS Linux 2.6.18\",\"os_family\":\"Linux\",\"os_name\":\"Linux\",\"os_system_name\":\"CentOS Linux\",\"os_type\":\"General\",\"os_vendor\":\"CentOS\",\"os_version\":\"2.6.18\",\"remediated\":[],\"risk_score\":0,\"severe_vulnerabilities\":0,\"tags\":[{\"name\":\"lab\",\"type\":\"SITE\"}],\"total_vulnerabilities\":2}",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "id": "452534235-25a7-40a3-9321-28ce0b5cc90e-default-asset-199",
+        "ip": [
+            "10.1.0.128"
+        ],
+        "os": {
+            "family": "Linux",
+            "full": "CentOS Linux 2.6.18",
+            "name": "Linux",
+            "version": "2.6.18"
+        },
+        "risk": {
+            "static_score": 0
+        }
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "rapid7": {
+        "insightvm": {
+            "asset": {
+                "assessed_for_policies": false,
+                "assessed_for_vulnerabilities": true,
+                "critical_vulnerabilities": 0,
+                "exploits": 0,
+                "id": "452534235-25a7-40a3-9321-28ce0b5cc90e-default-asset-199",
+                "ip": "10.1.0.128",
+                "last_assessed_for_vulnerabilities": "2020-03-20T19:19:42.611Z",
+                "last_scan_end": "2020-03-20T19:19:42.611Z",
+                "last_scan_start": "2020-03-20T19:18:13.611Z",
+                "malware_kits": 0,
+                "moderate_vulnerabilities": 2,
+                "os": {
+                    "architecture": "x86_64",
+                    "description": "CentOS Linux 2.6.18",
+                    "family": "Linux",
+                    "name": "Linux",
+                    "system_name": "CentOS Linux",
+                    "type": "General",
+                    "vendor": "CentOS",
+                    "version": "2.6.18"
+                },
+                "risk_score": 0,
+                "severe_vulnerabilities": 0,
+                "tags": [
+                    {
+                        "name": "lab",
+                        "type": "SITE"
+                    }
+                ],
+                "tags_nested": [
+                    {
+                        "name": "lab",
+                        "type": "SITE"
+                    }
+                ],
+                "total_vulnerabilities": 2
+            }
+        }
+    },
+    "related": {
+        "ip": [
+            "10.1.0.128"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "rapid7_insightvm-asset"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| rapid7.insightvm.asset.assessed_for_policies | Whether an asset was assessed for policies. | boolean |
+| rapid7.insightvm.asset.assessed_for_vulnerabilities | Whether an asset was assessed for vulnerabilities. | boolean |
+| rapid7.insightvm.asset.credential_assessments.port | The port the authentication was used on. | long |
+| rapid7.insightvm.asset.credential_assessments.protocol | The protocol the authentication was used on. | keyword |
+| rapid7.insightvm.asset.credential_assessments.status | The authentication of the last scan performed. | keyword |
+| rapid7.insightvm.asset.credential_assessments_nested.port | The port the authentication was used on. | long |
+| rapid7.insightvm.asset.credential_assessments_nested.protocol | The protocol the authentication was used on. | keyword |
+| rapid7.insightvm.asset.credential_assessments_nested.status | The authentication of the last scan performed. | keyword |
+| rapid7.insightvm.asset.critical_vulnerabilities | The count of critical vulnerability findings. | long |
+| rapid7.insightvm.asset.exploits | The count of known unique exploits that can be used to exploit vulnerabilities on the asset. | long |
+| rapid7.insightvm.asset.host_name | The host name (local or FQDN). | keyword |
+| rapid7.insightvm.asset.id | The identifier of the asset. | keyword |
+| rapid7.insightvm.asset.ip | The IPv4 or IPv6 address. | ip |
+| rapid7.insightvm.asset.last_assessed_for_vulnerabilities | The time at which an asset was assessed for vulnerabilities. | date |
+| rapid7.insightvm.asset.last_scan_end | The time at which the last scan of the asset ended. | date |
+| rapid7.insightvm.asset.last_scan_start | The time at which the last scan of the asset started. | date |
+| rapid7.insightvm.asset.mac | The Media Access Control (MAC) address. The format is six groups of two hexadecimal digits separated by colons. | keyword |
+| rapid7.insightvm.asset.malware_kits | The count of known unique malware kits that can be used to attack vulnerabilities on the asset. | long |
+| rapid7.insightvm.asset.moderate_vulnerabilities | The count of moderate vulnerability findings. | long |
+| rapid7.insightvm.asset.new.check_id | The identifier of the vulnerability check. | keyword |
+| rapid7.insightvm.asset.new.first_found | The first time the vulnerability was discovered. | date |
+| rapid7.insightvm.asset.new.key | The identifier of the assessment key. | keyword |
+| rapid7.insightvm.asset.new.last_found | The most recent time the vulnerability was discovered. | date |
+| rapid7.insightvm.asset.new.port | For services vulnerabilities, the port that is vulnerable. | long |
+| rapid7.insightvm.asset.new.proof | The identifier of the vulnerability proof. | keyword |
+| rapid7.insightvm.asset.new.protocol | For services vulnerabilities, the protocol that is vulnerable. | keyword |
+| rapid7.insightvm.asset.new.solution.fix | The solution fix for the vulnerability. | keyword |
+| rapid7.insightvm.asset.new.solution.id | The identifier of the solution for the vulnerability. | keyword |
+| rapid7.insightvm.asset.new.solution.summary | The summary for the solution for the vulnerability. | keyword |
+| rapid7.insightvm.asset.new.solution.type | The solution type for the vulnerability. | keyword |
+| rapid7.insightvm.asset.new.status | Enum: "EXCEPTION_VULN_EXPL" "UNEXPECTED_ERR" "NOT_VULN_DONT_STORE" "SUPERSEDED" "EXCEPTION_VULN_POTL" "VULNERABLE_EXPL" "OVERRIDDEN_VULN_VERS" "SKIPPED_DISABLED" "VULNERABLE_VERS" "VULNERABLE_POTENTIAL" "SKIPPED_VERS" "EXCEPTION_VULN_VERS" "NOT_VULNERABLE" "UNKNOWN" "SKIPPED_DOS" The status of the vulnerability finding. | keyword |
+| rapid7.insightvm.asset.new.vulnerability_id | The identifier of the vulnerability. | keyword |
+| rapid7.insightvm.asset.os.architecture | The architecture of the operating system. | keyword |
+| rapid7.insightvm.asset.os.description | The description of the operating system (containing vendor, family, product, version and architecture in a single string). | keyword |
+| rapid7.insightvm.asset.os.family | The family of the operating system. | keyword |
+| rapid7.insightvm.asset.os.name | The name of the operating system. | keyword |
+| rapid7.insightvm.asset.os.system_name | A combination of vendor and family (with redundancies removed), suitable for grouping. | keyword |
+| rapid7.insightvm.asset.os.type | The type of operating system. | keyword |
+| rapid7.insightvm.asset.os.vendor | The vendor of the operating system. | keyword |
+| rapid7.insightvm.asset.os.version | The version of the operating system. | keyword |
+| rapid7.insightvm.asset.remediated.check_id | The identifier of the vulnerability check. | keyword |
+| rapid7.insightvm.asset.remediated.first_found | The first time the vulnerability was discovered. | date |
+| rapid7.insightvm.asset.remediated.key | The identifier of the assessment key. | keyword |
+| rapid7.insightvm.asset.remediated.last_found | The most recent time the vulnerability was discovered. | date |
+| rapid7.insightvm.asset.remediated.port | For services vulnerabilities, the port that is vulnerable. | long |
+| rapid7.insightvm.asset.remediated.proof | The identifier of the vulnerability proof. | keyword |
+| rapid7.insightvm.asset.remediated.protocol | For services vulnerabilities, the protocol that is vulnerable. | keyword |
+| rapid7.insightvm.asset.remediated.solution.fix | The solution fix for the vulnerability. | keyword |
+| rapid7.insightvm.asset.remediated.solution.id | The identifier of the solution for the vulnerability. | keyword |
+| rapid7.insightvm.asset.remediated.solution.summary | The summary for the solution for the vulnerability. | keyword |
+| rapid7.insightvm.asset.remediated.solution.type | The solution type for the vulnerability. | keyword |
+| rapid7.insightvm.asset.remediated.status | Enum: "EXCEPTION_VULN_EXPL" "UNEXPECTED_ERR" "NOT_VULN_DONT_STORE" "SUPERSEDED" "EXCEPTION_VULN_POTL" "VULNERABLE_EXPL" "OVERRIDDEN_VULN_VERS" "SKIPPED_DISABLED" "VULNERABLE_VERS" "VULNERABLE_POTENTIAL" "SKIPPED_VERS" "EXCEPTION_VULN_VERS" "NOT_VULNERABLE" "UNKNOWN" "SKIPPED_DOS" The status of the vulnerability finding. | keyword |
+| rapid7.insightvm.asset.remediated.vulnerability_id | The identifier of the vulnerability. | keyword |
+| rapid7.insightvm.asset.risk_score | The risk score (with criticality adjustments) of the asset. | double |
+| rapid7.insightvm.asset.same.check_id | The identifier of the vulnerability check. | keyword |
+| rapid7.insightvm.asset.same.first_found | The first time the vulnerability was discovered. | date |
+| rapid7.insightvm.asset.same.key | The identifier of the assessment key. | keyword |
+| rapid7.insightvm.asset.same.last_found | The most recent time the vulnerability was discovered. | date |
+| rapid7.insightvm.asset.same.port | For services vulnerabilities, the port that is vulnerable. | long |
+| rapid7.insightvm.asset.same.proof | The identifier of the vulnerability proof. | keyword |
+| rapid7.insightvm.asset.same.protocol | For services vulnerabilities, the protocol that is vulnerable. | keyword |
+| rapid7.insightvm.asset.same.reintroduced | The time the vulnerability was reintroduced on the asset after having been remediated. | date |
+| rapid7.insightvm.asset.same.solution.fix | The solution fix for the vulnerability. | keyword |
+| rapid7.insightvm.asset.same.solution.id | The identifier of the solution for the vulnerability. | keyword |
+| rapid7.insightvm.asset.same.solution.summary | The summary for the solution for the vulnerability. | keyword |
+| rapid7.insightvm.asset.same.solution.type | The solution type for the vulnerability. | keyword |
+| rapid7.insightvm.asset.same.status | Enum: "EXCEPTION_VULN_EXPL" "UNEXPECTED_ERR" "NOT_VULN_DONT_STORE" "SUPERSEDED" "EXCEPTION_VULN_POTL" "VULNERABLE_EXPL" "OVERRIDDEN_VULN_VERS" "SKIPPED_DISABLED" "VULNERABLE_VERS" "VULNERABLE_POTENTIAL" "SKIPPED_VERS" "EXCEPTION_VULN_VERS" "NOT_VULNERABLE" "UNKNOWN" "SKIPPED_DOS" The status of the vulnerability finding. | keyword |
+| rapid7.insightvm.asset.same.vulnerability_id | The identifier of the vulnerability. | keyword |
+| rapid7.insightvm.asset.severe_vulnerabilities | The count of severe vulnerability findings. | long |
+| rapid7.insightvm.asset.tags.name | The stored value. | keyword |
+| rapid7.insightvm.asset.tags.type | The type of information stored and displayed. For sites, the value is "SITE". | keyword |
+| rapid7.insightvm.asset.tags_nested.name | The stored value. | keyword |
+| rapid7.insightvm.asset.tags_nested.type | The type of information stored and displayed. For sites, the value is "SITE". | keyword |
+| rapid7.insightvm.asset.total_vulnerabilities | The total count of vulnerability findings. | long |
+| rapid7.insightvm.asset.type | Enum: "hypervisor" "mobile" "guest" "physical" "unknown" The type of asset. | keyword |
+| rapid7.insightvm.asset.unique_identifiers.id | The unique identifier. | keyword |
+| rapid7.insightvm.asset.unique_identifiers.source | The source of the unique identifier. | keyword |
+| rapid7.insightvm.asset.unique_identifiers_nested.id | The unique identifier. | keyword |
+| rapid7.insightvm.asset.unique_identifiers_nested.source | The source of the unique identifier. | keyword |
