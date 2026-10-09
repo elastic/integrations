@@ -1,0 +1,55 @@
+source:
+  # Output of the `usage_fetches` transform: one document per day, meter,
+  # resource, and fetch.
+  index:
+    - "azure_billing.usage_fetches"
+# Second of two chained transforms that deduplicate usage details without
+# scripts. For every day, meter, and resource bucket this keeps the document of
+# the newest fetch, so older fetches of the same day, agent restarts, and short
+# collection periods never inflate the cost. The newest fetch is also the one
+# that carries Azure's latest revision of the day.
+latest:
+  unique_key:
+    - azure.billing.usage_date
+    - azure.billing.billing_period_id
+    - azure.billing.currency
+    - azure.subscription_id
+    - azure.billing.account_name
+    - azure.billing.department_name
+    - azure.resource.group
+    - azure.resource.name
+    - azure.resource.type
+    - azure.billing.product
+    - cloud.region
+    - data_stream.namespace
+  # `@timestamp` of a usage_fetches document is the newest row of its fetch.
+  sort: "@timestamp"
+dest:
+  # The destination index must not match `metrics-*`, so that a `metrics-*` data
+  # view never counts both the raw and the deduplicated documents.
+  index: "azure_billing.usage-v1"
+  aliases:
+    - alias: "azure_billing.usage_latest"
+      move_on_creation: true
+description: >-
+  Deduplicated Azure billing usage details. For each day, meter, and resource this keeps only the rows collected by the most recent fetch. Second stage of the deduplication, reading the usage_fetches transform output.
+frequency: 1h
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed
+  # mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    # Set by the usage_fetches destination pipeline when a document is written,
+    # which is the recommended sync field for a transform that reads another
+    # transform's output.
+    field: "event.ingested"
+    delay: 60s
+_meta:
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation.
+  fleet_transform_version: 0.1.0
+  # Installed after the `usage_fetches` transform it reads from.
+  order: 1
+  run_as_kibana_system: false
