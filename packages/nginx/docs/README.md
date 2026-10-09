@@ -1,6 +1,6 @@
 # Nginx
 
-Root package for Nginx (prototype). It holds no policy templates, data streams, or assets. It points at one child integration per schema:
+Integration group for Nginx (prototype). It holds no policy templates, data streams, or assets. It points at one child integration per schema:
 
 - `ecs/` - `nginx` (Elastic Agent, ECS)
 - `otel/` - `nginx_otel_integ` (OpenTelemetry, default)
