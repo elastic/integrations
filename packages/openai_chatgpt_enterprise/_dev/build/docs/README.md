@@ -19,6 +19,8 @@ This integration periodically queries the OpenAI Compliance Logs Platform API to
 
 On the first run, logs are pulled back as far as the configured initial interval. From the second collection onward, each run resumes from the `last_end_time` cursor returned by the previous request, so events are collected without gaps or duplication.
 
+By default each data stream polls every **15 minutes**, which matches OpenAI’s guidance for fresher Compliance Logs data (logs are published in roughly 10-minute batches, with p99 availability under 30 minutes). Raise the Interval if you only need daily reporting. On HTTP 429, the CEL input’s default retry handling backs off and honours `Retry-After` when the API returns it. Client-side rate limiting caps each data stream at 10 requests per second to avoid bursting against OpenAI’s published Compliance API limits (200 list requests/minute and 10,000 download requests/minute per workspace/organisation, shared across event types).
+
 > Note: OpenAI retains compliance logs for a limited window (up to 30 days). Configure the initial interval accordingly when first enabling the integration.
 
 ## What data does this integration collect?
