@@ -1,0 +1,89 @@
+- name: evcc
+  type: group
+  fields:
+    - name: site.title
+      type: keyword
+      description: Configured title of the evcc site this loadpoint belongs to.
+    - name: loadpoint
+      type: group
+      description: Per-loadpoint charging metrics reported by evcc.
+      fields:
+        - name: index
+          type: long
+          description: >-
+            1-based position of the loadpoint in the evcc configuration. evcc uses the same number to identify loadpoints in its logs, where it appears as the `lp-<N>` component prefix and is mapped to `evcc.log.loadpoint`, so this field joins loadpoint metrics to loadpoint logs.
+        - name: title
+          type: keyword
+          description: Configured name of the loadpoint.
+        - name: mode
+          type: keyword
+          description: Charging mode of the loadpoint, e.g. off, now, minpv, or pv.
+        - name: charging
+          type: boolean
+          description: Whether the loadpoint is currently charging.
+        - name: connected
+          type: boolean
+          description: Whether a vehicle is currently connected to the loadpoint.
+        - name: enabled
+          type: boolean
+          description: Whether charging is enabled on the loadpoint.
+        - name: connected_duration.sec
+          type: double
+          metric_type: gauge
+          description: Duration a vehicle has been connected to the loadpoint, in seconds.
+        - name: charge.power
+          type: double
+          metric_type: gauge
+          description: Current charging power at the loadpoint, in watts.
+        - name: charge.energy
+          type: double
+          metric_type: gauge
+          description: Energy charged during the current charging session, in Wh.
+        - name: charge.duration.sec
+          type: double
+          metric_type: gauge
+          description: Duration of the current charging session, in seconds.
+        - name: charge.remaining_duration.sec
+          type: double
+          metric_type: gauge
+          description: Estimated remaining duration until the charging target is reached, in seconds.
+        - name: charge.remaining_energy
+          type: double
+          metric_type: gauge
+          description: Estimated remaining energy required to reach the charging target, in Wh.
+        - name: effective.limit_soc
+          type: double
+          unit: percent
+          metric_type: gauge
+          description: Effective vehicle state-of-charge charging limit for this loadpoint.
+        - name: effective.min_current
+          type: double
+          metric_type: gauge
+          description: Effective minimum charging current for this loadpoint, in amperes.
+        - name: effective.max_current
+          type: double
+          metric_type: gauge
+          description: Effective maximum charging current for this loadpoint, in amperes.
+        - name: charger_status_reason
+          type: keyword
+          description: Reason reported by the charger for its current status.
+        - name: last_24h_energy
+          type: double
+          metric_type: gauge
+          description: Energy charged at this loadpoint over the last 24 hours, in Wh.
+        - name: last_7d_energy
+          type: double
+          metric_type: gauge
+          description: Energy charged at this loadpoint over the last 7 days, in Wh.
+        - name: vehicle.name
+          type: keyword
+          description: Name of the vehicle currently assigned to this loadpoint.
+        - name: vehicle.soc
+          type: double
+          unit: percent
+          metric_type: gauge
+          description: State of charge of the vehicle currently assigned to this loadpoint.
+        - name: vehicle.range
+          type: double
+          metric_type: gauge
+          description: Estimated remaining range of the vehicle currently assigned to this loadpoint, in km.
