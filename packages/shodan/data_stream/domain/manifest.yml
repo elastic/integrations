@@ -1,0 +1,45 @@
+title: Shodan Certificate Transparency
+type: logs
+streams:
+  - input: cel
+    title: Shodan Certificate Transparency Feed
+    description: Certificate transparency log records for a domain, collected via Shodan's free CTL service (no API key required)
+    template_path: cel.yml.hbs
+    vars:
+      - name: url
+        type: url
+        title: URL
+        description: Base URL of Shodan's CTL service.
+        required: true
+        show_user: false
+        default: "https://ctl.shodan.io"
+      - name: domain
+        type: text
+        title: Domain
+        description: Domain to query for certificate transparency records (e.g. example.com).
+        multi: false
+        required: true
+        show_user: true
+      - name: interval
+        type: text
+        title: Interval
+        description: Collection interval
+        required: true
+        show_user: true
+        default: "24h"
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        required: false
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported
+          event or to enhance the event with metadata. This executes in the
+          agent before the events are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
