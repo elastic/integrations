@@ -198,7 +198,7 @@
                                             "ignoreGlobalFilters": true,
                                             "index": "-95bb74f059477799b8371571b61a9cfb573730e621c5fd8493828f2fdcc41005",
                                             "query": {
-                                                "esql": "ROW `Open` = \"View metrics in Discover ↗\""
+                                                "esql": "ROW `Open` = \"View metrics in Discover\""
                                             }
                                         }
                                     }
@@ -213,7 +213,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "ROW `Open` = \"View metrics in Discover ↗\""
+                                "esql": "ROW `Open` = \"View metrics in Discover\""
                             },
                             "visualization": {
                                 "density": "compact",
@@ -235,7 +235,7 @@
                         {
                             "encode_url": true,
                             "label": "View metrics in Discover",
-                            "open_in_new_tab": true,
+                            "open_in_new_tab": false,
                             "trigger": "on_click_value",
                             "type": "url_drilldown",
                             "url": "{{kibanaUrl}}/app/discover#/?_g=(filters:{{rison context.panel.filters}},time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))\u0026_a=(dataSource:(dataViewId:'metrics-*',type:dataView),filters:!(),query:(language:kuery,query:''))"
@@ -518,7 +518,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Seconds per second that this VM's vCPUs were ready to run but not scheduled by the GCE host, equivalent to steal time. Near zero is healthy. Non-zero steal while CPU utilization is low means the physical host is oversubscribed — an infrastructure problem that resizing the VM will not fix. Compare against the same chart on other VMs in the zone.",
+                        "description": "Total seconds in each time bucket that this VM's vCPUs were ready to run but not scheduled by the GCE host, equivalent to steal time. Near zero is healthy. Non-zero steal while CPU utilization is low means the physical host is oversubscribed — an infrastructure problem that resizing the VM will not fix. Compare against the same chart on other VMs in the zone.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -547,16 +547,27 @@
                                                     "columnId": "area_0_y_0",
                                                     "customLabel": true,
                                                     "fieldName": "Scheduler Wait Time",
-                                                    "label": "Steal (s/s)",
+                                                    "label": "Steal (s)",
                                                     "meta": {
                                                         "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 1,
+                                                                "fromUnit": "seconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.compute.otel-default-ab710153be861315ed3af0a7228905d3cf6c1a6a69cce81bb82f25a4a9eb032c",
                                             "query": {
-                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Scheduler Wait Time` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/scheduler_wait_time`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Scheduler Wait Time` = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/cpu/scheduler_wait_time`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -571,7 +582,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Scheduler Wait Time` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/scheduler_wait_time`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Scheduler Wait Time` = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/cpu/scheduler_wait_time`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -639,7 +650,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Seconds per second that this VM's vCPUs were ready to run but not scheduled by the GCE host, equivalent to steal time. Near zero is healthy. Non-zero steal while CPU utilization is low means the physical host is oversubscribed — an infrastructure problem that resizing the VM will not fix. Compare against the same chart on other VMs in the zone.",
+                    "description": "Total seconds in each time bucket that this VM's vCPUs were ready to run but not scheduled by the GCE host, equivalent to steal time. Near zero is healthy. Non-zero steal while CPU utilization is low means the physical host is oversubscribed — an infrastructure problem that resizing the VM will not fix. Compare against the same chart on other VMs in the zone.",
                     "drilldowns": [],
                     "title": "CPU scheduler wait over time"
                 },
@@ -1059,7 +1070,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Bytes swapped in and out per second on this instance, derived from 60-second delta counters. Zero or trace levels are healthy. Sustained swap-in means the guest is faulting back pages it still needs and is the earliest reliable sign of memory exhaustion — it will surface as application latency well before memory used reaches 100%.",
+                        "description": "Bytes swapped in and out on this instance in each time bucket, from 60-second delta counters. Zero or trace levels are healthy. Sustained swap-in means the guest is faulting back pages it still needs and is the earliest reliable sign of memory exhaustion — it will surface as application latency well before memory used reaches 100%.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -1087,7 +1098,7 @@
                                                 {
                                                     "columnId": "line_0_y_0",
                                                     "customLabel": true,
-                                                    "fieldName": "swap_in_bps",
+                                                    "fieldName": "swap_in_bytes",
                                                     "label": "Swap in",
                                                     "meta": {
                                                         "type": "number"
@@ -1096,8 +1107,7 @@
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
-                                                                "decimals": 1,
-                                                                "suffix": "/s"
+                                                                "decimals": 1
                                                             }
                                                         }
                                                     }
@@ -1105,7 +1115,7 @@
                                                 {
                                                     "columnId": "line_0_y_1",
                                                     "customLabel": true,
-                                                    "fieldName": "swap_out_bps",
+                                                    "fieldName": "swap_out_bytes",
                                                     "label": "Swap out",
                                                     "meta": {
                                                         "type": "number"
@@ -1114,8 +1124,7 @@
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
-                                                                "decimals": 1,
-                                                                "suffix": "/s"
+                                                                "decimals": 1
                                                             }
                                                         }
                                                     }
@@ -1124,7 +1133,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.compute.otel-default-fb706eeb57fdcae3fd15cb73732b220e97183fd3820740fa87343d86883dd547",
                                             "query": {
-                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS swap_in_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_in_bytes_count`)) / 60, swap_out_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_out_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS swap_in_bytes = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_in_bytes_count`)), swap_out_bytes = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_out_bytes_count`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -1139,7 +1148,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS swap_in_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_in_bytes_count`)) / 60, swap_out_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_out_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS swap_in_bytes = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_in_bytes_count`)), swap_out_bytes = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_out_bytes_count`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1212,7 +1221,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Bytes swapped in and out per second on this instance, derived from 60-second delta counters. Zero or trace levels are healthy. Sustained swap-in means the guest is faulting back pages it still needs and is the earliest reliable sign of memory exhaustion — it will surface as application latency well before memory used reaches 100%.",
+                    "description": "Bytes swapped in and out on this instance in each time bucket, from 60-second delta counters. Zero or trace levels are healthy. Sustained swap-in means the guest is faulting back pages it still needs and is the earliest reliable sign of memory exhaustion — it will surface as application latency well before memory used reaches 100%.",
                     "drilldowns": [],
                     "title": "Swap activity over time"
                 },
@@ -1374,7 +1383,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Inbound and outbound network throughput for this instance, derived from 60-second delta counters. Ingress inside a VPC is effectively uncapped; egress is limited to roughly 2 Gbps per vCPU, so on a small machine type the sent line hits a ceiling long before the received line does. Sent flattening while received keeps climbing is the signature of that ceiling.",
+                        "description": "Bytes received and sent by this instance in each time bucket, from 60-second delta counters. Ingress inside a VPC is effectively uncapped; egress is limited to roughly 2 Gbps per vCPU, so on a small machine type the sent line hits a ceiling long before the received line does. Sent flattening while received keeps climbing is the signature of that ceiling.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -1402,7 +1411,7 @@
                                                 {
                                                     "columnId": "line_0_y_0",
                                                     "customLabel": true,
-                                                    "fieldName": "Received Bytes/sec",
+                                                    "fieldName": "Received bytes",
                                                     "label": "Received",
                                                     "meta": {
                                                         "type": "number"
@@ -1411,8 +1420,7 @@
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
-                                                                "decimals": 1,
-                                                                "suffix": "/s"
+                                                                "decimals": 1
                                                             }
                                                         }
                                                     }
@@ -1420,7 +1428,7 @@
                                                 {
                                                     "columnId": "line_0_y_1",
                                                     "customLabel": true,
-                                                    "fieldName": "Sent Bytes/sec",
+                                                    "fieldName": "Sent bytes",
                                                     "label": "Sent",
                                                     "meta": {
                                                         "type": "number"
@@ -1429,8 +1437,7 @@
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
-                                                                "decimals": 1,
-                                                                "suffix": "/s"
+                                                                "decimals": 1
                                                             }
                                                         }
                                                     }
@@ -1439,7 +1446,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.compute.otel-default-614c7edb4345bdee1c2eb17f38ae235852f26841f82769b0c0860fcc41628181",
                                             "query": {
-                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Received Bytes/sec` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/received_bytes_count`)) / 60, `Sent Bytes/sec` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/sent_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Received bytes` = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/network/received_bytes_count`)), `Sent bytes` = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/network/sent_bytes_count`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -1454,7 +1461,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Received Bytes/sec` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/received_bytes_count`)) / 60, `Sent Bytes/sec` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/sent_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Received bytes` = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/network/received_bytes_count`)), `Sent bytes` = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/network/sent_bytes_count`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1523,13 +1530,13 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Network throughput over time",
+                        "title": "Network bytes received \u0026 sent over time",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Inbound and outbound network throughput for this instance, derived from 60-second delta counters. Ingress inside a VPC is effectively uncapped; egress is limited to roughly 2 Gbps per vCPU, so on a small machine type the sent line hits a ceiling long before the received line does. Sent flattening while received keeps climbing is the signature of that ceiling.",
+                    "description": "Bytes received and sent by this instance in each time bucket, from 60-second delta counters. Ingress inside a VPC is effectively uncapped; egress is limited to roughly 2 Gbps per vCPU, so on a small machine type the sent line hits a ceiling long before the received line does. Sent flattening while received keeps climbing is the signature of that ceiling.",
                     "drilldowns": [],
-                    "title": "Network throughput over time"
+                    "title": "Network bytes received \u0026 sent over time"
                 },
                 "gridData": {
                     "h": 10,
@@ -1545,7 +1552,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Inbound and outbound packets per second for this instance. Read alongside the throughput chart: packet rate rising while byte throughput stays flat means average packet size is shrinking, which typically indicates connection churn, health-check storms or port scanning rather than real workload growth.",
+                        "description": "Packets received and sent by this instance in each time bucket. Read alongside the network bytes chart: packets rising while bytes stay flat means average packet size is shrinking, which typically indicates connection churn, health-check storms or port scanning rather than real workload growth.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -1573,7 +1580,7 @@
                                                 {
                                                     "columnId": "line_0_y_0",
                                                     "customLabel": true,
-                                                    "fieldName": "rx_pps",
+                                                    "fieldName": "rx_packets",
                                                     "label": "Received",
                                                     "meta": {
                                                         "type": "number"
@@ -1582,7 +1589,7 @@
                                                 {
                                                     "columnId": "line_0_y_1",
                                                     "customLabel": true,
-                                                    "fieldName": "tx_pps",
+                                                    "fieldName": "tx_packets",
                                                     "label": "Sent",
                                                     "meta": {
                                                         "type": "number"
@@ -1592,7 +1599,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.compute.otel-default-795043fa5a162b30c51e82f07e90e34ee2d52a382945a7bd18ebae2571dc6c6b",
                                             "query": {
-                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS rx_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/received_packets_count`)) / 60, tx_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/sent_packets_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS rx_packets = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/network/received_packets_count`)), tx_packets = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/network/sent_packets_count`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -1607,7 +1614,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS rx_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/received_packets_count`)) / 60, tx_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/sent_packets_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS rx_packets = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/network/received_packets_count`)), tx_packets = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/network/sent_packets_count`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1680,7 +1687,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Inbound and outbound packets per second for this instance. Read alongside the throughput chart: packet rate rising while byte throughput stays flat means average packet size is shrinking, which typically indicates connection churn, health-check storms or port scanning rather than real workload growth.",
+                    "description": "Packets received and sent by this instance in each time bucket. Read alongside the network bytes chart: packets rising while bytes stay flat means average packet size is shrinking, which typically indicates connection churn, health-check storms or port scanning rather than real workload growth.",
                     "drilldowns": [],
                     "title": "Network packets over time"
                 },
@@ -1698,7 +1705,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Disk read and write throughput for this instance, derived from 60-second delta counters. On pd-standard and pd-balanced volumes the throughput ceiling scales with provisioned disk size, so there is no fixed limit to plot. Throughput approaching that implicit ceiling surfaces as rising I/O latency and queue depth in the disks section below.",
+                        "description": "Bytes read from and written to disk by this instance in each time bucket, from 60-second delta counters. On pd-standard and pd-balanced volumes the throughput ceiling scales with provisioned disk size, so there is no fixed limit to plot. Throughput approaching that implicit ceiling surfaces as rising I/O latency and queue depth in the disks section below.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -1726,7 +1733,7 @@
                                                 {
                                                     "columnId": "line_0_y_0",
                                                     "customLabel": true,
-                                                    "fieldName": "Read B/s",
+                                                    "fieldName": "Read bytes",
                                                     "label": "Read",
                                                     "meta": {
                                                         "type": "number"
@@ -1735,8 +1742,7 @@
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
-                                                                "decimals": 1,
-                                                                "suffix": "/s"
+                                                                "decimals": 1
                                                             }
                                                         }
                                                     }
@@ -1744,7 +1750,7 @@
                                                 {
                                                     "columnId": "line_0_y_1",
                                                     "customLabel": true,
-                                                    "fieldName": "Write B/s",
+                                                    "fieldName": "Write bytes",
                                                     "label": "Write",
                                                     "meta": {
                                                         "type": "number"
@@ -1753,8 +1759,7 @@
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
-                                                                "decimals": 1,
-                                                                "suffix": "/s"
+                                                                "decimals": 1
                                                             }
                                                         }
                                                     }
@@ -1763,7 +1768,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.compute.otel-default-ca96effd56d4982178833d05d023f24742b98a6696bcfab60c364671c3e65389",
                                             "query": {
-                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Read B/s` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/read_bytes_count`)) / 60, `Write B/s` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/write_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Read bytes` = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/disk/read_bytes_count`)), `Write bytes` = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/disk/write_bytes_count`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -1778,7 +1783,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Read B/s` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/read_bytes_count`)) / 60, `Write B/s` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/write_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Read bytes` = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/disk/read_bytes_count`)), `Write bytes` = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/disk/write_bytes_count`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1847,13 +1852,13 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Disk throughput over time",
+                        "title": "Disk read \u0026 write bytes over time",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Disk read and write throughput for this instance, derived from 60-second delta counters. On pd-standard and pd-balanced volumes the throughput ceiling scales with provisioned disk size, so there is no fixed limit to plot. Throughput approaching that implicit ceiling surfaces as rising I/O latency and queue depth in the disks section below.",
+                    "description": "Bytes read from and written to disk by this instance in each time bucket, from 60-second delta counters. On pd-standard and pd-balanced volumes the throughput ceiling scales with provisioned disk size, so there is no fixed limit to plot. Throughput approaching that implicit ceiling surfaces as rising I/O latency and queue depth in the disks section below.",
                     "drilldowns": [],
-                    "title": "Disk throughput over time"
+                    "title": "Disk read \u0026 write bytes over time"
                 },
                 "gridData": {
                     "h": 10,
@@ -1869,7 +1874,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Disk read and write operations per second for this instance. IOPS on size-based Persistent Disk types scale with capacity rather than being independently provisioned, so judge saturation by whether latency and queue depth rise alongside IOPS rather than against any absolute number.",
+                        "description": "Disk read and write operations by this instance in each time bucket. IOPS on size-based Persistent Disk types scale with capacity rather than being independently provisioned, so judge saturation by whether latency and queue depth rise alongside IOPS rather than against any absolute number.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -1896,7 +1901,7 @@
                                                 },
                                                 {
                                                     "columnId": "line_0_y_0",
-                                                    "fieldName": "Read IOPS",
+                                                    "fieldName": "Read operations",
                                                     "meta": {
                                                         "type": "number"
                                                     },
@@ -1912,7 +1917,7 @@
                                                 },
                                                 {
                                                     "columnId": "line_0_y_1",
-                                                    "fieldName": "Write IOPS",
+                                                    "fieldName": "Write operations",
                                                     "meta": {
                                                         "type": "number"
                                                     },
@@ -1930,7 +1935,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.compute.otel-default-16bec1f85948a3e40243f39b820be7d1b7e2c0b45d4551dff5bb12c906464264",
                                             "query": {
-                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Read IOPS` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/read_ops_count`)) / 60, `Write IOPS` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/write_ops_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Read operations` = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/disk/read_ops_count`)), `Write operations` = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/disk/write_ops_count`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -1945,7 +1950,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Read IOPS` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/read_ops_count`)) / 60, `Write IOPS` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/write_ops_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Read operations` = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/disk/read_ops_count`)), `Write operations` = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/disk/write_ops_count`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2014,13 +2019,13 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Disk IOPS over time",
+                        "title": "Disk read \u0026 write operations over time",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Disk read and write operations per second for this instance. IOPS on size-based Persistent Disk types scale with capacity rather than being independently provisioned, so judge saturation by whether latency and queue depth rise alongside IOPS rather than against any absolute number.",
+                    "description": "Disk read and write operations by this instance in each time bucket. IOPS on size-based Persistent Disk types scale with capacity rather than being independently provisioned, so judge saturation by whether latency and queue depth rise alongside IOPS rather than against any absolute number.",
                     "drilldowns": [],
-                    "title": "Disk IOPS over time"
+                    "title": "Disk read \u0026 write operations over time"
                 },
                 "gridData": {
                     "h": 10,
@@ -2064,8 +2069,8 @@
                                                 {
                                                     "columnId": "line_0_y_0",
                                                     "customLabel": true,
-                                                    "fieldName": "dropped_pps",
-                                                    "label": "Dropped packets/s",
+                                                    "fieldName": "dropped_packets",
+                                                    "label": "Dropped packets",
                                                     "meta": {
                                                         "type": "number"
                                                     }
@@ -2073,8 +2078,8 @@
                                                 {
                                                     "columnId": "line_0_y_1",
                                                     "customLabel": true,
-                                                    "fieldName": "dropped_bps",
-                                                    "label": "Dropped bytes/s",
+                                                    "fieldName": "dropped_bytes",
+                                                    "label": "Dropped bytes",
                                                     "meta": {
                                                         "type": "number"
                                                     },
@@ -2082,8 +2087,7 @@
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
-                                                                "decimals": 1,
-                                                                "suffix": "/s"
+                                                                "decimals": 1
                                                             }
                                                         }
                                                     }
@@ -2092,7 +2096,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.compute.otel-default-354bb3f3d7f463d37e07a97efff29791ee517d0b9a330ba29daa546721b0682b",
                                             "query": {
-                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS dropped_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_packets_count`)) / 60, dropped_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS dropped_packets = SUM(SUM_OVER_TIME(`compute.googleapis.com/firewall/dropped_packets_count`)), dropped_bytes = SUM(SUM_OVER_TIME(`compute.googleapis.com/firewall/dropped_bytes_count`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -2107,7 +2111,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS dropped_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_packets_count`)) / 60, dropped_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS dropped_packets = SUM(SUM_OVER_TIME(`compute.googleapis.com/firewall/dropped_packets_count`)), dropped_bytes = SUM(SUM_OVER_TIME(`compute.googleapis.com/firewall/dropped_bytes_count`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -3208,7 +3212,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.compute.otel-default-96efc5cb203d0a5c12eed298c3205dd4aafb23a4a989ab431ccecabe8fd1fca6",
                                             "query": {
-                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\" AND attributes.interruption_type != \"none\"\n| STATS events = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/interruption_count`)) BY attributes.interruption_type, attributes.interruption_reason, attributes.instance_name\n| SORT events DESC\n| LIMIT 10"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\" AND attributes.interruption_type != \"none\"\n| STATS events = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/interruption_count`)) BY attributes.interruption_type, attributes.interruption_reason, attributes.instance_name\n| SORT events DESC\n| LIMIT 10"
                                             }
                                         }
                                     }
@@ -3223,7 +3227,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\" AND attributes.interruption_type != \"none\"\n| STATS events = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/interruption_count`)) BY attributes.interruption_type, attributes.interruption_reason, attributes.instance_name\n| SORT events DESC\n| LIMIT 10"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\" AND attributes.interruption_type != \"none\"\n| STATS events = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/interruption_count`)) BY attributes.interruption_type, attributes.interruption_reason, attributes.instance_name\n| SORT events DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "columns": [
@@ -3357,7 +3361,7 @@
         "timeFrom": "now-30m",
         "timeRestore": true,
         "timeTo": "now",
-        "title": "GCP Instance detail"
+        "title": "[GCP OTel] Compute Instance Detail"
     },
     "coreMigrationVersion": "8.8.0",
     "created_at": "2026-09-15T16:22:45.778Z",
