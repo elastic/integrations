@@ -1,0 +1,33 @@
+title: "DentiGrid Threat Events"
+type: logs
+dataset: dentigrid.threat
+streams:
+  - input: httpjson
+    title: "DentiGrid API Gateway Poller"
+    description: "Collect threat intelligence and deception events from DentiGrid API Gateway."
+    vars:
+      - id: url
+        type: text
+        title: "API URL"
+        description: "URL for the DentiGrid API Gateway threat feed endpoint."
+        default: "https://api-gateway.dentisystems.com/api/attacks/recent"
+      - id: interval
+        type: text
+        title: "Polling Interval"
+        description: "How often to poll the API Gateway."
+        default: "1m"
+      - id: api_key
+        type: password
+        title: "API Key"
+        description: "API key or Bearer token for authenticating with DentiGrid API."
+  - input: logfile
+    title: "DentiGrid Log File / Syslog"
+    description: "Tail local log files or Syslog streams containing DentiGrid JSON events."
+    vars:
+      - id: paths
+        type: yaml
+        title: "Log Paths"
+        description: "List of file paths to monitor for DentiGrid telemetry logs."
+        default:
+          - /var/log/dentigrid/*.json
+          - /var/log/dentisystems/threat.log
