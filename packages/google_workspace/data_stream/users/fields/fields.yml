@@ -1,0 +1,489 @@
+- name: google_workspace
+  type: group
+  fields:
+    - name: users
+      type: group
+      description: Google Workspace user account from the Admin SDK Directory API `users.list` method (`projection=full`).
+      fields:
+        - name: id
+          type: keyword
+          description: The unique ID of the user. Stable across renames. Copied to `user.id`.
+        - name: primary_email
+          type: keyword
+          description: The user's primary email address. Changes when the user is renamed. Copied to `user.email` and `user.name`.
+        - name: name
+          type: group
+          fields:
+            - name: given_name
+              type: keyword
+              description: The user's first name.
+            - name: family_name
+              type: keyword
+              description: The user's last name.
+            - name: full_name
+              type: keyword
+              description: The user's full name formed by concatenating the first and last name values. Copied to `user.full_name`.
+            - name: display_name
+              type: keyword
+              description: The user's display name.
+        - name: customer_id
+          type: keyword
+          description: The customer ID of the Google Workspace account.
+        - name: org_unit_path
+          type: keyword
+          description: The full path of the organizational unit the user belongs to. `/` is the top-level organizational unit.
+        - name: is_admin
+          type: boolean
+          description: Whether the user is a super administrator.
+        - name: is_delegated_admin
+          type: boolean
+          description: Whether the user is a delegated administrator.
+        - name: is_enrolled_in_2sv
+          type: boolean
+          description: Whether the user is enrolled in 2-step verification. Copied to `user.entity.attributes.mfa_enabled`.
+        - name: is_enforced_in_2sv
+          type: boolean
+          description: Whether 2-step verification is enforced for the user.
+        - name: suspended
+          type: boolean
+          description: Whether the user is suspended.
+        - name: suspension_reason
+          type: keyword
+          description: The reason the user was suspended, for example `ADMIN`. Sent only when `suspended` is true. Google does not document the full set of values.
+        - name: suspension_time
+          type: date
+          description: The time the user was suspended.
+        - name: archived
+          type: boolean
+          description: Whether the user is archived.
+        - name: archival_time
+          type: date
+          description: The time the user was archived.
+        - name: is_guest_user
+          type: boolean
+          description: Whether the user is a guest user.
+        - name: guest_account_info
+          type: group
+          fields:
+            - name: primary_guest_email
+              type: keyword
+              description: The external email address of the guest user.
+        - name: creation_time
+          type: date
+          description: The time the user's account was created.
+        - name: last_login_time
+          type: date
+          description: The last time the user signed in, as returned by Google. Values at the Unix epoch mean no recorded sign-in. Copied to `user.entity.lifecycle.last_activity` unless it is at the Unix epoch.
+        - name: deletion_time
+          type: date
+          description: The time the user's account was deleted.
+        - name: agreed_to_terms
+          type: boolean
+          description: Whether the user has completed an initial login and accepted the Terms of Service agreement. `false` means the user has never completed a first sign-in.
+        - name: change_password_at_next_login
+          type: boolean
+          description: Whether the user is forced to change their password at next login.
+        - name: ip_whitelisted
+          type: boolean
+          description: Whether the user is subject to the deprecated IP address allowlist configuration.
+        - name: is_mailbox_setup
+          type: boolean
+          description: Whether the user's Google mailbox is created.
+        - name: include_in_global_address_list
+          type: boolean
+          description: Whether the user's profile is visible in the Google Workspace global address list.
+        - name: aliases
+          type: keyword
+          description: The user's alias email addresses.
+        - name: non_editable_aliases
+          type: keyword
+          description: The user's non-editable alias email addresses, typically outside the account's primary domain or sub-domain.
+        - name: recovery_email
+          type: keyword
+          description: The user's recovery email address.
+        - name: recovery_phone
+          type: keyword
+          description: The user's recovery phone number.
+        - name: hash_function
+          type: keyword
+          description: The hash format of the password property.
+        - name: manager_email
+          type: keyword
+          description: The value of the user's `manager` relations, normally the manager's email address.
+        - name: emails
+          type: group
+          description: The user's email addresses.
+          fields:
+            - name: address
+              type: keyword
+              description: The email address.
+            - name: type
+              type: keyword
+              description: The type of the email address (`custom`, `home`, `other` or `work`).
+            - name: custom_type
+              type: keyword
+              description: The custom type of the email address.
+            - name: primary
+              type: boolean
+              description: Whether this is the user's primary email address.
+            - name: public_key_encryption_certificates
+              type: group
+              fields:
+                - name: certificate
+                  type: keyword
+                  description: X.509 encryption certificate in PEM format.
+                - name: is_default
+                  type: boolean
+                  description: Whether this is the default certificate for the email address.
+                - name: state
+                  type: keyword
+                  description: The certificate's state in its lifecycle.
+        - name: phones
+          type: group
+          description: The user's phone numbers.
+          fields:
+            - name: value
+              type: keyword
+              description: The phone number.
+            - name: type
+              type: keyword
+              description: The type of the phone number.
+            - name: custom_type
+              type: keyword
+              description: The custom type of the phone number.
+            - name: primary
+              type: boolean
+              description: Whether this is the user's primary phone number.
+        - name: addresses
+          type: group
+          description: The user's addresses.
+          fields:
+            - name: country
+              type: keyword
+              description: Country.
+            - name: country_code
+              type: keyword
+              description: Country code.
+            - name: custom_type
+              type: keyword
+              description: Custom type.
+            - name: extended_address
+              type: keyword
+              description: Extended address.
+            - name: formatted
+              type: keyword
+              description: Formatted address.
+            - name: locality
+              type: keyword
+              description: Locality.
+            - name: po_box
+              type: keyword
+              description: PO box.
+            - name: postal_code
+              type: keyword
+              description: Postal code.
+            - name: primary
+              type: boolean
+              description: Whether this is the user's primary address.
+            - name: region
+              type: keyword
+              description: Region.
+            - name: source_is_structured
+              type: boolean
+              description: Whether the user-supplied address was structured.
+            - name: street_address
+              type: keyword
+              description: Street address.
+            - name: type
+              type: keyword
+              description: The type of the address (`custom`, `home`, `other` or `work`).
+        - name: organizations
+          type: group
+          description: The organizations the user belongs to.
+          fields:
+            - name: cost_center
+              type: keyword
+              description: The cost center of the user's department.
+            - name: custom_type
+              type: keyword
+              description: Custom type.
+            - name: department
+              type: keyword
+              description: The department within the organization.
+            - name: description
+              type: keyword
+              description: Description of the organization.
+            - name: domain
+              type: keyword
+              description: The domain the organization belongs to.
+            - name: full_time_equivalent
+              type: long
+              description: The full-time equivalent millipercent within the organization (100000 = 100%).
+            - name: location
+              type: keyword
+              description: The location of the organization.
+            - name: name
+              type: keyword
+              description: The name of the organization.
+            - name: primary
+              type: boolean
+              description: Whether this is the user's primary organization.
+            - name: symbol
+              type: keyword
+              description: The symbol of the organization.
+            - name: title
+              type: keyword
+              description: The user's title (designation) in the organization.
+            - name: type
+              type: keyword
+              description: The type of the organization (`domain_only`, `school`, `unknown` or `work`).
+        - name: relations
+          type: group
+          description: The user's relations to other users. A `manager` relation names the user's manager.
+          fields:
+            - name: value
+              type: keyword
+              description: The name of the related user, normally an email address.
+            - name: type
+              type: keyword
+              description: The type of the relation, for example `manager` or `dotted_line_manager`.
+            - name: custom_type
+              type: keyword
+              description: Custom type.
+        - name: external_ids
+          type: group
+          description: The user's external IDs, such as an employee or network ID.
+          fields:
+            - name: value
+              type: keyword
+              description: The value of the ID.
+            - name: type
+              type: keyword
+              description: The type of the ID.
+            - name: custom_type
+              type: keyword
+              description: Custom type.
+        - name: locations
+          type: group
+          description: The user's locations.
+          fields:
+            - name: area
+              type: keyword
+              description: Textual location.
+            - name: building_id
+              type: keyword
+              description: Building identifier.
+            - name: custom_type
+              type: keyword
+              description: Custom type.
+            - name: desk_code
+              type: keyword
+              description: Desk location code.
+            - name: floor_name
+              type: keyword
+              description: Floor name or number.
+            - name: floor_section
+              type: keyword
+              description: Floor section.
+            - name: type
+              type: keyword
+              description: The type of the location (`custom`, `default` or `desk`).
+        - name: languages
+          type: group
+          description: The user's languages.
+          fields:
+            - name: custom_language
+              type: keyword
+              description: A language name that has no ISO 639 language code.
+            - name: language_code
+              type: keyword
+              description: ISO 639 language code.
+            - name: preference
+              type: keyword
+              description: Whether the language is preferred (`preferred` or `not_preferred`).
+        - name: keywords
+          type: group
+          description: The user's keywords.
+          fields:
+            - name: value
+              type: keyword
+              description: The keyword.
+            - name: type
+              type: keyword
+              description: The type of the keyword.
+            - name: custom_type
+              type: keyword
+              description: Custom type.
+        - name: websites
+          type: group
+          description: The user's websites.
+          fields:
+            - name: value
+              type: keyword
+              description: The website.
+            - name: type
+              type: keyword
+              description: The type of the website.
+            - name: custom_type
+              type: keyword
+              description: Custom type.
+            - name: primary
+              type: boolean
+              description: Whether this is the user's primary website.
+        - name: ims
+          type: group
+          description: The user's instant messenger accounts.
+          fields:
+            - name: im
+              type: keyword
+              description: The instant messenger ID.
+            - name: protocol
+              type: keyword
+              description: The instant messenger protocol.
+            - name: custom_protocol
+              type: keyword
+              description: Custom protocol.
+            - name: type
+              type: keyword
+              description: The type of the account.
+            - name: custom_type
+              type: keyword
+              description: Custom type.
+            - name: primary
+              type: boolean
+              description: Whether this is the user's primary instant messenger account.
+        - name: gender
+          type: group
+          description: The user's gender.
+          fields:
+            - name: type
+              type: keyword
+              description: Gender.
+            - name: custom_gender
+              type: keyword
+              description: Custom gender.
+            - name: address_me_as
+              type: keyword
+              description: How to refer to the user, for example `he/him/his` or `they/them/their`.
+        - name: notes
+          type: group
+          description: Notes for the user.
+          fields:
+            - name: value
+              type: keyword
+              description: The notes.
+            - name: content_type
+              type: keyword
+              description: The content type of the notes (`text_plain` or `text_html`).
+        - name: posix_accounts
+          type: group
+          description: The user's POSIX account information.
+          fields:
+            - name: account_id
+              type: keyword
+              description: A POSIX account field identifier.
+            - name: gecos
+              type: keyword
+              description: The GECOS (user information) for the account.
+            - name: gid
+              type: keyword
+              description: The default group ID.
+            - name: home_directory
+              type: keyword
+              description: The path to the home directory.
+            - name: operating_system_type
+              type: keyword
+              description: The operating system type of the account.
+            - name: primary
+              type: boolean
+              description: Whether this is the user's primary account within the system ID.
+            - name: shell
+              type: keyword
+              description: The path to the login shell.
+            - name: system_id
+              type: keyword
+              description: The system identifier the username or UID applies to.
+            - name: uid
+              type: keyword
+              description: The POSIX user ID.
+            - name: username
+              type: keyword
+              description: The username of the account.
+        - name: ssh_public_keys
+          type: group
+          description: The user's SSH public keys.
+          fields:
+            - name: key
+              type: keyword
+              description: The SSH public key.
+            - name: fingerprint
+              type: keyword
+              description: The SHA-256 fingerprint of the SSH public key.
+            - name: expiration_time_usec
+              type: long
+              description: The expiration time, in microseconds since the Unix epoch.
+        - name: custom_schemas
+          type: flattened
+          description: Custom fields of the user, keyed by schema name and then field name. Defined by each tenant.
+        - name: thumbnail_photo_url
+          type: keyword
+          description: The URL of the user's profile photo.
+        - name: thumbnail_photo_etag
+          type: keyword
+          description: ETag of the user's photo.
+        - name: kind
+          type: keyword
+          description: The type of the API resource.
+        - name: etag
+          type: keyword
+          description: ETag of the resource.
+        - name: groups
+          type: group
+          description: Groups the user is a direct member of. Present only when group membership collection is enabled and succeeded; an empty list means the user is in no group.
+          fields:
+            - name: id
+              type: keyword
+              description: The unique ID of the group.
+            - name: name
+              type: keyword
+              description: The group's display name.
+            - name: email
+              type: keyword
+              description: The group's email address.
+            - name: role
+              type: keyword
+              description: The user's role in the group (`OWNER`, `MANAGER` or `MEMBER`).
+        - name: role_assignments
+          type: group
+          description: Admin roles assigned directly to the user. Present only when admin role collection is enabled and succeeded; an empty list means the user has no direct assignment.
+          fields:
+            - name: role_assignment_id
+              type: keyword
+              description: The ID of the role assignment.
+            - name: role_id
+              type: keyword
+              description: The ID of the assigned role.
+            - name: role_name
+              type: keyword
+              description: The name of the assigned role.
+            - name: privileges
+              type: keyword
+              description: The names of the privileges granted by the role.
+            - name: is_super_admin_role
+              type: boolean
+              description: Whether the role is a super admin role.
+            - name: is_system_role
+              type: boolean
+              description: Whether the role is a pre-defined system role.
+            - name: scope_type
+              type: keyword
+              description: The scope in which the role is assigned (`CUSTOMER` or `ORG_UNIT`).
+            - name: org_unit_id
+              type: keyword
+              description: The ID of the organizational unit the role is restricted to, for `ORG_UNIT` assignments.
+            - name: condition
+              type: keyword
+              description: The condition associated with the role assignment.
+            - name: expire_time
+              type: date
+              description: The time the role assignment expires.
