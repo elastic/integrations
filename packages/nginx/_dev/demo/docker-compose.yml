@@ -1,0 +1,39 @@
+# Live nginx data for the integration group prototype.
+#
+#   docker compose -f packages/nginx/_dev/demo/docker-compose.yml up -d
+#
+# - stub_status: http://localhost:8080/nginx_status (host)
+#                http://nginx-demo/nginx_status (from containers on the same network)
+# - logs: named volume "nginx-demo-logs" -> access.log, error.log
+#   tail: docker run --rm -v nginx-demo-logs:/logs alpine tail -f /logs/access.log
+#   mount it into an agent container at /var/log/nginx-demo (read-only).
+# - loadgen hits /, a 404 path, and stub_status every second.
+name: nginx-demo
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: nginx-demo
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - nginx-logs:/var/log/nginx-demo
+
+  loadgen:
+    image: curlimages/curl:8.10.1
+    depends_on:
+      - nginx
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          curl -s -o /dev/null http://nginx/
+          curl -s -o /dev/null http://nginx/missing-$$RANDOM
+          curl -s -o /dev/null -A "demo-loadgen" http://nginx/index.html
+          sleep 1
+        done
+
+volumes:
+  nginx-logs:
+    name: nginx-demo-logs
