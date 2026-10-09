@@ -317,6 +317,7 @@ An example event for `audit` looks as following:
 | email.attachments.file.size | Attachment file size in bytes. | long |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
