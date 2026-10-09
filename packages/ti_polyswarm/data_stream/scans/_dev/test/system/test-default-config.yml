@@ -1,0 +1,19 @@
+input: cel
+service: ti-polyswarm-scans
+data_stream:
+  vars:
+    url: http://{{Hostname}}:{{Port}}
+    api_key: test-api-key
+    community: default
+    batch_size: 2
+wait_for_data_timeout: 1m
+# batch_size 2 forces the offset cursor to be exercised: page 1 returns two
+# artifacts with has_more true, page 2 returns the last one with has_more false.
+# The default 5m interval means exactly one polling cycle runs inside the test
+# window, so the count is the mock's three artifacts.
+assert:
+  hit_count: 3
+  fields_present:
+    - threat.indicator.file.hash.sha256
+    - threat.indicator.confidence
+    - related.hash
