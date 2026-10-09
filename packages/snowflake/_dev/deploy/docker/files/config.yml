@@ -1,0 +1,658 @@
+rules:
+  # login_history
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      async: "true"
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: /.*(LOGIN_HISTORY.*2020-06-15 10:00:00|2020-06-15 10:00:00.*LOGIN_HISTORY).*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06a4-0000-df4f-0000-00100006590f",
+            "createdOn": 1592173800123,
+            "statementStatusUrl": "/api/v2/statements/019c06a4-0000-df4f-0000-00100006590f",
+            "resultSetMetaData": {
+              "numRows": 1,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "EVENT_ID", "type": "fixed", "nullable": false},
+                {"name": "EVENT_TIMESTAMP", "type": "timestamp_ltz", "nullable": false},
+                {"name": "EVENT_TYPE", "type": "text", "nullable": true},
+                {"name": "USER_NAME", "type": "text", "nullable": true},
+                {"name": "CLIENT_IP", "type": "text", "nullable": true},
+                {"name": "REPORTED_CLIENT_TYPE", "type": "text", "nullable": true},
+                {"name": "REPORTED_CLIENT_VERSION", "type": "text", "nullable": true},
+                {"name": "FIRST_AUTHENTICATION_FACTOR", "type": "text", "nullable": true},
+                {"name": "SECOND_AUTHENTICATION_FACTOR", "type": "text", "nullable": true},
+                {"name": "IS_SUCCESS", "type": "text", "nullable": true},
+                {"name": "ERROR_CODE", "type": "fixed", "nullable": true},
+                {"name": "ERROR_MESSAGE", "type": "text", "nullable": true},
+                {"name": "CONNECTION", "type": "text", "nullable": true},
+                {"name": "CLIENT_PRIVATE_LINK_ID", "type": "text", "nullable": true},
+                {"name": "LOGIN_DETAILS", "type": "text", "nullable": true},
+                {"name": "AUTHORIZING_INTEGRATION_NAME", "type": "text", "nullable": true}
+              ],
+              "partitionInfo": [
+                {"rowCount": 1, "uncompressedSize": 220}
+              ]
+            },
+            "data": [
+              ["2001", "2020-06-15 14:30:00.000 +0000", "LOGIN", "eve.martinez", "198.51.100.30", "SNOWFLAKE_UI", "2026.1.0", "OAUTH_ACCESS_TOKEN", null, "YES", null, null, null, null, null, "EXAMPLE_OAUTH_INTEGRATION"]
+            ]
+          }
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      async: "true"
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: /.*(LOGIN_HISTORY.*2020-06-15|2020-06-15.*LOGIN_HISTORY).*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06a4-0000-df4f-0000-001000065910",
+            "createdOn": 1592173800456,
+            "statementStatusUrl": "/api/v2/statements/019c06a4-0000-df4f-0000-001000065910",
+            "resultSetMetaData": {
+              "numRows": 0,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "EVENT_ID", "type": "fixed", "nullable": false},
+                {"name": "EVENT_TIMESTAMP", "type": "timestamp_ltz", "nullable": false},
+                {"name": "EVENT_TYPE", "type": "text", "nullable": true},
+                {"name": "USER_NAME", "type": "text", "nullable": true},
+                {"name": "CLIENT_IP", "type": "text", "nullable": true},
+                {"name": "REPORTED_CLIENT_TYPE", "type": "text", "nullable": true},
+                {"name": "REPORTED_CLIENT_VERSION", "type": "text", "nullable": true},
+                {"name": "FIRST_AUTHENTICATION_FACTOR", "type": "text", "nullable": true},
+                {"name": "SECOND_AUTHENTICATION_FACTOR", "type": "text", "nullable": true},
+                {"name": "IS_SUCCESS", "type": "text", "nullable": true},
+                {"name": "ERROR_CODE", "type": "fixed", "nullable": true},
+                {"name": "ERROR_MESSAGE", "type": "text", "nullable": true},
+                {"name": "CONNECTION", "type": "text", "nullable": true},
+                {"name": "CLIENT_PRIVATE_LINK_ID", "type": "text", "nullable": true},
+                {"name": "LOGIN_DETAILS", "type": "text", "nullable": true},
+                {"name": "AUTHORIZING_INTEGRATION_NAME", "type": "text", "nullable": true}
+              ],
+              "partitionInfo": [
+                {"rowCount": 0, "uncompressedSize": 0}
+              ]
+            },
+            "data": []
+          }
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      async: "true"
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: /.*LOGIN_HISTORY.*/
+    responses:
+      - status_code: 202
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "code": "333334",
+            "message": "Asynchronous execution in progress. Use provided query id to perform query monitoring and management.",
+            "statementHandle": "019c06a4-0000-df4f-0000-00100006589e",
+            "statementStatusUrl": "/api/v2/statements/019c06a4-0000-df4f-0000-00100006589e"
+          }
+  - path: /api/v2/statements/019c06a4-0000-df4f-0000-00100006589e
+    methods: ['GET']
+    query_params:
+      partition: "1"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "data": [
+              ["1003", "2020-06-15 10:00:00.000 +0000", "LOGIN", "carol.davis", "192.0.2.30", "ODBC_DRIVER", "2.25.0", "PASSWORD", null, "YES", null, null, null, null, null, null],
+              ["1004", "2020-06-15 11:00:00.000 +0000", "LOGIN", null, "198.51.100.20", "PYTHON_DRIVER", "3.0.0", "PASSWORD", "MFA_TOKEN", "NO", "390100", "Incorrect username or password was specified.", null, null, null, null],
+              ["1005", "2020-06-15 12:00:00.000 +0000", "LOGIN", "dave.wilson", "203.0.113.50", "JDBC_DRIVER", "3.14.4", "PASSWORD", null, "YES", null, null, "EXAMPLE_CONNECTION", null, null, null]
+            ]
+          }
+  - path: /api/v2/statements/019c06a4-0000-df4f-0000-00100006589e
+    methods: ['GET']
+    query_params:
+      partition: "2"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "data": []
+          }
+  - path: /api/v2/statements/019c06a4-0000-df4f-0000-00100006589e
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06a4-0000-df4f-0000-00100006589e",
+            "createdOn": 1592172000123,
+            "statementStatusUrl": "/api/v2/statements/019c06a4-0000-df4f-0000-00100006589e",
+            "resultSetMetaData": {
+              "numRows": 5,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "EVENT_ID", "type": "fixed", "nullable": false},
+                {"name": "EVENT_TIMESTAMP", "type": "timestamp_ltz", "nullable": false},
+                {"name": "EVENT_TYPE", "type": "text", "nullable": true},
+                {"name": "USER_NAME", "type": "text", "nullable": true},
+                {"name": "CLIENT_IP", "type": "text", "nullable": true},
+                {"name": "REPORTED_CLIENT_TYPE", "type": "text", "nullable": true},
+                {"name": "REPORTED_CLIENT_VERSION", "type": "text", "nullable": true},
+                {"name": "FIRST_AUTHENTICATION_FACTOR", "type": "text", "nullable": true},
+                {"name": "SECOND_AUTHENTICATION_FACTOR", "type": "text", "nullable": true},
+                {"name": "IS_SUCCESS", "type": "text", "nullable": true},
+                {"name": "ERROR_CODE", "type": "fixed", "nullable": true},
+                {"name": "ERROR_MESSAGE", "type": "text", "nullable": true},
+                {"name": "CONNECTION", "type": "text", "nullable": true},
+                {"name": "CLIENT_PRIVATE_LINK_ID", "type": "text", "nullable": true},
+                {"name": "LOGIN_DETAILS", "type": "text", "nullable": true},
+                {"name": "AUTHORIZING_INTEGRATION_NAME", "type": "text", "nullable": true}
+              ],
+              "partitionInfo": [
+                {"rowCount": 2, "uncompressedSize": 280},
+                {"rowCount": 3, "uncompressedSize": 360},
+                {"rowCount": 0, "uncompressedSize": 0}
+              ]
+            },
+            "data": [
+              ["1001", "2020-06-15 08:00:00.123 +0000", "LOGIN", "alice.johnson", "198.51.100.10", "JDBC_DRIVER", "3.14.4", "PASSWORD", "MFA_TOKEN", "YES", null, null, null, null, null, null],
+              ["1002", "2020-06-15 09:00:00.000 +0000", "LOGIN", "bob.smith", "203.0.113.20", "SNOWFLAKE_UI", "2026.1.0", "PASSWORD", "MFA_TOKEN", "NO", "390100", "Incorrect username or password was specified.", null, null, "{\"malicious_ip_protection_info\":\"{\\\"result\\\":\\\"BLOCKED\\\",\\\"riskClassification\\\":\\\"HIGH\\\",\\\"categories\\\":[\\\"ANONYMOUS_VPN\\\",\\\"ANONYMOUS_PROXIES\\\"]}\"}", null]
+            ]
+          }
+  # sessions
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      async: "true"
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: /.*(SESSIONS.*2020-06-15 09:00:00|2020-06-15 09:00:00.*SESSIONS).*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06b5-0000-df4f-0000-00200007590f",
+            "createdOn": 1592185800123,
+            "statementStatusUrl": "/api/v2/statements/019c06b5-0000-df4f-0000-00200007590f",
+            "resultSetMetaData": {
+              "numRows": 1,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "SESSION_ID", "type": "fixed", "nullable": false},
+                {"name": "CREATED_ON", "type": "timestamp_ltz", "nullable": false},
+                {"name": "USER_NAME", "type": "text", "nullable": true},
+                {"name": "AUTHENTICATION_METHOD", "type": "text", "nullable": true},
+                {"name": "LOGIN_EVENT_ID", "type": "fixed", "nullable": true},
+                {"name": "CLIENT_APPLICATION_ID", "type": "text", "nullable": true},
+                {"name": "CLIENT_APPLICATION_VERSION", "type": "text", "nullable": true},
+                {"name": "CLIENT_ENVIRONMENT", "type": "text", "nullable": true},
+                {"name": "ACCESS_TIME", "type": "timestamp_ltz", "nullable": true},
+                {"name": "IS_OPEN", "type": "boolean", "nullable": true},
+                {"name": "CLOSED_REASON", "type": "text", "nullable": true}
+              ],
+              "partitionInfo": [
+                {"rowCount": 1, "uncompressedSize": 240}
+              ]
+            },
+            "data": [
+              ["3006", "2020-06-15 15:20:00.000 +0000", "frank.garcia", "OAUTH_ACCESS_TOKEN", "2001", "SNOWFLAKE_UI", "2026.1.0", "{\"OS\":\"Windows\",\"OCSP_MODE\":\"FAIL_OPEN\"}", "2020-06-15 16:30:00.000 +0000", "true", null]
+            ]
+          }
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      async: "true"
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: /.*(SESSIONS.*2020-06-15|2020-06-15.*SESSIONS).*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06b5-0000-df4f-0000-002000075910",
+            "createdOn": 1592185800456,
+            "statementStatusUrl": "/api/v2/statements/019c06b5-0000-df4f-0000-002000075910",
+            "resultSetMetaData": {
+              "numRows": 0,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "SESSION_ID", "type": "fixed", "nullable": false},
+                {"name": "CREATED_ON", "type": "timestamp_ltz", "nullable": false},
+                {"name": "USER_NAME", "type": "text", "nullable": true},
+                {"name": "AUTHENTICATION_METHOD", "type": "text", "nullable": true},
+                {"name": "LOGIN_EVENT_ID", "type": "fixed", "nullable": true},
+                {"name": "CLIENT_APPLICATION_ID", "type": "text", "nullable": true},
+                {"name": "CLIENT_APPLICATION_VERSION", "type": "text", "nullable": true},
+                {"name": "CLIENT_ENVIRONMENT", "type": "text", "nullable": true},
+                {"name": "ACCESS_TIME", "type": "timestamp_ltz", "nullable": true},
+                {"name": "IS_OPEN", "type": "boolean", "nullable": true},
+                {"name": "CLOSED_REASON", "type": "text", "nullable": true}
+              ],
+              "partitionInfo": [
+                {"rowCount": 0, "uncompressedSize": 0}
+              ]
+            },
+            "data": []
+          }
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      async: "true"
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: /.*SESSIONS.*/
+    responses:
+      - status_code: 202
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "code": "333334",
+            "message": "Asynchronous execution in progress. Use provided query id to perform query monitoring and management.",
+            "statementHandle": "019c06b5-0000-df4f-0000-00200007589e",
+            "statementStatusUrl": "/api/v2/statements/019c06b5-0000-df4f-0000-00200007589e"
+          }
+  - path: /api/v2/statements/019c06b5-0000-df4f-0000-00200007589e
+    methods: ['GET']
+    query_params:
+      partition: "1"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "data": [
+              ["3003", "2020-06-15 09:50:00.000 +0000", "carol.davis", "OAUTH_ACCESS_TOKEN", "1003", "ODBC_DRIVER", "2.25.0", "{\"OS\":\"Linux\",\"OCSP_MODE\":\"FAIL_CLOSED\"}", "2020-06-15 10:00:00.000 +0000", "true", null],
+              ["3004", "2020-06-15 10:50:00.000 +0000", "dave.wilson", "PASSWORD", "1004", "PYTHON_DRIVER", "3.0.0", "{\"OS\":\"macOS\",\"OCSP_MODE\":\"FAIL_OPEN\"}", "2020-06-15 11:00:00.000 +0000", "false", "FORCED_LOGOUT"],
+              ["3005", "2020-06-15 11:50:00.000 +0000", "eve.martinez", "PASSWORD", "1005", "JDBC_DRIVER", "3.14.4", "{\"OS\":\"Linux\",\"OCSP_MODE\":\"FAIL_OPEN\"}", "2020-06-15 12:00:00.000 +0000", "false", "LOGOUT"]
+            ]
+          }
+  - path: /api/v2/statements/019c06b5-0000-df4f-0000-00200007589e
+    methods: ['GET']
+    query_params:
+      partition: "2"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "data": []
+          }
+  - path: /api/v2/statements/019c06b5-0000-df4f-0000-00200007589e
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06b5-0000-df4f-0000-00200007589e",
+            "createdOn": 1592172000456,
+            "statementStatusUrl": "/api/v2/statements/019c06b5-0000-df4f-0000-00200007589e",
+            "resultSetMetaData": {
+              "numRows": 5,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "SESSION_ID", "type": "fixed", "nullable": false},
+                {"name": "CREATED_ON", "type": "timestamp_ltz", "nullable": false},
+                {"name": "USER_NAME", "type": "text", "nullable": true},
+                {"name": "AUTHENTICATION_METHOD", "type": "text", "nullable": true},
+                {"name": "LOGIN_EVENT_ID", "type": "fixed", "nullable": true},
+                {"name": "CLIENT_APPLICATION_ID", "type": "text", "nullable": true},
+                {"name": "CLIENT_APPLICATION_VERSION", "type": "text", "nullable": true},
+                {"name": "CLIENT_ENVIRONMENT", "type": "text", "nullable": true},
+                {"name": "ACCESS_TIME", "type": "timestamp_ltz", "nullable": true},
+                {"name": "IS_OPEN", "type": "boolean", "nullable": true},
+                {"name": "CLOSED_REASON", "type": "text", "nullable": true}
+              ],
+              "partitionInfo": [
+                {"rowCount": 2, "uncompressedSize": 300},
+                {"rowCount": 3, "uncompressedSize": 400},
+                {"rowCount": 0, "uncompressedSize": 0}
+              ]
+            },
+            "data": [
+              ["3001", "2020-06-15 07:50:00.000 +0000", "alice.johnson", "PASSWORD", "1001", "JDBC 3.14.4", "3.14.4", "{\"OS\":\"Linux\",\"OCSP_MODE\":\"FAIL_OPEN\"}", "2020-06-15 08:00:00.123 +0000", "false", "LOGOUT"],
+              ["3002", "2020-06-15 08:50:00.000 +0000", "bob.smith", "PASSWORD", "1002", "SNOWFLAKE_UI", "2026.1.0", "{\"OS\":\"Windows\",\"OCSP_MODE\":\"FAIL_OPEN\"}", "2020-06-15 09:00:00.000 +0000", "false", "ABANDONED"]
+            ]
+          }
+  # grants_to_users revokes — separate DELETED_ON statement
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      async: "true"
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: /.*GRANTS_TO_USERS.*DELETED_ON IS NOT NULL.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06c6-0000-df4f-0000-003000085b10",
+            "createdOn": 1592185800456,
+            "statementStatusUrl": "/api/v2/statements/019c06c6-0000-df4f-0000-003000085b10",
+            "resultSetMetaData": {
+              "numRows": 0,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "CREATED_ON", "type": "timestamp_ltz", "nullable": false},
+                {"name": "DELETED_ON", "type": "timestamp_ltz", "nullable": true},
+                {"name": "ROLE", "type": "text", "nullable": true},
+                {"name": "GRANTED_TO", "type": "text", "nullable": true},
+                {"name": "GRANTEE_NAME", "type": "text", "nullable": true},
+                {"name": "GRANTED_BY", "type": "text", "nullable": true}
+              ],
+              "partitionInfo": [
+                {"rowCount": 0, "uncompressedSize": 0}
+              ]
+            },
+            "data": []
+          }
+  # grants_to_users creates
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      async: "true"
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: /.*(GRANTS_TO_USERS WHERE CREATED_ON.*2020-06-15 10:00:00|2020-06-15 10:00:00.*GRANTS_TO_USERS WHERE CREATED_ON).*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06c6-0000-df4f-0000-00300008590f",
+            "createdOn": 1592185800123,
+            "statementStatusUrl": "/api/v2/statements/019c06c6-0000-df4f-0000-00300008590f",
+            "resultSetMetaData": {
+              "numRows": 1,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "CREATED_ON", "type": "timestamp_ltz", "nullable": false},
+                {"name": "DELETED_ON", "type": "timestamp_ltz", "nullable": true},
+                {"name": "ROLE", "type": "text", "nullable": true},
+                {"name": "GRANTED_TO", "type": "text", "nullable": true},
+                {"name": "GRANTEE_NAME", "type": "text", "nullable": true},
+                {"name": "GRANTED_BY", "type": "text", "nullable": true}
+              ],
+              "partitionInfo": [
+                {"rowCount": 1, "uncompressedSize": 180}
+              ]
+            },
+            "data": [
+              ["2020-06-15 14:00:00.000 +0000", "2020-06-15 14:30:00.000 +0000", "SECURITYADMIN", "USER", "frank.garcia", "ACCOUNTADMIN"]
+            ]
+          }
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      async: "true"
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: /.*(GRANTS_TO_USERS WHERE CREATED_ON.*2020-06-15|2020-06-15.*GRANTS_TO_USERS WHERE CREATED_ON).*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06c6-0000-df4f-0000-003000085910",
+            "createdOn": 1592185800456,
+            "statementStatusUrl": "/api/v2/statements/019c06c6-0000-df4f-0000-003000085910",
+            "resultSetMetaData": {
+              "numRows": 0,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "CREATED_ON", "type": "timestamp_ltz", "nullable": false},
+                {"name": "DELETED_ON", "type": "timestamp_ltz", "nullable": true},
+                {"name": "ROLE", "type": "text", "nullable": true},
+                {"name": "GRANTED_TO", "type": "text", "nullable": true},
+                {"name": "GRANTEE_NAME", "type": "text", "nullable": true},
+                {"name": "GRANTED_BY", "type": "text", "nullable": true}
+              ],
+              "partitionInfo": [
+                {"rowCount": 0, "uncompressedSize": 0}
+              ]
+            },
+            "data": []
+          }
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      async: "true"
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: /.*GRANTS_TO_USERS WHERE CREATED_ON.*/
+    responses:
+      - status_code: 202
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "code": "333334",
+            "message": "Asynchronous execution in progress. Use provided query id to perform query monitoring and management.",
+            "statementHandle": "019c06c6-0000-df4f-0000-00300008589e",
+            "statementStatusUrl": "/api/v2/statements/019c06c6-0000-df4f-0000-00300008589e"
+          }
+  - path: /api/v2/statements/019c06c6-0000-df4f-0000-00300008589e
+    methods: ['GET']
+    query_params:
+      partition: "1"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "data": [
+              ["2020-06-15 10:00:00.000 +0000", null, "USERADMIN", "USER", "carol.davis", "SECURITYADMIN"],
+              ["2020-06-15 10:30:00.000 +0000", "2020-06-15 11:00:00.000 +0000", "PUBLIC", "USER", "dave.wilson", "USERADMIN"],
+              ["2020-06-15 12:00:00.000 +0000", null, "SYSADMIN", "USER", "eve.martinez", "ACCOUNTADMIN"]
+            ]
+          }
+  - path: /api/v2/statements/019c06c6-0000-df4f-0000-00300008589e
+    methods: ['GET']
+    query_params:
+      partition: "2"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "data": []
+          }
+  - path: /api/v2/statements/019c06c6-0000-df4f-0000-00300008589e
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06c6-0000-df4f-0000-00300008589e",
+            "createdOn": 1592172000789,
+            "statementStatusUrl": "/api/v2/statements/019c06c6-0000-df4f-0000-00300008589e",
+            "resultSetMetaData": {
+              "numRows": 5,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "CREATED_ON", "type": "timestamp_ltz", "nullable": false},
+                {"name": "DELETED_ON", "type": "timestamp_ltz", "nullable": true},
+                {"name": "ROLE", "type": "text", "nullable": true},
+                {"name": "GRANTED_TO", "type": "text", "nullable": true},
+                {"name": "GRANTEE_NAME", "type": "text", "nullable": true},
+                {"name": "GRANTED_BY", "type": "text", "nullable": true}
+              ],
+              "partitionInfo": [
+                {"rowCount": 2, "uncompressedSize": 220},
+                {"rowCount": 3, "uncompressedSize": 320},
+                {"rowCount": 0, "uncompressedSize": 0}
+              ]
+            },
+            "data": [
+              ["2020-06-15 08:00:00.123 +0000", null, "SYSADMIN", "USER", "alice.johnson", "ACCOUNTADMIN"],
+              ["2020-06-15 08:30:00.000 +0000", "2020-06-15 09:00:00.000 +0000", "SECURITYADMIN", "USER", "bob.smith", "ACCOUNTADMIN"]
+            ]
+          }

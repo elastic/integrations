@@ -1,0 +1,233 @@
+---
+description: Parse Snowflake SESSIONS events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+
+  - date:
+      field: json.ACCESS_TIME
+      target_field: '@timestamp'
+      tag: date_access_time
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS Z
+        - yyyy-MM-dd HH:mm:ss.SSS XX
+        - ISO8601
+      if: ctx.json?.ACCESS_TIME != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_date_access_time_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - date:
+      field: json.CREATED_ON
+      target_field: event.start
+      tag: date_created_on
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS Z
+        - yyyy-MM-dd HH:mm:ss.SSS XX
+        - ISO8601
+      if: ctx.json?.CREATED_ON != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_date_created_on_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.SESSION_ID
+      target_field: snowflake.sessions.session_id
+      ignore_missing: true
+      tag: rename_session_id
+  - rename:
+      field: json.USER_NAME
+      target_field: user.name
+      ignore_missing: true
+      tag: rename_user_name
+  - rename:
+      field: json.CLOSED_REASON
+      target_field: event.reason
+      ignore_missing: true
+      tag: rename_closed_reason
+
+  - rename:
+      field: json.AUTHENTICATION_METHOD
+      target_field: snowflake.sessions.authentication_method
+      ignore_missing: true
+      tag: rename_authentication_method
+  - rename:
+      field: json.LOGIN_EVENT_ID
+      target_field: snowflake.sessions.login_event_id
+      ignore_missing: true
+      tag: rename_login_event_id
+  - rename:
+      field: json.CLIENT_APPLICATION_ID
+      target_field: snowflake.sessions.client_application_id
+      ignore_missing: true
+      tag: rename_client_application_id
+  - rename:
+      field: json.CLIENT_APPLICATION_VERSION
+      target_field: snowflake.sessions.client_application_version
+      ignore_missing: true
+      tag: rename_client_application_version
+  - rename:
+      field: json.CLIENT_BUILD_ID
+      target_field: snowflake.sessions.client_build_id
+      ignore_missing: true
+      tag: rename_client_build_id
+  - rename:
+      field: json.CLIENT_VERSION
+      target_field: snowflake.sessions.client_version
+      ignore_missing: true
+      tag: rename_client_version
+  - convert:
+      field: json.IS_OPEN
+      target_field: snowflake.sessions.is_open
+      type: boolean
+      ignore_missing: true
+      tag: convert_is_open
+      on_failure:
+        - append:
+            tag: append_error_message_2023f64b
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - json:
+      field: json.CLIENT_ENVIRONMENT
+      target_field: snowflake.sessions.client_environment
+      tag: parse_client_environment
+      if: ctx.json?.CLIENT_ENVIRONMENT instanceof String
+  - rename:
+      field: json.CLIENT_ENVIRONMENT
+      target_field: snowflake.sessions.client_environment
+      ignore_missing: true
+      tag: rename_client_environment_object
+      if: ctx.json?.CLIENT_ENVIRONMENT instanceof Map
+
+  - append:
+      field: related.user
+      tag: append_user_name_to_related
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category_session
+      value: session
+      allow_duplicates: false
+  - append:
+      field: event.category
+      tag: append_event_category_authentication
+      value: authentication
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_start
+      value: start
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_end
+      value: end
+      allow_duplicates: false
+      if: ctx.snowflake?.sessions?.is_open == false
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Snowflake
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Snowflake
+
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+      tag: remove_temp_fields
+
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+
+  - append:
+      field: tags
+      tag: append_preserve_on_collector_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      tag: append_error_message_d1950926
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_d762b9c5
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
