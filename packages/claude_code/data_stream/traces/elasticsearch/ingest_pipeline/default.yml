@@ -1,0 +1,106 @@
+---
+description: Pipeline for processing Claude Code OTel trace spans.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: "9.3.0"
+
+  # Span attributes stay under `attributes` (flat, dotted keys) so the platform's
+  # OTel traces mappings and the APM UI can use them as-is.
+
+  # Tool span attributes (only present when OTEL_LOG_TOOL_DETAILS is enabled).
+  - set:
+      tag: set_command_line
+      field: process.command_line
+      copy_from: attributes.full_command
+      if: ctx.attributes?.full_command != null
+  - set:
+      tag: set_file_path
+      field: file.path
+      copy_from: attributes.file_path
+      if: ctx.attributes?.file_path != null
+
+  - script:
+      tag: ecs_categorization
+      lang: painless
+      description: Set ECS event fields from the span.type attribute Claude Code assigns.
+      if: ctx.attributes instanceof Map
+      params:
+        categories:
+          interaction: session
+          llm_request: api
+          tool: process
+      source: >
+        ctx.event = ctx.event ?: new HashMap();
+        ctx.event.kind = 'event';
+        def spanType = ctx.attributes.get('span.type');
+        def category = params.categories.get(spanType);
+        if (category != null) {
+          ctx.event.category = [category];
+          ctx.event.type = ['info'];
+        }
+
+  - script:
+      tag: set_related_user
+      lang: painless
+      description: Populate related.user from the user.email and user.id span attributes.
+      if: ctx.attributes instanceof Map
+      source: >
+        def users = new ArrayList();
+        for (def key : ['user.email', 'user.id']) {
+          def value = ctx.attributes.get(key);
+          if (value != null && value != '' && !users.contains(value)) {
+            users.add(value);
+          }
+        }
+        if (!users.isEmpty()) {
+          ctx.related = ctx.related ?: new HashMap();
+          ctx.related.user = users;
+        }
+
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null/empty values.
+      tag: remove_nulls
+      source: |-
+        void handleMap(Map map) {
+            map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+            });
+        }
+        void handleList(List list) {
+            list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+            });
+        }
+        handleMap(ctx);
+
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: >-
+        Processor {{{_ingest.on_failure_processor_type}}}
+        with tag {{{_ingest.on_failure_processor_tag}}}
+        in pipeline {{{_ingest.pipeline}}}
+        failed with message:
+        {{{_ingest.on_failure_message}}}
+  - set:
+      tag: set_pipeline_error_kind
+      field: event.kind
+      value: pipeline_error

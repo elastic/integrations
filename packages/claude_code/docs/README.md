@@ -2,23 +2,26 @@
 
 ## Overview
 
-The Claude Code integration collects [OpenTelemetry](https://opentelemetry.io/) log events emitted by [Anthropic Claude Code](https://code.claude.com/), the AI coding agent. It provides typed field mappings, an ingest pipeline for structured queries, and security-focused dashboards for tool invocation auditing, cost monitoring, and permission analysis.
+The Claude Code integration collects [OpenTelemetry](https://opentelemetry.io/) log events and traces emitted by [Anthropic Claude Code](https://code.claude.com/), the AI coding agent. It provides typed field mappings, ingest pipelines for structured queries, security-focused dashboards for tool invocation auditing, cost monitoring, and permission analysis, and a traces overview dashboard for LLM usage, latency, and tool activity.
 
-Claude Code exports telemetry as OTLP (OpenTelemetry Protocol) logs. Each event represents an action in an agentic session: tool calls (shell commands, file operations, MCP tool invocations), API requests, user prompts, permission decisions, and lifecycle events.
+Claude Code exports telemetry as OTLP (OpenTelemetry Protocol) logs and, optionally, traces. Each log event represents an action in an agentic session: tool calls (shell commands, file operations, MCP tool invocations), API requests, user prompts, permission decisions, and lifecycle events. Trace spans connect interactions, LLM requests, and tool calls into one trace per user turn. Trace export is in beta.
 
 ### Compatibility
 
-This integration requires Claude Code CLI version 2.1.0 or later, which supports OTLP log export.
+This integration requires Claude Code CLI version 2.1.0 or later, which supports OTLP log export. Traces require version 2.1.101 or later. Earlier versions emit beta trace spans but don't apply the [verbosity gates](#verbosity-gates) to them, so spans can include prompts and tool content even when the gates are off.
 
 ### How it works
 
 Claude Code emits structured OTLP log records during agentic sessions. Each record carries an event name attribute identifying its type (mapped to `event.action` in ECS), along with event-specific attributes namespaced under `claude_code.*`. The Elastic Agent receives these events via its built-in OTLP HTTP receiver, applies an ingest pipeline that parses JSON-encoded tool parameters, extracts security-relevant fields, and categorizes events using ECS. The processed events are indexed into the `logs-claude_code.events.otel-*` data stream.
+
+Trace spans are indexed into the `traces-claude_code.otel-*` data stream. Span attributes stay under `attributes` and use Elastic's native OTel mappings. The traces ingest pipeline adds ECS categorization based on `span.type`.
 
 ## What data does this integration collect?
 
 | Data stream | Description |
 |-------------|-------------|
 | `events`    | All Claude Code OTLP log events — tool executions, API requests, permission decisions, MCP connections, hooks, plugins, and session lifecycle. |
+| `traces` (beta) | Claude Code OTLP trace spans — interactions, LLM requests, and tool calls. |
 
 The integration processes these event types:
 
@@ -38,20 +41,31 @@ The integration processes these event types:
 | `plugin_loaded` | Plugin loaded (name, scope, paths). | `library` |
 | `skill_activated` | Skill activation (name, source, trigger). | — |
 
+And these span types:
+
+| `span.type` | Description | ECS category |
+|-------------|-------------|--------------|
+| `interaction` | Root span for one user turn. | `session` |
+| `llm_request` | A model request (tokens, latency, stop reason). | `api` |
+| `tool` | A tool invocation within an interaction. | `process` |
+
+Claude Code also emits other span types (for example `hook`, and nested `tool.blocked_on_user`/`tool.execution` spans). These are indexed into the `traces` data stream but aren't ECS-categorized by the ingest pipeline.
+
 ## What do I need to use this integration?
 
 - An Elastic deployment running version 9.4.0 or later.
 - Claude Code CLI with telemetry enabled (`CLAUDE_CODE_ENABLE_TELEMETRY=1`).
+- For traces: `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1`.
 
 ### Verbosity gates
 
-Claude Code has four environment variables that control how much detail is included in telemetry events:
+Claude Code has four environment variables that control how much detail is included in log events and spans:
 
 | Variable | What it enables | Default |
 |----------|----------------|---------|
-| `OTEL_LOG_USER_PROMPTS` | Include the `prompt` text in `user_prompt` events. | Off |
-| `OTEL_LOG_TOOL_DETAILS` | Include `tool_parameters` and `tool_input` in tool events. | Off |
-| `OTEL_LOG_TOOL_CONTENT` | Include `tool_result` content in tool events. | Off |
+| `OTEL_LOG_USER_PROMPTS` | Include the `prompt` text in `user_prompt` events and spans. | Off |
+| `OTEL_LOG_TOOL_DETAILS` | Include `tool_parameters` and `tool_input` in tool events and spans. | Off |
+| `OTEL_LOG_TOOL_CONTENT` | Include `tool_result` content in tool events and spans. | Off |
 | `OTEL_LOG_RAW_API_BODIES` | Include raw API request/response bodies. | Off |
 
 Enabling these gates provides richer forensic data but indexes potentially sensitive content (commands, file contents, prompts). When a gate is disabled, the corresponding fields are absent from the document — the pipeline handles this gracefully.
@@ -64,7 +78,7 @@ Organizations can enforce telemetry and verbosity gates fleet-wide via MDM profi
 
 For general instructions on installing integrations and deploying Elastic Agent, refer to the [Getting started guide](https://www.elastic.co/docs/solutions/observability/get-started).
 
-**Prerequisites:** Install this integration in Fleet before sending data. The installation creates the ingest pipeline, field mappings, and dashboards required for processing Claude Code events.
+**Prerequisites:** Install this integration in Fleet before sending data. The installation creates the ingest pipelines, field mappings, and dashboards required for processing Claude Code events and spans.
 
 Claude Code exports telemetry via OTLP. There are three deployment paths.
 
@@ -74,39 +88,152 @@ If your Elastic Cloud deployment supports managed OTLP ingestion, point Claude C
 
 ```bash
 export CLAUDE_CODE_ENABLE_TELEMETRY=1
+export CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1
 export OTEL_LOGS_EXPORTER=otlp
+export OTEL_TRACES_EXPORTER=otlp
 export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 export OTEL_EXPORTER_OTLP_ENDPOINT="<your-elastic-cloud-otlp-endpoint>"
+export OTEL_EXPORTER_OTLP_HEADERS="Authorization=ApiKey <your-api-key>"
 export OTEL_RESOURCE_ATTRIBUTES="data_stream.dataset=claude_code.events.otel"
 ```
 
+`OTEL_RESOURCE_ATTRIBUTES` applies to both logs and traces, so spans also arrive with the events dataset, in `traces-claude_code.events.otel-*`. Run the following in Kibana Dev Tools to reroute them to `traces-claude_code.otel-*`. The same pipeline handles Claude Code Desktop spans, which land in `traces-generic.otel-*` (see [Claude Code Desktop traces](#claude-code-desktop-traces)).
+
+```console
+PUT _ingest/pipeline/traces-claude-code-reroute
+{
+  "processors": [
+    {
+      "reroute": {
+        "if": "['claude-code', 'claude-code-desktop'].contains(ctx.resource?.attributes?.get('service.name'))",
+        "dataset": "claude_code.otel",
+        "namespace": ["{{data_stream.namespace}}", "default"]
+      }
+    }
+  ]
+}
+
+PUT _index_template/traces-claude-code-reroute
+{
+  "index_patterns": ["traces-claude_code.events.otel-*", "traces-generic.otel-*"],
+  "priority": 150,
+  "composed_of": ["traces@mappings", "traces@settings", "otel@mappings", "otel@settings", "traces-otel@mappings", "semconv-resource-to-ecs@mappings", "traces@custom", "traces-otel@custom", "ecs@mappings"],
+  "ignore_missing_component_templates": ["traces@custom", "traces-otel@custom"],
+  "template": {
+    "settings": { "index.default_pipeline": "traces-claude-code-reroute" },
+    "mappings": { "properties": { "data_stream.type": { "type": "constant_keyword", "value": "traces" } } }
+  },
+  "data_stream": { "hidden": false, "allow_custom_routing": false },
+  "allow_auto_create": true
+}
+```
+
+If either data stream already exists, roll it over so it picks up the new template, for example `POST traces-generic.otel-default/_rollover`. Run a rollover for each namespace you use.
+
+
 ### Option B: Elastic Agent OTLP receiver
 
-The Elastic Agent exposes an OTLP HTTP receiver on the configured HTTP endpoint (default port: 4318). Configure Claude Code to send events to the agent:
+The Elastic Agent exposes an OTLP HTTP receiver for each data stream on its configured HTTP endpoint (default port: 4318 for events, 4320 for traces). Configure Claude Code to send events and spans to the agent:
 
 ```bash
 export CLAUDE_CODE_ENABLE_TELEMETRY=1
+export CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1
 export OTEL_LOGS_EXPORTER=otlp
+export OTEL_TRACES_EXPORTER=otlp
 export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-export OTEL_EXPORTER_OTLP_ENDPOINT="http://<agent-host>:4318"
+export OTEL_EXPORTER_OTLP_LOGS_ENDPOINT="http://<agent-host>:4318/v1/logs"
+export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="http://<agent-host>:4320/v1/traces"
 export OTEL_RESOURCE_ATTRIBUTES="data_stream.dataset=claude_code.events.otel"
 ```
 
 ### Option C: EDOT Collector
 
-Run the [Elastic Distribution of the OpenTelemetry Collector](https://github.com/elastic/elastic-agent) with an `otlp` receiver and an `elasticsearch` exporter. Configure the `data_stream.dataset` resource attribute as above. The collector routes events to `logs-claude_code.events.otel-*`.
+Run the [Elastic Distribution of the OpenTelemetry Collector](https://www.elastic.co/docs/reference/edot-collector) as a gateway for your Claude Code clients. The collector sets the dataset for each signal, so Claude Code doesn't need `OTEL_RESOURCE_ATTRIBUTES` or auth headers. Configure Claude Code to send events and spans to the collector:
+
+```bash
+export CLAUDE_CODE_ENABLE_TELEMETRY=1
+export CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1
+export OTEL_LOGS_EXPORTER=otlp
+export OTEL_TRACES_EXPORTER=otlp
+export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+export OTEL_EXPORTER_OTLP_ENDPOINT="http://<collector-host>:4318"
+```
+
+Example collector configuration:
+
+```yaml
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+connectors:
+  elasticapm:
+
+processors:
+  elasticapm:
+  transform/claude_code_logs:
+    log_statements:
+      - context: log
+        statements:
+          - set(attributes["data_stream.dataset"], "claude_code.events")
+  transform/claude_code_traces:
+    trace_statements:
+      - context: span
+        statements:
+          - set(attributes["data_stream.dataset"], "claude_code")
+      - context: spanevent
+        statements:
+          - set(attributes["data_stream.dataset"], "claude_code.events")
+
+exporters:
+  otlphttp/elasticsearch:
+    endpoint: ${env:ELASTIC_ENDPOINT}/_otlp
+    headers:
+      Authorization: "ApiKey ${env:ELASTIC_API_KEY}"
+
+service:
+  pipelines:
+    logs:
+      receivers: [otlp]
+      processors: [transform/claude_code_logs]
+      exporters: [otlphttp/elasticsearch]
+    traces:
+      receivers: [otlp]
+      processors: [transform/claude_code_traces, elasticapm]
+      exporters: [elasticapm, otlphttp/elasticsearch]
+    metrics/aggregated-otel-metrics:
+      receivers: [elasticapm]
+      processors: []
+      exporters: [otlphttp/elasticsearch]
+```
+
+Without the `transform` processors, data goes to `logs-generic.otel-*` and `traces-generic.otel-*`. Elasticsearch adds the `.otel` suffix to the dataset.
 
 ### Validation
 
-After deploying, run a short Claude Code session with telemetry enabled and confirm events appear in the `logs-claude_code.events.otel-*` data stream. For example, in Kibana Discover, filter on `data_stream.dataset: claude_code.events.otel`.
+After deploying, run a short Claude Code session with telemetry enabled and confirm events appear in the `logs-claude_code.events.otel-*` data stream. For example, in Kibana Discover, filter on `data_stream.dataset: claude_code.events.otel`. For traces, filter on `data_stream.dataset: claude_code.otel`.
+
+### Claude Code Desktop traces
+
+Claude Code Desktop ignores `OTEL_RESOURCE_ATTRIBUTES` ([open issue](https://github.com/anthropics/claude-code/issues/95269)) and reports `resource.attributes.service.name: claude-code-desktop`. When Desktop sends traces directly to Elasticsearch, its spans go to `traces-generic.otel-*`. Option B and Option C set the dataset for you. For Option A, the reroute pipeline in [Option A](#option-a-managed-otlp-motlp-recommended) moves Desktop spans to `traces-claude_code.otel-*` by `service.name`.
 
 ## Troubleshooting
 
 ### No events arriving
 
 - Verify `CLAUDE_CODE_ENABLE_TELEMETRY=1` is set in the environment where Claude Code runs.
-- Check that the OTLP endpoint is reachable from the Claude Code host (`curl -v http://<agent-host>:<port>/v1/logs`, where `<port>` matches the HTTP Endpoint configured in the integration policy, default `4318`).
+- Check that the logs OTLP endpoint is reachable from the Claude Code host (`curl -v http://<agent-host>:<port>/v1/logs`, where `<port>` matches the HTTP Endpoint configured in the integration policy, default `4318`).
 - Confirm the Elastic Agent is running and the integration policy is assigned.
+
+### No traces arriving
+
+- Verify `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1` and `OTEL_TRACES_EXPORTER=otlp` are set.
+- Check that the traces endpoint is reachable (`curl -v http://<agent-host>:<port>/v1/traces`, default port `4320`).
+- For Option A, check `traces-claude_code.events.otel-*` and `traces-generic.otel-*`. If Claude Code spans are there, confirm the reroute pipeline and template from [Option A](#option-a-managed-otlp-motlp-recommended) are installed and that the data streams were rolled over.
 
 ### Missing tool parameters or prompt text
 
@@ -114,13 +241,13 @@ Tool parameters, tool input, and prompt text are gated by environment variables 
 
 ### Pipeline errors
 
-Events with `event.kind: pipeline_error` and a `preserve_original_event` tag indicate the ingest pipeline encountered an error (typically malformed JSON in `tool_parameters` or `tool_input`). The original event is preserved for inspection.
+Events with `event.kind: pipeline_error` and a `preserve_original_event` tag indicate the events ingest pipeline encountered an error (typically malformed JSON in `tool_parameters` or `tool_input`). The original event is preserved for inspection. Spans with `event.kind: pipeline_error` indicate the traces ingest pipeline encountered an error. The failure details are in `error.message`.
 
 ## Reference
 
-### Ingest pipeline
+### Ingest pipelines
 
-The ingest pipeline parses JSON-encoded tool parameters and inputs into structured fields for querying:
+**Events** — parses JSON-encoded tool parameters and inputs into structured fields for querying:
 
 - `tool_parameters` (JSON string) → `tool_parameters_flattened` (flattened object)
 - `tool_input` (JSON string) → `tool_input_flattened` (flattened object)
@@ -130,6 +257,8 @@ It also extracts:
 - `mcp_server_name` and `mcp_tool_name` from MCP tool parameters
 - `file.path` from file operation tool parameters
 - `url.full` from web tool parameters
+
+**Traces** — sets `event.category` and `event.type` from `span.type`, `related.user` from the user attributes, and extracts `process.command_line` and `file.path` from tool spans.
 
 ### Security use cases
 
@@ -373,4 +502,164 @@ An example event for `events` looks as following:
 | url.full.text | Multi-field of `url.full`. | match_only_text |
 | user.email | User email address. | keyword |
 | user.id | Unique identifier of the user. | keyword |
+
+
+### Traces reference
+
+#### Spans
+
+An example event for `traces` looks as following:
+
+```json
+{
+    "@timestamp": "2026-10-07T17:19:12.905Z",
+    "attributes": {
+        "interaction": {
+            "duration_ms": 12545,
+            "sequence": 1
+        },
+        "organization": {
+            "id": "00000000-0000-0000-0000-000000000001"
+        },
+        "parent": {
+            "source": "none"
+        },
+        "queued_sends": 0,
+        "session": {
+            "id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+        },
+        "span": {
+            "type": "interaction"
+        },
+        "terminal": {
+            "type": "xterm-256color"
+        },
+        "user": {
+            "account_id": "user_01ExampleAccountId00000",
+            "account_uuid": "00000000-1111-2222-3333-444444444444",
+            "email": "test@example.com",
+            "id": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2"
+        },
+        "user_prompt_length": 17
+    },
+    "data_stream": {
+        "dataset": "claude_code.otel",
+        "namespace": "44902",
+        "type": "traces"
+    },
+    "duration": 12545000000,
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "event": {
+        "agent_id_status": "missing",
+        "category": [
+            "session"
+        ],
+        "dataset": "claude_code.otel",
+        "ingested": "2026-10-07T17:19:35Z",
+        "kind": "event",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "arch": "amd64",
+        "architecture": "amd64",
+        "os": {
+            "platform": "linux",
+            "version": "6.17.0-14-generic"
+        }
+    },
+    "interaction": {
+        "duration_ms": 12545,
+        "sequence": 1
+    },
+    "kind": "Internal",
+    "name": "claude_code.interaction",
+    "organization": {
+        "id": "00000000-0000-0000-0000-000000000001"
+    },
+    "os": {
+        "type": "linux",
+        "version": "6.17.0-14-generic"
+    },
+    "parent": {
+        "source": "none"
+    },
+    "queued_sends": 0,
+    "related": {
+        "user": [
+            "test@example.com",
+            "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2"
+        ]
+    },
+    "resource": {
+        "attributes": {
+            "host": {
+                "arch": "amd64"
+            },
+            "os": {
+                "type": "linux",
+                "version": "6.17.0-14-generic"
+            },
+            "service": {
+                "name": "claude-code",
+                "version": "2.1.175"
+            }
+        }
+    },
+    "scope": {
+        "name": "com.anthropic.claude_code.tracing",
+        "version": "1.0.0"
+    },
+    "service": {
+        "name": "claude-code",
+        "version": "2.1.175"
+    },
+    "session": {
+        "id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+    },
+    "span": {
+        "id": "4a33403362f74185",
+        "name": "claude_code.interaction",
+        "type": "interaction"
+    },
+    "span_id": "4a33403362f74185",
+    "terminal": {
+        "type": "xterm-256color"
+    },
+    "trace": {
+        "id": "84487adcee70a28b25f95b793b93b3fc"
+    },
+    "trace_id": "84487adcee70a28b25f95b793b93b3fc",
+    "user": {
+        "account_id": "user_01ExampleAccountId00000",
+        "account_uuid": "00000000-1111-2222-3333-444444444444",
+        "email": "test@example.com",
+        "id": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2"
+    },
+    "user_prompt_length": 17
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 

@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -20,7 +21,10 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
 )
 
-const endpoint = "elastic-agent:4318"
+const (
+	logsEndpoint   = "elastic-agent:4318"
+	tracesEndpoint = "elastic-agent:4320"
+)
 
 func main() {
 	log.Println("waiting for SIGHUP...")
@@ -29,7 +33,8 @@ func main() {
 	<-sig
 	log.Println("received SIGHUP, starting generator")
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+	defer cancel()
 
 	res, err := resource.New(ctx,
 		resource.WithAttributes(
@@ -44,12 +49,35 @@ func main() {
 		log.Fatalf("failed to create resource: %v", err)
 	}
 
+	// Each data stream is tested on its own policy, so only one of the two OTLP
+	// receivers is listening during a given run. Emit both signals concurrently
+	// and let the unused one fail without taking the other down.
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		if err := emitLogs(ctx, res); err != nil {
+			log.Printf("log export failed: %v", err)
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		if err := emitTraces(ctx, res); err != nil {
+			log.Printf("trace export failed: %v", err)
+		}
+	}()
+	wg.Wait()
+
+	log.Println("generator finished, exiting")
+}
+
+func emitLogs(ctx context.Context, res *resource.Resource) error {
 	exporter, err := otlploghttp.New(ctx,
 		otlploghttp.WithInsecure(),
-		otlploghttp.WithEndpoint(endpoint),
+		otlploghttp.WithEndpoint(logsEndpoint),
 	)
 	if err != nil {
-		log.Fatalf("failed to create exporter: %v", err)
+		return fmt.Errorf("create log exporter: %w", err)
 	}
 
 	provider := sdklog.NewLoggerProvider(
@@ -73,9 +101,10 @@ func main() {
 	}
 
 	if err := provider.ForceFlush(ctx); err != nil {
-		log.Fatalf("flush failed: %v", err)
+		return fmt.Errorf("flush logs: %w", err)
 	}
-	log.Println("all events sent, exiting")
+	log.Println("all events sent")
+	return nil
 }
 
 type event struct {
