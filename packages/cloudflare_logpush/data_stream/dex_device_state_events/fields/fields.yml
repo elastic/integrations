@@ -1,0 +1,220 @@
+- name: cloudflare_logpush.dex_device_state_events
+  type: group
+  fields:
+    - name: account_id
+      type: keyword
+      description: The Cloudflare account ID that owns the device.
+    - name: always_on
+      type: boolean
+      description: Whether the WARP client is configured in always-on mode.
+    - name: app_firewall_enabled
+      type: boolean
+      description: Whether the application firewall is enabled on the device.
+    - name: battery
+      type: group
+      fields:
+        - name: charging
+          type: boolean
+          description: Whether the device battery is currently charging.
+        - name: cycles
+          type: long
+          description: Number of battery charge cycles.
+        - name: percentage
+          type: float
+          unit: percent
+          metric_type: gauge
+          description: Battery charge level, as a fraction from 0 to 1.
+    - name: cpu
+      type: group
+      fields:
+        - name: percentage
+          type: float
+          unit: percent
+          metric_type: gauge
+          description: Overall CPU utilization, as a fraction from 0 to 1.
+        - name: percentage_by_app
+          type: nested
+          description: CPU utilization broken down by application.
+          fields:
+            - name: name
+              type: keyword
+              description: Application name.
+            - name: percentage
+              type: float
+              unit: percent
+              metric_type: gauge
+              description: CPU utilization for the application, as a fraction from 0 to 1.
+    - name: device
+      type: group
+      fields:
+        - name: ipv4
+          type: group
+          fields:
+            - name: netmask
+              type: keyword
+              description: Netmask of the device IPv4 address.
+        - name: ipv6
+          type: group
+          fields:
+            - name: netmask
+              type: keyword
+              description: Netmask of the device IPv6 address.
+        - name: registration_id
+          type: keyword
+          description: Device registration ID.
+        - name: registration_profile_id
+          type: keyword
+          description: Device registration profile ID.
+    - name: disk
+      type: group
+      fields:
+        - name: read_bps
+          type: long
+          description: Disk read throughput in bytes per second.
+        - name: usage_percentage
+          type: float
+          unit: percent
+          metric_type: gauge
+          description: Disk usage, as a fraction from 0 to 1.
+        - name: write_bps
+          type: long
+          description: Disk write throughput in bytes per second.
+    - name: doh_subdomain
+      type: keyword
+      description: DNS-over-HTTPS subdomain assigned to the device.
+    - name: experimental_extra
+      type: flattened
+      description: Additional experimental device state fields emitted by the WARP client.
+    - name: firewall_enabled
+      type: boolean
+      description: Whether the device firewall is enabled.
+    - name: gateway
+      type: group
+      fields:
+        - name: ipv4
+          type: group
+          fields:
+            - name: address
+              type: ip
+              description: IPv4 address of the device default gateway.
+            - name: netmask
+              type: keyword
+              description: Netmask of the gateway IPv4 address.
+        - name: ipv6
+          type: group
+          fields:
+            - name: address
+              type: ip
+              description: IPv6 address of the device default gateway.
+            - name: netmask
+              type: keyword
+              description: Netmask of the gateway IPv6 address.
+    - name: handshake_latency_ms
+      type: long
+      unit: ms
+      metric_type: gauge
+      description: WARP handshake latency in milliseconds. A value of -1 indicates the device is disconnected.
+    - name: isp
+      type: group
+      fields:
+        - name: ipv4
+          type: group
+          fields:
+            - name: netmask
+              type: keyword
+              description: Netmask of the ISP-assigned IPv4 address.
+        - name: ipv6
+          type: group
+          fields:
+            - name: asn
+              type: long
+              description: Autonomous system number of the ISP IPv6 address.
+            - name: aso
+              type: keyword
+              description: Autonomous system organization of the ISP IPv6 address.
+            - name: city
+              type: keyword
+              description: City associated with the ISP IPv6 address.
+            - name: country_iso
+              type: keyword
+              description: Country ISO code associated with the ISP IPv6 address.
+            - name: netmask
+              type: keyword
+              description: Netmask of the ISP-assigned IPv6 address.
+            - name: state_iso
+              type: keyword
+              description: State or region ISO code associated with the ISP IPv6 address.
+            - name: zip
+              type: keyword
+              description: Postal code associated with the ISP IPv6 address.
+    - name: mode
+      type: keyword
+      description: Operating mode of the WARP client.
+    - name: network
+      type: group
+      fields:
+        - name: connection_type
+          type: keyword
+          description: Type of network connection (for example `wifi`, `ethernet` or `cellular`).
+        - name: received_bps
+          type: long
+          description: Network throughput received in bytes per second.
+        - name: sent_bps
+          type: long
+          description: Network throughput sent in bytes per second.
+        - name: ssid
+          type: keyword
+          description: SSID of the connected Wi-Fi network.
+    - name: ram
+      type: group
+      fields:
+        - name: available_kb
+          type: long
+          description: Available RAM in kilobytes.
+        - name: used_percentage
+          type: float
+          unit: percent
+          metric_type: gauge
+          description: RAM utilization, as a fraction from 0 to 1.
+        - name: used_percentage_by_app
+          type: nested
+          description: RAM utilization broken down by application.
+          fields:
+            - name: name
+              type: keyword
+              description: Application name.
+            - name: percentage
+              type: float
+              unit: percent
+              metric_type: gauge
+              description: RAM utilization for the application, as a fraction from 0 to 1.
+    - name: status
+      type: keyword
+      description: Connection status of the WARP client (for example `connected` or `paused`).
+    - name: switch_locked
+      type: boolean
+      description: Whether the ability to toggle the WARP switch is locked.
+    - name: tunnel_stats
+      type: group
+      fields:
+        - name: downstream
+          type: flattened
+          description: Downstream tunnel statistics.
+        - name: upstream
+          type: flattened
+          description: Upstream tunnel statistics.
+    - name: tunnel_type
+      type: keyword
+      description: Tunnel protocol in use (for example `wireguard`, `masque` or `http2`).
+    - name: version
+      type: keyword
+      description: Version of the WARP client running on the device.
+    - name: warp_colo
+      type: group
+      fields:
+        - name: code
+          type: keyword
+          description: Cloudflare data center (colo) the WARP client is connected to.
+    - name: wifi_strength_dbm
+      type: long
+      description: Wi-Fi signal strength in dBm.
