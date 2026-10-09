@@ -1,0 +1,307 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+  maxsize: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+auth.oauth2:
+  provider: google
+  google:
+    jwt_file: {{jwt_file}}
+    jwt_json: {{jwt_json}}
+    delegated_account: {{delegated_account}}
+  scopes:
+    - https://www.googleapis.com/auth/admin.directory.user.readonly
+{{#if collect_group_membership}}
+    - https://www.googleapis.com/auth/admin.directory.group.readonly
+{{/if}}
+{{#if collect_admin_roles}}
+    - https://www.googleapis.com/auth/admin.directory.rolemanagement.readonly
+{{/if}}
+resource.url: {{directory_api_host}}
+state:
+  customer: {{customer}}
+{{#if domain}}
+  domain: {{domain}}
+{{/if}}
+  batch_size: {{batch_size}}
+  collect_group_membership: {{collect_group_membership}}
+  collect_admin_roles: {{collect_admin_roles}}
+redact:
+  fields: ~
+# A cycle makes one request per evaluation: every roles, role assignments,
+# groups and per-group members page, then every users page.
+max_executions: 100000
+program: |-
+  (
+    // One cycle is a sequence of phases, one HTTP request per evaluation,
+    // with "want_more" set between steps. Disabled phases are skipped:
+    // roles            (collect_admin_roles)      roleId -> role name/privileges
+    // role_assignments (collect_admin_roles)      flat list of user assignments
+    // groups           (collect_group_membership) queue of groups to walk
+    // members          (collect_group_membership) userId -> direct groups
+    // users            (always)                   one event per user
+    // Per-cycle state: phase, page_token, roles, assignments, groups_todo and
+    // memberships. All of it is dropped when the users walk ends, so every
+    // cycle starts fresh and no page token is carried over. "assignments" and
+    // "memberships" are present in the users phase only when their enrichment
+    // completed; a failed enrichment drops them and emits one error event.
+    // Enrichment phases emit a placeholder event (dropped by a processor) so
+    // that the input keeps evaluating.
+    // A new cycle starts whenever "want_more" is not set. A failed evaluation
+    // hands back the previous state with "want_more" false, so any leftover
+    // per-cycle state is dropped here rather than resumed.
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.drop(["phase", "page_token", "roles", "assignments", "groups_todo", "memberships"]).with(
+        {
+          "phase": state.?collect_admin_roles.orValue(false) ?
+            "roles"
+          : state.?collect_group_membership.orValue(false) ?
+            "groups"
+          :
+            "users",
+          "page_token": "",
+        }
+      )
+  ).as(state,
+    (
+      (state.phase == "roles") ?
+        {
+          "path": "/customer/" + state.customer + "/roles",
+          "query": {"maxResults": ["100"]},
+        }
+      : (state.phase == "role_assignments") ?
+        {
+          "path": "/customer/" + state.customer + "/roleassignments",
+          "query": {"maxResults": ["200"]},
+        }
+      : (state.phase == "groups") ?
+        {
+          "path": "/groups",
+          "query": {"customer": [state.customer], "maxResults": ["200"]},
+        }
+      : (state.phase == "members") ?
+        {
+          "path": "/groups/" + state.groups_todo[0].id + "/members",
+          "query": {"maxResults": ["200"]},
+        }
+      :
+        {
+          "path": "/users",
+          "query": {
+            ?"customer": (state.?domain.orValue("") == "") ? optional.of([state.customer]) : optional.none(),
+            ?"domain": (state.?domain.orValue("") != "") ? optional.of([state.domain]) : optional.none(),
+            "projection": ["full"],
+            "maxResults": [string(int(state.batch_size))],
+          },
+        }
+    ).as(req,
+      request(
+        "GET",
+        state.url.trim_right("/") + "/admin/directory/v1" + req.path + "?" + req.query.with(
+          {
+            ?"pageToken": (state.page_token != "") ? optional.of([state.page_token]) : optional.none(),
+          }
+        ).format_query()
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body,
+            (state.phase == "roles") ?
+              // roles: map roleId to role name, privileges and flags.
+              state.with(
+                {
+                  "events": [{"retry": true}],
+                  "roles": state.?roles.orValue({}).with(
+                    body.?items.orValue([]).map(r, has(r.roleId), r.roleId).zip(
+                      body.?items.orValue([]).map(r, has(r.roleId),
+                        {
+                          ?"role_name": r.?roleName,
+                          "privileges": r.?rolePrivileges.orValue([]).map(p, has(p.privilegeName), p.privilegeName),
+                          ?"is_super_admin_role": r.?isSuperAdminRole,
+                          ?"is_system_role": r.?isSystemRole,
+                        }
+                      )
+                    )
+                  ),
+                  "phase": (body.?nextPageToken.orValue("") != "") ? "roles" : "role_assignments",
+                  "page_token": body.?nextPageToken.orValue(""),
+                  "want_more": true,
+                }
+              )
+            : (state.phase == "role_assignments") ?
+              // role_assignments: keep unexpired user assignments, joined with
+              // their role. An absent assigneeType is treated as a user.
+              state.drop((body.?nextPageToken.orValue("") != "") ? [] : ["roles"]).with(
+                {
+                  "events": [{"retry": true}],
+                  "assignments": state.?assignments.orValue([]) + body.?items.orValue([]).map(r,
+                    r.?assigneeType.orValue("user").to_lower() == "user" && (
+                      r.?expirationDetails.expireTime.orValue("") == "" || is_error(timestamp(r.expirationDetails.expireTime)) ||
+                      timestamp(r.expirationDetails.expireTime) > now
+                    ),
+                    {
+                      "assigned_to": r.?assignedTo.orValue(""),
+                      ?"role_assignment_id": r.?roleAssignmentId,
+                      ?"role_id": r.?roleId,
+                      ?"scope_type": r.?scopeType,
+                      ?"org_unit_id": r.?orgUnitId,
+                      ?"condition": r.?condition,
+                      ?"expire_time": r.?expirationDetails.expireTime,
+                    }.with(state.roles[?r.?roleId.orValue("")].orValue({}))
+                  ),
+                  "phase": (body.?nextPageToken.orValue("") != "") ?
+                    "role_assignments"
+                  : state.?collect_group_membership.orValue(false) ?
+                    "groups"
+                  :
+                    "users",
+                  "page_token": body.?nextPageToken.orValue(""),
+                  "want_more": true,
+                }
+              )
+            : (state.phase == "groups") ?
+              // groups: queue every group for the members walk.
+              state.with(
+                {
+                  "events": [{"retry": true}],
+                  "groups_todo": state.?groups_todo.orValue([]) + body.?groups.orValue([]).map(g, has(g.id),
+                    {
+                      "id": g.id,
+                      ?"name": g.?name,
+                      ?"email": g.?email,
+                    }
+                  ),
+                  "memberships": {},
+                  "phase": (body.?nextPageToken.orValue("") != "") ?
+                    "groups"
+                  : (size(state.?groups_todo.orValue([])) + size(body.?groups.orValue([]).filter(g, has(g.id))) > 0) ?
+                    "members"
+                  :
+                    "users",
+                  "page_token": body.?nextPageToken.orValue(""),
+                  "want_more": true,
+                }
+              )
+            : (state.phase == "members") ?
+              // members: record the direct USER members of the head group, then
+              // move to the next group once its last page is read.
+              state.with(
+                {
+                  "events": [{"retry": true}],
+                  "memberships": state.memberships.with(
+                    body.?members.orValue([]).map(m, m.?type.orValue("") == "USER" && has(m.id), m.id).zip(
+                      body.?members.orValue([]).map(m, m.?type.orValue("") == "USER" && has(m.id),
+                        state.memberships[?m.id].orValue([]) + [state.groups_todo[0].with({?"role": m.?role})]
+                      )
+                    )
+                  ),
+                  "groups_todo": (body.?nextPageToken.orValue("") != "") ? state.groups_todo : tail(state.groups_todo),
+                  "phase": (body.?nextPageToken.orValue("") != "" || size(state.groups_todo) > 1) ? "members" : "users",
+                  "page_token": body.?nextPageToken.orValue(""),
+                  "want_more": true,
+                }
+              )
+            :
+              // users: emit one event per user, with the completed enrichments
+              // attached; end the cycle on the last page.
+              state.drop(
+                (body.?nextPageToken.orValue("") != "") ?
+                  []
+                :
+                  ["phase", "page_token", "roles", "assignments", "groups_todo", "memberships"]
+              ).with(
+                {
+                  "events": (size(body.?users.orValue([])) > 0) ?
+                    dyn(
+                      body.users.map(u,
+                        {
+                          "message": u.with(
+                            {
+                              ?"groups": state.?memberships.optMap(m, m[?u.id].orValue([])),
+                              ?"role_assignments": state.?assignments.optMap(a,
+                                a.map(x, x.assigned_to == u.id, x.drop("assigned_to"))
+                              ),
+                            }
+                          ).encode_json(),
+                        }
+                      )
+                    )
+                  :
+                    dyn([{"retry": true}]),
+                  ?"page_token": (body.?nextPageToken.orValue("") != "") ? optional.of(body.nextPageToken) : optional.none(),
+                  "want_more": body.?nextPageToken.orValue("") != "",
+                }
+              )
+          )
+        :
+          {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET " + state.url.trim_right("/") + "/admin/directory/v1" + req.path + ": " + (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          }.as(err,
+            (state.phase == "groups" || state.phase == "members") ?
+              // Group membership enrichment failed: abandon it for this cycle.
+              state.drop(["groups_todo", "memberships"]).with(
+                {
+                  "events": err,
+                  "phase": "users",
+                  "page_token": "",
+                  "want_more": true,
+                }
+              )
+            : (state.phase == "roles" || state.phase == "role_assignments") ?
+              // Admin roles enrichment failed: abandon it for this cycle.
+              state.drop(["roles", "assignments"]).with(
+                {
+                  "events": err,
+                  "phase": state.?collect_group_membership.orValue(false) ? "groups" : "users",
+                  "page_token": "",
+                  "want_more": true,
+                }
+              )
+            :
+              // Base inventory failed: end the cycle.
+              state.drop(["phase", "page_token", "roles", "assignments", "groups_todo", "memberships"]).with(
+                {
+                  "events": err,
+                  "want_more": false,
+                }
+              )
+          )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}

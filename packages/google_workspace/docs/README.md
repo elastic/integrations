@@ -62,9 +62,11 @@ In order to ingest data from the Google Reports API you must:
 - [Set up access to the Admin SDK API](https://support.google.com/workspacemigrate/answer/9222865?hl=en) for the ServiceAccount.
 - [Enable Domain-Wide Delegation](https://developers.google.com/admin-sdk/reports/v1/guides/delegation) for your ServiceAccount.
 
-This integration will use the following *oauth2 scope*:
+The Reports API data streams use the following *oauth2 scope*:
 
 - `https://www.googleapis.com/auth/admin.reports.audit.readonly`
+
+The `users` data stream needs different scopes. See [Google Workspace Users](#google-workspace-users).
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
@@ -259,6 +261,61 @@ Once Service Account credentials are downloaded as a JSON file, then the integra
 
 >  NOTE: The default value of the "Page Size" is set to 1000. This option is available under 'Alert' Advance options. Set the parameter "Page Size" according to the requirement. For Alert Data Stream, The default value of "Alert Center API Host" is `https://alertcenter.googleapis.com`. The Alert Center API Host will be used for collecting alert logs only.
 
+# Google Workspace Users
+
+The `users` data stream collects an **inventory** of the user accounts in your Google Workspace tenant from the [Admin SDK Directory API](https://developers.google.com/workspace/admin/directory/reference/rest/v1/users/list). Each collection cycle produces one document per user, describing what exists: identity, 2-Step Verification, admin, suspension and archive state, organisational unit, manager and other directory attributes. Documents have `event.kind: asset`.
+
+This is different from the `user_accounts` data stream, which contains audit **events** about actions users took on their own accounts (what happened). Changes to users made by administrators are in the `admin` data stream.
+
+The data stream is disabled by default.
+
+## Collection
+
+The Directory API has no filter for changed users, so each cycle reads the whole directory again. The default interval is `24h`. A tenant of 50,000 users needs about 100 requests per cycle.
+
+Two optional settings add more information to each user document. Both are off by default:
+
+- **Collect group membership** adds the groups each user is a direct member of (`user.group.id`, `user.group.name` and `google_workspace.users.groups`). Membership inherited through nested groups is not included.
+- **Collect admin roles and privileges** adds the admin roles assigned to each user (`user.roles`), their privileges (`user.entity.attributes.permissions`) and the scope each role applies to (`user.entity.relationships.administers.entity.id`): an organisational unit ID, or the customer ID for roles that apply to the whole account, such as super administrator. The full assignments are in `google_workspace.users.role_assignments`. Only roles assigned **directly** to the user are included. Roles a user gets through a group are not, because the Directory API only returns those for a single user at a time.
+
+`user.roles` always includes `super_admin` or `delegated_admin` when Google flags the user as one, even when the roles option is off.
+
+## Requirements
+
+The `users` data stream uses the same service account and `Delegated Account` as the Reports API data streams. It needs these extra scopes and privileges:
+
+| Setting | OAuth scope to add | Privilege the delegated account needs |
+|---|---|---|
+| Always | `https://www.googleapis.com/auth/admin.directory.user.readonly` | Users → Read and Organizational Units → Read, on **all** organizational units |
+| Collect group membership | `https://www.googleapis.com/auth/admin.directory.group.readonly` | Groups → Read. If you use a Groups Reader or Groups Editor role assignment instead, it must cover all groups. |
+| Collect admin roles and privileges | `https://www.googleapis.com/auth/admin.directory.rolemanagement.readonly` | The delegated account must be a **super administrator**. Google does not offer a privilege that grants read access to admin roles, so other accounts get HTTP 403 on these requests. |
+
+Google has merged the former "Admin console privileges" and "Admin API privileges" into one **Admin privileges** section, so one *Users → Read* privilege covers both. See [Administrator privilege definitions](https://support.google.com/a/answer/1219251).
+
+To add the scopes to the service account's domain-wide delegation (a super administrator must do this):
+
+1. In the Admin console go to **Security → Access and data control → API controls → Manage Domain Wide Delegation**.
+2. Find the service account's client ID and click **Edit**. Do not use **Add new** for a client ID that is already listed, and do not delete and re-add it: deleting it stops every application that uses it straight away.
+3. Add the scopes you need, separated by commas. **Keep** `https://www.googleapis.com/auth/admin.reports.audit.readonly` and any other scopes already listed.
+4. Click **Authorize**, then open **View details** and check that every scope is listed.
+
+Use the exact scope strings in the table. Google does not accept a broader scope in place of the one the integration requests. Scope changes can take up to 24 hours to take effect. If your organisation uses multi-party approval, another super administrator must approve the change first.
+
+> NOTE: The integration requests all the scopes the data stream needs in one token request. If any of them is not delegated yet, Google issues no token and the **whole** `users` data stream stops, including the basic user inventory. Turn on an optional setting only after its scope is delegated and in effect. The other data streams of the integration are not affected.
+
+The data stream calls `https://admin.googleapis.com`, which is configurable under the data stream's advanced options as "Directory API Host". If your network uses an egress allowlist, add `admin.googleapis.com`.
+
+## Notes on the data
+
+- `user.entity.lifecycle.last_activity` comes from the user's last sign-in time. Google says this value "might be inaccurate" when listing all users, so treat it as approximate. Users who have never signed in have no value; `google_workspace.users.agreed_to_terms: false` also shows that a user has never completed a first sign-in.
+- Deleted users are not included.
+
+## Troubleshooting
+
+- **The data stream stops with `oauth2: cannot fetch token` and the input health is Degraded.** Google rejected the token request. The error usually contains `unauthorized_client`, `access_denied`, `invalid_grant`, `invalid_scope` or `admin_policy_enforced`. Check that every scope for the settings you enabled is delegated exactly as in the table above, and that enough time has passed for the change to take effect.
+- **An error document reports HTTP 403 on a roles, role assignments, groups or members request.** The delegated account lacks the privilege for that option. Users are still collected, without that information. For the roles option, the delegated account must be a super administrator.
+- **Fewer users than expected.** The delegated account's role is probably limited to some organizational units. Grant Users → Read on all organizational units.
+
 ## Agentless Enabled Integration
 
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
@@ -416,6 +473,354 @@ An example event for `saml` looks as following:
 | google_workspace.saml.status_code | SAML status code. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
+
+
+### Users
+
+This is the `users` dataset. It contains an inventory of user accounts, not events. See [Google Workspace Users](#google-workspace-users).
+
+An example event for `users` looks as following:
+
+```json
+{
+    "@timestamp": "2026-10-05T08:18:38.434Z",
+    "agent": {
+        "ephemeral_id": "a87b9f19-fc1d-415f-a1ce-0ab5fb70d005",
+        "id": "bffd0e1e-b156-47c1-933c-fb3f66056953",
+        "name": "elastic-agent-84835",
+        "type": "filebeat",
+        "version": "9.5.3"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.users",
+        "namespace": "52558",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "bffd0e1e-b156-47c1-933c-fb3f66056953",
+        "snapshot": false,
+        "version": "9.5.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "dataset": "google_workspace.users",
+        "ingested": "2026-10-05T08:18:42Z",
+        "kind": "asset",
+        "module": "google_workspace",
+        "original": "{\"agreedToTerms\":true,\"aliases\":[\"a.johnson@example.com\"],\"archived\":false,\"changePasswordAtNextLogin\":false,\"creationTime\":\"2021-03-04T09:12:44.000Z\",\"customSchemas\":{\"EmployeeInfo\":{\"EmployeeType\":\"FTE\",\"StartDate\":\"2021-03-04\"}},\"customerId\":\"C0example1\",\"emails\":[{\"address\":\"alice.johnson@example.com\",\"primary\":true},{\"address\":\"a.johnson@example.com\"}],\"etag\":\"\\\"exampleEtag_user_1\\\"\",\"externalIds\":[{\"type\":\"organization\",\"value\":\"EMP-000123\"}],\"id\":\"100000000000000000001\",\"includeInGlobalAddressList\":true,\"ipWhitelisted\":false,\"isAdmin\":false,\"isDelegatedAdmin\":true,\"isEnforcedIn2Sv\":true,\"isEnrolledIn2Sv\":true,\"isMailboxSetup\":true,\"kind\":\"admin#directory#user\",\"lastLoginTime\":\"2026-09-30T08:15:42.000Z\",\"name\":{\"displayName\":\"Alice J.\",\"familyName\":\"Johnson\",\"fullName\":\"Alice Johnson\",\"givenName\":\"Alice\"},\"nonEditableAliases\":[\"alice.johnson@example.org\"],\"orgUnitPath\":\"/Engineering/Platform\",\"organizations\":[{\"costCenter\":\"CC-0001\",\"customType\":\"\",\"department\":\"Platform\",\"description\":\"Platform team\",\"location\":\"Example City\",\"name\":\"Example Corp\",\"primary\":true,\"title\":\"Staff Engineer\",\"type\":\"work\"}],\"phones\":[{\"type\":\"work\",\"value\":\"+1 734-555-0100\"}],\"primaryEmail\":\"alice.johnson@example.com\",\"recoveryEmail\":\"alice.personal@example.net\",\"relations\":[{\"type\":\"manager\",\"value\":\"bob.smith@example.com\"},{\"type\":\"dotted_line_manager\",\"value\":\"carol.white@example.com\"}],\"suspended\":false,\"thumbnailPhotoUrl\":\"https://www.example.com/photos/100000000000000000001\"}",
+        "type": [
+            "user",
+            "info"
+        ]
+    },
+    "google_workspace": {
+        "users": {
+            "agreed_to_terms": true,
+            "aliases": "a.johnson@example.com",
+            "archived": false,
+            "change_password_at_next_login": false,
+            "creation_time": "2021-03-04T09:12:44.000Z",
+            "custom_schemas": {
+                "EmployeeInfo": {
+                    "EmployeeType": "FTE",
+                    "StartDate": "2021-03-04"
+                }
+            },
+            "customer_id": "C0example1",
+            "emails": {
+                "address": [
+                    "alice.johnson@example.com",
+                    "a.johnson@example.com"
+                ],
+                "primary": true
+            },
+            "etag": "\"exampleEtag_user_1\"",
+            "external_ids": {
+                "type": "organization",
+                "value": "EMP-000123"
+            },
+            "id": "100000000000000000001",
+            "include_in_global_address_list": true,
+            "ip_whitelisted": false,
+            "is_admin": false,
+            "is_delegated_admin": true,
+            "is_enforced_in_2sv": true,
+            "is_enrolled_in_2sv": true,
+            "is_mailbox_setup": true,
+            "kind": "admin#directory#user",
+            "last_login_time": "2026-09-30T08:15:42.000Z",
+            "manager_email": "bob.smith@example.com",
+            "name": {
+                "display_name": "Alice J.",
+                "family_name": "Johnson",
+                "full_name": "Alice Johnson",
+                "given_name": "Alice"
+            },
+            "non_editable_aliases": "alice.johnson@example.org",
+            "org_unit_path": "/Engineering/Platform",
+            "organizations": {
+                "cost_center": "CC-0001",
+                "department": "Platform",
+                "description": "Platform team",
+                "location": "Example City",
+                "name": "Example Corp",
+                "primary": true,
+                "title": "Staff Engineer",
+                "type": "work"
+            },
+            "phones": {
+                "type": "work",
+                "value": "+1 734-555-0100"
+            },
+            "primary_email": "alice.johnson@example.com",
+            "recovery_email": "alice.personal@example.net",
+            "relations": {
+                "type": [
+                    "manager",
+                    "dotted_line_manager"
+                ],
+                "value": [
+                    "bob.smith@example.com",
+                    "carol.white@example.com"
+                ]
+            },
+            "suspended": false,
+            "thumbnail_photo_url": "https://www.example.com/photos/100000000000000000001"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "user": [
+            "100000000000000000001",
+            "alice.johnson@example.com",
+            "a.johnson@example.com",
+            "alice.johnson@example.org",
+            "bob.smith@example.com"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_workspace-users"
+    ],
+    "user": {
+        "domain": "example.com",
+        "email": "alice.johnson@example.com",
+        "entity": {
+            "attributes": {
+                "mfa_enabled": true
+            },
+            "display_name": "Alice Johnson",
+            "id": "100000000000000000001",
+            "last_seen_timestamp": "2026-10-05T08:18:38.434Z",
+            "lifecycle": {
+                "last_activity": "2026-09-30T08:15:42.000Z"
+            },
+            "name": "alice.johnson@example.com",
+            "source": "google_workspace",
+            "sub_type": "google_workspace_user",
+            "type": [
+                "user"
+            ]
+        },
+        "full_name": "Alice Johnson",
+        "id": "100000000000000000001",
+        "name": "alice.johnson@example.com",
+        "roles": [
+            "delegated_admin"
+        ]
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.code | Error code describing the error. | keyword |
+| error.id | Unique identifier for the error. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Event module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| google_workspace.users.addresses.country | Country. | keyword |
+| google_workspace.users.addresses.country_code | Country code. | keyword |
+| google_workspace.users.addresses.custom_type | Custom type. | keyword |
+| google_workspace.users.addresses.extended_address | Extended address. | keyword |
+| google_workspace.users.addresses.formatted | Formatted address. | keyword |
+| google_workspace.users.addresses.locality | Locality. | keyword |
+| google_workspace.users.addresses.po_box | PO box. | keyword |
+| google_workspace.users.addresses.postal_code | Postal code. | keyword |
+| google_workspace.users.addresses.primary | Whether this is the user's primary address. | boolean |
+| google_workspace.users.addresses.region | Region. | keyword |
+| google_workspace.users.addresses.source_is_structured | Whether the user-supplied address was structured. | boolean |
+| google_workspace.users.addresses.street_address | Street address. | keyword |
+| google_workspace.users.addresses.type | The type of the address (`custom`, `home`, `other` or `work`). | keyword |
+| google_workspace.users.agreed_to_terms | Whether the user has completed an initial login and accepted the Terms of Service agreement. `false` means the user has never completed a first sign-in. | boolean |
+| google_workspace.users.aliases | The user's alias email addresses. | keyword |
+| google_workspace.users.archival_time | The time the user was archived. | date |
+| google_workspace.users.archived | Whether the user is archived. | boolean |
+| google_workspace.users.change_password_at_next_login | Whether the user is forced to change their password at next login. | boolean |
+| google_workspace.users.creation_time | The time the user's account was created. | date |
+| google_workspace.users.custom_schemas | Custom fields of the user, keyed by schema name and then field name. Defined by each tenant. | flattened |
+| google_workspace.users.customer_id | The customer ID of the Google Workspace account. | keyword |
+| google_workspace.users.deletion_time | The time the user's account was deleted. | date |
+| google_workspace.users.emails.address | The email address. | keyword |
+| google_workspace.users.emails.custom_type | The custom type of the email address. | keyword |
+| google_workspace.users.emails.primary | Whether this is the user's primary email address. | boolean |
+| google_workspace.users.emails.public_key_encryption_certificates.certificate | X.509 encryption certificate in PEM format. | keyword |
+| google_workspace.users.emails.public_key_encryption_certificates.is_default | Whether this is the default certificate for the email address. | boolean |
+| google_workspace.users.emails.public_key_encryption_certificates.state | The certificate's state in its lifecycle. | keyword |
+| google_workspace.users.emails.type | The type of the email address (`custom`, `home`, `other` or `work`). | keyword |
+| google_workspace.users.etag | ETag of the resource. | keyword |
+| google_workspace.users.external_ids.custom_type | Custom type. | keyword |
+| google_workspace.users.external_ids.type | The type of the ID. | keyword |
+| google_workspace.users.external_ids.value | The value of the ID. | keyword |
+| google_workspace.users.gender.address_me_as | How to refer to the user, for example `he/him/his` or `they/them/their`. | keyword |
+| google_workspace.users.gender.custom_gender | Custom gender. | keyword |
+| google_workspace.users.gender.type | Gender. | keyword |
+| google_workspace.users.groups.email | The group's email address. | keyword |
+| google_workspace.users.groups.id | The unique ID of the group. | keyword |
+| google_workspace.users.groups.name | The group's display name. | keyword |
+| google_workspace.users.groups.role | The user's role in the group (`OWNER`, `MANAGER` or `MEMBER`). | keyword |
+| google_workspace.users.guest_account_info.primary_guest_email | The external email address of the guest user. | keyword |
+| google_workspace.users.hash_function | The hash format of the password property. | keyword |
+| google_workspace.users.id | The unique ID of the user. Stable across renames. Copied to `user.id`. | keyword |
+| google_workspace.users.ims.custom_protocol | Custom protocol. | keyword |
+| google_workspace.users.ims.custom_type | Custom type. | keyword |
+| google_workspace.users.ims.im | The instant messenger ID. | keyword |
+| google_workspace.users.ims.primary | Whether this is the user's primary instant messenger account. | boolean |
+| google_workspace.users.ims.protocol | The instant messenger protocol. | keyword |
+| google_workspace.users.ims.type | The type of the account. | keyword |
+| google_workspace.users.include_in_global_address_list | Whether the user's profile is visible in the Google Workspace global address list. | boolean |
+| google_workspace.users.ip_whitelisted | Whether the user is subject to the deprecated IP address allowlist configuration. | boolean |
+| google_workspace.users.is_admin | Whether the user is a super administrator. | boolean |
+| google_workspace.users.is_delegated_admin | Whether the user is a delegated administrator. | boolean |
+| google_workspace.users.is_enforced_in_2sv | Whether 2-step verification is enforced for the user. | boolean |
+| google_workspace.users.is_enrolled_in_2sv | Whether the user is enrolled in 2-step verification. Copied to `user.entity.attributes.mfa_enabled`. | boolean |
+| google_workspace.users.is_guest_user | Whether the user is a guest user. | boolean |
+| google_workspace.users.is_mailbox_setup | Whether the user's Google mailbox is created. | boolean |
+| google_workspace.users.keywords.custom_type | Custom type. | keyword |
+| google_workspace.users.keywords.type | The type of the keyword. | keyword |
+| google_workspace.users.keywords.value | The keyword. | keyword |
+| google_workspace.users.kind | The type of the API resource. | keyword |
+| google_workspace.users.languages.custom_language | A language name that has no ISO 639 language code. | keyword |
+| google_workspace.users.languages.language_code | ISO 639 language code. | keyword |
+| google_workspace.users.languages.preference | Whether the language is preferred (`preferred` or `not_preferred`). | keyword |
+| google_workspace.users.last_login_time | The last time the user signed in, as returned by Google. Values at the Unix epoch mean no recorded sign-in. Copied to `user.entity.lifecycle.last_activity` unless it is at the Unix epoch. | date |
+| google_workspace.users.locations.area | Textual location. | keyword |
+| google_workspace.users.locations.building_id | Building identifier. | keyword |
+| google_workspace.users.locations.custom_type | Custom type. | keyword |
+| google_workspace.users.locations.desk_code | Desk location code. | keyword |
+| google_workspace.users.locations.floor_name | Floor name or number. | keyword |
+| google_workspace.users.locations.floor_section | Floor section. | keyword |
+| google_workspace.users.locations.type | The type of the location (`custom`, `default` or `desk`). | keyword |
+| google_workspace.users.manager_email | The value of the user's `manager` relations, normally the manager's email address. | keyword |
+| google_workspace.users.name.display_name | The user's display name. | keyword |
+| google_workspace.users.name.family_name | The user's last name. | keyword |
+| google_workspace.users.name.full_name | The user's full name formed by concatenating the first and last name values. Copied to `user.full_name`. | keyword |
+| google_workspace.users.name.given_name | The user's first name. | keyword |
+| google_workspace.users.non_editable_aliases | The user's non-editable alias email addresses, typically outside the account's primary domain or sub-domain. | keyword |
+| google_workspace.users.notes.content_type | The content type of the notes (`text_plain` or `text_html`). | keyword |
+| google_workspace.users.notes.value | The notes. | keyword |
+| google_workspace.users.org_unit_path | The full path of the organizational unit the user belongs to. `/` is the top-level organizational unit. | keyword |
+| google_workspace.users.organizations.cost_center | The cost center of the user's department. | keyword |
+| google_workspace.users.organizations.custom_type | Custom type. | keyword |
+| google_workspace.users.organizations.department | The department within the organization. | keyword |
+| google_workspace.users.organizations.description | Description of the organization. | keyword |
+| google_workspace.users.organizations.domain | The domain the organization belongs to. | keyword |
+| google_workspace.users.organizations.full_time_equivalent | The full-time equivalent millipercent within the organization (100000 = 100%). | long |
+| google_workspace.users.organizations.location | The location of the organization. | keyword |
+| google_workspace.users.organizations.name | The name of the organization. | keyword |
+| google_workspace.users.organizations.primary | Whether this is the user's primary organization. | boolean |
+| google_workspace.users.organizations.symbol | The symbol of the organization. | keyword |
+| google_workspace.users.organizations.title | The user's title (designation) in the organization. | keyword |
+| google_workspace.users.organizations.type | The type of the organization (`domain_only`, `school`, `unknown` or `work`). | keyword |
+| google_workspace.users.phones.custom_type | The custom type of the phone number. | keyword |
+| google_workspace.users.phones.primary | Whether this is the user's primary phone number. | boolean |
+| google_workspace.users.phones.type | The type of the phone number. | keyword |
+| google_workspace.users.phones.value | The phone number. | keyword |
+| google_workspace.users.posix_accounts.account_id | A POSIX account field identifier. | keyword |
+| google_workspace.users.posix_accounts.gecos | The GECOS (user information) for the account. | keyword |
+| google_workspace.users.posix_accounts.gid | The default group ID. | keyword |
+| google_workspace.users.posix_accounts.home_directory | The path to the home directory. | keyword |
+| google_workspace.users.posix_accounts.operating_system_type | The operating system type of the account. | keyword |
+| google_workspace.users.posix_accounts.primary | Whether this is the user's primary account within the system ID. | boolean |
+| google_workspace.users.posix_accounts.shell | The path to the login shell. | keyword |
+| google_workspace.users.posix_accounts.system_id | The system identifier the username or UID applies to. | keyword |
+| google_workspace.users.posix_accounts.uid | The POSIX user ID. | keyword |
+| google_workspace.users.posix_accounts.username | The username of the account. | keyword |
+| google_workspace.users.primary_email | The user's primary email address. Changes when the user is renamed. Copied to `user.email` and `user.name`. | keyword |
+| google_workspace.users.recovery_email | The user's recovery email address. | keyword |
+| google_workspace.users.recovery_phone | The user's recovery phone number. | keyword |
+| google_workspace.users.relations.custom_type | Custom type. | keyword |
+| google_workspace.users.relations.type | The type of the relation, for example `manager` or `dotted_line_manager`. | keyword |
+| google_workspace.users.relations.value | The name of the related user, normally an email address. | keyword |
+| google_workspace.users.role_assignments.condition | The condition associated with the role assignment. | keyword |
+| google_workspace.users.role_assignments.expire_time | The time the role assignment expires. | date |
+| google_workspace.users.role_assignments.is_super_admin_role | Whether the role is a super admin role. | boolean |
+| google_workspace.users.role_assignments.is_system_role | Whether the role is a pre-defined system role. | boolean |
+| google_workspace.users.role_assignments.org_unit_id | The ID of the organizational unit the role is restricted to, for `ORG_UNIT` assignments. | keyword |
+| google_workspace.users.role_assignments.privileges | The names of the privileges granted by the role. | keyword |
+| google_workspace.users.role_assignments.role_assignment_id | The ID of the role assignment. | keyword |
+| google_workspace.users.role_assignments.role_id | The ID of the assigned role. | keyword |
+| google_workspace.users.role_assignments.role_name | The name of the assigned role. | keyword |
+| google_workspace.users.role_assignments.scope_type | The scope in which the role is assigned (`CUSTOMER` or `ORG_UNIT`). | keyword |
+| google_workspace.users.ssh_public_keys.expiration_time_usec | The expiration time, in microseconds since the Unix epoch. | long |
+| google_workspace.users.ssh_public_keys.fingerprint | The SHA-256 fingerprint of the SSH public key. | keyword |
+| google_workspace.users.ssh_public_keys.key | The SSH public key. | keyword |
+| google_workspace.users.suspended | Whether the user is suspended. | boolean |
+| google_workspace.users.suspension_reason | The reason the user was suspended, for example `ADMIN`. Sent only when `suspended` is true. Google does not document the full set of values. | keyword |
+| google_workspace.users.suspension_time | The time the user was suspended. | date |
+| google_workspace.users.thumbnail_photo_etag | ETag of the user's photo. | keyword |
+| google_workspace.users.thumbnail_photo_url | The URL of the user's profile photo. | keyword |
+| google_workspace.users.websites.custom_type | Custom type. | keyword |
+| google_workspace.users.websites.primary | Whether this is the user's primary website. | boolean |
+| google_workspace.users.websites.type | The type of the website. | keyword |
+| google_workspace.users.websites.value | The website. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.email | User email address. | keyword |
+| user.entity.attributes.mfa_enabled | Indicates whether multi-factor authentication is enabled for this entity. Typically applicable to User entities. | boolean |
+| user.entity.attributes.permissions | Action-level permissions associated with this entity (not roles or groups). Typically applicable to User, Host, and Service entities. | keyword |
+| user.entity.display_name | An optional field used when a pretty name is desired for entity-centric operations. This field should not be used for correlation with `\*.name` fields for entities with dedicated field sets (for example, `host`). | keyword |
+| user.entity.display_name.text | Multi-field of `user.entity.display_name`. | match_only_text |
+| user.entity.id | A unique identifier for the entity. When multiple identifiers exist, this should be the most stable and commonly used identifier that: 1) persists across the entity's lifecycle, 2) ensures uniqueness within its scope, 3) is commonly used for queries and correlation, and 4) is readily available in most observations (logs/events). For entities with dedicated field sets (for example, host, user), this value should match the corresponding \*.id field. Alternative identifiers (for example, ARNs values in AWS, URLs) can be preserved in the raw field. | keyword |
+| user.entity.last_seen_timestamp | Indicates the date/time when this entity was last "seen," usually based upon the last event/log that is initiated by this entity. | date |
+| user.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
+| user.entity.name | The name of the entity. The keyword field enables exact matches for filtering and aggregations, while the text field enables full-text search. For entities with dedicated field sets (for example, `host`), this field should mirrors the corresponding \*.name value. | keyword |
+| user.entity.name.text | Multi-field of `user.entity.name`. | match_only_text |
+| user.entity.relationships.administers.entity.id | Identifiers of referenced entities, using the same meaning as root `entity.id` (stable id for correlation within scope). | keyword |
+| user.entity.source | The module or integration that provided this entity data (similar to event.module). | keyword |
+| user.entity.sub_type | The specific type designation for the entity as defined by its provider or system. This field provides more granular classification than the type field. Examples: `aws_s3_bucket`, `gcp_cloud_storage_bucket`, `azure_blob_container` would all map to entity type `bucket`.  `hardware` , `virtual` , `container` , `node` , `cloud_instance` would all map to entity type `host`. | keyword |
+| user.entity.type | A standardized high-level classification of the entity. This provides a normalized way to group similar entities across different providers or systems. Example values: `bucket`, `database`, `container`, `function`, `queue`, `host`, `user`, `application`, `session`, `cloud`, `orchestrator`, etc. If an entity is nested under a top-level namespace like `host` or `cloud`, or similar, its type array should include the matching value — for example, `host` or `cloud`. | keyword |
+| user.full_name | User's full name, if available. | keyword |
+| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
+| user.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.group.name | Name of the group. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+| user.roles | Array of user roles at the time of the event. | keyword |
 
 
 ### User Accounts

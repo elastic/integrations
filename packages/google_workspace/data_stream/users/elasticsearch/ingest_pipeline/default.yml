@@ -1,0 +1,703 @@
+---
+description: Pipeline for processing the Google Workspace user inventory from the Admin SDK Directory API.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.5.0
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      if: ctx.event?.original != null
+
+  # Records carry no event time: @timestamp is the collection time. The CEL
+  # input already sets it when the user is published; fall back to the ingest
+  # time otherwise.
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_ingest_timestamp
+      value: '{{{_ingest.timestamp}}}'
+      override: false
+
+  # Categorization: one entity snapshot per user per collection cycle.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: iam
+  - append:
+      field: event.type
+      tag: append_event_type
+      value:
+        - user
+        - info
+      allow_duplicates: false
+
+  # Vendor fields, renamed to snake_case under google_workspace.users.
+  - rename:
+      field: json.kind
+      tag: rename_kind
+      target_field: google_workspace.users.kind
+      ignore_missing: true
+  - rename:
+      field: json.etag
+      tag: rename_etag
+      target_field: google_workspace.users.etag
+      ignore_missing: true
+  - rename:
+      field: json.id
+      tag: rename_id
+      target_field: google_workspace.users.id
+      ignore_missing: true
+  - rename:
+      field: json.primaryEmail
+      tag: rename_primary_email
+      target_field: google_workspace.users.primary_email
+      ignore_missing: true
+  - rename:
+      field: json.name.givenName
+      tag: rename_name_given_name
+      target_field: google_workspace.users.name.given_name
+      ignore_missing: true
+  - rename:
+      field: json.name.familyName
+      tag: rename_name_family_name
+      target_field: google_workspace.users.name.family_name
+      ignore_missing: true
+  - rename:
+      field: json.name.fullName
+      tag: rename_name_full_name
+      target_field: google_workspace.users.name.full_name
+      ignore_missing: true
+  - rename:
+      field: json.name.displayName
+      tag: rename_name_display_name
+      target_field: google_workspace.users.name.display_name
+      ignore_missing: true
+  - rename:
+      field: json.customerId
+      tag: rename_customer_id
+      target_field: google_workspace.users.customer_id
+      ignore_missing: true
+  - rename:
+      field: json.orgUnitPath
+      tag: rename_org_unit_path
+      target_field: google_workspace.users.org_unit_path
+      ignore_missing: true
+  - rename:
+      field: json.isAdmin
+      tag: rename_is_admin
+      target_field: google_workspace.users.is_admin
+      ignore_missing: true
+  - rename:
+      field: json.isDelegatedAdmin
+      tag: rename_is_delegated_admin
+      target_field: google_workspace.users.is_delegated_admin
+      ignore_missing: true
+  - rename:
+      field: json.isEnrolledIn2Sv
+      tag: rename_is_enrolled_in_2sv
+      target_field: google_workspace.users.is_enrolled_in_2sv
+      ignore_missing: true
+  - rename:
+      field: json.isEnforcedIn2Sv
+      tag: rename_is_enforced_in_2sv
+      target_field: google_workspace.users.is_enforced_in_2sv
+      ignore_missing: true
+  - rename:
+      field: json.suspended
+      tag: rename_suspended
+      target_field: google_workspace.users.suspended
+      ignore_missing: true
+  - rename:
+      field: json.suspensionReason
+      tag: rename_suspension_reason
+      target_field: google_workspace.users.suspension_reason
+      ignore_missing: true
+  - rename:
+      field: json.archived
+      tag: rename_archived
+      target_field: google_workspace.users.archived
+      ignore_missing: true
+  - rename:
+      field: json.isGuestUser
+      tag: rename_is_guest_user
+      target_field: google_workspace.users.is_guest_user
+      ignore_missing: true
+  - rename:
+      field: json.guestAccountInfo.primaryGuestEmail
+      tag: rename_guest_account_info_primary_guest_email
+      target_field: google_workspace.users.guest_account_info.primary_guest_email
+      ignore_missing: true
+  - rename:
+      field: json.agreedToTerms
+      tag: rename_agreed_to_terms
+      target_field: google_workspace.users.agreed_to_terms
+      ignore_missing: true
+  - rename:
+      field: json.changePasswordAtNextLogin
+      tag: rename_change_password_at_next_login
+      target_field: google_workspace.users.change_password_at_next_login
+      ignore_missing: true
+  - rename:
+      field: json.ipWhitelisted
+      tag: rename_ip_whitelisted
+      target_field: google_workspace.users.ip_whitelisted
+      ignore_missing: true
+  - rename:
+      field: json.isMailboxSetup
+      tag: rename_is_mailbox_setup
+      target_field: google_workspace.users.is_mailbox_setup
+      ignore_missing: true
+  - rename:
+      field: json.includeInGlobalAddressList
+      tag: rename_include_in_global_address_list
+      target_field: google_workspace.users.include_in_global_address_list
+      ignore_missing: true
+  - rename:
+      field: json.aliases
+      tag: rename_aliases
+      target_field: google_workspace.users.aliases
+      ignore_missing: true
+  - rename:
+      field: json.nonEditableAliases
+      tag: rename_non_editable_aliases
+      target_field: google_workspace.users.non_editable_aliases
+      ignore_missing: true
+  - rename:
+      field: json.recoveryEmail
+      tag: rename_recovery_email
+      target_field: google_workspace.users.recovery_email
+      ignore_missing: true
+  - rename:
+      field: json.recoveryPhone
+      tag: rename_recovery_phone
+      target_field: google_workspace.users.recovery_phone
+      ignore_missing: true
+  - rename:
+      field: json.hashFunction
+      tag: rename_hash_function
+      target_field: google_workspace.users.hash_function
+      ignore_missing: true
+  - rename:
+      field: json.thumbnailPhotoUrl
+      tag: rename_thumbnail_photo_url
+      target_field: google_workspace.users.thumbnail_photo_url
+      ignore_missing: true
+  - rename:
+      field: json.thumbnailPhotoEtag
+      tag: rename_thumbnail_photo_etag
+      target_field: google_workspace.users.thumbnail_photo_etag
+      ignore_missing: true
+  - rename:
+      field: json.customSchemas
+      tag: rename_custom_schemas
+      target_field: google_workspace.users.custom_schemas
+      ignore_missing: true
+      description: Tenant-defined keys are kept as they are; the field is mapped as `flattened`.
+  - rename:
+      field: json.groups
+      tag: rename_groups
+      target_field: google_workspace.users.groups
+      ignore_missing: true
+      description: Added by the CEL input when the group membership enrichment succeeded. `[]` means checked, with no memberships.
+  - rename:
+      field: json.role_assignments
+      tag: rename_role_assignments
+      target_field: google_workspace.users.role_assignments
+      ignore_missing: true
+      description: Added by the CEL input when the admin roles enrichment succeeded. `[]` means checked, with no assignments.
+  - script:
+      lang: painless
+      tag: script_snake_case_profile_fields
+      description: >-
+        Moves the multi-valued profile fields (arrays of objects, or single
+        objects for gender and notes) to google_workspace.users, converting
+        their camelCase keys to snake_case and dropping null or empty values.
+      if: ctx.json instanceof Map
+      params:
+        fields:
+          emails: emails
+          phones: phones
+          addresses: addresses
+          organizations: organizations
+          relations: relations
+          externalIds: external_ids
+          locations: locations
+          languages: languages
+          keywords: keywords
+          websites: websites
+          ims: ims
+          gender: gender
+          notes: notes
+          posixAccounts: posix_accounts
+          sshPublicKeys: ssh_public_keys
+      source: |-
+        String snake(String s) {
+          StringBuilder sb = new StringBuilder();
+          for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (Character.isUpperCase(c)) {
+              if (i > 0) {
+                sb.append('_');
+              }
+              sb.append(Character.toLowerCase(c));
+            } else {
+              sb.append(c);
+            }
+          }
+          return sb.toString();
+        }
+        def convert(def v) {
+          if (v instanceof Map) {
+            Map out = new HashMap();
+            for (def e : v.entrySet()) {
+              def c = convert(e.getValue());
+              if (c != null) {
+                out.put(snake(e.getKey()), c);
+              }
+            }
+            return out.isEmpty() ? null : out;
+          }
+          if (v instanceof List) {
+            List out = new ArrayList();
+            for (def item : v) {
+              def c = convert(item);
+              if (c != null) {
+                out.add(c);
+              }
+            }
+            return out.isEmpty() ? null : out;
+          }
+          if (v == null || (v instanceof String && v.isEmpty())) {
+            return null;
+          }
+          return v;
+        }
+        for (def e : params.fields.entrySet()) {
+          def v = ctx.json.remove(e.getKey());
+          def c = convert(v);
+          if (c == null) {
+            continue;
+          }
+          if (ctx.google_workspace == null) {
+            ctx.google_workspace = new HashMap();
+          }
+          if (ctx.google_workspace.users == null) {
+            ctx.google_workspace.users = new HashMap();
+          }
+          ctx.google_workspace.users[e.getValue()] = c;
+        }
+  - foreach:
+      field: google_workspace.users.ssh_public_keys
+      tag: foreach_ssh_public_keys_expiration_time_usec
+      ignore_missing: true
+      processor:
+        convert:
+          field: _ingest._value.expiration_time_usec
+          tag: convert_ssh_public_keys_expiration_time_usec_to_long
+          type: long
+          ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_ssh_public_keys_expiration_time_usec
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Timestamps. Google documents ISO 8601 with or without milliseconds and
+  # with an offset, and an epoch-milliseconds string in one legacy example.
+  - date:
+      field: json.creationTime
+      tag: date_creation_time
+      target_field: google_workspace.users.creation_time
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.creationTime != null && ctx.json.creationTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_creation_time
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.deletionTime
+      tag: date_deletion_time
+      target_field: google_workspace.users.deletion_time
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.deletionTime != null && ctx.json.deletionTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_deletion_time
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.suspensionTime
+      tag: date_suspension_time
+      target_field: google_workspace.users.suspension_time
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.suspensionTime != null && ctx.json.suspensionTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_suspension_time
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.archivalTime
+      tag: date_archival_time
+      target_field: google_workspace.users.archival_time
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.archivalTime != null && ctx.json.archivalTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_archival_time
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.lastLoginTime
+      tag: date_last_login_time
+      target_field: google_workspace.users.last_login_time
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.lastLoginTime != null && ctx.json.lastLoginTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_last_login_time
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # User identity.
+  - set:
+      field: user.id
+      tag: set_user_id_from_id
+      copy_from: google_workspace.users.id
+      ignore_empty_value: true
+  - set:
+      field: user.entity.id
+      tag: set_user_entity_id_from_id
+      copy_from: google_workspace.users.id
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_primary_email
+      copy_from: google_workspace.users.primary_email
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_primary_email
+      copy_from: google_workspace.users.primary_email
+      ignore_empty_value: true
+  - set:
+      field: user.entity.name
+      tag: set_user_entity_name_from_primary_email
+      copy_from: google_workspace.users.primary_email
+      ignore_empty_value: true
+  - dissect:
+      field: user.email
+      tag: dissect_user_domain_from_user_email
+      pattern: '%{}@%{user.domain}'
+      if: ctx.user?.email instanceof String && ctx.user.email.contains('@')
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_user_domain
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.full_name
+      tag: set_user_full_name_from_name_full_name
+      copy_from: google_workspace.users.name.full_name
+      ignore_empty_value: true
+  - set:
+      field: user.entity.display_name
+      tag: set_user_entity_display_name_from_name_full_name
+      copy_from: google_workspace.users.name.full_name
+      ignore_empty_value: true
+
+  # Entity constants and observation time.
+  - append:
+      field: user.entity.type
+      tag: append_user_entity_type
+      value: user
+      allow_duplicates: false
+  - set:
+      field: user.entity.sub_type
+      tag: set_user_entity_sub_type
+      value: google_workspace_user
+  - set:
+      field: user.entity.source
+      tag: set_user_entity_source
+      value: google_workspace
+  - set:
+      field: user.entity.last_seen_timestamp
+      tag: set_user_entity_last_seen_timestamp
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+
+  # Attributes and lifecycle.
+  - convert:
+      field: google_workspace.users.is_enrolled_in_2sv
+      tag: convert_is_enrolled_in_2sv_to_mfa_enabled
+      target_field: user.entity.attributes.mfa_enabled
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_mfa_enabled
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.entity.lifecycle.last_activity
+      tag: set_user_entity_lifecycle_last_activity
+      copy_from: google_workspace.users.last_login_time
+      ignore_empty_value: true
+      description: >-
+        The last sign-in time, which Google says is approximate when listing
+        users. A value that parses to Unix time 0 (in any form) means no
+        recorded sign-in, so it is not an activity time. The date processor
+        normalizes every such value to 1970-01-01T00:00:00.000Z. Absent, null
+        and empty values were never parsed.
+      if: ctx.google_workspace?.users?.last_login_time != null && ctx.google_workspace.users.last_login_time != '1970-01-01T00:00:00.000Z'
+
+  # Roles. The super admin and delegated admin flags are always present; role
+  # names, privileges and administered scopes come from the optional roles
+  # enrichment.
+  - append:
+      field: user.roles
+      tag: append_super_admin_to_user_roles
+      value: super_admin
+      allow_duplicates: false
+      if: ctx.google_workspace?.users?.is_admin == true
+  - append:
+      field: user.roles
+      tag: append_delegated_admin_to_user_roles
+      value: delegated_admin
+      allow_duplicates: false
+      if: ctx.google_workspace?.users?.is_delegated_admin == true
+  - script:
+      lang: painless
+      tag: script_role_assignments_to_roles_permissions_administers
+      description: >-
+        Adds each role assignment's role name to user.roles, the union of the
+        roles' privileges to user.entity.attributes.permissions, and the scope
+        of each assignment (the org unit ID for ORG_UNIT, the customer ID for
+        CUSTOMER) to user.entity.relationships.administers.entity.id, all
+        without duplicates.
+      if: ctx.google_workspace?.users?.role_assignments instanceof List
+      source: |-
+        Set roles = new LinkedHashSet();
+        if (ctx.user != null && ctx.user.roles instanceof List) {
+          roles.addAll(ctx.user.roles);
+        }
+        Set permissions = new LinkedHashSet();
+        Set administers = new LinkedHashSet();
+        def customerId = ctx.google_workspace.users.customer_id;
+        for (def a : ctx.google_workspace.users.role_assignments) {
+          if (!(a instanceof Map)) {
+            continue;
+          }
+          if (a.role_name instanceof String && !a.role_name.isEmpty()) {
+            roles.add(a.role_name);
+          }
+          if (a.privileges instanceof List) {
+            for (def p : a.privileges) {
+              if (p instanceof String && !p.isEmpty()) {
+                permissions.add(p);
+              }
+            }
+          }
+          if (a.scope_type == 'ORG_UNIT') {
+            if (a.org_unit_id instanceof String && !a.org_unit_id.isEmpty()) {
+              administers.add(a.org_unit_id);
+            }
+          } else if (a.scope_type == 'CUSTOMER') {
+            if (customerId instanceof String && !customerId.isEmpty()) {
+              administers.add(customerId);
+            }
+          }
+        }
+        if (roles.isEmpty() && permissions.isEmpty() && administers.isEmpty()) {
+          return;
+        }
+        if (ctx.user == null) {
+          ctx.user = new HashMap();
+        }
+        if (!roles.isEmpty()) {
+          ctx.user.roles = new ArrayList(roles);
+        }
+        if (permissions.isEmpty() && administers.isEmpty()) {
+          return;
+        }
+        if (ctx.user.entity == null) {
+          ctx.user.entity = new HashMap();
+        }
+        if (!permissions.isEmpty()) {
+          if (ctx.user.entity.attributes == null) {
+            ctx.user.entity.attributes = new HashMap();
+          }
+          ctx.user.entity.attributes.permissions = new ArrayList(permissions);
+        }
+        if (!administers.isEmpty()) {
+          ctx.user.entity.relationships = ['administers': ['entity': ['id': new ArrayList(administers)]]];
+        }
+
+  # Groups.
+  - foreach:
+      field: google_workspace.users.groups
+      tag: foreach_groups_id_to_user_group_id
+      ignore_missing: true
+      processor:
+        append:
+          field: user.group.id
+          tag: append_group_id_to_user_group_id
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_workspace.users.groups
+      tag: foreach_groups_name_to_user_group_name
+      ignore_missing: true
+      processor:
+        append:
+          field: user.group.name
+          tag: append_group_name_to_user_group_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+
+  # Manager.
+  - script:
+      lang: painless
+      tag: script_relations_to_manager_email
+      description: Sets manager_email from the values of the user's `manager` relations.
+      if: ctx.google_workspace?.users?.relations instanceof List
+      params:
+        manager_type: manager
+      source: |-
+        Set managers = new LinkedHashSet();
+        for (def r : ctx.google_workspace.users.relations) {
+          if (r instanceof Map && r.type == params.manager_type && r.value instanceof String && !r.value.isEmpty()) {
+            managers.add(r.value);
+          }
+        }
+        if (!managers.isEmpty()) {
+          ctx.google_workspace.users.manager_email = new ArrayList(managers);
+        }
+
+  # related.user
+  - append:
+      field: related.user
+      tag: append_user_id_to_related_user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - append:
+      field: related.user
+      tag: append_user_email_to_related_user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - foreach:
+      field: google_workspace.users.aliases
+      tag: foreach_aliases_to_related_user
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          tag: append_alias_to_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_workspace.users.non_editable_aliases
+      tag: foreach_non_editable_aliases_to_related_user
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          tag: append_non_editable_alias_to_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_workspace.users.emails
+      tag: foreach_emails_to_related_user
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          tag: append_email_address_to_related_user
+          value: '{{{_ingest._value.address}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_workspace.users.manager_email
+      tag: foreach_manager_email_to_related_user
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          tag: append_manager_email_to_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+
+  # Cleanup.
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      tag: append_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false

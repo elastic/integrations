@@ -1,0 +1,132 @@
+title: Collect user inventory from Google Workspace
+type: logs
+streams:
+  - input: cel
+    title: Users inventory
+    description: >-
+      Collect an inventory of Google Workspace user accounts from the Admin SDK Directory API. This is not the `user_accounts` data stream, which contains user account audit events.
+    template_path: cel.yml.hbs
+    enabled: false
+    vars:
+      - name: directory_api_host
+        type: text
+        title: Directory API Host
+        description: The Google Workspace Admin SDK Directory API host. The path will be automatically set.
+        multi: false
+        required: true
+        show_user: false
+        default: https://admin.googleapis.com
+      - name: interval
+        type: text
+        title: Interval
+        description: >-
+          Time between full directory listings. Each cycle re-reads the whole directory, because the API has no incremental filter. NOTE: Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+      - name: batch_size
+        type: integer
+        title: Page Size
+        description: Number of users requested per page (the `users.list` `maxResults` parameter). Google allows 1 to 500.
+        multi: false
+        required: true
+        show_user: false
+        default: 500
+      - name: collect_group_membership
+        type: bool
+        title: Collect group membership
+        description: >-
+          Adds each user's direct group memberships to the user documents. This adds the `https://www.googleapis.com/auth/admin.directory.group.readonly` scope to this stream's token request, and the delegated account needs the Groups > Read admin privilege. **The scope must be delegated in the Admin console (domain-wide delegation) before you enable this option. If it is not, the token request fails and the whole Users inventory stream stops, including the base user inventory.** Delegation changes can take up to 24 hours to take effect.
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: collect_admin_roles
+        type: bool
+        title: Collect admin roles and privileges
+        description: >-
+          Adds each user's direct admin role assignments, with role names and privileges, to the user documents. This adds the `https://www.googleapis.com/auth/admin.directory.rolemanagement.readonly` scope to this stream's token request. The delegated account must be a **super admin**; other admins get HTTP 403 on these calls. **The scope must be delegated in the Admin console (domain-wide delegation) before you enable this option. If it is not, the token request fails and the whole Users inventory stream stops, including the base user inventory.** Delegation changes can take up to 24 hours to take effect.
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: customer
+        type: text
+        title: Customer ID
+        description: >-
+          The Google Workspace customer ID to list users, groups and admin roles for. `my_customer` refers to the delegated account's own Google Workspace account.
+        multi: false
+        required: true
+        show_user: false
+        default: my_customer
+      - name: domain
+        type: text
+        title: Domain
+        description: >-
+          Optional. Lists only the users whose primary email address is on this domain. When set, it is sent instead of the Customer ID for the user listing. Group membership and admin roles are still collected for the whole Customer ID.
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        description: Tags for the data-stream.
+        default:
+          - forwarded
+          - google_workspace-users
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed.
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: SSL Config for the host i.e. certificate_authorities, supported_protocols, verification_mode etc.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #certificate_authorities:
+          #  - |
+          #    -----BEGIN CERTIFICATE-----
+          #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+          #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+          #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+          #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+          #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+          #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+          #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+          #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+          #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+          #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+          #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+          #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+          #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+          #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+          #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+          #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+          #    sxSmbIUfc2SGJGCJD4I=
+          #    -----END CERTIFICATE-----
