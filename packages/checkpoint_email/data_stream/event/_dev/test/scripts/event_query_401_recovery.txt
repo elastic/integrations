@@ -39,7 +39,7 @@ cp stdout got_docs.json
 
 # Verify at least one error event mentioning the 401 authentication failure.
 exec jq -r '[.hits.hits[]._source.error.message // empty] | flatten | .[]' got_docs.json
-stdout 'Authentication required'
+stdout '^POST /app/hec-api/v1.0/event/query: .*Authentication required'
 
 # Verify data-B events exist. These can only be indexed if the integration
 # re-authenticated after the 401 and obtained token-bravo.
