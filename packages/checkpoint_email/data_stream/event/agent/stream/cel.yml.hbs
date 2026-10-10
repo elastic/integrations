@@ -69,7 +69,12 @@ program: |
         "end_date": now.format(time_layout.RFC3339),
       })
   ).as(token,
-    has(token.events) ? token : // Exit early due to POST failure.
+    has(token.events) ? // Exit early due to POST failure.
+      state.with({
+        "events": token.events,
+        "want_more": false,
+      })
+    :
       state.with(
         post_request(
           state.url.trim_right("/") + "/app/hec-api/v1.0/event/query", "application/json", {
