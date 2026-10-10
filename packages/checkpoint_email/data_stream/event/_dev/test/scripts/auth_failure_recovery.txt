@@ -34,9 +34,9 @@ add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -timeout 5m ${DATA_STREAM_NAME}
 cp stdout got_docs.json
 
-# Verify the auth failure was reported.
+# Verify the auth failure was reported and names the auth endpoint.
 exec jq -r '[.hits.hits[]._source.error.message // empty] | flatten | .[]' got_docs.json
-stdout 'Invalid client credentials'
+stdout '^POST /auth/external: .*Invalid client credentials'
 
 # Verify no cycle failed because the configuration was lost from state.
 ! stdout 'no such key'
