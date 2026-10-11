@@ -1191,12 +1191,14 @@ processors:
   # correlation. When it is an email (SSO/Identity Center), both the full email
   # and the local-part prefix are added so it correlates with sources that store
   # only the short username. user.name is left as the IAM role name. (issue #18346)
+  # AWS-service actors are skipped: their session name is not a user, so it must not reach related.user or user.email.
   - grok:
       field: aws.cloudtrail.user_identity.arn
       patterns:
         - '^arn:[a-z0-9-]+:sts:.*/%{GREEDYDATA:_tmp.session_name}$'
       ignore_missing: true
       if: >-
+        ctx._tmp?.service_name == null &&
         (ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole' ||
         ctx.aws?.cloudtrail?.user_identity?.type == 'FederatedUser' ||
         ctx.aws?.cloudtrail?.user_identity?.type == 'IdentityCenterUser') &&
