@@ -427,31 +427,49 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
     findings.extend(nested_object_children(entries))
 
     # --- index sort ------------------------------------------------------ #
-    # For a columnar-ready data stream the sort fields must be mapped, have doc
-    # values, and include `@timestamp` (package-spec#1250 review). `host.name` counts
-    # as mapped: the logs profile adds its mapping when the package does not.
+    # For a columnar-ready data stream the sort fields must be mapped, have doc values
+    # and be of a type that has them (package-spec#1250). `@timestamp` is the only field
+    # that counts as mapped without a declaration: Fleet always maps it. `host.name` is
+    # injected by Elasticsearch only for its *default* sort, so a custom sort must map it.
+    # Leaving `@timestamp` out of a custom sort is a convention warning (SVR00016), not
+    # an error: Elasticsearch does not require it.
     existing = stream["existing_index_sort"]
     if existing:
         mapped = {flat for _, flat, _, _, _, _ in entries}
+        unsortable_types = {"text", "match_only_text", "wildcard", "flattened", "nested",
+                            "object", "group"}
         problems: List[str] = []
-        if "@timestamp" not in existing["field"]:
-            problems.append("`@timestamp` is not in it")
+        order = existing.get("order") or []
+        if order and len(order) != len(existing["field"]):
+            problems.append(f"`index.sort.order` has {len(order)} entries but "
+                            f"`index.sort.field` has {len(existing['field'])}")
         for name in existing["field"]:
             fdef = field_index.get(name)
-            if name in ("@timestamp", "host.name") and name not in mapped:
+            if name == "@timestamp" and name not in mapped:
                 continue
             if name not in mapped:
                 problems.append(f"`{name}` is not mapped in this data stream")
             elif fdef is not None and is_false(fdef.get("doc_values")):
                 problems.append(f"`{name}` has `doc_values: false`")
+            elif fdef is not None and fdef.get("type") in unsortable_types:
+                problems.append(f"`{name}` is of type `{fdef.get('type')}`, which has no doc values")
         if problems:
             findings.append(finding(
                 "index_sort_invalid", "A", "blocker",
                 f"The explicit `index.sort` (`{', '.join(existing['field'])}`) does not fit a "
                 f"columnar-ready data stream: {'; '.join(problems)}.",
-                "Sort fields must be mapped, have doc values, and include `@timestamp`. Fix "
-                "the sort, or leave it to the logs profile default "
-                "(`host.name`, `@timestamp`).",
+                "Sort fields must be mapped (only `@timestamp` is implicit), keep their doc "
+                "values, and be of a type that has them; `order` must match `field` in length. "
+                "Fix the sort, or leave it to the logs profile default (`host.name`, `@timestamp`).",
+                rel(manifest_path), line=line_of(es_section, "index_template")))
+        if "@timestamp" not in existing["field"]:
+            findings.append(finding(
+                "index_sort_no_timestamp", "C", "info",
+                f"The explicit `index.sort` (`{', '.join(existing['field'])}`) does not include "
+                f"`@timestamp`. Elasticsearch allows it, but most queries filter on a time "
+                f"range; the spec reports it as warning `SVR00016`.",
+                "Add `@timestamp` (usually last, `desc`) unless this dataset is never queried "
+                "by time range; otherwise exclude `SVR00016` in `validation.yml` with a comment.",
                 rel(manifest_path), line=line_of(es_section, "index_template")))
 
     # --- package-spec version gate -------------------------------------- #

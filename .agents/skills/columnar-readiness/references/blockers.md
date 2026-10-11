@@ -470,10 +470,15 @@ guard against a future enum expansion.
 ### A8. An explicit `index.sort` that does not fit — `index_sort_invalid`
 
 **Rule.** The data stream manifest declares `index.sort` and, per the package-spec#1250
-review, a columnar-ready stream's sort fields must be mapped, have doc values, and
-include `@timestamp`. A sort field that is not declared in the stream's fields, one
-with `doc_values: false`, or a sort without `@timestamp` is a finding. `host.name`
-counts as mapped: the logs profile adds its mapping when the package does not.
+review, a columnar-ready stream's sort fields must be mapped, keep their doc values,
+and be of a type that has them; `index.sort.order`, when set, must match `field` in
+length. A sort field that is not declared in the stream's fields (only `@timestamp` is
+implicit — Fleet always maps it; `host.name` is injected by Elasticsearch for its
+*default* sort only, so a custom sort must map it), one with `doc_values: false`, or
+one of type `text`/`match_only_text`/`wildcard`/`flattened`/`nested`/object is
+`index_sort_invalid`. A custom sort that leaves out `@timestamp` is allowed by
+Elasticsearch; the spec reports it as warning `SVR00016` and the audit as the
+info-level `index_sort_no_timestamp`.
 
 **Remediation.** Fix the sort ([`sorting.md`](sorting.md)), or drop it and keep the
 logs profile default (`host.name`, `@timestamp`). The audit's own sort proposals

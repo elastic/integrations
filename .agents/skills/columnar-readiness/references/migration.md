@@ -98,7 +98,9 @@ errors:
 **Never exclude a columnar finding** — `SVR00014` (`dynamic: false`), `SVR00015`
 (`enabled: false`), or a hard mapping error (nested-in-nested, `copy_to`, a non-`lowercase`
 normalizer, a mapping-level runtime field, an invalid `index.sort`: those have no code and
-cannot be excluded). **Excluded checks still print**, under
+cannot be excluded). The one exception is `SVR00016` (a custom `index.sort` without
+`@timestamp`): a convention warning, excludable with a comment when the dataset is never
+queried by time range. **Excluded checks still print**, under
 `Skipped errors:` with their own `found N validation errors:` header; the count that
 matters is the **final** `linting package failed: found N validation errors:` line,
 and a clean run has none.
