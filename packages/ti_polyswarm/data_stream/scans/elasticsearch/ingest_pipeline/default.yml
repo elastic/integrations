@@ -186,6 +186,12 @@ processors:
       value: '{{{threat.indicator.file.hash.md5}}}'
       allow_duplicates: false
       if: ctx.threat?.indicator?.file?.hash?.md5 != null
+  - remove:
+      description: Drop the raw payload unless the user asked to preserve it.
+      tag: remove-event-original
+      field: event.original
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
 on_failure:
   - append:
       field: error.message

@@ -8,6 +8,11 @@ source:
         - exists:
             field: threat.indicator.file.hash.sha256
       must_not:
+        # A document that fails after the SHA-256 rename keeps its hash and
+        # gains error.message, so the exists filter above is not enough to keep
+        # half-processed documents out of the deduplicated latest index.
+        - exists:
+            field: error.message
         - terms:
             _tier:
               - data_frozen
