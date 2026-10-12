@@ -59,6 +59,10 @@ latest:
     # `azure.billing.scope` keep forecasts of different scopes apart; rows from
     # older agents are keyed as the subscription scope (see runtime_mappings).
     - azure.billing.scope_key
+    # Older agents have no scope, so the Fleet namespace is the only way to keep
+    # the forecasts of two such policies apart when they query different scopes
+    # with the same subscription ID.
+    - data_stream.namespace
   # Azure keeps revising cost rows for up to ~72h, so the most recently collected
   # copy of a row is the authoritative one.
   sort: "@timestamp"
@@ -89,12 +93,23 @@ sync:
     # 120s instead of the default 60s because of the index refresh delay in
     # Serverless.
     delay: 120s
+# A forecast is only meaningful while it is being refreshed: the metricset
+# re-issues the whole forecast window on every fetch. Documents that stop being
+# refreshed are dropped after three days. That removes the forecast of a scope
+# key that no longer exists, for example after an agent upgrade changes a
+# department policy's key from the subscription fallback to the real scope, and
+# keeps this index to the current window. Past days are shown from the usage
+# transforms, not from here.
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 3d
 _meta:
   # Bump this version to delete, reinstall, and restart the transform during
   # package installation. The source has no `@timestamp` range filter on purpose:
   # Fleet rebuilds the destination index from scratch on a version bump, and a
   # relative range filter would silently drop all history.
   fleet_transform_version: 0.1.0
-  # Independent of the two usage transforms; installed last.
-  order: 2
+  # Independent of the usage transforms; installed last.
+  order: 3
   run_as_kibana_system: false

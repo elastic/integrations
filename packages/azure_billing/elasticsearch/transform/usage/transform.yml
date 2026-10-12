@@ -3,11 +3,15 @@ source:
   # resource, and fetch.
   index:
     - "azure_billing.usage_fetches"
-# Second of two chained transforms that deduplicate usage details without
-# scripts. For every day, meter, and resource bucket this keeps the document of
-# the newest fetch, so older fetches of the same day, agent restarts, and short
-# collection periods never inflate the cost. The newest fetch is also the one
-# that carries Azure's latest revision of the day.
+# Second of three chained transforms that deduplicate usage details without
+# scripted aggregations. For every day, meter, and resource bucket this keeps the
+# document of the newest fetch, so older fetches of the same day, agent restarts,
+# and short collection periods never inflate the cost.
+#
+# A newer fetch can also omit a bucket that an older fetch had, or carry it under
+# a corrected key. The older document then stays here, so the dashboard does not
+# read this index on its own: it joins it with the `usage_latest_fetch` output and
+# counts only the buckets whose fetch is the newest one for their day and scope.
 latest:
   unique_key:
     - azure.billing.usage_date
@@ -21,7 +25,6 @@ latest:
     - azure.resource.type
     - azure.billing.product
     - cloud.region
-    - data_stream.namespace
   # `@timestamp` of a usage_fetches document is the newest row of its fetch.
   sort: "@timestamp"
 dest:
@@ -32,7 +35,7 @@ dest:
     - alias: "azure_billing.usage_latest"
       move_on_creation: true
 description: >-
-  Deduplicated Azure billing usage details. For each day, meter, and resource this keeps only the rows collected by the most recent fetch. Second stage of the deduplication, reading the usage_fetches transform output.
+  Deduplicated Azure billing usage details: for each day, meter, and resource the document of the most recent fetch. Second stage of the deduplication, reading the usage_fetches transform output.
 frequency: 1h
 settings:
   # This is required to prevent the transform from clobbering the Fleet-managed
