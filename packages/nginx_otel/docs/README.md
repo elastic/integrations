@@ -76,7 +76,7 @@ The `file_storage` extension persists the filelog receiver checkpoints so log co
 
 The `transform` processors parse raw log lines into structured fields using grok patterns:
 
-- **`transform/parse_nginx_access/log`** — Parses the NGINX combined access log format and extracts fields such as `http.request.method`, `http.response.status_code`, `url.original`, `source.address`, `http.response.body.size`, `http.version`, and `user_agent.original`. It also runs user-agent parsing to populate `user_agent.name`.
+- **`transform/parse_nginx_access/log`** — Parses the NGINX combined access log format and extracts fields such as `http.request.method`, `http.response.status_code`, `url.original`, `source.address`, `http.response.body.size`, `network.protocol.version`, and `user_agent.original`. It also runs user-agent parsing to populate `user_agent.name`.
 - **`transform/parse_nginx_error/log`** — Parses NGINX error log entries and extracts `log.level`, `process.pid`, `process.thread.id`, `nginx.error.connection_id`, and `message`.
 - **`resourcedetection/system`** — Detects and attaches host-level resource attributes such as `host.name` and `host.arch`.
 
@@ -99,7 +99,7 @@ processors:
           - set(attributes["url.original"], body["url.original"])
           - set(attributes["source.address"], body["source.address"])
           - set(attributes["http.response.body.size"], body["http.response.body.size"])
-          - set(attributes["http.version"], body["http.version"])
+          - set(attributes["network.protocol.version"], body["http.version"])
           - set(attributes["user_agent.original"], body["user_agent.original"])
       - context: log
         conditions:
