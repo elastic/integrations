@@ -13,7 +13,7 @@ queries against the workflow execution index.
 - **Executions Over Time** — stacked bar chart of runs per workflow
 - **Trigger Breakdown** — treemap of execution trigger sources
 - **Failure Rate Over Time** — overall failure rate trend
-- **Duration Distribution** — execution counts bucketed by duration (< 1s, 1s–5s, 5s–30s, > 30s)
+- **Duration Distribution** — execution counts bucketed by duration (< 1s, 1s–5s, 5s–30s, ≥ 30s)
 - **Avg Duration Over Time** — overall average duration trend
 - **Status Breakdown** — treemap of execution statuses
 - **Slowest Workflows** — table of workflows ranked by p95 duration
@@ -34,5 +34,6 @@ Elasticsearch index created by the Workflows Execution Engine:
 ## Requirements
 
 - Kibana 9.6.0 or later
+- An Enterprise subscription
 - Workflows must be available in your deployment
 - Users must have the required Workflows feature privileges for their spaces
