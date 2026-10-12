@@ -193,7 +193,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Opens this instance's metric documents in Discover for the current time range.",
+                    "description": "Opens this instance's metrics in Discover in ES|QL mode, one chart per metric, for the current time range and filters.",
                     "drilldowns": [
                         {
                             "encode_url": true,
@@ -201,7 +201,7 @@
                             "open_in_new_tab": false,
                             "trigger": "on_click_value",
                             "type": "url_drilldown",
-                            "url": "{{kibanaUrl}}/app/discover#/?_g=(filters:!(),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(dataViewId:'metrics-*',type:dataView),filters:{{rison context.panel.filters}},interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc)))"
+                            "url": "{{kibanaUrl}}/app/discover#/?_g=(filters:!(),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(type:esql),query:(esql:'TS metrics-gcp.cloudsql_mysql.otel-default{{#each context.panel.filters}}{{#unless meta.disabled}}{{#with query}}{{#each match_phrase}} | WHERE {{#if ../../meta.negate}}NOT {{/if}}`{{@key}}` == \"{{lookup ../match_phrase @key}}\"{{/each}}{{#with bool}}{{#if should}} | WHERE {{#if ../../meta.negate}}NOT {{/if}}({{#each should}}{{#each match_phrase}}`{{@key}}` == \"{{lookup ../match_phrase @key}}\"{{/each}}{{#unless @last}} OR {{/unless}}{{/each}}){{/if}}{{/with}}{{/with}}{{/unless}}{{/each}}'))"
                         }
                     ],
                     "hide_border": true,
