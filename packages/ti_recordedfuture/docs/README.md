@@ -46,7 +46,8 @@ must use the same CSV format as the risklist endpoints:
 
 Recorded Future's public VPN and proxy Fusion lists
 (`/public/vpn_proxy_lists/vpn_ips_list.csv` and `proxy_ips_list.csv`) use the
-columns `ip`, `risk_score`, and `service` instead. These files are supported:
+columns `ip`, `risk_score`, and `service` instead. These files are supported
+when fetched through the custom Fusion file URL option:
 `ip` and `risk_score` are mapped onto `Name` and `Risk`, and `service` is kept
 under `recordedfuture.service`. Any other Fusion file that uses a different
 schema (no `Name`/`ip` column) is not supported; its documents are indexed with

@@ -123,7 +123,7 @@ processors:
         Unsupported Recorded Future CSV schema: the required indicator column
         `Name` (or `ip` for VPN/proxy lists) is missing. The threat data stream
         expects the risklist columns Name, Risk, RiskString, EvidenceDetails
-        (and Algorithm for hashes). Columns received: {{{json}}}.
+        (and Algorithm for hashes). See event.original for the received row.
 
   #
   # Decode EvidenceDetails column as JSON.
@@ -333,7 +333,7 @@ processors:
       tag: set_threat_indicator_type_2c983715
       field: threat.indicator.type
       value: url
-      if: 'ctx.threat?.indicator?.type == null && ctx.json?.Name != null && ctx.json.Name.contains("/")'
+      if: 'ctx.threat?.indicator?.type == null && ctx.json.Name.contains("/")'
   - uri_parts:
       tag: uri_parts_json_Name_to_threat_indicator_url_41cdc7ad
       field: json.Name
