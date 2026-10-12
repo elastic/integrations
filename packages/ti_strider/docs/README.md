@@ -87,7 +87,6 @@ threat.feed.name: "Strider Shield"
 | data_stream.type |  | constant_keyword |
 | ecs.version | ECS version this event adheres to. | keyword |
 | event.category | Event category (e.g. threat). | keyword |
-| event.kind | High-level kind of the event (e.g. enrichment for threat indicators). | constant_keyword |
 | event.type | Event type (e.g. indicator). | keyword |
 | input.type | Type of input that generated the event. | keyword |
 | labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
