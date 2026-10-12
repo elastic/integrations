@@ -1,0 +1,43 @@
+rules:
+  - path: /tenant-id/oauth2/v2.0/token
+    methods: [POST]
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"token_type":"Bearer","expires_in":3599,"ext_expires_in":3599,"access_token":"topsecretaccesstokenthatshouldnotbeleakedforabit"}
+  - path: /api/machines/InfoGatheringExport
+    methods: [GET]
+    query_params:
+      sasValidHours: "{sasValidHours:.*}"
+    request_headers:
+      Authorization:
+        - "Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"exportFiles":["http://{{ .request.host }}/export/info-gathering/blob1.json.gz","http://{{ .request.host }}/export/info-gathering/blob2.json.gz"],"generatedTime":"2026-08-31T23:12:21.000Z"}
+  - path: /export/info-gathering/blob1.json.gz
+    methods: [GET]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/gzip"
+        body: '{{file "/files/info-gathering-blob1.json.gz"}}'
+  - path: /export/info-gathering/blob2.json.gz
+    methods: [GET]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/gzip"
+        body: '{{file "/files/info-gathering-blob2.json.gz"}}'

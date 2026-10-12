@@ -12,9 +12,9 @@ The Island Browser integration is compatible with `v1` version of Island Browser
 
 ### How it works
 
-This integration periodically queries the Island Browser API to retrieve details for devices, users, and compromised credentials, and to log audit events and admin action events.
+This integration periodically queries the Island Browser API to retrieve details for devices, users, and compromised credentials, and to collect SIEM events.
 
-Audit and admin action events are collected through the **SIEM Events** data stream, which pulls audit and admin action logs together through the Island SIEM integration.
+The **SIEM Events** data stream collects events through the Island SIEM integration. It supports three audit types: user audits, admin audits, and system audits.
 
 The separate **Audit** and **Admin Actions** data streams are deprecated. New deployments should use **SIEM Events** instead.
 
@@ -22,7 +22,7 @@ The separate **Audit** and **Admin Actions** data streams are deprecated. New de
 
 This integration collects log messages of the following types:
 
-- `SIEM Events`: Collects audit and admin action logs through the Island SIEM integration.
+- `SIEM Events`: Collects user audits, admin audits, and system audits through the Island SIEM integration.
 - `Admin Actions` (deprecated): Collects all admin actions from the Island Browser via [Admin Actions API endpoint](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter). Use **SIEM Events** instead.
 - `Audit` (deprecated): Collects all timeline audits from the Island Browser via [Audit API endpoint](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter). Use **SIEM Events** instead.
 - `Compromised Credential`: Collects a list of all compromised credentials from the Island Browser via [Compromised Credential API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-compromised-credentials).
@@ -66,7 +66,7 @@ For more details, check [Documentation](https://documentation.island.io/apidocs/
 
 #### Configure the SIEM integration
 
-To collect audit and admin action logs through the SIEM API, set up the Generic SIEM Integration in the Island Management Console and copy the **Audit ID**.
+To collect user, admin, and system audits through the SIEM API, set up the Generic SIEM Integration in the Island Management Console and copy the **Audit ID**.
 
 1. Log in to the Island Management Console as an administrator (Full Admin or System Admin).
 2. Navigate to **Modules > Platform Settings > System Settings > Integrations > SIEM**.
@@ -110,7 +110,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ### Collecting data from the SIEM API
 
-To collect audit and admin action logs through the Island SIEM integration:
+To collect user, admin, and system audits through the Island SIEM integration:
 
 1. Complete the [SIEM integration setup](#configure-the-siem-integration) in the Island Management Console.
 2. Enable **SIEM Events** in Fleet and configure **URL**, **API Key**, and **Audit ID**.
