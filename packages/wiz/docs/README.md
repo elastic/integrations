@@ -57,14 +57,14 @@ These data streams collect from the Wiz GraphQL API: Audit, Cloud Configuration 
 
 The Elastic integration tile in Wiz grants these scopes. They are listed here for reference.
 
-    | Data Stream                              | Scope                                                                                   |
-    | ---------------------------------------- | --------------------------------------------------------------------------------------- |
-    | Audit                                    | admin:audit                                                                             |
-    | Cloud Configuration Finding              | read:cloud_configuration                                                                |
-    | Cloud Configuration Finding Full Posture | read:cloud_configuration                                                                |
-    | Defend (`defend_v2`)                     | read:detections, read:cloud_events_cloud, read:cloud_events_sensor, read:security_scans |
-    | Issue                                    | read:issues                                                                             |
-    | Vulnerability                            | read:vulnerabilities                                                                    |
+| Data Stream                              | Scope                                                                                   |
+| ---------------------------------------- | --------------------------------------------------------------------------------------- |
+| Audit                                    | admin:audit                                                                             |
+| Cloud Configuration Finding              | read:cloud_configuration                                                                |
+| Cloud Configuration Finding Full Posture | read:cloud_configuration                                                                |
+| Defend (`defend_v2`)                     | read:detections, read:cloud_events_cloud, read:cloud_events_sensor, read:security_scans |
+| Issue                                    | read:issues                                                                             |
+| Vulnerability                            | read:vulnerabilities                                                                    |
 
 ### Collect logs (Defend, `defend` data stream) via HTTP Endpoint
 
