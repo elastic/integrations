@@ -427,10 +427,11 @@ rules:
   #           rolling response[1] = dataset B (ids 9001-9003). cursor.timestamp -> 1750000002.
   #   STEP 4b (t~5s, page 2) -> "full-fetch page 2" rule -> empty -> stops pagination.
   #   STEP 5  (t~6-9s, page 1) not yet time to refetch -> cursor 1750000002 -> "STEP 5" rule -> empty.
-  #   STEP 6  (t~10s) next refetch -> "fresh full-fetch" rolls back to dataset A (same _ids -> overwrite,
-  #           no new docs); the cycle repeats. Total unique docs stays 13.
+  #   STEP 6  (t~10s) next refetch -> "fresh full-fetch" rolls back to dataset A. The refetch marker is
+  #           part of the _id, so these are new docs; the cycle repeats and the count keeps growing.
   #
-  # Indexed unique docs: dataset A (2) + STEP 2 attributes (8) + dataset B (3) = 13 => assert.hit_count.
+  # Indexed docs after STEP 6: dataset A (2) + STEP 2 attributes (8) + dataset B (3) + dataset A
+  # again (2) = 15 => assert.min_count.
   #
   # The default (non-refetch) test runs STEP 1 -> STEP 2 -> STEP 3 only, never advances the rolling
   # response to dataset B, and asserts hit_count = 10.

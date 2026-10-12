@@ -1,7 +1,7 @@
 format_version: 3.5.0
 name: prometheus_input_otel
 title: "Prometheus Scrape via OTel (Guided)"
-version: 0.2.0
+version: 0.3.0
 source:
   license: "Elastic-2.0"
 description: "Scrape Prometheus-format metrics via the OTel Collector with guided HTTPS/TLS/auth configuration."
@@ -56,8 +56,24 @@ policy_templates:
         type: text
         title: Metrics Path
         required: false
-        description: The HTTP resource path to fetch metrics from targets
+        description: >
+          The HTTP resource path to fetch metrics from targets. Path only — do
+          not append query parameters here; use the Query Parameters field instead.
         default: /metrics
+        show_user: false
+      - name: params
+        type: yaml
+        title: Query Parameters
+        required: false
+        description: >
+          Optional Prometheus scrape query parameters as a YAML map of
+          parameter name to a list of values. These are appended to the
+          scrape URL as proper query-string parameters. Example:
+
+            namespaces:
+              - my-namespace.account
+            labels:
+              - temporal_activity_type
         show_user: false
       - name: scheme
         type: select
