@@ -223,17 +223,19 @@ The integration will compute:
 
 From **0.3.0** onward, ingest pipelines ship with the integration and the billing transform reads `onprem_billing_config` directly (no enrich policies or manual `calculate_cost` pipeline).
 
-When you change `deployment_erus` or RAM fields with `_update`, also set `daily_meru` (mERU per day = ERU × 1000), or re-index the document through the packaged config pipeline:
+When you change `deployment_erus` or RAM fields with `_update`, also set `daily_meru` explicitly (mERU per day = ERU × 1000):
 
 ```json
-POST onprem_billing_config/_update/<document_id>?pipeline=metrics-ess_billing.billing-0.3.4-config_bootstrap
+POST onprem_billing_config/_update/<document_id>
 {
   "doc": {
     "deployment_erus": 3.0,
-    "deployment_tags": ["chargeback_group:platform_team"]
+    "daily_meru": 3000
   }
 }
 ```
+
+> **Upgrading from 0.3.3 to 0.3.4:** Restart the `billing` transform after upgrading.
 
 > **Upgrading from 0.3.2 to 0.3.3:** The billing transform now includes `deployment_tags` in its pivot group_by, which is required for Chargeback group assignment. After upgrading, reset and restart the `billing` transform so the lookup index is recreated with the updated pivot key. Your existing `onprem_billing_config` deployment tags are preserved; no re-configuration is needed.
 
