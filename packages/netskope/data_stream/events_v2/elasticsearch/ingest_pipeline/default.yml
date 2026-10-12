@@ -64,7 +64,6 @@ processors:
         handleMap(ctx);
   - convert:
       field: netskope.events_v2.acked
-      if: ctx.netskope?.events_v2?.alert == "yes"
       tag: convert_acked_to_boolean_295143be
       type: boolean
       ignore_missing: true
@@ -90,7 +89,7 @@ processors:
         - ISO8601
         - UNIX
         - epoch_second
-      if: ctx.netskope?.events_v2?.alert == "yes" && ctx.netskope?.events_v2?.breach_date != null && ctx.netskope.events_v2.breach_date != ''
+      if: ctx.netskope?.events_v2?.breach_date != null && ctx.netskope.events_v2.breach_date != ''
       on_failure:
         - remove:
             tag: remove_netskope_alert_v2_breach_date_b237f436
@@ -102,7 +101,6 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.breach_score
-      if: ctx.netskope?.events_v2?.alert == "yes"
       tag: convert_breach_score_to_long_98a9d8b5
       type: long
       ignore_missing: true
@@ -117,7 +115,6 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.file_cls_encrypted
-      if: ctx.netskope?.events_v2?.alert == "yes"
       tag: convert_file_cls_encrypted_to_boolean_6dfbeac2
       type: boolean
       ignore_missing: true
@@ -132,7 +129,6 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.iaas_remediated
-      if: ctx.netskope?.events_v2?.alert == "yes"
       tag: convert_iaas_remediated_to_boolean_871624b3
       type: boolean
       ignore_missing: true
@@ -147,7 +143,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: netskope.events_v2.iaas_remediated_on
-      if: ctx.netskope?.events_v2?.alert == "yes" && ctx.netskope?.events_v2?.iaas_remediated_on != null && ctx.netskope.events_v2.iaas_remediated_on != ''
+      if: ctx.netskope?.events_v2?.iaas_remediated_on != null && ctx.netskope.events_v2.iaas_remediated_on != ''
       tag: date_iaas_remediated_on_912779f0
       target_field: netskope.events_v2.iaas_remediated_on
       formats:
@@ -170,7 +166,6 @@ processors:
       ignore_empty_value: true
   - convert:
       field: netskope.events_v2.external_collaborator_count
-      if: ctx.netskope?.events_v2?.alert == "yes"
       tag: convert_external_collaborator_count_to_long_external_collaborator_count_cadd2566
       type: long
       ignore_missing: true
@@ -185,7 +180,6 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.external_email
-      if: ctx.netskope?.events_v2?.alert == "yes"
       tag: convert_external_email_to_long_external_email_1d9c2e88
       type: long
       ignore_missing: true
@@ -200,7 +194,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: netskope.events_v2.last_timestamp
-      if: ctx.netskope?.events_v2?.alert == "yes" && ctx.netskope?.events_v2?.last_timestamp != null && ctx.netskope.events_v2.last_timestamp != ''
+      if: ctx.netskope?.events_v2?.last_timestamp != null && ctx.netskope.events_v2.last_timestamp != ''
       tag: date_last_timestamp_last_timestamp_6a9863d5
       target_field: netskope.events_v2.last_timestamp
       formats:
@@ -218,7 +212,6 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.malsite_latitude
-      if: ctx.netskope?.events_v2?.alert == "yes"
       tag: convert_malsite_latitude_to_double_malsite_latitude_341887ad
       type: double
       ignore_missing: true
@@ -233,7 +226,6 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.malsite_longitude
-      if: ctx.netskope?.events_v2?.alert == "yes"
       tag: convert_malsite_longitude_to_double_malsite_longitude_d5608dba
       type: double
       ignore_missing: true
@@ -248,7 +240,6 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.sa_profile_id
-      if: ctx.netskope?.events_v2?.alert == "yes"
       tag: convert_sa_profile_id_to_long_sa_profile_id_1c66ab68
       type: long
       ignore_missing: true
@@ -263,7 +254,6 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.severity_level_id
-      if: ctx.netskope?.events_v2?.alert == "yes"
       tag: convert_severity_level_id_to_long_severity_level_id_88b0268d
       type: long
       ignore_missing: true
@@ -278,7 +268,6 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.threat_source_id
-      if: ctx.netskope?.events_v2?.alert == "yes"
       tag: convert_threat_source_id_to_long_threat_source_id_2c1b54c1
       type: long
       ignore_missing: true
@@ -293,7 +282,6 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.threshold
-      if: ctx.netskope?.events_v2?.alert == "yes"
       tag: convert_threshold_to_long_threshold_fefd5f78
       type: long
       ignore_missing: true
@@ -308,7 +296,6 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: netskope.events_v2.threshold_time
-      if: ctx.netskope?.events_v2?.alert == "yes"
       tag: convert_threshold_time_to_long_threshold_time_05d5cf61
       type: long
       ignore_missing: true
@@ -1217,6 +1204,7 @@ processors:
       tag: date_start_time_8dd67ef3
       target_field: netskope.events_v2.start_time
       formats:
+        - 'yyyy-MM-dd HH:mm:ss'
         - ISO8601
       if: ctx.netskope?.events_v2?.start_time != null && ctx.netskope.events_v2.start_time != ''
       on_failure:
