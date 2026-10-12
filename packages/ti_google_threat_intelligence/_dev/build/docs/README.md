@@ -78,6 +78,27 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 6. Click on **Save and Continue** to save the integration.
 **Note:** Please make only the threat feed types you have the privilege to access are enabled.
 
+### To collect logs from files (filestream), follow the below steps:
+
+Air-gapped and other offline deployments have no route to the Google Threat Intelligence API. For these, each threat list data stream also offers a **filestream** input that reads threat list files already saved to disk, alongside the REST API input above. Documents are written to the same data streams and mappings, so the packaged dashboards and threat enrichment work the same way regardless of how the data arrived.
+
+**File format.** The filestream input expects **NDJSON**: one IOC object per line, each line a single `{"data":{...}}` object. This is not the pretty-printed `{"iocs":[ ... ]}` body the API returns. The files must be plain `.ndjson`. The filestream input cannot read `.zip` or `.tar.gz` archives, and gzip-compressed files (`.gz`) are excluded.
+
+**Producing the files.** Google Threat Intelligence does not write NDJSON files itself. A collector has to pull `/api/v3/threat_lists/{threat_list_id}/{hour}` (or `/latest`) and write one IOC per line. For Google Distributed Cloud this is a flag on the export that already runs; for other deployments, use the provided export script, which writes one `threat_list_<id>-<hour>.ndjson` file per list:
+
+```bash
+<export-script> --format ndjson --outdir /path/to/threat_lists
+```
+
+**Enabling file collection in Elastic:**
+
+1. In Kibana, go to **Management > Integrations** and open the **Google Threat Intelligence** integration.
+2. Enable the **filestream** input for each threat list data stream you want to collect from files.
+3. Set **Paths** to a glob that matches the NDJSON files for that data stream, for example `/path/to/threat_lists/*ransomware*.ndjson`. Paths have no default, so a path is required to enable the input.
+4. Click **Save and Continue**.
+
+Each line of an NDJSON file is ingested as its own indicator event.
+
 ## Transforming Data for Up-to-Date Insights
 
 To keep the collected data up to date, **Transforms** are used.

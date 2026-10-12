@@ -78,6 +78,27 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 6. Click on **Save and Continue** to save the integration.
 **Note:** Please make only the threat feed types you have the privilege to access are enabled.
 
+### To collect logs from files (filestream), follow the below steps:
+
+Air-gapped and other offline deployments have no route to the Google Threat Intelligence API. For these, each threat list data stream also offers a **filestream** input that reads threat list files already saved to disk, alongside the REST API input above. Documents are written to the same data streams and mappings, so the packaged dashboards and threat enrichment work the same way regardless of how the data arrived.
+
+**File format.** The filestream input expects **NDJSON**: one IOC object per line, each line a single `{"data":{...}}` object. This is not the pretty-printed `{"iocs":[ ... ]}` body the API returns. The files must be plain `.ndjson`. The filestream input cannot read `.zip` or `.tar.gz` archives, and gzip-compressed files (`.gz`) are excluded.
+
+**Producing the files.** Google Threat Intelligence does not write NDJSON files itself. A collector has to pull `/api/v3/threat_lists/{threat_list_id}/{hour}` (or `/latest`) and write one IOC per line. For Google Distributed Cloud this is a flag on the export that already runs; for other deployments, use the provided export script, which writes one `threat_list_<id>-<hour>.ndjson` file per list:
+
+```bash
+<export-script> --format ndjson --outdir /path/to/threat_lists
+```
+
+**Enabling file collection in Elastic:**
+
+1. In Kibana, go to **Management > Integrations** and open the **Google Threat Intelligence** integration.
+2. Enable the **filestream** input for each threat list data stream you want to collect from files.
+3. Set **Paths** to a glob that matches the NDJSON files for that data stream, for example `/path/to/threat_lists/*ransomware*.ndjson`. Paths have no default, so a path is required to enable the input.
+4. Click **Save and Continue**.
+
+Each line of an NDJSON file is ingested as its own indicator event.
+
 ## Transforming Data for Up-to-Date Insights
 
 To keep the collected data up to date, **Transforms** are used.
@@ -194,24 +215,24 @@ An example event for `cryptominer` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "afac2e45-4a73-4d9b-a18f-edd1c8bc28c6",
-        "id": "d9e28c59-a647-42c3-b930-4bf1e458ba07",
-        "name": "elastic-agent-36349",
+        "ephemeral_id": "8fc42d69-6e12-4e03-bc0b-b907e9d2a36a",
+        "id": "c42aa7d5-614a-49f7-a8fc-b28fb9523f22",
+        "name": "elastic-agent-92775",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.cryptominer",
-        "namespace": "30398",
+        "namespace": "81871",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "d9e28c59-a647-42c3-b930-4bf1e458ba07",
+        "id": "c42aa7d5-614a-49f7-a8fc-b28fb9523f22",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -219,7 +240,7 @@ An example event for `cryptominer` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.cryptominer",
-        "ingested": "2026-09-25T14:01:50Z",
+        "ingested": "2026-09-29T09:51:09Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -398,7 +419,6 @@ An example event for `cryptominer` looks as following:
 | log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only). | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only). | keyword |
-| log.flags | Flags set by the log collection layer. Contains 'multiline' when the event was assembled from multiple lines by the filestream multiline parser. | keyword |
 | log.offset | Log offset. | long |
 | threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
@@ -415,24 +435,24 @@ An example event for `first_stage_delivery_vectors` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "83df4fc7-1236-4441-8650-42f01c0ca084",
-        "id": "c1d44fc9-58b6-4984-a025-67f6b6f16ca9",
-        "name": "elastic-agent-41473",
+        "ephemeral_id": "7bcdef5d-00e2-4722-bb80-b6801c8bc1d4",
+        "id": "e87cda9c-7f06-461b-a0fd-66a276014630",
+        "name": "elastic-agent-25923",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.first_stage_delivery_vectors",
-        "namespace": "58601",
+        "namespace": "97168",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "c1d44fc9-58b6-4984-a025-67f6b6f16ca9",
+        "id": "e87cda9c-7f06-461b-a0fd-66a276014630",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -440,7 +460,7 @@ An example event for `first_stage_delivery_vectors` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.first_stage_delivery_vectors",
-        "ingested": "2026-09-25T14:03:18Z",
+        "ingested": "2026-09-29T09:53:07Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -619,7 +639,6 @@ An example event for `first_stage_delivery_vectors` looks as following:
 | log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only). | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only). | keyword |
-| log.flags | Flags set by the log collection layer. Contains 'multiline' when the event was assembled from multiple lines by the filestream multiline parser. | keyword |
 | log.offset | Log offset. | long |
 | threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
@@ -636,24 +655,24 @@ An example event for `infostealer` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "d96c9ce5-20fc-451d-b8e6-c824ec0b16be",
-        "id": "3860881d-1c8a-4bf0-b03b-366dd9522502",
-        "name": "elastic-agent-44574",
+        "ephemeral_id": "7cc51b45-e143-4379-a2c2-3f3b111799fb",
+        "id": "3430dd52-4510-4ffb-a8c5-fb06f5400096",
+        "name": "elastic-agent-29187",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.infostealer",
-        "namespace": "43527",
+        "namespace": "87231",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "3860881d-1c8a-4bf0-b03b-366dd9522502",
+        "id": "3430dd52-4510-4ffb-a8c5-fb06f5400096",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -661,7 +680,7 @@ An example event for `infostealer` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.infostealer",
-        "ingested": "2026-09-25T14:04:38Z",
+        "ingested": "2026-09-29T09:54:27Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -840,7 +859,6 @@ An example event for `infostealer` looks as following:
 | log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only). | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only). | keyword |
-| log.flags | Flags set by the log collection layer. Contains 'multiline' when the event was assembled from multiple lines by the filestream multiline parser. | keyword |
 | log.offset | Log offset. | long |
 | threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
@@ -857,24 +875,24 @@ An example event for `ioc_stream` looks as following:
 {
     "@timestamp": "2024-12-16T07:54:23.000Z",
     "agent": {
-        "ephemeral_id": "1551e458-dd55-46d7-bd60-d3b00332e626",
-        "id": "5e88b3c7-71e0-4ec1-add3-824ab976c10d",
-        "name": "elastic-agent-27198",
+        "ephemeral_id": "650a4b85-7d9f-40a3-9f97-ae666377a789",
+        "id": "86796ea2-0e50-454f-84fb-593d67eb21c9",
+        "name": "elastic-agent-57163",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.ioc_stream",
-        "namespace": "93686",
+        "namespace": "33583",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "5e88b3c7-71e0-4ec1-add3-824ab976c10d",
+        "id": "86796ea2-0e50-454f-84fb-593d67eb21c9",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -882,7 +900,7 @@ An example event for `ioc_stream` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.ioc_stream",
-        "ingested": "2026-09-25T14:07:10Z",
+        "ingested": "2026-09-29T09:56:37Z",
         "kind": "enrichment",
         "original": "{\"attributes\":{\"available_tools\":[],\"downloadable\":true,\"exiftool\":{\"FileType\":\"TXT\",\"FileTypeExtension\":\"txt\",\"LineCount\":\"1\",\"MIMEEncoding\":\"us-ascii\",\"MIMEType\":\"text/plain\",\"Newlines\":\"(none)\",\"WordCount\":\"1\"},\"first_seen_itw_date\":1707511993,\"first_submission_date\":1648544390,\"gti_assessment\":{\"contributing_factors\":{\"associated_actor\":[\"source\",\"javascript\",\"js\"],\"mandiant_association_actor\":true,\"mandiant_confidence_score\":75},\"description\":\"This indicator did not match our detection criteria and there is currently no evidence of malicious activity.\",\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1648544390,\"last_analysis_stats\":{\"confirmed-timeout\":0,\"failure\":0,\"harmless\":0,\"malicious\":0,\"suspicious\":0,\"timeout\":0,\"type-unsupported\":16,\"undetected\":57},\"last_modification_date\":1734335663,\"last_seen_itw_date\":1707512002,\"last_submission_date\":1648544390,\"magic\":\"ASCII text, with no line terminators\",\"mandiant_ic_score\":75,\"md5\":\"1e1d23c4e7524bc15a0b3ced0caf9ffc\",\"meaningful_name\":\"Password[1].htm\",\"names\":[\"Password[1].htm\"],\"reputation\":0,\"sha1\":\"4e234b019b77a4f04c168734a60e0b1883989215\",\"sha256\":\"841d999a7a7f0b2cd8bc21e6550fedee985bf53a530fef1033d1c4810b0be5bc\",\"size\":11,\"ssdeep\":\"3:EsaM:t\",\"tags\":[\"javascript\"],\"times_submitted\":1,\"total_votes\":{\"harmless\":0,\"malicious\":0},\"type_description\":\"JavaScript\",\"type_extension\":\"js\",\"type_tag\":\"javascript\",\"type_tags\":[\"source\",\"javascript\",\"js\"],\"unique_sources\":1,\"vhash\":\"9eecb7db59d16c80417c72d1e1f4fbf1\"},\"context_attributes\":{\"hunting_info\":null,\"notification_date\":1742528463,\"notification_id\":\"21769600967\",\"origin\":\"subscriptions\",\"sources\":[{\"id\":\"threat-actor--bfd69ac3-0158-57d3-a101-42496712ddae\",\"label\":\"UNC4515\",\"type\":\"collection\"}],\"tags\":[]},\"id\":\"841d999a7a7f0b2cd8bc21e6550fedee985bf53a530fef1033d1c4810b0be5bc\",\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/841d999a7a7f0b2cd8bc21e6550fedee985bf53a530fef1033d1c4810b0be5bc\"},\"type\":\"file\"}",
         "type": [
@@ -1389,24 +1407,24 @@ An example event for `iot` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "95d529f0-4a15-46c2-9f05-1d31b73e2fd6",
-        "id": "e820a104-f793-483f-b86b-a3722d33094a",
-        "name": "elastic-agent-77657",
+        "ephemeral_id": "f8e251fe-c19b-4b65-b305-861fa537b26b",
+        "id": "6bfd4c06-0123-4a32-bb9a-a9d32f55a0cb",
+        "name": "elastic-agent-44812",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.iot",
-        "namespace": "35155",
+        "namespace": "94116",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "e820a104-f793-483f-b86b-a3722d33094a",
+        "id": "6bfd4c06-0123-4a32-bb9a-a9d32f55a0cb",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1414,7 +1432,7 @@ An example event for `iot` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.iot",
-        "ingested": "2026-09-25T14:07:59Z",
+        "ingested": "2026-09-29T09:57:27Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -1593,7 +1611,6 @@ An example event for `iot` looks as following:
 | log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only). | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only). | keyword |
-| log.flags | Flags set by the log collection layer. Contains 'multiline' when the event was assembled from multiple lines by the filestream multiline parser. | keyword |
 | log.offset | Log offset. | long |
 | threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
@@ -1610,24 +1627,24 @@ An example event for `linux` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "01bdca36-4d52-462e-8df1-e56dd1d46239",
-        "id": "2bfae646-ce0e-4ae2-aacd-436a578c88ab",
-        "name": "elastic-agent-31444",
+        "ephemeral_id": "e117091e-90ce-47da-aee7-65a58c71c57d",
+        "id": "6b3b3f5c-e35c-4d61-9911-3d78e23f9d41",
+        "name": "elastic-agent-86093",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.linux",
-        "namespace": "51417",
+        "namespace": "21789",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "2bfae646-ce0e-4ae2-aacd-436a578c88ab",
+        "id": "6b3b3f5c-e35c-4d61-9911-3d78e23f9d41",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1635,7 +1652,7 @@ An example event for `linux` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.linux",
-        "ingested": "2026-09-25T14:09:29Z",
+        "ingested": "2026-09-29T09:58:48Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -1814,7 +1831,6 @@ An example event for `linux` looks as following:
 | log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only). | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only). | keyword |
-| log.flags | Flags set by the log collection layer. Contains 'multiline' when the event was assembled from multiple lines by the filestream multiline parser. | keyword |
 | log.offset | Log offset. | long |
 | threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
@@ -1831,24 +1847,24 @@ An example event for `malicious_network_infrastructure` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "bfca0fbc-085e-4315-a7ac-81e35ab4010b",
-        "id": "1349a5ad-5f59-4e1a-9177-9c2edae258f2",
-        "name": "elastic-agent-14607",
+        "ephemeral_id": "b2a4f791-ac61-4f99-afc0-bff45a3721b3",
+        "id": "4623f3bf-7b0f-4e5e-adbc-a5a42ea71488",
+        "name": "elastic-agent-46540",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.malicious_network_infrastructure",
-        "namespace": "92549",
+        "namespace": "58877",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "1349a5ad-5f59-4e1a-9177-9c2edae258f2",
+        "id": "4623f3bf-7b0f-4e5e-adbc-a5a42ea71488",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1857,7 +1873,7 @@ An example event for `malicious_network_infrastructure` looks as following:
             "network"
         ],
         "dataset": "ti_google_threat_intelligence.malicious_network_infrastructure",
-        "ingested": "2026-09-25T14:10:59Z",
+        "ingested": "2026-09-29T10:00:09Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -2037,7 +2053,6 @@ An example event for `malicious_network_infrastructure` looks as following:
 | log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only). | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only). | keyword |
-| log.flags | Flags set by the log collection layer. Contains 'multiline' when the event was assembled from multiple lines by the filestream multiline parser. | keyword |
 | log.offset | Log offset. | long |
 | threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
@@ -2054,24 +2069,24 @@ An example event for `malware` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "1fa2841b-aa1e-435e-ba5e-7c7d698605f2",
-        "id": "7964e91a-a65c-477f-bac2-db0271d4c7c7",
-        "name": "elastic-agent-26103",
+        "ephemeral_id": "1fce1b0b-4e38-4cb4-a5e8-a2cd1ff49b27",
+        "id": "fbee00c6-de3b-4917-a88a-a95d6cf9951b",
+        "name": "elastic-agent-29116",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.malware",
-        "namespace": "71030",
+        "namespace": "72818",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "7964e91a-a65c-477f-bac2-db0271d4c7c7",
+        "id": "fbee00c6-de3b-4917-a88a-a95d6cf9951b",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -2080,7 +2095,7 @@ An example event for `malware` looks as following:
             "malware"
         ],
         "dataset": "ti_google_threat_intelligence.malware",
-        "ingested": "2026-09-25T14:12:20Z",
+        "ingested": "2026-09-29T10:01:27Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -2260,7 +2275,6 @@ An example event for `malware` looks as following:
 | log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only). | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only). | keyword |
-| log.flags | Flags set by the log collection layer. Contains 'multiline' when the event was assembled from multiple lines by the filestream multiline parser. | keyword |
 | log.offset | Log offset. | long |
 | threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
@@ -2277,24 +2291,24 @@ An example event for `mobile` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "8faeda92-8619-4bac-9ac9-4f35c06ec0da",
-        "id": "8230a2cb-52cc-4c9a-8dba-2171bf8accab",
-        "name": "elastic-agent-21007",
+        "ephemeral_id": "e3b00eb1-6738-45d1-8353-770bfcd9d60c",
+        "id": "daf5ffa7-9d10-464c-b33a-b794feb50ec6",
+        "name": "elastic-agent-38119",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.mobile",
-        "namespace": "84610",
+        "namespace": "87462",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "8230a2cb-52cc-4c9a-8dba-2171bf8accab",
+        "id": "daf5ffa7-9d10-464c-b33a-b794feb50ec6",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -2302,7 +2316,7 @@ An example event for `mobile` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.mobile",
-        "ingested": "2026-09-25T14:13:39Z",
+        "ingested": "2026-09-29T10:02:49Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -2481,7 +2495,6 @@ An example event for `mobile` looks as following:
 | log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only). | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only). | keyword |
-| log.flags | Flags set by the log collection layer. Contains 'multiline' when the event was assembled from multiple lines by the filestream multiline parser. | keyword |
 | log.offset | Log offset. | long |
 | threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
@@ -2498,24 +2511,24 @@ An example event for `osx` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "3152d52c-f8fd-48d5-9d39-d79638a6bcba",
-        "id": "a5512941-7a1d-4b57-8dab-69b5d72591ae",
-        "name": "elastic-agent-21194",
+        "ephemeral_id": "f21f45fe-90b9-40c6-9315-776296238003",
+        "id": "46913240-b507-4404-96b5-3c9b7a627e82",
+        "name": "elastic-agent-22636",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.osx",
-        "namespace": "63731",
+        "namespace": "97635",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "a5512941-7a1d-4b57-8dab-69b5d72591ae",
+        "id": "46913240-b507-4404-96b5-3c9b7a627e82",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -2523,7 +2536,7 @@ An example event for `osx` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.osx",
-        "ingested": "2026-09-25T14:15:00Z",
+        "ingested": "2026-09-29T10:04:09Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -2702,7 +2715,6 @@ An example event for `osx` looks as following:
 | log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only). | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only). | keyword |
-| log.flags | Flags set by the log collection layer. Contains 'multiline' when the event was assembled from multiple lines by the filestream multiline parser. | keyword |
 | log.offset | Log offset. | long |
 | threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
@@ -2719,24 +2731,24 @@ An example event for `phishing` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "f0e925bb-f847-4e64-be04-d5f46b2cc32e",
-        "id": "571182aa-a8a4-4d3f-91ea-700a03ae2749",
-        "name": "elastic-agent-44422",
+        "ephemeral_id": "83bc9f70-293e-4edb-a84d-d1b8086032da",
+        "id": "35392272-fd61-42ce-aad2-e9d13713ca46",
+        "name": "elastic-agent-39324",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.phishing",
-        "namespace": "80664",
+        "namespace": "70187",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "571182aa-a8a4-4d3f-91ea-700a03ae2749",
+        "id": "35392272-fd61-42ce-aad2-e9d13713ca46",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -2744,7 +2756,7 @@ An example event for `phishing` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.phishing",
-        "ingested": "2026-09-25T14:16:09Z",
+        "ingested": "2026-09-29T10:05:27Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -2923,7 +2935,6 @@ An example event for `phishing` looks as following:
 | log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only). | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only). | keyword |
-| log.flags | Flags set by the log collection layer. Contains 'multiline' when the event was assembled from multiple lines by the filestream multiline parser. | keyword |
 | log.offset | Log offset. | long |
 | threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
@@ -2940,24 +2951,24 @@ An example event for `ransomware` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "dcbb8535-eed7-4703-b034-26ea1a26e4c2",
-        "id": "c3ef1e48-657b-4b2c-9369-c57921ddee42",
-        "name": "elastic-agent-32762",
+        "ephemeral_id": "252e8cc6-7565-4cff-b53b-03e188e7991a",
+        "id": "d8ddbcf2-b75a-48d2-841f-7dd02e7e816a",
+        "name": "elastic-agent-32230",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.ransomware",
-        "namespace": "23947",
+        "namespace": "49344",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "c3ef1e48-657b-4b2c-9369-c57921ddee42",
+        "id": "d8ddbcf2-b75a-48d2-841f-7dd02e7e816a",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -2965,7 +2976,7 @@ An example event for `ransomware` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.ransomware",
-        "ingested": "2026-09-25T14:17:28Z",
+        "ingested": "2026-09-29T10:06:46Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -3144,7 +3155,6 @@ An example event for `ransomware` looks as following:
 | log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only). | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only). | keyword |
-| log.flags | Flags set by the log collection layer. Contains 'multiline' when the event was assembled from multiple lines by the filestream multiline parser. | keyword |
 | log.offset | Log offset. | long |
 | threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
@@ -3161,24 +3171,24 @@ An example event for `threat_actor` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "8ac6d2d7-d6f3-4883-9df4-f03667c251e7",
-        "id": "a7de2d38-9ebb-4369-942a-909decda237c",
-        "name": "elastic-agent-96322",
+        "ephemeral_id": "280ff974-63d4-4f2d-a70c-3fae55f8ec55",
+        "id": "df131779-8d29-412a-99a8-b1a996dc2437",
+        "name": "elastic-agent-89160",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.threat_actor",
-        "namespace": "45356",
+        "namespace": "77498",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "a7de2d38-9ebb-4369-942a-909decda237c",
+        "id": "df131779-8d29-412a-99a8-b1a996dc2437",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -3186,7 +3196,7 @@ An example event for `threat_actor` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.threat_actor",
-        "ingested": "2026-09-25T14:18:48Z",
+        "ingested": "2026-09-29T10:08:07Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -3365,7 +3375,6 @@ An example event for `threat_actor` looks as following:
 | log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only). | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only). | keyword |
-| log.flags | Flags set by the log collection layer. Contains 'multiline' when the event was assembled from multiple lines by the filestream multiline parser. | keyword |
 | log.offset | Log offset. | long |
 | threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
@@ -3382,24 +3391,24 @@ An example event for `trending` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "e3f4b5c5-3346-4c47-ae24-1736020fce85",
-        "id": "0d69898f-875e-4dd0-b8ce-3e348e85cb2e",
-        "name": "elastic-agent-76254",
+        "ephemeral_id": "e5c37dbe-0f20-4c72-8003-d3875799e4c6",
+        "id": "4229c9ea-98be-4e14-8ccb-89515410aa1d",
+        "name": "elastic-agent-48228",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.trending",
-        "namespace": "25779",
+        "namespace": "59233",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "0d69898f-875e-4dd0-b8ce-3e348e85cb2e",
+        "id": "4229c9ea-98be-4e14-8ccb-89515410aa1d",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -3407,7 +3416,7 @@ An example event for `trending` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.trending",
-        "ingested": "2026-09-25T14:20:19Z",
+        "ingested": "2026-09-29T10:09:24Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -3586,7 +3595,6 @@ An example event for `trending` looks as following:
 | log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only). | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only). | keyword |
-| log.flags | Flags set by the log collection layer. Contains 'multiline' when the event was assembled from multiple lines by the filestream multiline parser. | keyword |
 | log.offset | Log offset. | long |
 | threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
@@ -3603,24 +3611,24 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2026-07-20T13:01:39.000Z",
     "agent": {
-        "ephemeral_id": "83e1ce3b-3b4e-421d-914d-1e72a37927cd",
-        "id": "3d067dc4-ab7a-4df8-a2a7-b251320fd88b",
-        "name": "elastic-agent-14427",
+        "ephemeral_id": "0f17e6b3-c80c-4790-a86d-55233ada1cbd",
+        "id": "916d549c-c003-4e29-9042-cac2af4cbc7f",
+        "name": "elastic-agent-52321",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.vulnerability",
-        "namespace": "30707",
+        "namespace": "21356",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "3d067dc4-ab7a-4df8-a2a7-b251320fd88b",
+        "id": "916d549c-c003-4e29-9042-cac2af4cbc7f",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -3629,7 +3637,7 @@ An example event for `vulnerability` looks as following:
         ],
         "created": "2026-07-20T20:45:08.000Z",
         "dataset": "ti_google_threat_intelligence.vulnerability",
-        "ingested": "2026-09-25T14:21:51Z",
+        "ingested": "2026-09-29T10:10:47Z",
         "kind": "enrichment",
         "original": "{\"attributes\":{\"aggregations\":{},\"alt_names\":[],\"alt_names_details\":[],\"autogenerated_tags\":[],\"available_mitigation\":[],\"capabilities\":[],\"collection_links\":[],\"collection_type\":\"vulnerability\",\"counters\":{\"attack_techniques\":0,\"domains\":0,\"files\":0,\"iocs\":0,\"ip_addresses\":0,\"subscribers\":0,\"urls\":0},\"creation_date\":1784580308,\"cve_id\":\"CVE-2026-63730\",\"cvss\":{\"cvssv3_x\":{\"base_score\":5,\"temporal_score\":4.6,\"vector\":\"CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:L/I:N/A:N/E:U/RL:U/RC:C\"},\"cvssv3_x_translated\":{\"base_score\":0,\"temporal_score\":0,\"vector\":\"CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:N\"},\"cvssv4_x\":{\"score\":1.3,\"supplemental\":{\"automatable\":null,\"provider_urgency\":null,\"recovery\":null,\"response_effort\":null,\"safety\":null,\"value_density\":null},\"threat\":{\"exploit_maturity\":\"Unreported\"},\"vector\":\"CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/SC:L/VI:N/SI:N/VA:N/SA:N/E:U\"}},\"cwe\":{\"id\":\"CWE-918\",\"title\":\"Server-Side Request Forgery (SSRF)\"},\"date_of_disclosure\":1784505600,\"description\":\"Mitre Corporation has provided the following description:   \\n*HyperDX before 2.31.0 contains a server-side request forgery vulnerability that allows authenticated team members to direct the server to make requests to arbitrary internal network destinations by supplying a caller-controlled URL to the webhook test endpoint. Attackers can bypass the insufficient hostname blacklist validation in the webhook handler to enumerate internal services, interact with internal containers, or access cloud instance metadata services including provider metadata endpoints.*\",\"detection_names\":[],\"domains_count\":0,\"epss\":{\"percentile\":null,\"score\":null},\"executive_summary\":\"* A Server-Side Request Forgery (SSRF) vulnerability exists that, when exploited, allows a privileged attacker to achieve unknown impacts.\\n* We are currently unaware of exploitation activity in the wild. Exploit code is not publicly available.\\n* Google Threat Intelligence Group (GTIG) considers this a Low-risk vulnerability due to unknown impacts.\\n* There are currently no mitigation options available for this issue.\",\"exploit_availability\":\"No Known\",\"exploitation\":{\"exploit_release_date\":null,\"first_exploitation\":null,\"tech_details_release_date\":null},\"exploitation_consequence\":\"\",\"exploitation_state\":\"No Known\",\"exploitation_vectors\":[],\"field_sources\":[{\"field\":\"cvss.cvssv4_x.vector\",\"source\":{\"field_type\":\"Ranked\",\"source_name\":\"Mitre Corporation\",\"source_url\":\"\",\"sources\":[]}}],\"files_count\":0,\"first_seen_details\":[],\"ip_addresses_count\":0,\"last_modification_date\":1784552499,\"last_seen_details\":[],\"malware_roles\":[],\"mati_genids_dict\":{\"cve_id\":\"vulnerability--1a9c1e42-f50c-5629-ade2-53739090bf7e\",\"mve_id\":\"vulnerability--11f92668-33b9-5562-be9f-ccaea589a04c\",\"report_id\":null},\"merged_actors\":[],\"motivations\":[],\"mve_id\":\"MVE-2026-43838\",\"name\":\"CVE-2026-63730\",\"operating_systems\":[],\"origin\":\"Google Threat Intelligence\",\"predicted_risk_rating\":\"LOW\",\"priority\":\"P4\",\"private\":false,\"references_count\":0,\"risk_factors\":[],\"risk_rating\":\"Medium\",\"source_regions_hierarchy\":[],\"sources\":[{\"cvss\":{\"cvssv2_0\":null,\"cvssv3_x\":{\"base_score\":5,\"temporal_score\":null,\"vector\":\"CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:L/I:N/A:N\"},\"cvssv3_x_translated\":null,\"cvssv4_x\":{\"score\":5.3,\"supplemental\":null,\"threat\":null,\"vector\":\"CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/SC:L/VI:N/SI:N/VA:N/SA:N\"}},\"md5\":\"e39e72ab729af6010b060045a7ac9024\",\"name\":\"Mitre Corporation\",\"published_date\":1784573062,\"source_description\":null,\"title\":null,\"unique_id\":null,\"url\":\"https://github.com/CVEProject/cvelistV5/blob/main/cves/2026/63xxx/CVE-2026-63730.json\"}],\"status\":\"COMPUTED\",\"subscribers_count\":0,\"tags\":[],\"tags_details\":[],\"targeted_industries\":[],\"targeted_industries_tree\":[],\"targeted_regions\":[],\"targeted_regions_hierarchy\":[],\"top_icon_md5\":[],\"urls_count\":0,\"vendor_fix_references\":[],\"version_history\":[{\"date\":1784552499,\"version_notes\":[\"cvss.cvssv4_x.score: Added\"]}],\"workarounds\":[]},\"context_attributes\":{\"role\":\"viewer\",\"shared_with_me\":false},\"id\":\"vulnerability--cve-2026-63730\",\"links\":{\"self\":\"https://www.virustotal.com/api/v3/collections/vulnerability--cve-2026-63730\"},\"type\":\"collection\"}",
         "type": [
@@ -4013,24 +4021,24 @@ An example event for `vulnerability_weaponization` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "5d824d6b-1605-4182-8a34-a65742d01c12",
-        "id": "4fbea120-04f7-4ebd-8d25-b7fbb61e6400",
-        "name": "elastic-agent-40849",
+        "ephemeral_id": "df424528-557d-481a-9e33-4029b050298a",
+        "id": "f1417347-01ce-42bf-b99c-c3341777e905",
+        "name": "elastic-agent-19712",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.vulnerability_weaponization",
-        "namespace": "35251",
+        "namespace": "27807",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "4fbea120-04f7-4ebd-8d25-b7fbb61e6400",
+        "id": "f1417347-01ce-42bf-b99c-c3341777e905",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -4038,7 +4046,7 @@ An example event for `vulnerability_weaponization` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.vulnerability_weaponization",
-        "ingested": "2026-09-25T14:22:39Z",
+        "ingested": "2026-09-29T10:11:38Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -4217,7 +4225,6 @@ An example event for `vulnerability_weaponization` looks as following:
 | log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only). | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only). | keyword |
-| log.flags | Flags set by the log collection layer. Contains 'multiline' when the event was assembled from multiple lines by the filestream multiline parser. | keyword |
 | log.offset | Log offset. | long |
 | threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
