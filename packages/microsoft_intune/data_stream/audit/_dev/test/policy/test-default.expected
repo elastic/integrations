@@ -1,0 +1,41 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: microsoft_intune
+      name: test-default-microsoft_intune
+      streams:
+        - authority_host: https://login.microsoftonline.com
+          connection_string: ${SECRET_0}
+          consumer_group: $Default
+          data_stream:
+            dataset: microsoft_intune.audit
+          eventhub: example
+          publisher_pipeline.disable_host: true
+          storage_account: default
+          storage_account_container: azure-eventhub-input-example
+          storage_account_key: ${SECRET_1}
+          tags:
+            - forwarded
+            - microsoft_intune-audit
+          transport: amqp
+      type: azure-eventhub
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-microsoft_intune.audit-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
+    - {}
