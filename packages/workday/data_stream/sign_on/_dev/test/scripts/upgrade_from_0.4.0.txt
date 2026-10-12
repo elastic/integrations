@@ -1,0 +1,41 @@
+# Upgrading a Sign-on-only policy from 0.4.0 to the current package must succeed.
+#
+# 0.4.0 is the last release before the user data stream. 0.5.0 added that
+# stream with required url, username, and password. Fleet rejects the upgrade
+# when those variables are empty:
+#   Package policy is invalid:
+#   inputs.cel.streams.workday.user.vars.url: ["Report URL is required"]
+#   inputs.cel.streams.workday.user.vars.username: ["Username is required"]
+#   inputs.cel.streams.workday.user.vars.password: ["Password is required"]
+#
+# 0.4.0 is pinned on purpose. ${PREVIOUS_VERSION} is 0.5.1, which already
+# has the user stream, so an upgrade from that version does not hit this check.
+
+[!external_stack] skip 'Skipping external stack test.'
+[breaking_change] skip 'Cannot upgrade across breaking change.'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+install_package_from_registry -profile ${CONFIG_PROFILES}/${PROFILE} ${PACKAGE_NAME} 0.4.0
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} -version 0.4.0 test_config.yaml DATA_STREAM_NAME
+
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+upgrade_package_latest -profile ${CONFIG_PROFILES}/${PROFILE}
+stdout 'upgraded package '${PACKAGE_NAME}
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+
+-- test_config.yaml --
+input: cel
+vars: ~
+data_stream:
+  vars:
+    url: http://workday.example:8080/ccx/service/customreport2/tenant/report_owner/report_name?format=json
+    username: test_user
+    password: test_password
+    initial_interval: 24h
+    interval: 24h
+    preserve_original_event: false
+    enable_request_tracer: false
