@@ -166,7 +166,7 @@
                                             "ignoreGlobalFilters": true,
                                             "index": "-95bb74f059477799b8371571b61a9cfb573730e621c5fd8493828f2fdcc41005",
                                             "query": {
-                                                "esql": "ROW `Open` = \"View metrics in Discover ↗\""
+                                                "esql": "ROW `Open` = \"View metrics in Discover\""
                                             }
                                         }
                                     }
@@ -181,7 +181,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "ROW `Open` = \"View metrics in Discover ↗\""
+                                "esql": "ROW `Open` = \"View metrics in Discover\""
                             },
                             "visualization": {
                                 "density": "compact",
@@ -205,7 +205,7 @@
                         {
                             "encode_url": true,
                             "label": "View metrics in Discover",
-                            "open_in_new_tab": true,
+                            "open_in_new_tab": false,
                             "trigger": "on_click_value",
                             "type": "url_drilldown",
                             "url": "{{kibanaUrl}}/app/discover#/?_g=(filters:{{rison context.panel.filters}},time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))\u0026_a=(dataSource:(dataViewId:'metrics-*',type:dataView),filters:!(),query:(language:kuery,query:''))"
@@ -228,7 +228,7 @@
                 "embeddableConfig": {
                     "description": "Saturation summary for the selected service, showing CPU and memory utilisation percentiles over the range. p95 CPU above 80% or p95 memory above 70% indicates the service is near its resource limits and may throttle or OOM.",
                     "esql_query": [
-                        "FROM metrics-gcp.cloudrun.otel-default\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c= ?_tend\n| STATS\n    mem_p50 = PERCENTILE(`metrics.run.googleapis.com/container/memory/utilizations`::exponential_histogram, 50),\n    mem_p95 = PERCENTILE(`metrics.run.googleapis.com/container/memory/utilizations`::exponential_histogram, 95),\n    mem_p99 = PERCENTILE(`metrics.run.googleapis.com/container/memory/utilizations`::exponential_histogram, 99),\n    cpu_p50 = PERCENTILE(`metrics.run.googleapis.com/container/cpu/utilizations`::exponential_histogram, 50),\n    cpu_p95 = PERCENTILE(`metrics.run.googleapis.com/container/cpu/utilizations`::exponential_histogram, 95),\n    cpu_p99 = PERCENTILE(`metrics.run.googleapis.com/container/cpu/utilizations`::exponential_histogram, 99),\n    max_active = MAX(`metrics.run.googleapis.com/container/instance_count`) WHERE attributes.state == \"active\"\n    BY service_name = resource.attributes.service_name,\n       location = resource.attributes.location,\n       project_id = resource.attributes.project_id\n| SORT mem_p95 DESC\n| LIMIT 1"
+                        "FROM metrics-gcp.cloudrun.otel-default\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c= ?_tend\n| STATS\n    mem_p50 = PERCENTILE(`metrics.run.googleapis.com/container/memory/utilizations`::exponential_histogram, 50),\n    mem_p95 = PERCENTILE(`metrics.run.googleapis.com/container/memory/utilizations`::exponential_histogram, 95),\n    mem_p99 = PERCENTILE(`metrics.run.googleapis.com/container/memory/utilizations`::exponential_histogram, 99),\n    cpu_p50 = PERCENTILE(`metrics.run.googleapis.com/container/cpu/utilizations`::exponential_histogram, 50),\n    cpu_p95 = PERCENTILE(`metrics.run.googleapis.com/container/cpu/utilizations`::exponential_histogram, 95),\n    cpu_p99 = PERCENTILE(`metrics.run.googleapis.com/container/cpu/utilizations`::exponential_histogram, 99),\n    max_active = MAX(`metrics.run.googleapis.com/container/instance_count`) WHERE attributes.state == \"active\"\n    BY service_name = resource.attributes.service_name,\n       location = resource.attributes.location,\n       project_id = resource.attributes.project_id\n| SORT mem_p95 DESC NULLS LAST\n| LIMIT 1"
                     ],
                     "template": "\u003cstyle\u003e\n  body {\n    margin: 0;\n    padding: var(--cc-space-l);\n    box-sizing: border-box;\n    font-family: var(--cc-font-family);\n    color: var(--cc-color-text);\n    background: var(--cc-color-background);\n  }\n  .panel-title { font-size: 1rem; font-weight: 600; margin: 0 0 var(--cc-space-s) 0; }\n  .meta-grid {\n    display: grid;\n    grid-template-columns: repeat(3, 1fr);\n    gap: var(--cc-space-l);\n    margin-top: var(--cc-space-xs);\n  }\n  .field { display: flex; flex-direction: column; gap: var(--cc-space-xs); min-width: 0; }\n  .field-label { font-size: 0.85rem; color: var(--cc-color-text); opacity: 0.6; }\n  .field-value { font-size: 1rem; font-weight: 600; word-break: break-all; }\n  .empty { font-size: 0.875rem; color: var(--cc-color-text); opacity: 0.6; }\n  .ok   { color: var(--cc-color-text); }\n  .warn { color: var(--cc-color-text); }\n  .bad  { color: var(--cc-color-text); }\n\u003c/style\u003e\n\n{% if rows.size == 0 %}\n  \u003cdiv class=\"panel-title\"\u003eService metadata\u003c/div\u003e\n  \u003cdiv class=\"empty\"\u003eNo data in selected time range.\u003c/div\u003e\n{% else %}\n  {% for row in rows %}\n  \u003cdiv\u003e\n    \u003cdiv class=\"panel-title\"\u003eService metadata\u003c/div\u003e\n    \u003cdiv class=\"meta-grid\"\u003e\n\n      \u003cdiv class=\"field\"\u003e\n        \u003cdiv class=\"field-label\"\u003eRegion\u003c/div\u003e\n        \u003cdiv class=\"field-value\"\u003e{% if row[\"location\"].value %}{{ row[\"location\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n      \u003c/div\u003e\n\n      \u003cdiv class=\"field\"\u003e\n        \u003cdiv class=\"field-label\"\u003eProject\u003c/div\u003e\n        \u003cdiv class=\"field-value\"\u003e{% if row[\"project_id\"].value %}{{ row[\"project_id\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n      \u003c/div\u003e\n\n      \u003cdiv class=\"field\"\u003e\n        \u003cdiv class=\"field-label\"\u003eMax active instances\u003c/div\u003e\n        \u003cdiv class=\"field-value\"\u003e{% if row[\"max_active\"].value %}{{ row[\"max_active\"].value | round: 0 }}{% else %}—{% endif %}\u003c/div\u003e\n      \u003c/div\u003e\n\n      \u003cdiv class=\"field\"\u003e\n        \u003cdiv class=\"field-label\"\u003eMemory p50\u003c/div\u003e\n        {% if row[\"mem_p50\"].value %}\n          {% assign m50 = row[\"mem_p50\"].value | times: 100.0 %}\n          \u003cdiv class=\"field-value {% if m50 \u003e= 90 %}bad{% elsif m50 \u003e= 70 %}warn{% else %}ok{% endif %}\"\u003e{{ m50 | round: 1 }}%\u003c/div\u003e\n        {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n      \u003c/div\u003e\n\n      \u003cdiv class=\"field\"\u003e\n        \u003cdiv class=\"field-label\"\u003eMemory p95\u003c/div\u003e\n        {% if row[\"mem_p95\"].value %}\n          {% assign m95 = row[\"mem_p95\"].value | times: 100.0 %}\n          \u003cdiv class=\"field-value {% if m95 \u003e= 90 %}bad{% elsif m95 \u003e= 70 %}warn{% else %}ok{% endif %}\"\u003e{{ m95 | round: 1 }}%\u003c/div\u003e\n        {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n      \u003c/div\u003e\n\n      \u003cdiv class=\"field\"\u003e\n        \u003cdiv class=\"field-label\"\u003eMemory p99\u003c/div\u003e\n        {% if row[\"mem_p99\"].value %}\n          {% assign m99 = row[\"mem_p99\"].value | times: 100.0 %}\n          \u003cdiv class=\"field-value {% if m99 \u003e= 90 %}bad{% elsif m99 \u003e= 70 %}warn{% else %}ok{% endif %}\"\u003e{{ m99 | round: 1 }}%\u003c/div\u003e\n        {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n      \u003c/div\u003e\n\n      \u003cdiv class=\"field\"\u003e\n        \u003cdiv class=\"field-label\"\u003eCPU p50\u003c/div\u003e\n        {% if row[\"cpu_p50\"].value %}\n          {% assign c50 = row[\"cpu_p50\"].value | times: 100.0 %}\n          \u003cdiv class=\"field-value {% if c50 \u003e= 90 %}bad{% elsif c50 \u003e= 70 %}warn{% else %}ok{% endif %}\"\u003e{{ c50 | round: 1 }}%\u003c/div\u003e\n        {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n      \u003c/div\u003e\n\n      \u003cdiv class=\"field\"\u003e\n        \u003cdiv class=\"field-label\"\u003eCPU p95\u003c/div\u003e\n        {% if row[\"cpu_p95\"].value %}\n          {% assign c95 = row[\"cpu_p95\"].value | times: 100.0 %}\n          \u003cdiv class=\"field-value {% if c95 \u003e= 90 %}bad{% elsif c95 \u003e= 70 %}warn{% else %}ok{% endif %}\"\u003e{{ c95 | round: 1 }}%\u003c/div\u003e\n        {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n      \u003c/div\u003e\n\n      \u003cdiv class=\"field\"\u003e\n        \u003cdiv class=\"field-label\"\u003eCPU p99\u003c/div\u003e\n        {% if row[\"cpu_p99\"].value %}\n          {% assign c99 = row[\"cpu_p99\"].value | times: 100.0 %}\n          \u003cdiv class=\"field-value {% if c99 \u003e= 90 %}bad{% elsif c99 \u003e= 70 %}warn{% else %}ok{% endif %}\"\u003e{{ c99 | round: 1 }}%\u003c/div\u003e\n        {% else %}\u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e{% endif %}\n      \u003c/div\u003e\n\n    \u003c/div\u003e\n  \u003c/div\u003e\n  {% endfor %}\n{% endif %}"
                 },
@@ -584,8 +584,8 @@
                                                 {
                                                     "columnId": "metric_accessor_metric",
                                                     "customLabel": true,
-                                                    "fieldName": "Requests/sec",
-                                                    "label": "Requests/sec",
+                                                    "fieldName": "Requests",
+                                                    "label": "Requests",
                                                     "meta": {
                                                         "type": "number"
                                                     },
@@ -593,8 +593,8 @@
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
-                                                                "compact": false,
-                                                                "decimals": 4
+                                                                "compact": true,
+                                                                "decimals": 0
                                                             }
                                                         }
                                                     }
@@ -603,7 +603,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.cloudrun.otel-default-e700b8b9f2c92bd1154595512feda624ffe98bf3ddfb1f0c24b54d76f1eb2d25",
                                             "query": {
-                                                "esql": "TS metrics-gcp.cloudrun.otel-default\n| WHERE TRANGE(?_tstart, ?_tend)\n| STATS total = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`)),\n        buckets = COUNT_DISTINCT(BUCKET(@timestamp, 1 minute, ?_tstart, ?_tend))\n| EVAL `Requests/sec` = ROUND(TO_DOUBLE(COALESCE(total, TO_LONG(0))) / (TO_DOUBLE(buckets) * 60.0), 4)\n| KEEP `Requests/sec`"
+                                                "esql": "TS metrics-gcp.cloudrun.otel-default\n| WHERE TRANGE(?_tstart, ?_tend)\n| STATS `Requests` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`))"
                                             }
                                         }
                                     }
@@ -618,7 +618,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.cloudrun.otel-default\n| WHERE TRANGE(?_tstart, ?_tend)\n| STATS total = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`)),\n        buckets = COUNT_DISTINCT(BUCKET(@timestamp, 1 minute, ?_tstart, ?_tend))\n| EVAL `Requests/sec` = ROUND(TO_DOUBLE(COALESCE(total, TO_LONG(0))) / (TO_DOUBLE(buckets) * 60.0), 4)\n| KEEP `Requests/sec`"
+                                "esql": "TS metrics-gcp.cloudrun.otel-default\n| WHERE TRANGE(?_tstart, ?_tend)\n| STATS `Requests` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`))"
                             },
                             "visualization": {
                                 "density": "default",
@@ -636,7 +636,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Average request throughput in requests per second.",
+                    "description": "Total number of requests handled in the selected time range.",
                     "drilldowns": []
                 },
                 "gridData": {
@@ -679,7 +679,7 @@
                                                 },
                                                 {
                                                     "columnId": "bar_stacked_0_y_0",
-                                                    "fieldName": "Requests/sec",
+                                                    "fieldName": "Requests",
                                                     "meta": {
                                                         "type": "number"
                                                     }
@@ -695,7 +695,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.cloudrun.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/request_count` IS NOT NULL | STATS `Requests/sec` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`))/60.0 BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Response class` = attributes.response_code_class | SORT time_bucket ASC"
+                                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/request_count` IS NOT NULL | STATS `Requests` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Response class` = attributes.response_code_class | SORT time_bucket ASC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -711,7 +711,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/request_count` IS NOT NULL | STATS `Requests/sec` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`))/60.0 BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Response class` = attributes.response_code_class | SORT time_bucket ASC"
+                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/request_count` IS NOT NULL | STATS `Requests` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Response class` = attributes.response_code_class | SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -854,9 +854,9 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Request rate by HTTP response code class (2xx/3xx/4xx/5xx) over time.",
+                    "description": "Requests in each time bucket by HTTP response code class (2xx/3xx/4xx/5xx).",
                     "drilldowns": [],
-                    "title": "Request rate (req/s) over time by response code class"
+                    "title": "Request count over time by response code class"
                 },
                 "gridData": {
                     "h": 11,
@@ -1842,7 +1842,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.cloudrun.otel-default-b9ea68ba85c8491d1ee674ff3ad0ad57052af39c83a8a61ca04cc4502172481a",
                                             "query": {
-                                                "esql": "TS metrics-gcp.cloudrun.otel-default\n| WHERE TRANGE(?_tstart, ?_tend)\n| STATS `Instances` = AVG(AVG_OVER_TIME(`metrics.run.googleapis.com/container/instance_count`))\n  BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend),\n     `State` = attributes.state\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-gcp.cloudrun.otel-default\n| WHERE TRANGE(?_tstart, ?_tend)\n| STATS i = AVG(AVG_OVER_TIME(`metrics.run.googleapis.com/container/instance_count`))\n  BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend),\n     `State` = attributes.state,\n     service = resource.attributes.service_name,\n     revision = resource.attributes.revision_name\n| STATS `Instances` = SUM(i) BY time_bucket, `State`\n| SORT time_bucket ASC"
                                             }
                                         }
                                     }
@@ -1857,7 +1857,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.cloudrun.otel-default\n| WHERE TRANGE(?_tstart, ?_tend)\n| STATS `Instances` = AVG(AVG_OVER_TIME(`metrics.run.googleapis.com/container/instance_count`))\n  BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend),\n     `State` = attributes.state\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-gcp.cloudrun.otel-default\n| WHERE TRANGE(?_tstart, ?_tend)\n| STATS i = AVG(AVG_OVER_TIME(`metrics.run.googleapis.com/container/instance_count`))\n  BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend),\n     `State` = attributes.state,\n     service = resource.attributes.service_name,\n     revision = resource.attributes.revision_name\n| STATS `Instances` = SUM(i) BY time_bucket, `State`\n| SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2955,12 +2955,26 @@
                                                             }
                                                         }
                                                     }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_2",
+                                                    "fieldName": "Region",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_3",
+                                                    "fieldName": "Project",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.cloudrun.otel-default-2d128844450ef516c839f300b4893326183c8fc850dbaedb320387e786d36543",
                                             "query": {
-                                                "esql": "TS metrics-gcp.cloudrun.otel-default | STATS `Requests` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`)), errors = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`)) WHERE attributes.response_code_class == \"5xx\", `Latency p50 ms` = ROUND(PERCENTILE(`metrics.run.googleapis.com/request_latencies`::exponential_histogram, 50), 2), `Latency p95 ms` = ROUND(PERCENTILE(`metrics.run.googleapis.com/request_latencies`::exponential_histogram, 95), 2) BY `Revision` = resource.attributes.revision_name, `Service` = resource.attributes.service_name | EVAL `5xx` = COALESCE(errors, TO_LONG(0)) | EVAL `Error %` = ROUND(`5xx` * 100.0 / `Requests`, 2) | WHERE `Requests` \u003e 0 | KEEP `Revision`, `Service`, `Error %`, `Requests`, `5xx`, `Latency p50 ms`, `Latency p95 ms` | SORT `Error %` DESC NULLS LAST, `Requests` DESC | LIMIT 10"
+                                                "esql": "FROM metrics-gcp.cloudrun.otel-default | STATS `Requests` = SUM(`metrics.run.googleapis.com/request_count`), errors = SUM(`metrics.run.googleapis.com/request_count`) WHERE attributes.response_code_class == \"5xx\", `Latency p50 ms` = ROUND(PERCENTILE(`metrics.run.googleapis.com/request_latencies`::exponential_histogram, 50), 2), `Latency p95 ms` = ROUND(PERCENTILE(`metrics.run.googleapis.com/request_latencies`::exponential_histogram, 95), 2), `Region` = MAX(resource.attributes.location), `Project` = MAX(resource.attributes.project_id) BY `Revision` = resource.attributes.revision_name, `Service` = resource.attributes.service_name | EVAL `5xx` = COALESCE(errors, TO_LONG(0)) | EVAL `Error %` = ROUND(`5xx` * 100.0 / `Requests`, 2) | WHERE `Requests` \u003e 0 | KEEP `Revision`, `Service`, `Error %`, `Requests`, `5xx`, `Latency p50 ms`, `Latency p95 ms`, `Region`, `Project` | SORT `Error %` DESC NULLS LAST, `Requests` DESC | LIMIT 10"
                                             }
                                         }
                                     }
@@ -2975,7 +2989,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.cloudrun.otel-default | STATS `Requests` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`)), errors = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`)) WHERE attributes.response_code_class == \"5xx\", `Latency p50 ms` = ROUND(PERCENTILE(`metrics.run.googleapis.com/request_latencies`::exponential_histogram, 50), 2), `Latency p95 ms` = ROUND(PERCENTILE(`metrics.run.googleapis.com/request_latencies`::exponential_histogram, 95), 2) BY `Revision` = resource.attributes.revision_name, `Service` = resource.attributes.service_name | EVAL `5xx` = COALESCE(errors, TO_LONG(0)) | EVAL `Error %` = ROUND(`5xx` * 100.0 / `Requests`, 2) | WHERE `Requests` \u003e 0 | KEEP `Revision`, `Service`, `Error %`, `Requests`, `5xx`, `Latency p50 ms`, `Latency p95 ms` | SORT `Error %` DESC NULLS LAST, `Requests` DESC | LIMIT 10"
+                                "esql": "FROM metrics-gcp.cloudrun.otel-default | STATS `Requests` = SUM(`metrics.run.googleapis.com/request_count`), errors = SUM(`metrics.run.googleapis.com/request_count`) WHERE attributes.response_code_class == \"5xx\", `Latency p50 ms` = ROUND(PERCENTILE(`metrics.run.googleapis.com/request_latencies`::exponential_histogram, 50), 2), `Latency p95 ms` = ROUND(PERCENTILE(`metrics.run.googleapis.com/request_latencies`::exponential_histogram, 95), 2), `Region` = MAX(resource.attributes.location), `Project` = MAX(resource.attributes.project_id) BY `Revision` = resource.attributes.revision_name, `Service` = resource.attributes.service_name | EVAL `5xx` = COALESCE(errors, TO_LONG(0)) | EVAL `Error %` = ROUND(`5xx` * 100.0 / `Requests`, 2) | WHERE `Requests` \u003e 0 | KEEP `Revision`, `Service`, `Error %`, `Requests`, `5xx`, `Latency p50 ms`, `Latency p95 ms`, `Region`, `Project` | SORT `Error %` DESC NULLS LAST, `Requests` DESC | LIMIT 10"
                             },
                             "visualization": {
                                 "columns": [
@@ -3075,6 +3089,22 @@
                                         "hidden": false,
                                         "isMetric": true,
                                         "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_row_2",
+                                        "hidden": true,
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_row_3",
+                                        "hidden": true,
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": false
                                     }
                                 ],
                                 "density": "compact",
@@ -3100,6 +3130,14 @@
                             "trigger": "on_click_value",
                             "type": "url_drilldown",
                             "url": "{{kibanaUrl}}/app/dashboards#/view/gcp_cloudrun_otel-7d96ccf8-44dc-4987-8835-7ec93a922d04?_g=(time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))\u0026_a=(filters:!((meta:(alias:!n,disabled:!f,index:'metrics-gcp.cloudrun.otel-default',key:resource.attributes.service_name,negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.service_name:'{{event.value}}')))),query:(language:kuery,query:''))"
+                        },
+                        {
+                            "encode_url": true,
+                            "label": "View in Google Console ↗",
+                            "open_in_new_tab": true,
+                            "trigger": "on_click_row",
+                            "type": "url_drilldown",
+                            "url": "https://console.cloud.google.com/run/detail/{{event.values.[2]}}/{{event.values.[1]}}/revisions?project={{event.values.[3]}}"
                         }
                     ],
                     "title": "Revisions ranked by error rate"
@@ -3429,7 +3467,7 @@
                                                 },
                                                 {
                                                     "columnId": "line_0_y_0",
-                                                    "fieldName": "Rx bytes/s",
+                                                    "fieldName": "Rx bytes",
                                                     "meta": {
                                                         "type": "number"
                                                     },
@@ -3437,15 +3475,14 @@
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
-                                                                "decimals": 1,
-                                                                "suffix": "/s"
+                                                                "decimals": 1
                                                             }
                                                         }
                                                     }
                                                 },
                                                 {
                                                     "columnId": "line_0_y_1",
-                                                    "fieldName": "Tx bytes/s",
+                                                    "fieldName": "Tx bytes",
                                                     "meta": {
                                                         "type": "number"
                                                     },
@@ -3453,8 +3490,7 @@
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
-                                                                "decimals": 1,
-                                                                "suffix": "/s"
+                                                                "decimals": 1
                                                             }
                                                         }
                                                     }
@@ -3463,7 +3499,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.cloudrun.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/container/network/received_bytes_count` IS NOT NULL | STATS `Rx bytes/s` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/network/received_bytes_count`))/60.0, `Tx bytes/s` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/network/sent_bytes_count`))/60.0 BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT time_bucket ASC"
+                                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/container/network/received_bytes_count` IS NOT NULL OR `metrics.run.googleapis.com/container/network/sent_bytes_count` IS NOT NULL | STATS `Rx bytes` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/network/received_bytes_count`)), `Tx bytes` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/network/sent_bytes_count`)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT time_bucket ASC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -3479,7 +3515,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/container/network/received_bytes_count` IS NOT NULL | STATS `Rx bytes/s` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/network/received_bytes_count`))/60.0, `Tx bytes/s` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/network/sent_bytes_count`))/60.0 BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT time_bucket ASC"
+                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/container/network/received_bytes_count` IS NOT NULL OR `metrics.run.googleapis.com/container/network/sent_bytes_count` IS NOT NULL | STATS `Rx bytes` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/network/received_bytes_count`)), `Tx bytes` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/network/sent_bytes_count`)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -3550,9 +3586,9 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Network receive and transmit throughput in bytes per second over time.",
+                    "description": "Bytes received and transmitted in each time bucket.",
                     "drilldowns": [],
-                    "title": "Network throughput (Rx \u0026 Tx bytes/s) over time"
+                    "title": "Network traffic (Rx \u0026 Tx bytes) over time"
                 },
                 "gridData": {
                     "h": 11,
