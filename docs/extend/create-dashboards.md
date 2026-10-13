@@ -1,11 +1,14 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/integrations-developer/current/create-dashboards.html
+description: Package Kibana dashboards in an Elastic integration with elastic-package. Build them in Kibana, then add them to your package source.
 ---
 
-# Create and export dashboards [create-dashboards]
+# Add dashboards to an integration [create-dashboards]
 
-Visualizing integration data in a meaningful way is a key aspect of building a great integration. Dashboards help users quickly understand and explore the data your integration ingests
+To add dashboards to an integration you're building, create them in {{kib}}, then use `elastic-package` to add them to your package source. Dashboards help users quickly understand and explore the data your integration ingests.
+
+To download a dashboard as a PDF, PNG, CSV, or JSON file, refer to [Export {{kib}} dashboards](docs-content://explore-analyze/dashboards/sharing.md).
 
 ## Getting started [_getting_started]
 
