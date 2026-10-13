@@ -1,0 +1,37 @@
+source:
+  index:
+    - "logs-tenable_sc.asset-*"
+  query:
+    bool:
+      filter:
+        - term:
+            event.kind: state
+      must_not:
+        - exists:
+            field: error.message
+        - terms:
+            _tier:
+              - data_frozen
+              - data_cold
+dest:
+  index: "logs-tenable_sc_latest.asset-1"
+  aliases:
+    - alias: "logs-tenable_sc_latest.asset"
+      move_on_creation: true
+latest:
+  unique_key:
+    - tenable_sc.asset.custom_hash
+    - data_stream.namespace
+  sort: "@timestamp"
+description: Latest Tenable Security Center asset state by stable asset identity.
+frequency: 5m
+sync:
+  time:
+    field: event.ingested
+    delay: 120s
+_meta:
+  managed: true
+  fleet_transform_version: 0.1.1
+settings:
+  deduce_mappings: false
+  unattended: true

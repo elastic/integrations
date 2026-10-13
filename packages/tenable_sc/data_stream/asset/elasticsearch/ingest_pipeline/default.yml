@@ -82,6 +82,30 @@ processors:
       target_field: tenable_sc.asset.custom_hash
       method: SHA-256
       ignore_missing: true
+  - fingerprint:
+      tag: fingerprint_to_id_asset_state_8a3c2f1e
+      description: >-
+        Document id from stable asset identity plus mutable scan state so
+        severity and score changes index as new documents while unchanged
+        assets deduplicate on repeat polls.
+      if: ctx.tenable_sc?.asset?.custom_hash != null
+      fields:
+        - tenable_sc.asset.custom_hash
+        - json.score
+        - json.total
+        - json.severityInfo
+        - json.severityLow
+        - json.severityMedium
+        - json.severityHigh
+        - json.severityCritical
+        - json.macAddress
+        - json.policyName
+        - json.pluginSet
+        - json.lastAuthRun
+        - json.lastUnauthRun
+      target_field: _id
+      method: SHA-256
+      ignore_missing: true
   - convert:
       tag: convert_json_ip_to_tenable_sc_asset_ip_0a1cb325
       field: json.ip
