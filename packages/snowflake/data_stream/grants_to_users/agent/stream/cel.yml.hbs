@@ -74,37 +74,61 @@ program: |-
             optional.of(
               {
                 "statement": (req.query == "deleted") ?
-                  ("SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.GRANTS_TO_USERS " + "WHERE DELETED_ON IS NOT NULL AND DELETED_ON " + (state.?cursor.continue.orValue(false) ? ">= ?" : "> ?") + " ORDER BY DELETED_ON ASC, GRANTEE_NAME ASC, ROLE ASC " + "LIMIT " + string(state.batch_size))
+                  ("SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.GRANTS_TO_USERS WHERE DELETED_ON IS NOT NULL AND " + (
+                    state.?cursor.continue.orValue(false) ?
+                      "(DELETED_ON > ? OR (DELETED_ON = ? AND (GRANTEE_NAME > ? OR (GRANTEE_NAME = ? AND ROLE > ?))))"
+                    :
+                      "DELETED_ON > ?"
+                  ) + " ORDER BY DELETED_ON ASC, GRANTEE_NAME ASC, ROLE ASC LIMIT " + string(state.batch_size))
                 :
-                  "SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.GRANTS_TO_USERS " + "WHERE CREATED_ON " + (state.?cursor.continue.orValue(false) ? ">= ?" : "> ?") + " ORDER BY CREATED_ON ASC, GRANTEE_NAME ASC, ROLE ASC " + "LIMIT " + string(state.batch_size),
+                  "SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.GRANTS_TO_USERS WHERE " + (
+                    state.?cursor.continue.orValue(false) ?
+                      "(CREATED_ON > ? OR (CREATED_ON = ? AND (GRANTEE_NAME > ? OR (GRANTEE_NAME = ? AND ROLE > ?))))"
+                    :
+                      "CREATED_ON > ?"
+                  ) + " ORDER BY CREATED_ON ASC, GRANTEE_NAME ASC, ROLE ASC LIMIT " + string(state.batch_size),
                 "warehouse": state.warehouse,
                 "role": state.role,
-                "bindings": {
-                  "1": {
-                    "type": "TEXT",
-                    "value": (req.query == "deleted") ?
-                      (
-                        (state.?cursor.last_deleted_on.orValue("") != "") ?
-                          (
-                            state.?cursor.continue.orValue(false) ?
-                              state.cursor.last_deleted_on
-                            :
-                              (state.cursor.last_deleted_on.parse_time("2006-01-02 15:04:05.000 -0700") - duration(state.lag_time)).format("2006-01-02 15:04:05.000 -0700")
-                          )
-                        :
-                          (now - duration(state.initial_interval)).format("2006-01-02 15:04:05.000 -0700")
-                      )
-                    : (state.?cursor.last_created_on.orValue("") != "") ?
-                      (
-                        state.?cursor.continue.orValue(false) ?
-                          state.cursor.last_created_on
-                        :
-                          (state.cursor.last_created_on.parse_time("2006-01-02 15:04:05.000 -0700") - duration(state.lag_time)).format("2006-01-02 15:04:05.000 -0700")
-                      )
-                    :
-                      (now - duration(state.initial_interval)).format("2006-01-02 15:04:05.000 -0700"),
+                "bindings": state.?cursor.continue.orValue(false) ?
+                  {
+                    "1": {
+                      "type": "TEXT",
+                      "value": (req.query == "deleted") ? state.cursor.last_deleted_on : state.cursor.last_created_on,
+                    },
+                    "2": {
+                      "type": "TEXT",
+                      "value": (req.query == "deleted") ? state.cursor.last_deleted_on : state.cursor.last_created_on,
+                    },
+                    "3": {
+                      "type": "TEXT",
+                      "value": state.?cursor.last_grantee_name.orValue(""),
+                    },
+                    "4": {
+                      "type": "TEXT",
+                      "value": state.?cursor.last_grantee_name.orValue(""),
+                    },
+                    "5": {
+                      "type": "TEXT",
+                      "value": state.?cursor.last_role.orValue(""),
+                    },
+                  }
+                :
+                  {
+                    "1": {
+                      "type": "TEXT",
+                      "value": (req.query == "deleted") ?
+                        (
+                          (state.?cursor.last_deleted_on.orValue("") != "") ?
+                            (state.cursor.last_deleted_on.parse_time("2006-01-02 15:04:05.000 -0700") - duration(state.lag_time)).format("2006-01-02 15:04:05.000 -0700")
+                          :
+                            (now - duration(state.initial_interval)).format("2006-01-02 15:04:05.000 -0700")
+                        )
+                      : (state.?cursor.last_created_on.orValue("") != "") ?
+                        (state.cursor.last_created_on.parse_time("2006-01-02 15:04:05.000 -0700") - duration(state.lag_time)).format("2006-01-02 15:04:05.000 -0700")
+                      :
+                        (now - duration(state.initial_interval)).format("2006-01-02 15:04:05.000 -0700"),
+                    },
                   },
-                },
                 "parameters": {
                   "TIMESTAMP_LTZ_OUTPUT_FORMAT": "YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM",
                 },
@@ -133,7 +157,10 @@ program: |-
                 "cursor": {
                   ?"last_created_on": (state.?cursor.last_created_on.orValue("") != "") ? optional.of(state.cursor.last_created_on) : optional.none(),
                   ?"last_deleted_on": (state.?cursor.last_deleted_on.orValue("") != "") ? optional.of(state.cursor.last_deleted_on) : optional.none(),
+                  ?"last_grantee_name": (state.?cursor.last_grantee_name.orValue("") != "") ? optional.of(state.cursor.last_grantee_name) : optional.none(),
+                  ?"last_role": (state.?cursor.last_role.orValue("") != "") ? optional.of(state.cursor.last_role) : optional.none(),
                   "query": req.query,
+                  "continue": state.?cursor.continue.orValue(false),
                   "handle": string(body.statementHandle),
                   "next_partition": 0,
                 },
@@ -201,6 +228,22 @@ program: |-
                         )
                       :
                         state.?cursor.last_deleted_on.orValue(""),
+                      "last_grantee_name": (size(result.rows) > 0 && int(state.?cursor.next_partition.orValue(0)) + 1 >= result.partition_count) ?
+                        string(
+                          result.names.zip(result.rows[int(size(result.rows)) - 1]).?GRANTEE_NAME.orValue(
+                            state.?cursor.last_grantee_name.orValue("")
+                          )
+                        )
+                      :
+                        state.?cursor.last_grantee_name.orValue(""),
+                      "last_role": (size(result.rows) > 0 && int(state.?cursor.next_partition.orValue(0)) + 1 >= result.partition_count) ?
+                        string(
+                          result.names.zip(result.rows[int(size(result.rows)) - 1]).?ROLE.orValue(
+                            state.?cursor.last_role.orValue("")
+                          )
+                        )
+                      :
+                        state.?cursor.last_role.orValue(""),
                       // After a created page, continue created when LIMIT is full; otherwise run deleted.
                       "query": (int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count) ?
                         req.query
