@@ -63,7 +63,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| Collection interval | `1h` | How often the Analytics API is polled for new hourly data (10 minutes to 24 hours). |
+| Collection interval | `1h` | How often the Analytics API is polled for new hourly data (1 hour to 24 hours). |
 | Initial lookback | `168h` (7 days) | How far back to collect data on the first run (at least 1 hour). |
 
 </details>
