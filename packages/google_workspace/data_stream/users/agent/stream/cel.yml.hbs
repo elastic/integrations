@@ -260,9 +260,12 @@ program: |-
           }.as(err,
             (state.phase == "groups" || state.phase == "members") ?
               // Group membership enrichment failed: abandon it for this cycle.
+              // The error is returned as a list so that it is published like
+              // any other event: an optional enrichment failure must not log
+              // at error level or mark the input as degraded.
               state.drop(["groups_todo", "memberships"]).with(
                 {
-                  "events": err,
+                  "events": [err],
                   "phase": "users",
                   "page_token": "",
                   "want_more": true,
@@ -270,9 +273,10 @@ program: |-
               )
             : (state.phase == "roles" || state.phase == "role_assignments") ?
               // Admin roles enrichment failed: abandon it for this cycle.
+              // Returned as a list for the same reason as above.
               state.drop(["roles", "assignments"]).with(
                 {
-                  "events": err,
+                  "events": [err],
                   "phase": state.?collect_group_membership.orValue(false) ? "groups" : "users",
                   "page_token": "",
                   "want_more": true,

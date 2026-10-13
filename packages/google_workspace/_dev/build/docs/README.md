@@ -263,11 +263,11 @@ Once Service Account credentials are downloaded as a JSON file, then the integra
 
 # Google Workspace Users
 
-The `users` data stream collects an **inventory** of the user accounts in your Google Workspace tenant from the [Admin SDK Directory API](https://developers.google.com/workspace/admin/directory/reference/rest/v1/users/list). Each collection cycle produces one document per user, describing what exists: identity, 2-Step Verification, admin, suspension and archive state, organisational unit, manager and other directory attributes. Documents have `event.kind: asset`.
+The `users` data stream collects an **inventory** of the user accounts in your Google Workspace tenant from the [Admin SDK Directory API](https://developers.google.com/workspace/admin/directory/reference/rest/v1/users/list). Each collection cycle produces one document per user, describing what exists: identity, 2-Step Verification, admin, suspension and archive state, organizational unit, manager and other directory attributes. Documents have `event.kind: asset`.
 
 This is different from the `user_accounts` data stream, which contains audit **events** about actions users took on their own accounts (what happened). Changes to users made by administrators are in the `admin` data stream.
 
-The data stream is disabled by default.
+The data stream is turned off by default.
 
 ## Collection
 
@@ -276,7 +276,7 @@ The Directory API has no filter for changed users, so each cycle reads the whole
 Two optional settings add more information to each user document. Both are off by default:
 
 - **Collect group membership** adds the groups each user is a direct member of (`user.group.id`, `user.group.name` and `google_workspace.users.groups`). Membership inherited through nested groups is not included.
-- **Collect admin roles and privileges** adds the admin roles assigned to each user (`user.roles`), their privileges (`user.entity.attributes.permissions`) and the scope each role applies to (`user.entity.relationships.administers.entity.id`): an organisational unit ID, or the customer ID for roles that apply to the whole account, such as super administrator. The full assignments are in `google_workspace.users.role_assignments`. Only roles assigned **directly** to the user are included. Roles a user gets through a group are not, because the Directory API only returns those for a single user at a time.
+- **Collect admin roles and privileges** adds the admin roles assigned to each user (`user.roles`), their privileges (`user.entity.attributes.permissions`) and the scope each role applies to (`user.entity.relationships.administers.entity.id`): an organizational unit ID, or the customer ID for roles that apply to the whole account, such as super administrator. The full assignments are in `google_workspace.users.role_assignments`. Only roles assigned **directly** to the user are included. Roles a user gets through a group are not, because the Directory API only returns those for a single user at a time.
 
 `user.roles` always includes `super_admin` or `delegated_admin` when Google flags the user as one, even when the roles option is off.
 
@@ -299,15 +299,15 @@ To add the scopes to the service account's domain-wide delegation (a super admin
 3. Add the scopes you need, separated by commas. **Keep** `https://www.googleapis.com/auth/admin.reports.audit.readonly` and any other scopes already listed.
 4. Click **Authorize**, then open **View details** and check that every scope is listed.
 
-Use the exact scope strings in the table. Google does not accept a broader scope in place of the one the integration requests. Scope changes can take up to 24 hours to take effect. If your organisation uses multi-party approval, another super administrator must approve the change first.
+Use the exact scope strings in the table. Google does not accept a broader scope in place of the one the integration requests. Scope changes can take up to 24 hours to take effect. If your organization uses multi-party approval, another super administrator must approve the change first.
 
 > NOTE: The integration requests all the scopes the data stream needs in one token request. If any of them is not delegated yet, Google issues no token and the **whole** `users` data stream stops, including the basic user inventory. Turn on an optional setting only after its scope is delegated and in effect. The other data streams of the integration are not affected.
 
-The data stream calls `https://admin.googleapis.com`, which is configurable under the data stream's advanced options as "Directory API Host". If your network uses an egress allowlist, add `admin.googleapis.com`.
+The data stream calls `https://admin.googleapis.com`. You can change this with the **Directory API Host** setting under the data stream's advanced options. If your network uses an egress allowlist, add `admin.googleapis.com`.
 
 ## Notes on the data
 
-- `user.entity.lifecycle.last_activity` comes from the user's last sign-in time. Google says this value "might be inaccurate" when listing all users, so treat it as approximate. Users who have never signed in have no value; `google_workspace.users.agreed_to_terms: false` also shows that a user has never completed a first sign-in.
+- `user.entity.lifecycle.last_activity` comes from the user's last sign-in time. Google says this value "might be inaccurate" when listing all users, so treat it as approximate. Users who have never signed in have no value. `google_workspace.users.agreed_to_terms: false` also shows that a user has never completed a first sign-in.
 - Deleted users are not included.
 
 ## Troubleshooting

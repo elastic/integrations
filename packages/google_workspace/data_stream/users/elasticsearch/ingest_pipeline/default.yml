@@ -632,6 +632,12 @@ processors:
       value: '{{{user.email}}}'
       allow_duplicates: false
       if: ctx.user?.email != null
+  - append:
+      field: related.user
+      tag: append_primary_guest_email_to_related_user
+      value: '{{{google_workspace.users.guest_account_info.primary_guest_email}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.users?.guest_account_info?.primary_guest_email != null
   - foreach:
       field: google_workspace.users.aliases
       tag: foreach_aliases_to_related_user

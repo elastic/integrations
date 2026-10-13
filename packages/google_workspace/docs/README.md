@@ -263,11 +263,11 @@ Once Service Account credentials are downloaded as a JSON file, then the integra
 
 # Google Workspace Users
 
-The `users` data stream collects an **inventory** of the user accounts in your Google Workspace tenant from the [Admin SDK Directory API](https://developers.google.com/workspace/admin/directory/reference/rest/v1/users/list). Each collection cycle produces one document per user, describing what exists: identity, 2-Step Verification, admin, suspension and archive state, organisational unit, manager and other directory attributes. Documents have `event.kind: asset`.
+The `users` data stream collects an **inventory** of the user accounts in your Google Workspace tenant from the [Admin SDK Directory API](https://developers.google.com/workspace/admin/directory/reference/rest/v1/users/list). Each collection cycle produces one document per user, describing what exists: identity, 2-Step Verification, admin, suspension and archive state, organizational unit, manager and other directory attributes. Documents have `event.kind: asset`.
 
 This is different from the `user_accounts` data stream, which contains audit **events** about actions users took on their own accounts (what happened). Changes to users made by administrators are in the `admin` data stream.
 
-The data stream is disabled by default.
+The data stream is turned off by default.
 
 ## Collection
 
@@ -276,7 +276,7 @@ The Directory API has no filter for changed users, so each cycle reads the whole
 Two optional settings add more information to each user document. Both are off by default:
 
 - **Collect group membership** adds the groups each user is a direct member of (`user.group.id`, `user.group.name` and `google_workspace.users.groups`). Membership inherited through nested groups is not included.
-- **Collect admin roles and privileges** adds the admin roles assigned to each user (`user.roles`), their privileges (`user.entity.attributes.permissions`) and the scope each role applies to (`user.entity.relationships.administers.entity.id`): an organisational unit ID, or the customer ID for roles that apply to the whole account, such as super administrator. The full assignments are in `google_workspace.users.role_assignments`. Only roles assigned **directly** to the user are included. Roles a user gets through a group are not, because the Directory API only returns those for a single user at a time.
+- **Collect admin roles and privileges** adds the admin roles assigned to each user (`user.roles`), their privileges (`user.entity.attributes.permissions`) and the scope each role applies to (`user.entity.relationships.administers.entity.id`): an organizational unit ID, or the customer ID for roles that apply to the whole account, such as super administrator. The full assignments are in `google_workspace.users.role_assignments`. Only roles assigned **directly** to the user are included. Roles a user gets through a group are not, because the Directory API only returns those for a single user at a time.
 
 `user.roles` always includes `super_admin` or `delegated_admin` when Google flags the user as one, even when the roles option is off.
 
@@ -299,15 +299,15 @@ To add the scopes to the service account's domain-wide delegation (a super admin
 3. Add the scopes you need, separated by commas. **Keep** `https://www.googleapis.com/auth/admin.reports.audit.readonly` and any other scopes already listed.
 4. Click **Authorize**, then open **View details** and check that every scope is listed.
 
-Use the exact scope strings in the table. Google does not accept a broader scope in place of the one the integration requests. Scope changes can take up to 24 hours to take effect. If your organisation uses multi-party approval, another super administrator must approve the change first.
+Use the exact scope strings in the table. Google does not accept a broader scope in place of the one the integration requests. Scope changes can take up to 24 hours to take effect. If your organization uses multi-party approval, another super administrator must approve the change first.
 
 > NOTE: The integration requests all the scopes the data stream needs in one token request. If any of them is not delegated yet, Google issues no token and the **whole** `users` data stream stops, including the basic user inventory. Turn on an optional setting only after its scope is delegated and in effect. The other data streams of the integration are not affected.
 
-The data stream calls `https://admin.googleapis.com`, which is configurable under the data stream's advanced options as "Directory API Host". If your network uses an egress allowlist, add `admin.googleapis.com`.
+The data stream calls `https://admin.googleapis.com`. You can change this with the **Directory API Host** setting under the data stream's advanced options. If your network uses an egress allowlist, add `admin.googleapis.com`.
 
 ## Notes on the data
 
-- `user.entity.lifecycle.last_activity` comes from the user's last sign-in time. Google says this value "might be inaccurate" when listing all users, so treat it as approximate. Users who have never signed in have no value; `google_workspace.users.agreed_to_terms: false` also shows that a user has never completed a first sign-in.
+- `user.entity.lifecycle.last_activity` comes from the user's last sign-in time. Google says this value "might be inaccurate" when listing all users, so treat it as approximate. Users who have never signed in have no value. `google_workspace.users.agreed_to_terms: false` also shows that a user has never completed a first sign-in.
 - Deleted users are not included.
 
 ## Troubleshooting
@@ -483,24 +483,24 @@ An example event for `users` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-05T08:18:38.434Z",
+    "@timestamp": "2026-10-13T10:03:38.984Z",
     "agent": {
-        "ephemeral_id": "a87b9f19-fc1d-415f-a1ce-0ab5fb70d005",
-        "id": "bffd0e1e-b156-47c1-933c-fb3f66056953",
-        "name": "elastic-agent-84835",
+        "ephemeral_id": "efe720d3-2e9b-45dd-a471-11f33bed2beb",
+        "id": "f8f1ef20-6577-4fd1-b9fa-1d2535e50c5b",
+        "name": "elastic-agent-33890",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "google_workspace.users",
-        "namespace": "52558",
+        "namespace": "86091",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "bffd0e1e-b156-47c1-933c-fb3f66056953",
+        "id": "f8f1ef20-6577-4fd1-b9fa-1d2535e50c5b",
         "snapshot": false,
         "version": "9.5.3"
     },
@@ -510,7 +510,7 @@ An example event for `users` looks as following:
             "iam"
         ],
         "dataset": "google_workspace.users",
-        "ingested": "2026-10-05T08:18:42Z",
+        "ingested": "2026-10-13T10:03:42Z",
         "kind": "asset",
         "module": "google_workspace",
         "original": "{\"agreedToTerms\":true,\"aliases\":[\"a.johnson@example.com\"],\"archived\":false,\"changePasswordAtNextLogin\":false,\"creationTime\":\"2021-03-04T09:12:44.000Z\",\"customSchemas\":{\"EmployeeInfo\":{\"EmployeeType\":\"FTE\",\"StartDate\":\"2021-03-04\"}},\"customerId\":\"C0example1\",\"emails\":[{\"address\":\"alice.johnson@example.com\",\"primary\":true},{\"address\":\"a.johnson@example.com\"}],\"etag\":\"\\\"exampleEtag_user_1\\\"\",\"externalIds\":[{\"type\":\"organization\",\"value\":\"EMP-000123\"}],\"id\":\"100000000000000000001\",\"includeInGlobalAddressList\":true,\"ipWhitelisted\":false,\"isAdmin\":false,\"isDelegatedAdmin\":true,\"isEnforcedIn2Sv\":true,\"isEnrolledIn2Sv\":true,\"isMailboxSetup\":true,\"kind\":\"admin#directory#user\",\"lastLoginTime\":\"2026-09-30T08:15:42.000Z\",\"name\":{\"displayName\":\"Alice J.\",\"familyName\":\"Johnson\",\"fullName\":\"Alice Johnson\",\"givenName\":\"Alice\"},\"nonEditableAliases\":[\"alice.johnson@example.org\"],\"orgUnitPath\":\"/Engineering/Platform\",\"organizations\":[{\"costCenter\":\"CC-0001\",\"customType\":\"\",\"department\":\"Platform\",\"description\":\"Platform team\",\"location\":\"Example City\",\"name\":\"Example Corp\",\"primary\":true,\"title\":\"Staff Engineer\",\"type\":\"work\"}],\"phones\":[{\"type\":\"work\",\"value\":\"+1 734-555-0100\"}],\"primaryEmail\":\"alice.johnson@example.com\",\"recoveryEmail\":\"alice.personal@example.net\",\"relations\":[{\"type\":\"manager\",\"value\":\"bob.smith@example.com\"},{\"type\":\"dotted_line_manager\",\"value\":\"carol.white@example.com\"}],\"suspended\":false,\"thumbnailPhotoUrl\":\"https://www.example.com/photos/100000000000000000001\"}",
@@ -620,7 +620,7 @@ An example event for `users` looks as following:
             },
             "display_name": "Alice Johnson",
             "id": "100000000000000000001",
-            "last_seen_timestamp": "2026-10-05T08:18:38.434Z",
+            "last_seen_timestamp": "2026-10-13T10:03:38.984Z",
             "lifecycle": {
                 "last_activity": "2026-09-30T08:15:42.000Z"
             },
@@ -738,7 +738,7 @@ An example event for `users` looks as following:
 | google_workspace.users.name.given_name | The user's first name. | keyword |
 | google_workspace.users.non_editable_aliases | The user's non-editable alias email addresses, typically outside the account's primary domain or sub-domain. | keyword |
 | google_workspace.users.notes.content_type | The content type of the notes (`text_plain` or `text_html`). | keyword |
-| google_workspace.users.notes.value | The notes. | keyword |
+| google_workspace.users.notes.value | The notes. | match_only_text |
 | google_workspace.users.org_unit_path | The full path of the organizational unit the user belongs to. `/` is the top-level organizational unit. | keyword |
 | google_workspace.users.organizations.cost_center | The cost center of the user's department. | keyword |
 | google_workspace.users.organizations.custom_type | Custom type. | keyword |
