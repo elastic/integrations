@@ -93,11 +93,17 @@ program: |-
                   {
                     "1": {
                       "type": "TEXT",
-                      "value": (req.query == "deleted") ? state.cursor.last_deleted_on : state.cursor.last_created_on,
+                      "value": (state.?cursor.page_timestamp.orValue("") != "") ?
+                        state.cursor.page_timestamp
+                      :
+                        ((req.query == "deleted") ? state.cursor.last_deleted_on : state.cursor.last_created_on),
                     },
                     "2": {
                       "type": "TEXT",
-                      "value": (req.query == "deleted") ? state.cursor.last_deleted_on : state.cursor.last_created_on,
+                      "value": (state.?cursor.page_timestamp.orValue("") != "") ?
+                        state.cursor.page_timestamp
+                      :
+                        ((req.query == "deleted") ? state.cursor.last_deleted_on : state.cursor.last_created_on),
                     },
                     "3": {
                       "type": "TEXT",
@@ -159,6 +165,7 @@ program: |-
                   ?"last_deleted_on": (state.?cursor.last_deleted_on.orValue("") != "") ? optional.of(state.cursor.last_deleted_on) : optional.none(),
                   ?"last_grantee_name": (state.?cursor.last_grantee_name.orValue("") != "") ? optional.of(state.cursor.last_grantee_name) : optional.none(),
                   ?"last_role": (state.?cursor.last_role.orValue("") != "") ? optional.of(state.cursor.last_role) : optional.none(),
+                  ?"page_timestamp": (state.?cursor.page_timestamp.orValue("") != "") ? optional.of(state.cursor.page_timestamp) : optional.none(),
                   "query": req.query,
                   "continue": state.?cursor.continue.orValue(false),
                   "handle": string(body.statementHandle),
@@ -203,8 +210,12 @@ program: |-
                     "events": (size(result.rows) > 0) ?
                       dyn(result.rows.map(row, {"message": result.names.zip(row).encode_json()}))
                     : (
+                      // A continuation that returns no rows must still publish a placeholder.
+                      // Otherwise an empty deleted continuation keeps query=deleted and blocks created.
                       int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count ||
-                      req.query == "created" || req.query == "deleted" && result.num_rows >= int(state.batch_size)
+                      req.query == "created" ||
+                      (req.query == "deleted" && result.num_rows >= int(state.batch_size)) ||
+                      state.?cursor.continue.orValue(false)
                     ) ?
                       dyn([{"retry": true}])
                     :
@@ -244,6 +255,27 @@ program: |-
                         )
                       :
                         state.?cursor.last_role.orValue(""),
+                      // Last row's CREATED_ON or DELETED_ON. Keyset continuations bind this, not the
+                      // high watermark, so a full page inside the lag window is not skipped.
+                      "page_timestamp": (size(result.rows) > 0 && int(state.?cursor.next_partition.orValue(0)) + 1 >= result.partition_count) ?
+                        (
+                          (req.query == "deleted") ?
+                            (
+                              result.names.zip(result.rows[int(size(result.rows)) - 1]).?DELETED_ON.orValue(null) == null ?
+                                state.?cursor.page_timestamp.orValue("")
+                              :
+                                string(result.names.zip(result.rows[int(size(result.rows)) - 1]).DELETED_ON)
+                            )
+                          :
+                            (
+                              result.names.zip(result.rows[int(size(result.rows)) - 1]).?CREATED_ON.orValue(null) == null ?
+                                state.?cursor.page_timestamp.orValue("")
+                              :
+                                string(result.names.zip(result.rows[int(size(result.rows)) - 1]).CREATED_ON)
+                            )
+                        )
+                      :
+                        state.?cursor.page_timestamp.orValue(""),
                       // After a created page, continue created when LIMIT is full; otherwise run deleted.
                       "query": (int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count) ?
                         req.query

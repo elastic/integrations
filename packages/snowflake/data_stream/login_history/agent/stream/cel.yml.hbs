@@ -84,11 +84,17 @@ program: |-
                   {
                     "1": {
                       "type": "TEXT",
-                      "value": state.cursor.last_timestamp,
+                      "value": (state.?cursor.page_timestamp.orValue("") != "") ?
+                        state.cursor.page_timestamp
+                      :
+                        state.cursor.last_timestamp,
                     },
                     "2": {
                       "type": "TEXT",
-                      "value": state.cursor.last_timestamp,
+                      "value": (state.?cursor.page_timestamp.orValue("") != "") ?
+                        state.cursor.page_timestamp
+                      :
+                        state.cursor.last_timestamp,
                     },
                     "3": {
                       "type": "FIXED",
@@ -133,6 +139,7 @@ program: |-
                 "cursor": {
                   ?"last_timestamp": (state.?cursor.last_timestamp.orValue("") != "") ? optional.of(state.cursor.last_timestamp) : optional.none(),
                   ?"last_event_id": (state.?cursor.last_event_id.orValue("") != "") ? optional.of(state.cursor.last_event_id) : optional.none(),
+                  ?"page_timestamp": (state.?cursor.page_timestamp.orValue("") != "") ? optional.of(state.cursor.page_timestamp) : optional.none(),
                   "continue": state.?cursor.continue.orValue(false),
                   "handle": string(body.statementHandle),
                   "next_partition": 0,
@@ -171,8 +178,11 @@ program: |-
                   "events": (size(result.rows) > 0) ?
                     dyn(result.rows.map(row, {"message": result.names.zip(row).encode_json()}))
                   : (
+                    // A continuation that returns no rows must still publish a placeholder.
+                    // With zero events the input keeps the previous cursor, so continue would stick.
                     int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count ||
-                    result.num_rows >= int(state.batch_size)
+                    result.num_rows >= int(state.batch_size) ||
+                    state.?cursor.continue.orValue(false)
                   ) ?
                     dyn([{"retry": true}])
                   :
@@ -202,6 +212,17 @@ program: |-
                       )
                     :
                       state.?cursor.last_event_id.orValue("0"),
+                    // Last row's EVENT_TIMESTAMP. Keyset continuations bind this, not the high watermark,
+                    // so a full page that sits entirely inside the lag window is not skipped.
+                    "page_timestamp": (size(result.rows) > 0 && int(state.?cursor.next_partition.orValue(0)) + 1 >= result.partition_count) ?
+                      (
+                        result.names.zip(result.rows[int(size(result.rows)) - 1]).?EVENT_TIMESTAMP.orValue(null) == null ?
+                          state.?cursor.page_timestamp.orValue("")
+                        :
+                          string(result.names.zip(result.rows[int(size(result.rows)) - 1]).EVENT_TIMESTAMP)
+                      )
+                    :
+                      state.?cursor.page_timestamp.orValue(""),
                     "continue": result.num_rows >= int(state.batch_size),
                   }.with(
                     (int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count) ?
