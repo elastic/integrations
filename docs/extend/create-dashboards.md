@@ -8,7 +8,6 @@ description: Package Kibana dashboards in an Elastic integration with elastic-pa
 
 To add dashboards to an integration you're building, create them in {{kib}}, then use `elastic-package` to add them to your package source. Dashboards help users quickly understand and explore the data your integration ingests.
 
-
 ## Getting started [_getting_started]
 
 1. Create or customize a dashboard
