@@ -207,19 +207,13 @@ program: |-
                   : (record.?CREATED_ON.orValue(null) == null) ? "" : string(record.CREATED_ON)
                 ).filter(timestamp, timestamp != "").as(row_timestamps,
                   {
+                    // Always publish a placeholder for an empty page. With zero events the
+                    // input discards the returned cursor, so an empty deleted pass would
+                    // leave query=deleted and stop collecting new grants.
                     "events": (size(result.rows) > 0) ?
                       dyn(result.rows.map(row, {"message": result.names.zip(row).encode_json()}))
-                    : (
-                      // A continuation that returns no rows must still publish a placeholder.
-                      // Otherwise an empty deleted continuation keeps query=deleted and blocks created.
-                      int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count ||
-                      req.query == "created" ||
-                      (req.query == "deleted" && result.num_rows >= int(state.batch_size)) ||
-                      state.?cursor.continue.orValue(false)
-                    ) ?
-                      dyn([{"retry": true}])
                     :
-                      dyn([]),
+                      dyn([{"retry": true}]),
                     "cursor": {
                       "last_created_on": (req.query == "created" && size(row_timestamps) > 0) ?
                         (
