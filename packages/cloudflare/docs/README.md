@@ -25,6 +25,8 @@ For more information, refer to [Elastic Managed integrations](https://www.elasti
 
 ### Configure Cloudflare Audit logs
 
+Collect Audit logs with the **Collect Cloudflare Audit logs via API** input. The **Audit logs** option in the **Collect Cloudflare Logpull logs via API** input is **DEPRECATED** since version `2.31.0` and will be removed in a future release; it supports only Auth Email and Auth Key authentication. If you use it, deactivate it and enable Audit logs in the **Collect Cloudflare Audit logs via API** input instead.
+
 The integration can retrieve Cloudflare audit logs using -
 
 1. Auth Email and Auth Key

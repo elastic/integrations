@@ -72,6 +72,26 @@ To configure the integration to pull threat intelligence from an ISAC feed, foll
 
 Once the integration is running and pulling data, it automatically maps threat indicator fields from STIX to ECS. Verify that the imported indicators (e.g. IPs, domains, hashes) align with your detection rules.
 
+### Collecting from TAXII servers that use an API key/secret pair
+
+Some TAXII 2.1 servers issue an API key and secret instead of a username and password, and expect them to be sent as HTTP Basic credentials rather than as a bearer token. The steps below use [IsMalicious](https://ismalicious.com/api-docs) as an example, but apply to any server with the same model.
+
+1. Obtain the API key and secret from your provider account, and confirm the account has feed access.
+2. Call the server's TAXII discovery endpoint (for example `https://api.ismalicious.com/taxii`) to find the API root, then list its collections (`https://api.ismalicious.com/taxii/api-root/collections`). Authenticate with HTTP Basic using the key as username and the secret as password. Note the ID of each collection you can read.
+3. Add the **Custom Threat Intelligence** integration in Fleet, enable the RESTful API stream, and configure:
+
+   | Setting | Value |
+   | --- | --- |
+   | URL API endpoint | `https://<server>/<api-root>/collections/<COLLECTION_ID>/objects/` |
+   | Enable TAXII 2.1 | Enabled |
+   | Basic Auth Username | Your API key |
+   | Basic Auth Password | Your API secret |
+   | API Key / API Key Type | Leave unset |
+
+   Leave **Accept header value** and **Content-Type header value** at their defaults. Configure one stream per collection. For example, the `malicious-ips` collection on IsMalicious uses `https://api.ismalicious.com/taxii/api-root/collections/malicious-ips/objects/`.
+4. Set **Initial Interval** and **Interval** according to collection size. Pagination follows the server's `next` token automatically. Use **Limit** to bound the page size, and raise **Maximum Pages Per Interval** if a large initial import hits the [CEL execution limit](#exceeding-maximum-number-of-cel-executions).
+5. Verify indicators arrive with the expected values, types and timestamps, and use the `logs-ti_custom_latest.indicator` alias for indicator match rules. See [Expiration of Indicators of Compromise](#expiration-of-indicators-of-compromise-iocs) for how `valid_until`, `revoked` and the `IOC Expiration Duration` fail-safe are applied.
+
 ### Expiration of Indicators of Compromise (IOCs)
 
 The Custom Threat Intelligence integration supports IOC expiration. The ingested IOCs expire after certain duration. Based on the [STIX 2.1 reference](https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html), the following options are available to determine the expiration of indicators:

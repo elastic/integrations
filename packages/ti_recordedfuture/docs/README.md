@@ -32,8 +32,27 @@ Recorded Future documentation for the available lists for each entity or use the
 default. To fetch indicators from multiple entities, you need to create a
 separate integration policy for each.
 
-Alternatively, the `threat` data stream can fetch custom Fusion files by
-supplying the URL to the CSV file as an advanced configuration option.
+Alternatively, the `threat` data stream can fetch a custom Fusion file by
+supplying the URL to the CSV file as an advanced configuration option. The file
+must use the same CSV format as the risklist endpoints:
+
+| Column | Required | Notes |
+|---|---|---|
+| `Name` | Yes | The indicator value. Its type (IP, URL, domain, or file hash) is auto-detected from the value, independent of the configured `entity`. |
+| `Risk` | Recommended | Risk score from 0 to 99. Mapped to `event.risk_score`. |
+| `RiskString` | No | For example, `4/52`. |
+| `EvidenceDetails` | No | JSON-encoded evidence from Recorded Future. |
+| `Algorithm` | No | Hash algorithm (for example `SHA-256`); marks the row as a file-hash indicator. |
+
+Recorded Future's public VPN and proxy Fusion lists
+(`/public/vpn_proxy_lists/vpn_ips_list.csv` and `proxy_ips_list.csv`) use the
+columns `ip`, `risk_score`, and `service` instead. These files are supported
+when fetched through the custom Fusion file URL option:
+`ip` and `risk_score` are mapped onto `Name` and `Risk`, and `service` is kept
+under `recordedfuture.service`. Any other Fusion file that uses a different
+schema (no `Name`/`ip` column) is not supported; its documents are indexed with
+`event.kind: pipeline_error` and an explanatory `error.message`. Additional
+columns are preserved under `recordedfuture.*`.
 
 The `threat` data stream will check whether the available data has changed
 before actually downloading it. A short interval setting will mean that it
@@ -246,6 +265,7 @@ An example event for `threat` looks as following:
 | recordedfuture.list | User-configured risklist. | keyword |
 | recordedfuture.name | Indicator value. | keyword |
 | recordedfuture.risk_string | Details of risk rules observed. | keyword |
+| recordedfuture.service | Service associated with the indicator in Recorded Future VPN/proxy Fusion lists (for example, the VPN or proxy provider name). | keyword |
 | threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
