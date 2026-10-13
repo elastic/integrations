@@ -47,7 +47,7 @@ SORTABLE_TYPES = SORTABLE_STRING_TYPES | SORTABLE_NUMERIC_TYPES
 # built fields file even though the package source never mentions it.
 # Verified against ECS v8.11.0 and v9.3.0 schemas.
 #
-# The `external: ecs` declaration is what makes it a blocker, which is why the check
+# The `external: ecs` declaration is what makes it a finding, which is why the check
 # below requires it. A package that never declares the field gets its mapping from the
 # stack's `ecs@mappings` component template instead, and that template's
 # `ecs_non_indexed_keyword` dynamic template (`*event.original`,

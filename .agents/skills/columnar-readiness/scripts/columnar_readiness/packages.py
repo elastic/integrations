@@ -501,8 +501,10 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
             "manifest.yml", line=format_version_line))
 
     # --- declared ready with unresolved Class A findings ----------------- #
-    # The validator checks every logs data stream that ends up ready, and rejects the
-    # declaration while a blocker remains: a contradiction inside the package.
+    # The validator checks every logs data stream that ends up ready and rejects most
+    # Class A findings on it; Elasticsearch rejects the rest (`_source` overrides,
+    # `dynamic: runtime`) when Fleet installs the template. Either way the declaration
+    # contradicts the mappings.
     # Platform findings (doc_values: false, store: true) are Elasticsearch rejections that
     # Fleet resolves at install time, so they do not contradict a readiness declaration.
     blocking = [f for f in findings
@@ -516,10 +518,11 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
             "logsdb_columnar_with_blockers", "A", "blocker",
             f"`logsdb_columnar: {effective}` "
             f"({'this data stream' if from_stream else 'the package, inherited by this data stream'}) "
-            f"declares it columnar-ready, but it still has {len(blocking)} Class A "
-            f"finding(s) ({', '.join('`%s`' % c for c in codes)}). The validator checks every "
-            f"logs data stream that ends up ready and rejects the declaration while any of "
-            f"them remains.",
+            f"declares it columnar-ready, but it still has {len(blocking)} non-platform "
+            f"Class A finding(s) ({', '.join('`%s`' % c for c in codes)}). The package-spec "
+            f"validator checks every logs data stream that ends up ready and rejects most of "
+            f"them; Elasticsearch rejects the rest (`_source` overrides, `dynamic: runtime`) "
+            f"when Fleet installs the template.",
             "Fix the Class A findings listed above, or mark this data stream "
             "`elasticsearch.logsdb_columnar: unsupported` in its manifest, so it stays on "
             "LogsDB while the rest of the package opts in.",
@@ -534,7 +537,7 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
     # Appended last: they are Class C, so they cannot turn a Class A verdict, but a
     # `review` one does move a stream to NEEDS_REVIEW, which is the point — a stream
     # whose `_source` is read by a transform, a Kibana runtime field or an ES|QL
-    # `METADATA _source` query should not be declared `supported` before someone has
+    # `METADATA _source` query should not be declared columnar-ready before someone has
     # looked at it.
     findings.extend(source_consumer_findings(ds_name, transforms or [], kibana or []))
     findings.extend(latest_transform_findings(

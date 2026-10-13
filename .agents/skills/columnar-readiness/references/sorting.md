@@ -61,9 +61,9 @@ as something other than a keyword/number with doc values — `text`,
 | **collector / poller** | `httpjson`, `cel`, `aws-s3`, `aws-cloudwatch`, `gcp-pubsub`, `gcs`, `azure-eventhub`, `azure-blob-storage`, `azure-monitor`, `o365audit`, `entity-analytics`, `salesforce`, `okta`, `http_endpoint`, `streaming`, `websocket`, `lumberjack`, `cometd`, `netflow`, `benchmark`, `cloudfoundry`, `cloudbeat/*`, `kafka`, `redis`, `mqtt` | the collector — one value | propose an explicit sort |
 
 The three lists are `HOST_MEANINGFUL_INPUTS`, `RECEIVER_INPUTS` and
-`COLLECTOR_INPUTS` at the top of `scripts/audit.py`; the table above is the same
-membership spelled out, so keep the two in step when you add an input. An input in
-none of them is *unclassified* and is treated as a collector.
+`COLLECTOR_INPUTS` in `scripts/columnar_readiness/constants.py`; the table above is
+the same membership spelled out, so keep the two in step when you add an input. An
+input in none of them is *unclassified* and is treated as a collector.
 
 ### When the default is right
 
@@ -200,12 +200,12 @@ Accepted from **two** sources:
 - a declaration in `data_stream/<ds>/fields/*.yml`; **or**
 - a scalar value in `sample_event.json`. ECS fields are mapped by the `ecs@mappings`
   component template once a document carries them, so many packages whose pipeline
-  fills `cloud.account.id` never declare it. Across the catalog, 21 streams populate
-  `cloud.account.id`, 31 `organization.id`, 4 `cloud.project.id` and 5
-  `observer.name` without declaring any of them. Without this path the audit says
-  "no confident candidate" while the tenant id is sitting in the sample event. The
-  type and the array flag still come from the ECS cache, so a missing cache falls
-  back to "no confident candidate" — the safe direction.
+  fills `cloud.account.id` never declare it. Across the catalog, the sample events of
+  40 logs streams carry `cloud.account.id`, 59 `organization.id`, 10
+  `cloud.project.id` and 18 `observer.name` without a declaration. Without this path
+  the audit says "no confident candidate" while the tenant id is sitting in the
+  sample event. The type and the array flag still come from the ECS cache, so a
+  missing cache falls back to "no confident candidate" — the safe direction.
 
   This is also why `aws/cloudtrail` sorts on `cloud.account.id` and not on a vendor
   leaf: the ECS field is the same AWS account id, populated by the pipeline, and it
@@ -345,7 +345,7 @@ on `_`, `-` and camelCase and lowercased, so `errorMessage` is `{error, message}
 `response_time_in_seconds` is `{response, time, in, seconds}`. Token matching rather
 than substring matching is what keeps `security_id` out of the `sec` (seconds)
 bucket and `account_number` out of the `num` one. All of the lists live in one block
-at the top of `scripts/audit.py`.
+in `scripts/columnar_readiness/constants.py`.
 
 **Integers must look like identifiers** (applies to every tier). A numeric field is
 accepted only when its leaf carries an id token — `id`, `uid`, `identifier`, so
@@ -404,7 +404,10 @@ candidate just to fill the slot.
 
 ## Verifying
 
-After installing the package against a 9.5+ stack:
+After installing the package in `logsdb_columnar` mode — a Kibana with the 9.6 Fleet
+support (routes A and B in
+[`correctness-and-performance.md`](correctness-and-performance.md#getting-a-columnar-index-locally)),
+or any 9.5+ stack through a `@custom` component template (route C):
 
 ```
 GET _index_template/logs-<pkg>.<ds>

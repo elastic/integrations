@@ -29,7 +29,7 @@ Three classes:
 
 | Class | Meaning | Effect on status |
 | --- | --- | --- |
-| **A** | Elasticsearch rejects the index template at PUT time | `BLOCKED`, or `READY_AFTER_AUTO_FIX` when the package fix is mechanical |
+| **A** | Elasticsearch rejects the index template at PUT time | `BLOCKED`, or `READY_AFTER_AUTO_FIX` when the package fix is mechanical; unchanged for the `platform` findings Fleet resolves at install (A2, A2b, A2c) |
 | **B** | Accepted, but data is permanently lost | `NEEDS_REVIEW` |
 | **C** | Accepted, behaviour changes | informational only |
 
@@ -76,10 +76,10 @@ elasticsearch:
   savings, not correctness — but it is a breaking change for the package: major version
   bump and a `breaking-change` changelog entry.
 - **Mode changes take effect on the next rollover.**
-- **Nothing per field.** There is no field-level `columnar:` block. `doc_values: false`
-  (and `store: true`) is for Elasticsearch or Fleet to handle in columnar mode (A2,
-  A2c), and a field that needs an inverted index sets `index: true` itself, which
-  changes nothing on LogsDB.
+- **Nothing per field.** There is no field-level `columnar:` block. Fleet strips
+  `doc_values: false` (and `store: true`) when it installs a stream in
+  `logsdb_columnar` mode (A2, A2c), and a field that needs an inverted index sets
+  `index: true` itself, which changes nothing on LogsDB.
 
 **A data stream manifest has one `elasticsearch:` key.** An `unsupported` override and
 the index sort are children of the same mapping, so they go in as one merged block —
@@ -99,12 +99,13 @@ elasticsearch:
           order: ["asc", "desc"]
 ```
 
-**The declaration findings.** The validator checks every logs data stream that ends up
-ready:
+**The declaration findings.** Mistakes in the declaration itself. package-spec (its JSON
+schema or the columnar validator) rejects all of them, except the Elasticsearch-only
+part of `logsdb_columnar_with_blockers`:
 
 | Code | When |
 | --- | --- |
-| `logsdb_columnar_with_blockers` | a stream takes `opt_in` or `default` (its own or the package's) while it still has a Class A finding. Fix the findings, or mark the stream `unsupported` |
+| `logsdb_columnar_with_blockers` | a stream takes `opt_in` or `default` (its own or the package's) while it still has a non-platform Class A finding. The validator rejects most of them (nested in nested, `copy_to`, normalizers, runtime fields, `index.sort`); Elasticsearch rejects the others (`_source` overrides, `dynamic: runtime`) when Fleet installs the template. Fix the findings, or mark the stream `unsupported` |
 | `logsdb_columnar_with_index_mode` | a logs stream's own manifest sets `logsdb_columnar` (any value, `unsupported` included) together with `index_mode`. Remove `logsdb_columnar` from that manifest, or drop `index_mode`. The package value is ignored for a stream with `index_mode`, so it never triggers this |
 | `logsdb_columnar_not_logs` | a non-logs data stream sets `logsdb_columnar` |
 | `index_mode_columnar` | a manifest sets `index_mode: logsdb_columnar` or `columnar` |
@@ -246,20 +247,21 @@ ECS fields that carry `doc_values: false` (checked against ECS v8.11.0 and v9.3.
 **Remediation: no package change**, as for A2: Fleet drops the `doc_values: false` ECS
 brings in the same way as a declared one. Severity `platform`, status unchanged.
 
-**Where it surfaces.** `elastic-package lint` validates the package *source*, where
-the field has no `doc_values` at all, so it sees nothing. `elastic-package build`
-validates the *built zip*, where ECS has been resolved — that is where every affected
-package will fail, whatever spec version it declares.
+**Where it surfaces.** Only in the *built* package: `elastic-package lint` validates
+the source, where the field has no `doc_values` at all, and `elastic-package build`
+validates the built zip, where ECS has been resolved. Neither fails on it: the spec
+validator has no `doc_values` check, and Fleet strips it at install. The audit reads
+the source and flags the `external: ecs` declaration itself.
 
 **Known in catalog:** about 50 packages and 75 data streams. Run
 `scripts/audit.py packages/ --catalog` for the current list.
 
-#### The dynamic path is *not* a blocker — packages that never declare the field
+#### The dynamic path is *not* a finding — packages that never declare the field
 
 `doc_values: false` is an attribute of the **ECS schema**, and a package only imports
 that schema where it writes `external: ecs`. It is **not** an attribute of
 `event.original` as such, and that distinction decides whether a package has the
-blocker at all.
+finding at all.
 
 A package that never declares `event.original` — `rabbitmq`, `apache`, `nginx`, and
 most `logfile`/`filestream` packages — puts no mapping for it in its index template at
@@ -284,7 +286,7 @@ pattern in half the log packages — is therefore columnar-clean and is **not** 
 finding. The audit requires `external: ecs` on the field before it raises
 `doc_values_false_ecs`, for exactly this reason.
 
-So the blocker exists in exactly two situations:
+So the finding exists in exactly two situations:
 
 1. the package declares the field with `external: ecs` (this section), or
 2. the package writes `doc_values: false` on it itself (A2).
@@ -432,7 +434,9 @@ with an unknown field arrives". That was wrong.)
 
 **Severity: `auto_fix`.** The fix is mechanical and has a single obvious form —
 replace `runtime` with `true` — with no judgement call about what the data means, so
-it belongs with `copy_to` and `doc_values: false` rather than with the review items.
+it belongs with `copy_to` and the custom normalizer rather than with the review items.
+The package-spec validator does not check it; Elasticsearch rejects the template when
+Fleet installs it.
 The behaviour change it implies (unmapped leaves become concrete doc values instead
 of computed-on-read fields) is what columnar mode wants anyway.
 

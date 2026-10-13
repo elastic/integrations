@@ -16,21 +16,22 @@ through the package.
 ## Current status
 
 The facts in this section change between releases; update them here, not elsewhere.
-Last reviewed 2026-10-07.
+Last reviewed 2026-10-14.
 
 - **Elasticsearch:** `logsdb_columnar` is tech preview since 9.5; GA is targeted for
   9.7 (January 27). Keyword doc-value skippers are still pending and bloom filters
   come after GA, so benchmark numbers from today will move.
-- **package-spec 3.7.0** is unreleased. The `elasticsearch.logsdb_columnar` setting
-  below is the shape agreed in the elastic/package-spec#1250 review; that PR is being
-  reworked to it, so until it lands `elastic-package lint` rejects what this skill
-  writes ([`references/migration.md`](references/migration.md#local-tooling)).
-- **Fleet support** targets Kibana 9.6; its PR (elastic/kibana#292285) still implements
-  the earlier design. Kibana's registry `spec.max` is still 3.6, so 3.7.0 packages only
-  reach Kibana through `elastic-package install` for now.
-- **`doc_values: false` and `store: true`** are for Elasticsearch or Fleet to handle in
-  columnar mode (which one is not decided yet), not for packages. Until then a data
-  stream with either cannot go columnar.
+- **package-spec 3.7.0** is unreleased. elastic/package-spec#1250 implements the
+  `elasticsearch.logsdb_columnar` setting below but is not merged yet, so a stock
+  `elastic-package lint` rejects what this skill writes
+  ([`references/migration.md`](references/migration.md#local-tooling)).
+- **Fleet support** targets Kibana 9.6; its PR (elastic/kibana#292285) implements the
+  same contract and is not merged yet. Kibana's registry `spec.max` is still 3.6, so
+  3.7.0 packages only reach Kibana through `elastic-package install` for now.
+- **`doc_values: false` and `store: true`** need no package change: Elasticsearch
+  rejects them in columnar modes, and Fleet strips them from the generated mappings
+  when it installs a data stream in `logsdb_columnar` mode (elastic/kibana#292285).
+  The audit lists them with severity `platform`; they do not change a status.
 - **Objects inside `nested` fields** lose their link to the element on columnar (9.5.4,
   and 9.6 snapshots up to 2026-10-01): an object sent as JSON inside a nested element
   is indexed apart from it. Dotted keys are not affected. The audit flags it
@@ -109,13 +110,15 @@ elasticsearch:
   `index_mode: logsdb_columnar`.
 - Mode changes take effect at the next rollover.
 - **Write `opt_in`** for the tech preview; `default` is for later.
-- Nothing per field: there is no `columnar:` block. `doc_values: false` is left to
-  Elasticsearch or Fleet, and a field that needs an inverted index sets `index: true`.
+- Nothing per field: there is no `columnar:` block. Fleet strips `doc_values: false`
+  and `store: true` in `logsdb_columnar` mode, and a field that needs an inverted index
+  sets `index: true`.
 
 A data stream manifest has **one** `elasticsearch:` key, and the index sort lives under
 the same one: merge, never paste a second `elasticsearch:` (a duplicate key silently
-drops one of them). The validator checks every logs data stream that ends up ready,
-so a blocked stream needs `unsupported` before the package can declare `opt_in`.
+drops one of them). The validator checks every logs data stream that ends up ready
+(and Elasticsearch rejects the rest of Class A at install), so a blocked stream needs
+`unsupported` before the package can declare `opt_in`.
 
 The setting needs `format_version: "3.7.0"` and `conditions.kibana.version:
 "^9.6.0"` in the root manifest ([`references/migration.md`](references/migration.md)).
@@ -188,12 +191,15 @@ detection rule and its remediation:
   - `nested` inside `nested`, whether declared through `fields:` or as dotted-name
     sibling entries;
   - `doc_values: false` (except on a multi-field) and `store: true`: no package change,
-    they wait on Elasticsearch or Fleet (BLOCKED until then);
+    Fleet strips them when it installs the stream in `logsdb_columnar` mode (severity
+    `platform`, the status does not change);
   - `copy_to`, and a keyword `normalizer` other than `lowercase`;
   - mapping-level runtime fields and `dynamic: runtime`;
   - stored-`_source` overrides, types without doc values, and an explicit `index.sort`
-    whose fields are not mapped, have no doc values, or leave out `@timestamp`
-    (`index_sort_invalid`);
+    whose fields are not mapped (only `@timestamp` is implicit), have no doc values or
+    a type that cannot be sorted, or whose `order` does not match `field` in length
+    (`index_sort_invalid`). A custom sort without `@timestamp` is only a warning
+    (`SVR00016`; the info-level `index_sort_no_timestamp`);
   - mistakes in the declaration (`logsdb_columnar_with_blockers`,
     `logsdb_columnar_with_index_mode`, `logsdb_columnar_not_logs`,
     `logsdb_columnar_requires_spec_3_7`, `index_mode_columnar`).
@@ -209,21 +215,21 @@ detection rule and its remediation:
     (`source_consumer_latest_transform`), a Kibana asset (`source_consumer_kibana`),
     or a shipped detection rule (`source_consumer_detection_rule`).
 
-**`doc_values: false` waits on the platform.** Elasticsearch rejects it in columnar
-mode today. Per the package-spec#1250 review, Elasticsearch (preferred, it also covers
-user-managed templates) or Fleet is to handle it, so packages do not change these
-fields and there is no field-level override. The same goes for `store: true`. Fleet
-drops both from the generated mappings when it installs the stream in `logsdb_columnar`
-mode (elastic/kibana#292285), so the finding is severity `platform`: it does not change
-the status, and the stream must **not** be marked `unsupported` for it.
+**`doc_values: false` is handled by the platform.** Elasticsearch rejects it in
+columnar mode, and per the package-spec#1250 review packages do not change these
+fields: there is no field-level override, and the spec validator does not report them.
+The same goes for `store: true`. Fleet drops both from the generated mappings when it
+installs the stream in `logsdb_columnar` mode (elastic/kibana#292285), so the finding
+is severity `platform`: it does not change the status, and the stream must **not** be
+marked `unsupported` for it.
 
 **The ECS trap.** `external: ecs` imports `doc_values` from the ECS schema at build
 time, and ECS defines `event.original` with `doc_values: false`. About 50 packages
-carry it without it appearing in their source (`doc_values_false_ecs`); it waits on the
-platform like any other `doc_values: false`. A package that never *declares*
+carry it without it appearing in their source (`doc_values_false_ecs`); Fleet strips it
+like any other `doc_values: false`. A package that never *declares*
 `event.original` is fine: the field is mapped at index time by `ecs@mappings`, which
-sets `index: false` only and keeps doc values. The blocker is the declaration, not the
-field.
+sets `index: false` only and keeps doc values. The finding is about the declaration,
+not the field.
 
 **Columnar `_source` is not a faithful copy of what was ingested.** The differences:
 
@@ -355,7 +361,8 @@ a columnar index:
 - **Route B** (same Kibana): turn the integration's toggle on, in the Fleet UI or API.
 - **Route C** (any stock 9.5+ stack): set `index.mode: logsdb_columnar` in a
   `logs-<pkg>.<ds>@custom` component template. Only for packages without
-  `doc_values: false` fields.
+  `doc_values: false` or `store: true` fields (ECS imports included): Fleet does not
+  strip them on this route, so Elasticsearch rejects the mapping.
 
 Then diff system tests between the two modes: dotted keys, collapsed single-element
 arrays, parallel object arrays and preserved order are expected, and so is

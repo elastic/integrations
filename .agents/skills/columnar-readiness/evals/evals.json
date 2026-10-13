@@ -114,7 +114,8 @@
     "query": "Can checkpoint firewall go columnar? What about the packets_dropped field?",
     "files": ["packages/checkpoint"],
     "expected_behavior": [
-      "Reports the firewall stream as BLOCKED by event.original's doc_values: false from ECS, which needs no package change and waits on Elasticsearch or Fleet",
+      "Reports the firewall stream as NEEDS_REVIEW because of packets_dropped (nested_object_children), not BLOCKED",
+      "Says event.original's doc_values: false from ECS needs no package change and does not block the stream: Fleet strips it when it installs the stream in logsdb_columnar mode (severity platform), so the stream must not be marked unsupported for it",
       "Explains that packets_dropped is nested and its elements hold objects (source, destination, ...), which columnar indexes apart from their element, so nested queries combining them stop matching and _source splits the elements",
       "Offers the choices for packets_dropped: the dotted-key script processor for the default pipeline (shown as a suggested change), accepting it when nothing combines those fields, flattened, or marking the stream logsdb_columnar: unsupported",
       "Says this looks like an Elasticsearch bug to re-check on newer builds, not a design difference"

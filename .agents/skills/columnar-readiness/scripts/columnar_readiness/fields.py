@@ -230,7 +230,8 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
     if has_runtime(fdef):
         out.append(finding(
             "runtime_field", "A", "review",
-            f"`{flat}` is a mapping-level runtime field, which columnar mode rejects.",
+            f"`{flat}` is a mapping-level runtime field, which columnar mode rejects; the "
+            f"package-spec validator reports it as a hard error on a columnar-ready stream.",
             "Compute a concrete field with a `script` processor in the ingest pipeline, or "
             "move the logic to query time (ES|QL `EVAL`, or a search-request runtime field).",
             rel_file, flat))

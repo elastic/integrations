@@ -21,11 +21,12 @@ The static half is steps 1–7 of [`migration.md`](migration.md): baseline `lint
 validation:
 
 - **Run `build`, not just `lint`.** `lint` validates the package **source**; `build`
-  resolves `external: ecs` first and validates the **built zip**. In the source an
+  resolves `external: ecs` first and validates the **built zip**, so an `external: ecs`
+  declaration (a sort field's included) only has to resolve there. In the source an
   `external: ecs` reference to `event.original` carries no `doc_values` at all; in the
-  built package it carries `doc_values: false`. The ECS blocker
-  (`doc_values_false_ecs`) is invisible to `lint` and fails `build` the moment the
-  stream declares readiness.
+  built package it carries `doc_values: false`. That is not a validation error: Fleet
+  strips it when it installs the stream in `logsdb_columnar` mode
+  (`doc_values_false_ecs`, severity `platform`).
 - **The spec is unreleased.** Everything this skill writes is package-spec 3.7.0
   (`3.7.0-next`). A stock `elastic-package` rejects it; build one against a local
   package-spec checkout ([`migration.md`](migration.md#local-tooling)).
@@ -62,11 +63,11 @@ the Elasticsearch error and report it.
 
 ### Kibana with the Fleet support
 
-No Kibana supports `elasticsearch.logsdb_columnar` yet. The Fleet PR
-(elastic/kibana#292285, branch `feat/columnar-index-mode`) still implements the earlier
-design and has to follow the package-spec#1250 shape first. Stock Kibana installs the
-package but ignores the setting: the streams stay on logsdb and the toggle does not
-exist. Once a Kibana build with the reworked support exists:
+No released Kibana supports `elasticsearch.logsdb_columnar` yet. The Fleet PR
+(elastic/kibana#292285, branch `feat/columnar-index-mode`) implements the
+package-spec#1250 contract but is not merged. Stock Kibana installs the package but
+ignores the setting: the streams stay on logsdb and the toggle does not exist. To test
+with the Fleet support, run a Kibana built from that branch:
 
 1. `elastic-package stack up` as above, then stop the docker Kibana
    (`docker stop elastic-package-stack-kibana-1`).
@@ -111,7 +112,8 @@ document, so `GET _data_stream/logs-<pkg>.<ds>` can show the old generation for 
 while. Verify with a write, or force it with `POST logs-<pkg>.<ds>/_rollover`.
 
 **C. A `@custom` component template** (any stock 9.5+ stack). For packages without
-`doc_values: false` fields — no ECS `event.original` import, no package-owned one —
+`doc_values: false` or `store: true` fields — no ECS `event.original` import, no
+package-owned one —
 set the mode in the stream's custom component template, which Fleet templates already
 compose:
 
@@ -121,9 +123,10 @@ PUT _component_template/logs-<pkg>.<ds>@custom
 POST logs-<pkg>.<ds>-default/_rollover
 ```
 
-Fleet does not know about this mode: a `doc_values: false` field makes the PUT fail
-(until Elasticsearch or Fleet handles it), which is itself a useful check. Delete the
-component template (and roll over) when done.
+Fleet does not know about this mode, so it does not strip `doc_values: false` or
+`store: true` here: a field with either (an ECS `event.original` import included) makes
+the `PUT` fail, which is itself a useful check. Only Elasticsearch could accept them
+on this route. Delete the component template (and roll over) when done.
 
 Whatever the route, re-run the `GET _settings` check and confirm `index.mode` is
 `logsdb_columnar` on the **newest** backing index before believing any result.

@@ -33,10 +33,10 @@ from typing import Any, Dict, List, Optional, Tuple
 #   back to LogsDB at the next rollover and tells the user why. For the package that is
 #   a breaking change: major version bump and a `breaking-change` changelog entry.
 # * Mode changes take effect on the next rollover.
-# * There is no field-level `columnar:` block. `doc_values: false` (and `store: true`)
-#   is for Elasticsearch or Fleet to handle in columnar mode, not for every package;
-#   a field that needs an inverted index sets `index: true` itself, which changes
-#   nothing on LogsDB.
+# * There is no field-level `columnar:` block. Fleet strips `doc_values: false` (and
+#   `store: true`) when it installs a data stream in `logsdb_columnar` mode, so
+#   packages leave them alone; a field that needs an inverted index sets `index: true`
+#   itself, which changes nothing on LogsDB.
 #
 # Using the setting needs `format_version: "3.7.0"` (`logsdb_columnar_requires_spec_3_7`)
 # and a `conditions.kibana.version` of at least COLUMNAR_KIBANA_CONSTRAINT, because

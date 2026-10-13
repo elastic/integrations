@@ -47,8 +47,9 @@ def columnar_optin_label(stream: Dict[str, Any]) -> str:
                 and f["code"] not in DECLARATION_CODES]
     if stream.get("columnar_enabled") and blocking:
         label += (f". **Inconsistent** (`logsdb_columnar_with_blockers`): the stream still "
-                  f"has {len(blocking)} Class A finding(s), which the validator rejects — fix "
-                  "them or mark this data stream `logsdb_columnar: unsupported`")
+                  f"has {len(blocking)} non-platform Class A finding(s), which package-spec or "
+                  "Elasticsearch rejects — fix them or mark this data stream "
+                  "`logsdb_columnar: unsupported`")
     if effective != "unsupported":
         # Plumbing pointer only. The 9.6 minimum-stack cost is stated ONCE, in the package
         # header: repeating it per data stream is how a warning stops being read.
@@ -667,7 +668,7 @@ def md_catalog(results: List[Dict[str, Any]], scanned: Optional[int] = None,
     lines.extend(code_rows(BLOCKER_CODES) or ["(none)", ""])
 
     npkg, nds, _ = union(PLATFORM_CODES)
-    lines.append("## Waiting on Elasticsearch or Fleet — no package change "
+    lines.append("## Handled by Fleet at install — no package change "
                  f"({npkg} packages, {nds} data streams)")
     lines.append("")
     lines.append("`doc_values: false` (declared, or imported from ECS by `external: ecs`) and "
@@ -752,7 +753,8 @@ def md_catalog(results: List[Dict[str, Any]], scanned: Optional[int] = None,
         lines.append("")
         lines.extend(code_rows(DECLARATION_PROBLEM_CODES))
 
-    INFO_CODES = ["nested_single_level", "keyword_normalizer_lowercase", "object_array_flattening"]
+    INFO_CODES = ["nested_single_level", "keyword_normalizer_lowercase", "object_array_flattening",
+                  "index_sort_no_timestamp"]
     npkg, nds, _ = union(INFO_CODES)
     lines.append("## Informational — Class C "
                  f"({npkg} packages, {nds} data streams)")

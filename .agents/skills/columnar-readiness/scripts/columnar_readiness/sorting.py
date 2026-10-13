@@ -455,7 +455,7 @@ def _ecs_sample_candidate(name: str, field_index: Dict[str, Dict[str, Any]],
 
     ECS fields are mapped by the `ecs@mappings` component template, so a package that
     populates `cloud.account.id` in its pipeline often does not list it in
-    `fields/*.yml` (21 streams for `cloud.account.id`, 31 for `organization.id`). The
+    `fields/*.yml` (40 logs streams for `cloud.account.id`, 59 for `organization.id`). The
     sample event is then the only static evidence that the field exists at all. Type
     and array flag still come from the ECS cache, so a missing cache falls back to "no
     confident candidate", the safe direction.

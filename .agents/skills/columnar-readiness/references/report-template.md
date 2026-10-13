@@ -28,7 +28,7 @@ Two checks on the declaration rather than the mappings, both Class A:
 `logsdb_columnar_requires_spec_3_7` (`auto_fix`) fires when `elasticsearch.logsdb_columnar`
 appears while the root `format_version` is below 3.7.0 — bump it — and
 `logsdb_columnar_with_blockers` (`blocker`) fires when a stream takes `opt_in` or
-`default` while it still has a Class A finding. `logsdb_columnar_with_index_mode`,
+`default` while it still has a non-platform Class A finding. `logsdb_columnar_with_index_mode`,
 `logsdb_columnar_not_logs` and `index_mode_columnar` cover the other validation errors
 of the setting (see [`blockers.md`](blockers.md)).
 
@@ -44,7 +44,7 @@ default), `default` (new installations get columnar; existing streams keep their
 `unsupported` (stays on LogsDB), or not declared. The stream's own value wins over the
 package's. In JSON: `logsdb_columnar` (the stream's own value), `logsdb_columnar_effective`
 and the derived `columnar_enabled` (`opt_in` or `default`). A stream that takes `opt_in`
-or `default` while still carrying Class A findings is called out as inconsistent, and
+or `default` while still carrying non-platform Class A findings is called out as inconsistent, and
 raises `logsdb_columnar_with_blockers` (severity `blocker`).
 
 The package header carries a **Package readiness** line: the package-level value, or,
@@ -73,6 +73,18 @@ and the BLOCKED streams are marked `unsupported`.
 `receiver_proposed`, `explicit`, `receiver_no_candidate` and `no_candidate` carry an
 `explicit_sort_yaml` fragment; `default_ok` and `degraded` do not, and
 `review_candidate` deliberately does not.
+
+**A proposed sort on an undeclared field** carries its declaration. package-spec rejects
+an `index.sort` field the data stream does not define (only `@timestamp` is implicit),
+and the ECS fields a proposal can use (`cloud.account.id` from the sample event, a
+receiver's `observer.*`) are often undeclared. Then `sort.undeclared_fields` lists them,
+the Stream manifest line says so, and a **Suggested change** follows the manifest
+block: `- name: <field>` / `external: ecs` for `data_stream/<ds>/fields/ecs.yml`
+(appended, or a new file), with a note when the package's `_dev/build/build.yml` has no
+ECS dependency. In JSON it is `sort.field_declaration` (`file`, `position`, `body`,
+`note`). An explicit sort the manifest already has gets no declaration: the
+`index_sort_invalid` finding covers it, and a custom sort without `@timestamp` gets the
+info-level `index_sort_no_timestamp` (spec warning `SVR00016`).
 
 **`_source` consumers** is printed for every in-scope stream, found or not, because an
 empty Class C section is indistinguishable from a check that never ran. Clean, it
@@ -166,6 +178,14 @@ proposed at all.
             field: ["<field>", "@timestamp"]
             order: ["asc", "desc"]
   ```
+  - **Suggested change** in `data_stream/<ds>/fields/ecs.yml`, <a new file | at the end of the file, as top-level entries>:   ← only when the sort field is undeclared
+
+    ```yaml
+    - name: <field>
+      external: ecs
+    ```
+
+    <why the declaration is needed; whether `_dev/build/build.yml` lacks the ECS dependency>
 
 ### Class A — rejected by Elasticsearch
 
@@ -253,7 +273,7 @@ OTel log streams out of scope until derived fields land (<n>): `<pkg>`/<ds>, …
 
 ## Already declared (`elasticsearch.logsdb_columnar`)
 ## Blockers — Class A, no mechanical fix (<n> packages, <n> data streams)
-## Waiting on Elasticsearch or Fleet — no package change (<n> packages, <n> data streams)
+## Handled by Fleet at install — no package change (<n> packages, <n> data streams)
 ## Class A, mechanically fixable — declared in the package source
 ## Data-loss review — Class B (<n> packages, <n> data streams)
 ## Judgement calls — review (<n> packages, <n> data streams)
@@ -265,6 +285,9 @@ OTel log streams out of scope until derived fields land (<n>): `<pkg>`/<ds>, …
 ```
 
 The **Already declared** section is omitted while no stream takes a value.
+**Informational — Class C** groups `nested_single_level`, `keyword_normalizer_lowercase`,
+`object_array_flattening` and `index_sort_no_timestamp` (a custom `index.sort` without
+`@timestamp`, spec warning `SVR00016`); none of them changes a status.
 Findings are grouped **by code**, not only by status, so a run can be diffed against
 a previous one even when the status rules change.
 
