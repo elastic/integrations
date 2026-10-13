@@ -106,7 +106,8 @@ HOST_MEANINGFUL_INPUTS = {
 RECEIVER_INPUTS = {"tcp", "udp", "syslog"}
 
 # Device identifiers a receiver pipeline may populate from the syslog header, best
-# first. These are the only sort keys proposed for a receiver stream.
+# first. These are the only sort keys proposed for a receiver stream. ECS fields only:
+# a proposal on one the stream does not declare declares it with `external: ecs`.
 RECEIVER_SORT_FIELDS = ["observer.name", "observer.hostname", "observer.serial_number"]
 
 # Inputs that poll or receive from a remote API: the agent host is the collector, not
@@ -125,10 +126,12 @@ COLLECTOR_INPUTS = {
 # Preferred index-sort grouping fields, best first.
 #
 # These are accepted from two sources: a declaration in `fields/*.yml`, and — because
-# ECS fields are supplied by the `ecs@mappings` component template at install time and
-# therefore frequently left undeclared — a scalar value in `sample_event.json`, with
-# the type and the array flag resolved from the ECS cache. See
-# `_ecs_sample_candidate`.
+# ECS fields are mapped by the `ecs@mappings` component template and therefore
+# frequently left undeclared — a scalar value in `sample_event.json`, with the type
+# and the array flag resolved from the ECS cache. See `_ecs_sample_candidate`. A sort
+# on an undeclared one needs its `external: ecs` declaration too, which the proposal
+# carries: package-spec rejects an `index.sort` field the data stream does not define.
+# So the list holds ECS fields only.
 SORT_CANDIDATES = [
     "cloud.account.id",
     "organization.id",

@@ -13,7 +13,7 @@ from .consumers import object_array_findings, source_consumer_findings
 from .ecs import ecs_schema
 from .fields import check_field, check_stream_manifest, nested_object_children, walk_fields
 from .kibana import scan_kibana_assets
-from .patches import attach_pipeline_patches
+from .patches import attach_pipeline_patches, sort_field_declaration
 from .pipelines import scan_pipelines
 from .rules import (
     default_rules_dir,
@@ -349,11 +349,16 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
         stream["out_of_scope_reason"] = reason
         return stream
 
+    # A fixed `index_mode` (`time_series`) keeps the stream out of `logsdb_columnar`: the
+    # package value is ignored for it, and its own value is a validation error
+    # (`logsdb_columnar_with_index_mode` below).
+    fixed_mode = bool(stream["index_mode"]) and stream["index_mode"] not in COLUMNAR_INDEX_MODES
     effective = (own if own in LOGSDB_COLUMNAR_STREAM_VALUES
                  else package_value if package_value in LOGSDB_COLUMNAR_PACKAGE_VALUES
+                 and not fixed_mode
                  else None)
     stream["logsdb_columnar_effective"] = effective
-    stream["columnar_enabled"] = effective in ("opt_in", "default")
+    stream["columnar_enabled"] = effective in ("opt_in", "default") and not fixed_mode
 
     stream["inputs"] = sorted({
         s.get("input") for s in (manifest.get("streams") or []) if isinstance(s, dict) and s.get("input")
@@ -385,15 +390,17 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
             "Remove `index_mode` here, and declare `elasticsearch.logsdb_columnar: opt_in` "
             "in the root `manifest.yml` (or on this data stream).",
             rel(manifest_path), line=line_of(es_section, "index_mode")))
-    elif mode and stream["columnar_enabled"]:
+    elif mode and own is not None:
+        # Only the stream's own value: the validator ignores the package value here.
         findings.append(finding(
             "logsdb_columnar_with_index_mode", "A", "blocker",
-            f"`index_mode: {mode}` and `logsdb_columnar: {effective}` both apply to this "
-            f"data stream. `logsdb_columnar` only applies when `index_mode` is unset, and the "
-            f"validator rejects the combination.",
-            "Mark this data stream `elasticsearch.logsdb_columnar: unsupported`, or drop "
+            f"This data stream sets both `index_mode: {mode}` and `logsdb_columnar: {own}`. "
+            f"`logsdb_columnar` only applies when `index_mode` is unset, so the validator "
+            f"rejects the combination whatever the value, `unsupported` included. A "
+            f"package-level value is ignored for a data stream with `index_mode`.",
+            "Remove `logsdb_columnar` from this data stream's manifest, or drop "
             "`index_mode`.",
-            rel(manifest_path), line=line_of(es_section, "index_mode")))
+            rel(manifest_path), line=own_line))
 
     # Fields
     # Fields
@@ -573,6 +580,13 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
                                     pipeline_arrays=pipeline_arrays,
                                     sample=sample,
                                     field_sources=field_sources)
+    # A proposed sort on an ECS field the stream does not declare comes with the
+    # declaration; an explicit sort the manifest already has is judged by
+    # `index_sort_invalid` instead.
+    undeclared = stream["sort"].get("undeclared_fields") or []
+    stream["sort"]["field_declaration"] = (
+        sort_field_declaration(undeclared, ds_dir, pkg_dir)
+        if undeclared and not existing else None)
     stream["lookup_candidates"] = lookup_candidates(
         specific_rules, filter_fields, field_index, stream["sort"].get("sort_fields") or [])
     stream["status"] = status_from_findings(findings)

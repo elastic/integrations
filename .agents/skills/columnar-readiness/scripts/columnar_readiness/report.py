@@ -154,6 +154,12 @@ def stream_manifest_block(s: Dict[str, Any]) -> Tuple[List[str], List[str]]:
     elif sort["explicit_sort_yaml"]:
         body.extend(sort_yaml(sort["sort_fields"], sort["sort_orders"],
                                header=False).rstrip("\n").split("\n"))
+        if sort.get("field_declaration"):
+            names = ", ".join(f"`{n}`" for n in sort["undeclared_fields"])
+            it = "it" if len(sort["undeclared_fields"]) == 1 else "them"
+            notes.append(f"the sort uses {names}, which this data stream does not declare: "
+                         f"declare {it} in the same change (below), or the sort fails "
+                         f"validation")
     elif sort["class"] == "default_ok":
         notes.append("no `index.sort` to write — the `logsdb_columnar` logs profile "
                      "already sorts on `host.name asc, @timestamp desc`")
@@ -179,6 +185,19 @@ def stream_manifest_placement(s: Dict[str, Any]) -> str:
     return (f"add the block below to `data_stream/{ds}/manifest.yml` (there is no "
             f"`elasticsearch:` key yet) — it goes in as a new top-level key, "
             f"conventionally after `streams:` at the end of the file")
+
+
+def patch_lines(p: Dict[str, Any]) -> List[str]:
+    """A suggested change (`patches.patch`) as a sub-item: where, the snippet, the note."""
+    lines = [f"  - **Suggested change** in `{p['file']}`, {p['position']}:",
+             "",
+             f"    ```{p.get('lang') or 'yaml'}"]
+    for ln in p["body"].rstrip("\n").split("\n"):
+        lines.append(f"    {ln}" if ln else "")
+    lines.append("    ```")
+    if p.get("note"):
+        lines.extend(["", f"    {p['note']}"])
+    return lines
 
 
 def _sort_summary(fields: List[str], orders: List[str]) -> str:
@@ -431,6 +450,8 @@ def md_package(result: Dict[str, Any]) -> str:
             for ln in body:
                 lines.append(f"  {ln}")
             lines.append("  ```")
+        if s["sort"].get("field_declaration"):
+            lines.extend(patch_lines(s["sort"]["field_declaration"]))
         lines.append("")
         if not s["findings"]:
             lines.append("No blocking or lossy mapping features found.")
@@ -452,15 +473,7 @@ def md_package(result: Dict[str, Any]) -> str:
                     lines.append(f"  - {ln}" if idx == 0 else f"    {ln}")
                 p = f.get("patch")
                 if p:
-                    lines.append(f"  - **Suggested change** in `{p['file']}`, {p['position']}:")
-                    lines.append("")
-                    lines.append(f"    ```{p.get('lang') or 'yaml'}")
-                    for ln in p["body"].rstrip("\n").split("\n"):
-                        lines.append(f"    {ln}" if ln else "")
-                    lines.append("    ```")
-                    if p.get("note"):
-                        lines.append("")
-                        lines.append(f"    {p['note']}")
+                    lines.extend(patch_lines(p))
             lines.append("")
 
     if skipped:

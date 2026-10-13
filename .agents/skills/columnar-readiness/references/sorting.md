@@ -198,18 +198,35 @@ those two streams now get.
 Accepted from **two** sources:
 
 - a declaration in `data_stream/<ds>/fields/*.yml`; **or**
-- a scalar value in `sample_event.json`. ECS fields are supplied by the
-  `ecs@mappings` component template at install time, so a package whose pipeline
-  fills `cloud.account.id` has no reason to also declare it — and most do not.
-  Across the catalog, 21 streams populate `cloud.account.id`, 31 `organization.id`,
-  4 `cloud.project.id` and 5 `observer.name` without declaring any of them. Without
-  this path the audit says "no confident candidate" while the tenant id is sitting
-  in the sample event. The type and the array flag still come from the ECS cache, so
-  a missing cache falls back to "no confident candidate" — the safe direction.
+- a scalar value in `sample_event.json`. ECS fields are mapped by the `ecs@mappings`
+  component template once a document carries them, so many packages whose pipeline
+  fills `cloud.account.id` never declare it. Across the catalog, 21 streams populate
+  `cloud.account.id`, 31 `organization.id`, 4 `cloud.project.id` and 5
+  `observer.name` without declaring any of them. Without this path the audit says
+  "no confident candidate" while the tenant id is sitting in the sample event. The
+  type and the array flag still come from the ECS cache, so a missing cache falls
+  back to "no confident candidate" — the safe direction.
 
   This is also why `aws/cloudtrail` sorts on `cloud.account.id` and not on a vendor
   leaf: the ECS field is the same AWS account id, populated by the pipeline, and it
   is single-valued.
+
+**An undeclared sort field has to be declared with the sort.** package-spec rejects
+an `index.sort` field the data stream does not define (only `@timestamp` is
+implicit), and Elasticsearch cannot sort on a field that is not mapped when the index
+is created, which is before `ecs@mappings` sees a document. So whenever a proposal
+(this path, or a receiver's `observer.*` field the pipeline writes) sorts on a field
+the stream does not declare, the report adds a **Suggested change** that declares it
+in `data_stream/<ds>/fields/ecs.yml`:
+
+```yaml
+- name: cloud.account.id
+  external: ecs
+```
+
+`external: ecs` needs an ECS dependency in the package's `_dev/build/build.yml`; the
+suggested change says so when it is missing. Only ECS fields are proposed this way: a
+non-ECS field is never proposed unless the stream declares it.
 
 Two exceptions for `agent.id`, which identifies the **collector**, not the subject:
 it is never taken from the sample-event path (334 poller streams carry it), and it

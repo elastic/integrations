@@ -7,6 +7,8 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
+from .common import load_yaml
+
 
 # --------------------------------------------------------------------------- #
 # Suggested changes (ready-to-paste snippets attached to findings)
@@ -205,6 +207,46 @@ def _runtime_script(runtime: Any) -> Optional[str]:
         if isinstance(script, str):
             return script
     return None
+
+
+def sort_field_declaration(fields: List[str], ds_dir: str, pkg_dir: str) -> Dict[str, Any]:
+    """The `external: ecs` declarations a proposed index sort needs.
+
+    package-spec rejects an `index.sort` field the data stream does not define (only
+    `@timestamp` is implicit), and Elasticsearch cannot sort on a field that is not
+    mapped when the index is created: `ecs@mappings` maps it only once a document
+    carries it. The declaration goes into the stream's `fields/ecs.yml`, the file most
+    packages import ECS fields in (`base-fields.yml` and the generated `agent.yml` /
+    `beats.yml` also carry `external: ecs`, but they are not the place for it).
+    """
+    path = os.path.join(ds_dir, "fields", "ecs.yml")
+    target = os.path.relpath(path, pkg_dir)
+    position = ("at the end of the file, as top-level entries" if os.path.isfile(path)
+                else "a new file")
+    note = ("package-spec rejects an `index.sort` field that the data stream does not "
+            "define (only `@timestamp` is implicit), so the sort needs this declaration. "
+            "Like the sort, it applies in every index mode: the field gets its ECS "
+            "mapping in the package's component template.")
+    if not _has_ecs_dependency(pkg_dir):
+        note += (" The package's `_dev/build/build.yml` declares no ECS dependency, so "
+                 "`external: ecs` cannot resolve: add `dependencies.ecs.reference` (the "
+                 "`git@v<version>` other packages use) first.")
+    body = "".join(f"- name: {name}\n  external: ecs\n" for name in fields)
+    return patch(target, position, body, note=note)
+
+
+def _has_ecs_dependency(pkg_dir: str) -> bool:
+    """Whether `_dev/build/build.yml` declares `dependencies.ecs.reference`."""
+    path = os.path.join(pkg_dir, "_dev", "build", "build.yml")
+    if not os.path.isfile(path):
+        return False
+    try:
+        doc = load_yaml(path)
+    except RuntimeError:
+        return False
+    deps = doc.get("dependencies") if isinstance(doc, dict) else None
+    ecs = deps.get("ecs") if isinstance(deps, dict) else None
+    return isinstance(ecs, dict) and bool(ecs.get("reference"))
 
 
 def attach_pipeline_patches(findings: List[Dict[str, Any]],

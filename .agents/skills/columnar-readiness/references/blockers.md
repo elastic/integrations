@@ -105,7 +105,7 @@ ready:
 | Code | When |
 | --- | --- |
 | `logsdb_columnar_with_blockers` | a stream takes `opt_in` or `default` (its own or the package's) while it still has a Class A finding. Fix the findings, or mark the stream `unsupported` |
-| `logsdb_columnar_with_index_mode` | a logs stream has `index_mode` and takes `opt_in` or `default` |
+| `logsdb_columnar_with_index_mode` | a logs stream's own manifest sets `logsdb_columnar` (any value, `unsupported` included) together with `index_mode`. Remove `logsdb_columnar` from that manifest, or drop `index_mode`. The package value is ignored for a stream with `index_mode`, so it never triggers this |
 | `logsdb_columnar_not_logs` | a non-logs data stream sets `logsdb_columnar` |
 | `index_mode_columnar` | a manifest sets `index_mode: logsdb_columnar` or `columnar` |
 | `logsdb_columnar_requires_spec_3_7` | the setting is used under a `format_version` older than 3.7.0, where it is an unknown property |
@@ -481,8 +481,10 @@ Elasticsearch; the spec reports it as warning `SVR00016` and the audit as the
 info-level `index_sort_no_timestamp`.
 
 **Remediation.** Fix the sort ([`sorting.md`](sorting.md)), or drop it and keep the
-logs profile default (`host.name`, `@timestamp`). The audit's own sort proposals
-already meet these conditions.
+logs profile default (`host.name`, `@timestamp`). The audit's own sort proposals meet
+these conditions once applied whole: a proposal on an ECS field the stream does not
+declare comes with its `external: ecs` declaration for `fields/ecs.yml`, and the sort
+needs it ([`sorting.md`](sorting.md)).
 
 **Known in catalog:** none in a `type: logs` data stream (only `synthetics` declares a
 sort, and it is out of scope).

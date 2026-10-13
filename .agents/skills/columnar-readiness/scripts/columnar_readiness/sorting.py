@@ -120,6 +120,12 @@ def recommend_sort(stream: Dict[str, Any], field_index: Dict[str, Dict[str, Any]
             "sort_orders": orders,
             "reason": "; ".join(reason_bits + ([extra_reason] if extra_reason else [])),
             "explicit_sort_yaml": sort_yaml(fields, orders) if explicit else None,
+            # package-spec rejects an `index.sort` field the data stream does not define
+            # (only `@timestamp` is implicit). These are the ECS fields the proposal sorts
+            # on without a declaration in `fields/*.yml`: the stream declares them
+            # (`external: ecs`) together with the sort (`patches.sort_field_declaration`).
+            "undeclared_fields": [f for f in fields if f != "@timestamp"
+                                  and f not in field_index] if explicit else [],
             "dashboard_top_fields": top_dash,
             # The tier-3 dashboard hint: a field the package's own dashboards filter
             # on. Never a proposal — see `review_candidate` below.
@@ -147,6 +153,8 @@ def recommend_sort(stream: Dict[str, Any], field_index: Dict[str, Dict[str, Any]
     if host_meaningful:
         return default_or_degraded("`host.name` is agent-populated and sort-compatible")
 
+    # A device identifier the pipeline writes is proposed even when the stream does not
+    # declare it: it is an ECS field, so the proposal declares it (`undeclared_fields`).
     device = next((f for f in RECEIVER_SORT_FIELDS if f in pipeline_arrays.targets), None)
 
     # Receiver regime: the pipeline decides. Do not fall through to the tenant tiers —
@@ -445,12 +453,17 @@ def _ecs_sample_candidate(name: str, field_index: Dict[str, Dict[str, Any]],
                           sample: Dict[str, Any]) -> bool:
     """Tier 1 acceptance for an ECS field the package never declares.
 
-    ECS fields are installed by the `ecs@mappings` component template, so a package
-    that populates `cloud.account.id` in its pipeline has no reason to list it in
-    `fields/*.yml` — and most do not (21 streams for `cloud.account.id`, 31 for
-    `organization.id`). The sample event is then the only static evidence that the
-    field exists at all. Type and array flag still come from the ECS cache, so a
-    missing cache falls back to "no confident candidate", the safe direction.
+    ECS fields are mapped by the `ecs@mappings` component template, so a package that
+    populates `cloud.account.id` in its pipeline often does not list it in
+    `fields/*.yml` (21 streams for `cloud.account.id`, 31 for `organization.id`). The
+    sample event is then the only static evidence that the field exists at all. Type
+    and array flag still come from the ECS cache, so a missing cache falls back to "no
+    confident candidate", the safe direction.
+
+    Accepted as a candidate only: `ecs@mappings` maps the field when the first
+    document carries it, too late for `index.sort`, and package-spec rejects a sort
+    field the data stream does not define. So a proposal on such a field always comes
+    with its `external: ecs` declaration (`undeclared_fields`).
     """
     if name in field_index:
         return False  # declared: the normal `_sortable` path already ruled on it

@@ -305,6 +305,10 @@ static analysis. The **input types** pick the regime:
   declared in `fields/*.yml` or populated in `sample_event.json` (`cloud.account.id`,
   `organization.id`, `cloud.project.id`, …), then vendor tenant ids. What dashboards
   filter on is only a hint.
+- **A sort field must be declared** in the stream's `fields/*.yml`: package-spec
+  rejects any other (only `@timestamp` is implicit). When a proposal sorts on an ECS
+  field the stream does not declare, the report adds its `external: ecs` declaration
+  for `fields/ecs.yml`: apply both together.
 - A candidate must be **single-valued** (itself and every object it lives in), have doc
   values, be a `keyword`/`ip` or an identifier-named integer, and not be constant.
   Otherwise the audit says "no confident candidate; needs human choice": a weak or
