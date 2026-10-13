@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing Phishing URLs collection feed
+description: Pipeline for processing Phishing URLs collection feed.
 processors:
   - terminate:
       tag: data_collection_error
@@ -44,6 +44,10 @@ processors:
       tag: json_event_original_to_eti_561d07d4
       field: event.original
       target_field: eti
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - drop:
       tag: drop_5a415bbc
       if: ctx.eti?.type != 'indicator'
@@ -138,6 +142,17 @@ processors:
           patterns:
           - "^\\[url:value%{SPACE}=%{SPACE}'%{DATA:threat.indicator.url.original}'\\]?"
           ignore_failure: true
+  - script:
+      tag: decode_html_entities_in_indicator_url
+      lang: painless
+      if: ctx.threat?.indicator?.url?.original != null
+      source: |
+        ctx.threat.indicator.url.original = ctx.threat.indicator.url.original
+          .replace('&amp;', '&')
+          .replace('&lt;', '<')
+          .replace('&gt;', '>')
+          .replace('&quot;', '"')
+          .replace('&#39;', "'");
   - set:
       tag: set_threat_indicator_type_2f871b98
       field: threat.indicator.type
