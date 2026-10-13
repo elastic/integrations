@@ -84,11 +84,7 @@ Air-gapped and other offline deployments have no route to the Google Threat Inte
 
 **File format.** The filestream input expects **NDJSON**: one IOC object per line, each line a single JSON object with a `data` field. This is not the pretty-printed JSON object with an `iocs` array that the API returns. The files must be plain `.ndjson`. The filestream input cannot read `.zip` or `.tar.gz` archives, and gzip-compressed files (`.gz`) are excluded.
 
-**Producing the files.** Google Threat Intelligence does not write NDJSON files itself. A collector has to pull `/api/v3/threat_lists/{threat_list_id}/{hour}` (or `/latest`) and write one IOC per line. For Google Distributed Cloud this is a flag on the export that already runs; for other deployments, use the provided export script, which writes one `threat_list_<id>-<hour>.ndjson` file per list:
-
-```bash
-<export-script> --format ndjson --outdir /path/to/threat_lists
-```
+**Producing the files.** Google Threat Intelligence does not write NDJSON files itself, so a collector with API access must create them. Call `GET /api/v3/threat_lists/{threat_list_id}/{hour}` (with the `x-apikey` header) on a host that can reach the API, take each element of the `iocs` array in the response, and write it as one `{"data":{...}}` JSON object per line to a `.ndjson` file named after the list and hour, for example `threat_list_ransomware-2025010112.ndjson`. Then copy the files to the air-gapped host and point the filestream input at them.
 
 **Enabling file collection in Elastic:**
 
