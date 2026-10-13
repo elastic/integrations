@@ -14,6 +14,10 @@ PIPELINE_FILE="packages_pipeline.yml"
 # Buildkite rejects pipeline uploads with more than 500 jobs (organization limit),
 # so steps are uploaded in batches. Keep some margin below the limit (the group also counts as a job).
 MAX_STEPS_PER_UPLOAD="${MAX_STEPS_PER_UPLOAD:-400}"
+if ! [[ "${MAX_STEPS_PER_UPLOAD}" =~ ^[1-9][0-9]*$ ]]; then
+    echo "MAX_STEPS_PER_UPLOAD must be a positive integer, got: '${MAX_STEPS_PER_UPLOAD}'"
+    exit 1
+fi
 steps_in_batch=0
 
 start_batch() {
