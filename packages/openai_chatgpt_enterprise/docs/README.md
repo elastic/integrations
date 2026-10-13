@@ -19,7 +19,7 @@ This integration periodically queries the OpenAI Compliance Logs Platform API to
 
 On the first run, logs are pulled back as far as the configured initial interval. From the second collection onward, each run resumes from the `last_end_time` cursor returned by the previous request, so events are collected without gaps or duplication.
 
-By default, each data stream polls every **15 minutes**. OpenAI publishes Compliance Logs in batches roughly every 10-15 minutes, so polling more often won’t return fresher data. Increase the Interval to reduce API calls if you don’t need the freshest data.
+By default, each data stream polls every **1 minute**, matching updated OpenAI guidance for Compliance Logs. Increase the Interval to reduce API calls if you don’t need the freshest data.
 
 Keep Batch Size at its default of 100 to limit list requests, which OpenAI caps at 200 per minute across all event types.
 
