@@ -1125,6 +1125,13 @@ processors:
       ignore_missing: true
       if: ctx._tmp?.service_name == null
       tag: rename_user_identity_principal_id_1f790b6f
+  # Service actors do not get user.id, so keep their principal ID in a vendor field instead of dropping it.
+  - rename:
+      field: json.userIdentity.principalId
+      target_field: aws.cloudtrail.user_identity.principal_id
+      ignore_missing: true
+      if: ctx._tmp?.service_name != null
+      tag: rename_user_identity_principal_id_service_actor_3d054b3c
   - rename:
       tag: rename_json_userIdentity_arn_to_aws_cloudtrail_user_identity_arn_02745565
       field: json.userIdentity.arn
