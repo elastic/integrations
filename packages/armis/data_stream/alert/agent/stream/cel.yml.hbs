@@ -81,7 +81,7 @@ program: |
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
             resp.Body.decode_json().as(body, {
-              "events" : body.?data.results.orValue([]).map(e,
+              "events" : body.?data.results.orValue([]).as(r, r != null ? r : []).map(e,
                 {
                   "message": e.encode_json()
                 }
