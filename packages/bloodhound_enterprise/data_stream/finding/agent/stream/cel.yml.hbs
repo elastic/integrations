@@ -80,28 +80,18 @@ program: |-
                           :
                             [{"id": "1", "name": "default"}],
                         }).as(all_domains,
-                          (
-                            (type(state.?selected_environment.orValue("")) == string) ?
-                              string(state.selected_environment)
-                            :
-                              ""
-                          ).as(env,
-                            (
-                              (type(state.?bhe_zones.orValue("")) == string) ?
-                                string(state.bhe_zones)
-                              :
-                                ""
-                            ).as(zones,
+                          state.?selected_environment.orValue("").as(env,
+                            state.?bhe_zones.orValue("").as(zones,
                               (
-                                env == "" || env == "*" || env.lowerAscii() == "all" ||
-                                !all_domains.exists(d, env.contains(string(d.name)))
+                                env == "" || env == "*" || env.to_lower() == "all" ||
+                                !all_domains.exists(d, env.contains(d.name))
                               ).as(env_all,
                                 (
-                                  zones == "" || zones == "*" || zones.lowerAscii() == "all" ||
-                                  !all_domains.exists(d, d.tags.exists(t, zones.contains(string(t.name))))
+                                  zones == "" || zones == "*" || zones.to_lower() == "all" ||
+                                  !all_domains.exists(d, d.tags.exists(t, zones.contains(t.name)))
                                 ).as(zones_all,
-                                  all_domains.filter(d, env_all || env.contains(string(d.name))).map(d, d.with({
-                                    "tags": d.tags.filter(t, zones_all || zones.contains(string(t.name))),
+                                  all_domains.filter(d, env_all || env.contains(d.name)).map(d, d.with({
+                                    "tags": d.tags.filter(t, zones_all || zones.contains(t.name)),
                                   })).filter(d, size(d.tags) > 0).as(domains,
                                     (size(domains) > 0) ?
                                       {
@@ -232,7 +222,7 @@ program: |-
                   "events": {
                     "error": {
                       "code": string(resp.StatusCode),
-                      "message": "GET " + uri + ": " + string(resp.Status) + " (" + string(resp.StatusCode) + ")",
+                      "message": "GET " + uri + ": " + resp.Status + " (" + string(resp.StatusCode) + ")",
                     },
                   },
                   "want_more": false,
@@ -242,7 +232,7 @@ program: |-
                   "events": {
                     "error": {
                       "code": string(resp.StatusCode),
-                      "message": "GET " + uri + ": " + string(resp.Status) + " (" + string(resp.StatusCode) + ")",
+                      "message": "GET " + uri + ": " + resp.Status + " (" + string(resp.StatusCode) + ")",
                     },
                   },
                   "step": 1,
@@ -257,7 +247,7 @@ program: |-
                     "error": {
                       "code": string(resp.StatusCode),
                       "message": "GET " + uri + ": " + (
-                        (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                        (size(resp.Body) != 0) ? string(resp.Body) : resp.Status + " (" + string(resp.StatusCode) + ")"
                       ),
                     },
                   },

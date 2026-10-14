@@ -64,10 +64,10 @@ redact:
     - kibana_api_key
 program: |-
   (
-    (size(string(state.base_url)) > 0 && string(state.base_url).substring(int(size(string(state.base_url))) - 1, int(size(string(state.base_url)))) == "/") ?
-      (string(state.base_url).substring(0, int(size(string(state.base_url))) - 1))
+    (size(state.base_url) > 0 && state.base_url.substring(int(size(state.base_url)) - 1, int(size(state.base_url))) == "/") ?
+      (state.base_url.substring(0, int(size(state.base_url)) - 1))
     :
-      string(state.base_url)
+      state.base_url
   ).as(base_trim,
     (
       base_trim.startsWith("https:") ?
@@ -109,25 +109,25 @@ program: |-
               (current_step == 1) ?
                 "/api/v2/available-domains"
               : (current_step == 2) ?
-                (((string(state.kibana_space) == "" || string(state.kibana_space) == "default") ? "" : "/s/" + string(state.kibana_space)) + "/api/cases/_find?perPage=100&page=" + string(state.case_page))
+                (((state.kibana_space == "" || state.kibana_space == "default") ? "" : "/s/" + state.kibana_space) + "/api/cases/_find?perPage=100&page=" + string(state.case_page))
               : (current_step == 3) ?
                 ("/api/v2/domains/" + string(state.domains[int(state.domain_index)].id) + "/available-types?asset_group_tag_id=" + string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].id))
               : (current_step == 4) ?
                 ("/api/v2/findings/" + cur_finding.type)
               : (current_step == 5) ?
                 ("/api/v2/domains/" + string(cur_finding._domain_id) + "/details?finding=" + string(cur_finding.type) + "&skip=" + string(state.details_skip) + "&limit=" + ((
-                  has(state.sync_mode) && string(state.sync_mode) == "cases_only"
+                  has(state.sync_mode) && state.sync_mode == "cases_only"
                 ) ? "1" : string(state.details_limit)) + "&Accepted=eq%3Afalse&asset_group_tag_id=" + string(cur_finding._asset_group_tag_id))
               : (current_step == 6 && state.existing_case_titles.exists(t, t == case_key)) ?
-                (((string(state.kibana_space) == "" || string(state.kibana_space) == "default") ? "" : "/s/" + string(state.kibana_space)) + "/api/cases/" + string(state.existing_bh_cases.filter(c, c.title == case_key).map(c, c.id)[0]))
+                (((state.kibana_space == "" || state.kibana_space == "default") ? "" : "/s/" + state.kibana_space) + "/api/cases/" + string(state.existing_bh_cases.filter(c, c.title == case_key).map(c, c.id)[0]))
               : (current_step == 6) ?
-                (((string(state.kibana_space) == "" || string(state.kibana_space) == "default") ? "" : "/s/" + string(state.kibana_space)) + "/api/cases")
+                (((state.kibana_space == "" || state.kibana_space == "default") ? "" : "/s/" + state.kibana_space) + "/api/cases")
               : (current_step == 7) ?
-                ("/.alerts-security.alerts-" + ((string(state.kibana_space) == "") ? "default" : string(state.kibana_space)) + "/_bulk")
+                ("/.alerts-security.alerts-" + ((state.kibana_space == "") ? "default" : state.kibana_space) + "/_bulk")
               : (current_step == 8) ?
-                (((string(state.kibana_space) == "" || string(state.kibana_space) == "default") ? "" : "/s/" + string(state.kibana_space)) + "/api/cases/" + string(state.current_case_id) + "/comments")
+                (((state.kibana_space == "" || state.kibana_space == "default") ? "" : "/s/" + state.kibana_space) + "/api/cases/" + state.current_case_id + "/comments")
               :
-                ((string(state.kibana_space) == "" || string(state.kibana_space) == "default") ? "" : "/s/" + string(state.kibana_space)) + "/api/cases?ids=%5B%22" + string(state.cases_to_delete[int(state.delete_index)]) + "%22%5D"
+                ((state.kibana_space == "" || state.kibana_space == "default") ? "" : "/s/" + state.kibana_space) + "/api/cases?ids=%5B%22" + string(state.cases_to_delete[int(state.delete_index)]) + "%22%5D"
             ).as(uri,
               (
   
@@ -147,10 +147,10 @@ program: |-
                       : (has(cur_finding._tier_tag) && cur_finding._tier_tag != "") ? string(cur_finding._tier_tag) : "hygiene",
                     ],
                     "description": "# " + ((has(cur_finding.finding_title) && string(cur_finding.finding_title) != "") ? string(cur_finding.finding_title) : string(cur_finding.type)) + "\n\n[View on portal](" + ((
-                      (size(string(state.base_url)) > 0 && string(state.base_url).substring(int(size(string(state.base_url))) - 1, int(size(string(state.base_url)))) == "/") ?
-                        (string(state.base_url).substring(0, int(size(string(state.base_url))) - 1))
+                      (size(state.base_url) > 0 && state.base_url.substring(int(size(state.base_url)) - 1, int(size(state.base_url))) == "/") ?
+                        (state.base_url.substring(0, int(size(state.base_url)) - 1))
                       :
-                        string(state.base_url)
+                        state.base_url
                     ) + "/ui/graphview?environmentId=" + string(cur_finding._domain_id) + "&findingName=" + string(cur_finding.type) + "&assetGroupTagId=" + string(cur_finding._asset_group_tag_id)) + ")" + "\n\n## Type\n\n" + (has(cur_finding.finding_type_label) ? string(cur_finding.finding_type_label) : "") + "\n\n## Short Remediation\n\n" + (has(cur_finding.short_remediation) ? string(cur_finding.short_remediation) : "") + "\n\n## Long Remediation\n\n" + (has(cur_finding.long_remediation) ? string(cur_finding.long_remediation) : "") + "\n\n## Short Description\n\n" + (has(cur_finding.short_description) ? string(cur_finding.short_description) : "") + "\n\n## Long Description\n\n" + (has(cur_finding.long_description) ? string(cur_finding.long_description) : "") + "\n\n## References\n\n" + (has(cur_finding.references) ? string(cur_finding.references) : ""),
                     "owner": "securitySolution",
                     "settings": {"syncAlerts": false},
@@ -244,12 +244,12 @@ program: |-
                                                 ((has(inst.DomainSID) && string(inst.DomainSID) != "") ? string(inst.DomainSID) : string(cur_finding._domain_id)).as(env_id,
                                                   (
                                                     (
-                                                      size(string(state.base_url)) > 0 &&
-                                                      string(state.base_url).substring(int(size(string(state.base_url))) - 1, int(size(string(state.base_url)))) == "/"
+                                                      size(state.base_url) > 0 &&
+                                                      state.base_url.substring(int(size(state.base_url)) - 1, int(size(state.base_url))) == "/"
                                                     ) ?
-                                                      (string(state.base_url).substring(0, int(size(string(state.base_url))) - 1))
+                                                      (state.base_url.substring(0, int(size(state.base_url)) - 1))
                                                     :
-                                                      string(state.base_url)
+                                                      state.base_url
                                                   ).as(bhe_base,
                                                     (
                                                       (env_id != "" && string(cur_finding.type) != "") ?
@@ -401,8 +401,8 @@ program: |-
   
                               (current_step == 1) ?
                                 (
-                                    ((has(state.selected_environment) && type(state.selected_environment) == string) ? string(state.selected_environment) : "").as(selected_env,
-                                      ((has(state.bhe_zones) && type(state.bhe_zones) == string) ? string(state.bhe_zones) : "").as(selected_zones,
+                                    ((has(state.selected_environment) && type(state.selected_environment) == string) ? state.selected_environment : "").as(selected_env,
+                                      ((has(state.bhe_zones) && type(state.bhe_zones) == string) ? state.bhe_zones : "").as(selected_zones,
                                         (has(parsed_body.data) && size(parsed_body.data) > 0) ?
                                           parsed_body.data.map(d,
                                             {
@@ -472,7 +472,7 @@ program: |-
                                                         "events": [{"message": {
                                                             "_step": 1,
                                                             "_uri": uri,
-                                                            "story": "Authentication succeeded for base_url " + string(state.base_url) + ". " + (
+                                                            "story": "Authentication succeeded for base_url " + state.base_url + ". " + (
                                                               env_is_all ?
                                                                 (
                                                                   (
@@ -547,15 +547,15 @@ program: |-
                                                 c.tags.exists(t, t == tenant_tag) ||
                                                 c.tags.exists(t, string(t).matches("(?i)^(bloodhound_enterprise|bloodhound)$")) &&
                                                 (
-                                                  c.title.startsWith(string(state.base_url)) ||
+                                                  c.title.startsWith(state.base_url) ||
                                                   c.title.startsWith(
                                                     (
-                                                      size(string(state.base_url)) > 0 &&
-                                                      string(state.base_url).substring(int(size(string(state.base_url))) - 1, int(size(string(state.base_url)))) == "/"
+                                                      size(state.base_url) > 0 &&
+                                                      state.base_url.substring(int(size(state.base_url)) - 1, int(size(state.base_url))) == "/"
                                                     ) ?
-                                                      (string(state.base_url).substring(0, int(size(string(state.base_url))) - 1))
+                                                      (state.base_url.substring(0, int(size(state.base_url)) - 1))
                                                     :
-                                                      string(state.base_url) + "/"
+                                                      state.base_url + "/"
                                                   )
                                                 )
                                               )
@@ -823,7 +823,7 @@ program: |-
                                                 f.with(
                                                   {
                                                     "_instances": (
-                                                      has(state.sync_mode) && string(state.sync_mode) == "cases_only"
+                                                      has(state.sync_mode) && state.sync_mode == "cases_only"
                                                     ) ? [] : merged_instances,
                                                     "_instance_count": has(parsed_body.count) ? int(parsed_body.count) : size(merged_instances),
                                                     "_severity": page_severity,
@@ -833,7 +833,7 @@ program: |-
                                               :
                                                 f
                                             ).as(updated_findings,
-                                              (has(state.sync_mode) && string(state.sync_mode) == "cases_only") ?
+                                              (has(state.sync_mode) && state.sync_mode == "cases_only") ?
                                                 state.with(
                                                   {
                                                     "step": 6,
@@ -907,7 +907,7 @@ program: |-
                                 ).as(resolved_case_id,
                                   (
                                     resolved_case_id != "" && has(state.sync_mode) &&
-                                    string(state.sync_mode) == "cases_only"
+                                    state.sync_mode == "cases_only"
                                   ) ?
                                     (
                                       (int(state.finding_index) + 1 < size(state.process_findings)) ?
