@@ -1143,6 +1143,18 @@ An example event for `network` looks as following:
 
 The Docker `container_logs` data stream collects container logs.
 
+Docker's `json-file` logging driver rotates logs by deleting the rotated files. Since Elastic Agent 9.1, on Linux the
+filestream input keeps a deleted file open until it has been inactive for `close.on_state_change.inactive` (5 minutes
+by default), so during a burst of rotations deleted files can keep using disk space until that timeout passes.
+To release file handles as soon as a file is deleted, add the following to the `Custom configurations` field of the
+data stream (shown under advanced options):
+
+```yaml
+close.on_state_change.removed: true
+```
+
+Note that with this setting any lines not yet read from a file when it is deleted are lost.
+
 **Exported fields**
 
 | Field | Description | Type |

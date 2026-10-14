@@ -8,8 +8,11 @@ services:
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
   microsoft-defender-mock:
     image: docker.elastic.co/observability/stream:v0.23.0
+    hostname: svc-microsoft-defender-for-endpoint
     ports:
       - 8080
+    environment:
+      PORT: "8080"
     volumes:
       - ./http-mock-config.yml:/config.yml
     command:
@@ -22,6 +25,18 @@ services:
       - 8080
     volumes:
       - ./vulnerability-http-mock-config.yml:/config.yml
+    command:
+      - http-server
+      - --exit-on-unmatched-rule
+      - --addr=:8080
+      - --config=/config.yml
+  microsoft-defender-endpoint-information-gathering-cel:
+    image: docker.elastic.co/observability/stream:v0.23.0
+    ports:
+      - 8080
+    volumes:
+      - ./information-gathering-http-mock-config.yml:/config.yml
+      - ./files:/files:ro
     command:
       - http-server
       - --exit-on-unmatched-rule
