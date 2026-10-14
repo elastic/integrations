@@ -230,7 +230,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | entity.id | Generic entity identifier for principals that don't fit into specific categories (user, service, host). Used as a fallback for unknown or miscellaneous entity types like GitHub repo references. | keyword |
-| entity.target.id | Generic entity identifier for targets that don't fit into specific categories. Used for projects, zones, and other miscellaneous GCP resources. | keyword |
+| entity.target.id | Generic entity identifier for targets, as the full resource name (`//\<service\>/\<resourceName\>`) used by Cloud Asset Inventory. Instance targets are carried in `host.target.id` instead when the instance ID is known. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | gcp.audit.access.caller_ip_geo.region_code |  | keyword |
@@ -316,6 +316,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.target.entity.id | Unique identifier for compute resources targeted by GCP audit events. Includes Compute Engine instance IDs and resource paths. | keyword |
+| host.target.id | Numeric Compute Engine instance ID of the instance targeted by the event, matching the host id used by Cloud Asset Inventory. | keyword |
 | input.type | Input type | keyword |
 | labels.cluster_location |  | keyword |
 | labels.cluster_name |  | keyword |

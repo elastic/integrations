@@ -98,6 +98,14 @@ processors:
       field: cloud.instance.id
       copy_from: json.resource.labels.instance_id
       if: ctx.json?.resource?.labels?.instance_id != null
+  # The numeric Compute Engine instance id is the host.id Cloud Asset Inventory uses, so the
+  # instance target resolves to the same host entity.
+  - set:
+      tag: set_host_target_id_f0cbbc2a
+      field: host.target.id
+      copy_from: json.resource.labels.instance_id
+      ignore_empty_value: true
+      if: ctx.json?.resource?.type == 'gce_instance' && ctx.json?.resource?.labels?.instance_id != null
   - set:
       tag: set_cloud_availability_zone_24b38f5a
       field: cloud.availability_zone
@@ -331,15 +339,21 @@ processors:
         }
         
         // Classify target entities
+        // Cloud Asset Inventory names assets //<service>/<resourceName>, so the same name is
+        // written to entity.target.id to resolve to the inventory's generic entity.
+        String targetService = ctx.json?.protoPayload?.serviceName;
+        boolean hasInstanceId = ctx.json?.resource?.labels?.instance_id != null;
         if (ctx.target?.entity?.id instanceof List) {
           for (def targetId : ctx.target.entity.id) {
             if (targetId == null || targetId == "") {
               continue;
             }
             String target = targetId.toString();
+            String fullName = (targetService != null && targetService != "") ? "//" + targetService + "/" + target : null;
+            boolean isInstance = target.contains("/instances");
             
             // Compute instances
-            if (target.contains("/instances")) {
+            if (isInstance) {
               addNestedValue(ctx, "host.target.entity.id", target);
             }
             // Service accounts: projects/*/serviceAccounts/* or email addresses ending with .gserviceaccount.com
@@ -378,8 +392,17 @@ processors:
               addNestedValue(ctx, "service.target.entity.id", target);
             }
             // Everything else (projects, zones, workloadIdentityPools, etc.)
-            else {
+            else if (fullName == null) {
               addNestedValue(ctx, "entity.target.id", target);
+            }
+
+            if (fullName != null) {
+              if (!isInstance) {
+                addNestedValue(ctx, "entity.target.id", fullName);
+              } else if (!hasInstanceId && target.contains("/instances/")) {
+                // The instance id is missing, so host.target.id is not set: fall back to the name.
+                addNestedValue(ctx, "entity.target.id", fullName);
+              }
             }
           }
         }
