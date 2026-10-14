@@ -49,9 +49,6 @@ func main() {
 		log.Fatalf("failed to create resource: %v", err)
 	}
 
-	// Each data stream is tested on its own policy, so only one of the two OTLP
-	// receivers is listening during a given run. Emit both signals concurrently
-	// and let the unused one fail without taking the other down.
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go func() {
