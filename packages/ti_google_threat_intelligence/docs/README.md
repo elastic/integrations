@@ -347,6 +347,7 @@ An example event for `cryptominer` looks as following:
 | gti.cryptominer.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
 | gti.cryptominer.attributes.creation_date | The date when the IOC was created. | date |
 | gti.cryptominer.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.cryptominer.attributes.gti_assessment.contributing_factors.gti_confidence_score | The Google Threat Intelligence confidence score for the assessment. | long |
 | gti.cryptominer.attributes.gti_assessment.severity | The threat severity level. | keyword |
 | gti.cryptominer.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
 | gti.cryptominer.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
@@ -354,10 +355,13 @@ An example event for `cryptominer` looks as following:
 | gti.cryptominer.attributes.last_analysis_date | The most recent scan date. | date |
 | gti.cryptominer.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
 | gti.cryptominer.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.cryptominer.attributes.last_analysis_stats.confirmed_timeout | Number of reports that confirmed a timeout during analysis. | long |
+| gti.cryptominer.attributes.last_analysis_stats.failure | Number of reports that failed during analysis. | long |
 | gti.cryptominer.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
 | gti.cryptominer.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
 | gti.cryptominer.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
 | gti.cryptominer.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.cryptominer.attributes.last_analysis_stats.type_unsupported | Number of reports where the file type is unsupported. | long |
 | gti.cryptominer.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
 | gti.cryptominer.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
 | gti.cryptominer.attributes.last_http_response_code | The HTTP response code of the last response. | long |
@@ -377,6 +381,7 @@ An example event for `cryptominer` looks as following:
 | gti.cryptominer.attributes.type_tags | The broader tags related to the specific file type. | keyword |
 | gti.cryptominer.attributes.url | The original URL to be scanned. | keyword |
 | gti.cryptominer.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.cryptominer.context_attributes.threat_list_id | The identifier of the threat list that the IOC belongs to. | keyword |
 | gti.cryptominer.id | The unique ID associated with the entity. | keyword |
 | gti.cryptominer.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
 | gti.cryptominer.relationships.campaigns.attributes.name | Campaign's name. | keyword |
@@ -567,6 +572,7 @@ An example event for `first_stage_delivery_vectors` looks as following:
 | gti.first_stage_delivery_vectors.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
 | gti.first_stage_delivery_vectors.attributes.creation_date | The date when the IOC was created. | date |
 | gti.first_stage_delivery_vectors.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.first_stage_delivery_vectors.attributes.gti_assessment.contributing_factors.gti_confidence_score | The Google Threat Intelligence confidence score for the assessment. | long |
 | gti.first_stage_delivery_vectors.attributes.gti_assessment.severity | The threat severity level. | keyword |
 | gti.first_stage_delivery_vectors.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
 | gti.first_stage_delivery_vectors.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
@@ -574,10 +580,13 @@ An example event for `first_stage_delivery_vectors` looks as following:
 | gti.first_stage_delivery_vectors.attributes.last_analysis_date | The most recent scan date. | date |
 | gti.first_stage_delivery_vectors.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
 | gti.first_stage_delivery_vectors.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.first_stage_delivery_vectors.attributes.last_analysis_stats.confirmed_timeout | Number of reports that confirmed a timeout during analysis. | long |
+| gti.first_stage_delivery_vectors.attributes.last_analysis_stats.failure | Number of reports that failed during analysis. | long |
 | gti.first_stage_delivery_vectors.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
 | gti.first_stage_delivery_vectors.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
 | gti.first_stage_delivery_vectors.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
 | gti.first_stage_delivery_vectors.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.first_stage_delivery_vectors.attributes.last_analysis_stats.type_unsupported | Number of reports where the file type is unsupported. | long |
 | gti.first_stage_delivery_vectors.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
 | gti.first_stage_delivery_vectors.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
 | gti.first_stage_delivery_vectors.attributes.last_http_response_code | The HTTP response code of the last response. | long |
@@ -597,6 +606,7 @@ An example event for `first_stage_delivery_vectors` looks as following:
 | gti.first_stage_delivery_vectors.attributes.type_tags | The broader tags related to the specific file type. | keyword |
 | gti.first_stage_delivery_vectors.attributes.url | The original URL to be scanned. | keyword |
 | gti.first_stage_delivery_vectors.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.first_stage_delivery_vectors.context_attributes.threat_list_id | The identifier of the threat list that the IOC belongs to. | keyword |
 | gti.first_stage_delivery_vectors.id | The unique ID associated with the entity. | keyword |
 | gti.first_stage_delivery_vectors.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
 | gti.first_stage_delivery_vectors.relationships.campaigns.attributes.name | Campaign's name. | keyword |
@@ -787,6 +797,7 @@ An example event for `infostealer` looks as following:
 | gti.infostealer.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
 | gti.infostealer.attributes.creation_date | The date when the IOC was created. | date |
 | gti.infostealer.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.infostealer.attributes.gti_assessment.contributing_factors.gti_confidence_score | The Google Threat Intelligence confidence score for the assessment. | long |
 | gti.infostealer.attributes.gti_assessment.severity | The threat severity level. | keyword |
 | gti.infostealer.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
 | gti.infostealer.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
@@ -794,10 +805,13 @@ An example event for `infostealer` looks as following:
 | gti.infostealer.attributes.last_analysis_date | The most recent scan date. | date |
 | gti.infostealer.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
 | gti.infostealer.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.infostealer.attributes.last_analysis_stats.confirmed_timeout | Number of reports that confirmed a timeout during analysis. | long |
+| gti.infostealer.attributes.last_analysis_stats.failure | Number of reports that failed during analysis. | long |
 | gti.infostealer.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
 | gti.infostealer.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
 | gti.infostealer.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
 | gti.infostealer.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.infostealer.attributes.last_analysis_stats.type_unsupported | Number of reports where the file type is unsupported. | long |
 | gti.infostealer.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
 | gti.infostealer.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
 | gti.infostealer.attributes.last_http_response_code | The HTTP response code of the last response. | long |
@@ -817,6 +831,7 @@ An example event for `infostealer` looks as following:
 | gti.infostealer.attributes.type_tags | The broader tags related to the specific file type. | keyword |
 | gti.infostealer.attributes.url | The original URL to be scanned. | keyword |
 | gti.infostealer.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.infostealer.context_attributes.threat_list_id | The identifier of the threat list that the IOC belongs to. | keyword |
 | gti.infostealer.id | The unique ID associated with the entity. | keyword |
 | gti.infostealer.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
 | gti.infostealer.relationships.campaigns.attributes.name | Campaign's name. | keyword |
@@ -1539,6 +1554,7 @@ An example event for `iot` looks as following:
 | gti.iot.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
 | gti.iot.attributes.creation_date | The date when the IOC was created. | date |
 | gti.iot.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.iot.attributes.gti_assessment.contributing_factors.gti_confidence_score | The Google Threat Intelligence confidence score for the assessment. | long |
 | gti.iot.attributes.gti_assessment.severity | The threat severity level. | keyword |
 | gti.iot.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
 | gti.iot.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
@@ -1546,10 +1562,13 @@ An example event for `iot` looks as following:
 | gti.iot.attributes.last_analysis_date | The most recent scan date. | date |
 | gti.iot.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
 | gti.iot.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.iot.attributes.last_analysis_stats.confirmed_timeout | Number of reports that confirmed a timeout during analysis. | long |
+| gti.iot.attributes.last_analysis_stats.failure | Number of reports that failed during analysis. | long |
 | gti.iot.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
 | gti.iot.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
 | gti.iot.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
 | gti.iot.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.iot.attributes.last_analysis_stats.type_unsupported | Number of reports where the file type is unsupported. | long |
 | gti.iot.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
 | gti.iot.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
 | gti.iot.attributes.last_http_response_code | The HTTP response code of the last response. | long |
@@ -1569,6 +1588,7 @@ An example event for `iot` looks as following:
 | gti.iot.attributes.type_tags | The broader tags related to the specific file type. | keyword |
 | gti.iot.attributes.url | The original URL to be scanned. | keyword |
 | gti.iot.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.iot.context_attributes.threat_list_id | The identifier of the threat list that the IOC belongs to. | keyword |
 | gti.iot.id | The unique ID associated with the entity. | keyword |
 | gti.iot.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
 | gti.iot.relationships.campaigns.attributes.name | Campaign's name. | keyword |
@@ -1759,6 +1779,7 @@ An example event for `linux` looks as following:
 | gti.linux.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
 | gti.linux.attributes.creation_date | The date when the IOC was created. | date |
 | gti.linux.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.linux.attributes.gti_assessment.contributing_factors.gti_confidence_score | The Google Threat Intelligence confidence score for the assessment. | long |
 | gti.linux.attributes.gti_assessment.severity | The threat severity level. | keyword |
 | gti.linux.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
 | gti.linux.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
@@ -1766,10 +1787,13 @@ An example event for `linux` looks as following:
 | gti.linux.attributes.last_analysis_date | The most recent scan date. | date |
 | gti.linux.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
 | gti.linux.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.linux.attributes.last_analysis_stats.confirmed_timeout | Number of reports that confirmed a timeout during analysis. | long |
+| gti.linux.attributes.last_analysis_stats.failure | Number of reports that failed during analysis. | long |
 | gti.linux.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
 | gti.linux.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
 | gti.linux.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
 | gti.linux.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.linux.attributes.last_analysis_stats.type_unsupported | Number of reports where the file type is unsupported. | long |
 | gti.linux.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
 | gti.linux.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
 | gti.linux.attributes.last_http_response_code | The HTTP response code of the last response. | long |
@@ -1789,6 +1813,7 @@ An example event for `linux` looks as following:
 | gti.linux.attributes.type_tags | The broader tags related to the specific file type. | keyword |
 | gti.linux.attributes.url | The original URL to be scanned. | keyword |
 | gti.linux.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.linux.context_attributes.threat_list_id | The identifier of the threat list that the IOC belongs to. | keyword |
 | gti.linux.id | The unique ID associated with the entity. | keyword |
 | gti.linux.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
 | gti.linux.relationships.campaigns.attributes.name | Campaign's name. | keyword |
@@ -1981,6 +2006,7 @@ An example event for `malicious_network_infrastructure` looks as following:
 | gti.malicious_network_infrastructure.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
 | gti.malicious_network_infrastructure.attributes.creation_date | The date when the IOC was created. | date |
 | gti.malicious_network_infrastructure.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.malicious_network_infrastructure.attributes.gti_assessment.contributing_factors.gti_confidence_score | The Google Threat Intelligence confidence score for the assessment. | long |
 | gti.malicious_network_infrastructure.attributes.gti_assessment.severity | The threat severity level. | keyword |
 | gti.malicious_network_infrastructure.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
 | gti.malicious_network_infrastructure.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
@@ -1988,10 +2014,13 @@ An example event for `malicious_network_infrastructure` looks as following:
 | gti.malicious_network_infrastructure.attributes.last_analysis_date | The most recent scan date. | date |
 | gti.malicious_network_infrastructure.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
 | gti.malicious_network_infrastructure.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.malicious_network_infrastructure.attributes.last_analysis_stats.confirmed_timeout | Number of reports that confirmed a timeout during analysis. | long |
+| gti.malicious_network_infrastructure.attributes.last_analysis_stats.failure | Number of reports that failed during analysis. | long |
 | gti.malicious_network_infrastructure.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
 | gti.malicious_network_infrastructure.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
 | gti.malicious_network_infrastructure.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
 | gti.malicious_network_infrastructure.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.malicious_network_infrastructure.attributes.last_analysis_stats.type_unsupported | Number of reports where the file type is unsupported. | long |
 | gti.malicious_network_infrastructure.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
 | gti.malicious_network_infrastructure.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
 | gti.malicious_network_infrastructure.attributes.last_http_response_code | The HTTP response code of the last response. | long |
@@ -2011,6 +2040,7 @@ An example event for `malicious_network_infrastructure` looks as following:
 | gti.malicious_network_infrastructure.attributes.type_tags | The broader tags related to the specific file type. | keyword |
 | gti.malicious_network_infrastructure.attributes.url | The original URL to be scanned. | keyword |
 | gti.malicious_network_infrastructure.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.malicious_network_infrastructure.context_attributes.threat_list_id | The identifier of the threat list that the IOC belongs to. | keyword |
 | gti.malicious_network_infrastructure.id | The unique ID associated with the entity. | keyword |
 | gti.malicious_network_infrastructure.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
 | gti.malicious_network_infrastructure.relationships.campaigns.attributes.name | Campaign's name. | keyword |
@@ -2203,6 +2233,7 @@ An example event for `malware` looks as following:
 | gti.malware.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
 | gti.malware.attributes.creation_date | The date when the IOC was created. | date |
 | gti.malware.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.malware.attributes.gti_assessment.contributing_factors.gti_confidence_score | The Google Threat Intelligence confidence score for the assessment. | long |
 | gti.malware.attributes.gti_assessment.severity | The threat severity level. | keyword |
 | gti.malware.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
 | gti.malware.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
@@ -2210,10 +2241,13 @@ An example event for `malware` looks as following:
 | gti.malware.attributes.last_analysis_date | The most recent scan date. | date |
 | gti.malware.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
 | gti.malware.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.malware.attributes.last_analysis_stats.confirmed_timeout | Number of reports that confirmed a timeout during analysis. | long |
+| gti.malware.attributes.last_analysis_stats.failure | Number of reports that failed during analysis. | long |
 | gti.malware.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
 | gti.malware.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
 | gti.malware.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
 | gti.malware.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.malware.attributes.last_analysis_stats.type_unsupported | Number of reports where the file type is unsupported. | long |
 | gti.malware.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
 | gti.malware.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
 | gti.malware.attributes.last_http_response_code | The HTTP response code of the last response. | long |
@@ -2233,6 +2267,7 @@ An example event for `malware` looks as following:
 | gti.malware.attributes.type_tags | The broader tags related to the specific file type. | keyword |
 | gti.malware.attributes.url | The original URL to be scanned. | keyword |
 | gti.malware.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.malware.context_attributes.threat_list_id | The identifier of the threat list that the IOC belongs to. | keyword |
 | gti.malware.id | The unique ID associated with the entity. | keyword |
 | gti.malware.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
 | gti.malware.relationships.campaigns.attributes.name | Campaign's name. | keyword |
@@ -2423,6 +2458,7 @@ An example event for `mobile` looks as following:
 | gti.mobile.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
 | gti.mobile.attributes.creation_date | The date when the IOC was created. | date |
 | gti.mobile.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.mobile.attributes.gti_assessment.contributing_factors.gti_confidence_score | The Google Threat Intelligence confidence score for the assessment. | long |
 | gti.mobile.attributes.gti_assessment.severity | The threat severity level. | keyword |
 | gti.mobile.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
 | gti.mobile.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
@@ -2430,10 +2466,13 @@ An example event for `mobile` looks as following:
 | gti.mobile.attributes.last_analysis_date | The most recent scan date. | date |
 | gti.mobile.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
 | gti.mobile.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.mobile.attributes.last_analysis_stats.confirmed_timeout | Number of reports that confirmed a timeout during analysis. | long |
+| gti.mobile.attributes.last_analysis_stats.failure | Number of reports that failed during analysis. | long |
 | gti.mobile.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
 | gti.mobile.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
 | gti.mobile.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
 | gti.mobile.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.mobile.attributes.last_analysis_stats.type_unsupported | Number of reports where the file type is unsupported. | long |
 | gti.mobile.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
 | gti.mobile.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
 | gti.mobile.attributes.last_http_response_code | The HTTP response code of the last response. | long |
@@ -2453,6 +2492,7 @@ An example event for `mobile` looks as following:
 | gti.mobile.attributes.type_tags | The broader tags related to the specific file type. | keyword |
 | gti.mobile.attributes.url | The original URL to be scanned. | keyword |
 | gti.mobile.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.mobile.context_attributes.threat_list_id | The identifier of the threat list that the IOC belongs to. | keyword |
 | gti.mobile.id | The unique ID associated with the entity. | keyword |
 | gti.mobile.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
 | gti.mobile.relationships.campaigns.attributes.name | Campaign's name. | keyword |
@@ -2643,6 +2683,7 @@ An example event for `osx` looks as following:
 | gti.osx.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
 | gti.osx.attributes.creation_date | The date when the IOC was created. | date |
 | gti.osx.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.osx.attributes.gti_assessment.contributing_factors.gti_confidence_score | The Google Threat Intelligence confidence score for the assessment. | long |
 | gti.osx.attributes.gti_assessment.severity | The threat severity level. | keyword |
 | gti.osx.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
 | gti.osx.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
@@ -2650,10 +2691,13 @@ An example event for `osx` looks as following:
 | gti.osx.attributes.last_analysis_date | The most recent scan date. | date |
 | gti.osx.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
 | gti.osx.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.osx.attributes.last_analysis_stats.confirmed_timeout | Number of reports that confirmed a timeout during analysis. | long |
+| gti.osx.attributes.last_analysis_stats.failure | Number of reports that failed during analysis. | long |
 | gti.osx.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
 | gti.osx.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
 | gti.osx.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
 | gti.osx.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.osx.attributes.last_analysis_stats.type_unsupported | Number of reports where the file type is unsupported. | long |
 | gti.osx.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
 | gti.osx.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
 | gti.osx.attributes.last_http_response_code | The HTTP response code of the last response. | long |
@@ -2673,6 +2717,7 @@ An example event for `osx` looks as following:
 | gti.osx.attributes.type_tags | The broader tags related to the specific file type. | keyword |
 | gti.osx.attributes.url | The original URL to be scanned. | keyword |
 | gti.osx.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.osx.context_attributes.threat_list_id | The identifier of the threat list that the IOC belongs to. | keyword |
 | gti.osx.id | The unique ID associated with the entity. | keyword |
 | gti.osx.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
 | gti.osx.relationships.campaigns.attributes.name | Campaign's name. | keyword |
@@ -2863,6 +2908,7 @@ An example event for `phishing` looks as following:
 | gti.phishing.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
 | gti.phishing.attributes.creation_date | The date when the IOC was created. | date |
 | gti.phishing.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.phishing.attributes.gti_assessment.contributing_factors.gti_confidence_score | The Google Threat Intelligence confidence score for the assessment. | long |
 | gti.phishing.attributes.gti_assessment.severity | The threat severity level. | keyword |
 | gti.phishing.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
 | gti.phishing.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
@@ -2870,10 +2916,13 @@ An example event for `phishing` looks as following:
 | gti.phishing.attributes.last_analysis_date | The most recent scan date. | date |
 | gti.phishing.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
 | gti.phishing.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.phishing.attributes.last_analysis_stats.confirmed_timeout | Number of reports that confirmed a timeout during analysis. | long |
+| gti.phishing.attributes.last_analysis_stats.failure | Number of reports that failed during analysis. | long |
 | gti.phishing.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
 | gti.phishing.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
 | gti.phishing.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
 | gti.phishing.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.phishing.attributes.last_analysis_stats.type_unsupported | Number of reports where the file type is unsupported. | long |
 | gti.phishing.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
 | gti.phishing.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
 | gti.phishing.attributes.last_http_response_code | The HTTP response code of the last response. | long |
@@ -2893,6 +2942,7 @@ An example event for `phishing` looks as following:
 | gti.phishing.attributes.type_tags | The broader tags related to the specific file type. | keyword |
 | gti.phishing.attributes.url | The original URL to be scanned. | keyword |
 | gti.phishing.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.phishing.context_attributes.threat_list_id | The identifier of the threat list that the IOC belongs to. | keyword |
 | gti.phishing.id | The unique ID associated with the entity. | keyword |
 | gti.phishing.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
 | gti.phishing.relationships.campaigns.attributes.name | Campaign's name. | keyword |
@@ -3083,6 +3133,7 @@ An example event for `ransomware` looks as following:
 | gti.ransomware.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
 | gti.ransomware.attributes.creation_date | The date when the IOC was created. | date |
 | gti.ransomware.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.ransomware.attributes.gti_assessment.contributing_factors.gti_confidence_score | The Google Threat Intelligence confidence score for the assessment. | long |
 | gti.ransomware.attributes.gti_assessment.severity | The threat severity level. | keyword |
 | gti.ransomware.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
 | gti.ransomware.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
@@ -3090,10 +3141,13 @@ An example event for `ransomware` looks as following:
 | gti.ransomware.attributes.last_analysis_date | The most recent scan date. | date |
 | gti.ransomware.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
 | gti.ransomware.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.ransomware.attributes.last_analysis_stats.confirmed_timeout | Number of reports that confirmed a timeout during analysis. | long |
+| gti.ransomware.attributes.last_analysis_stats.failure | Number of reports that failed during analysis. | long |
 | gti.ransomware.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
 | gti.ransomware.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
 | gti.ransomware.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
 | gti.ransomware.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.ransomware.attributes.last_analysis_stats.type_unsupported | Number of reports where the file type is unsupported. | long |
 | gti.ransomware.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
 | gti.ransomware.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
 | gti.ransomware.attributes.last_http_response_code | The HTTP response code of the last response. | long |
@@ -3113,6 +3167,7 @@ An example event for `ransomware` looks as following:
 | gti.ransomware.attributes.type_tags | The broader tags related to the specific file type. | keyword |
 | gti.ransomware.attributes.url | The original URL to be scanned. | keyword |
 | gti.ransomware.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.ransomware.context_attributes.threat_list_id | The identifier of the threat list that the IOC belongs to. | keyword |
 | gti.ransomware.id | The unique ID associated with the entity. | keyword |
 | gti.ransomware.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
 | gti.ransomware.relationships.campaigns.attributes.name | Campaign's name. | keyword |
@@ -3303,6 +3358,7 @@ An example event for `threat_actor` looks as following:
 | gti.threat_actor.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
 | gti.threat_actor.attributes.creation_date | The date when the IOC was created. | date |
 | gti.threat_actor.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.threat_actor.attributes.gti_assessment.contributing_factors.gti_confidence_score | The Google Threat Intelligence confidence score for the assessment. | long |
 | gti.threat_actor.attributes.gti_assessment.severity | The threat severity level. | keyword |
 | gti.threat_actor.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
 | gti.threat_actor.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
@@ -3310,10 +3366,13 @@ An example event for `threat_actor` looks as following:
 | gti.threat_actor.attributes.last_analysis_date | The most recent scan date. | date |
 | gti.threat_actor.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
 | gti.threat_actor.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.threat_actor.attributes.last_analysis_stats.confirmed_timeout | Number of reports that confirmed a timeout during analysis. | long |
+| gti.threat_actor.attributes.last_analysis_stats.failure | Number of reports that failed during analysis. | long |
 | gti.threat_actor.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
 | gti.threat_actor.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
 | gti.threat_actor.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
 | gti.threat_actor.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.threat_actor.attributes.last_analysis_stats.type_unsupported | Number of reports where the file type is unsupported. | long |
 | gti.threat_actor.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
 | gti.threat_actor.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
 | gti.threat_actor.attributes.last_http_response_code | The HTTP response code of the last response. | long |
@@ -3333,6 +3392,7 @@ An example event for `threat_actor` looks as following:
 | gti.threat_actor.attributes.type_tags | The broader tags related to the specific file type. | keyword |
 | gti.threat_actor.attributes.url | The original URL to be scanned. | keyword |
 | gti.threat_actor.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.threat_actor.context_attributes.threat_list_id | The identifier of the threat list that the IOC belongs to. | keyword |
 | gti.threat_actor.id | The unique ID associated with the entity. | keyword |
 | gti.threat_actor.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
 | gti.threat_actor.relationships.campaigns.attributes.name | Campaign's name. | keyword |
@@ -3523,6 +3583,7 @@ An example event for `trending` looks as following:
 | gti.trending.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
 | gti.trending.attributes.creation_date | The date when the IOC was created. | date |
 | gti.trending.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.trending.attributes.gti_assessment.contributing_factors.gti_confidence_score | The Google Threat Intelligence confidence score for the assessment. | long |
 | gti.trending.attributes.gti_assessment.severity | The threat severity level. | keyword |
 | gti.trending.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
 | gti.trending.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
@@ -3530,10 +3591,13 @@ An example event for `trending` looks as following:
 | gti.trending.attributes.last_analysis_date | The most recent scan date. | date |
 | gti.trending.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
 | gti.trending.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.trending.attributes.last_analysis_stats.confirmed_timeout | Number of reports that confirmed a timeout during analysis. | long |
+| gti.trending.attributes.last_analysis_stats.failure | Number of reports that failed during analysis. | long |
 | gti.trending.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
 | gti.trending.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
 | gti.trending.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
 | gti.trending.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.trending.attributes.last_analysis_stats.type_unsupported | Number of reports where the file type is unsupported. | long |
 | gti.trending.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
 | gti.trending.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
 | gti.trending.attributes.last_http_response_code | The HTTP response code of the last response. | long |
@@ -3553,6 +3617,7 @@ An example event for `trending` looks as following:
 | gti.trending.attributes.type_tags | The broader tags related to the specific file type. | keyword |
 | gti.trending.attributes.url | The original URL to be scanned. | keyword |
 | gti.trending.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.trending.context_attributes.threat_list_id | The identifier of the threat list that the IOC belongs to. | keyword |
 | gti.trending.id | The unique ID associated with the entity. | keyword |
 | gti.trending.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
 | gti.trending.relationships.campaigns.attributes.name | Campaign's name. | keyword |
@@ -4153,6 +4218,7 @@ An example event for `vulnerability_weaponization` looks as following:
 | gti.vulnerability_weaponization.attributes.country | The country where the IP is placed (ISO-3166 country code). | keyword |
 | gti.vulnerability_weaponization.attributes.creation_date | The date when the IOC was created. | date |
 | gti.vulnerability_weaponization.attributes.first_submission_date | The UTC timestamp of the date when the URL was first submitted to Google Threat Intelligence. | date |
+| gti.vulnerability_weaponization.attributes.gti_assessment.contributing_factors.gti_confidence_score | The Google Threat Intelligence confidence score for the assessment. | long |
 | gti.vulnerability_weaponization.attributes.gti_assessment.severity | The threat severity level. | keyword |
 | gti.vulnerability_weaponization.attributes.gti_assessment.threat_score | The Google Threat Intelligence score is a function of the verdict and severity, and leverages additional internal factors to generate the score. | long |
 | gti.vulnerability_weaponization.attributes.gti_assessment.verdict | Indicates the assessed threat verdict, which can be benign, undetected, suspicious, malicious, or unknown. | keyword |
@@ -4160,10 +4226,13 @@ An example event for `vulnerability_weaponization` looks as following:
 | gti.vulnerability_weaponization.attributes.last_analysis_date | The most recent scan date. | date |
 | gti.vulnerability_weaponization.attributes.last_analysis_results.engine | The name of the security engine that performed the analysis. | keyword |
 | gti.vulnerability_weaponization.attributes.last_analysis_results.result | The outcome of the analysis performed by the security engine. | keyword |
+| gti.vulnerability_weaponization.attributes.last_analysis_stats.confirmed_timeout | Number of reports that confirmed a timeout during analysis. | long |
+| gti.vulnerability_weaponization.attributes.last_analysis_stats.failure | Number of reports that failed during analysis. | long |
 | gti.vulnerability_weaponization.attributes.last_analysis_stats.harmless | Number of reports saying that is harmless. | long |
 | gti.vulnerability_weaponization.attributes.last_analysis_stats.malicious | Number of reports saying that is malicious. | long |
 | gti.vulnerability_weaponization.attributes.last_analysis_stats.suspicious | Number of reports saying that is suspicious. | long |
 | gti.vulnerability_weaponization.attributes.last_analysis_stats.timeout | Number of reports saying that is timeout. | long |
+| gti.vulnerability_weaponization.attributes.last_analysis_stats.type_unsupported | Number of reports where the file type is unsupported. | long |
 | gti.vulnerability_weaponization.attributes.last_analysis_stats.undetected | Number of reports saying that is undetected. | long |
 | gti.vulnerability_weaponization.attributes.last_final_url | The URL if the original URL redirects, where does it end. | keyword |
 | gti.vulnerability_weaponization.attributes.last_http_response_code | The HTTP response code of the last response. | long |
@@ -4183,6 +4252,7 @@ An example event for `vulnerability_weaponization` looks as following:
 | gti.vulnerability_weaponization.attributes.type_tags | The broader tags related to the specific file type. | keyword |
 | gti.vulnerability_weaponization.attributes.url | The original URL to be scanned. | keyword |
 | gti.vulnerability_weaponization.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
+| gti.vulnerability_weaponization.context_attributes.threat_list_id | The identifier of the threat list that the IOC belongs to. | keyword |
 | gti.vulnerability_weaponization.id | The unique ID associated with the entity. | keyword |
 | gti.vulnerability_weaponization.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
 | gti.vulnerability_weaponization.relationships.campaigns.attributes.name | Campaign's name. | keyword |
