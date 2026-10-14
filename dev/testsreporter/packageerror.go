@@ -16,6 +16,7 @@ type packageError struct {
 	dataError
 	teams       []string
 	packageName string
+	packagePath string
 	dataStream  string
 }
 
@@ -69,7 +70,10 @@ func newPackageError(options packageErrorOptions) (*packageError, error) {
 		var owners []string
 		var err error
 		if options.OwnersResolver != nil {
-			owners, err = options.OwnersResolver.packageOwners(p.packageName, p.dataStream)
+			var details packageDetails
+			details, err = options.OwnersResolver.lookup(p.packageName, p.dataStream)
+			owners = details.owners
+			p.packagePath = details.path
 		} else {
 			owners, err = codeowners.PackageOwners(p.packageName, p.dataStream, options.CodeownersPath)
 		}
@@ -114,6 +118,7 @@ func (p *packageError) String() string {
 func (p *packageError) SummaryData() map[string]any {
 	data := p.dataError.Data()
 	data["packageName"] = p.packageName
+	data["packagePath"] = p.packagePath
 	data["testName"] = p.Name
 	data["dataStream"] = p.dataStream
 	data["owners"] = p.teams

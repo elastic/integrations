@@ -41,7 +41,7 @@ func createPackagesTree(t *testing.T, packages map[string]string, owners []strin
 	return codeownersPath, packagesPath
 }
 
-func TestOwnersResolverPackageOwners(t *testing.T) {
+func TestOwnersResolverLookup(t *testing.T) {
 	codeownersPath, packagesPath := createPackagesTree(t,
 		map[string]string{
 			// Folder and name in the manifest are the same.
@@ -51,6 +51,8 @@ func TestOwnersResolverPackageOwners(t *testing.T) {
 			// Nested packages, the name of the folder is not unique.
 			"technology/input_otel": "technology_input_otel",
 			"other/input_otel":      "other_input_otel",
+			// Package without owners.
+			"no_owner": "no_owner",
 		},
 		[]string{
 			"/packages/apache @elastic/apache-team",
@@ -68,45 +70,54 @@ func TestOwnersResolverPackageOwners(t *testing.T) {
 		title         string
 		packageName   string
 		dataStream    string
-		expected      []string
+		expected      packageDetails
 		expectedError string
 	}{
 		{
 			title:       "name and folder are the same",
 			packageName: "apache",
-			expected:    []string{"@elastic/apache-team"},
+			expected:    packageDetails{path: "packages/apache", owners: []string{"@elastic/apache-team"}},
 		},
 		{
 			title:       "data stream with its own owners",
 			packageName: "apache",
 			dataStream:  "error",
-			expected:    []string{"@elastic/apache-error-team"},
+			expected:    packageDetails{path: "packages/apache", owners: []string{"@elastic/apache-error-team"}},
 		},
 		{
 			title:       "data stream without its own owners",
 			packageName: "apache",
 			dataStream:  "access",
-			expected:    []string{"@elastic/apache-team"},
+			expected:    packageDetails{path: "packages/apache", owners: []string{"@elastic/apache-team"}},
 		},
 		{
 			title:       "name in manifest different to folder",
 			packageName: "sql",
-			expected:    []string{"@elastic/sql-team"},
+			expected:    packageDetails{path: "packages/sql_input", owners: []string{"@elastic/sql-team"}},
 		},
 		{
 			title:       "folder name, as reported by previous versions of elastic-package",
 			packageName: "sql_input",
-			expected:    []string{"@elastic/sql-team"},
+			expected:    packageDetails{path: "packages/sql_input", owners: []string{"@elastic/sql-team"}},
 		},
 		{
 			title:       "nested package",
 			packageName: "technology_input_otel",
-			expected:    []string{"@elastic/technology-team"},
+			expected: packageDetails{
+				path:   "packages/technology/input_otel",
+				owners: []string{"@elastic/technology-team"},
+			},
 		},
 		{
 			title:       "other nested package with the same folder name",
 			packageName: "other_input_otel",
-			expected:    []string{"@elastic/other-team"},
+			expected:    packageDetails{path: "packages/other/input_otel", owners: []string{"@elastic/other-team"}},
+		},
+		{
+			title:         "package without owners keeps its path",
+			packageName:   "no_owner",
+			expected:      packageDetails{path: "packages/no_owner"},
+			expectedError: "no owner found",
 		},
 		{
 			title:         "folder name of nested packages is ambiguous",
@@ -122,14 +133,14 @@ func TestOwnersResolverPackageOwners(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			teams, err := resolver.packageOwners(c.packageName, c.dataStream)
+			details, err := resolver.lookup(c.packageName, c.dataStream)
 			if c.expectedError != "" {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, c.expectedError)
-				return
+			} else {
+				require.NoError(t, err)
 			}
-			require.NoError(t, err)
-			assert.Equal(t, c.expected, teams)
+			assert.Equal(t, c.expected, details)
 		})
 	}
 }

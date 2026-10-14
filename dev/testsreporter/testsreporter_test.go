@@ -230,6 +230,7 @@ func TestErrorsFromTestsManifestName(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, errors, 1)
 		assert.Equal(t, "sql", errors[0].packageName)
+		assert.Equal(t, "packages/sql_input", errors[0].packagePath)
 		assert.Equal(t, []string{"@elastic/sql-team"}, errors[0].teams)
 	})
 
@@ -247,7 +248,7 @@ func TestErrorsFromTestsManifestName(t *testing.T) {
 
 func TestErrorsFromTestsMissingOwners(t *testing.T) {
 	codeownersPath, packagesPath := createPackagesTree(t,
-		map[string]string{"apache": "apache"},
+		map[string]string{"apache": "apache", "no_owner": "no_owner"},
 		[]string{"/packages/apache @elastic/apache-team"},
 	)
 
@@ -255,10 +256,11 @@ func TestErrorsFromTestsMissingOwners(t *testing.T) {
 	resultsPath := t.TempDir()
 	results := `<?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="system" tests="3" failures="3">
+  <testsuite name="system" tests="4" failures="4">
     <testcase name="first" classname="apache.access" time="1"><failure>could not find hits</failure></testcase>
     <testcase name="second" classname="not_a_package.logs" time="1"><failure>could not find hits</failure></testcase>
     <testcase name="third" classname="apache.error" time="1"><failure>could not find hits</failure></testcase>
+    <testcase name="fourth" classname="no_owner.logs" time="1"><failure>could not find hits</failure></testcase>
   </testsuite>
 </testsuites>`
 	require.NoError(t, os.WriteFile(filepath.Join(resultsPath, "results.xml"), []byte(results), 0o644))
@@ -283,13 +285,25 @@ func TestErrorsFromTestsMissingOwners(t *testing.T) {
 			require.NoError(t, err)
 
 			// All the failures are reported, also the ones with owners found after the missing one.
-			require.Len(t, errors, 3)
+			require.Len(t, errors, 4)
 			assert.Equal(t, "apache", errors[0].packageName)
 			assert.Equal(t, []string{"@elastic/apache-team"}, errors[0].teams)
 			assert.Equal(t, "not_a_package", errors[1].packageName)
 			assert.Empty(t, errors[1].teams)
 			assert.Equal(t, "apache", errors[2].packageName)
 			assert.Equal(t, []string{"@elastic/apache-team"}, errors[2].teams)
+
+			// The path of the package is known only when the resolver is used, even if it has no owners.
+			assert.Equal(t, "no_owner", errors[3].packageName)
+			assert.Empty(t, errors[3].teams)
+			if c.options.PackagesPath != "" {
+				assert.Equal(t, "packages/apache", errors[0].packagePath)
+				assert.Empty(t, errors[1].packagePath)
+				assert.Equal(t, "packages/no_owner", errors[3].packagePath)
+			} else {
+				assert.Empty(t, errors[0].packagePath)
+				assert.Empty(t, errors[3].packagePath)
+			}
 		})
 	}
 }

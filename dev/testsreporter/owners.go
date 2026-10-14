@@ -39,17 +39,28 @@ func newOwnersResolver(codeownersPath, packagesPath string) (*ownersResolver, er
 	return &ownersResolver{owners: owners, packages: packages}, nil
 }
 
-func (r *ownersResolver) packageOwners(packageName, dataStream string) ([]string, error) {
+// packageDetails are the details found for a package reported in the tests results.
+type packageDetails struct {
+	// path of the package, relative to the root of the repository.
+	path string
+	// owners of the package, or of its data stream if the data stream has owners.
+	owners []string
+}
+
+// lookup finds the path and the owners of a package. The path is returned even if the owners
+// are not found.
+func (r *ownersResolver) lookup(packageName, dataStream string) (packageDetails, error) {
 	pkg, err := r.findPackage(packageName)
 	if err != nil {
-		return nil, err
+		return packageDetails{}, err
 	}
 
-	teams, err := r.owners.PackageOwnersByPath(pkg.Path, dataStream)
+	details := packageDetails{path: pkg.Path}
+	details.owners, err = r.owners.PackageOwnersByPath(pkg.Path, dataStream)
 	if err != nil {
-		return nil, fmt.Errorf("failed to find owners for package %s: %w", packageName, err)
+		return details, fmt.Errorf("failed to find owners for package %s: %w", packageName, err)
 	}
-	return teams, nil
+	return details, nil
 }
 
 func (r *ownersResolver) findPackage(name string) (citools.PackageInfo, error) {
