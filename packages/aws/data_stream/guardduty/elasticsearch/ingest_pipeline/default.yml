@@ -2544,21 +2544,27 @@ processors:
             tag: append_error_message_f2f35039
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  # Severity levels: https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_findings-severity.html
+  - set:
+      tag: set_aws_guardduty_severity_value_46978e01
+      field: aws.guardduty.severity.value
+      value: 'Critical'
+      if: ctx.aws?.guardduty?.severity?.code != null && ctx.aws.guardduty.severity.code >= 9.0
   - set:
       tag: set_aws_guardduty_severity_value_108812a6
       field: aws.guardduty.severity.value
       value: 'High'
-      if: ctx.aws?.guardduty?.severity?.code != null && ctx.aws.guardduty.severity.code <= 8.9 && ctx.aws.guardduty.severity.code >= 7.0
+      if: ctx.aws?.guardduty?.severity?.code != null && ctx.aws.guardduty.severity.code < 9.0 && ctx.aws.guardduty.severity.code >= 7.0
   - set:
       tag: set_aws_guardduty_severity_value_11f328d4
       field: aws.guardduty.severity.value
       value: 'Medium'
-      if: ctx.aws?.guardduty?.severity?.code != null && ctx.aws.guardduty.severity.code <= 6.9 && ctx.aws.guardduty.severity.code >= 4.0
+      if: ctx.aws?.guardduty?.severity?.code != null && ctx.aws.guardduty.severity.code < 7.0 && ctx.aws.guardduty.severity.code >= 4.0
   - set:
       tag: set_aws_guardduty_severity_value_dd25e583
       field: aws.guardduty.severity.value
       value: 'Low'
-      if: ctx.aws?.guardduty?.severity?.code != null && ctx.aws.guardduty.severity.code <= 3.9 && ctx.aws.guardduty.severity.code >= 1.0
+      if: ctx.aws?.guardduty?.severity?.code != null && ctx.aws.guardduty.severity.code < 4.0 && ctx.aws.guardduty.severity.code >= 1.0
   - rename:
       tag: rename_json_title_to_aws_guardduty_title_9a6db728
       field: json.title
@@ -2943,12 +2949,12 @@ processors:
       field: event.provider
       copy_from: aws.guardduty.service.action.aws_api_call_action.service_name
       ignore_empty_value: true
-  - convert:
-      tag: convert_json_severity_to_event_severity_649b84d8
-      field: json.severity
-      target_field: event.severity
-      type: long
-      ignore_missing: true
+  - script:
+      tag: script_set_event_severity_e58c0bb3
+      description: Truncate the severity code to a long for event.severity, since GuardDuty severities may be fractional.
+      lang: painless
+      if: ctx.aws?.guardduty?.severity?.code instanceof Number
+      source: ctx.event.severity = ((Number) ctx.aws.guardduty.severity.code).longValue();
       on_failure:
         - append:
             tag: append_error_message_373c1d2d
