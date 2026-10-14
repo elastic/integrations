@@ -46,6 +46,7 @@ processors:
       target_field: eti
       on_failure:
         - append:
+            tag: append_error_message_cf6557c4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - drop:
@@ -149,11 +150,11 @@ processors:
       if: ctx.threat?.indicator?.url?.original != null
       source: |
         ctx.threat.indicator.url.original = ctx.threat.indicator.url.original
-          .replace('&amp;', '&')
           .replace('&lt;', '<')
           .replace('&gt;', '>')
           .replace('&quot;', '"')
-          .replace('&#39;', "'");
+          .replace('&#39;', "'")
+          .replace('&amp;', '&');
   - set:
       tag: set_threat_indicator_type_2f871b98
       field: threat.indicator.type
@@ -186,11 +187,10 @@ processors:
           return false;
         }
         drop(ctx);
-  - append:
-      tag: append_event_kind_d2f25e35
+  - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
       if: ctx.error?.message != null
   - append:
       tag: append_tags_9fe66b2c
