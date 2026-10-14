@@ -89,7 +89,7 @@ Air-gapped and other offline deployments have no route to the Google Threat Inte
 **Enabling file collection in Elastic:**
 
 1. In Kibana, go to **Management → Integrations** and open the **Google Threat Intelligence** integration.
-2. Enable the **filestream** input for each threat list data stream you want to collect from files.
+2. Enable the **Collect Google Threat Intelligence events via file** input for each threat list data stream you want to collect from files.
 3. Set **Paths** to a glob that matches the NDJSON files for that data stream, for example `/path/to/threat_lists/*ransomware*.ndjson`. Paths have no default, so a path is required to enable the input.
 4. Click **Save and Continue**.
 
