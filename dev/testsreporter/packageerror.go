@@ -31,6 +31,10 @@ type packageErrorOptions struct {
 	ClosedIssueURL    string
 	PreviousBuilds    []string
 	Teams             []string
+
+	// OwnersResolver is used to find the owners of the package. If it is not set,
+	// the owners are looked up using the name of the package as the name of its folder.
+	OwnersResolver *ownersResolver
 }
 
 // Ensures that packageError implements failureObserver interface
@@ -58,7 +62,13 @@ func newPackageError(options packageErrorOptions) (*packageError, error) {
 	p.dataStream = p.testCase.DataStream()
 
 	if len(options.Teams) == 0 {
-		owners, err := codeowners.PackageOwners(p.packageName, p.dataStream, options.CodeownersPath)
+		var owners []string
+		var err error
+		if options.OwnersResolver != nil {
+			owners, err = options.OwnersResolver.packageOwners(p.packageName, p.dataStream)
+		} else {
+			owners, err = codeowners.PackageOwners(p.packageName, p.dataStream, options.CodeownersPath)
+		}
 		if err != nil {
 			return nil, fmt.Errorf("failed to find owners for package %s: %w", p.packageName, err)
 		}

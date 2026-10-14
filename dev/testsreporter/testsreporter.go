@@ -23,6 +23,10 @@ type CheckOptions struct {
 	Subscription      string
 	BuildURL          string
 	CodeownersPath    string
+	// PackagesPath is the path to the folder with the packages, relative to the root of the repository.
+	// If it is set, the owners of the packages are found using the name of the package in its manifest
+	// or the name of its folder. If it is not set, only the name of the folder is used.
+	PackagesPath string
 
 	MaxPreviousLinks int
 	MaxTestsReported int
@@ -102,6 +106,15 @@ func Check(ctx context.Context, resultsPath string, options CheckOptions) error 
 }
 
 func errorsFromTests(resultsPath string, options CheckOptions) ([]*packageError, error) {
+	var resolver *ownersResolver
+	if options.PackagesPath != "" {
+		var err error
+		resolver, err = newOwnersResolver(options.CodeownersPath, options.PackagesPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create resolver of package owners: %w", err)
+		}
+	}
+
 	var packageErrors []*packageError
 	err := filepath.Walk(resultsPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -128,6 +141,7 @@ func errorsFromTests(resultsPath string, options CheckOptions) ([]*packageError,
 				BuildURL:          options.BuildURL,
 				TestCase:          c,
 				CodeownersPath:    options.CodeownersPath,
+				OwnersResolver:    resolver,
 			})
 			if err != nil {
 				return fmt.Errorf("failed to create package error: %w", err)
