@@ -109,6 +109,43 @@ func TestNewPackageError(t *testing.T) {
 			},
 			expectedError: true,
 		},
+		{
+			title: "Not found package allowing missing owners",
+			options: packageErrorOptions{
+				Serverless:        true,
+				ServerlessProject: "observability",
+				LogsDB:            false,
+				StackVersion:      "8.16.0-SNAPSHOT",
+				BuildURL:          "https://buildkite.com/elastic/integrations/build/1",
+				TestCase: testCase{
+					Name:      "failing test",
+					ClassName: "notexist.datastream",
+					Error:     "could not find hits",
+				},
+				CodeownersPath:     "./testdata/CODEOWNERS-default-tests",
+				AllowMissingOwners: true,
+			},
+			expectedError: false,
+			expected: packageError{
+				dataError: dataError{
+					serverless:        true,
+					serverlessProject: "observability",
+					logsDB:            false,
+					stackVersion:      "8.16.0-SNAPSHOT",
+					errorLinks: errorLinks{
+						firstBuild: "https://buildkite.com/elastic/integrations/build/1",
+					},
+				},
+				testCase: testCase{
+					Name:      "failing test",
+					ClassName: "notexist.datastream",
+					Error:     "could not find hits",
+				},
+				packageName: "notexist",
+				dataStream:  "datastream",
+				teams:       nil,
+			},
+		},
 	}
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {

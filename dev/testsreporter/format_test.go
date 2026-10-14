@@ -36,6 +36,26 @@ func TestSummary(t *testing.T) {
 `,
 		},
 		{
+			// Owners are not found, the failure is reported without them.
+			title: "summary stack version with data stream and empty owners",
+			resultError: &packageError{
+				dataError: dataError{
+					stackVersion: "8.14",
+				},
+				packageName: "foo",
+				dataStream:  "data",
+				testCase: testCase{
+					Name: "mytest",
+				},
+				teams: []string{},
+			},
+			expected: `- Stack version: 8.14
+- Package: foo
+- Failing test: mytest
+- DataStream: data
+`,
+		},
+		{
 			title: "summary stack version with owners without data stream",
 			resultError: &packageError{
 				dataError: dataError{
@@ -293,6 +313,36 @@ First build failed: http://link/1
 Latest failed builds:
 - http://link/2
 - http://link/3
+`,
+		},
+		{
+			// Owners are not found, the failure is reported without them.
+			title: "description error empty owners",
+			resultError: &packageError{
+				dataError: dataError{
+					stackVersion: "8.14",
+					errorLinks: errorLinks{
+						firstBuild: "http://link/1",
+					},
+				},
+				packageName: "foo",
+				testCase: testCase{
+					Name:  "mytest",
+					Error: "myerror",
+				},
+				teams: []string{},
+			},
+			expected: `- Stack version: 8.14
+- Package: foo
+- Failing test: mytest
+
+Error:
+` + "```" + `
+myerror
+` + "```" + `
+
+First build failed: http://link/1
+
 `,
 		},
 		{

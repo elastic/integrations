@@ -35,6 +35,10 @@ type packageErrorOptions struct {
 	// OwnersResolver is used to find the owners of the package. If it is not set,
 	// the owners are looked up using the name of the package as the name of its folder.
 	OwnersResolver *ownersResolver
+
+	// AllowMissingOwners avoids failing when the owners of the package are not found,
+	// the package error is created without owners.
+	AllowMissingOwners bool
 }
 
 // Ensures that packageError implements failureObserver interface
@@ -69,10 +73,14 @@ func newPackageError(options packageErrorOptions) (*packageError, error) {
 		} else {
 			owners, err = codeowners.PackageOwners(p.packageName, p.dataStream, options.CodeownersPath)
 		}
-		if err != nil {
+		switch {
+		case err != nil && options.AllowMissingOwners:
+			fmt.Printf("WARNING: the failure of %q will be reported without owners: %s\n", p.testCase.String(), err)
+		case err != nil:
 			return nil, fmt.Errorf("failed to find owners for package %s: %w", p.packageName, err)
+		default:
+			p.teams = owners
 		}
-		p.teams = owners
 	}
 
 	return &p, nil

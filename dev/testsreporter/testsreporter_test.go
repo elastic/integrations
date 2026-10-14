@@ -5,6 +5,8 @@
 package testsreporter
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -198,6 +200,96 @@ func TestErrorPackageName(t *testing.T) {
 				packages = append(packages, e.packageName)
 			}
 			assert.Equal(t, c.expected, packages)
+		})
+	}
+}
+
+func TestErrorsFromTestsManifestName(t *testing.T) {
+	codeownersPath, packagesPath := createPackagesTree(t,
+		map[string]string{"sql_input": "sql"},
+		[]string{"/packages/sql_input @elastic/sql-team"},
+	)
+
+	// Results reported with the name in the manifest, as elastic-package does now.
+	resultsPath := t.TempDir()
+	results := `<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="system" tests="1" failures="1">
+    <testcase name="system test: mysql" classname="sql." time="3.5">
+      <failure>could not find hits</failure>
+    </testcase>
+  </testsuite>
+</testsuites>`
+	require.NoError(t, os.WriteFile(filepath.Join(resultsPath, "sql-system-1.xml"), []byte(results), 0o644))
+
+	t.Run("resolving by manifest name", func(t *testing.T) {
+		errors, err := errorsFromTests(resultsPath, CheckOptions{
+			CodeownersPath: codeownersPath,
+			PackagesPath:   packagesPath,
+		})
+		require.NoError(t, err)
+		require.Len(t, errors, 1)
+		assert.Equal(t, "sql", errors[0].packageName)
+		assert.Equal(t, []string{"@elastic/sql-team"}, errors[0].teams)
+	})
+
+	t.Run("without packages path the folder name is used", func(t *testing.T) {
+		errors, err := errorsFromTests(resultsPath, CheckOptions{
+			CodeownersPath: codeownersPath,
+		})
+		require.NoError(t, err)
+		require.Len(t, errors, 1)
+		// The owners are not found for the name in the manifest, the failure is reported without owners.
+		assert.Equal(t, "sql", errors[0].packageName)
+		assert.Empty(t, errors[0].teams)
+	})
+}
+
+func TestErrorsFromTestsMissingOwners(t *testing.T) {
+	codeownersPath, packagesPath := createPackagesTree(t,
+		map[string]string{"apache": "apache"},
+		[]string{"/packages/apache @elastic/apache-team"},
+	)
+
+	// A package that cannot be found in the middle of other failing tests.
+	resultsPath := t.TempDir()
+	results := `<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="system" tests="3" failures="3">
+    <testcase name="first" classname="apache.access" time="1"><failure>could not find hits</failure></testcase>
+    <testcase name="second" classname="not_a_package.logs" time="1"><failure>could not find hits</failure></testcase>
+    <testcase name="third" classname="apache.error" time="1"><failure>could not find hits</failure></testcase>
+  </testsuite>
+</testsuites>`
+	require.NoError(t, os.WriteFile(filepath.Join(resultsPath, "results.xml"), []byte(results), 0o644))
+
+	cases := []struct {
+		title   string
+		options CheckOptions
+	}{
+		{
+			title:   "with package owners resolver",
+			options: CheckOptions{CodeownersPath: codeownersPath, PackagesPath: packagesPath},
+		},
+		{
+			title:   "without package owners resolver",
+			options: CheckOptions{CodeownersPath: codeownersPath},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.title, func(t *testing.T) {
+			errors, err := errorsFromTests(resultsPath, c.options)
+			require.NoError(t, err)
+
+			// All the failures are reported, also the ones with owners found after the missing one.
+			require.Len(t, errors, 3)
+			assert.Equal(t, "apache", errors[0].packageName)
+			assert.Equal(t, []string{"@elastic/apache-team"}, errors[0].teams)
+			assert.Equal(t, "not_a_package", errors[1].packageName)
+			assert.Empty(t, errors[1].teams)
+			assert.Equal(t, "apache", errors[2].packageName)
+			assert.Equal(t, []string{"@elastic/apache-team"}, errors[2].teams)
 		})
 	}
 }

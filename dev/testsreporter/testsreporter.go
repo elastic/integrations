@@ -142,6 +142,8 @@ func errorsFromTests(resultsPath string, options CheckOptions) ([]*packageError,
 				TestCase:          c,
 				CodeownersPath:    options.CodeownersPath,
 				OwnersResolver:    resolver,
+				// A package without owners must not avoid reporting the rest of failures.
+				AllowMissingOwners: true,
 			})
 			if err != nil {
 				return fmt.Errorf("failed to create package error: %w", err)
