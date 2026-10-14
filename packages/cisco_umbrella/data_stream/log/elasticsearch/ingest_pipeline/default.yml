@@ -107,6 +107,28 @@ processors:
         - cisco.umbrella.isolate_action
         - cisco.umbrella.file_action
         - cisco.umbrella.warn_status
+        - cisco.umbrella.forwarding_method
+        - cisco.umbrella.producer
+        - cisco.umbrella.msp_organization_id
+        - cisco.umbrella.blocked_destination_countries
+        - cisco.umbrella.application_ids
+        - cisco.umbrella.hostname
+        - cisco.umbrella.datacenter
+        - cisco.umbrella.egress
+        - cisco.umbrella.server_name
+        - cisco.umbrella.time_based_rule
+        - cisco.umbrella.security_overridden
+        - cisco.umbrella.detected_response_file_type
+        - cisco.umbrella.warn_categories
+        - organization.id
+        - cisco.umbrella.application_entity_name
+        - cisco.umbrella.application_entity_category
+        - cisco.umbrella.egress_ip
+        - cisco.umbrella.ai_model_name
+        - cisco.umbrella.ai_supply_chain_categories
+        - cisco.umbrella.event_correlation_id
+        - cisco.umbrella.isolation_profile_id
+        - cisco.umbrella.source_country
       if: ctx.log?.file?.path != null && ctx.log.file.path.contains('proxylogs')
   - set:
       field: observer.type
@@ -154,6 +176,10 @@ processors:
         - organization.id
         - source.nat.ip
         - cisco.umbrella.egress
+        - cisco.umbrella.event_correlation_id
+        - cisco.umbrella.destination_sgt_origin_id
+        - cisco.umbrella.fw_block_reason
+        - cisco.umbrella.source_country
       if: ctx.log?.file?.path != null && (ctx.log.file.path.contains('cloudfirewalllogs') || ctx.log.file.path.contains('firewalllogs'))
   - date:
       field: cisco.umbrella.first_packet_timestamp
@@ -223,6 +249,7 @@ processors:
         - cisco.umbrella.enforced_by
         - cisco.umbrella.ftd_enforcement_id
         - cisco.umbrella.ftd_enforcement_name
+        - cisco.umbrella.event_correlation_id
       if: ctx.log?.file?.path != null && ctx.log.file.path.contains('intrusionlogs')
   - set:
       field: observer.type
@@ -259,6 +286,16 @@ processors:
         - destination.ip
         - destination.port
         - organization.id
+        - cisco.umbrella.taac_tenant_id
+        - cisco.umbrella.taac_profile_id
+        - cisco.umbrella.match_excerpts
+        - cisco.umbrella.match_violation_starts
+        - cisco.umbrella.match_violation_ends
+        - cisco.umbrella.email_sender
+        - cisco.umbrella.email_recipients
+        - cisco.umbrella.email_attachments
+        - cisco.umbrella.email_id
+        - cisco.umbrella.email_vendor_id
       if: ctx.log?.file?.path != null && ctx.log.file.path.contains('dlplogs')
   - set:
       field: observer.type
@@ -387,6 +424,40 @@ processors:
       separator: ",\\s*"
       preserve_trailing: false
       if: "ctx.cisco?.umbrella?.fqdns != null"
+  - split:
+      field: cisco.umbrella.blocked_destination_countries
+      separator: ",\\s*"
+      preserve_trailing: false
+      if: "ctx.cisco?.umbrella?.blocked_destination_countries != null"
+  - split:
+      field: cisco.umbrella.application_ids
+      separator: ",\\s*"
+      preserve_trailing: false
+      if: "ctx.cisco?.umbrella?.application_ids != null"
+  - split:
+      field: cisco.umbrella.ai_supply_chain_categories
+      separator: ",\\s*"
+      preserve_trailing: false
+      if: "ctx.cisco?.umbrella?.ai_supply_chain_categories != null"
+  - split:
+      field: cisco.umbrella.warn_categories
+      separator: ",\\s*"
+      preserve_trailing: false
+      if: "ctx.cisco?.umbrella?.warn_categories != null"
+  - split:
+      field: cisco.umbrella.email_recipients
+      separator: ",\\s*"
+      preserve_trailing: false
+      if: "ctx.cisco?.umbrella?.email_recipients != null"
+  - split:
+      field: cisco.umbrella.email_attachments
+      separator: ",\\s*"
+      preserve_trailing: false
+      if: "ctx.cisco?.umbrella?.email_attachments != null"
+  - set:
+      field: host.name
+      copy_from: cisco.umbrella.hostname
+      ignore_empty_value: true
   - script:
       if: ctx.cisco?.umbrella?.identities != null && ctx.cisco?.umbrella?.identity_types != null && ctx.cisco.umbrella.identities.length == ctx.cisco.umbrella.identity_types.length
       lang: painless
@@ -733,6 +804,10 @@ processors:
       field: source.ip
       target_field: source.geo
       ignore_missing: true
+  - set:
+      field: source.geo.country_iso_code
+      copy_from: cisco.umbrella.source_country
+      ignore_empty_value: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -816,6 +891,21 @@ processors:
       value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null
+  - append:
+      field: related.ip
+      value: "{{{cisco.umbrella.egress_ip}}}"
+      allow_duplicates: false
+      if: ctx.cisco?.umbrella?.egress_ip != null
+  - append:
+      field: related.hosts
+      value: "{{{cisco.umbrella.server_name}}}"
+      allow_duplicates: false
+      if: ctx.cisco?.umbrella?.server_name != null
+  - append:
+      field: related.user
+      value: "{{{cisco.umbrella.email_sender}}}"
+      allow_duplicates: false
+      if: ctx.cisco?.umbrella?.email_sender != null
   - append:
       field: related.hosts
       value: "{{{host.name}}}"
