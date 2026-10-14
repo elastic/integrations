@@ -60,6 +60,7 @@ Notes:
  - The setting is available on the streaming inputs only (AWS S3/SQS, Azure Blob Storage, Azure Event Hub and Google Cloud Storage). GitHub does not return `api.request` events through the REST audit log API, so the setting does not apply to the API input.
  - Enabling the setting only affects new data; existing documents remain in `logs-github.audit-*`. Queries that must span old and new data should target both data streams.
  - The rerouted documents keep the `github.*` field names, and carry a `route_api_request_events` tag.
+ - Routing on its own does not change retention. To apply a different retention, customize the `logs-github.api_requests@custom` component template (for example, set `index.lifecycle.name` to an ILM policy, or set a data stream lifecycle `data_retention`).
 
 {{fields "audit"}}
 
