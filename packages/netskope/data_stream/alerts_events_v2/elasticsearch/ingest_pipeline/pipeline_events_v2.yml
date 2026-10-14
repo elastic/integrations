@@ -341,12 +341,16 @@ processors:
       tag: json_dlp_match_info
       description: >-
         Decode dlp_match_info when it is received as serialized JSON. Values
-        that are not valid JSON are kept as text by the next processor.
+        that are not valid JSON are moved to dlp_match_info_text.
       field: netskope.events_v2.dlp_match_info
       if: >-
         ctx.netskope?.events_v2?.dlp_match_info instanceof String &&
         (ctx.netskope.events_v2.dlp_match_info.trim().startsWith('{') || ctx.netskope.events_v2.dlp_match_info.trim().startsWith('['))
-      ignore_failure: true
+      on_failure:
+        - rename:
+            tag: rename_dlp_match_info_to_text
+            field: netskope.events_v2.dlp_match_info
+            target_field: netskope.events_v2.dlp_match_info_text
   - script:
       tag: script_move_dlp_match_info_text
       lang: painless
