@@ -7,7 +7,7 @@ The Snowflake integration for Elastic collects security telemetry from [Snowflak
 
 ### Compatibility
 
-This integration queries Snowflake `ACCOUNT_USAGE` historical views through SQL API v2 (`/api/v2/statements`). Those views retain about one year of data and are delayed (about 45 minutes to 3 hours depending on the view). It is compatible with Snowflake accounts on AWS, Azure, and Google Cloud, including PrivateLink hosts. China region hosts (`.snowflakecomputing.cn`) are supported when the account URL is set accordingly. The `access_history` data stream requires Snowflake Enterprise Edition or higher.
+This integration queries Snowflake `ACCOUNT_USAGE` historical views through SQL API v2 (`/api/v2/statements`). Those views retain about one year of data and are delayed (about 45 minutes to 3 hours depending on the view). It is compatible with Snowflake accounts on AWS, Azure, and Google Cloud, including PrivateLink hosts. China region hosts (`.snowflakecomputing.cn`) are supported when the account URL is set accordingly. The `access_history` data stream requires Snowflake Enterprise Edition or later.
 
 ### How it works
 
@@ -17,7 +17,7 @@ Elastic Agent submits SQL statements to `POST /api/v2/statements`, polls asynchr
 
 The Snowflake integration collects the following logs:
 
-* **access_history**: Objects and columns read or written by each query from `SNOWFLAKE.ACCOUNT_USAGE.ACCESS_HISTORY` (direct and base objects accessed, objects modified, DDL operations, policies referenced). Enterprise Edition or higher.
+* **access_history**: Objects and columns read or written by each query from `SNOWFLAKE.ACCOUNT_USAGE.ACCESS_HISTORY` (direct and base objects accessed, objects modified, DDL operations, policies referenced). Enterprise Edition or later.
 * **data_transfer_history**: Hourly byte-count windows of data moved between clouds and regions from `SNOWFLAKE.ACCOUNT_USAGE.DATA_TRANSFER_HISTORY`, by transfer type.
 * **stages**: Stage create, alter, and drop activity from `SNOWFLAKE.ACCOUNT_USAGE.STAGES`, including external stage locations (`s3://`, `azure://`, `gcs://`) and storage integrations. Watermarks are `LAST_ALTERED` and `DELETED` because rows update in place.
 
@@ -61,7 +61,7 @@ Elastic Agent is required to stream data from the SQL API and ship the data to E
 
 ### Set up steps in Kibana
 
-1. In Kibana go to **Management > Integrations**.
+1. In Kibana go to **Management → Integrations**.
 2. Search for **Snowflake** and add the integration.
 3. Set the account URL, role, and warehouse.
 4. Provide the programmatic access token for the service user. OAuth access tokens and key-pair JWT are not supported.
@@ -69,20 +69,20 @@ Elastic Agent is required to stream data from the SQL API and ship the data to E
 
 ### Validation
 
-In Discover, filter on `event.dataset: snowflake.access_history`, `event.dataset: snowflake.data_transfer_history`, or `event.dataset: snowflake.stages`. Access history should contain `event.category: database` events; data transfer should contain `event.category: network` events with `network.bytes`; stages should contain `event.category: configuration` events with `event.action` of `create`, `alter`, or `drop`.
+In Discover, filter on `event.dataset: snowflake.access_history`, `event.dataset: snowflake.data_transfer_history`, or `event.dataset: snowflake.stages`. Access history should contain `event.category: database` events. Data transfer should contain `event.category: network` events with `network.bytes`. Stages should contain `event.category: configuration` events with `event.action` of `create`, `alter`, or `drop`.
 
 ## Troubleshooting
 
-- No data is being collected: Confirm the warehouse can auto-resume, the role has the required SNOWFLAKE database role (or imported privileges), and the account URL is reachable on HTTPS 443. ACCOUNT_USAGE latency means new rows may take up to 2–3 hours to appear.
-- `access_history` returns an error: The `ACCESS_HISTORY` view exists only on Enterprise Edition or higher. Disable the data stream on lower editions.
-- Authentication failures: Service users cannot use passwords. Provide a programmatic access token; the integration always sends `X-Snowflake-Authorization-Token-Type: PROGRAMMATIC_ACCESS_TOKEN`.
+- No data is being collected: Confirm the warehouse can auto-resume, the role has the required SNOWFLAKE database role (or imported privileges), and the account URL is reachable on HTTPS 443. ACCOUNT_USAGE latency means new rows can take up to 2–3 hours to appear.
+- `access_history` returns an error: The `ACCESS_HISTORY` view exists only on Enterprise Edition or later. Turn off the data stream on lower editions.
+- Authentication failures: Service users cannot use passwords. Provide a programmatic access token. The integration always sends `X-Snowflake-Authorization-Token-Type: PROGRAMMATIC_ACCESS_TOKEN`.
 - Network policy blocks the SQL API: Add the agent egress IP, or use a PrivateLink hostname from `SYSTEM$GET_PRIVATELINK_CONFIG()`.
 - HTTP 429 (`390505`): Reduce poll frequency. There is no documented `Retry-After` contract on the SQL API.
 - Duplicate rows: Each poll overlaps the previous watermark by the configured lag time so late-arriving rows are included. Documents use a fingerprint `_id`, so re-delivered rows overwrite rather than duplicate.
 
 ## Performance and scaling
 
-Each poll runs SQL on the configured warehouse and consumes Snowflake credits. `ACCOUNT_USAGE` latency is 45 minutes to 3 hours, so polling faster than the view latency does not make data fresher. Suggested starting intervals are `3h` for access history and `2h` for data transfer history and stages. Overlap the watermark by at least the view latency so late-arriving rows are included. `ACCESS_HISTORY` can be high volume on busy accounts; keep `batch_size` at the default unless statements time out.
+Each poll runs SQL on the configured warehouse and consumes Snowflake credits. `ACCOUNT_USAGE` latency is 45 minutes to 3 hours, so polling faster than the view latency does not make data fresher. Suggested starting intervals are `3h` for access history and `2h` for data transfer history and stages. Overlap the watermark by at least the view latency so late-arriving rows are included. `ACCESS_HISTORY` can be high volume on busy accounts. Keep `batch_size` at the default unless statements time out.
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
@@ -110,7 +110,7 @@ These APIs are used with this integration:
 
 #### access_history
 
-The `access_history` data stream provides object and column access events from `SNOWFLAKE.ACCOUNT_USAGE.ACCESS_HISTORY`. Nested object lists are decoded from the view's JSON columns and kept as flattened fields; object names are also extracted into keyword arrays for aggregation.
+The `access_history` data stream provides object and column access events from `SNOWFLAKE.ACCOUNT_USAGE.ACCESS_HISTORY`. Nested object lists are decoded from the view's JSON columns and kept as flattened fields. Object names are also extracted into keyword arrays for aggregation.
 
 ##### access_history fields
 
