@@ -1,0 +1,420 @@
+---
+description: Parse Snowflake ACCESS_HISTORY events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+
+  - date:
+      field: json.QUERY_START_TIME
+      target_field: '@timestamp'
+      tag: date_query_start_time
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS Z
+        - yyyy-MM-dd HH:mm:ss.SSS XX
+        - ISO8601
+      if: ctx.json?.QUERY_START_TIME != null
+      on_failure:
+        - remove:
+            field: json.QUERY_START_TIME
+            tag: remove_unparsed_query_start_time
+        - append:
+            field: error.message
+            tag: append_date_query_start_time_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.start
+      tag: set_event_start
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+      if: ctx.json?.QUERY_START_TIME != null
+
+  - rename:
+      field: json.QUERY_ID
+      target_field: event.id
+      ignore_missing: true
+      tag: rename_query_id
+  - fingerprint:
+      fields:
+        - event.id
+      target_field: _id
+      tag: fingerprint_id
+      if: ctx.event?.id != null
+  - rename:
+      field: json.USER_NAME
+      target_field: user.name
+      ignore_missing: true
+      tag: rename_user_name
+  - rename:
+      field: json.EVENT_SOURCE
+      target_field: event.provider
+      ignore_missing: true
+      tag: rename_event_source
+  - rename:
+      field: json.PARENT_QUERY_ID
+      target_field: snowflake.access_history.parent_query_id
+      ignore_missing: true
+      tag: rename_parent_query_id
+  - rename:
+      field: json.ROOT_QUERY_ID
+      target_field: snowflake.access_history.root_query_id
+      ignore_missing: true
+      tag: rename_root_query_id
+
+  # The SQL API returns ARRAY/OBJECT/VARIANT columns as JSON text inside the cell.
+  - json:
+      field: json.DIRECT_OBJECTS_ACCESSED
+      target_field: snowflake.access_history.direct_objects_accessed
+      tag: parse_direct_objects_accessed_json
+      if: ctx.json?.DIRECT_OBJECTS_ACCESSED instanceof String && ctx.json.DIRECT_OBJECTS_ACCESSED != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_parse_direct_objects_accessed_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.DIRECT_OBJECTS_ACCESSED
+      target_field: snowflake.access_history.direct_objects_accessed
+      ignore_missing: true
+      tag: rename_direct_objects_accessed_object
+      if: ctx.json?.DIRECT_OBJECTS_ACCESSED instanceof List || ctx.json?.DIRECT_OBJECTS_ACCESSED instanceof Map
+  - json:
+      field: json.BASE_OBJECTS_ACCESSED
+      target_field: snowflake.access_history.base_objects_accessed
+      tag: parse_base_objects_accessed_json
+      if: ctx.json?.BASE_OBJECTS_ACCESSED instanceof String && ctx.json.BASE_OBJECTS_ACCESSED != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_parse_base_objects_accessed_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.BASE_OBJECTS_ACCESSED
+      target_field: snowflake.access_history.base_objects_accessed
+      ignore_missing: true
+      tag: rename_base_objects_accessed_object
+      if: ctx.json?.BASE_OBJECTS_ACCESSED instanceof List || ctx.json?.BASE_OBJECTS_ACCESSED instanceof Map
+  - json:
+      field: json.OBJECTS_MODIFIED
+      target_field: snowflake.access_history.objects_modified
+      tag: parse_objects_modified_json
+      if: ctx.json?.OBJECTS_MODIFIED instanceof String && ctx.json.OBJECTS_MODIFIED != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_parse_objects_modified_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.OBJECTS_MODIFIED
+      target_field: snowflake.access_history.objects_modified
+      ignore_missing: true
+      tag: rename_objects_modified_object
+      if: ctx.json?.OBJECTS_MODIFIED instanceof List || ctx.json?.OBJECTS_MODIFIED instanceof Map
+  - json:
+      field: json.OBJECT_MODIFIED_BY_DDL
+      target_field: snowflake.access_history.object_modified_by_ddl
+      tag: parse_object_modified_by_ddl_json
+      if: ctx.json?.OBJECT_MODIFIED_BY_DDL instanceof String && ctx.json.OBJECT_MODIFIED_BY_DDL != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_parse_object_modified_by_ddl_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.OBJECT_MODIFIED_BY_DDL
+      target_field: snowflake.access_history.object_modified_by_ddl
+      ignore_missing: true
+      tag: rename_object_modified_by_ddl_object
+      if: ctx.json?.OBJECT_MODIFIED_BY_DDL instanceof List || ctx.json?.OBJECT_MODIFIED_BY_DDL instanceof Map
+  - json:
+      field: json.POLICIES_REFERENCED
+      target_field: snowflake.access_history.policies_referenced
+      tag: parse_policies_referenced_json
+      if: ctx.json?.POLICIES_REFERENCED instanceof String && ctx.json.POLICIES_REFERENCED != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_parse_policies_referenced_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.POLICIES_REFERENCED
+      target_field: snowflake.access_history.policies_referenced
+      ignore_missing: true
+      tag: rename_policies_referenced_object
+      if: ctx.json?.POLICIES_REFERENCED instanceof List || ctx.json?.POLICIES_REFERENCED instanceof Map
+  - json:
+      field: json.ADDITIONAL_PROPERTIES
+      target_field: snowflake.access_history.additional_properties
+      tag: parse_additional_properties_json
+      if: ctx.json?.ADDITIONAL_PROPERTIES instanceof String && ctx.json.ADDITIONAL_PROPERTIES != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_parse_additional_properties_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.ADDITIONAL_PROPERTIES
+      target_field: snowflake.access_history.additional_properties
+      ignore_missing: true
+      tag: rename_additional_properties_object
+      if: ctx.json?.ADDITIONAL_PROPERTIES instanceof List || ctx.json?.ADDITIONAL_PROPERTIES instanceof Map
+  - json:
+      field: json.INVOKER_IDENTITY
+      target_field: snowflake.access_history.invoker_identity
+      tag: parse_invoker_identity_json
+      if: ctx.json?.INVOKER_IDENTITY instanceof String && ctx.json.INVOKER_IDENTITY != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_parse_invoker_identity_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.INVOKER_IDENTITY
+      target_field: snowflake.access_history.invoker_identity
+      ignore_missing: true
+      tag: rename_invoker_identity_object
+      if: ctx.json?.INVOKER_IDENTITY instanceof List || ctx.json?.INVOKER_IDENTITY instanceof Map
+  - json:
+      field: json.AGENTS_INFO
+      target_field: snowflake.access_history.agents_info
+      tag: parse_agents_info_json
+      if: ctx.json?.AGENTS_INFO instanceof String && ctx.json.AGENTS_INFO != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_parse_agents_info_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.AGENTS_INFO
+      target_field: snowflake.access_history.agents_info
+      ignore_missing: true
+      tag: rename_agents_info_object
+      if: ctx.json?.AGENTS_INFO instanceof List || ctx.json?.AGENTS_INFO instanceof Map
+
+  # OBJECT_MODIFIED_BY_DDL has a small fixed shape; map it to snake_case fields.
+  - rename:
+      field: snowflake.access_history.object_modified_by_ddl.objectDomain
+      target_field: snowflake.access_history.object_modified_by_ddl.object_domain
+      ignore_missing: true
+      tag: rename_ddl_object_domain
+  - rename:
+      field: snowflake.access_history.object_modified_by_ddl.objectId
+      target_field: snowflake.access_history.object_modified_by_ddl.object_id
+      ignore_missing: true
+      tag: rename_ddl_object_id
+  - convert:
+      field: snowflake.access_history.object_modified_by_ddl.object_id
+      tag: convert_ddl_object_id_to_string
+      type: string
+      ignore_missing: true
+      description: objectId is a number for most domains but a string for some (for example functions); store it as keyword.
+  - rename:
+      field: snowflake.access_history.object_modified_by_ddl.objectName
+      target_field: snowflake.access_history.object_modified_by_ddl.object_name
+      ignore_missing: true
+      tag: rename_ddl_object_name
+  - rename:
+      field: snowflake.access_history.object_modified_by_ddl.operationType
+      target_field: snowflake.access_history.object_modified_by_ddl.operation_type
+      ignore_missing: true
+      tag: rename_ddl_operation_type
+  - set:
+      field: event.action
+      tag: set_event_action_from_ddl_operation
+      copy_from: snowflake.access_history.object_modified_by_ddl.operation_type
+      ignore_empty_value: true
+      if: ctx.snowflake?.access_history?.object_modified_by_ddl?.operation_type instanceof String
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+
+  # Convenience keyword arrays of objectName values for aggregations.
+  - script:
+      tag: script_extract_object_names
+      lang: painless
+      description: Collect objectName values from the accessed and modified object arrays into keyword arrays so dashboards can aggregate without flattened-field limitations.
+      if: ctx.snowflake?.access_history != null
+      params:
+        sources:
+          direct_objects_accessed: direct_objects_accessed_names
+          base_objects_accessed: base_objects_accessed_names
+          objects_modified: objects_modified_names
+        truncation_sentinels:
+          - TRUNCATED
+      source: |-
+        def ah = ctx.snowflake.access_history;
+        for (def entry : params.sources.entrySet()) {
+          def objs = ah[entry.getKey()];
+          if (!(objs instanceof List)) {
+            continue;
+          }
+          def names = new ArrayList();
+          for (def obj : objs) {
+            if (obj instanceof Map && obj.objectName instanceof String
+                && !params.truncation_sentinels.contains(obj.objectName) && !names.contains(obj.objectName)) {
+              names.add(obj.objectName);
+            }
+          }
+          if (!names.isEmpty()) {
+            ah[entry.getValue()] = names;
+          }
+        }
+
+  - append:
+      field: related.user
+      tag: append_user_name_to_related
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: database
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_access
+      value: access
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_change
+      value: change
+      allow_duplicates: false
+      if: >-
+        (ctx.snowflake?.access_history?.objects_modified instanceof List && ctx.snowflake.access_history.objects_modified.size() != 0)
+        || ctx.snowflake?.access_history?.object_modified_by_ddl instanceof Map
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Snowflake
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Snowflake
+
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+      tag: remove_temp_fields
+
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+
+  - append:
+      field: tags
+      tag: append_preserve_on_collector_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      tag: append_error_message_d1950926
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_d762b9c5
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
