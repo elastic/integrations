@@ -2,17 +2,21 @@
 description: Pipeline for parsing MySQL error logs
 processors:
 - set:
+    tag: set_event_ingested_8674df62
     field: event.ingested
     value: '{{_ingest.timestamp}}'
 - set:
+      tag: set_ecs_version_44805c2a
       field: ecs.version
       value: '8.11.0'
 - set:
+    tag: set_event_original_72e6d96d
     field: event.original
     value: '{{{message}}}'
     ignore_empty_value: true
     if: 'ctx.event?.original == null'
 - grok:
+    tag: grok_message_f0d1ab55
     field: message
     patterns:
     - '%{MYSQLDATETIME}%{SPACE}(%{NUMBER:mysql.thread_id:long}%{SPACE})?(\[%{DATA:log.level}\]%{SPACE})?%{GREEDYMULTILINE:message}'
@@ -25,6 +29,7 @@ processors:
         (.|
         )+
 - grok:
+    tag: grok_message_f50f803a
     field: message
     patterns:
     - '(\[%{DATA:event.code}\])%{SPACE}(\[%{DATA:event.provider}\])%{SPACE}%{GREEDYMULTILINE}'
@@ -36,9 +41,11 @@ processors:
         (.|
         )+
 - rename:
+    tag: rename_timestamp_0390878a
     field: '@timestamp'
     target_field: event.created
 - date:
+    tag: date_tmp_local_timestamp_df5d0227
     if: ctx._tmp?.local_timestamp != null && ctx.event?.timezone == null
     field: _tmp.local_timestamp
     formats:
@@ -47,6 +54,7 @@ processors:
     - yyyy-MM-dd H:m:s
     - yyyy-MM-dd  H:m:s
 - date:
+    tag: date_tmp_local_timestamp_4f815c15
     if: ctx._tmp?.local_timestamp != null && ctx.event?.timezone != null
     field: _tmp.local_timestamp
     timezone: '{{ event.timezone }}'
@@ -56,27 +64,42 @@ processors:
     - yyyy-MM-dd H:m:s
     - yyyy-MM-dd  H:m:s
 - date:
+    tag: date_tmp_timestamp_25b309cb
     if: ctx._tmp?.timestamp != null
     field: _tmp.timestamp
     formats:
     - ISO8601
 - remove:
+    tag: remove_tmp_f772def7
     field: _tmp
     ignore_missing: true
 - set:
+    tag: set_event_kind_5328c5ed
     field: event.kind
     value: event
 - append:
+    tag: append_event_category_ecbd7a0a
     field: event.category
     value: database
 - append:
+    tag: append_event_type_c1739176
     field: event.type
     value: info
 - append:
+    tag: append_event_type_e6d26793
     field: event.type
     value: error
     if: "ctx?.log?.level != null && ctx.log.level.toLowerCase() == 'error'"
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      tag: set_event_kind_10173111
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_48c757dc
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
