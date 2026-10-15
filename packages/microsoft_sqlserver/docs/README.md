@@ -110,6 +110,10 @@ The SQL Server `log` contains user-defined events and certain system events you 
 
 Read more in [View the SQL Server error log in SQL Server Management Studio](https://docs.microsoft.com/en-us/sql/relational-databases/performance/view-the-sql-server-error-log-sql-server-management-studio?view=sql-server-ver16).
 
+> **Note**: Starting with version 2.18.0, the error `log` data stream uses the `filestream` input. This keeps the Elastic Agent unit healthy when an empty, `utf-16le-bom` encoded SQL Server error log is harvested, and it reads error logs smaller than 1 KiB.
+>
+> Upgrading an existing policy re-ingests the error logs that are present when the new input starts, once. On Elastic Agent 9.x, and on 8.19.21 and later, those duplicate documents are tagged `take_over`. On Elastic Agent 8.19.0 through 8.19.20, `take_over` does not run, so the duplicates are untagged. After that re-read, ingestion continues from the new offsets.
+
 #### Performance metrics
 
 Collects the `performance` counter metrics. The dynamic counter feature provides flexibility to collect metrics by providing the counter as an input.
@@ -305,10 +309,12 @@ An example event for `log` looks as following:
         ]
     },
     "input": {
-        "type": "log"
+        "type": "filestream"
     },
     "log": {
         "file": {
+            "device_id": "77",
+            "inode": "768087",
             "path": "/tmp/service_logs/errorlog"
         },
         "flags": [
@@ -347,6 +353,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.flags | This field contains the flags of the event. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | microsoft_sqlserver.log.origin | Origin of the message usually the server but it can also be a recovery process | keyword |

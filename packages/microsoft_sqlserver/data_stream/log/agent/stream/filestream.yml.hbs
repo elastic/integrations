@@ -2,7 +2,11 @@ paths:
 {{#each paths as |path i|}}
  - {{path}}
 {{/each}}
-allow_deprecated_use: true
+prospector.scanner.exclude_files: ['\.gz$']
+# SQL Server can rotate an error log before it reaches the 1 KiB fingerprint threshold.
+file_identity.native: ~
+prospector.scanner.fingerprint.enabled: false
+take_over: true
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
@@ -13,11 +17,11 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-exclude_files: [".gz$"]
-multiline:
-  pattern: '^\d{4}-\d{2}-\d{2}'
-  negate: true
-  match: after
+parsers:
+  - multiline:
+      pattern: '^\d{4}-\d{2}-\d{2}'
+      negate: true
+      match: after
 {{#if encoding}}
 encoding: {{encoding}}
 {{/if}}
