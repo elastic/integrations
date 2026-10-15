@@ -29,9 +29,13 @@ The minimum **kibana.version** required is **9.5.0**, and the minimum Elastic Ag
 
 ### Elastic Managed deployment
 
-This integration supports Elastic Managed deployment, where the collection agent runs in Elastic's cloud rather than inside your network. The Okta API is a public HTTPS endpoint, so no special connectivity configuration is required.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-When using Elastic Managed deployment, the **JWK file** authentication option is not available because it relies on a file on the agent's local filesystem. Use **API token** or **JWK JSON** (inline key) authentication instead.
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
+
+The Okta API is a public HTTPS endpoint, so no special connectivity configuration is required.
+
+When using an Elastic Managed integration, the **JWK file** authentication option is not available because it relies on a file on the agent's local filesystem. Use **API token** or **JWK JSON** (inline key) authentication instead.
 
 ### Collect data from Okta
 
