@@ -322,29 +322,34 @@ processors:
         // derived from the resource path where it differs.
         String inventoryName(String service, String target) {
           String[] p = target.splitOnToken('/');
+          int n = p.length;
+          if (n < 2) {
+            return null;
+          }
+          // Wildcard and placeholder segments do not identify a single asset.
           for (String segment : p) {
-            if (segment.length() == 0) {
+            if (segment.length() == 0 || segment.contains("*") || segment == "-") {
               return null;
             }
           }
-          int n = p.length;
           // Resource Manager assets are named by number, whichever service logged the event.
           if (n == 2 && isNumeric(p[1]) && (p[0] == "projects" || p[0] == "organizations" || p[0] == "folders")) {
             return "//cloudresourcemanager.googleapis.com/" + target;
           }
-          if (service == "compute.googleapis.com" && p[0] == "projects" && p[1] != "-") {
+          if (service == "compute.googleapis.com" && p[0] == "projects") {
             if (n == 6 && p[2] == "zones" && (p[4] == "instances" || p[4] == "disks")) {
               return "//" + service + "/" + target;
             }
             if (n == 6 && p[2] == "regions" && (p[4] == "disks" || p[4] == "subnetworks" || p[4] == "forwardingRules" || p[4] == "backendServices")) {
               return "//" + service + "/" + target;
             }
-            if (n == 5 && p[2] == "global" && (p[3] == "networks" || p[3] == "firewalls")) {
+            if (n == 5 && p[2] == "global" && (p[3] == "networks" || p[3] == "firewalls" || p[3] == "forwardingRules" || p[3] == "backendServices")) {
               return "//" + service + "/" + target;
             }
           }
+          // The inventory names buckets by bucket name alone.
           if (service == "storage.googleapis.com" && n == 4 && p[0] == "projects" && p[1] == "_" && p[2] == "buckets") {
-            return "//" + service + "/" + target;
+            return "//" + service + "/" + p[3];
           }
           return null;
         }
