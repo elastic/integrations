@@ -147,7 +147,7 @@ The same API key is sent to the Kibana Cases API and to Elasticsearch `_bulk` fo
 6. Keep **Attack Path Findings** (`finding`) disabled unless you explicitly need raw finding documents.
 7. Select **Save and continue**.
 
-**Local elastic-package stack tip:** when the agent runs inside the elastic-package Docker network, use internal hostnames such as `https://elastic-package-stack-kibana-1:5601` and `https://elasticsearch:9200`. For agents on external hosts, use publicly reachable URLs. Do not leave those hostnames in a production policy; Kibana URL and Elasticsearch URL have no default.
+**Local elastic-package stack tip:** when the agent runs inside the elastic-package Docker network, use `https://kibana:5601` and `https://elasticsearch:9200`. Those names are on the stack certificate. `https://elastic-package-stack-kibana-1:5601` fails TLS with `x509: certificate is valid for localhost, kibana, not elastic-package-stack-kibana-1`, so Case & Alert Sync never reaches the Cases API. For agents on external hosts, use publicly reachable URLs. Do not leave those hostnames in a production policy; Kibana URL and Elasticsearch URL have no default.
 
 ### Kibana space
 
