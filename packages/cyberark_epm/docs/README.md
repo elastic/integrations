@@ -68,6 +68,14 @@ This method uses the OAuth2 client credentials flow with a CyberArk Identity ser
   - The default `[EPM] URL` is `https://login.epm.cyberark.com`, but this can vary depending on your region. Refer to the [Documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#EPMdispatcherservername) to find the correct URL for your region. This URL is the EPM dispatcher server and is only used with the **EPM** authentication method. The **CyberArk Identity** method uses `[Identity] EPM Server URL` instead.
   - If you encounter an error indicating that the usage limit has been reached, consider lowering the "Resource Rate Limit" parameter in the advanced section. For more details, refer to the [documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#APIlimitations).
 
+### Collection behavior
+
+The Raw Event, Policy Audit Raw Event, Aggregated Event and Policy Audit Aggregated Event data streams collect events by their CyberArk EPM arrival time (`arrivalTime`), which is when the EPM service received the event, not when it occurred on the endpoint. EPM agents upload events in batches, so an event can reach EPM long after it occurred. The `@timestamp` field is set from the arrival time.
+
+Consecutive polling windows overlap by the Lookback parameter in the advanced section (default `2m`). Events collected twice because of the overlap are deduplicated.
+
+To collect events from further back after setup, for example after upgrading from a version that filtered by event time and missed late-arriving events, add a new integration policy with a larger Initial Interval, such as `1440h` for 60 days. The Initial Interval only applies on the first run of a policy. Events already stored in older backing indices of the data stream may be indexed again.
+
 ## Logs reference
 
 ### Raw Event
