@@ -105,10 +105,11 @@ each error and warning it reports; [`references/columnar.md`](references/columna
 says how:
 
 - errors: `copy_to`, a keyword normalizer other than `lowercase`, a mapping-level
-  runtime field, `nested` inside `nested`, an invalid `index.sort`, `logsdb_columnar`
-  on a non-logs stream or together with `index_mode`;
-- warnings: `dynamic: false` (`SVR00014`), `enabled: false` (`SVR00015`), a custom
-  `index.sort` without `@timestamp` (`SVR00016`).
+  runtime field, `nested` inside `nested`, `dynamic: false`, `dynamic: runtime`,
+  `enabled: false`, an invalid `index.sort`, `logsdb_columnar` on a non-logs stream or
+  together with `index_mode`. Elasticsearch rejects them in columnar modes: fix the
+  mapping, or mark the stream `unsupported`;
+- warning: a custom `index.sort` without `@timestamp` (`SVR00016`).
 
 Never exclude a columnar finding in `validation.yml`, except `SVR00016` with a comment
 when the dataset is never queried by time range. A stream you cannot fix now gets
@@ -132,8 +133,7 @@ only means this script found nothing), the effective `logsdb_columnar`, and find
 - `source_consumer_latest_transform`, `source_consumer_transform`,
   `source_consumer_kibana`, `source_consumer_detection_rule`: readers of the rebuilt
   `_source`. Nothing fails; they silently get the flat shape. Review each one;
-- `nested_object_children`: objects inside a `nested` field (the Elasticsearch bug);
-- `dynamic_runtime`: rejected by Elasticsearch at install, not by the validator.
+- `nested_object_children`: objects inside a `nested` field (the Elasticsearch bug).
 
 A stream keeps `unsupported` until its `_source` consumers are reviewed. Quote the
 **Detection rules** line in the PR even when it is zero; rules users wrote are not

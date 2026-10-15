@@ -9,7 +9,7 @@ cannot see.
 `elastic-package check` (package-spec >= 3.7.0) reports the mappings and index sort
 settings Elasticsearch rejects in `logsdb_columnar`. This script covers the rest, per logs
 data stream: scope and effective readiness, `_source` consumers, objects inside `nested`
-fields, `dynamic: runtime`, the index sort proposal, the detection rules and dashboards to
+fields, the index sort proposal, the detection rules and dashboards to
 benchmark, and the lookup candidates for `index: true`. See references/columnar.md.
 
     python3 <skill-dir>/scripts/audit.py packages/<pkg> [--format markdown|json|both]
@@ -802,14 +802,6 @@ def audit_stream(pkg_dir, ds_name, manifest, rules, pkg_name, own_dir, package_v
         if not in_mf:
             fields.setdefault(flat, fdef)
             sources.setdefault(flat, fname)
-        if str(fdef.get("dynamic", "")).strip().lower() == "runtime":
-            findings.append(finding("dynamic_runtime", "blocker", f"`{flat}` sets `dynamic: runtime`, "
-                                    "rejected in columnar modes: use `dynamic: true`.", rel, flat))
-    mappings = itpl.get("mappings") or {}
-    if isinstance(mappings, dict) and str(mappings.get("dynamic", "")).strip().lower() == "runtime":
-        findings.append(finding("dynamic_runtime", "blocker", "`index_template.mappings.dynamic: "
-                                "runtime` is rejected in columnar modes: use `dynamic: true`.",
-                                f"data_stream/{ds_name}/manifest.yml"))
     findings.extend(nested_object_children(entries))
     findings.extend(finding("source_consumer_kibana", "review", f"Reads `_source`: {', '.join(a['hits'])}.",
                             a["file"]) for a in kibana)

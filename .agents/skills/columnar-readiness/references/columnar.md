@@ -47,11 +47,13 @@ processor (port `doc[...]`/`emit()` to `ctx` assignments), or move the logic to 
 time (ES|QL `EVAL`, a search-request runtime field). `runtime: true` without a script
 just becomes the plain type.
 
-**`dynamic: false`** (`SVR00014`) and **`enabled: false`** (`SVR00015`). With no
-stored `_source` the unmapped data is gone for good. Confirm the dropped fields do not
-matter (and say so in the PR), map the ones that do, use `dynamic: true` (unmapped
-leaves become cheap non-indexed doc values; watch the field limit), `dynamic: strict`,
-or `type: flattened` for open-ended objects. For `enabled: false`, prefer `flattened`.
+**`dynamic: false`, `dynamic: runtime`, `enabled: false`** (errors). Elasticsearch
+rejects them in columnar modes: with no stored `_source`, unmapped data would be gone
+for good and runtime fields would have nothing to load from. Map the subfields that
+matter, use `dynamic: true` (unmapped leaves become cheap non-indexed doc values; watch
+the field limit) or `dynamic: strict`, or `type: flattened` for open-ended objects; for
+`enabled: false`, prefer `flattened`. Say in the PR which fields you mapped. If none of
+that fits yet, mark the stream `unsupported`.
 
 **`index.sort`** (errors; `SVR00016` warning). Sort fields must be defined in the
 stream's fields (only `@timestamp` is implicit; a custom sort must map `host.name`),
@@ -68,10 +70,6 @@ installs a stream in `logsdb_columnar` mode. Leave them, and never mark a stream
 in at build time; same handling.
 
 ## Script findings (`scripts/audit.py`)
-
-**`dynamic_runtime`**: `dynamic: runtime` on a field or on
-`index_template.mappings`. Elasticsearch rejects the template when Fleet installs it.
-Use `dynamic: true`.
 
 **`nested_object_children`**: a single-level `nested` field whose elements hold objects.
 On columnar, an object sent as JSON inside an element is indexed apart from it: a
@@ -176,7 +174,7 @@ exact value; if the benchmark shows it too slow and it cannot join the sort key,
   `event.id`. Expected differences, and only these: dotted `_source` keys
   (`geo_point` stays `{lat, lon}`); single-element arrays as scalars; object arrays as
   parallel arrays; multi-value order preserved; objects inside `nested` elements split
-  off (until fixed); data under `dynamic: false` gone; `normalizer: lowercase` values
+  off (until fixed); `normalizer: lowercase` values
   lowercased. elastic-package fails columnar runs with "expected array, found
   <scalar>": tooling, not a package bug; check the values and note it. Anything else
   (a changed value, a dropped mapped field, precision loss) is a bug to report with
