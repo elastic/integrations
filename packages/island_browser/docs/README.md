@@ -101,7 +101,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
     * To **Collect logs from Island Browser API**, you'll need to:
 
-        - Configure **URL** and **API Key**.
+        - Configure **URL** and **API Key**. **SIEM Events** must use `https://api.island.io`. **User**, **Device**, **Compromised Credential**, and the deprecated **Audit** and **Admin Actions** data streams must use `https://management.island.io`. The URL applies to every data stream enabled in the policy, so collect SIEM Events in a separate integration policy from the management API data streams.
         - Enable/Disable the required datasets.
         - For **SIEM Events**, provide the **Audit ID** from the Generic SIEM Integration in the Island Management Console.
         - For each dataset, adjust the integration configuration parameters if required, including the Interval, Batch Size etc. to enable data collection.
@@ -113,7 +113,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 To collect user, admin, and system audits through the Island SIEM integration:
 
 1. Complete the [SIEM integration setup](#configure-the-siem-integration) in the Island Management Console.
-2. Enable **SIEM Events** in Fleet and configure **URL**, **API Key**, and **Audit ID**.
+2. Enable **SIEM Events** in Fleet, set **URL** to `https://api.island.io`, and configure **API Key** and **Audit ID**.
 
 ### Validation
 
