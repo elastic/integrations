@@ -311,17 +311,17 @@ processors:
       field: azure.springcloudlogs.correlationId
       target_field: azure.correlation.id
       ignore_missing: true
-  - rename:
-      tag: rename_azure_springcloudlogs_tenantId_to_azure_tenant_id_3a4b5c6d
-      field: azure.springcloudlogs.tenantId
-      target_field: azure.tenant.id
-      ignore_missing: true
-  - rename:
-      tag: rename_azure_springcloudlogs_TenantId_to_azure_tenant_id_7e8f9a0b
-      field: azure.springcloudlogs.TenantId
+  - set:
+      tag: set_azure_springcloudlogs_tenantId_to_azure_tenant_id_fdb277cc
+      field: azure.tenant.id
+      copy_from: azure.springcloudlogs.tenantId
+      ignore_empty_value: true
+  - set:
+      tag: set_azure_springcloudlogs_TenantId_to_azure_tenant_id_2bb1fa2f
+      field: azure.tenant.id
+      copy_from: azure.springcloudlogs.TenantId
       if: ctx.azure?.tenant?.id == null
-      target_field: azure.tenant.id
-      ignore_missing: true
+      ignore_empty_value: true
   - rename:
       tag: rename_azure_springcloudlogs_properties_statusCode_to_azure_springcloudlogs_properties_status_code_aa28599b
       field: azure.springcloudlogs.properties.statusCode

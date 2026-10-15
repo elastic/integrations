@@ -50,28 +50,28 @@ processors:
       field: azure.eventhub.resourceId
       target_field: azure.resource_id
       ignore_missing: true
-  - rename:
-      tag: rename_azure_eventhub_ResourceId_to_azure_resource_id_f1234567
-      field: azure.eventhub.ResourceId
-      target_field: azure.resource_id
+  - set:
+      tag: set_azure_eventhub_ResourceId_to_azure_resource_id_2ec65d1b
+      field: azure.resource_id
+      copy_from: azure.eventhub.ResourceId
       if: ctx.azure?.resource_id == null
-      ignore_missing: true
-  - rename:
-      tag: rename_azure_eventhub_tenantId_to_azure_tenant_id_b2c3d4e5
-      field: azure.eventhub.tenantId
-      target_field: azure.tenant.id
-      ignore_missing: true
-  - rename:
-      tag: rename_azure_eventhub_TenantId_to_azure_tenant_id_f6a7b8c9
-      field: azure.eventhub.TenantId
-      target_field: azure.tenant.id
+      ignore_empty_value: true
+  - set:
+      tag: set_azure_eventhub_tenantId_to_azure_tenant_id_3b2b4c9f
+      field: azure.tenant.id
+      copy_from: azure.eventhub.tenantId
+      ignore_empty_value: true
+  - set:
+      tag: set_azure_eventhub_TenantId_to_azure_tenant_id_0d6db0e5
+      field: azure.tenant.id
+      copy_from: azure.eventhub.TenantId
       if: ctx.azure?.tenant?.id == null
-      ignore_missing: true
-  - rename:
-      tag: rename_azure_eventhub_correlationId_to_azure_correlation_id_d0e1f2a3
-      field: azure.eventhub.correlationId
-      target_field: azure.correlation.id
-      ignore_missing: true
+      ignore_empty_value: true
+  - set:
+      tag: set_azure_eventhub_correlationId_to_azure_correlation_id_3ef212df
+      field: azure.correlation.id
+      copy_from: azure.eventhub.correlationId
+      ignore_empty_value: true
   - set:
       tag: set_cloud_region_from_eventhub_location_g4h5i6j7
       field: cloud.region
@@ -81,12 +81,12 @@ processors:
         The length guard skips country codes (for example `GB`) that tenant-level
         events carry in `location`; they are not Azure regions.
       ignore_empty_value: true
-  - rename:
-      tag: rename_azure_eventhub_Region_to_cloud_region_k8l9m0n1
-      field: azure.eventhub.Region
-      target_field: cloud.region
+  - set:
+      tag: set_azure_eventhub_Region_to_cloud_region_bda35c79
+      field: cloud.region
+      copy_from: azure.eventhub.Region
       if: "ctx.cloud?.region == null"
-      ignore_missing: true
+      ignore_empty_value: true
   - rename:
       tag: rename_azure_eventhub_durationMs_to_event_duration_f7de1882
       field: azure.eventhub.durationMs

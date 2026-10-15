@@ -168,6 +168,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.resource.provider | Legacy name for the resource provider namespace, still populated. Prefer `azure.resource_provider.namespace`. | keyword |
 | azure.resource_group.name | Azure resource group name. | keyword |
 | azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
+| azure.springcloudlogs.TenantId | Tenant ID from the log envelope (capitalised variant), as sent by Azure. Also copied to `azure.tenant.id`. | keyword |
 | azure.springcloudlogs.category | Category | keyword |
 | azure.springcloudlogs.event_category | Event Category | keyword |
 | azure.springcloudlogs.log_format | ccpNamespace | keyword |
@@ -183,6 +184,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.springcloudlogs.properties.thread | Thread | keyword |
 | azure.springcloudlogs.properties.type | Type | keyword |
 | azure.springcloudlogs.status | Status | keyword |
+| azure.springcloudlogs.tenantId | Tenant ID from the log envelope, as sent by Azure. Also copied to `azure.tenant.id`. | keyword |
 | azure.subscription.id | Azure subscription ID. | keyword |
 | azure.subscription_id | Legacy flat name for the subscription ID, still populated. Prefer `azure.subscription.id`. | keyword |
 | azure.tenant.id | Azure tenant ID. | keyword |

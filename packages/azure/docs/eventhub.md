@@ -154,7 +154,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure-eventhub.sequence_number | Sequence number | long |
 | azure.correlation.id | Correlation ID for grouping related operations. | keyword |
 | azure.correlation_id | Legacy flat name for the correlation ID, still populated. Prefer `azure.correlation.id`. | keyword |
+| azure.eventhub.Region | Region from the parsed message envelope (`parse_message` only). Also copied to `cloud.region` when `location` is absent. | keyword |
+| azure.eventhub.ResourceId | Resource ID from the parsed message envelope, capitalised variant (`parse_message` only). Also copied to `azure.resource_id` when `resourceId` is absent. | keyword |
+| azure.eventhub.TenantId | Tenant ID from the parsed message envelope, capitalised variant (`parse_message` only). Also copied to `azure.tenant.id`. | keyword |
+| azure.eventhub.category | Log category from the parsed message envelope (`parse_message` only). | keyword |
+| azure.eventhub.correlationId | Correlation ID from the parsed message envelope (`parse_message` only). Also copied to `azure.correlation.id`. | keyword |
+| azure.eventhub.location | Location from the parsed message envelope (`parse_message` only). Also copied to `cloud.region` when it is an Azure region. | keyword |
+| azure.eventhub.operationName | Operation name from the parsed message envelope (`parse_message` only). | keyword |
 | azure.eventhub.properties.raw | Raw properties as a string, if the `properties` field is a string. | keyword |
+| azure.eventhub.tenantId | Tenant ID from the parsed message envelope (`parse_message` only). Also copied to `azure.tenant.id`. | keyword |
 | azure.resource.authorization_rule | Authorization rule. | keyword |
 | azure.resource.group | Legacy name for the resource group, still populated. Prefer `azure.resource_group.name`. | keyword |
 | azure.resource.id | Legacy name for the ARM resource ID, still populated. Prefer `cloud.resource_id`. | keyword |

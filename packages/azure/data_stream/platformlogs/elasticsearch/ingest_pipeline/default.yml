@@ -388,17 +388,17 @@ processors:
       field: azure.platformlogs.correlationId
       target_field: azure.correlation.id
       ignore_missing: true
-  - rename:
-      tag: rename_azure_platformlogs_tenantId_to_azure_tenant_id_5e6f7a8b
-      field: azure.platformlogs.tenantId
-      target_field: azure.tenant.id
-      ignore_missing: true
-  - rename:
-      tag: rename_azure_platformlogs_TenantId_to_azure_tenant_id_9c0d1e2f
-      field: azure.platformlogs.TenantId
+  - set:
+      tag: set_azure_platformlogs_tenantId_to_azure_tenant_id_b8ef6470
+      field: azure.tenant.id
+      copy_from: azure.platformlogs.tenantId
+      ignore_empty_value: true
+  - set:
+      tag: set_azure_platformlogs_TenantId_to_azure_tenant_id_25e0dd98
+      field: azure.tenant.id
+      copy_from: azure.platformlogs.TenantId
       if: ctx.azure?.tenant?.id == null
-      target_field: azure.tenant.id
-      ignore_missing: true
+      ignore_empty_value: true
   - rename:
       tag: rename_azure_platformlogs_properties_statusCode_to_azure_platformlogs_properties_status_code_78ef0791
       field: azure.platformlogs.properties.statusCode

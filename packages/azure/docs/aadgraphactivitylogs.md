@@ -230,6 +230,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.aadgraphactivitylogs.category | Azure Event Category. For Azure AD Graph Activity Logs, this is `AzureADGraphActivityLogs`. | keyword |
+| azure.aadgraphactivitylogs.correlation_id | Correlation ID from the log envelope. Also copied to `azure.correlation.id`. | keyword |
 | azure.aadgraphactivitylogs.operation_name | Operation name. For this category the value is always the literal string `AAD Graph Activity`; rely on the derived `event.action` (HTTP method + directory collection from `requestUri`) for detection. | keyword |
 | azure.aadgraphactivitylogs.properties.actor_type | Type of identity that issued the request, for example `User`, `ServicePrincipal`. | keyword |
 | azure.aadgraphactivitylogs.properties.api_version | The API version of the event. | keyword |
@@ -253,6 +254,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | azure.aadgraphactivitylogs.properties.type | The name of the table. | keyword |
 | azure.aadgraphactivitylogs.properties.user_agent | The user agent information related to request. | keyword |
 | azure.aadgraphactivitylogs.properties.wids | Denotes the tenant-wide roles assigned to this user. | keyword |
+| azure.aadgraphactivitylogs.resource_id | Resource ID from the log envelope. Also copied to `azure.resource_id` for ARM resource ID parsing. | keyword |
 | azure.correlation.id | Correlation ID for grouping related operations. | keyword |
 | azure.correlation_id | Legacy flat name for the correlation ID, still populated. Prefer `azure.correlation.id`. | keyword |
 | azure.resource.authorization_rule | Authorization rule. | keyword |
