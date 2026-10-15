@@ -110,7 +110,7 @@ These APIs are used with this integration:
 
 #### access_history
 
-The `access_history` data stream provides object and column access events from `SNOWFLAKE.ACCOUNT_USAGE.ACCESS_HISTORY`. Nested object lists are decoded from the view's JSON columns and kept as flattened fields. Object names are also extracted into keyword arrays for aggregation.
+The `access_history` data stream provides object and column access events from `SNOWFLAKE.ACCOUNT_USAGE.ACCESS_HISTORY`. Nested object lists are decoded from the view's JSON columns and kept as flattened fields. Object names and column names (which vary per query) are also extracted into keyword arrays for aggregation.
 
 ##### access_history fields
 

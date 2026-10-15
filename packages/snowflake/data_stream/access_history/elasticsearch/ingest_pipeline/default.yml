@@ -291,17 +291,23 @@ processors:
       tag: lowercase_event_action
       ignore_missing: true
 
-  # Convenience keyword arrays of objectName values for aggregations.
+  # Convenience keyword arrays of objectName and columnName values for aggregations.
   - script:
-      tag: script_extract_object_names
+      tag: script_extract_object_and_column_names
       lang: painless
-      description: Collect objectName values from the accessed and modified object arrays into keyword arrays so dashboards can aggregate without flattened-field limitations.
+      description: Collect objectName and columnName values from the accessed and modified object arrays into keyword arrays so dashboards can aggregate without flattened-field limitations. Column names vary per query.
       if: ctx.snowflake?.access_history != null
       params:
         sources:
-          direct_objects_accessed: direct_objects_accessed_names
-          base_objects_accessed: base_objects_accessed_names
-          objects_modified: objects_modified_names
+          direct_objects_accessed:
+            names: direct_objects_accessed_names
+            columns: direct_objects_accessed_columns
+          base_objects_accessed:
+            names: base_objects_accessed_names
+            columns: base_objects_accessed_columns
+          objects_modified:
+            names: objects_modified_names
+            columns: objects_modified_columns
         truncation_sentinels:
           - TRUNCATED
       source: |-
@@ -312,14 +318,29 @@ processors:
             continue;
           }
           def names = new ArrayList();
+          def columns = new ArrayList();
           for (def obj : objs) {
-            if (obj instanceof Map && obj.objectName instanceof String
+            if (!(obj instanceof Map)) {
+              continue;
+            }
+            if (obj.objectName instanceof String
                 && !params.truncation_sentinels.contains(obj.objectName) && !names.contains(obj.objectName)) {
               names.add(obj.objectName);
             }
+            if (obj.columns instanceof List) {
+              for (def col : obj.columns) {
+                if (col instanceof Map && col.columnName instanceof String
+                    && !params.truncation_sentinels.contains(col.columnName) && !columns.contains(col.columnName)) {
+                  columns.add(col.columnName);
+                }
+              }
+            }
           }
           if (!names.isEmpty()) {
-            ah[entry.getValue()] = names;
+            ah[entry.getValue().names] = names;
+          }
+          if (!columns.isEmpty()) {
+            ah[entry.getValue().columns] = columns;
           }
         }
 

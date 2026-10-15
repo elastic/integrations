@@ -136,7 +136,7 @@ These APIs are used with this integration:
 
 #### access_history
 
-The `access_history` data stream provides object and column access events from `SNOWFLAKE.ACCOUNT_USAGE.ACCESS_HISTORY`. Nested object lists are decoded from the view's JSON columns and kept as flattened fields. Object names are also extracted into keyword arrays for aggregation.
+The `access_history` data stream provides object and column access events from `SNOWFLAKE.ACCOUNT_USAGE.ACCESS_HISTORY`. Nested object lists are decoded from the view's JSON columns and kept as flattened fields. Object names and column names (which vary per query) are also extracted into keyword arrays for aggregation.
 
 ##### access_history fields
 
@@ -156,8 +156,10 @@ The `access_history` data stream provides object and column access events from `
 | snowflake.access_history.additional_properties | Operational metadata for the source of the event. Decoded from the ADDITIONAL_PROPERTIES VARIANT. | flattened |
 | snowflake.access_history.agents_info | Ordered list of invoking agents, from the nearest agent to the top-level agent (agentType, agentId, agentName). Decoded from the AGENTS_INFO JSON array. | flattened |
 | snowflake.access_history.base_objects_accessed | All base data objects required to run the query. Decoded from the BASE_OBJECTS_ACCESSED JSON array. | flattened |
+| snowflake.access_history.base_objects_accessed_columns | Distinct columnName values extracted from base_objects_accessed. Column names vary per query. | keyword |
 | snowflake.access_history.base_objects_accessed_names | Fully qualified objectName values extracted from base_objects_accessed. | keyword |
 | snowflake.access_history.direct_objects_accessed | Data objects (tables, views, columns, stages, UDFs, stored procedures) directly named in the query. Decoded from the DIRECT_OBJECTS_ACCESSED JSON array. | flattened |
+| snowflake.access_history.direct_objects_accessed_columns | Distinct columnName values extracted from direct_objects_accessed. Column names vary per query. | keyword |
 | snowflake.access_history.direct_objects_accessed_names | Fully qualified objectName values extracted from direct_objects_accessed. | keyword |
 | snowflake.access_history.invoker_identity | Snowflake service that directly accessed the object. Deprecated by Snowflake (removed in the 2026_07 bundle). Decoded from the INVOKER_IDENTITY VARIANT. | flattened |
 | snowflake.access_history.object_modified_by_ddl.object_domain | Type of the object defined or modified by the DDL operation. | keyword |
@@ -166,6 +168,7 @@ The `access_history` data stream provides object and column access events from `
 | snowflake.access_history.object_modified_by_ddl.operation_type | SQL keyword for the DDL operation, for example ALTER, CREATE, DROP, GRANT, or REVOKE. | keyword |
 | snowflake.access_history.object_modified_by_ddl.properties | Object or column properties set by the DDL operation (atomic and compound properties). | flattened |
 | snowflake.access_history.objects_modified | Objects associated with a write operation in the query, including column lineage (directSources/baseSources). Decoded from the OBJECTS_MODIFIED JSON array. | flattened |
+| snowflake.access_history.objects_modified_columns | Distinct columnName values extracted from objects_modified. Column names vary per query. | keyword |
 | snowflake.access_history.objects_modified_names | Fully qualified objectName values extracted from objects_modified. | keyword |
 | snowflake.access_history.parent_query_id | Query ID of the parent job, or absent if the job has no parent. | keyword |
 | snowflake.access_history.policies_referenced | Masking and row access policies enforced on the accessed objects and columns. Decoded from the POLICIES_REFERENCED JSON array. | flattened |
@@ -246,6 +249,10 @@ An example event for `access_history` looks as following:
                     "objectName": "EXAMPLE_DB.PUBLIC.ORDERS"
                 }
             ],
+            "base_objects_accessed_columns": [
+                "CONTENT",
+                "CREATED_AT"
+            ],
             "base_objects_accessed_names": [
                 "EXAMPLE_DB.PUBLIC.ORDERS"
             ],
@@ -272,6 +279,10 @@ An example event for `access_history` looks as following:
                     "objectId": 66564,
                     "objectName": "EXAMPLE_DB.PUBLIC.ORDERS"
                 }
+            ],
+            "direct_objects_accessed_columns": [
+                "CONTENT",
+                "CREATED_AT"
             ],
             "direct_objects_accessed_names": [
                 "EXAMPLE_DB.FUNCTIONS.RETURN_SUM",

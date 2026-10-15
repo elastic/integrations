@@ -95,7 +95,7 @@ program: |-
         }
       ).do_request().as(resp,
         (resp.StatusCode == 202) ?
-          try(resp.Body.decode_json()).as(body,
+          resp.Body.decode_json().as(body,
             (is_error(body) || string(body.?statementHandle.orValue("")) == "") ?
               {
                 "events": {
@@ -119,7 +119,7 @@ program: |-
               }
           )
         : (resp.StatusCode == 200) ?
-          try(resp.Body.decode_json()).as(body,
+          resp.Body.decode_json().as(body,
             is_error(body) ?
               {
                 "events": {
@@ -144,9 +144,9 @@ program: |-
                   int(state.?cursor.partition_count.orValue(0)),
                 "handle": string(body.?statementHandle.orValue(state.?cursor.handle.orValue(""))),
               }.as(result,
-                result.rows.map(row, result.names.zip(row)).map(record,
-                  (record.?QUERY_START_TIME.orValue(null) == null) ? "" : string(record.QUERY_START_TIME)
-                ).filter(timestamp, timestamp != "").as(row_timestamps,
+                result.rows.map(row, result.names.zip(row)).map(record, record.?QUERY_START_TIME.orValue(null) != null,
+                  string(record.QUERY_START_TIME)
+                ).as(row_timestamps,
                   {
                     "events": (size(result.rows) > 0) ?
                       dyn(result.rows.map(row, {"message": result.names.zip(row).encode_json()}))
@@ -186,38 +186,24 @@ program: |-
           )
         :
           {
-            "events": (resp.StatusCode == 429 || resp.StatusCode >= 500) ?
-              dyn(
-                {
-                  "error": {
-                    "code": string(resp.StatusCode),
-                    "id": resp.Status,
-                    "message": req.http_method + " " + req.request_url + ": " + (
-                      (size(resp.Body) != 0) ?
-                        string(resp.Body)
-                      :
-                        resp.Status + " (" + string(resp.StatusCode) + ")"
-                    ),
-                  },
-                }
+            "events": (
+              {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": resp.Status,
+                  "message": req.http_method + " " + req.request_url + ": " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      resp.Status + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              }.as(err, (resp.StatusCode == 429 || resp.StatusCode >= 500) ?
+                dyn(err)
+              :
+                dyn([err])
               )
-            :
-              dyn(
-                [
-                  {
-                    "error": {
-                      "code": string(resp.StatusCode),
-                      "id": resp.Status,
-                      "message": req.http_method + " " + req.request_url + ": " + (
-                        (size(resp.Body) != 0) ?
-                          string(resp.Body)
-                        :
-                          resp.Status + " (" + string(resp.StatusCode) + ")"
-                      ),
-                    },
-                  },
-                ]
-              ),
+            ),
             "want_more": false,
           }
       )
