@@ -230,7 +230,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | entity.id | Generic entity identifier for principals that don't fit into specific categories (user, service, host). Used as a fallback for unknown or miscellaneous entity types like GitHub repo references. | keyword |
-| entity.target.id | Generic entity identifier for targets, as the full resource name (`//\<service\>/\<resourceName\>`) used by Cloud Asset Inventory. Instance targets are carried in `host.target.id` instead when the instance ID is known. | keyword |
+| entity.target.id | Generic entity identifier for targets. For concrete resources that Cloud Asset Inventory collects (Compute Engine resources, Resource Manager projects, organizations and folders, and Cloud Storage buckets), it is the full resource name (`//\<service\>/\<resourceName\>`) the inventory uses. Instance targets are carried in `host.target.id` instead when the instance ID is known. Other targets keep the resource name from the audit log. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | gcp.audit.access.caller_ip_geo.region_code |  | keyword |
