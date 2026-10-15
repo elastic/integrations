@@ -66,9 +66,22 @@ These values are:
 4. Add all the required integration configuration parameters, including the Client ID, Client Secret, Tenant ID to enable data collection.
 5. Select "Save and continue" to save the integration.
 
-### Data Retention and ILM Configuration
+### Data retention
 
-For `vulnerability` data stream, a full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we have set up an Index Lifecycle Management (ILM) policy that automatically deletes `vulnerability` data older than 7 days. This helps keep storage usage under control.
+The `vulnerability` data stream collects vulnerability change events from the `SoftwareVulnerabilityChangesByMachine` delta API, resuming from a saved `sinceTime` cursor. Every change to a vulnerability on a machine is a new document, so the source stream grows with change volume rather than with the size of the estate, and the `latest_cdr_vuln` transform maintains the current state of each vulnerability. The other data streams collect incrementally and follow the default lifecycle for their destination indices.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-microsoft_defender_endpoint.vulnerability-*` | `logs-microsoft_defender_endpoint.vulnerability-default_policy`: roll over after 7d, delete 7d after rollover | delete 7d after rollover |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-microsoft_defender_endpoint.vulnerability-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
 
 > **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index: `delete`, `delete_index`
 
