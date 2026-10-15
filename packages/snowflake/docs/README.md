@@ -361,7 +361,6 @@ An example event for `sessions` looks as following:
         "reason": "LOGOUT",
         "start": "2020-06-15T07:50:00.000Z",
         "type": [
-            "start",
             "end"
         ]
     },
@@ -456,6 +455,7 @@ An example event for `grants_to_users` looks as following:
         "version": "8.19.3"
     },
     "event": {
+        "action": "role_granted",
         "agent_id_status": "verified",
         "category": [
             "iam"
@@ -495,11 +495,11 @@ An example event for `grants_to_users` looks as following:
         "snowflake-grants_to_users"
     ],
     "user": {
-        "roles": [
-            "SYSADMIN"
-        ],
         "target": {
-            "name": "alice.johnson"
+            "name": "alice.johnson",
+            "roles": [
+                "SYSADMIN"
+            ]
         }
     }
 }

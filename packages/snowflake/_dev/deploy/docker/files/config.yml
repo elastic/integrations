@@ -1,4 +1,23 @@
 rules:
+  # login_history statement failure. Matched only by the batch_size 3 system test.
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      async: "true"
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: '/.*LOGIN_HISTORY.*LIMIT 3".*/'
+    responses:
+      - status_code: 422
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"code":"002003","sqlState":"02000","message":"SQL compilation error: Object 'SNOWFLAKE.ACCOUNT_USAGE.LOGIN_HISTORY' does not exist or not authorized.","statementHandle":"019c06a4-0000-df4f-0000-0010000659ff"}
   # Keyset continuation coverage for the batch_size 2 system tests.
   # These rules are ahead of the LIMIT 10000 rules used by test-default-config.yml.
   # login_history continuation: empty keyset after the watermark moves to 13:00. A second request means continue stayed true.

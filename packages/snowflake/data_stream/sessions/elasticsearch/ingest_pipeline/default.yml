@@ -29,6 +29,16 @@ processors:
       target_field: json
       tag: parse_json
 
+  - fingerprint:
+      tag: fingerprint_document_id
+      fields:
+        - json.SESSION_ID
+        - json.ACCESS_TIME
+        - json.IS_OPEN
+        - json.CLOSED_REASON
+      target_field: _id
+      ignore_missing: true
+
   - date:
       field: json.ACCESS_TIME
       target_field: '@timestamp'
@@ -156,9 +166,10 @@ processors:
       allow_duplicates: false
   - append:
       field: event.type
-      tag: append_event_type_start
-      value: start
+      tag: append_event_type_info
+      value: info
       allow_duplicates: false
+      if: ctx.snowflake?.sessions?.is_open != false
   - append:
       field: event.type
       tag: append_event_type_end

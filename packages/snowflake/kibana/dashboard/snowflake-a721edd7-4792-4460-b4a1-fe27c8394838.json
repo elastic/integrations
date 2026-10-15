@@ -587,118 +587,71 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-224c9be1-448d-4cb0-b079-a6dd0cfefa67",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "snowflake-sessions-open-esql": {
+                                    "id": "snowflake-sessions-open-esql",
+                                    "title": "logs-snowflake.sessions-*",
+                                    "timeFieldName": "@timestamp",
+                                    "sourceFilters": [],
+                                    "type": "esql",
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {},
+                                    "allowNoIndex": false,
+                                    "name": "logs-snowflake.sessions-*",
+                                    "allowHidden": false,
+                                    "managed": false
+                                }
+                            },
                             "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "logs-*",
-                                    "layers": {
-                                        "224c9be1-448d-4cb0-b079-a6dd0cfefa67": {
-                                            "columnOrder": [
-                                                "61480d2c-33da-4f7e-afa5-d79dd297847b"
-                                            ],
-                                            "columns": {
-                                                "61480d2c-33da-4f7e-afa5-d79dd297847b": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Open Sessions",
-                                                    "operationType": "unique_count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "snowflake.sessions.session_id"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "currentIndexPatternId": "logs-*",
-                                    "layers": {}
-                                },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "logs-*",
+                                            "id": "snowflake-sessions-open-esql",
                                             "timeField": "@timestamp",
-                                            "title": "logs-*"
+                                            "title": "logs-snowflake.sessions-*"
                                         }
                                     ],
-                                    "layers": {}
+                                    "layers": {
+                                        "224c9be1-448d-4cb0-b079-a6dd0cfefa67": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "open_sessions",
+                                                    "customLabel": true,
+                                                    "fieldName": "open_sessions",
+                                                    "label": "Open Sessions",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "index": "snowflake-sessions-open-esql",
+                                            "query": {
+                                                "esql": "FROM logs-snowflake.sessions-*\n| EVAL closed = CASE(snowflake.sessions.is_open == false, 1, 0)\n| STATS ever_closed = MAX(closed) BY snowflake.sessions.session_id\n| WHERE ever_closed == 0\n| STATS open_sessions = COUNT(*)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "data_stream.dataset",
-                                        "index": "19aa74bc-3d73-45ce-8c1c-b7cb3dd48a0a",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "snowflake.sessions"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "snowflake.sessions"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "snowflake.sessions.is_open",
-                                        "index": "f357c6e6-a656-40c9-9213-71db9ea17756",
-                                        "key": "snowflake.sessions.is_open",
-                                        "negate": false,
-                                        "params": {
-                                            "query": true
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "snowflake.sessions.is_open": true
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
-                                "language": "kuery",
-                                "query": ""
+                                "esql": "FROM logs-snowflake.sessions-*\n| EVAL closed = CASE(snowflake.sessions.is_open == false, 1, 0)\n| STATS ever_closed = MAX(closed) BY snowflake.sessions.session_id\n| WHERE ever_closed == 0\n| STATS open_sessions = COUNT(*)"
                             },
                             "visualization": {
                                 "color": "#6092C0",
                                 "layerId": "224c9be1-448d-4cb0-b079-a6dd0cfefa67",
                                 "layerType": "data",
-                                "metricAccessor": "61480d2c-33da-4f7e-afa5-d79dd297847b",
+                                "metricAccessor": "open_sessions",
                                 "secondaryTrend": {
                                     "type": "none"
                                 }
-                            }
+                            },
+                            "needsRefresh": false
                         },
                         "title": "",
                         "type": "lens",
@@ -709,52 +662,7 @@
                             "events": []
                         }
                     },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "data_stream.dataset",
-                                "index": "19aa74bc-3d73-45ce-8c1c-b7cb3dd48a0a",
-                                "key": "data_stream.dataset",
-                                "negate": false,
-                                "params": {
-                                    "query": "snowflake.sessions"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "data_stream.dataset": "snowflake.sessions"
-                                }
-                            }
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "snowflake.sessions.is_open",
-                                "index": "f357c6e6-a656-40c9-9213-71db9ea17756",
-                                "key": "snowflake.sessions.is_open",
-                                "negate": false,
-                                "params": {
-                                    "query": true
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "snowflake.sessions.is_open": true
-                                }
-                            }
-                        }
-                    ],
+                    "filters": [],
                     "hidePanelTitles": true,
                     "query": {
                         "language": "kuery",
@@ -1123,114 +1031,80 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-4ce4bd5f-10c7-44c3-bafc-42c5534957bb",
-                                "type": "index-pattern"
-                            }
-                        ],
+                        "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "snowflake-login-activity-esql": {
+                                    "id": "snowflake-login-activity-esql",
+                                    "title": "logs-snowflake.login_history-*",
+                                    "timeFieldName": "@timestamp",
+                                    "sourceFilters": [],
+                                    "type": "esql",
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {},
+                                    "allowNoIndex": false,
+                                    "name": "logs-snowflake.login_history-*",
+                                    "allowHidden": false,
+                                    "managed": false
+                                }
+                            },
                             "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "logs-*",
-                                    "layers": {
-                                        "4ce4bd5f-10c7-44c3-bafc-42c5534957bb": {
-                                            "columnOrder": [
-                                                "d37d5e30-385d-4b6a-b0f0-c8aba1ba5cac",
-                                                "675156cc-580f-4944-9071-dda0e9732342",
-                                                "cd341cde-946a-4fea-a9d2-789c7589c575"
-                                            ],
-                                            "columns": {
-                                                "675156cc-580f-4944-9071-dda0e9732342": {
-                                                    "customLabel": true,
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "Count",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": false,
-                                                        "interval": "6h"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "cd341cde-946a-4fea-a9d2-789c7589c575": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count of records",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "sourceField": "___records___"
-                                                },
-                                                "d37d5e30-385d-4b6a-b0f0-c8aba1ba5cac": {
-                                                    "customLabel": true,
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "Count",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": false,
-                                                        "interval": "d"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "currentIndexPatternId": "logs-*",
-                                    "layers": {}
-                                },
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "logs-*",
+                                            "id": "snowflake-login-activity-esql",
                                             "timeField": "@timestamp",
-                                            "title": "logs-*"
+                                            "title": "logs-snowflake.login_history-*"
                                         }
                                     ],
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "data_stream.dataset",
-                                        "index": "ebe49760-0bca-4423-9566-f4481bda8d3f",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "snowflake.login_history"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "snowflake.login_history"
+                                    "layers": {
+                                        "4ce4bd5f-10c7-44c3-bafc-42c5534957bb": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "day_of_week",
+                                                    "customLabel": true,
+                                                    "fieldName": "day_of_week",
+                                                    "label": "Day of week",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "hour_of_day",
+                                                    "customLabel": true,
+                                                    "fieldName": "hour_of_day",
+                                                    "label": "Hour",
+                                                    "meta": {
+                                                        "esType": "integer",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "logins",
+                                                    "customLabel": true,
+                                                    "fieldName": "logins",
+                                                    "label": "Logins",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "index": "snowflake-login-activity-esql",
+                                            "query": {
+                                                "esql": "FROM logs-snowflake.login_history-*\n| EVAL day_of_week = CONCAT(DATE_FORMAT(\"e\", @timestamp), \" \", DATE_FORMAT(\"EEE\", @timestamp)),\n       hour_of_day = DATE_EXTRACT(\"hour_of_day\", @timestamp)\n| STATS logins = COUNT(*) BY day_of_week, hour_of_day"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
-                            ],
+                            },
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
-                                "language": "kuery",
-                                "query": ""
+                                "esql": "FROM logs-snowflake.login_history-*\n| EVAL day_of_week = CONCAT(DATE_FORMAT(\"e\", @timestamp), \" \", DATE_FORMAT(\"EEE\", @timestamp)),\n       hour_of_day = DATE_EXTRACT(\"hour_of_day\", @timestamp)\n| STATS logins = COUNT(*) BY day_of_week, hour_of_day"
                             },
                             "visualization": {
                                 "gridConfig": {
@@ -1238,11 +1112,11 @@
                                     "isVisible": true,
                                     "isXAxisLabelVisible": true,
                                     "isXAxisTitleVisible": true,
-                                    "isYAxisLabelVisible": false,
+                                    "isYAxisLabelVisible": true,
                                     "isYAxisTitleVisible": true,
                                     "xAxisLabelRotation": -45,
-                                    "xTitle": "Weeks",
-                                    "yTitle": "Hours"
+                                    "xTitle": "Day of week",
+                                    "yTitle": "Hour"
                                 },
                                 "layerId": "4ce4bd5f-10c7-44c3-bafc-42c5534957bb",
                                 "layerType": "data",
@@ -1253,10 +1127,11 @@
                                     "shouldTruncate": false,
                                     "type": "heatmap_legend"
                                 },
-                                "valueAccessor": "cd341cde-946a-4fea-a9d2-789c7589c575",
-                                "xAccessor": "d37d5e30-385d-4b6a-b0f0-c8aba1ba5cac",
-                                "yAccessor": "675156cc-580f-4944-9071-dda0e9732342"
-                            }
+                                "valueAccessor": "logins",
+                                "xAccessor": "day_of_week",
+                                "yAccessor": "hour_of_day"
+                            },
+                            "needsRefresh": false
                         },
                         "title": "",
                         "type": "lens",
@@ -1267,30 +1142,7 @@
                             "events": []
                         }
                     },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "data_stream.dataset",
-                                "index": "ebe49760-0bca-4423-9566-f4481bda8d3f",
-                                "key": "data_stream.dataset",
-                                "negate": false,
-                                "params": {
-                                    "query": "snowflake.login_history"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "data_stream.dataset": "snowflake.login_history"
-                                }
-                            }
-                        }
-                    ],
+                    "filters": [],
                     "query": {
                         "language": "kuery",
                         "query": ""
@@ -1341,11 +1193,6 @@
         },
         {
             "id": "logs-*",
-            "name": "4d2dc195-5af3-4fc1-adb8-20a1bdaa6e06:indexpattern-datasource-layer-224c9be1-448d-4cb0-b079-a6dd0cfefa67",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "d65a136d-ce7a-461a-85f3-28229a0ffc4d:indexpattern-datasource-layer-dc56ae15-086e-4e5c-9ea9-cb97dd785f68",
             "type": "index-pattern"
         },
@@ -1357,11 +1204,6 @@
         {
             "id": "logs-*",
             "name": "7f3a3428-abe2-4e33-916f-10abde59b3fe:75f0de41-e79c-409b-9e4f-526302000ca1",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "2ebccdc4-681d-424f-a9a6-b736d46df26c:indexpattern-datasource-layer-4ce4bd5f-10c7-44c3-bafc-42c5534957bb",
             "type": "index-pattern"
         },
         {

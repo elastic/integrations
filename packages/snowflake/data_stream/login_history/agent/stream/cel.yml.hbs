@@ -113,6 +113,7 @@ program: |-
                   },
                 "parameters": {
                   "TIMESTAMP_LTZ_OUTPUT_FORMAT": "YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM",
+                  "TIMEZONE": "UTC",
                 },
               }.encode_json()
             )
@@ -120,7 +121,7 @@ program: |-
             optional.none(),
         }
       ).do_request().as(resp,
-        (resp.StatusCode == 202) ?
+        (resp.StatusCode == 202 || (resp.StatusCode == 429 && req.http_method == "GET")) ?
           try(resp.Body.decode_json()).as(body,
             (is_error(body) || string(body.?statementHandle.orValue("")) == "") ?
               {
@@ -128,7 +129,7 @@ program: |-
                   "error": {
                     "code": string(resp.StatusCode),
                     "id": resp.Status,
-                    "message": req.http_method + " " + req.request_url + ": HTTP 202 without statementHandle",
+                    "message": req.http_method + " " + req.request_url + ": HTTP " + string(resp.StatusCode) + " without statementHandle",
                   },
                 },
                 "want_more": false,

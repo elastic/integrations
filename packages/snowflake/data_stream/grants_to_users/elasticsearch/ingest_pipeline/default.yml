@@ -29,6 +29,16 @@ processors:
       target_field: json
       tag: parse_json
 
+  - fingerprint:
+      tag: fingerprint_document_id
+      fields:
+        - json.ROLE
+        - json.GRANTEE_NAME
+        - json.CREATED_ON
+        - json.DELETED_ON
+      target_field: _id
+      ignore_missing: true
+
   - date:
       field: json.CREATED_ON
       target_field: event.start
@@ -91,10 +101,21 @@ processors:
       ignore_missing: true
       tag: rename_grantee_name
   - append:
-      field: user.roles
-      tag: append_role_to_user_roles
+      field: user.target.roles
+      tag: append_role_to_user_target_roles
       value: '{{{json.ROLE}}}'
       allow_duplicates: false
+      if: ctx.json?.ROLE != null
+  - set:
+      field: event.action
+      tag: set_event_action_role_revoked
+      value: role_revoked
+      if: ctx.json?.DELETED_ON != null
+  - set:
+      field: event.action
+      tag: set_event_action_role_granted
+      value: role_granted
+      override: false
   - rename:
       field: json.GRANTED_BY
       target_field: snowflake.grants_to_users.granted_by
