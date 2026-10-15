@@ -29,9 +29,8 @@ Last reviewed 2026-10-14; update these facts here when they change.
   stream installed in `logsdb_columnar` mode: those need no package change.
 - **Objects inside `nested` fields** are split off their element on columnar (9.5.4, 9.6
   snapshots up to 2026-10-01): an Elasticsearch bug, re-check on newer builds.
-- **Open team decisions** the skill follows a default for: the `breaking-change`
-  changelog type for the Kibana floor (repo precedent); OTel and input packages out of
-  scope.
+- **Open team decisions** the skill follows a default for: OTel and input packages out
+  of scope.
 
 ## What logsdb_columnar is
 
@@ -94,9 +93,10 @@ In the root `manifest.yml`:
 - `logsdb_columnar: unsupported` on every stream that stays on LogsDB: OTel-input
   streams, and streams that steps 2 or 3 leave blocked. A manifest has one
   `elasticsearch:` key: merge, never paste a second one (YAML keeps only one).
-- Changelog, breaking entry first, with placeholder links: `breaking-change` "Raise the
-  minimum required Kibana version to 9.6.0 …", `enhancement` "Declare LogsDB columnar
-  support (logsdb_columnar opt_in) …", plus one for any pipeline change.
+- Changelog: one `enhancement` entry with a placeholder link, for example "Add opt-in
+  LogsDB columnar support, which requires Kibana 9.6.0." Name the index sort in the same
+  entry when step 4 adds one. The major bump stays, to keep the old major free for
+  backports, but the entry is not `breaking-change`.
 
 ### 2. Run `elastic-package check` and fix every columnar finding
 
