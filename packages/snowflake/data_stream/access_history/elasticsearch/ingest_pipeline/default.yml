@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: '9.3.0'
+      value: '9.5.0'
   - remove:
       field:
         - organization
@@ -350,6 +350,35 @@ processors:
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
+  - script:
+      tag: script_related_user_from_user_stages
+      lang: painless
+      description: When stageKind is User, objectName is the owning user; add it to related.user.
+      if: ctx.snowflake?.access_history != null
+      params:
+        sources:
+          - direct_objects_accessed
+          - base_objects_accessed
+          - objects_modified
+      source: |-
+        def users = ctx.related?.user instanceof List ? ctx.related.user : new ArrayList();
+        for (def src : params.sources) {
+          def objs = ctx.snowflake.access_history[src];
+          if (!(objs instanceof List)) {
+            continue;
+          }
+          for (def obj : objs) {
+            if (obj instanceof Map && obj.stageKind instanceof String
+                && obj.stageKind.equalsIgnoreCase('User') && obj.objectName instanceof String
+                && !users.contains(obj.objectName)) {
+              users.add(obj.objectName);
+            }
+          }
+        }
+        if (!users.isEmpty()) {
+          ctx.related = ctx.related ?: [:];
+          ctx.related.user = users;
+        }
 
   - set:
       field: event.kind

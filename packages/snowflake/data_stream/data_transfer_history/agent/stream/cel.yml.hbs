@@ -50,15 +50,19 @@ program: |-
       )
     :
       state.url.trim_right("/") + "/api/v2/statements?" + {
-        "async": ["true"],
         "requestId": [uuid()],
       }.format_query(),
     "since": (
       (state.?cursor.last_timestamp.orValue("") != "") ?
-        (string(state.cursor.last_timestamp).parse_time("2006-01-02 15:04:05.000 Z0700") - duration(state.lag_time))
+        (
+          state.?cursor.catching_up.orValue(false) ?
+            string(state.cursor.last_timestamp)
+          :
+            (string(state.cursor.last_timestamp).parse_time("2006-01-02 15:04:05.000 Z0700") - duration(state.lag_time)).format("2006-01-02 15:04:05.000 -0700")
+        )
       :
-        now - duration(state.initial_interval)
-    ).format("2006-01-02 15:04:05.000 -0700"),
+        (now - duration(state.initial_interval)).format("2006-01-02 15:04:05.000 -0700")
+    ),
   }.as(req,
     state.with(
       request(
@@ -143,6 +147,10 @@ program: |-
                 :
                   int(state.?cursor.partition_count.orValue(0)),
                 "handle": string(body.?statementHandle.orValue(state.?cursor.handle.orValue(""))),
+                "filled_batch": (size(body.?resultSetMetaData.rowType.orValue([])) > 0) ?
+                  int(body.resultSetMetaData.?numRows.orValue(0)) >= int(state.batch_size)
+                :
+                  state.?cursor.filled_batch.orValue(false),
               }.as(result,
                 result.rows.map(row, result.names.zip(row)).map(record, record.?START_TIME.orValue(null) != null,
                   string(record.START_TIME)
@@ -175,11 +183,14 @@ program: |-
                           "next_partition": int(state.?cursor.next_partition.orValue(0)) + 1,
                           "row_type": result.names,
                           "partition_count": result.partition_count,
+                          "filled_batch": result.filled_batch,
                         }
                       :
-                        {}
+                        {
+                          "catching_up": result.filled_batch,
+                        }
                     ),
-                    "want_more": int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count,
+                    "want_more": int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count || result.filled_batch,
                   }
                 )
               )

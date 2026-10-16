@@ -11,7 +11,7 @@ This integration queries Snowflake `ACCOUNT_USAGE` historical views through SQL 
 
 ### How it works
 
-Elastic Agent submits SQL statements to `POST /api/v2/statements`, polls asynchronous statement handles, and pages result partitions. Each data stream queries one `ACCOUNT_USAGE` view and advances a timestamp watermark with lookback to cover view latency.
+Elastic Agent submits SQL statements to `POST /api/v2/statements` and pages result partitions. If Snowflake returns HTTP 202, the agent polls the statement handle until results are ready. Each data stream queries one `ACCOUNT_USAGE` view and advances a timestamp watermark with lookback to cover view latency. When a statement returns a full `batch_size` page, the next request continues from the watermark without the lag overlap until the backlog is drained.
 
 ## What data does this integration collect?
 
@@ -78,7 +78,7 @@ In Discover, filter on `event.dataset: snowflake.access_history`, `event.dataset
 - Authentication failures: Service users cannot use passwords. Provide a programmatic access token. The integration always sends `X-Snowflake-Authorization-Token-Type: PROGRAMMATIC_ACCESS_TOKEN`.
 - Network policy blocks the SQL API: Add the agent egress IP, or use a PrivateLink hostname from `SYSTEM$GET_PRIVATELINK_CONFIG()`.
 - HTTP 429 (`390505`): Reduce poll frequency. There is no documented `Retry-After` contract on the SQL API.
-- Duplicate rows: Each poll overlaps the previous watermark by the configured lag time so late-arriving rows are included. Documents use a fingerprint `_id`, so re-delivered rows overwrite rather than duplicate.
+- Duplicate rows: Each poll overlaps the previous watermark by the configured lag time so late-arriving rows are included. Documents use a fingerprint `_id`, so re-delivered rows are usually dropped as duplicates, never overwritten, and a few duplicates can appear across index rollovers.
 
 ## Performance and scaling
 

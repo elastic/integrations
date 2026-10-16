@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: '9.3.0'
+      value: '9.5.0'
   - remove:
       field:
         - organization
@@ -151,6 +151,21 @@ processors:
       ignore_failure: true
       tag: uri_parts_stage_url
       if: ctx.url?.original != null
+  - set:
+      field: cloud.provider
+      tag: set_cloud_provider_aws
+      value: aws
+      if: ctx.url?.scheme == 's3'
+  - set:
+      field: cloud.provider
+      tag: set_cloud_provider_azure
+      value: azure
+      if: ctx.url?.scheme == 'azure'
+  - set:
+      field: cloud.provider
+      tag: set_cloud_provider_gcp
+      value: gcp
+      if: ctx.url?.scheme == 'gcs'
 
   - rename:
       field: json.STAGE_ID
@@ -182,6 +197,12 @@ processors:
       target_field: snowflake.stages.stage_catalog
       ignore_missing: true
       tag: rename_stage_catalog
+  - set:
+      field: cloud.region
+      tag: set_cloud_region
+      copy_from: json.STAGE_REGION
+      ignore_empty_value: true
+      if: ctx.json?.STAGE_REGION instanceof String
   - rename:
       field: json.STAGE_REGION
       target_field: snowflake.stages.stage_region
@@ -197,11 +218,17 @@ processors:
       target_field: snowflake.stages.stage_owner
       ignore_missing: true
       tag: rename_stage_owner
+  - append:
+      field: related.user
+      tag: append_stage_owner_to_related
+      value: '{{{snowflake.stages.stage_owner}}}'
+      allow_duplicates: false
+      if: ctx.snowflake?.stages?.stage_owner != null
   - rename:
       field: json.COMMENT
-      target_field: snowflake.stages.comment
+      target_field: message
       ignore_missing: true
-      tag: rename_comment
+      tag: rename_comment_to_message
   - rename:
       field: json.OWNER_ROLE_TYPE
       target_field: snowflake.stages.owner_role_type

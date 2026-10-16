@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: '9.3.0'
+      value: '9.5.0'
   - remove:
       field:
         - organization
@@ -137,6 +137,18 @@ processors:
       target_field: snowflake.data_transfer_history.transfer_type
       ignore_missing: true
       tag: rename_transfer_type
+  - set:
+      field: cloud.origin.provider
+      tag: set_cloud_origin_provider
+      copy_from: json.SOURCE_CLOUD
+      ignore_empty_value: true
+      if: ctx.json?.SOURCE_CLOUD instanceof String
+  - set:
+      field: cloud.origin.region
+      tag: set_cloud_origin_region
+      copy_from: json.SOURCE_REGION
+      ignore_empty_value: true
+      if: ctx.json?.SOURCE_REGION instanceof String
   - rename:
       field: json.SOURCE_CLOUD
       target_field: snowflake.data_transfer_history.source_cloud
@@ -147,6 +159,18 @@ processors:
       target_field: snowflake.data_transfer_history.source_region
       ignore_missing: true
       tag: rename_source_region
+  - set:
+      field: cloud.target.provider
+      tag: set_cloud_target_provider
+      copy_from: json.TARGET_CLOUD
+      ignore_empty_value: true
+      if: ctx.json?.TARGET_CLOUD instanceof String
+  - set:
+      field: cloud.target.region
+      tag: set_cloud_target_region
+      copy_from: json.TARGET_REGION
+      ignore_empty_value: true
+      if: ctx.json?.TARGET_REGION instanceof String
   - rename:
       field: json.TARGET_CLOUD
       target_field: snowflake.data_transfer_history.target_cloud
