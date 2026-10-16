@@ -1,17 +1,101 @@
 ---
 description: Pipeline for parsing PFsense Squid logs.
 processors:
+  # OPNsense ships Squid access logs as ECS-JSON (logformat "opnsense"), not as
+  # classic Squid text. Decode those into a temporary field first, then map the
+  # values onto the same fields the grok branch produces, so both formats end up
+  # identical downstream.
+  #
+  # NOTE: never use add_to_root here. The OPNsense payload carries its own
+  # "event" object, which would overwrite event.provider and break the routing
+  # (and the drop processor) in the parent pipeline.
+  - json:
+      tag: json_opnsense_squid_ecs
+      field: message
+      target_field: _tmp.squid
+      if: "ctx.message != null && ctx.message.trim().startsWith('{')"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'failed to decode OPNsense Squid ECS-JSON: {{{ _ingest.on_failure_message }}}'
   - grok:
       tag: grok_message_55f0c6b7
       field: message
+      if: ctx._tmp?.squid == null
       patterns:
       - '%{IPORHOST:source.address} %{NOTSPACE:squid.request_status}/%{NUMBER:http.response.status_code:long} %{NUMBER:http.response.bytes:long} %{NOTSPACE:http.request.method} (?:%{URI:url.original}|(%{IPORHOST:url.domain}(?::%{DATA:url.port})?))?%{SPACE}%{NOTSPACE:http.request.referrer}%{SPACE}%{NOTSPACE:squid.hierarchy_status}/(?:%{IPORHOST:destination.address}|-)%{SPACE}%{NOTSPACE:http.response.mime_type}'
       ignore_missing: false
+  # --- map the decoded OPNsense values onto the shared field set ---
+  - rename:
+      tag: rename_opnsense_url_original
+      field: _tmp.squid.url.original
+      target_field: url.original
+      ignore_missing: true
+  - rename:
+      tag: rename_opnsense_http_method
+      field: _tmp.squid.http.request.method
+      target_field: http.request.method
+      ignore_missing: true
+  - rename:
+      tag: rename_opnsense_status_code
+      field: _tmp.squid.http.response.body.status_code
+      target_field: http.response.status_code
+      ignore_missing: true
+  - rename:
+      tag: rename_opnsense_response_bytes
+      field: _tmp.squid.http.response.bytes
+      target_field: http.response.bytes
+      ignore_missing: true
+  - rename:
+      tag: rename_opnsense_http_version
+      field: _tmp.squid.http.version
+      target_field: http.version
+      ignore_missing: true
+  - rename:
+      tag: rename_opnsense_request_status
+      field: _tmp.squid.labels.request_status
+      target_field: squid.request_status
+      ignore_missing: true
+  - rename:
+      tag: rename_opnsense_hierarchy_status
+      field: _tmp.squid.labels.hierarchy_status
+      target_field: squid.hierarchy_status
+      ignore_missing: true
+  # Squid writes "-" for the client address when it is unavailable.
+  - remove:
+      tag: remove_opnsense_empty_source
+      field: _tmp.squid.source.ip
+      if: ctx._tmp?.squid?.source?.ip == '-'
+      ignore_missing: true
+  - rename:
+      tag: rename_opnsense_source_ip
+      field: _tmp.squid.source.ip
+      target_field: source.address
+      ignore_missing: true
+  # OPNsense reports the client in host.hostname when source.ip is absent.
+  - set:
+      tag: set_opnsense_source_from_host
+      field: source.address
+      copy_from: _tmp.squid.host.hostname
+      if: "ctx.source?.address == null && ctx._tmp?.squid?.host?.hostname != null && ctx._tmp.squid.host.hostname != '-'"
+      ignore_empty_value: true
+  - remove:
+      tag: remove_tmp_squid
+      field: _tmp
+      ignore_missing: true
+  # --- shared: applies to both formats ---
   - uri_parts:
       tag: uri_parts_url_original_c5d45689
       field: url.original
       ignore_failure: true
       if: ctx.url?.original != null
+  - grok:
+      tag: grok_url_authority_connect
+      field: url.original
+      if: "ctx.url?.domain == null && ctx.url?.original != null && ctx.url.original.indexOf('://') == -1"
+      patterns:
+        - '^%{IPORHOST:url.domain}(?::%{NUMBER:url.port:long})?$'
+      ignore_failure: true
   - convert:
       tag: convert_url_port_537f953d
       field: url.port
