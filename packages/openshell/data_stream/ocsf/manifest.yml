@@ -1,0 +1,51 @@
+title: 'NVIDIA OpenShell OCSF events'
+type: logs
+streams:
+  - input: logfile
+    title: OpenShell OCSF events from log files
+    description: Read OCSF JSONL records written by the OpenShell sandbox supervisor or Windows MXC gateway.
+    enabled: true
+    template_path: logfile.yml.hbs
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        description: >-
+          Paths of the OCSF JSONL files. Linux sandbox supervisors write `/var/log/openshell-ocsf.YYYY-MM-DD.log` inside the sandbox; mount that directory into the Elastic Agent container or host. Windows MXC gateways write to `%PROGRAMDATA%\OpenShell\logs` or `OPENSHELL_OCSF_LOG_DIR`.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/log/openshell-ocsf.*.log
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - openshell-ocsf
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: preserve_duplicate_custom_fields
+        type: bool
+        title: Preserve duplicate custom fields
+        description: Preserve `openshell.ocsf.*` fields that were copied to Elastic Common Schema (ECS) fields.
+        multi: false
+        required: true
+        show_user: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        multi: false
+        required: false
+        show_user: false
