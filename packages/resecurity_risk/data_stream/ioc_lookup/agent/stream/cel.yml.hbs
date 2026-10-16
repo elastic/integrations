@@ -1,0 +1,95 @@
+config_version: 2
+interval: {{interval}}
+resource:
+  url: {{url}}
+  retry:
+    max_attempts: 3
+    wait_min: 1s
+    wait_max: 60s
+  tracer:
+    enabled: {{enable_request_tracer}}
+    filename: "../../logs/cel/http-request-trace-*.ndjson"
+    maxbackups: 5
+{{#if http_client_timeout}}
+  timeout: {{http_client_timeout}}
+{{/if}}
+{{#if proxy_url}}
+  proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+  ssl: {{ssl}}
+{{/if}}
+redact:
+  fields:
+    - api_key
+state:
+  api_key: {{api_key}}
+  hashes:
+{{#each hashes as |hash|}}
+    - {{hash}}
+{{/each}}
+program: |
+  state.with(
+    state.hashes.map(h,
+      request(
+        "GET",
+        state.url.trim_right("/") + "/ioc/search-by-hash?" + {"hash": [string(h)]}.format_query()
+      ).with(
+        {
+          "Header": {
+            "Accept": ["application/json"],
+            "Authorization": ["Basic " + state.api_key.base64()],
+          },
+        }
+      ).do_request().as(resp,
+        resp.StatusCode == 200 ?
+          {
+            "message": resp.Body.decode_json().with(
+              {
+                "hash_query": string(h),
+                "found": true,
+              }
+            ).encode_json(),
+          }
+        : resp.StatusCode == 404 ?
+          {
+            "message": {
+              "hash_query": string(h),
+              "found": false,
+            }.encode_json(),
+          }
+        :
+          {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET " + state.url.trim_right("/") + "/ioc/search-by-hash: " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status)
+              ),
+            },
+          }
+      )
+    ).as(events,
+      {
+        "events": events,
+        "want_more": false,
+      }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
