@@ -1,5 +1,6 @@
 title: "Threat Feed Spam"
 type: logs
+ilm_policy: logs-ti_whoisfreaks.threat_feed_spam-default_policy
 streams:
   - input: cel
     title: "Spam Domain Feed"
@@ -7,16 +8,16 @@ streams:
       The Spam Domain Feed delivers a daily CSV file of domains sending unsolicited bulk email or feeding spam link networks. Verified spam seed domains are expanded through shared infrastructure pivots to reveal the wider sending networks behind each campaign, giving mail filters far more coverage than a single reported domain. Feeding the list into mail filters blocks unwanted messages surfaced through shared sending infrastructure.
     template_path: cel.yml.hbs
     vars:
-      - name: resource_url
+      - name: url
         type: text
-        title: "Resource URL"
+        title: "URL"
         description: URL of the WhoisFreaks spam threat feed endpoint.
         required: true
         show_user: false
         default: https://files.whoisfreaks.com/v3.4/stream/threat-feed/spam
-      - name: resource_interval
+      - name: interval
         type: text
-        title: "Resource Interval"
+        title: "Interval"
         description: |-
           WhoisFreaks threat feeds are published as daily CSV snapshots. Re-fetching
           them every hour creates unnecessary API load and quota waste. The
@@ -29,7 +30,7 @@ streams:
         type: integer
         title: "Page Size"
         description: |-
-          Number of records requested per page (the `page_limit` sent to the feed
+          Number of records requested per page (the `limit` query parameter sent to the feed
           endpoint). The feed is paged with a dynamic `offset` until a page comes
           back short, so this only controls memory and request count per poll, not
           how much data is ingested. Larger pages mean fewer requests but more
@@ -37,11 +38,55 @@ streams:
         required: true
         show_user: true
         default: 5000
-      - name: resource_timeout
+      - name: ioc_expiration_duration
         type: text
-        title: "Resource Timeout"
-        description: |-
-          The maximum time to wait for a response from the spam feed endpoint.
-        required: false
+        title: IOC Expiration Duration
+        description: >-
+          Indicator is expired after this duration since its last seen timestamp. Supported units for this parameter are d/h/m. Example `10d`. Default value is `90d` i.e., 90 days.
+        multi: false
+        required: true
+        show_user: true
+        default: "90d"
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Supported time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
         show_user: false
         default: 5m
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        default: false
+        required: false
+        show_user: false
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags for the data stream.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - whoisfreaks-threat-feed-spam
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

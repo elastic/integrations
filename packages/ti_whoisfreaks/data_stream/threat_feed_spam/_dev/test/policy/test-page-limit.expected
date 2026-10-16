@@ -8,30 +8,65 @@ inputs:
       streams:
         - data_stream:
             dataset: ti_whoisfreaks.threat_feed_spam
+          fields:
+            _conf:
+                ioc_expiration_duration: 90d
+          fields_under_root: true
           interval: 24h
           program: |
-            (has(state.cur_offset) ? int(state.cur_offset) : 0).as(offset,
-            int(state.page_limit).as(page_limit,
-            state.url.as(req_url,
-            state.api_key.as(key,
-              request("GET", req_url + "?" + {"apiKey": [key], "offset": [string(offset)], "limit": [string(page_limit)]}.format_query()).do_request().as(resp,
-                resp.StatusCode != 200 ?
-                  {"events": [{"error": {"code": string(resp.StatusCode), "message": "WhoisFreaks Spam failed at offset " + string(offset) + ": status " + string(resp.StatusCode) + " " + string(resp.Body)}}], "url": req_url, "api_key": key, "page_limit": page_limit, "cur_offset": 0, "want_more": false}
-                : string(resp.Body).split("\n").filter(row, row != "" && !row.startsWith("domain,")).as(rows,
-                  {"events": rows.map(row, {"message": row}), "url": req_url, "api_key": key, "page_limit": page_limit, "cur_offset": size(rows) < page_limit ? 0 : offset + page_limit, "want_more": size(rows) >= page_limit}
-                )
+            state.with(
+              request("GET", state.url + "?" + {
+                "apiKey": [state.api_key],
+                "offset": [string(int(state.cur_offset))],
+                "limit": [string(int(state.page_limit))],
+              }.format_query()).do_request().as(resp,
+                (resp.StatusCode != 200) ?
+                  {
+                    "events": [
+                      {
+                        "error": {
+                          "code": string(resp.StatusCode),
+                          "id": string(resp.Status),
+                          "message": "GET " + state.url + " at offset " + string(int(state.cur_offset)) + ": " + (
+                            (size(resp.Body) != 0) ?
+                              string(resp.Body)
+                            :
+                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                          ),
+                        },
+                      },
+                    ],
+                    "cur_offset": 0,
+                    "want_more": false,
+                  }
+                :
+                  string(resp.Body).split("\n").map(row, row.trim_space()).filter(row, row != "" && !row.startsWith("domain,")).as(rows,
+                    {
+                      "events": rows.map(row, {"message": row}),
+                      "cur_offset": (size(rows) < int(state.page_limit)) ? 0 : int(state.cur_offset) + int(state.page_limit),
+                      "want_more": size(rows) >= int(state.page_limit),
+                    }
+                  )
               )
-            ))))
+            )
+          publisher_pipeline.disable_host: true
           redact:
             fields:
                 - api_key
+          resource.ssl: null
           resource.timeout: 5m
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
           resource.url: https://files.whoisfreaks.com/v3.4/stream/threat-feed/spam
           state:
             api_key: ${SECRET_0}
             cur_offset: 0
             page_limit: 100
-            want_more: false
+          tags:
+            - forwarded
+            - whoisfreaks-threat-feed-spam
       type: cel
       use_output: default
 output_permissions:

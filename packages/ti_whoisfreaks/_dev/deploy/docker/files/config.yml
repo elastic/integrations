@@ -1,0 +1,197 @@
+rules:
+  # Public file status endpoint used by both newly registered domain streams.
+  - path: /v3.3/status
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"newly":{"gtld":{"last_update":"2026-08-04","available_from":"2026-05-01"},"cctld":{"last_update":"2026-08-04","available_from":"2026-05-01"}}}
+  # Newly registered gTLD domains with WHOIS: 3 rows split over two pages (limit 2).
+  - path: /v3.3/stream/domainer/gtld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["test_api_key"]
+      whois: ["true"]
+      date: ["2026-08-04"]
+      limit: ["2"]
+      offset: ["0"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          num,domain_name,query_time,create_date,update_date,expiry_date,domain_registrar_id,domain_registrar_name,domain_registrar_whois,domain_registrar_url,registrant_name,registrant_company,registrant_address,registrant_city,registrant_country_code,registrant_email,name_server_1,name_server_2,domain_status_1,domain_status_2
+          1,alpha-shop.example,2026-08-04 09:54:02,2026-08-03,2026-08-03,2027-08-03,9999,Example Registrar Inc,whois.registrar.example,http://www.registrar.example,Jane Doe,Example Org,123 Example Street,Springfield,US,registrant@example.com,ns1.example.net,ns2.example.net,addperiod,clienttransferprohibited
+          2,bravo-pay.example,2026-08-04 09:54:02,2026-08-04,2026-08-04,2027-08-04,9998,Sample Registrar LLC,whois.sample-registrar.example,http://www.sample-registrar.example,,,,,,,ns1.example.org,,addperiod,
+  - path: /v3.3/stream/domainer/gtld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["test_api_key"]
+      whois: ["true"]
+      date: ["2026-08-04"]
+      limit: ["2"]
+      offset: ["2"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          num,domain_name,query_time,create_date,update_date,expiry_date,domain_registrar_id,domain_registrar_name,domain_registrar_whois,domain_registrar_url,registrant_name,registrant_company,registrant_address,registrant_city,registrant_country_code,registrant_email,name_server_1,name_server_2,domain_status_1,domain_status_2
+          3,charlie-login.example,2026-08-04 09:54:02,2026-08-04,2026-08-04,2026-11-02,9999,Example Registrar Inc,whois.registrar.example,http://www.registrar.example,John Doe,,456 Sample Avenue,Shelbyville,GB,admin@example.org,ns1.example.net,,addperiod,
+  # Newly registered ccTLD domains with WHOIS: a single short page.
+  - path: /v3.3/stream/domainer/cctld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["test_api_key"]
+      whois: ["true"]
+      date: ["2026-08-04"]
+      limit: ["2"]
+      offset: ["0"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          num,domain_name,query_time,create_date,update_date,expiry_date,domain_registrar_id,domain_registrar_name,domain_registrar_whois,domain_registrar_url,registrant_name,registrant_company,registrant_address,registrant_city,registrant_country_code,registrant_email,name_server_1,name_server_2,domain_status_1,domain_status_2
+          1,delta-mail.example,2026-08-04 09:54:02,2026-08-02,,2027-08-02,9997,Test Registry Services,whois.test-registry.example,http://www.test-registry.example,,,,,,,ns1.example.com,ns2.example.com,ok,
+  # Newly registered gTLD domains without WHOIS: 3 domains split over two pages (limit 2).
+  - path: /v3.3/stream/domainer/gtld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["test_api_key"]
+      whois: ["false"]
+      date: ["2026-08-04"]
+      limit: ["2"]
+      offset: ["0"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          alpha-shop.example
+          bravo-pay.example
+  - path: /v3.3/stream/domainer/gtld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["test_api_key"]
+      whois: ["false"]
+      date: ["2026-08-04"]
+      limit: ["2"]
+      offset: ["2"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          charlie-login.example
+  # Newly registered ccTLD domains without WHOIS: a single short page.
+  - path: /v3.3/stream/domainer/cctld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["test_api_key"]
+      whois: ["false"]
+      date: ["2026-08-04"]
+      limit: ["2"]
+      offset: ["0"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          delta-mail.example
+  # Malware threat feed: 3 rows split over two pages (limit 2).
+  - path: /v3.4/stream/threat-feed/malware
+    methods: ["GET"]
+    query_params:
+      apiKey: ["test_api_key"]
+      offset: ["0"]
+      limit: ["2"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          domain,threat_type,confidence,first_seen,last_seen,no_of_threat_matched_pivots
+          malware-host-1.example,malware,1.0,2026-06-25 13:45:35.401434+00,2026-08-25 00:16:20.97521+00,1
+          malware-host-2.example,malware,0.85,2026-07-01 08:00:00+00,2026-08-24 22:10:05.5+00,3
+  - path: /v3.4/stream/threat-feed/malware
+    methods: ["GET"]
+    query_params:
+      apiKey: ["test_api_key"]
+      offset: ["2"]
+      limit: ["2"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          malware-host-3.example,malware,0.6,2026-08-20 11:11:11.123456789+00,2026-08-25 01:02:03+00,2
+  # Phishing threat feed: 3 rows split over two pages (limit 2).
+  - path: /v3.4/stream/threat-feed/phishing
+    methods: ["GET"]
+    query_params:
+      apiKey: ["test_api_key"]
+      offset: ["0"]
+      limit: ["2"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          domain,threat_type,confidence,first_seen,last_seen,no_of_threat_matched_pivots
+          phish-login-1.example,phishing,1.0,2026-06-25 13:45:35.401434+00,2026-08-25 00:16:20.97521+00,1
+          phish-login-2.example,phishing,0.85,2026-07-01 08:00:00+00,2026-08-24 22:10:05.5+00,3
+  - path: /v3.4/stream/threat-feed/phishing
+    methods: ["GET"]
+    query_params:
+      apiKey: ["test_api_key"]
+      offset: ["2"]
+      limit: ["2"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          phish-login-3.example,phishing,0.6,2026-08-20 11:11:11.123456789+00,2026-08-25 01:02:03+00,2
+  # Spam threat feed: 3 rows split over two pages (limit 2).
+  - path: /v3.4/stream/threat-feed/spam
+    methods: ["GET"]
+    query_params:
+      apiKey: ["test_api_key"]
+      offset: ["0"]
+      limit: ["2"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          domain,threat_type,confidence,first_seen,last_seen,no_of_threat_matched_pivots
+          spam-sender-1.example,spam,1.0,2026-06-25 13:45:35.401434+00,2026-08-25 00:16:20.97521+00,1
+          spam-sender-2.example,spam,0.85,2026-07-01 08:00:00+00,2026-08-24 22:10:05.5+00,3
+  - path: /v3.4/stream/threat-feed/spam
+    methods: ["GET"]
+    query_params:
+      apiKey: ["test_api_key"]
+      offset: ["2"]
+      limit: ["2"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          spam-sender-3.example,spam,0.6,2026-08-20 11:11:11.123456789+00,2026-08-25 01:02:03+00,2

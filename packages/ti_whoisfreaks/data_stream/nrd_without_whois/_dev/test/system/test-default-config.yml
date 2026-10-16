@@ -1,10 +1,16 @@
 input: cel
 service: ti_whoisfreaks
+vars:
+  api_key: test_api_key
 data_stream:
   vars:
-    resource_url: "http://{{Hostname}}:{{Port}}/v3.3/stream/domainer"
+    url: "http://{{Hostname}}:{{Port}}/v3.3/stream/domainer"
     status_url: "http://{{Hostname}}:{{Port}}/v3.3/status"
-    api_key: "test-fake-api-key"
-    page_limit: 5000
-    resource_date: ""
-    resource_interval: 10s
+    # The mock serves 3 gTLD rows (2 pages) and 1 ccTLD row (1 page).
+    page_limit: 2
+    # Long interval: every hit must arrive in the first polling cycle.
+    interval: 1h
+    enable_request_tracer: true
+    preserve_original_event: true
+assert:
+  hit_count: 4

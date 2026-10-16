@@ -1,189 +1,101 @@
 ---
-description: Pipeline for processing WhoisFreaks domain intelligence records
+description: Pipeline for processing WhoisFreaks newly registered domains with WHOIS records.
 processors:
-  - pipeline:
-      tag: pipeline_logs_ti_whoisfreaks_nrd_with_whois_custom
-      name: logs-ti_whoisfreaks.nrd_with_whois@custom
-      ignore_missing_pipeline: true
-      ignore_failure: true
-  # Flag upstream errors so partial docs are not indexed as normal events.
-  - set:
-      tag: set_event_kind_error
-      field: event.kind
-      value: pipeline_error
-      if: "ctx.error != null"
-  - set:
-      tag: set_event_kind_default
-      field: event.kind
-      value: enrichment
-      if: "ctx.error == null"
-
-  - set:
-      tag: set_event_category
-      field: event.category
-      value:
-        - threat
-        - network
-      if: "ctx.error == null"
-  - set:
-      tag: set_event_type
-      field: event.type
-      value:
-        - indicator
-      if: "ctx.error == null"
-  - set:
-      tag: set_event_dataset
-      field: event.dataset
-      value: ti_whoisfreaks.nrd_with_whois
+  - terminate:
+      tag: terminate_cel_failure
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: Error message set and no data to process.
   - set:
       tag: set_ecs_version
       field: ecs.version
-      value: '8.11.0'
-
-  # Move the per-feed tag emitted by the input into whoisfreaks.tld_type.
+      value: '9.5.0'
   - set:
-      tag: set_tld_type
-      field: whoisfreaks.tld_type
-      copy_from: _tld
-      ignore_empty_value: true
-  - remove:
-      tag: remove_tmp_tld
-      field: _tld
+      tag: set_event_kind
+      field: event.kind
+      value: enrichment
+  - rename:
+      tag: rename_message_to_event_original
+      field: message
+      target_field: event.original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      tag: remove_message
+      field: message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      tag: json_event_original
+      field: event.original
+      target_field: whoisfreaks
+  # WhoisFreaks emits "" for absent CSV columns; drop them before any parsing.
+  - script:
+      tag: script_drop_empty_whoisfreaks_values
+      description: Drops empty string values from the parsed WHOIS record.
+      lang: painless
+      if: ctx.whoisfreaks instanceof Map
+      source: |-
+        ctx.whoisfreaks.values().removeIf(v -> v == null || (v instanceof String && v.trim() == ''));
   - convert:
-      tag: convert_num
+      tag: convert_whoisfreaks_num
       field: whoisfreaks.num
       type: long
       ignore_missing: true
-      ignore_failure: true
-      if: "ctx.whoisfreaks?.num != null && ctx.whoisfreaks.num != ''"
-
-  # Drop blank date strings. WhoisFreaks emits "" for absent dates; left in place
-  # these fail the date mapping at index time and land the doc in _ignored.
-  - remove:
-      tag: drop_empty_create_date
-      field: whoisfreaks.create_date
-      ignore_missing: true
-      if: "ctx.whoisfreaks?.create_date == ''"
-  - remove:
-      tag: drop_empty_update_date
-      field: whoisfreaks.update_date
-      ignore_missing: true
-      if: "ctx.whoisfreaks?.update_date == ''"
-  - remove:
-      tag: drop_empty_expiry_date
-      field: whoisfreaks.expiry_date
-      ignore_missing: true
-      if: "ctx.whoisfreaks?.expiry_date == ''"
-
-  # Timestamps, for successful records only.
   - date:
-      tag: parse_query_time
+      tag: date_whoisfreaks_query_time
       field: whoisfreaks.query_time
-      target_field: "@timestamp"
+      target_field: '@timestamp'
       formats:
-        - "yyyy-MM-dd HH:mm:ss"
-        - "ISO8601"
-      if: "ctx.whoisfreaks?.query_time != null && ctx.whoisfreaks.query_time != ''"
-      ignore_failure: true
+        - 'yyyy-MM-dd HH:mm:ss'
+        - ISO8601
+      if: ctx.whoisfreaks?.query_time != null
   - date:
-      tag: parse_create_date
+      tag: date_whoisfreaks_create_date
       field: whoisfreaks.create_date
       target_field: whoisfreaks.create_date
       formats:
-        - "yyyy-MM-dd HH:mm:ss"
-        - "yyyy-MM-dd"
-        - "ISO8601"
-      if: "ctx.whoisfreaks?.create_date != null && ctx.whoisfreaks.create_date != ''"
-      ignore_failure: true
+        - 'yyyy-MM-dd HH:mm:ss'
+        - 'yyyy-MM-dd'
+        - ISO8601
+      if: ctx.whoisfreaks?.create_date != null
   - date:
-      tag: parse_update_date
+      tag: date_whoisfreaks_update_date
       field: whoisfreaks.update_date
       target_field: whoisfreaks.update_date
       formats:
-        - "yyyy-MM-dd HH:mm:ss"
-        - "yyyy-MM-dd"
-        - "ISO8601"
-      if: "ctx.whoisfreaks?.update_date != null && ctx.whoisfreaks.update_date != ''"
-      ignore_failure: true
+        - 'yyyy-MM-dd HH:mm:ss'
+        - 'yyyy-MM-dd'
+        - ISO8601
+      if: ctx.whoisfreaks?.update_date != null
   - date:
-      tag: parse_expiry_date
+      tag: date_whoisfreaks_expiry_date
       field: whoisfreaks.expiry_date
       target_field: whoisfreaks.expiry_date
       formats:
-        - "yyyy-MM-dd HH:mm:ss"
-        - "yyyy-MM-dd"
-        - "ISO8601"
-      if: "ctx.whoisfreaks?.expiry_date != null && ctx.whoisfreaks.expiry_date != ''"
-      ignore_failure: true
-
-  # ECS convenience fields used by the dashboard.
-  - set:
-      tag: set_ecs_domain
-      field: domain.registered_domain
-      copy_from: whoisfreaks.domain_name
-      ignore_empty_value: true
-  - set:
-      tag: set_ecs_registrar
-      field: domain.registrar.name
-      copy_from: whoisfreaks.domain_registrar_name
-      ignore_empty_value: true
-
-  # Threat intelligence ECS fields.
-  - set:
-      tag: set_threat_indicator_type
-      field: threat.indicator.type
-      value: domain-name
-      if: "ctx.error == null && ctx.whoisfreaks?.domain_name != null"
-  - set:
-      tag: set_threat_indicator_domain
-      field: threat.indicator.domain
-      copy_from: whoisfreaks.domain_name
-      ignore_empty_value: true
-      if: "ctx.error == null"
-  - set:
-      tag: set_threat_feed_name
-      field: threat.feed.name
-      value: WhoisFreaks
-      if: "ctx.error == null"
-  - set:
-      tag: set_threat_feed_dashboard_id
-      field: threat.feed.dashboard_id
-      value: ti_whoisfreaks-383060b6-e437-4bac-9578-612a44ed8150
-      if: "ctx.error == null"
-  - set:
-      tag: set_threat_indicator_provider
-      field: threat.indicator.provider
-      value: WhoisFreaks
-      if: "ctx.error == null"
-  - set:
-      tag: set_threat_indicator_reference
-      field: threat.indicator.reference
-      value: https://whoisfreaks.com/
-      if: "ctx.error == null"
-
+        - 'yyyy-MM-dd HH:mm:ss'
+        - 'yyyy-MM-dd'
+        - ISO8601
+      if: ctx.whoisfreaks?.expiry_date != null
   # Derived fields for dashboards and rules.
   - script:
-      tag: compute_expiry_and_age_fields
-      description: Compute days_until_expiry and is_newly_registered.
+      tag: script_compute_expiry_and_age_fields
+      description: Computes whoisfreaks.days_until_expiry and whoisfreaks.is_newly_registered.
       lang: painless
-      ignore_failure: true
-      if: "ctx.whoisfreaks != null"
-      source: |
-        if (ctx.whoisfreaks.expiry_date != null) {
-          long nowMillis = ctx.containsKey('@timestamp') && ctx['@timestamp'] != null
-            ? Instant.parse(ctx['@timestamp']).toEpochMilli()
-            : System.currentTimeMillis();
-          long expiryMillis = Instant.parse(ctx.whoisfreaks.expiry_date).toEpochMilli();
-          ctx.whoisfreaks.days_until_expiry = (int) Math.floor((expiryMillis - nowMillis) / 86400000.0);
+      if: ctx.whoisfreaks?.domain_name != null
+      source: |-
+        if (ctx.whoisfreaks.expiry_date != null && ctx['@timestamp'] != null) {
+          long nowMillis = ZonedDateTime.parse(ctx['@timestamp']).toInstant().toEpochMilli();
+          long expiryMillis = ZonedDateTime.parse(ctx.whoisfreaks.expiry_date).toInstant().toEpochMilli();
+          ctx.whoisfreaks.days_until_expiry = (long) Math.floor((expiryMillis - nowMillis) / 86400000.0);
         }
         if (ctx.whoisfreaks.create_date != null && ctx.whoisfreaks.query_time != null) {
-          String createDay = ctx.whoisfreaks.create_date.toString().substring(0, 10);
-          String queryDay = ctx.whoisfreaks.query_time.toString().substring(0, 10);
+          String createDay = ctx.whoisfreaks.create_date.substring(0, 10);
+          String queryDay = ctx.whoisfreaks.query_time.substring(0, 10);
           ctx.whoisfreaks.is_newly_registered = createDay.equals(queryDay);
         }
-
-  # Deduplicate so a re-polled file does not create duplicate docs.
+  # Deduplicate so a re-polled file does not create duplicate documents.
   - fingerprint:
       tag: fingerprint_for_dedup
       fields:
@@ -191,11 +103,10 @@ processors:
         - whoisfreaks.domain_name
         - whoisfreaks.query_time
       target_field: _id
-      if: "ctx.whoisfreaks?.domain_name != null && ctx.whoisfreaks?.query_time != null"
-      ignore_missing: true
-
+      if: ctx.whoisfreaks?.domain_name != null && ctx.whoisfreaks?.query_time != null
 on_failure:
-  - set:
+  - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -203,6 +114,11 @@ on_failure:
         in pipeline '{{{ _ingest.pipeline }}}'
         failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
-      field: event.kind
       tag: set_pipeline_error_to_event_kind
+      field: event.kind
       value: pipeline_error
+  - append:
+      tag: append_preserve_original_event
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

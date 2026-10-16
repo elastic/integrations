@@ -32,23 +32,22 @@
       type: keyword
       description: Name of the domain registrar.
     - name: domain_registrar_whois
-      type: text
+      type: keyword
       description: Registrar WHOIS server details.
     - name: domain_registrar_url
       type: keyword
       description: Registrar website URL.
     - name: registrant_name
-      type: text
+      type: keyword
       description: Name of the domain registrant.
       multi_fields:
-        - name: keyword
-          type: keyword
-          ignore_above: 1024
+        - name: text
+          type: match_only_text
     - name: registrant_company
       type: keyword
       description: Company or organization that registered the domain.
     - name: registrant_address
-      type: text
+      type: match_only_text
       description: Street address of the registrant.
     - name: registrant_city
       type: keyword
@@ -75,17 +74,16 @@
       type: keyword
       description: Contact fax number of the registrant.
     - name: administrative_name
-      type: text
+      type: keyword
       description: Name of the administrative contact.
       multi_fields:
-        - name: keyword
-          type: keyword
-          ignore_above: 1024
+        - name: text
+          type: match_only_text
     - name: administrative_company
       type: keyword
       description: Company of the administrative contact.
     - name: administrative_address
-      type: text
+      type: match_only_text
       description: Street address of the administrative contact.
     - name: administrative_city
       type: keyword
@@ -112,17 +110,16 @@
       type: keyword
       description: Fax number of the administrative contact.
     - name: technical_name
-      type: text
+      type: keyword
       description: Name of the technical contact.
       multi_fields:
-        - name: keyword
-          type: keyword
-          ignore_above: 1024
+        - name: text
+          type: match_only_text
     - name: technical_company
       type: keyword
       description: Company of the technical contact.
     - name: technical_address
-      type: text
+      type: match_only_text
       description: Street address of the technical contact.
     - name: technical_city
       type: keyword
@@ -149,17 +146,16 @@
       type: keyword
       description: Fax number of the technical contact.
     - name: billing_name
-      type: text
+      type: keyword
       description: Name of the billing contact.
       multi_fields:
-        - name: keyword
-          type: keyword
-          ignore_above: 1024
+        - name: text
+          type: match_only_text
     - name: billing_company
       type: keyword
       description: Company of the billing contact.
     - name: billing_address
-      type: text
+      type: match_only_text
       description: Street address of the billing contact.
     - name: billing_city
       type: keyword
@@ -275,11 +271,8 @@
     - name: days_until_expiry
       type: long
       description: >-
-        Days between the record's query_time and its expiry_date. Negative once the domain has already expired. Computed by the ingest pipeline.
+        Days between the record's query_time and its expiry_date. Negative once the domain has already expired. Computed once by the ingest pipeline at ingest time.
     - name: is_newly_registered
       type: boolean
       description: >-
         True when create_date falls on the same day as query_time, i.e. the domain was registered the day it was captured in this feed. Computed by the ingest pipeline.
-- name: input.type
-  type: keyword
-  description: Type of input used to ingest the logs (e.g., cel).

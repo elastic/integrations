@@ -1,24 +1,78 @@
-resource.url: "{{resource_url}}"
-resource.timeout: "{{resource_timeout}}"
-interval: "{{resource_interval}}"
+interval: "{{interval}}"
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: "{{http_client_timeout}}"
+{{/if}}
+resource.url: "{{url}}"
 state:
   api_key: "{{api_key}}"
   page_limit: {{page_limit}}
   cur_offset: 0
-  want_more: false
 redact:
   fields:
     - api_key
 program: |
-  (has(state.cur_offset) ? int(state.cur_offset) : 0).as(offset,
-  int(state.page_limit).as(page_limit,
-  state.url.as(req_url,
-  state.api_key.as(key,
-    request("GET", req_url + "?" + {"apiKey": [key], "offset": [string(offset)], "limit": [string(page_limit)]}.format_query()).do_request().as(resp,
-      resp.StatusCode != 200 ?
-        {"events": [{"error": {"code": string(resp.StatusCode), "message": "WhoisFreaks Phishing failed at offset " + string(offset) + ": status " + string(resp.StatusCode) + " " + string(resp.Body)}}], "url": req_url, "api_key": key, "page_limit": page_limit, "cur_offset": 0, "want_more": false}
-      : string(resp.Body).split("\n").filter(row, row != "" && !row.startsWith("domain,")).as(rows,
-        {"events": rows.map(row, {"message": row}), "url": req_url, "api_key": key, "page_limit": page_limit, "cur_offset": size(rows) < page_limit ? 0 : offset + page_limit, "want_more": size(rows) >= page_limit}
-      )
+  state.with(
+    request("GET", state.url + "?" + {
+      "apiKey": [state.api_key],
+      "offset": [string(int(state.cur_offset))],
+      "limit": [string(int(state.page_limit))],
+    }.format_query()).do_request().as(resp,
+      (resp.StatusCode != 200) ?
+        {
+          "events": [
+            {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url + " at offset " + string(int(state.cur_offset)) + ": " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+          ],
+          "cur_offset": 0,
+          "want_more": false,
+        }
+      :
+        string(resp.Body).split("\n").map(row, row.trim_space()).filter(row, row != "" && !row.startsWith("domain,")).as(rows,
+          {
+            "events": rows.map(row, {"message": row}),
+            "cur_offset": (size(rows) < int(state.page_limit)) ? 0 : int(state.cur_offset) + int(state.page_limit),
+            "want_more": size(rows) >= int(state.page_limit),
+          }
+        )
     )
-  ))))
+  )
+{{#if ioc_expiration_duration}}
+fields_under_root: true
+fields:
+  _conf:
+    ioc_expiration_duration: "{{ioc_expiration_duration}}"
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -1,0 +1,95 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: ti_whoisfreaks
+      name: test-all-ti_whoisfreaks
+      streams:
+        - data_stream:
+            dataset: ti_whoisfreaks.threat_feed_phishing
+          fields:
+            _conf:
+                ioc_expiration_duration: 30d
+          fields_under_root: true
+          interval: 12h
+          processors:
+            - add_fields:
+                fields:
+                    name: whoisfreaks-test
+                target: project
+          program: |
+            state.with(
+              request("GET", state.url + "?" + {
+                "apiKey": [state.api_key],
+                "offset": [string(int(state.cur_offset))],
+                "limit": [string(int(state.page_limit))],
+              }.format_query()).do_request().as(resp,
+                (resp.StatusCode != 200) ?
+                  {
+                    "events": [
+                      {
+                        "error": {
+                          "code": string(resp.StatusCode),
+                          "id": string(resp.Status),
+                          "message": "GET " + state.url + " at offset " + string(int(state.cur_offset)) + ": " + (
+                            (size(resp.Body) != 0) ?
+                              string(resp.Body)
+                            :
+                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                          ),
+                        },
+                      },
+                    ],
+                    "cur_offset": 0,
+                    "want_more": false,
+                  }
+                :
+                  string(resp.Body).split("\n").map(row, row.trim_space()).filter(row, row != "" && !row.startsWith("domain,")).as(rows,
+                    {
+                      "events": rows.map(row, {"message": row}),
+                      "cur_offset": (size(rows) < int(state.page_limit)) ? 0 : int(state.cur_offset) + int(state.page_limit),
+                      "want_more": size(rows) >= int(state.page_limit),
+                    }
+                  )
+              )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - api_key
+          resource.proxy_url: http://proxy.example:8080
+          resource.ssl:
+            verification_mode: none
+          resource.timeout: 2m
+          resource.tracer:
+            enabled: true
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://files.whoisfreaks.com/v3.4/stream/threat-feed/phishing
+          state:
+            api_key: ${SECRET_0}
+            cur_offset: 0
+            page_limit: 100
+          tags:
+            - preserve_original_event
+            - forwarded
+            - custom-tag
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-ti_whoisfreaks.threat_feed_phishing-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

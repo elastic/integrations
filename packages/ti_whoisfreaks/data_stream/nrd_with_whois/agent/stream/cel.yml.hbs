@@ -1,220 +1,160 @@
-resource.url: "{{resource_url}}"
-resource.timeout: "{{resource_timeout}}"
-interval: "{{resource_interval}}"
+interval: "{{interval}}"
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: "{{http_client_timeout}}"
+{{/if}}
+resource.url: "{{url}}"
 state:
   status_url: "{{status_url}}"
   api_key: "{{api_key}}"
-  page_limit: "{{page_limit}}"
-  pinned_date: "{{resource_date}}"
-  cursor:
-    phase: ""
-    cur_offset: 0
-    gtld_date: ""
-    cctld_date: ""
-    last_gtld_date: ""
-    last_cctld_date: ""
+  page_limit: {{page_limit}}
+  file_date: "{{file_date}}"
 redact:
   fields:
     - api_key
 program: |
-  (has(state.cursor) ? state.cursor : {}).as(c,
-  (has(c.phase) ? c.phase : "").as(phase,
-  (has(c.cur_offset) ? int(c.cur_offset) : 0).as(cur_offset,
-  (has(c.gtld_date) ? c.gtld_date : "").as(gtld_date,
-  (has(c.cctld_date) ? c.cctld_date : "").as(cctld_date,
-  (has(c.last_gtld_date) ? c.last_gtld_date : "").as(last_gtld_date,
-  (has(c.last_cctld_date) ? c.last_cctld_date : "").as(last_cctld_date,
-
-  phase == "gtld" ?
-      request("GET", state.url + "/gtld?" + {
-          "apiKey": [state.api_key],
-          "whois": ["true"],
-          "date": [gtld_date],
-          "limit": [string(int(state.page_limit))],
-          "offset": [string(cur_offset)],
-      }.format_query()).do_request().as(resp,
-          resp.StatusCode != 200 ?
+  state.with(
+    state.?cursor.orValue({}).as(c,
+      (c.?phase.orValue("") in ["gtld", "cctld"]) ?
+        ((c.phase == "gtld") ? c.?gtld_date.orValue("") : c.?cctld_date.orValue("")).as(date,
+          request("GET", state.url + "/" + c.phase + "?" + {
+            "apiKey": [state.api_key],
+            "whois": ["true"],
+            "date": [date],
+            "limit": [string(int(state.page_limit))],
+            "offset": [string(int(c.?cur_offset.orValue(0)))],
+          }.format_query()).do_request().as(resp,
+            (resp.StatusCode != 200) ?
               {
-                  "events": [{"error": {
+                "events": [
+                  {
+                    "error": {
                       "code": string(resp.StatusCode),
-                      "message": "WhoisFreaks gtld page failed at offset " + string(cur_offset) +
-                          " for date " + gtld_date + ": status " + string(resp.StatusCode) + " " + string(resp.Body),
-                  }}],
-                  "url": state.url,
-                  "status_url": state.status_url,
-                  "api_key": state.api_key,
-                  "page_limit": state.page_limit,
-                  "pinned_date": state.pinned_date,
-                  "cursor": {
-                      "phase": cctld_date != "" ? "cctld" : "idle",
+                      "id": string(resp.Status),
+                      "message": "GET " + state.url + "/" + c.phase + " for date " + date + " at offset " + string(int(c.?cur_offset.orValue(0))) + ": " + (
+                        (size(resp.Body) != 0) ?
+                          string(resp.Body)
+                        :
+                          string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                      ),
+                    },
+                  },
+                ],
+                // Keep the cursor for errors that can succeed on retry, so the next poll resumes
+                // this page instead of skipping the day. Other 4xx responses (for example a bad
+                // or expired file date) never succeed, so return to the status check instead.
+                "cursor": (resp.StatusCode >= 400 && resp.StatusCode < 500 && !(resp.StatusCode in [401, 403, 408, 429])) ?
+                  c.with({"phase": "idle", "cur_offset": 0, "gtld_date": "", "cctld_date": ""})
+                :
+                  c,
+                "want_more": false,
+              }
+            :
+              resp.Body.mime("text/csv; header=present").as(rows,
+                {
+                  "events": (size(rows) > 0) ?
+                    dyn(rows.map(row, {"message": row.with({"tld_type": c.phase}).encode_json()}))
+                  :
+                    // The input ends the cycle on an empty events list even when want_more
+                    // is true; the placeholder is dropped by the drop_event processor.
+                    dyn([{"retry": true}]),
+                  "cursor": (size(rows) >= int(state.page_limit)) ?
+                    c.with({"cur_offset": int(c.?cur_offset.orValue(0)) + int(state.page_limit)})
+                  : (c.phase == "gtld") ?
+                    c.with({
+                      "phase": (c.?cctld_date.orValue("") != "") ? "cctld" : "idle",
                       "cur_offset": 0,
                       "gtld_date": "",
-                      "cctld_date": cctld_date,
-                      "last_gtld_date": last_gtld_date,
-                      "last_cctld_date": last_cctld_date,
-                  },
-                  "want_more": cctld_date != "",
-              }
-          :
-              resp.Body.mime("text/csv; header=present").as(rows,
-                  size(rows) < int(state.page_limit) ?
-                      {
-                          "events": rows.map(row, {"whoisfreaks": row, "_tld": "gtld"}),
-                          "url": state.url,
-                          "status_url": state.status_url,
-                          "api_key": state.api_key,
-                          "page_limit": state.page_limit,
-                          "pinned_date": state.pinned_date,
-                          "cursor": {
-                              "phase": cctld_date != "" ? "cctld" : "idle",
-                              "cur_offset": 0,
-                              "gtld_date": "",
-                              "cctld_date": cctld_date,
-                              "last_gtld_date": gtld_date,
-                              "last_cctld_date": last_cctld_date,
-                          },
-                          "want_more": cctld_date != "",
-                      }
+                      "last_gtld_date": date,
+                    })
                   :
-                      {
-                          "events": rows.map(row, {"whoisfreaks": row, "_tld": "gtld"}),
-                          "url": state.url,
-                          "status_url": state.status_url,
-                          "api_key": state.api_key,
-                          "page_limit": state.page_limit,
-                          "pinned_date": state.pinned_date,
-                          "cursor": {
-                              "phase": "gtld",
-                              "cur_offset": cur_offset + int(state.page_limit),
-                              "gtld_date": gtld_date,
-                              "cctld_date": cctld_date,
-                              "last_gtld_date": last_gtld_date,
-                              "last_cctld_date": last_cctld_date,
-                          },
-                          "want_more": true,
-                      }
-              )
-      )
-  : phase == "cctld" ?
-      request("GET", state.url + "/cctld?" + {
-          "apiKey": [state.api_key],
-          "whois": ["true"],
-          "date": [cctld_date],
-          "limit": [string(int(state.page_limit))],
-          "offset": [string(cur_offset)],
-      }.format_query()).do_request().as(resp,
-          resp.StatusCode != 200 ?
-              {
-                  "events": [{"error": {
-                      "code": string(resp.StatusCode),
-                      "message": "WhoisFreaks cctld page failed at offset " + string(cur_offset) +
-                          " for date " + cctld_date + ": status " + string(resp.StatusCode) + " " + string(resp.Body),
-                  }}],
-                  "url": state.url,
-                  "status_url": state.status_url,
-                  "api_key": state.api_key,
-                  "page_limit": state.page_limit,
-                  "pinned_date": state.pinned_date,
-                  "cursor": {
+                    c.with({
                       "phase": "idle",
                       "cur_offset": 0,
-                      "gtld_date": "",
                       "cctld_date": "",
-                      "last_gtld_date": last_gtld_date,
-                      "last_cctld_date": last_cctld_date,
-                  },
-                  "want_more": false,
-              }
-          :
-              resp.Body.mime("text/csv; header=present").as(rows,
-                  size(rows) < int(state.page_limit) ?
-                      {
-                          "events": rows.map(row, {"whoisfreaks": row, "_tld": "cctld"}),
-                          "url": state.url,
-                          "status_url": state.status_url,
-                          "api_key": state.api_key,
-                          "page_limit": state.page_limit,
-                          "pinned_date": state.pinned_date,
-                          "cursor": {
-                              "phase": "idle",
-                              "cur_offset": 0,
-                              "gtld_date": "",
-                              "cctld_date": "",
-                              "last_gtld_date": last_gtld_date,
-                              "last_cctld_date": cctld_date,
-                          },
-                          "want_more": false,
-                      }
-                  :
-                      {
-                          "events": rows.map(row, {"whoisfreaks": row, "_tld": "cctld"}),
-                          "url": state.url,
-                          "status_url": state.status_url,
-                          "api_key": state.api_key,
-                          "page_limit": state.page_limit,
-                          "pinned_date": state.pinned_date,
-                          "cursor": {
-                              "phase": "cctld",
-                              "cur_offset": cur_offset + int(state.page_limit),
-                              "gtld_date": gtld_date,
-                              "cctld_date": cctld_date,
-                              "last_gtld_date": last_gtld_date,
-                              "last_cctld_date": last_cctld_date,
-                          },
-                          "want_more": true,
-                      }
+                      "last_cctld_date": date,
+                    }),
+                  "want_more": size(rows) >= int(state.page_limit) || (c.phase == "gtld" && c.?cctld_date.orValue("") != ""),
+                }
               )
-      )
-  :
-      request("GET", state.status_url).do_request().as(statusResp,
-          statusResp.StatusCode != 200 ?
+          )
+        )
+      :
+        request("GET", state.status_url).do_request().as(resp,
+          (resp.StatusCode != 200) ?
+            {
+              "events": [
+                {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": "GET " + state.status_url + ": " + (
+                      (size(resp.Body) != 0) ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                    ),
+                  },
+                },
+              ],
+              "cursor": c,
+              "want_more": false,
+            }
+          :
+            resp.Body.decode_json().as(status,
               {
-                  "events": [{"error": {
-                      "code": string(statusResp.StatusCode),
-                      "message": "WhoisFreaks status request failed with status " +
-                          string(statusResp.StatusCode) + ": " + string(statusResp.Body),
-                  }}],
-                  "url": state.url,
-                  "status_url": state.status_url,
-                  "api_key": state.api_key,
-                  "page_limit": state.page_limit,
-                  "pinned_date": state.pinned_date,
-                  "cursor": {
-                      "phase": "idle",
+                "gtld": (state.file_date != "") ? state.file_date : string(status.?newly.gtld.last_update.orValue("")),
+                "cctld": (state.file_date != "") ? state.file_date : string(status.?newly.cctld.last_update.orValue("")),
+              }.as(latest,
+                {
+                  "gtld": (latest.gtld != c.?last_gtld_date.orValue("")) ? latest.gtld : "",
+                  "cctld": (latest.cctld != c.?last_cctld_date.orValue("")) ? latest.cctld : "",
+                }.as(pending,
+                  {
+                    // The input ends the cycle on an empty events list even when want_more is
+                    // true; emit a placeholder (dropped by the drop_event processor) so paging
+                    // starts in this cycle and the new cursor is persisted.
+                    "events": (pending.gtld != "" || pending.cctld != "") ?
+                      dyn([{"retry": true}])
+                    :
+                      dyn([]),
+                    "cursor": {
+                      "phase": (pending.gtld != "") ? "gtld" : (pending.cctld != "") ? "cctld" : "idle",
                       "cur_offset": 0,
-                      "gtld_date": "",
-                      "cctld_date": "",
-                      "last_gtld_date": last_gtld_date,
-                      "last_cctld_date": last_cctld_date,
-                  },
-                  "want_more": false,
-              }
-          :
-              bytes(statusResp.Body).decode_json().as(status,
-                  (has(status.newly) && has(status.newly.gtld) && has(status.newly.gtld.last_update) ? string(status.newly.gtld.last_update) : "").as(gtldLatest,
-                  (has(status.newly) && has(status.newly.cctld) && has(status.newly.cctld.last_update) ? string(status.newly.cctld.last_update) : "").as(cctldLatest,
-                  (state.pinned_date != "" ? state.pinned_date : gtldLatest).as(gtldT,
-                  (state.pinned_date != "" ? state.pinned_date : cctldLatest).as(cctldT,
-                  (gtldT != "" && gtldT != last_gtld_date).as(gtldNeed,
-                  (cctldT != "" && cctldT != last_cctld_date).as(cctldNeed,
-                      {
-                          "events": [],
-                          "url": state.url,
-                          "status_url": state.status_url,
-                          "api_key": state.api_key,
-                          "page_limit": state.page_limit,
-                          "pinned_date": state.pinned_date,
-                          "cursor": {
-                              "phase": gtldNeed ? "gtld" : (cctldNeed ? "cctld" : "idle"),
-                              "cur_offset": 0,
-                              "gtld_date": gtldNeed ? gtldT : "",
-                              "cctld_date": cctldNeed ? cctldT : "",
-                              "last_gtld_date": last_gtld_date,
-                              "last_cctld_date": last_cctld_date,
-                          },
-                          "want_more": gtldNeed || cctldNeed,
-                      }
-                  ))))))
+                      "gtld_date": pending.gtld,
+                      "cctld_date": pending.cctld,
+                      "last_gtld_date": c.?last_gtld_date.orValue(""),
+                      "last_cctld_date": c.?last_cctld_date.orValue(""),
+                    },
+                    "want_more": pending.gtld != "" || pending.cctld != "",
+                  }
+                )
               )
-      )
-  )))))))
+            )
+        )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}

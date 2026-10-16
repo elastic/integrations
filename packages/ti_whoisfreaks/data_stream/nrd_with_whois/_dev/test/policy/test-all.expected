@@ -1,0 +1,179 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: ti_whoisfreaks
+      name: test-all-ti_whoisfreaks
+      streams:
+        - data_stream:
+            dataset: ti_whoisfreaks.nrd_with_whois
+          interval: 12h
+          processors:
+            - drop_event.when.equals.retry: true
+            - add_fields:
+                fields:
+                    name: whoisfreaks-test
+                target: project
+          program: |
+            state.with(
+              state.?cursor.orValue({}).as(c,
+                (c.?phase.orValue("") in ["gtld", "cctld"]) ?
+                  ((c.phase == "gtld") ? c.?gtld_date.orValue("") : c.?cctld_date.orValue("")).as(date,
+                    request("GET", state.url + "/" + c.phase + "?" + {
+                      "apiKey": [state.api_key],
+                      "whois": ["true"],
+                      "date": [date],
+                      "limit": [string(int(state.page_limit))],
+                      "offset": [string(int(c.?cur_offset.orValue(0)))],
+                    }.format_query()).do_request().as(resp,
+                      (resp.StatusCode != 200) ?
+                        {
+                          "events": [
+                            {
+                              "error": {
+                                "code": string(resp.StatusCode),
+                                "id": string(resp.Status),
+                                "message": "GET " + state.url + "/" + c.phase + " for date " + date + " at offset " + string(int(c.?cur_offset.orValue(0))) + ": " + (
+                                  (size(resp.Body) != 0) ?
+                                    string(resp.Body)
+                                  :
+                                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                                ),
+                              },
+                            },
+                          ],
+                          // Keep the cursor for errors that can succeed on retry, so the next poll resumes
+                          // this page instead of skipping the day. Other 4xx responses (for example a bad
+                          // or expired file date) never succeed, so return to the status check instead.
+                          "cursor": (resp.StatusCode >= 400 && resp.StatusCode < 500 && !(resp.StatusCode in [401, 403, 408, 429])) ?
+                            c.with({"phase": "idle", "cur_offset": 0, "gtld_date": "", "cctld_date": ""})
+                          :
+                            c,
+                          "want_more": false,
+                        }
+                      :
+                        resp.Body.mime("text/csv; header=present").as(rows,
+                          {
+                            "events": (size(rows) > 0) ?
+                              dyn(rows.map(row, {"message": row.with({"tld_type": c.phase}).encode_json()}))
+                            :
+                              // The input ends the cycle on an empty events list even when want_more
+                              // is true; the placeholder is dropped by the drop_event processor.
+                              dyn([{"retry": true}]),
+                            "cursor": (size(rows) >= int(state.page_limit)) ?
+                              c.with({"cur_offset": int(c.?cur_offset.orValue(0)) + int(state.page_limit)})
+                            : (c.phase == "gtld") ?
+                              c.with({
+                                "phase": (c.?cctld_date.orValue("") != "") ? "cctld" : "idle",
+                                "cur_offset": 0,
+                                "gtld_date": "",
+                                "last_gtld_date": date,
+                              })
+                            :
+                              c.with({
+                                "phase": "idle",
+                                "cur_offset": 0,
+                                "cctld_date": "",
+                                "last_cctld_date": date,
+                              }),
+                            "want_more": size(rows) >= int(state.page_limit) || (c.phase == "gtld" && c.?cctld_date.orValue("") != ""),
+                          }
+                        )
+                    )
+                  )
+                :
+                  request("GET", state.status_url).do_request().as(resp,
+                    (resp.StatusCode != 200) ?
+                      {
+                        "events": [
+                          {
+                            "error": {
+                              "code": string(resp.StatusCode),
+                              "id": string(resp.Status),
+                              "message": "GET " + state.status_url + ": " + (
+                                (size(resp.Body) != 0) ?
+                                  string(resp.Body)
+                                :
+                                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                              ),
+                            },
+                          },
+                        ],
+                        "cursor": c,
+                        "want_more": false,
+                      }
+                    :
+                      resp.Body.decode_json().as(status,
+                        {
+                          "gtld": (state.file_date != "") ? state.file_date : string(status.?newly.gtld.last_update.orValue("")),
+                          "cctld": (state.file_date != "") ? state.file_date : string(status.?newly.cctld.last_update.orValue("")),
+                        }.as(latest,
+                          {
+                            "gtld": (latest.gtld != c.?last_gtld_date.orValue("")) ? latest.gtld : "",
+                            "cctld": (latest.cctld != c.?last_cctld_date.orValue("")) ? latest.cctld : "",
+                          }.as(pending,
+                            {
+                              // The input ends the cycle on an empty events list even when want_more is
+                              // true; emit a placeholder (dropped by the drop_event processor) so paging
+                              // starts in this cycle and the new cursor is persisted.
+                              "events": (pending.gtld != "" || pending.cctld != "") ?
+                                dyn([{"retry": true}])
+                              :
+                                dyn([]),
+                              "cursor": {
+                                "phase": (pending.gtld != "") ? "gtld" : (pending.cctld != "") ? "cctld" : "idle",
+                                "cur_offset": 0,
+                                "gtld_date": pending.gtld,
+                                "cctld_date": pending.cctld,
+                                "last_gtld_date": c.?last_gtld_date.orValue(""),
+                                "last_cctld_date": c.?last_cctld_date.orValue(""),
+                              },
+                              "want_more": pending.gtld != "" || pending.cctld != "",
+                            }
+                          )
+                        )
+                      )
+                  )
+              )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - api_key
+          resource.proxy_url: http://proxy.example:8080
+          resource.ssl:
+            verification_mode: none
+          resource.timeout: 2m
+          resource.tracer:
+            enabled: true
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://files.whoisfreaks.com/v3.3/stream/domainer
+          state:
+            api_key: ${SECRET_0}
+            file_date: "2026-08-04"
+            page_limit: 100
+            status_url: https://files.whoisfreaks.com/v3.3/status
+          tags:
+            - preserve_original_event
+            - forwarded
+            - custom-tag
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-ti_whoisfreaks.nrd_with_whois-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
