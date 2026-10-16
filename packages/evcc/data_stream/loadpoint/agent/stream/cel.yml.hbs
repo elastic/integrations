@@ -1,0 +1,90 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}/api/state
+redact:
+  fields: ~
+program: |
+  request("GET", state.url).do_request().as(resp,
+    resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, {
+        // evcc returns no stable id per loadpoint, but it identifies them by 1-based position in
+        // its own logs ("lp-1", "lp-2", ...). That position is emitted here as `index` so the
+        // loadpoint metrics can be joined to the log data stream's `evcc.log.loadpoint`.
+        //
+        // CEL has no range generator, and mito registers no two-variable comprehensions (the
+        // three-argument `map` macro is filter-then-transform, not an indexed map), so the index
+        // is taken from a fixed list filtered to the actual loadpoint count. 32 is far above any
+        // real evcc site, where loadpoints are physical charge points.
+        "events": [
+          0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+          16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+        ].filter(i, i < size(body.?loadpoints.orValue([]))).map(i, body.loadpoints[i].as(lp, {"message": {
+          "index": i + 1,
+          "site_title": body.?siteTitle.orValue(null),
+          "title": lp.?title.orValue(null),
+          "mode": lp.?mode.orValue(null),
+          "charging": lp.?charging.orValue(null),
+          "connected": lp.?connected.orValue(null),
+          "enabled": lp.?enabled.orValue(null),
+          "connected_duration": lp.?connectedDuration.orValue(null),
+          "charge_power": lp.?chargePower.orValue(null),
+          "charged_energy": lp.?chargedEnergy.orValue(null),
+          "charge_duration": lp.?chargeDuration.orValue(null),
+          "charge_remaining_duration": lp.?chargeRemainingDuration.orValue(null),
+          "charge_remaining_energy": lp.?chargeRemainingEnergy.orValue(null),
+          "effective_limit_soc": lp.?effectiveLimitSoc.orValue(null),
+          "effective_min_current": lp.?effectiveMinCurrent.orValue(null),
+          "effective_max_current": lp.?effectiveMaxCurrent.orValue(null),
+          "charger_status_reason": lp.?chargerStatusReason.orValue(null),
+          "last_24h_energy": lp.?last24hEnergy.orValue(null),
+          "last_7d_energy": lp.?last7dEnergy.orValue(null),
+          "vehicle_name": lp.?vehicleName.orValue(null),
+          "vehicle_soc": lp.?vehicleSoc.orValue(null),
+          "vehicle_range": lp.?vehicleRange.orValue(null),
+        }.encode_json()})),
+        "want_more": false,
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET " + state.url + ": " + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false,
+      }
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

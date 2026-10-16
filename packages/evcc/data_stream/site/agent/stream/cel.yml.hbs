@@ -1,0 +1,71 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}/api/state
+redact:
+  fields: ~
+program: |
+  request("GET", state.url).do_request().as(resp,
+    resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, {
+        "events": [{
+          "message": {
+            "site_title": body.?siteTitle.orValue(null),
+            "version": body.?version.orValue(null),
+            "currency": body.?currency.orValue(null),
+            "home_power": body.?homePower.orValue(null),
+            "grid_power": body.?grid.power.orValue(null),
+            "pv_power": body.?pvPower.orValue(null),
+            "pv_energy": body.?pvEnergy.orValue(null),
+            // evcc varies the shape of this field between versions: some releases (e.g. 0.211.x) return a
+            // list of battery objects, others (e.g. 0.312.x) return a single battery object. Both are passed
+            // through as-is here and normalized in the ingest pipeline, which can do proper type introspection.
+            "battery": body.?battery.orValue(null),
+            "statistics": body.?statistics.orValue(null),
+          }.encode_json(),
+        }],
+        "want_more": false,
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET " + state.url + ": " + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false,
+      }
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

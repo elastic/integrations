@@ -1,0 +1,43 @@
+format_version: 3.4.2
+name: evcc
+title: "evcc"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Collect site, solar, battery, and EV charging metrics and logs from evcc, the open-source solar charging and energy management system."
+type: integration
+categories:
+  - custom
+  - monitoring
+conditions:
+  kibana:
+    version: "^8.19.0 || ^9.1.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/evcc-logo.svg
+    title: evcc logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: evcc
+    title: evcc
+    description: Collect site and loadpoint metrics, and logs, from evcc.
+    inputs:
+      - type: cel
+        title: Collect evcc metrics via REST API
+        description: Poll the evcc REST API for site, solar, battery, and charging metrics.
+        vars:
+          - name: url
+            type: text
+            title: evcc URL
+            description: Base URL of the evcc instance, e.g. http://evcc.local:7070.
+            default: http://localhost:7070
+            required: true
+            show_user: true
+      - type: journald
+        title: Collect evcc logs via journald
+        description: Collect evcc application logs from the systemd journal (Linux hosts running evcc as a systemd service).
+owner:
+  github: elastic/integrations-triaging
+  type: community

@@ -1,0 +1,67 @@
+title: "evcc loadpoint metrics"
+type: metrics
+streams:
+  - input: cel
+    title: Collect evcc loadpoint metrics
+    description: Collect per-loadpoint charging metrics from the evcc REST API. This data stream polls `/api/state` independently of the site data stream so the two can use different intervals; enabling both results in two requests per interval pair.
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: How often the evcc API is polled.
+        required: true
+        show_user: true
+        default: 30s
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        description: The request tracer logs HTTP requests and responses to the agent's local filesystem for debugging. Enabling this compromises security and should only be used for debugging.
+        required: false
+        show_user: false
+        default: false
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before an HTTP request times out, e.g. 30s. Defaults to the agent's built-in timeout when unset.
+        required: false
+        show_user: false
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        description: Optional proxy URL to route requests to the evcc API through.
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: Optional TLS/SSL settings for connecting to the evcc API, e.g. to trust a self-signed certificate.
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - evcc-loadpoint
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        required: false
+        show_user: false
+        description: Processors to apply to events before ingest parsing.
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

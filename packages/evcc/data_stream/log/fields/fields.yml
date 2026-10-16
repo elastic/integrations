@@ -1,0 +1,59 @@
+- name: evcc
+  type: group
+  fields:
+    - name: log
+      type: group
+      description: Fields parsed from evcc application log lines that are not already covered by ECS.
+      fields:
+        - name: component
+          type: keyword
+          description: evcc log component/module that emitted the line, e.g. site, lp-1, main, sma.
+        - name: error_reason
+          type: keyword
+          description: >-
+            Failure detail reported by evcc for a vehicle API call or device read (e.g. "connect: connection refused", "context deadline exceeded"). Kept as a dedicated field rather than ECS `error.message`, which is reserved for ingest pipeline processing errors.
+        - name: loadpoint
+          type: long
+          description: Loadpoint index, parsed from a component value of the form lp-<N>.
+        - name: vehicle_metric
+          type: keyword
+          description: Vehicle metric a failed API call was attempting to refresh, e.g. soc, soc_limit, range, odometer.
+        - name: http_status_text
+          type: keyword
+          description: HTTP status text reported by a vehicle API call, e.g. Forbidden, Internal Server Error.
+        - name: ignored_by_estimator
+          type: boolean
+          description: Whether evcc reported that a failed vehicle metric read was ignored by its SoC estimator.
+        - name: subsystem
+          type: keyword
+          description: Site subsystem a device read failure relates to, e.g. battery, pv.
+        - name: reading
+          type: keyword
+          description: The reading that failed to be read, e.g. power, soc, energy.
+        - name: device_index
+          type: long
+          description: Configured index of the device within its subsystem (1-based), e.g. battery 1, pv 2.
+        - name: device_sub_index
+          type: long
+          description: Index of the underlying meter/adder read that failed (0-based), from evcc's internal add[N] wrapper.
+        - name: current_actual
+          type: float
+          description: Actual charging current reported by the charger during a current mismatch warning, in amperes.
+        - name: current_expected
+          type: float
+          description: Charging current evcc expected during a current mismatch warning, in amperes.
+        - name: min_interval_sec
+          type: long
+          description: Minimum polling interval evcc recommends to avoid charger logic current-mismatch warnings, in seconds.
+        - name: phases_actual
+          type: long
+          description: Actual active phase count reported by the charger during a phases mismatch warning.
+        - name: phases_expected
+          type: long
+          description: Phase count evcc expected during a phases mismatch warning.
+        - name: current_limit
+          type: float
+          description: Charge current limit evcc attempted to set when a set-current-limit call timed out, in amperes.
+        - name: available_version
+          type: keyword
+          description: evcc version reported as available in a "new version available" notice.

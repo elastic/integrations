@@ -1,0 +1,13 @@
+# No `tags: [preserve_original_event]` here, unlike test-common-config.yml. The pipeline must still
+# keep `event.original`: dropping it for storage optimisation is the job of the final pipeline
+# outside the integration, which reads the same tag. This fixture guards against the deprecated
+# in-package removal processor being re-introduced. The second line has no recognisable envelope, so
+# preserve_original_on_unparsed_envelope must add the tag that keeps its raw copy downstream.
+fields:
+  tags:
+    - forwarded
+    - evcc-log
+  data_stream:
+    type: logs
+    dataset: evcc.log
+    namespace: default
