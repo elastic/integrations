@@ -65,6 +65,22 @@ processors:
     to_lower: true
     ignore_missing: true
     ignore_failure: true
+- decode_xml:
+    when:
+      and:
+        - has_fields:
+            - winlog.event_data.param2
+        - equals:
+            winlog.provider_name: AD FS Auditing
+        - regexp:
+            winlog.channel: '^[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]$'
+        - regexp:
+            winlog.event_id: '^(120[0-9]|1210)$'
+    field: winlog.event_data.param2
+    target_field: winlog._tmp.adfs.audit_base
+    to_lower: true
+    ignore_missing: true
+    ignore_failure: true
 {{#if processors.length}}
 {{processors}}
 {{/if}}

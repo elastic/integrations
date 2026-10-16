@@ -47,6 +47,22 @@ inputs:
                             winlog.provider_name: Microsoft-Windows-Security-Auditing
                         - regexp:
                             winlog.channel: ^[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]$
+            - decode_xml:
+                field: winlog.event_data.param2
+                ignore_failure: true
+                ignore_missing: true
+                target_field: winlog._tmp.adfs.audit_base
+                to_lower: true
+                when:
+                    and:
+                        - has_fields:
+                            - winlog.event_data.param2
+                        - equals:
+                            winlog.provider_name: AD FS Auditing
+                        - regexp:
+                            winlog.channel: ^[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]$
+                        - regexp:
+                            winlog.event_id: ^(120[0-9]|1210)$
           publisher_pipeline.disable_host: true
           tags:
             - forwarded
