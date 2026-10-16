@@ -1,0 +1,51 @@
+config_version: 2
+interval: {{interval}}
+resource.url: {{url}}
+state:
+  domain: {{domain}}
+program: |
+  state.with(
+    request(
+      "GET",
+      state.url.trim_right("/") + "/api/v1/domain/" + state.domain
+    ).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, {
+        "events": dyn(
+          type(body) == list ?
+            body.map(e, {
+              "message": e.encode_json(),
+            })
+          :
+            []
+        ),
+      })
+    :
+      {
+        "events": dyn({
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": resp.Status,
+            "message": "GET " + state.url.trim_right("/") + "/api/v1/domain/" + state.domain + ": " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  resp.Status + ' (' + string(resp.StatusCode) + ')'
+              ),
+          },
+        }),
+      }
+    )
+  )
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
