@@ -1,0 +1,61 @@
+title: BloodHound Enterprise Sync
+type: logs
+streams:
+  - input: cel
+    template_path: cel.yml.hbs
+    title: BloodHound Enterprise Case & Alert Sync
+    description: >-
+      Synchronizes BloodHound Enterprise attack-path findings into Elastic Security Cases and Alerts. Emits sync-step metadata events to this data stream for troubleshooting.
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: Time to wait between full Case & Alert Sync cycles (e.g. 1h, 30m). During a single sync, steps still run back-to-back; this value only applies after a sync finishes.
+        default: 1h
+        multi: false
+        required: true
+        show_user: true
+      - name: details_limit
+        type: text
+        title: Details page size
+        description: BloodHound details page size used for offset pagination.
+        default: "500"
+        multi: false
+        required: true
+        show_user: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+          Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
+          tracer will delete any stored traces.
+          See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable)
+          for details.
+        multi: false
+        required: false
+        show_user: false
+        default: false
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added as the event.original field.
+        required: true
+        show_user: false
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - bloodhound_enterprise-case_sync
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed.
+        show_user: false
+elasticsearch:
+  index_template:
+    mappings:
+      dynamic: false
