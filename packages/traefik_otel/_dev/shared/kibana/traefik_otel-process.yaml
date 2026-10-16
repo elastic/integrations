@@ -61,14 +61,10 @@ dashboards:
         esql:
           type: metric
           query:
-            - FROM metrics-traefik.otel-*
+            - TS metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE process_cpu_seconds_total IS NOT NULL
-            - STATS total = SUM(process_cpu_seconds_total),
-              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
-            - EVAL duration_sec = DATE_DIFF("seconds", min_ts, max_ts)
-            - EVAL cpu_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)
-            - KEEP cpu_rate
+            - STATS cpu_rate = SUM(RATE(process_cpu_seconds_total))
           primary:
             field: cpu_rate
             label: CPU sec/sec
@@ -159,14 +155,11 @@ dashboards:
         esql:
           type: line
           query:
-            - FROM metrics-traefik.otel-*
+            - TS metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE process_cpu_seconds_total IS NOT NULL
-            - STATS total = SUM(process_cpu_seconds_total),
-              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+            - STATS cpu_rate = SUM(RATE(process_cpu_seconds_total))
               BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
-            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
-            - EVAL cpu_rate = total / bucket_secs
             - KEEP time_bucket, cpu_rate
             - SORT time_bucket ASC
           dimension:
