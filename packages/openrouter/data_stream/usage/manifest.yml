@@ -1,0 +1,84 @@
+title: "usage"
+type: metrics
+streams:
+  - input: cel
+    title: OpenRouter API usage metrics
+    description: >-
+      Collect daily additive usage metrics (request counts, token consumption, cost)
+      from the OpenRouter Analytics API, grouped by model and API key.
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: duration
+        title: Collection interval
+        description: How often the Analytics API is polled for new daily data. Between 10m and 24h.
+        min_duration: 10m
+        max_duration: 24h
+        required: true
+        show_user: true
+        default: 6h
+      - name: initial_interval
+        type: duration
+        title: Initial lookback interval
+        description: >-
+          How far back to collect data on the first run (for example 168h = 7 days).
+          At least 1h. Longer values mean more requests on
+          the first run (one request per 30 days).
+        min_duration: 1h
+        required: true
+        show_user: true
+        default: 168h
+      - name: finalization_delay
+        type: duration
+        title: Finalization delay
+        description: >-
+          How far behind "now" the collection window end is kept. Daily usage
+          metrics are running counters that update throughout the day, so a short
+          delay is sufficient (15m by default). Increase if you observe missing recent data.
+        min_duration: 0s
+        required: true
+        show_user: false
+        default: 15m
+      - name: http_client_timeout
+        type: duration
+        title: HTTP client timeout
+        description: Duration to wait before declaring a request timed out (for example 60s). Between 1s and 10m.
+        min_duration: 1s
+        max_duration: 10m
+        required: false
+        show_user: false
+        default: 60s
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL configuration
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        required: false
+        show_user: false
+        description: Processors applied to events before ingest pipeline parsing.
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

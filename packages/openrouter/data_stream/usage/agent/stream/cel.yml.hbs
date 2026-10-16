@@ -1,0 +1,165 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}/analytics/query
+state:
+  management_api_key: {{management_api_key}}
+  initial_interval: {{initial_interval}}
+  finalization_delay: {{finalization_delay}}
+  # Each request covers 30 days at daily granularity (safe under the 31-day span limit).
+  # If the API reports a truncated result, the span is halved (down to 24h) and
+  # persisted in the cursor.
+  window_span: "720h"
+redact:
+  fields:
+    - management_api_key
+program: |
+  // Usage stream: daily snapshot metrics (request count, tokens, cost) grouped by
+  // model and API key. Windowing issues 30-day chunks (halved when the API reports
+  // a truncated result) to stay within the Analytics API's 31-day per-query span limit. The cursor stores raw RFC3339 timestamps so
+  // today's in-progress bucket is re-polled every interval; dashboards use MAX→SUM
+  // to aggregate across multiple documents for the same day.
+  state.with(
+    state.?cursor.span.optMap(sp, duration(sp)).orValue(duration(state.window_span)).as(span,
+    (now - duration(state.finalization_delay)).as(today,
+        // Resume from the cursor; on the first run start initial_interval ago. A long
+        // initial_interval is backfilled window by window.
+        state.?cursor.last_end.optMap(ts, timestamp(ts)).orValue(
+          now - duration(state.initial_interval)
+        ).format(time_layout.DateOnly).parse_time(time_layout.DateOnly).as(start,
+          {
+            "today": today,
+            "start": start,
+            "span": span,
+            "end": min(start + span, today),
+          }
+        )
+      )).as(w,
+        // If we've caught up to today, stop and wait for the next scheduled run.
+        // Note: start is truncated to DateOnly (midnight) on each read, so it is
+        // always < today (raw timestamp) for the current day — today's running
+        // total is re-fetched every interval.
+        w.start >= w.today ?
+          {
+            "events": [],
+            "want_more": false,
+          }
+        :
+          request("POST", state.url).with({
+            "Header": {
+              "Authorization": ["Bearer " + state.management_api_key],
+              "Content-Type": ["application/json"],
+            },
+            "Body": {
+              "time_range": {
+                "start": w.start.format(time_layout.RFC3339),
+                "end": w.end.format(time_layout.RFC3339),
+              },
+              "granularity": "day",
+              "dimensions": ["model", "api_key_id"],
+              "metrics": [
+                "request_count",
+                "byok_request_count",
+                "tokens_prompt",
+                "tokens_completion",
+                "tokens_total",
+                "cached_tokens",
+                "reasoning_tokens",
+                "total_usage",
+                "credits_usage",
+                "openrouter_usage",
+                "byok_usage",
+                "byok_fees",
+                "usage_upstream",
+                "usage_cache",
+                "guardrail_invoked_count",
+                "response_cached_count",
+                "blended_cost_per_million_tokens",
+                "usage_web",
+                "usage_file",
+                "usage_web_fetch",
+              ],
+              "limit": 10000,
+            }.encode_json(),
+          }).do_request().as(resp,
+            resp.StatusCode == 200 ?
+              resp.Body.decode_json().as(body,
+                // If the API truncated the result at the row limit, discard it and retry
+                // the same window with half the span so no rows are silently lost. At the
+                // minimum span the (possibly truncated) rows are ingested as-is.
+                (body.?data.?metadata.?truncated.orValue(false) && (w.end - w.start).getSeconds() > 86400) ?
+                  {
+                    // want_more only continues the loop when events are published, so emit the
+                    // sentinel (dropped by the drop_event processor) to retry right away.
+                    "events": [{"message": "{\"_fake\":true}"}],
+                    "cursor": {
+                      "last_end": w.start.format(time_layout.RFC3339),
+                      "span": string(max((w.end - w.start).getSeconds() / 2 / 86400 * 86400, 86400)) + "s",
+                    },
+                    "want_more": true,
+                  }
+                :
+                  body.?data.?data.orValue([]).as(rows,
+                    // Emit a sentinel event for empty windows so the cursor advances
+                    // and backfill is not stalled. The drop_event processor below
+                    // discards it before ingest.
+                    (size(rows) == 0 ?
+                      [{"message": "{\"_fake\":true}"}]
+                    :
+                      rows.map(row, {"message": row.encode_json()})
+                    ).as(events, {
+                      "events": events,
+                      "cursor": {
+                        "last_end": w.end.format(time_layout.RFC3339),
+                        "span": string(w.span.getSeconds()) + "s",
+                      },
+                      "want_more": w.end < w.today,
+                    })
+                  )
+              )
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": "POST /analytics/query: " + (
+                      size(resp.Body) != 0 ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                    ),
+                  },
+                },
+                "want_more": false,
+              }
+          )
+      )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+  - drop_event.when.contains.message: '"_fake":true'
+{{#if processors}}
+{{processors}}
+{{/if}}

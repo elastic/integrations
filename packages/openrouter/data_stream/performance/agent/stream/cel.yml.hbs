@@ -1,0 +1,176 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}/analytics/query
+state:
+  management_api_key: {{management_api_key}}
+  initial_interval: {{initial_interval}}
+  finalization_delay: {{finalization_delay}}
+  # Each request covers exactly 24 hours (1 API call = 24 hourly buckets).
+  window_span: "24h"
+redact:
+  fields:
+    - management_api_key
+program: |
+  // Performance stream: hourly non-additive metrics (latency, throughput, cache rate)
+  // grouped by model and API key. Each request covers exactly 24 hours, keeping the
+  // query span well within the Analytics API's 31-day limit for these metrics. If the API
+  // reports a truncated result, the span is halved (down to 1h) and persisted in the cursor.
+  state.with(
+    state.?cursor.span.optMap(sp, duration(sp)).orValue(duration(state.window_span)).as(span,
+    (now - duration(state.finalization_delay))
+      .format("2006-01-02T15:00:00Z")
+      .parse_time("2006-01-02T15:00:00Z").as(today,
+        // Resume from the cursor; on the first run start initial_interval before the
+        // finalized boundary, so even a 1h lookback covers one closed hour. A long
+        // initial_interval is backfilled window by window.
+        state.?cursor.last_end.optMap(ts, timestamp(ts)).orValue(
+          today - duration(state.initial_interval)
+        ).format("2006-01-02T15:00:00Z").parse_time("2006-01-02T15:00:00Z").as(start,
+          {
+            "today": today,
+            "start": start,
+            "span": span,
+            "end": min(start + span, today),
+          }
+        )
+      )).as(w,
+        // If we've caught up to today, stop and wait for the next scheduled run.
+        w.start >= w.today ?
+          {
+            "events": [],
+            "want_more": false,
+          }
+        :
+          request("POST", state.url).with({
+            "Header": {
+              "Authorization": ["Bearer " + state.management_api_key],
+              "Content-Type": ["application/json"],
+            },
+            "Body": {
+              "time_range": {
+                "start": w.start.format(time_layout.RFC3339),
+                "end": w.end.format(time_layout.RFC3339),
+              },
+              "granularity": "hour",
+              "dimensions": ["model", "api_key_id"],
+              "metrics": [
+                "p50_latency",
+                "p90_latency",
+                "p95_latency",
+                "p99_latency",
+                "p50_router_latency",
+                "p90_router_latency",
+                "p99_router_latency",
+                "p50_total_time_to_first_token",
+                "p90_total_time_to_first_token",
+                "p95_total_time_to_first_token",
+                "p99_total_time_to_first_token",
+                "p50_generation_time",
+                "p90_generation_time",
+                "p99_generation_time",
+                "p50_inter_token_latency",
+                "p90_inter_token_latency",
+                "p99_inter_token_latency",
+                "p50_throughput",
+                "p90_throughput",
+                "p95_throughput",
+                "p99_throughput",
+                "cache_hit_rate",
+                "response_cached_rate",
+                "guardrail_invoked_rate",
+                "request_count",
+                "avg_latency",
+                "avg_total_time_to_first_token",
+                "avg_throughput",
+                "avg_inter_token_latency",
+                "avg_router_latency",
+                "avg_generation_time",
+                "p95_router_latency",
+                "p95_generation_time",
+                "p95_inter_token_latency",
+              ],
+              "limit": 10000,
+            }.encode_json(),
+          }).do_request().as(resp,
+            resp.StatusCode == 200 ?
+              resp.Body.decode_json().as(body,
+                // If the API truncated the result at the row limit, discard it and retry
+                // the same window with half the span so no rows are silently lost. At the
+                // minimum span the (possibly truncated) rows are ingested as-is.
+                (body.?data.?metadata.?truncated.orValue(false) && (w.end - w.start).getSeconds() > 3600) ?
+                  {
+                    // want_more only continues the loop when events are published, so emit the
+                    // sentinel (dropped by the drop_event processor) to retry right away.
+                    "events": [{"message": "{\"_fake\":true}"}],
+                    "cursor": {
+                      "last_end": w.start.format(time_layout.RFC3339),
+                      "span": string(max((w.end - w.start).getSeconds() / 2 / 3600 * 3600, 3600)) + "s",
+                    },
+                    "want_more": true,
+                  }
+                :
+                  body.?data.?data.orValue([]).as(rows,
+                    // Emit a sentinel event for empty windows so the cursor advances
+                    // and backfill is not stalled. The drop_event processor below
+                    // discards it before ingest.
+                    (size(rows) == 0 ?
+                      [{"message": "{\"_fake\":true}"}]
+                    :
+                      rows.map(row, {"message": row.encode_json()})
+                    ).as(events, {
+                      "events": events,
+                      "cursor": {
+                        "last_end": w.end.format(time_layout.RFC3339),
+                        "span": string(w.span.getSeconds()) + "s",
+                      },
+                      "want_more": w.end < w.today,
+                    })
+                  )
+              )
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": "POST /analytics/query: " + (
+                      size(resp.Body) != 0 ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                    ),
+                  },
+                },
+                "want_more": false,
+              }
+          )
+      )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+  - drop_event.when.contains.message: '"_fake":true'
+{{#if processors}}
+{{processors}}
+{{/if}}
