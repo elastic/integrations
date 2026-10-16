@@ -354,7 +354,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.flags | This field contains the flags of the event. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | microsoft_sqlserver.log.origin | Origin of the message usually the server but it can also be a recovery process | keyword |
