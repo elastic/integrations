@@ -101,7 +101,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
     * To **Collect logs from Island Browser API**, you'll need to:
 
-        - Configure **URL** and **API Key**.
+        - Configure **URL** and **API Key**. **SIEM Events** must use `https://api.island.io`. **User**, **Device**, **Compromised Credential**, and the deprecated **Audit** and **Admin Actions** data streams must use `https://management.island.io`. The URL applies to every data stream enabled in the policy, so collect SIEM Events in a separate integration policy from the management API data streams.
         - Enable/Disable the required datasets.
         - For **SIEM Events**, provide the **Audit ID** from the Generic SIEM Integration in the Island Management Console.
         - For each dataset, adjust the integration configuration parameters if required, including the Interval, Batch Size etc. to enable data collection.
@@ -113,7 +113,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 To collect user, admin, and system audits through the Island SIEM integration:
 
 1. Complete the [SIEM integration setup](#configure-the-siem-integration) in the Island Management Console.
-2. Enable **SIEM Events** in Fleet and configure **URL**, **API Key**, and **Audit ID**.
+2. Enable **SIEM Events** in Fleet, set **URL** to `https://api.island.io`, and configure **API Key** and **Audit ID**.
 
 ### Validation
 
@@ -201,6 +201,20 @@ This integration dataset uses the following APIs:
 - `Device`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
 - `User`: [Island Browser API](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
 
-#### ILM Policy
+#### Data retention
 
-To facilitate user and device data, source data stream-backed indices `.ds-logs-island_browser.user-*` and `.ds-logs-island_browser.device-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-island_browser.user-default_policy` and `logs-island_browser.device-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+The data streams below collect a full snapshot of Island Browser devices and users on every polling interval, so their backing indices hold one copy of each record per interval.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-island_browser.device-*` | `logs-island_browser.device-default_policy`: roll over after 30d, delete 30d after rollover | delete 30d after rollover |
+| `logs-island_browser.user-*` | `logs-island_browser.user-default_policy`: roll over after 30d, delete 30d after rollover | delete 30d after rollover |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-island_browser.device-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
