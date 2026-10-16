@@ -1,0 +1,73 @@
+# Generation tuning for the incident fields. Fields not listed get default
+# per-type randomness. The top-level `fields:` key is what the corpus generator's
+# config loader expects (config.LoadConfigFromYaml).
+#
+# The embedded-alert entries mirror ../../alert/corpus/config.yml so an alert weighs
+# the same whether it arrives on the alert stream or inside an incident.
+fields:
+  - name: id
+    cardinality: 100000000
+  - name: tenantId
+    cardinality: 1                 # single tenant = single page = worst case
+  - name: displayName
+    cardinality: 1000
+  - name: description
+    cardinality: 1000
+  - name: lastModifiedBy
+    enum: [Automation, secOpsAnalyst, defenderForCloud]
+  - name: status
+    enum: [active, resolved, redirected]
+  - name: severity
+    enum: [informational, low, medium, high]
+  - name: lastUpdateDateTime
+    period: -1h
+  - name: createdDateTime
+    period: -1h
+  - name: alert.id
+    cardinality: 100000000
+  - name: alert.providerAlertId
+    cardinality: 100000000
+  - name: alert.status
+    enum: [new, inProgress, resolved]
+  - name: alert.severity
+    enum: [informational, low, medium, high]
+  - name: alert.category
+    enum: [Execution, Persistence, LateralMovement, Exfiltration]
+  - name: alert.investigationState
+    enum: [queued, unsupportedAlertType, terminatedByUser, benign]
+  - name: alert.description
+    cardinality: 1000
+  - name: alert.recommendedActions
+    cardinality: 1000
+  - name: alert.additional.commandLine
+    cardinality: 1000
+  - name: alert.additional.uri
+    cardinality: 10000
+  - name: alert.additional.resourceId
+    cardinality: 10000
+  - name: alert.evidence.verdict
+    enum: [unknown, suspicious, malicious]
+  - name: alert.evidence.resourceType
+    enum: [Virtual Machine, Storage Account, Key Vault, SQL Server]
+  - name: alert.evidence.resourceName
+    cardinality: 10000
+  - name: alert.evidence.resourceId
+    cardinality: 10000
+  - name: alert.evidence.countryLetterCode
+    enum: [US, GB, DE, IN, AU]
+  - name: alert.evidence.city
+    cardinality: 200
+  - name: alert.evidence.state
+    cardinality: 50
+  - name: alert.evidence.port
+    range:
+      min: 1024
+      max: 65535
+  - name: alert.evidence.protocol
+    enum: [Tcp, Udp]
+  - name: alert.evidence.accountName
+    cardinality: 10000
+  - name: alert.evidence.domainName
+    cardinality: 20
+  - name: alert.evidence.userPrincipalName
+    cardinality: 10000

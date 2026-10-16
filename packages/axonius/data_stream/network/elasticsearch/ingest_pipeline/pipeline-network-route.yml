@@ -3,280 +3,309 @@ description: Pipeline for processing network route logs.
 processors:
   - foreach:
       field: axonius.network.route
-      tag: foreach_route_host_ipv4s
+      tag: foreach_route_host_ipv4s_818ebec1
       if: ctx.axonius?.network?.route instanceof List
       processor:
         foreach:
           field: _ingest._value.host_ipv4s
-          tag: foreach_route_host_ipv4s
+          tag: foreach_route_host_ipv4s_7e12cb5b
           ignore_missing: true
           processor:
             convert:
               field: _ingest._value
-              tag: convert_route_host_ipv4s_to_ip
+              tag: convert_route_host_ipv4s_to_ip_16eaf20a
               type: ip
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_39075fe8
                     field: _ingest._value
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_8c764c65
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.route
-      tag: foreach_route_is_end_point
+      tag: foreach_route_is_end_point_219701dc
       if: ctx.axonius?.network?.route instanceof List
       processor:
         convert:
           field: _ingest._value.is_end_point
-          tag: convert_route_is_end_point_to_boolean
+          tag: convert_route_is_end_point_to_boolean_fabb7f19
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_end_point_c8e6379d
                 field: _ingest._value.is_end_point
                 ignore_missing: true
             - append:
+                tag: append_error_message_33dfc3dd
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.route
-      tag: foreach_route_is_entry_point
+      tag: foreach_route_is_entry_point_035c0773
       if: ctx.axonius?.network?.route instanceof List
       processor:
         convert:
           field: _ingest._value.is_entry_point
-          tag: convert_route_is_entry_point_to_boolean
+          tag: convert_route_is_entry_point_to_boolean_16a7f405
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_entry_point_ae3ce456
                 field: _ingest._value.is_entry_point
                 ignore_missing: true
             - append:
+                tag: append_error_message_2aa3ff61
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.route
-      tag: foreach_route_is_public_facing
+      tag: foreach_route_is_public_facing_6e0d14f6
       if: ctx.axonius?.network?.route instanceof List
       processor:
         convert:
           field: _ingest._value.is_public_facing
-          tag: convert_route_is_public_facing_to_boolean
+          tag: convert_route_is_public_facing_to_boolean_76dc9ca4
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_public_facing_cecc68df
                 field: _ingest._value.is_public_facing
                 ignore_missing: true
             - append:
+                tag: append_error_message_b5fde5b5
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.route
-      tag: foreach_route_nat_from_destination_integer_ip
+      tag: foreach_route_nat_from_destination_integer_ip_1f5be457
       if: ctx.axonius?.network?.route instanceof List
       processor:
         convert:
           field: _ingest._value.nat.from_destination_integer_ip
-          tag: convert_route_nat_from_destination_integer_ip_to_long
+          tag: convert_route_nat_from_destination_integer_ip_to_long_7a120c33
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_nat_from_destination_integer_ip_7194bd85
                 field: _ingest._value.nat.from_destination_integer_ip
                 ignore_missing: true
             - append:
+                tag: append_error_message_d2697069
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.route
-      tag: foreach_route_nat_from_destination_ip_address
+      tag: foreach_route_nat_from_destination_ip_address_e49419c5
       if: ctx.axonius?.network?.route instanceof List
       processor:
         convert:
           field: _ingest._value.nat.from_destination_ip_address
-          tag: convert_route_nat_from_destination_ip_address_to_ip
+          tag: convert_route_nat_from_destination_ip_address_to_ip_674b1b47
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_nat_from_destination_ip_address_937abd1e
                 field: _ingest._value.nat.from_destination_ip_address
                 ignore_missing: true
             - append:
+                tag: append_error_message_0662ba0f
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.route
-      tag: foreach_route_nat_from_destination_ip_address
+      tag: foreach_route_nat_from_destination_ip_address_6ca6787e
       if: ctx.axonius?.network?.route instanceof List
       processor:
         append:
           field: destination.nat.ip
-          tag: append_route_nat_from_destination_ip_address_into_destination_nat_ip
+          tag: append_route_nat_from_destination_ip_address_into_destination_nat_ip_cf635ecd
           value: '{{{_ingest._value.nat.from_destination_ip_address}}}'
           allow_duplicates: false
   - foreach:
       field: axonius.network.route
-      tag: foreach_route_nat_from_source_integer_ip
+      tag: foreach_route_nat_from_source_integer_ip_198bb7ce
       if: ctx.axonius?.network?.route instanceof List
       processor:
         convert:
           field: _ingest._value.nat.from_source_integer_ip
-          tag: convert_route_nat_from_source_integer_ip_to_long
+          tag: convert_route_nat_from_source_integer_ip_to_long_1520d77a
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_nat_from_source_integer_ip_3fa3c26c
                 field: _ingest._value.nat.from_source_integer_ip
                 ignore_missing: true
             - append:
+                tag: append_error_message_f682ffe7
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.route
-      tag: foreach_route_nat_from_source_ip_address
+      tag: foreach_route_nat_from_source_ip_address_251d485b
       if: ctx.axonius?.network?.route instanceof List
       processor:
         convert:
           field: _ingest._value.nat.from_source_ip_address
-          tag: convert_route_nat_from_source_ip_address_to_ip
+          tag: convert_route_nat_from_source_ip_address_to_ip_225e678f
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_nat_from_source_ip_address_618aecd5
                 field: _ingest._value.nat.from_source_ip_address
                 ignore_missing: true
             - append:
+                tag: append_error_message_047adb03
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.route
-      tag: foreach_route_nat_from_source_ip_address
+      tag: foreach_route_nat_from_source_ip_address_046c76f3
       if: ctx.axonius?.network?.route instanceof List
       processor:
         append:
           field: source.nat.ip
-          tag: append_route_nat_from_source_ip_address_into_source_nat_ip
+          tag: append_route_nat_from_source_ip_address_into_source_nat_ip_789956dc
           value: '{{{_ingest._value.nat.from_source_ip_address}}}'
           allow_duplicates: false
   - foreach:
       field: axonius.network.route
-      tag: foreach_route_nat_is_destination_ip_range_public
+      tag: foreach_route_nat_is_destination_ip_range_public_29ab2653
       if: ctx.axonius?.network?.route instanceof List
       processor:
         convert:
           field: _ingest._value.nat.is_destination_ip_range_public
-          tag: convert_route_nat_is_destination_ip_range_public_to_boolean
+          tag: convert_route_nat_is_destination_ip_range_public_to_boolean_18488123
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_nat_is_destination_ip_range_public_ed81d475
                 field: _ingest._value.nat.is_destination_ip_range_public
                 ignore_missing: true
             - append:
+                tag: append_error_message_0dd9bd5c
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.route
-      tag: foreach_route_nat_is_source_ip_range_public
+      tag: foreach_route_nat_is_source_ip_range_public_cc1252c2
       if: ctx.axonius?.network?.route instanceof List
       processor:
         convert:
           field: _ingest._value.nat.is_source_ip_range_public
-          tag: convert_route_nat_is_source_ip_range_public_to_boolean
+          tag: convert_route_nat_is_source_ip_range_public_to_boolean_b5b290c2
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_nat_is_source_ip_range_public_c735083b
                 field: _ingest._value.nat.is_source_ip_range_public
                 ignore_missing: true
             - append:
+                tag: append_error_message_530a739b
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.route
-      tag: foreach_route_nat_to_destination_integer_ip
+      tag: foreach_route_nat_to_destination_integer_ip_8ad0dc23
       if: ctx.axonius?.network?.route instanceof List
       processor:
         convert:
           field: _ingest._value.nat.to_destination_integer_ip
-          tag: convert_route_nat_to_destination_integer_ip_to_long
+          tag: convert_route_nat_to_destination_integer_ip_to_long_3e2ce4be
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_nat_to_destination_integer_ip_58087fb2
                 field: _ingest._value.nat.to_destination_integer_ip
                 ignore_missing: true
             - append:
+                tag: append_error_message_7e5d4a63
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.route
-      tag: foreach_route_nat_to_destination_ip_address
+      tag: foreach_route_nat_to_destination_ip_address_4df405ca
       if: ctx.axonius?.network?.route instanceof List
       processor:
         convert:
           field: _ingest._value.nat.to_destination_ip_address
-          tag: convert_route_nat_to_destination_ip_address_to_ip
+          tag: convert_route_nat_to_destination_ip_address_to_ip_ecc8ca66
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_nat_to_destination_ip_address_15e40bc6
                 field: _ingest._value.nat.to_destination_ip_address
                 ignore_missing: true
             - append:
+                tag: append_error_message_fe71f0d1
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.route
-      tag: foreach_route_nat_to_source_integer_ip
+      tag: foreach_route_nat_to_source_integer_ip_4bccd6fd
       if: ctx.axonius?.network?.route instanceof List
       processor:
         convert:
           field: _ingest._value.nat.to_source_integer_ip
-          tag: convert_route_nat_to_source_integer_ip_to_long
+          tag: convert_route_nat_to_source_integer_ip_to_long_58a32d0d
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_nat_to_source_integer_ip_06c8ecce
                 field: _ingest._value.nat.to_source_integer_ip
                 ignore_missing: true
             - append:
+                tag: append_error_message_6138325f
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.route
-      tag: foreach_route_nat_to_source_ip_address
+      tag: foreach_route_nat_to_source_ip_address_3cd83cff
       if: ctx.axonius?.network?.route instanceof List
       processor:
         convert:
           field: _ingest._value.nat.to_source_ip_address
-          tag: convert_route_nat_to_source_ip_address_to_ip
+          tag: convert_route_nat_to_source_ip_address_to_ip_12205d44
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_nat_to_source_ip_address_442bab81
                 field: _ingest._value.nat.to_source_ip_address
                 ignore_missing: true
             - append:
+                tag: append_error_message_41c735b3
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.route
-      tag: foreach_axonius_network_route
+      tag: foreach_axonius_network_route_09153995
       if: ctx.axonius?.network?.route instanceof List
       processor:
         remove:
           field:
             - _ingest._value.nat.from_destination_ip_address
             - _ingest._value.nat.from_source_ip_address
-          tag: remove_network_route_nat_mapped_fields
+          tag: remove_network_route_nat_mapped_fields_78b08e2a
           ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -284,5 +313,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

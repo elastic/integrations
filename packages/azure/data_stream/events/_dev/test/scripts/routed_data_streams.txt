@@ -1,0 +1,78 @@
+# Verify that events from the events data stream are routed to category-specific
+# data streams via routing rules.
+#
+# The fake EventHub server delivers one event per Azure log category:
+#   - Administrative                → azure.activitylogs
+#   - ApplicationGatewayFirewallLog → azure.application_gateway
+#   - AuditLogs                     → azure.auditlogs
+#   - AzureFirewallApplicationRule  → azure.firewall_logs
+#   - MicrosoftGraphActivityLogs    → azure.graphactivitylogs
+#   - AzureADGraphActivityLogs      → azure.aadgraphactivitylogs
+#   - RiskyUsers                    → azure.identity_protection
+#   - AppServiceHTTPLogs            → azure.platformlogs
+#   - ProvisioningLogs              → azure.provisioning
+#   - SignInLogs                    → azure.signinlogs
+#   - ApplicationConsole            → azure.springcloudlogs
+#
+# The server speaks AMQP 1.0 on port 5672 (EventHub emulator protocol) and
+# Azure Blob Storage REST on port 10000 (checkpoint store). Its source lives
+# in packages/azure/_dev/scripts/azure-eh/.
+
+[!external_stack] skip 'Skipping external stack test.'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Copy the fake EventHub server source into the working directory.
+mkdir azure-eh
+cp ${PACKAGE_ROOT}/_dev/scripts/azure-eh/docker-compose.yml azure-eh/docker-compose.yml
+cp ${PACKAGE_ROOT}/_dev/scripts/azure-eh/go.mod azure-eh/go.mod
+cp ${PACKAGE_ROOT}/_dev/scripts/azure-eh/main.go azure-eh/main.go
+
+# Start the fake EventHub server.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} azure-eh
+
+# Add the package resources.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Add the data stream policy pointing at the fake EventHub.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml EVENTS_DS
+
+# Wait for all routed docs to arrive, then confirm the total holds.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 11 -confirm 5s -timeout 5m logs-azure.activitylogs-*,logs-azure.application_gateway-*,logs-azure.auditlogs-*,logs-azure.firewall_logs-*,logs-azure.graphactivitylogs-*,logs-azure.aadgraphactivitylogs-*,logs-azure.identity_protection-*,logs-azure.platformlogs-*,logs-azure.provisioning-*,logs-azure.signinlogs-*,logs-azure.springcloudlogs-*
+
+# Each destination got its one document (docs already indexed, these return immediately).
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-azure.activitylogs-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-azure.application_gateway-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-azure.auditlogs-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-azure.firewall_logs-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-azure.graphactivitylogs-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-azure.aadgraphactivitylogs-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-azure.identity_protection-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-azure.platformlogs-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-azure.provisioning-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-azure.signinlogs-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-azure.springcloudlogs-*
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${EVENTS_DS}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down azure-eh
+
+-- test_config.yaml --
+input: azure-eventhub
+vars:
+  eventhub: azure-routing-test
+  consumer_group: $Default
+  auth_type: connection_string
+  connection_string: "Endpoint=sb://svc-azure-eh:5672;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;UseDevelopmentEmulator=true;EntityPath=azure-routing-test"
+  storage_account: devstoreaccount1
+  storage_account_connection_string: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://svc-azure-eh:10000/devstoreaccount1;"
+data_stream:
+  vars:
+    processor_version: v2
+    processor_start_position: earliest
+    preserve_original_event: false

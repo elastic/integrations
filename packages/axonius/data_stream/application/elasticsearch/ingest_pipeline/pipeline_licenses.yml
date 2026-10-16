@@ -3,7 +3,7 @@ description: Pipeline for processing license logs.
 processors:
   - date:
       field: axonius.application.actual_renewal_date
-      tag: date_actual_renewal_date
+      tag: date_actual_renewal_date_2a0d870d
       target_field: axonius.application.actual_renewal_date
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -12,56 +12,60 @@ processors:
       if: ctx.axonius?.application?.actual_renewal_date != null && ctx.axonius.application.actual_renewal_date != ''
       on_failure:
         - remove:
+            tag: remove_axonius_application_actual_renewal_date_cd48b5ec
             field: axonius.application.actual_renewal_date
             ignore_missing: true
         - append:
+            tag: append_error_message_9d5b0c6a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.application.associated_license_users
-      tag: foreach_associated_license_users_email
+      tag: foreach_associated_license_users_email_fdf24fdd
       if: ctx.axonius?.application?.associated_license_users instanceof List
       processor:
         append:
           field: related.user
-          tag: append_associated_license_users_email_into_related_user
+          tag: append_associated_license_users_email_into_related_user_e7268d72
           value: '{{{_ingest._value.email}}}'
           allow_duplicates: false
   - foreach:
       field: axonius.application.associated_license_users
-      tag: foreach_associated_license_users_username
+      tag: foreach_associated_license_users_username_b7b39ff0
       if: ctx.axonius?.application?.associated_license_users instanceof List
       processor:
         append:
           field: related.user
-          tag: append_associated_license_users_username_into_related_user
+          tag: append_associated_license_users_username_into_related_user_c37bd20a
           value: '{{{_ingest._value.username}}}'
           allow_duplicates: false
   - foreach:
       field: axonius.application.associated_users
-      tag: foreach_associated_users_username
+      tag: foreach_associated_users_username_4a77b1a2
       if: ctx.axonius?.application?.associated_users instanceof List
       processor:
         append:
           field: related.user
-          tag: append_associated_users_username_into_related_user
+          tag: append_associated_users_username_into_related_user_447ee4fb
           value: '{{{_ingest._value.username}}}'
           allow_duplicates: false
   - convert:
       field: axonius.application.cost
-      tag: convert_cost_to_double
+      tag: convert_cost_to_double_df57f382
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_application_cost_909b345d
             field: axonius.application.cost
             ignore_missing: true
         - append:
+            tag: append_error_message_7ac23044
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.application.end_date
-      tag: date_end_date
+      tag: date_end_date_91a8d4cf
       target_field: axonius.application.end_date
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -70,122 +74,142 @@ processors:
       if: ctx.axonius?.application?.end_date != null && ctx.axonius.application.end_date != ''
       on_failure:
         - remove:
+            tag: remove_axonius_application_end_date_79d95968
             field: axonius.application.end_date
             ignore_missing: true
         - append:
+            tag: append_error_message_8b0f6892
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.application.is_active_license
-      tag: convert_is_active_license_to_boolean
+      tag: convert_is_active_license_to_boolean_5f23b2f7
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_application_is_active_license_fb646c2f
             field: axonius.application.is_active_license
             ignore_missing: true
         - append:
+            tag: append_error_message_3b41d87e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.application.is_active_license_from_adapter
-      tag: convert_is_active_license_from_adapter_to_boolean
+      tag: convert_is_active_license_from_adapter_to_boolean_3ae5b011
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_application_is_active_license_from_adapter_351c7da3
             field: axonius.application.is_active_license_from_adapter
             ignore_missing: true
         - append:
+            tag: append_error_message_e151dca7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.application.license_estimated_monthly_cost
-      tag: convert_license_estimated_monthly_cost_to_double
+      tag: convert_license_estimated_monthly_cost_to_double_c0c9b61c
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_application_license_estimated_monthly_cost_c587928b
             field: axonius.application.license_estimated_monthly_cost
             ignore_missing: true
         - append:
+            tag: append_error_message_15aac0c3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.application.license_estimated_yearly_cost
-      tag: convert_license_estimated_yearly_cost_to_double
+      tag: convert_license_estimated_yearly_cost_to_double_0e4b0680
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_application_license_estimated_yearly_cost_fb6a8f47
             field: axonius.application.license_estimated_yearly_cost
             ignore_missing: true
         - append:
+            tag: append_error_message_7e7cc0be
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.application.number_of_active_associated_users
-      tag: convert_number_of_active_associated_users_to_long
+      tag: convert_number_of_active_associated_users_to_long_cb9f6b67
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_application_number_of_active_associated_users_0cb125dd
             field: axonius.application.number_of_active_associated_users
             ignore_missing: true
         - append:
+            tag: append_error_message_a20278bf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.application.number_of_associated_users
-      tag: convert_number_of_associated_users_to_long
+      tag: convert_number_of_associated_users_to_long_ea5239a0
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_application_number_of_associated_users_f2f695fd
             field: axonius.application.number_of_associated_users
             ignore_missing: true
         - append:
+            tag: append_error_message_e8e02d08
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.application.number_of_inactive_associated_users
-      tag: convert_number_of_inactive_associated_users_to_long
+      tag: convert_number_of_inactive_associated_users_to_long_78dbdff7
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_application_number_of_inactive_associated_users_95211bf7
             field: axonius.application.number_of_inactive_associated_users
             ignore_missing: true
         - append:
+            tag: append_error_message_c0cdcb5e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.application.possible_savings_of_inactive_associated_users
-      tag: convert_possible_savings_of_inactive_associated_users_to_double
+      tag: convert_possible_savings_of_inactive_associated_users_to_double_af92ef08
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_application_possible_savings_of_inactive_associated_users_7e4432ff
             field: axonius.application.possible_savings_of_inactive_associated_users
             ignore_missing: true
         - append:
+            tag: append_error_message_0cc274e4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.application.quantity
-      tag: convert_quantity_to_long
+      tag: convert_quantity_to_long_944d1156
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_application_quantity_f5abf375
             field: axonius.application.quantity
             ignore_missing: true
         - append:
+            tag: append_error_message_c247f584
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.application.start_date
-      tag: date_start_date
+      tag: date_start_date_97aa801b
       target_field: axonius.application.start_date
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -194,30 +218,35 @@ processors:
       if: ctx.axonius?.application?.start_date != null && ctx.axonius.application.start_date != ''
       on_failure:
         - remove:
+            tag: remove_axonius_application_start_date_dde3e013
             field: axonius.application.start_date
             ignore_missing: true
         - append:
+            tag: append_error_message_a3fbba3e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
-      tag: set_event_start_from_application_start_date
+      tag: set_event_start_from_application_start_date_030f640c
       copy_from: axonius.application.start_date
       ignore_empty_value: true
   - convert:
       field: axonius.application.unit_price
-      tag: convert_unit_price_to_double
+      tag: convert_unit_price_to_double_71eb9ed0
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_application_unit_price_894bfd2b
             field: axonius.application.unit_price
             ignore_missing: true
         - append:
+            tag: append_error_message_d914138b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -225,5 +254,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -3,23 +3,31 @@ description: Pipeline for processing source object.
 processors:
   - convert:
       field: ses.source.type_id
-      tag: convert_source_type_id_to_string
+      tag: convert_source_type_id_to_string_658e94a4
       type: string
       if: ctx.ses?.source?.type_id != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_8ea0f4c8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_ses_source_type_id_b7377268
             field: ses.source.type_id
             ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}}
-        in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

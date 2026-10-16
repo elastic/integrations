@@ -3,188 +3,193 @@ description: Pipeline for processing device logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - append:
       field: event.category
-      tag: append_host_into_event_category
+      tag: append_host_into_event_category_cbc3f167
       value: host
       allow_duplicates: false
   - append:
       field: event.type
-      tag: append_info_into_event_type
+      tag: append_info_into_event_type_a75e9a8a
       value: info
       allow_duplicates: false
   - date:
       field: json.lastSyncTime
-      tag: date_last_sync_time
+      tag: date_last_sync_time_b82f7611
       target_field: "@timestamp"
       formats:
         - ISO8601
       ignore_failure: true
   - set:
       field: host.id
-      tag: set_host_id_from_uuid
+      tag: set_host_id_from_uuid_3cb77c1a
       copy_from: json.uuid
       ignore_empty_value: true
   - rename:
       field: json.displayName
-      tag: rename_displayName
+      tag: rename_displayName_ec9b8896
       target_field: host.name
       ignore_missing: true
   - append:
       field: related.hosts
-      tag: append_uuid_into_related_hosts
+      tag: append_uuid_into_related_hosts_a14f552c
       value: "{{{json.uuid}}}"
       allow_duplicates: false
       if: ctx.json?.uuid != null
   - append:
       field: related.hosts
-      tag: append_host_name_into_related_hosts
+      tag: append_host_name_into_related_hosts_82ac1e98
       value: "{{{host.name}}}"
       allow_duplicates: false
       if: ctx.host?.name != null
   - convert:
       field: json.primaryLocalIpAddress
-      tag: convert_primary_local_ip_to_ip
+      tag: convert_primary_local_ip_to_ip_6f6082c0
       type: ip
       target_field: json.primaryLocalIpAddress
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_primaryLocalIpAddress_621acdb6
             field: json.primaryLocalIpAddress
             ignore_missing: true
         - append:
+            tag: append_error_message_239ac3d1
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - append:
       field: host.ip
-      tag: append_primary_local_ip_into_host_ip
+      tag: append_primary_local_ip_into_host_ip_2fac3c01
       value: "{{{json.primaryLocalIpAddress}}}"
       allow_duplicates: false
       if: ctx.json?.primaryLocalIpAddress != null
   - append:
       field: related.ip
-      tag: append_primary_local_ip_into_related_ip
+      tag: append_primary_local_ip_into_related_ip_f7b78f54
       value: "{{{json.primaryLocalIpAddress}}}"
       allow_duplicates: false
       if: ctx.json?.primaryLocalIpAddress != null
   - convert:
       field: json.publicIpAddress
-      tag: convert_public_ip_to_ip
+      tag: convert_public_ip_to_ip_68525d2e
       type: ip
       target_field: json.publicIpAddress
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_publicIpAddress_8ce77ce7
             field: json.publicIpAddress
             ignore_missing: true
         - append:
+            tag: append_error_message_25ec2e56
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - append:
       field: host.ip
-      tag: append_public_ip_into_host_ip
+      tag: append_public_ip_into_host_ip_bd2e9ea4
       value: "{{{json.publicIpAddress}}}"
       allow_duplicates: false
       if: ctx.json?.publicIpAddress != null
   - append:
       field: related.ip
-      tag: append_public_ip_into_related_ip
+      tag: append_public_ip_into_related_ip_9283af99
       value: "{{{json.publicIpAddress}}}"
       allow_duplicates: false
       if: ctx.json?.publicIpAddress != null
   - rename:
       field: json.operatingSystem.displayName
-      tag: rename_os_displayName
+      tag: rename_os_displayName_69ae55ab
       target_field: host.os.full
       ignore_missing: true
   - rename:
       field: json.operatingSystem.version.name
-      tag: rename_os_version_name
+      tag: rename_os_version_name_0fda5ef1
       target_field: host.os.version
       ignore_missing: true
   - set:
       field: host.os.type
-      tag: set_os_type_windows
+      tag: set_os_type_windows_81fc5ec0
       value: windows
       if: ctx.host?.os?.full != null && ctx.host.os.full.toLowerCase().contains('windows')
   - set:
       field: host.os.type
-      tag: set_os_type_linux
+      tag: set_os_type_linux_dccde04a
       value: linux
       if: ctx.host?.os?.full != null && ctx.host.os.full.toLowerCase().contains('linux')
   - set:
       field: host.os.type
-      tag: set_os_type_macos
+      tag: set_os_type_macos_6e63f832
       value: macos
       if: ctx.host?.os?.full != null && (ctx.host.os.full.toLowerCase().contains('mac os') || ctx.host.os.full.toLowerCase().contains('macos'))
   - set:
       field: host.os.name
-      tag: set_os_name_from_os_full
+      tag: set_os_name_from_os_full_9b9ae1c3
       copy_from: host.os.full
       ignore_empty_value: true
   - set:
       field: host.os.platform
-      tag: set_os_platform_windows
+      tag: set_os_platform_windows_12903b69
       value: windows
       if: ctx.host?.os?.type == 'windows'
   - set:
       field: host.os.platform
-      tag: set_os_platform_linux
+      tag: set_os_platform_linux_10a1db1b
       value: linux
       if: ctx.host?.os?.type == 'linux'
   - set:
       field: host.os.platform
-      tag: set_os_platform_macos
+      tag: set_os_platform_macos_b65ebdf7
       value: darwin
       if: ctx.host?.os?.type == 'macos'
   - set:
       field: host.os.family
-      tag: set_os_family_windows
+      tag: set_os_family_windows_a1650161
       value: windows
       if: ctx.host?.os?.type == 'windows'
   - set:
       field: host.os.family
-      tag: set_os_family_linux
+      tag: set_os_family_linux_3557f7c2
       value: linux
       if: ctx.host?.os?.type == 'linux'
   - set:
       field: host.os.family
-      tag: set_os_family_macos
+      tag: set_os_family_macos_ec5f3d4f
       value: darwin
       if: ctx.host?.os?.type == 'macos'
   - script:
-      tag: script_extract_mac_addresses
+      tag: script_extract_mac_addresses_5046be30
       lang: painless
       description: Extracts MAC addresses from hardwareProfiles network adapters into host.mac.
       source: |-
@@ -208,10 +213,11 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_b9d8dd63
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - script:
-      tag: script_rename_nested_fields
+      tag: script_rename_nested_fields_bd944733
       lang: painless
       description: Renames camelCase fields in deployedComponents and hardwareProfiles arrays to snake_case.
       source: |-
@@ -246,164 +252,169 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_7c0ce348
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - fingerprint:
       fields:
         - json.uuid
-      tag: fingerprint_uuid
+      tag: fingerprint_uuid_df8e1c6e
       target_field: _id
       method: MD5
       ignore_missing: true
   - rename:
       field: json.uuid
-      tag: rename_uuid
+      tag: rename_uuid_bfc489e0
       target_field: eset_protect.device.uuid
       ignore_missing: true
   - set:
       field: eset_protect.device.display_name
-      tag: set_display_name_from_host_name
+      tag: set_display_name_from_host_name_788651db
       copy_from: host.name
       ignore_empty_value: true
   - rename:
       field: json.etag
-      tag: rename_etag
+      tag: rename_etag_3bc3be99
       target_field: eset_protect.device.etag
       ignore_missing: true
   - rename:
       field: json.ownerUuid
-      tag: rename_ownerUuid
+      tag: rename_ownerUuid_94a91612
       target_field: eset_protect.device.owner_uuid
       ignore_missing: true
   - rename:
       field: json.description
-      tag: rename_description
+      tag: rename_description_f5399fb1
       target_field: eset_protect.device.description
       ignore_missing: true
   - rename:
       field: json.tags
-      tag: rename_device_tags
+      tag: rename_device_tags_96aa6104
       target_field: eset_protect.device.labels
       ignore_missing: true
   - rename:
       field: json.deployedComponents
-      tag: rename_deployedComponents
+      tag: rename_deployedComponents_93b48f33
       target_field: eset_protect.device.deployed_components
       ignore_missing: true
   - date:
       field: json.lastSyncTime
-      tag: date_last_sync_time_custom
+      tag: date_last_sync_time_custom_0cb08bdf
       target_field: eset_protect.device.last_sync_time
       formats:
         - ISO8601
       ignore_failure: true
   - rename:
       field: json.originalDisplayName
-      tag: rename_originalDisplayName
+      tag: rename_originalDisplayName_e2373a07
       target_field: eset_protect.device.original_display_name
       ignore_missing: true
   - rename:
       field: json.parentGroupUuid
-      tag: rename_parentGroupUuid
+      tag: rename_parentGroupUuid_fdbe1bee
       target_field: eset_protect.device.parent_group_uuid
       ignore_missing: true
   - convert:
       field: json.isMobile
-      tag: convert_isMobile_to_boolean
+      tag: convert_isMobile_to_boolean_b01e01f0
       target_field: eset_protect.device.is_mobile
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2e4b68d6
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.enrollmentStatus
-      tag: rename_enrollmentStatus
+      tag: rename_enrollmentStatus_2aa7d2d9
       target_field: eset_protect.device.enrollment_status
       ignore_missing: true
   - rename:
       field: json.functionalityStatus
-      tag: rename_functionalityStatus
+      tag: rename_functionalityStatus_3ebe56ac
       target_field: eset_protect.device.functionality_status
       ignore_missing: true
   - convert:
       field: json.isMuted
-      tag: convert_isMuted_to_boolean
+      tag: convert_isMuted_to_boolean_becfa214
       target_field: eset_protect.device.is_muted
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ce87b32d
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - convert:
       field: json.functionalityProblemCount
-      tag: convert_functionalityProblemCount_to_long
+      tag: convert_functionalityProblemCount_to_long_e9891793
       target_field: eset_protect.device.functionality_problem_count
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_36bb32fc
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - convert:
       field: json.isMaster
-      tag: convert_isMaster_to_boolean
+      tag: convert_isMaster_to_boolean_7638dfe9
       target_field: eset_protect.device.is_master
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_abeea48a
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.activeProducts
-      tag: rename_activeProducts
+      tag: rename_activeProducts_d0e4ab91
       target_field: eset_protect.device.active_products
       ignore_missing: true
   - rename:
       field: json.deviceType
-      tag: rename_deviceType
+      tag: rename_deviceType_0f4d582d
       target_field: eset_protect.device.type
       ignore_missing: true
   - rename:
       field: json.primaryLocalIpAddress
-      tag: rename_primaryLocalIpAddress
+      tag: rename_primaryLocalIpAddress_e20bdeea
       target_field: eset_protect.device.primary_local_ip_address
       ignore_missing: true
   - rename:
       field: json.publicIpAddress
-      tag: rename_publicIpAddress
+      tag: rename_publicIpAddress_9347e92b
       target_field: eset_protect.device.public_ip_address
       ignore_missing: true
   - rename:
       field: json.hardwareProfiles
-      tag: rename_hardwareProfiles
+      tag: rename_hardwareProfiles_90e80223
       target_field: eset_protect.device.hardware_profiles
       ignore_missing: true
   - rename:
       field: json.operatingSystem
-      tag: rename_operatingSystem
+      tag: rename_operatingSystem_9ad288fb
       target_field: eset_protect.device.operating_system
       ignore_missing: true
   - rename:
       field: json.managementDomain
-      tag: rename_managementDomain
+      tag: rename_managementDomain_383879b0
       target_field: eset_protect.device.management_domain
       ignore_missing: true
   - remove:
       field:
         - eset_protect.device.display_name
         - eset_protect.device.uuid
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_8141e44f
       ignore_missing: true
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_50c8d6aa
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -421,24 +432,28 @@ processors:
         }
         drop(ctx);
   - append:
+      tag: append_event_kind_d2f25e35
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

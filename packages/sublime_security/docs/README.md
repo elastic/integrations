@@ -1535,6 +1535,7 @@ An example event for `message_event` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
+| sublime_security.message_event.attack_score_verdict | Attack Score verdict for the message. Possible values are malicious, spam, graymail, suspicious, unknown, error, or likely_benign. | keyword |
 | sublime_security.message_event.canonical_id | Canonical ID of the message. | keyword |
 | sublime_security.message_event.created_at | Time this message was added to sublime_security. | date |
 | sublime_security.message_event.data.flagged_rules.id | ID of the flagged rule. | keyword |

@@ -392,7 +392,7 @@ func TestSetManifestOwner(t *testing.T) {
 }
 
 // The CODEOWNERS-rewriting logic itself is tested directly in
-// dev/backports/owners (owners.ApplyUpdates) — writeOwnerSyncPlan is a thin
+// cmd/backport/backports/owners (owners.ApplyUpdates) — writeOwnerSyncPlan is a thin
 // file-I/O wrapper around it plus setManifestOwner, tested here.
 func TestWriteOwnerSyncPlan(t *testing.T) {
 	workDir := t.TempDir()

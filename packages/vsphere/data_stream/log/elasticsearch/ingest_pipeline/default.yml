@@ -14,6 +14,7 @@ processors:
     patterns:
     - "^(%{ECS_SYSLOG_PRIORITY})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{HOST}%{SPACE}%{NOTSPACE:process.name}
       (%{POSINT:process.pid:long}|-) - -%{SPACE}%{GREEDYDATA:message}"
+    - "^(%{ECS_SYSLOG_PRIORITY})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{HOST}%{SPACE}%{NOTSPACE:process.name}%{SPACE}(%{POSINT:process.pid:long}|-)(%{SPACE}%{NOTSPACE})?%{SPACE}%{SYSLOG5424SD:_tmp.structured_data}\\s+%{GREEDYDATA:message}"
     - "^(%{ECS_SYSLOG_PRIORITY})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{HOST}%{SPACE}%{DATA:process.name}(?:\\[%{POSINT:process.pid:long}\\])?\\:
       %{GREEDYDATA:message}"
     - "^(%{ECS_SYSLOG_PRIORITY})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{HOST}%{SPACE}%{NOTSPACE:process.name}%{SPACE}(%{POSINT:process.pid:long}|-)( -)?%{SPACE}%{GREEDYDATA:message}"
@@ -23,6 +24,14 @@ processors:
     pattern_definitions:
       ECS_SYSLOG_PRIORITY: "<%{NONNEGINT:log.syslog.priority:long}>(\\d )?"
       HOST: "(?:%{IP:host.ip}|%{HOSTNAME:host.name})"
+- grok:
+    description: Extract user name from RFC5424 syslog structured data
+    field: _tmp.structured_data
+    patterns:
+    - '(^|\s)user="{0,2}%{SDPARAMVALUE:user.name}"{0,2}'
+    pattern_definitions:
+      SDPARAMVALUE: '[^\s\]"]+'
+    ignore_failure: true
 - script:
     description: Translate log.syslog.priority to log.syslog.severity.code and log.syslog.facility.code
     lang: painless
@@ -86,16 +95,19 @@ processors:
       }
       ctx.log.syslog.severity.name = params[(ctx.log.syslog.severity.code).toString()];
 - grok:
+    description: Parse vSphere event body, including hostd "Event <id> :" messages left after RFC 5424 structured data
     field: message
     patterns:
     - "^%{EVENT1}"
     - "^%{EVENT2}"
+    - "^%{EVENT_SD}"
     - "^%{GREEDYDATA:message}"
     pattern_definitions:
       EVENT1: "%{TIMESTAMP_ISO8601}(( '%{NOTSPACE:event.action}' %{POSINT})|:) %{LOGLEVEL:log.level}
         %{GREEDYDATA:message}"
       EVENT2: Event \[%{POSINT:event.id}\] %{NOTSPACE} \[%{TIMESTAMP_ISO8601}\] \[%{JAVACLASS:log.logger}\]
         \[%{LOGLEVEL:log.level}\] %{GREEDYDATA:message}
+      EVENT_SD: Event\s+%{POSINT:event.id}\s*:\s*%{GREEDYDATA:message}
 - date:
     field: _tmp.timestamp
     target_field: "@timestamp"

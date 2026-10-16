@@ -1,11 +1,12 @@
 format_version: 3.5.0
 name: prometheus_input_otel
 title: "Prometheus Scrape via OTel (Guided)"
-version: 0.1.1
+version: 0.3.0
 source:
   license: "Elastic-2.0"
 description: "Scrape Prometheus-format metrics via the OTel Collector with guided HTTPS/TLS/auth configuration."
 type: input
+group: prometheus
 categories:
   - monitoring
   - observability
@@ -55,8 +56,24 @@ policy_templates:
         type: text
         title: Metrics Path
         required: false
-        description: The HTTP resource path to fetch metrics from targets
+        description: >
+          The HTTP resource path to fetch metrics from targets. Path only — do
+          not append query parameters here; use the Query Parameters field instead.
         default: /metrics
+        show_user: false
+      - name: params
+        type: yaml
+        title: Query Parameters
+        required: false
+        description: >
+          Optional Prometheus scrape query parameters as a YAML map of
+          parameter name to a list of values. These are appended to the
+          scrape URL as proper query-string parameters. Example:
+
+            namespaces:
+              - my-namespace.account
+            labels:
+              - temporal_activity_type
         show_user: false
       - name: scheme
         type: select
@@ -120,7 +137,7 @@ policy_templates:
         type: text
         title: Username
         required: false
-        description: Username for basic authentication
+        description: Username for basic authentication. When set, basic auth is used and Bearer Token is ignored.
         show_user: true
       - name: password
         type: password
@@ -131,6 +148,15 @@ policy_templates:
         secret: false
         description: Password for basic authentication. Must be used together with Username.
         show_user: true
+      - name: bearer_token
+        type: password
+        title: Bearer Token
+        required: false
+        # TODO: Change to secret: true once Fleet Server resolves the secret handling issue
+        # for OTel input packages. See: https://github.com/elastic/fleet-server/issues/6277
+        secret: false
+        description: Bearer token sent as Authorization Bearer credentials. Ignored when Username is set.
+        show_user: true
 owner:
-  github: elastic/ecosystem
+  github: elastic/obs-infraobs-integrations
   type: elastic

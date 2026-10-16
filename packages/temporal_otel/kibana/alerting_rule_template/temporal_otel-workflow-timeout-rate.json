@@ -1,0 +1,53 @@
+{
+  "id": "temporal_otel-workflow-timeout-rate",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when workflow executions are timing out — i.e., running past their workflowExecutionTimeout without completing. Workflow timeouts are distinct from failures: the workflow ran out of wall-clock time, not out of retries. Sustained timeouts indicate blocked workers, backlogged task queues, or timeout values set too aggressively for the actual workload.",
+    "name": "[Temporal OTel] Workflow Timeout Rate Elevated",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "temporal",
+      "temporal-cloud"
+    ],
+    "schedule": {
+      "interval": "15m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Workflow Timeout Rate Elevated\n\nThis alert fires when one or more task queues are experiencing workflow execution timeouts. A workflow timeout (`workflowExecutionTimeout`) means the workflow ran longer than its configured maximum lifetime — it was terminated by Temporal, not by application logic.\n\n### Why This Matters\n\nWorkflow timeouts often cascade: if an upstream system retries a timed-out workflow, it re-submits work that then competes for the same overloaded task queue resources. This can amplify the original pressure.\n\n### Triage Steps\n\n1. **Check task queue backlog**: A growing backlog is the most common cause — workers are unable to process tasks before the workflow's execution timeout expires.\n   ```esql\n   TS metrics-temporal.cloud_metrics.otel-*\n   | STATS max_backlog = MAX(AVG_OVER_TIME(metrics.temporal_cloud_v1_approximate_backlog_count))\n       BY attributes.temporal_namespace, attributes.temporal_task_queue, attributes.task_type\n   | WHERE max_backlog > 100\n   | SORT max_backlog DESC\n   ```\n\n2. **Check for no pollers**: If `no_poller_tasks_count` is non-zero for this queue, workers are absent — tasks cannot be processed at all.\n\n3. **Compare with activity timeouts**: If `activity_task_timeout_count` is also elevated, the root cause may be in the activity layer (slow external dependencies, worker crashes).\n\n4. **Check workflow schedule-to-close latency**: If `workflow_schedule_to_close_latency_p99` has increased significantly, the workload itself is running slower — not necessarily due to infrastructure but possibly due to increased data volumes or logic changes.\n\n5. **Review timeout configuration**: Confirm that the `workflowExecutionTimeout` is appropriate for the workflow type. Very short timeouts on long-running workflows will trigger this alert even without any problems.\n\n6. **Scale workers**: If backlog is growing, scale up the worker fleet for the affected task queue.\n\n### Threshold Guidance\n\n- `timeout_rate > 0.01` per second (~1 timeout per 100 seconds): This is a low-frequency alert by design. Even a small number of sustained workflow timeouts warrants investigation.\n- In healthy systems, `workflow_timeout_count` should be zero or near-zero at all times."
+      },
+      "dashboards": [
+        {
+          "id": "temporal_otel-5e3e5a3c-5eaf-4556-af1e-72a001264380"
+        }
+      ]
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS timeout_rate = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_timeout_count)),\n        success_rate = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_success_count))\n    BY attributes.temporal_namespace, attributes.temporal_task_queue\n// workflow_timeout_count only emits when timeouts occur; null rates are excluded\n| WHERE timeout_rate > 0.01\n// Compute timeout percentage of all workflow closures for context\n| EVAL timeout_pct = ROUND(\n    timeout_rate /\n    (timeout_rate + CASE(success_rate IS NULL, 0.0, success_rate)) * 100.0,\n    3)\n| SORT timeout_rate DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.temporal_task_queue",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

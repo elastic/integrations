@@ -5,14 +5,14 @@ processors:
   # Set ECS version.
   #
   - set:
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: '8.11.0'
   #
   # Set event.original from message, unless reindexing.
   #
   - rename:
-      tag: rename_message
+      tag: rename_message_7f1de011
       field: message
       target_field: event.original
       if: ctx.event?.original == null
@@ -21,7 +21,7 @@ processors:
   # Parse syslog headers (if any) and extract JSON payload.
   #
   - grok:
-      tag: grok_event_original
+      tag: grok_event_original_999c2d54
       field: event.original
       patterns:
         # RFC5424 from CyberArk.
@@ -40,48 +40,52 @@ processors:
         JSON_PAYLOAD: '{"format":"elastic","version":"1.0",.*}'
       on_failure:
         - fail:
+            tag: fail_unexpected_event_format_ingest_failure_68fd596e
             message: "unexpected event format: {{{_ingest.on_failure_message}}}"
 
   - json:
-      tag: json_tmp_payload
+      tag: json_tmp_payload_69514177
       field: _tmp.payload
       target_field: _tmp.json
       on_failure:
         - fail:
+            tag: fail_malformed_json_event_ingest_failure_26133cea
             message: "malformed JSON event: {{{_ingest.on_failure_message}}}"
 
   - rename:
-      tag: rename_tmp_json_syslog_monitor_record
+      tag: rename_tmp_json_syslog_monitor_record_63db2429
       field: _tmp.json.syslog.monitor_record
       target_field: cyberarkpas.monitor
       on_failure:
         - fail:
+            tag: fail_unexpected_event_structure_ingest_failure_f1a58473
             message: "unexpected event structure: {{{_ingest.on_failure_message}}}"
 
   #
   # Remove all empty fields
   #
   - script:
-      tag: script_removes_empty_monitor_fields
+      tag: script_removes_empty_monitor_fields_60281d23
       lang: painless
       description: 'Removes empty monitor fields'
       source: >-
         ctx.cyberarkpas.monitor.entrySet().removeIf(entry -> entry.getValue() == "");
 
   - rename:
-      tag: rename_tmp_json_raw
+      tag: rename_tmp_json_raw_e5641adc
       field: _tmp.json.raw
       target_field: cyberarkpas.monitor.raw
       ignore_missing: true
 
   - date:
-      tag: date_cyberarkpas_monitor_isotimestamp
+      tag: date_cyberarkpas_monitor_isotimestamp_4937f922
       field: cyberarkpas.monitor.IsoTimestamp
       target_field: '@timestamp'
       formats:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_7ed66c96
             field: error.message
             value: "failed to parse ISO timestamp field: {{{cyberarkpas.monitor.IsoTimestamp}}}: {{{_ingest.on_failure_message}}}"
 
@@ -89,7 +93,7 @@ processors:
   # Convert field names from CamelCase to snake_case.
   #
   - script:
-      tag: script_converts_monitor_fields_names_from_camelcase_to_snake_case
+      tag: script_converts_monitor_fields_names_from_camelcase_to_snake_case_39f594ea
       lang: painless
       description: "Converts monitor field's names from CamelCase to snake_case"
       source: >
@@ -130,7 +134,6 @@ processors:
           );
         }
         ctx.cyberarkpas.monitor = keys_to_snake_case_recursive(ctx.cyberarkpas.monitor);
-
   ########################################################
   # All processors from this point use the snake_case form
   # to access CyberArk fields.
@@ -140,72 +143,72 @@ processors:
   # Parse integers
   #
   - convert:
-      tag: convert_cyberarkpas_monitor_average_execution_time
+      tag: convert_cyberarkpas_monitor_average_execution_time_a9cb0a6d
       field: cyberarkpas.monitor.average_execution_time
       type: integer
       ignore_missing: true
   - convert:
-      tag: convert_cyberarkpas_monitor_max_execution_time
+      tag: convert_cyberarkpas_monitor_max_execution_time_24b61847
       field: cyberarkpas.monitor.max_execution_time
       type: integer
       ignore_missing: true
   - convert:
-      tag: convert_cyberarkpas_monitor_average_queue_time
+      tag: convert_cyberarkpas_monitor_average_queue_time_17988788
       field: cyberarkpas.monitor.average_queue_time
       type: integer
       ignore_missing: true
   - convert:
-      tag: convert_cyberarkpas_monitor_max_queue_time
+      tag: convert_cyberarkpas_monitor_max_queue_time_acd0e26e
       field: cyberarkpas.monitor.max_queue_time
       type: integer
       ignore_missing: true
   - convert:
-      tag: convert_cyberarkpas_monitor_number_of_parallel_tasks
+      tag: convert_cyberarkpas_monitor_number_of_parallel_tasks_0af7c535
       field: cyberarkpas.monitor.number_of_parallel_tasks
       type: integer
       ignore_missing: true
   - convert:
-      tag: convert_cyberarkpas_monitor_max_parallel_tasks
+      tag: convert_cyberarkpas_monitor_max_parallel_tasks_a8f169e9
       field: cyberarkpas.monitor.max_parallel_tasks
       type: integer
       ignore_missing: true
   - convert:
-      tag: convert_cyberarkpas_monitor_transaction_count
+      tag: convert_cyberarkpas_monitor_transaction_count_90ce1e20
       field: cyberarkpas.monitor.transaction_count
       type: integer
       ignore_missing: true
   - convert:
-      tag: convert_cyberarkpas_monitor_cpu_usage
+      tag: convert_cyberarkpas_monitor_cpu_usage_6f569d62
       field: cyberarkpas.monitor.cpu_usage
       type: integer
       ignore_missing: true
   - convert:
-      tag: convert_cyberarkpas_monitor_memory_usage
+      tag: convert_cyberarkpas_monitor_memory_usage_27711acd
       field: cyberarkpas.monitor.memory_usage
       type: integer
       ignore_missing: true
   - convert:
-      tag: convert_cyberarkpas_monitor_drive_free_space_in_gb
+      tag: convert_cyberarkpas_monitor_drive_free_space_in_gb_d842f2b1
       field: cyberarkpas.monitor.drive_free_space_in_gb
       type: integer
       ignore_missing: true
   - convert:
-      tag: convert_cyberarkpas_monitor_drive_total_space_in_gb
+      tag: convert_cyberarkpas_monitor_drive_total_space_in_gb_6fb4f444
       field: cyberarkpas.monitor.drive_total_space_in_gb
       type: integer
       ignore_missing: true
   - convert:
-      tag: convert_cyberarkpas_monitor_syslog_queue_size
+      tag: convert_cyberarkpas_monitor_syslog_queue_size_8abcb6b4
       field: cyberarkpas.monitor.syslog_queue_size
       type: integer
       ignore_missing: true
 
+
   ########################################################
   # ECS enrichment
   ########################################################
-
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_037f3dfc
       field: event.kind
       value: metric
 
@@ -213,34 +216,33 @@ processors:
   # Rewrite the default tag
   #
   - script:
-      tag: script_rewrite_the_default_tag
+      tag: script_rewrite_the_default_tag_6db92fab
       lang: painless
       description: 'Rewrite the default tag'
       if: ctx.tags instanceof List
       source: >-
         def i = ctx.tags.indexOf("cyberarkpas-audit");
         if (i != -1) ctx.tags.set(i, "cyberarkpas-monitor");
-
   #
   # Observer fields
   #
   - rename:
-      tag: rename_cyberarkpas_monitor_vendor
+      tag: rename_cyberarkpas_monitor_vendor_dcbffe9a
       field: cyberarkpas.monitor.vendor
       target_field: observer.vendor
       ignore_missing: true
   - rename:
-      tag: rename_cyberarkpas_monitor_product
+      tag: rename_cyberarkpas_monitor_product_2dceae7f
       field: cyberarkpas.monitor.product
       target_field: observer.product
       ignore_missing: true
   - set:
-      tag: set_observer_version
+      tag: set_observer_version_79e48624
       field: observer.version
       copy_from: cyberarkpas.monitor.version
       ignore_empty_value: true
   - rename:
-      tag: rename_cyberarkpas_monitor_hostname
+      tag: rename_cyberarkpas_monitor_hostname_023f24c8
       field: cyberarkpas.monitor.hostname
       target_field: observer.hostname
       ignore_missing: true
@@ -249,7 +251,7 @@ processors:
   # Populate related.hosts
   #
   - append:
-      tag: append_related_hosts
+      tag: append_related_hosts_9f723d7f
       field: related.hosts
       value: '{{{observer.hostname}}}'
       if: ctx.observer?.hostname != null
@@ -259,7 +261,7 @@ processors:
   # Set host fields, unless already set
   #
   - script:
-      tag: script_set_host_cpu_usage
+      tag: script_set_host_cpu_usage_ca5545cc
       lang: painless
       description: 'Set host.cpu.usage'
       if: ctx.host?.cpu?.usage == null
@@ -268,7 +270,7 @@ processors:
         if (ctx.host.cpu == null) ctx.host.cpu = [:];
         ctx.host.cpu.usage = ctx.cyberarkpas.monitor.cpu_usage/100.0;
   - set:
-      tag: set_host_name
+      tag: set_host_name_36cd5e73
       field: host.name
       value: '{{{observer.hostname}}}'
       ignore_empty_value: true
@@ -278,27 +280,28 @@ processors:
   # Cleanup
   #
   - remove:
-      tag: remove_tmp
+      tag: remove_tmp_9ef01a7c
       field: _tmp
       ignore_missing: true
 
 on_failure:
   - set:
-      tag: set_event_kind_on_failure
+      tag: set_event_kind_on_failure_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - remove:
-      tag: remove_tmp_on_failure
+      tag: remove_tmp_on_failure_2b95a689
       field: _tmp
       ignore_missing: true

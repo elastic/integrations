@@ -1,0 +1,74 @@
+{
+  "attributes": {
+    "name": "[Supabase OTel] Mean database query latency 99.5% rolling 30 days",
+    "description": "Tracks mean query execution time for the project's database, derived from the two cumulative pg_stat_statements counters: total execution time in seconds over total queries executed. Because everything a Supabase project serves is a client of this one database, mean query time is the closest project-wide latency signal available and is the usual root cause behind 'the API is slow'. A 5-minute timeslice is good when mean execution time stayed at or below the 50 millisecond threshold, and the SLO requires 99.5% of timeslices to be good over a rolling 30 days. Both counters are cumulative, so each becomes a per-timeslice delta via max() - min(), and the equation scales the seconds-valued time delta by 1000 so the threshold reads directly in milliseconds. A timeslice in which no queries ran at all divides by zero, which Kibana records as no data rather than as a success, so quiet periods neither consume nor credit error budget. Two caveats when reading this SLO. It is a call-weighted mean across every statement, so frequent cheap queries dominate and a few important queries degrading badly will move it only slightly; there is no request-duration histogram in this data, so no percentile is available as an alternative. And a pg_stat_reset() inside a timeslice inflates both deltas toward their lifetime totals, so that slice reports the lifetime mean rather than the window mean. The 50 ms bar is a conservative starting point and should be recalibrated to the application's own query mix.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"supabase.metrics.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "pg_stat_statements_total_time_seconds",
+              "filter": ""
+            },
+            {
+              "name": "B",
+              "aggregation": "min",
+              "field": "pg_stat_statements_total_time_seconds",
+              "filter": ""
+            },
+            {
+              "name": "C",
+              "aggregation": "max",
+              "field": "pg_stat_statements_total_queries",
+              "filter": ""
+            },
+            {
+              "name": "D",
+              "aggregation": "min",
+              "field": "pg_stat_statements_total_queries",
+              "filter": ""
+            }
+          ],
+          "equation": "1000 * (A-B) / (C-D)",
+          "comparator": "LTE",
+          "threshold": 50
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "5m"
+    },
+    "tags": [
+      "supabase",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.supabase_project_ref"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+        },
+        {
+          "id": "supabase_otel-7c6a2004-c517-4b50-b70a-2682b7a79228"
+        }
+      ]
+    }
+  },
+  "id": "supabase_otel-mean-query-latency-99.5-Rolling30Days",
+  "type": "slo_template"
+}

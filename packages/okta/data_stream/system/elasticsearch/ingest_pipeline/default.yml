@@ -2,7 +2,7 @@
 description: Pipeline for Okta system logs.
 processors:
   - remove:
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       field:
         - organization
         - division
@@ -13,34 +13,34 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
-      tag: set_version
+      tag: set_version_6b2cef5e
       field: ecs.version
       value: '8.11.0'
   # Keep message as event.original.
   # Warn if event.original has already been set. This is most likely due to logstash ecs_compatibility setting.
   - append:
-      tag: append_message
+      tag: append_message_22f4027a
       if: ctx.event?.original != null
       field: error.message
       value: 'event.original is set before start of ingest pipeline'
   # keep message as event.original if it has not already been set.
   - rename:
-      tag: rename_message
+      tag: rename_message_7f1de011
       field: message
       target_field: event.original
       if: ctx.event?.original == null
       ignore_missing: true
   - remove:
-      tag: remove_message
+      tag: remove_message_bc5087de
       field: message
       if: ctx.event?.original != null
       ignore_missing: true
   - json:
-      tag: json_original
+      tag: json_original_74d23cc2
       field: event.original
       target_field: json
   - script:
-      tag: script
+      tag: script_drops_null_empty_values_recursively_5fcd9900
       description: Drops null/empty values recursively
       lang: painless
       source: |
@@ -58,36 +58,36 @@ processors:
         }
         drop(ctx);
   - convert:
-      tag: convert_uuid
+      tag: convert_uuid_a2c28148
       field: json.uuid
       target_field: _id
       type: string
       ignore_failure: true
       if: ctx.json?.uuid != null && ctx.json?.uuid != ""
   - date:
-      tag: date_published
+      tag: date_published_4ca7c653
       field: json.published
       formats:
         - ISO8601
       ignore_failure: true
   - set:
-      tag: set_kind
+      tag: set_kind_d452ef2c
       field: event.kind
       value: event
   - rename:
-      tag: rename_displayMessage
+      tag: rename_displayMessage_6bae4a21
       field: json.displayMessage
       target_field: okta.display_message
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_eventType
+      tag: rename_eventType_60652189
       field: json.eventType
       target_field: okta.event_type
       ignore_missing: true
       ignore_failure: true
   - append:
-      tag: append_category
+      tag: append_category_a579baf6
       field: event.category
       value: iam
       if: |
@@ -97,7 +97,7 @@ processors:
         "user.lifecycle.unsuspend"].contains(ctx.okta?.event_type)
       allow_duplicates: false
   - append:
-      tag: append_category_2
+      tag: append_category_2_fd4c1adb
       field: event.category
       value: configuration
       if: |
@@ -110,19 +110,19 @@ processors:
         "application.lifecycle.deactivate","application.lifecycle.update"].contains(ctx.okta?.event_type)
       allow_duplicates: false
   - append:
-      tag: append_category_3
+      tag: append_category_3_6a944429
       field: event.category
       value: authentication
       if: '["user.session.start","user.session.end","user.authentication.sso","policy.evaluate_sign_on"].contains(ctx.okta?.event_type)'
       allow_duplicates: false
   - append:
-      tag: append_category_4
+      tag: append_category_4_0e8ce08c
       field: event.category
       value: session
       if: '["user.session.start","user.session.end"].contains(ctx.okta?.event_type)'
       allow_duplicates: false
   - append:
-      tag: append_type
+      tag: append_type_d3661be4
       field: event.type
       value: info
       if: |
@@ -130,13 +130,13 @@ processors:
         "core.concurrency.org.limit.violation"].contains(ctx.okta?.event_type)
       allow_duplicates: false
   - append:
-      tag: append_category_5
+      tag: append_category_5_97dea8a4
       field: event.category
       value: network
       if: '["security.request.blocked"].contains(ctx.okta?.event_type)'
       allow_duplicates: false
   - append:
-      tag: append_category_6
+      tag: append_category_6_eb9b0c48
       field: event.category
       value: network
       if: |
@@ -144,25 +144,25 @@ processors:
         "core.concurrency.org.limit.violation","security.request.blocked"].contains(ctx.okta?.event_type)
       allow_duplicates: false
   - append:
-      tag: append_type_2
+      tag: append_type_2_7267429c
       field: event.type
       value: start
       if: '["user.session.start"].contains(ctx.okta?.event_type)'
       allow_duplicates: false
   - append:
-      tag: append_type_3
+      tag: append_type_3_3d45774e
       field: event.type
       value: end
       if: '["user.session.end"].contains(ctx.okta?.event_type)'
       allow_duplicates: false
   - append:
-      tag: append_type_4
+      tag: append_type_4_c0db1cfc
       field: event.type
       value: group
       if: '["group.user_membership.add","group.user_membership.remove"].contains(ctx.okta?.event_type)'
       allow_duplicates: false
   - append:
-      tag: append_type_5
+      tag: append_type_5_d277052e
       field: event.type
       value: info
       if: |
@@ -173,7 +173,7 @@ processors:
         "application.user_membership.remove","application.user_membership.change_username"].contains(ctx.okta?.event_type)
       allow_duplicates: false
   - append:
-      tag: append_type_6
+      tag: append_type_6_19dfd8fc
       field: event.type
       value: change
       if: |
@@ -186,388 +186,390 @@ processors:
         "application.user_membership.remove","application.user_membership.change_username"].contains(ctx.okta?.event_type)
       allow_duplicates: false
   - append:
-      tag: append_type_7
+      tag: append_type_7_92a35243
       field: event.type
       value: creation
       if: '["user.lifecycle.create","policy.lifecycle.create","application.lifecycle.create"].contains(ctx.okta?.event_type)'
       allow_duplicates: false
   - append:
-      tag: append_type_8
+      tag: append_type_8_7b379a0a
       field: event.type
       value: deletion
       if: '["policy.lifecycle.delete","application.lifecycle.delete"].contains(ctx.okta?.event_type)'
       allow_duplicates: false
   - append:
-      tag: append_type_9
+      tag: append_type_9_f87a0664
       field: event.type
       value: info
       if: '["policy.evaluate_sign_on"].contains(ctx.okta?.event_type)'
       allow_duplicates: false
   - pipeline:
-      tag: pipeline_ecs_category_type
+      tag: pipeline_ecs_category_type_c039e8b1
       name: '{{ IngestPipeline "ecs_category_type" }}'
   - rename:
-      tag: rename_uuid
+      tag: rename_uuid_1c5677e8
       field: json.uuid
       target_field: okta.uuid
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_alternateId
+      tag: rename_alternateId_dd32b0ec
       field: json.actor.alternateId
       target_field: okta.actor.alternate_id
       ignore_missing: true
       ignore_failure: true
   - set:
-      tag: set_name
+      tag: set_name_e1802197
       field: user.name
       copy_from: okta.actor.alternate_id
       ignore_empty_value: true
   - set:
-      tag: set_email
+      tag: set_email_5ae87311
       field: user.email
       copy_from: user.name
       ignore_empty_value: true
       if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
   - set:
-      tag: set_name_2
+      tag: set_name_2_0fcba070
       field: source.user.name
       copy_from: user.name
       ignore_empty_value: true
   - set:
-      tag: set_email_2
+      tag: set_email_2_4bef4ee1
       field: source.user.email
       copy_from: source.user.name
       if: ctx.source?.user?.name != null && ctx.source.user.name.indexOf("@") > 0
   - set:
-      tag: set_name_3
+      tag: set_name_3_79a8a507
       field: client.user.name
       copy_from: user.name
       ignore_empty_value: true
   - set:
-      tag: set_email_3
+      tag: set_email_3_fad279fe
       field: client.user.email
       copy_from: client.user.name
       if: ctx.client?.user?.name != null && ctx.client.user.name.indexOf("@") > 0
   - rename:
-      tag: rename_displayName
+      tag: rename_displayName_44aa3e19
       field: json.actor.displayName
       target_field: okta.actor.display_name
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_id
+      tag: rename_id_7cd2943f
       field: json.actor.id
       target_field: okta.actor.id
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_type
+      tag: rename_type_ce819c49
       field: json.actor.type
       target_field: okta.actor.type
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_device
+      tag: rename_device_a5ca4aee
       field: json.client.device
       target_field: okta.client.device
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_device_2
+      tag: rename_device_2_bcd9fb3d
       field: json.device
       target_field: okta.device
       ignore_missing: true
       ignore_failure: true
   - json:
-      tag: json_device_integrator
+      tag: json_device_integrator_22c109e6
       field: okta.device.device_integrator
       if: ctx.okta?.device?.device_integrator != null
   - rename:
-      tag: rename_geolocation
+      tag: rename_geolocation_8afc3cd4
       field: json.client.geographicalContext.geolocation
       target_field: client.geo.location
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_city
+      tag: rename_city_e691a072
       field: json.client.geographicalContext.city
       target_field: client.geo.city_name
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_state
+      tag: rename_state_28ff97fe
       field: json.client.geographicalContext.state
       target_field: client.geo.region_name
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_country
+      tag: rename_country_ae4542b6
       field: json.client.geographicalContext.country
       target_field: client.geo.country_name
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_id_2
+      tag: rename_id_2_6a1cb3a5
       field: json.client.id
       target_field: okta.client.id
       ignore_missing: true
       ignore_failure: true
   - convert:
-      tag: convert_ipAddress
+      tag: convert_ipAddress_86573c5a
       field: json.client.ipAddress
       target_field: okta.client.ip
       type: ip
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_browser
+      tag: rename_browser_1ac5d2c7
       field: json.client.userAgent.browser
       target_field: okta.client.user_agent.browser
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_os
+      tag: rename_os_8d546fcb
       field: json.client.userAgent.os
       target_field: okta.client.user_agent.os
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_rawUserAgent
+      tag: rename_rawUserAgent_e87b81db
       field: json.client.userAgent.rawUserAgent
       target_field: okta.client.user_agent.raw_user_agent
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_zone
+      tag: rename_zone_3c350eae
       field: json.client.zone
       target_field: okta.client.zone
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_reason
+      tag: rename_reason_d492c051
       field: json.outcome.reason
       target_field: okta.outcome.reason
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_result
+      tag: rename_result_418ab4d7
       field: json.outcome.result
       target_field: okta.outcome.result
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_target
+      tag: rename_target_04f4a008
       field: json.target
       target_field: okta.target
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_id_3
+      tag: rename_id_3_8270261d
       field: json.transaction.id
       target_field: okta.transaction.id
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_type_2
+      tag: rename_type_2_2bd3b756
       field: json.transaction.type
       target_field: okta.transaction.type
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_requestApiTokenId
+      tag: rename_requestApiTokenId_c855a64c
       field: json.transaction.detail.requestApiTokenId
       target_field: okta.transaction.detail.request_api_token_id
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_rootApiTokenId
+      tag: rename_rootApiTokenId_c3836126
       field: json.transaction.detail.rootApiTokenId
       target_field: okta.transaction.detail.root_api_token_id
       ignore_missing: true
   - pipeline:
-      tag: pipeline
+      tag: pipeline_use_flattened_debug_3f4c4b94
       if: ctx._conf?.remove_flattened_debug != true
       name: '{{ IngestPipeline "use_flattened_debug" }}'
   - pipeline:
-      tag: pipeline_authenticationProvider
+      tag: pipeline_authenticationProvider_b6cb9171
       if: ctx._conf?.remove_flattened_debug == true
       name: '{{ IngestPipeline "no_use_flattened_debug" }}'
   - rename:
-      tag: rename_authenticationProvider
+      tag: rename_authenticationProvider_8eb32ed5
       field: json.authenticationContext.authenticationProvider
       target_field: okta.authentication_context.authentication_provider
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_authenticationStep
+      tag: rename_authenticationStep_ec8645dc
       field: json.authenticationContext.authenticationStep
       target_field: okta.authentication_context.authentication_step
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_credentialProvider
+      tag: rename_credentialProvider_3a65e9f2
       field: json.authenticationContext.credentialProvider
       target_field: okta.authentication_context.credential_provider
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_credentialType
+      tag: rename_credentialType_477c9d7a
       field: json.authenticationContext.credentialType
       target_field: okta.authentication_context.credential_type
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_externalSessionId
+      tag: rename_externalSessionId_724e3921
       field: json.authenticationContext.externalSessionId
       target_field: okta.authentication_context.external_session_id
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_interface
+      tag: rename_interface_7ef4d245
       field: json.authenticationContext.interface
       target_field: okta.authentication_context.authentication_provider
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_issuer
+      tag: rename_issuer_0b6f1e54
       field: json.authenticationContext.issuer
       target_field: okta.authentication_context.issuer
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_rootSessionId
+      tag: rename_rootSessionId_f059dc0b
       field: json.authenticationContext.rootSessionId
       target_field: okta.authentication_context.root_session_id
       ignore_missing: true
   - rename:
-      tag: rename_asNumber
+      tag: rename_asNumber_cc7375be
       field: json.securityContext.asNumber
       target_field: okta.security_context.as.number
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_asOrg
+      tag: rename_asOrg_e9ab3c53
       field: json.securityContext.asOrg
       target_field: okta.security_context.as.organization.name
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_domain
+      tag: rename_domain_3ab91701
       field: json.securityContext.domain
       target_field: okta.security_context.domain
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_isProxy
+      tag: rename_isProxy_7f9226cb
       field: json.securityContext.isProxy
       target_field: okta.security_context.is_proxy
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_isp
+      tag: rename_isp_80fc8444
       field: json.securityContext.isp
       target_field: okta.security_context.isp
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_ipChain
+      tag: rename_ipChain_05b272ea
       field: json.request.ipChain
       target_field: okta.request.ip_chain
       ignore_missing: true
       ignore_failure: true
   - foreach:
-      tag: foreach_ip_chain
+      tag: foreach_ip_chain_c1106e84
       field: okta.request.ip_chain
       processor:
         rename:
+          tag: rename_ingest_value_geographicalContext_to_ingest_value_geographical_context_5a4e8f5d
           field: _ingest._value.geographicalContext
           target_field: _ingest._value.geographical_context
           ignore_missing: true
           ignore_failure: true
       ignore_missing: true
   - foreach:
-      tag: foreach_ip_chain_2
+      tag: foreach_ip_chain_2_2e020d71
       field: okta.request.ip_chain
       processor:
         rename:
+          tag: rename_ingest_value_geographical_context_postalCode_to_ingest_value_geographical_context_postal_code_19d7b126
           field: _ingest._value.geographical_context.postalCode
           target_field: _ingest._value.geographical_context.postal_code
           ignore_missing: true
           ignore_failure: true
       ignore_missing: true
   - convert:
-      tag: convert_raw_user_agent
+      tag: convert_raw_user_agent_e3fa7611
       field: okta.client.user_agent.raw_user_agent
       target_field: user_agent.original
       type: string
       ignore_failure: true
   - set:
-      tag: set_ip
+      tag: set_ip_77469429
       field: client.ip
       copy_from: okta.client.ip
       if: ctx.okta?.client?.ip != null
   - set:
-      tag: set_ip_2
+      tag: set_ip_2_846fadda
       field: source.ip
       copy_from: okta.client.ip
       if: ctx.okta?.client?.ip != null
   - convert:
-      tag: convert_event_type
+      tag: convert_event_type_35291b2e
       field: okta.event_type
       target_field: event.action
       type: string
       ignore_failure: true
   - convert:
-      tag: convert_name
+      tag: convert_name_e2849786
       field: okta.security_context.as.organization.name
       target_field: client.as.organization.name
       type: string
       ignore_failure: true
   - convert:
-      tag: convert_domain
+      tag: convert_domain_7b2eb21d
       field: okta.security_context.domain
       target_field: client.domain
       type: string
       ignore_failure: true
   - convert:
-      tag: convert_domain_2
+      tag: convert_domain_2_7609a161
       field: okta.security_context.domain
       target_field: source.domain
       type: string
       ignore_failure: true
   - convert:
-      tag: convert_uuid_2
+      tag: convert_uuid_2_480cb82f
       field: okta.uuid
       target_field: event.id
       type: string
       ignore_failure: true
   - lowercase:
-      tag: lowercase_result
+      tag: lowercase_result_37acc7a3
       field: okta.outcome.result
       target_field: okta.outcome.result_lower
       ignore_missing: true
   - set:
-      tag: set_outcome
+      tag: set_outcome_3b128f38
       field: event.outcome
       value: success
       if: ctx.okta?.outcome?.result_lower != null && (ctx.okta?.outcome?.result_lower == "success" || ctx.okta?.outcome?.result_lower == "allow")
   - set:
-      tag: set_outcome_2
+      tag: set_outcome_2_02843e12
       field: event.outcome
       value: failure
       if: ctx.okta?.outcome?.result_lower != null && (ctx.okta?.outcome?.result_lower == "failure" || ctx.okta?.outcome?.result_lower == "deny")
   - set:
-      tag: set_outcome_3
+      tag: set_outcome_3_4ab8830e
       field: event.outcome
       value: unknown
       if: ctx.event?.outcome == null
   - remove:
-      tag: remove_result_lower
+      tag: remove_result_lower_f64edd1b
       field: okta.outcome.result_lower
       ignore_missing: true
   - script:
-      tag: okta-target-modifications
+      tag: okta-target-modifications_93a33e56
       lang: painless
       source: |
         def arr = ctx.okta?.target;
@@ -624,116 +626,116 @@ processors:
           }
         }
   - set:
-      tag: set_full_name
+      tag: set_full_name_f622a845
       field: user.target.full_name
       copy_from: okta_target_user.display_name
       if: ctx.okta_target_user?.display_name != null
   - set:
-      tag: set_id
+      tag: set_id_d1bc70fc
       field: user.target.id
       copy_from: okta_target_user.id
       if: ctx.okta_target_user?.id != null
   - set:
-      tag: set_email_4
+      tag: set_email_4_0fa1f6ec
       field: user.target.email
       copy_from: okta_target_user.login
       if: ctx.okta_target_user?.login != null
   - set:
-      tag: set_name_4
+      tag: set_name_4_f463bd5e
       field: user.target.group.name
       copy_from: okta_target_group.display_name
       if: ctx.okta_target_group?.display_name != null
   - set:
-      tag: set_id_2
+      tag: set_id_2_f225926f
       field: user.target.group.id
       copy_from: okta_target_group.id
       if: ctx.okta_target_group?.id != null
   - remove:
-      tag: remove_2
+      tag: remove_2_9ffcea4a
       field:
         - okta_target_user
         - okta_target_group
       ignore_missing: true
   - set:
-      tag: set_id_3
+      tag: set_id_3_8c380eda
       field: client.user.id
       value: "{{{okta.actor.id}}}"
       ignore_empty_value: true
       if: ctx.okta?.actor?.id != null
   - set:
-      tag: set_id_4
+      tag: set_id_4_60ed4ddf
       field: source.user.id
       value: "{{{okta.actor.id}}}"
       ignore_empty_value: true
       if: ctx.okta?.actor?.id != null
   - set:
-      tag: set_full_name_2
+      tag: set_full_name_2_78fe52b1
       field: client.user.full_name
       value: "{{{okta.actor.display_name}}}"
       ignore_empty_value: true
       if: ctx.okta?.actor?.display_name != null
   - set:
-      tag: set_full_name_3
+      tag: set_full_name_3_6290e923
       field: source.user.full_name
       value: "{{{okta.actor.display_name}}}"
       ignore_empty_value: true
       if: ctx.okta?.actor?.display_name != null
   - set:
-      tag: set_full_name_4
+      tag: set_full_name_4_2f32ec02
       field: user.full_name
       value: "{{{okta.actor.display_name}}}"
       ignore_empty_value: true
       if: ctx.okta?.actor?.display_name != null
   - append:
-      tag: append_user
+      tag: append_user_b6830b15
       field: related.user
       value: "{{{okta.actor.display_name}}}"
       allow_duplicates: false
       if: ctx.okta?.actor?.display_name != null
   - append:
-      tag: append_user_2
+      tag: append_user_2_e5db41d9
       field: related.user
       value: "{{{user.target.full_name}}}"
       allow_duplicates: false
       if: ctx.user?.target?.full_name != null
   - append:
-      tag: append_user_3
+      tag: append_user_3_325195a6
       field: related.user
       value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
-      tag: append_ip
+      tag: append_ip_723473d3
       field: related.ip
       value: "{{{source.ip}}}"
       allow_duplicates: false
       if: ctx.source?.ip != null
   - append:
-      tag: append_ip_2
+      tag: append_ip_2_44bf5f52
       field: related.ip
       value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null
   - remove:
-      tag: remove_json
+      tag: remove_json_94dc55cd
       field: json
       ignore_missing: true
   - user_agent:
-      tag: user_agent_original
+      tag: user_agent_original_10108afd
       field: user_agent.original
       ignore_missing: true
   - geoip:
-      tag: geoip_ip
+      tag: geoip_ip_9a2d4d31
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
-      tag: geoip_ip_2
+      tag: geoip_ip_2_71881fab
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
   - geoip:
-      tag: geoip_ip_3
+      tag: geoip_ip_3_58199963
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -742,7 +744,7 @@ processors:
         - organization_name
       ignore_missing: true
   - geoip:
-      tag: geoip_ip_4
+      tag: geoip_ip_4_4e3ec16d
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -751,62 +753,62 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
-      tag: rename_asn
+      tag: rename_asn_168bbbaf
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
-      tag: rename_organization_name
+      tag: rename_organization_name_aa06a00b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
-      tag: rename_asn_2
+      tag: rename_asn_2_4968f9c8
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
-      tag: rename_organization_name_2
+      tag: rename_organization_name_2_fb88b41e
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
   - remove:
-      tag: remove_conf
+      tag: remove_conf_4c027444
       field: _conf
       ignore_missing: true
       ignore_failure: true
   - uri_parts:
-      tag: uri_parts_okta_url
+      tag: uri_parts_okta_url_cb825541
       field: okta_url
       target_field: okta_url
       keep_original: false
       ignore_missing: true
   - rename:
-      tag: rename_domain_2
+      tag: rename_domain_2_ba2de13b
       field: okta_url.domain
       target_field: host.name
       ignore_missing: true
       on_failure:
         - rename:
-            tag: rename_domain_3
+            tag: rename_domain_3_fbb202ae
             field: okta_url.domain
             target_field: okta.okta_domain
             on_failure:
               - rename:
-                  tag: rename_domain_4
+                  tag: rename_domain_4_69bf3460
                   field: okta_url.domain
                   target_field: okta_domain
   - remove:
-      tag: remove_okta_url
+      tag: remove_okta_url_343fae0e
       field: okta_url
       ignore_missing: true
 on_failure:
   - set:
-      tag: set_kind_2
+      tag: set_kind_2_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_message_2
+      tag: append_message_2_14080786
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -814,7 +816,7 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
         failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -8,605 +8,619 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_d5c66e22
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_b006b7b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_ab1166ce
       value: alert
   - fingerprint:
       fields:
         - json.uid
         - json.date
-      tag: fingerprint_issue
+      tag: fingerprint_issue_accc8c7c
       target_field: _id
   - rename:
       field: json.account.name
-      tag: rename_account_name
+      tag: rename_account_name_a3291b28
       target_field: cyera.event.account.name
       ignore_missing: true
   - set:
       field: cloud.account.name
-      tag: set_cloud_account_name_from_event_account_name
+      tag: set_cloud_account_name_from_event_account_name_cb801973
       copy_from: cyera.event.account.name
       ignore_empty_value: true
   - rename:
       field: json.account.platform
-      tag: rename_account_platform
+      tag: rename_account_platform_b4c4ce3e
       target_field: cyera.event.account.platform
       ignore_missing: true
   - rename:
       field: json.account.uid
-      tag: rename_account_uid
+      tag: rename_account_uid_3eaf0155
       target_field: cyera.event.account.uid
       ignore_missing: true
   - set:
       field: cloud.account.id
-      tag: set_cloud_account_id_from_event_account_uid
+      tag: set_cloud_account_id_from_event_account_uid_07fa9487
       copy_from: cyera.event.account.uid
       ignore_empty_value: true
   - foreach:
       field: json.affectedDataClassAppearances
-      tag: foreach_affectedDataClassAppearances_recordsCount_dataClass_classificationName
+      tag: foreach_affectedDataClassAppearances_recordsCount_dataClass_classificationName_b1b2b04b
       if: ctx.json?.affectedDataClassAppearances instanceof List
       processor:
         rename:
           field: _ingest._value.recordsCount.dataClass.classificationName
-          tag: rename_affectedDataClassAppearances_recordsCount_dataClass_classificationName
+          tag: rename_affectedDataClassAppearances_recordsCount_dataClass_classificationName_fabf1b40
           target_field: _ingest._value.records_count.data_class.classification_name
           ignore_missing: true
   - foreach:
       field: json.affectedDataClassAppearances
-      tag: foreach_affectedDataClassAppearances_recordsCount_dataClass_uid
+      tag: foreach_affectedDataClassAppearances_recordsCount_dataClass_uid_ab3ee529
       if: ctx.json?.affectedDataClassAppearances instanceof List
       processor:
         rename:
           field: _ingest._value.recordsCount.dataClass.uid
-          tag: rename_affectedDataClassAppearances_recordsCount_dataClass_uid
+          tag: rename_affectedDataClassAppearances_recordsCount_dataClass_uid_0be0d374
           target_field: _ingest._value.records_count.data_class.uid
           ignore_missing: true
   - foreach:
       field: json.affectedDataClassAppearances
-      tag: foreach_affectedDataClassAppearances_recordsCount_recordsCount
+      tag: foreach_affectedDataClassAppearances_recordsCount_recordsCount_b76536bf
       if: ctx.json?.affectedDataClassAppearances instanceof List
       processor:
         convert:
           field: _ingest._value.recordsCount.recordsCount
-          tag: convert_affectedDataClassAppearances_recordsCount_recordsCount _to_long
+          tag: convert_affectedDataClassAppearances_recordsCount_recordsCount_to_long_71a34cb8
           target_field: _ingest._value.records_count.value
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_recordsCount_recordsCount_8175f2ec
                 field: _ingest._value.recordsCount.recordsCount
                 ignore_missing: true
             - append:
+                tag: append_error_message_fbff5bdd
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.affectedDataClassAppearances
-      tag: foreach_affectedDataClassAppearances
+      tag: foreach_affectedDataClassAppearances_b2011f87
       if: ctx.json?.affectedDataClassAppearances instanceof List
       processor:
         remove:
           field: _ingest._value.recordsCount.recordsCount
-          tag: remove_affectedDataClassAppearances
+          tag: remove_affectedDataClassAppearances_1e353d09
           ignore_missing: true
   - rename:
       field: json.affectedDataClassAppearances
-      tag: rename_affectedDataClassAppearances
+      tag: rename_affectedDataClassAppearances_4a37bbd6
       target_field: cyera.event.affected.data_class_appearances
       ignore_missing: true
   - convert:
       field: json.affectedObjectsCount
-      tag: convert_affectedObjectsCount_to_long
+      tag: convert_affectedObjectsCount_to_long_538200a2
       target_field: cyera.event.affected.objects_count
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3ba399f7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.affectedObjectsDiff
-      tag: convert_affectedObjectsDiff_to_long
+      tag: convert_affectedObjectsDiff_to_long_554e0912
       target_field: cyera.event.affected.objects_diff
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_fd046bc9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.affectedRecordsDiff
-      tag: convert_affectedRecordsDiff_to_long
+      tag: convert_affectedRecordsDiff_to_long_5a5ca13b
       target_field: cyera.event.affected.records_diff
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_7a8d72f6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.automaticScanning
-      tag: rename_automaticScanning
+      tag: rename_automaticScanning_c1b20a75
       target_field: cyera.event.automatic_scanning
       ignore_missing: true
   - rename:
       field: json.changedClassificationUid
-      tag: rename_changedClassificationUid
+      tag: rename_changedClassificationUid_fc0d8f0d
       target_field: cyera.event.changed_classification_uid
       ignore_missing: true
   - rename:
       field: json.classificationName
-      tag: rename_classificationName
+      tag: rename_classificationName_092ba92f
       target_field: cyera.event.classification_name
       ignore_missing: true
   - foreach:
       field: json.classifications
-      tag: foreach_classifications_classificationName
+      tag: foreach_classifications_classificationName_37bc6c66
       if: ctx.json?.classifications instanceof List
       processor:
         rename:
           field: _ingest._value.classificationName
-          tag: rename_classifications_classificationName
+          tag: rename_classifications_classificationName_3ef8a7c8
           target_field: _ingest._value.name
           ignore_missing: true
   - rename:
       field: json.classifications
-      tag: rename_classifications
+      tag: rename_classifications_c8faf9ec
       target_field: cyera.event.classifications
       ignore_missing: true
   - rename:
       field: json.cloudProvider
-      tag: rename_cloudProvider
+      tag: rename_cloudProvider_34c686eb
       target_field: cyera.event.cloud_provider
       ignore_missing: true
   - set:
       field: cloud.provider
-      tag: set_cloud_provider_from_event_cloud_provider
+      tag: set_cloud_provider_from_event_cloud_provider_e6857285
       copy_from: cyera.event.cloud_provider
       ignore_empty_value: true
   - lowercase:
       field: cloud.provider
-      tag: lowercase_cloud_provider
+      tag: lowercase_cloud_provider_1a17fc24
       ignore_missing: true
   - rename:
       field: json.datastore.dataOwner
-      tag: rename_datastore_dataOwner
+      tag: rename_datastore_dataOwner_990a1061
       target_field: cyera.event.datastore.data_owner
       ignore_missing: true
   - rename:
       field: json.datastore.infrastructure
-      tag: rename_datastore_infrastructure
+      tag: rename_datastore_infrastructure_3cddd0ba
       target_field: cyera.event.datastore.infrastructure
       ignore_missing: true
   - set:
       field: cloud.service.name
-      tag: set_cloud_service_name_from_event_datastore_infrastructure
+      tag: set_cloud_service_name_from_event_datastore_infrastructure_4b342eee
       copy_from: cyera.event.datastore.infrastructure
       ignore_empty_value: true
   - rename:
       field: json.datastore.name
-      tag: rename_datastore_name
+      tag: rename_datastore_name_527876e7
       target_field: cyera.event.datastore.name
       ignore_missing: true
   - convert:
       field: json.datastore.recordsAtHighRisk
-      tag: convert_datastore_recordsAtHighRisk_to_long
+      tag: convert_datastore_recordsAtHighRisk_to_long_394730d0
       target_field: cyera.event.datastore.records_at_high_risk
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0bda7e70
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.datastore.uid
-      tag: rename_datastore_uid
+      tag: rename_datastore_uid_f9e496bb
       target_field: cyera.event.datastore.uid
       ignore_missing: true
   - rename:
       field: json.datastore.userTags
-      tag: rename_datastore_userTags
+      tag: rename_datastore_userTags_9dececb5
       target_field: cyera.event.datastore.tags.user_tags
       ignore_missing: true
   - rename:
       field: json.datastoreUserTags
-      tag: rename_datastoreUserTags
+      tag: rename_datastoreUserTags_fda13742
       target_field: cyera.event.datastore.user_tags
       ignore_missing: true
   - rename:
       field: json.datastore.vpcId
-      tag: rename_datastore_vpcId
+      tag: rename_datastore_vpcId_ba06f4b3
       target_field: cyera.event.datastore.vpc_id
       ignore_missing: true
   - date:
       field: json.date
-      tag: date_date
+      tag: date_date_fdcfaee1
       target_field: cyera.event.date
       formats:
         - ISO8601
       if: ctx.json?.date != null && ctx.json.date != ''
       on_failure:
         - append:
+            tag: append_error_message_cfcfb843
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_event_date
+      tag: set_@timestamp_from_event_date_f86ea7ca
       copy_from: cyera.event.date
       ignore_empty_value: true
   - rename:
       field: json.deploymentName
-      tag: rename_deploymentName
+      tag: rename_deploymentName_e18d9c8a
       target_field: cyera.event.deployment_name
       ignore_missing: true
   - rename:
       field: json.domainName
-      tag: rename_domainName
+      tag: rename_domainName_22158608
       target_field: cyera.event.domain_name
       ignore_missing: true
   - append:
       field: related.hosts
-      tag: append_event_domain_name_into_related_hosts
+      tag: append_event_domain_name_into_related_hosts_ec168636
       value: '{{{cyera.event.domain_name}}}'
       allow_duplicates: false
       if: ctx.cyera?.event?.domain_name != null
   - convert:
       field: json.expectedM365SensitivityLabelAssignmentsCount
-      tag: convert_expectedM365SensitivityLabelAssignmentsCount_to_long
+      tag: convert_expectedM365SensitivityLabelAssignmentsCount_to_long_e0a52d80
       target_field: cyera.event.expected_m365_sensitivity_label_assignments_count
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c1a3cddc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.failedM365SensitivityLabelAssignmentsCount
-      tag: convert_failedM365SensitivityLabelAssignmentsCount_to_long
+      tag: convert_failedM365SensitivityLabelAssignmentsCount_to_long_0d6becc9
       target_field: cyera.event.failed_m365_sensitivity_label_assignments_count
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0cf42fc8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.frequency
-      tag: rename_frequency
+      tag: rename_frequency_3a5cbee5
       target_field: cyera.event.frequency
       ignore_missing: true
   - rename:
       field: json.inPlatformIdentifier
-      tag: rename_inPlatformIdentifier
+      tag: rename_inPlatformIdentifier_acc9eda7
       target_field: cyera.event.in_platform_identifier
       ignore_missing: true
   - convert:
       field: json.isDomainTrusted
-      tag: convert_isDomainTrusted_to_boolean
+      tag: convert_isDomainTrusted_to_boolean_fd93830c
       target_field: cyera.event.is_domain_trusted
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9e9ec5ff
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.isReportDeleted
-      tag: convert_isReportDeleted_to_boolean
+      tag: convert_isReportDeleted_to_boolean_f65f50d1
       target_field: cyera.event.is_report.deleted
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_7eebdbc9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.isReportExpired
-      tag: convert_isReportExpired_to_boolean
+      tag: convert_isReportExpired_to_boolean_47ba1c2f
       target_field: cyera.event.is_report.expired
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b3b2f0bf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.issueName
-      tag: rename_issueName
+      tag: rename_issueName_64bcec89
       target_field: cyera.event.issue_name
       ignore_missing: true
   - rename:
       field: json.issue.policy.name
-      tag: rename_issue_policy_name
+      tag: rename_issue_policy_name_2dbe144f
       target_field: cyera.event.issue.policy.name
       ignore_missing: true
   - rename:
       field: json.issue.policy.uid
-      tag: rename_issue_policy_uid
+      tag: rename_issue_policy_uid_e5fa70e1
       target_field: cyera.event.issue.policy.uid
       ignore_missing: true
   - rename:
       field: json.issue.policy.useCases
-      tag: rename_issue_policy_useCases
+      tag: rename_issue_policy_useCases_7815452a
       target_field: cyera.event.issue.policy.use_cases
       ignore_missing: true
   - rename:
       field: json.issue.resolutionNote
-      tag: rename_issue_resolutionNote
+      tag: rename_issue_resolutionNote_5a0a6a0b
       target_field: cyera.event.issue.resolution.note
       ignore_missing: true
   - rename:
       field: json.issue.resolution
-      tag: rename_issue_resolution
+      tag: rename_issue_resolution_b9145e11
       target_field: cyera.event.issue.resolution.value
       ignore_missing: true
   - rename:
       field: json.issue.riskStatus
-      tag: rename_issue_riskStatus
+      tag: rename_issue_riskStatus_2d0b5f92
       target_field: cyera.event.issue.risk_status
       ignore_missing: true
   - rename:
       field: json.issueUid
-      tag: rename_issueUid
+      tag: rename_issueUid_bdee6e9b
       target_field: cyera.event.issue_uid
       ignore_missing: true
   - rename:
       field: json.issue.uid
-      tag: rename_issue_uid
+      tag: rename_issue_uid_57bf3597
       target_field: cyera.event.issue.uid
       ignore_missing: true
   - foreach:
       field: json.issues
-      tag: foreach_issues_policy_useCases
+      tag: foreach_issues_policy_useCases_3897c765
       if: ctx.json?.issues instanceof List
       processor:
         rename:
           field: _ingest._value.policy.useCases
-          tag: rename_issues_policy_useCases
+          tag: rename_issues_policy_useCases_c4515807
           target_field: _ingest._value.policy.use_cases
           ignore_missing: true
   - foreach:
       field: json.issues
-      tag: foreach_issues_resolutionNote
+      tag: foreach_issues_resolutionNote_11d1b87b
       if: ctx.json?.issues instanceof List
       processor:
         rename:
           field: _ingest._value.resolutionNote
-          tag: rename_issues_resolutionNote
+          tag: rename_issues_resolutionNote_2979487d
           target_field: _ingest._value.resolution_note
           ignore_missing: true
   - foreach:
       field: json.issues
-      tag: foreach_issues_resolution
+      tag: foreach_issues_resolution_4f784727
       if: ctx.json?.issues instanceof List
       processor:
         rename:
           field: _ingest._value.resolution
-          tag: rename_issues_resolution
+          tag: rename_issues_resolution_b5625e6e
           target_field: _ingest._value.resolution_value
           ignore_missing: true
   - foreach:
       field: json.issues
-      tag: foreach_issues_riskStatus
+      tag: foreach_issues_riskStatus_3c74ab63
       if: ctx.json?.issues instanceof List
       processor:
         rename:
           field: _ingest._value.riskStatus
-          tag: rename_issues_riskStatus
+          tag: rename_issues_riskStatus_3a559782
           target_field: _ingest._value.risk_status
           ignore_missing: true
   - rename:
       field: json.issues
-      tag: rename_issues
+      tag: rename_issues_6b95278f
       target_field: cyera.event.issues
       ignore_missing: true
   - rename:
       field: json.m365AssignedSensitivityLabelName
-      tag: rename_m365AssignedSensitivityLabelName
+      tag: rename_m365AssignedSensitivityLabelName_526de9e8
       target_field: cyera.event.m365_assigned_sensitivity_label_name
       ignore_missing: true
   - rename:
       field: json.originalSensitivityDisplayName
-      tag: rename_originalSensitivityDisplayName
+      tag: rename_originalSensitivityDisplayName_39a01a7b
       target_field: cyera.event.original_sensitivity.display_name
       ignore_missing: true
   - rename:
       field: json.originalSensitivity
-      tag: rename_originalSensitivity
+      tag: rename_originalSensitivity_22000e4c
       target_field: cyera.event.original_sensitivity.value
       ignore_missing: true
   - rename:
       field: json.policy.name
-      tag: rename_policy_name
+      tag: rename_policy_name_7a586f78
       target_field: cyera.event.policy.name
       ignore_missing: true
   - rename:
       field: json.policy.uid
-      tag: rename_policy_uid
+      tag: rename_policy_uid_856c66d3
       target_field: cyera.event.policy.uid
       ignore_missing: true
   - rename:
       field: json.policy.useCases
-      tag: rename_policy_useCases
+      tag: rename_policy_useCases_731b5211
       target_field: cyera.event.policy.use_cases
       ignore_missing: true
   - rename:
       field: json.projectName
-      tag: rename_projectName
+      tag: rename_projectName_e258c2aa
       target_field: cyera.event.project.name
       ignore_missing: true
   - rename:
       field: json.projectUid
-      tag: rename_projectUid
+      tag: rename_projectUid_106445dd
       target_field: cyera.event.project.uid
       ignore_missing: true
   - rename:
       field: json.recipients
-      tag: rename_recipients
+      tag: rename_recipients_ee3f6633
       target_field: cyera.event.recipients
       ignore_missing: true
   - rename:
       field: json.reportFileName
-      tag: rename_reportFileName
+      tag: rename_reportFileName_0640f893
       target_field: cyera.event.report.file_name
       ignore_missing: true
   - rename:
       field: json.reportInstanceUid
-      tag: rename_reportInstanceUid
+      tag: rename_reportInstanceUid_c545f9f7
       target_field: cyera.event.report.instance_uid
       ignore_missing: true
   - rename:
       field: json.reportJobUid
-      tag: rename_reportJobUid
+      tag: rename_reportJobUid_c434b68e
       target_field: cyera.event.report.job_uid
       ignore_missing: true
   - rename:
       field: json.reportName
-      tag: rename_reportName
+      tag: rename_reportName_5eb43571
       target_field: cyera.event.report.name
       ignore_missing: true
   - rename:
       field: json.reportType
-      tag: rename_reportType
+      tag: rename_reportType_75f6c077
       target_field: cyera.event.report.type
       ignore_missing: true
   - rename:
       field: json.sku
-      tag: rename_sku
+      tag: rename_sku_cdc92c7f
       target_field: cyera.event.sku
       ignore_missing: true
   - foreach:
       field: json.sourceClassifications
-      tag: foreach_sourceClassifications_classificationName
+      tag: foreach_sourceClassifications_classificationName_c2d972e3
       if: ctx.json?.sourceClassifications instanceof List
       processor:
         rename:
           field: _ingest._value.classificationName
-          tag: rename_sourceClassifications_classificationName
+          tag: rename_sourceClassifications_classificationName_6664143c
           target_field: _ingest._value.name
           ignore_missing: true
   - rename:
       field: json.sourceClassifications
-      tag: rename_sourceClassifications
+      tag: rename_sourceClassifications_8579b714
       target_field: cyera.event.source_classifications
       ignore_missing: true
   - rename:
       field: json.subscriptionUid
-      tag: rename_subscriptionUid
+      tag: rename_subscriptionUid_cb496c45
       target_field: cyera.event.subscription_uid
       ignore_missing: true
   - convert:
       field: json.successfulM365SensitivityLabelAssignmentsCount
-      tag: convert_successfulM365SensitivityLabelAssignmentsCount_to_long
+      tag: convert_successfulM365SensitivityLabelAssignmentsCount_to_long_22d7bf88
       target_field: cyera.event.successful_m365_sensitivity_label_assignments_count
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f30a7f35
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.targetClassifications
-      tag: foreach_targetClassifications_classificationName
+      tag: foreach_targetClassifications_classificationName_0f7b7d93
       if: ctx.json?.targetClassifications instanceof List
       processor:
         rename:
           field: _ingest._value.classificationName
-          tag: rename_targetClassifications_classificationName
+          tag: rename_targetClassifications_classificationName_27e38eb1
           target_field: _ingest._value.name
           ignore_missing: true
   - rename:
       field: json.targetClassifications
-      tag: rename_targetClassifications
+      tag: rename_targetClassifications_bbf29d2b
       target_field: cyera.event.target_classifications
       ignore_missing: true
   - rename:
       field: json.targetSensitivityDisplayName
-      tag: rename_targetSensitivityDisplayName
+      tag: rename_targetSensitivityDisplayName_60f802ec
       target_field: cyera.event.target_sensitivity.display_name
       ignore_missing: true
   - rename:
       field: json.targetSensitivity
-      tag: rename_targetSensitivity
+      tag: rename_targetSensitivity_36031717
       target_field: cyera.event.target_sensitivity.value
       ignore_missing: true
   - rename:
       field: json.type
-      tag: rename_type
+      tag: rename_type_fe7e1b28
       target_field: cyera.event.type
       ignore_missing: true
   - rename:
       field: json.uid
-      tag: rename_uid
+      tag: rename_uid_98fc55bd
       target_field: cyera.event.uid
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_event_uid
+      tag: set_event_id_from_event_uid_1dff8237
       copy_from: cyera.event.uid
       ignore_empty_value: true
   - rename:
       field: json.user
-      tag: rename_user
+      tag: rename_user_065f1aea
       target_field: cyera.event.user
       ignore_missing: true
   - set:
       field: user.name
-      tag: set_user_name_from_event_user
+      tag: set_user_name_from_event_user_3c73601f
       copy_from: cyera.event.user
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_event_user_into_related_user
+      tag: append_event_user_into_related_user_698449a9
       value: '{{{cyera.event.user}}}'
       allow_duplicates: false
       if: ctx.cyera?.event?.user != null
   - rename:
       field: json.vendorLink
-      tag: rename_vendorLink
+      tag: rename_vendorLink_fca8a3b5
       target_field: cyera.event.vendor.link
       ignore_missing: true
   - rename:
       field: json.vendorStatus
-      tag: rename_vendorStatus
+      tag: rename_vendorStatus_d1006449
       target_field: cyera.event.vendor.status
       ignore_missing: true
   - rename:
       field: json.vendorTicketId
-      tag: rename_vendorTicketId
+      tag: rename_vendorTicketId_dc8fd0c9
       target_field: cyera.event.vendor.ticket_id
       ignore_missing: true
   - remove:
@@ -618,15 +632,15 @@ processors:
         - cyera.event.date
         - cyera.event.uid
         - cyera.event.user
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_d753b9ba
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -653,16 +667,18 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -670,9 +686,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

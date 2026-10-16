@@ -3,29 +3,32 @@ description: Pipeline for processing sample logs
 processors:
 
 - set:
+    tag: set_ecs_version_f5923549
     field: ecs.version
     value: '8.17.0'
 
 - rename:
+    tag: rename_json_to_jamf_pro_events_127fc70c
     field: json
     target_field: jamf_pro.events
     # all valid events will now have jamf_pro.events.{event,webhook}
 
 - convert:
+    tag: convert_jamf_pro_events_event_management_id_d79c3147
     field: jamf_pro.events.event.management_id
     type: string
     if: >
       ctx.jamf_pro.events.event?.management_id != null &&
       !(ctx.jamf_pro.events.event.management_id instanceof String)
-
 - rename:
+    tag: rename_jamf_pro_events_event_computer_to_jamf_pro_events_event_is_computer_76427444
     field: jamf_pro.events.event.computer
     target_field: jamf_pro.events.event.is_computer
     if: ctx.jamf_pro.events.event.computer instanceof boolean
 
 - script:
     description: Convert Additional Info keys to snake case.
-    tag: additional-info-keys-to-snake-case
+    tag: additional-info-keys-to-snake-case_ff922fd6
     lang: painless
     source: |
       Map keysToSnakeCase(Map m) {
@@ -57,17 +60,19 @@ processors:
         ctx.jamf_pro.events = keysToSnakeCase(ctx.jamf_pro.events);
       }
 
+
 ##############
 # Timestamps #
 ##############
-
 - date:
+    tag: date_jamf_pro_events_webhook_event_timestamp_to_jamf_pro_events_webhook_event_timestamp_31d0fb7a
     field: jamf_pro.events.webhook.event_timestamp
     target_field: jamf_pro.events.webhook.event_timestamp
     formats:
       - UNIX_MS
 
 - date:
+    tag: date_jamf_pro_events_event_last_update_to_jamf_pro_events_event_last_update_4f3eb8b0
     field: jamf_pro.events.event.last_update
     target_field: jamf_pro.events.event.last_update
     if: ctx.jamf_pro.events.event.last_update != null
@@ -75,64 +80,73 @@ processors:
       - UNIX_MS
 
 - set:
+    tag: set_host_entity_lifecycle_last_activity_1ddc1893
     field: host.entity.lifecycle.last_activity
     copy_from: jamf_pro.events.webhook.event_timestamp
     ignore_empty_value: true
 
+
 ##############
 #   IP src   #
 ##############
-
 - set:
+    tag: set_host_ip_4499d624
     if: "ctx.jamf_pro.events.event.ip_address != null && ctx.jamf_pro.events.event.ip_address != ''"
     field: host.ip
-    value: 
+    value:
      - '{{{jamf_pro.events.event.ip_address}}}'
     ignore_empty_value: true
 
 - set:
+    tag: set_host_ip_6dd53242
     if: >
       ctx.jamf_pro.events.event.computer?.reported_ip_address != null &&
       ctx.jamf_pro.events.event.computer.reported_ip_address != ''
     field: host.ip
-    value: 
+    value:
      - "{{{jamf_pro.events.event.computer.reported_ip_address}}}"
     ignore_empty_value: true
+
 
 ##############
 #  User src  #
 ##############
-
 - set:
+    tag: set_user_name_6ce75428
     field: user.name
     copy_from: jamf_pro.events.event.username
     ignore_empty_value: true
 
 - set:
+    tag: set_user_name_cb89921b
     field: user.name
     copy_from: jamf_pro.events.event.computer.username
     ignore_empty_value: true
 
 - set:
+    tag: set_user_email_8e078ecb
     field: user.email
     copy_from: jamf_pro.events.event.computer.email_address
     ignore_empty_value: true
 
 - set:
+    tag: set_user_email_0f3c2b38
     field: user.email
     copy_from: jamf_pro.events.event.email_address
     ignore_empty_value: true
 
+
 ##############
 #   OS src   #
 ##############
-
 - set:
+    tag: set_host_os_version_524e1d1a
     if: ctx.jamf_pro.events.event.os_version != null
     field: host.os.version
     copy_from: jamf_pro.events.event.os_version
 
 - set:
+    tag: set_host_os_version_9e9967cd
     if: ctx.jamf_pro.events.event.computer?.os_version != null
     field: host.os.version
     copy_from: jamf_pro.events.event.computer.os_version
@@ -141,76 +155,83 @@ processors:
 ##############
 # ECS compat #
 ##############
-
 - set:
+    tag: set_host_name_604445a4
     field: host.name
     copy_from: jamf_pro.events.event.computer.device_name
     ignore_empty_value: true
 
 - set:
+    tag: set_host_id_7ce14fbc
     field: host.id
     copy_from: jamf_pro.events.event.computer.udid
     ignore_empty_value: true
 
 - set:
+    tag: set_host_address_8760bf68
     field: host.address
     copy_from: host.ip
     ignore_empty_value: true
 
 - geoip:
+    tag: geoip_host_ip_to_host_geo_e7ddacb9
     if: ctx.host?.ip != null && ctx.host.ip != ''
     field: host.ip
     target_field: host.geo
     ignore_missing: true
 
 - append:
+    tag: append_related_user_36df74b3
     field: related.user
     value: "{{{user.name}}}"
     if: ctx.user?.name != null && ctx.user.name != ""
 
 - append:
+    tag: append_related_user_968086e6
     field: related.user
     value: "{{{user.email}}}"
     if: ctx.user?.email != null && ctx.user.email != ""
 
 - set:
+    tag: set_event_kind_de80643c
     field: event.kind
     value: event
 
 - set:
+    tag: set_event_action_17ff02f3
     field: event.action
     copy_from: jamf_pro.events.webhook.webhook_event
     ignore_empty_value: true
 
 # event.category and event.type — keyed on event.action via a lookup table.
 - script:
-    tag: script_set_event_category_and_type
+    tag: script_set_event_category_and_type_30a46659
     lang: painless
     description: Set event.category and event.type from a table keyed on the Jamf webhook event (event.action).
     params:
       actions:
-        ComputerAdded: { category: [host], type: [change] }
-        ComputerCheckIn: { category: [host], type: [] }
-        ComputerInventoryCompleted: { category: [host], type: [] }
-        ComputerPushCapabilityChanged: { category: [host], type: [change] }
-        MobileDeviceEnrolled: { category: [host], type: [change, start] }
-        MobileDeviceUnEnrolled: { category: [host], type: [change, end] }
-        MobileDeviceCheckIn: { category: [host], type: [] }
-        MobileDeviceInventoryCompleted: { category: [host], type: [] }
-        MobileDeviceCommandCompleted: { category: [host], type: [change, end] }
-        MobileDevicePushSent: { category: [host], type: [] }
-        DeviceAddedToDEP: { category: [host], type: [change] }
-        PushSent: { category: [host], type: [] }
-        SCEPChallenge: { category: [host, authentication], type: [start] }
-        SmartGroupComputerMembershipChange: { category: [host, iam], type: [change, group] }
-        SmartGroupMobileDeviceMembershipChange: { category: [host, iam], type: [change, group] }
-        JSSStartup: { category: [host], type: [start] }
-        JSSShutdown: { category: [host], type: [end] }
-        ComputerPolicyFinished: { category: [configuration], type: [change] }
-        ComputerPatchPolicyCompleted: { category: [configuration, package], type: [change] }
-        PatchSoftwareTitleUpdated: { category: [configuration, package], type: [change] }
-        RestAPIOperation: { category: [api], type: [change, admin] }
-        SmartGroupUserMembershipChange: { category: [iam], type: [change, group] }
+        ComputerAdded: {category: [host], type: [change]}
+        ComputerCheckIn: {category: [host], type: []}
+        ComputerInventoryCompleted: {category: [host], type: []}
+        ComputerPushCapabilityChanged: {category: [host], type: [change]}
+        MobileDeviceEnrolled: {category: [host], type: [change, start]}
+        MobileDeviceUnEnrolled: {category: [host], type: [change, end]}
+        MobileDeviceCheckIn: {category: [host], type: []}
+        MobileDeviceInventoryCompleted: {category: [host], type: []}
+        MobileDeviceCommandCompleted: {category: [host], type: [change, end]}
+        MobileDevicePushSent: {category: [host], type: []}
+        DeviceAddedToDEP: {category: [host], type: [change]}
+        PushSent: {category: [host], type: []}
+        SCEPChallenge: {category: [host, authentication], type: [start]}
+        SmartGroupComputerMembershipChange: {category: [host, iam], type: [change, group]}
+        SmartGroupMobileDeviceMembershipChange: {category: [host, iam], type: [change, group]}
+        JSSStartup: {category: [host], type: [start]}
+        JSSShutdown: {category: [host], type: [end]}
+        ComputerPolicyFinished: {category: [configuration], type: [change]}
+        ComputerPatchPolicyCompleted: {category: [configuration, package], type: [change]}
+        PatchSoftwareTitleUpdated: {category: [configuration, package], type: [change]}
+        RestAPIOperation: {category: [api], type: [change, admin]}
+        SmartGroupUserMembershipChange: {category: [iam], type: [change, group]}
     source: |-
       def action = ctx.event?.action;
       if (action == null) {
@@ -231,21 +252,20 @@ processors:
 
 - set:
     field: event.outcome
-    tag: set_event_outcome_success
+    tag: set_event_outcome_success_c05809e2
     value: success
     if: >-
       ctx.jamf_pro?.events?.event?.successful == true ||
       ctx.jamf_pro?.events?.event?.operation_successful == true
-
 - set:
     field: event.outcome
-    tag: set_event_outcome_failure
+    tag: set_event_outcome_failure_cbca4e9e
     value: failure
     if: >-
       ctx.jamf_pro?.events?.event?.successful == false ||
       ctx.jamf_pro?.events?.event?.operation_successful == false
-
 - convert:
+    tag: convert_jamf_pro_events_event_computer_ip_address_to_source_ip_f0398d65
     target_field: source.ip
     type: ip
     field: jamf_pro.events.event.computer.ip_address
@@ -259,12 +279,15 @@ processors:
 
 on_failure:
 - set:
+    tag: set_event_kind_72b1902f
     field: event.kind
     value: pipeline_error
 - append:
+    tag: append_tags_279d5a5c
     field: tags
     value: preserve_original_event
     allow_duplicates: false
 - append:
+    tag: append_error_message_6906b116
     field: error.message
     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

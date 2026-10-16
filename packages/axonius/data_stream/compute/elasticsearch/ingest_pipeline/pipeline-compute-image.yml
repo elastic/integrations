@@ -3,23 +3,23 @@ description: Pipeline for processing compute image logs.
 processors:
   - set:
       field: host.architecture
-      tag: set_host_architecture_from_compute_architecture
+      tag: set_host_architecture_from_compute_architecture_ff175942
       copy_from: axonius.compute.architecture
       ignore_empty_value: true
   - set:
       field: cloud.account.id
-      tag: set_cloud_account_id_from_compute_aws_organization_id
+      tag: set_cloud_account_id_from_compute_aws_organization_id_c916e020
       copy_from: axonius.compute.aws_organization.id
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_compute_aws_organization_master_account_email_into_related_user
+      tag: append_compute_aws_organization_master_account_email_into_related_user_45cdca7e
       value: '{{{axonius.compute.aws_organization.master_account_email}}}'
       allow_duplicates: false
       if: ctx.axonius?.compute?.aws_organization?.master_account_email != null
   - date:
       field: axonius.compute.create_time
-      tag: date_create_time
+      tag: date_create_time_3c4420a9
       target_field: axonius.compute.create_time
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -28,29 +28,31 @@ processors:
       if: ctx.axonius?.compute?.create_time != null && ctx.axonius.compute.create_time != ''
       on_failure:
         - remove:
+            tag: remove_axonius_compute_create_time_023b7982
             field: axonius.compute.create_time
             ignore_missing: true
         - append:
+            tag: append_error_message_6220ed05
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created_from_compute_create_time
+      tag: set_event_created_from_compute_create_time_3199a573
       copy_from: axonius.compute.create_time
       ignore_empty_value: true
   - set:
       field: message
-      tag: set_message_from_compute_description
+      tag: set_message_from_compute_description_924f0bc7
       copy_from: axonius.compute.description
       ignore_empty_value: true
   - foreach:
       field: axonius.compute.ebs_volumes
-      tag: foreach_ebs_volumes_create_time
+      tag: foreach_ebs_volumes_create_time_6e79bb5f
       if: ctx.axonius?.compute?.ebs_volumes instanceof List
       processor:
         date:
           field: _ingest._value.create_time
-          tag: date_ebs_volumes_create_time
+          tag: date_ebs_volumes_create_time_f26319e4
           target_field: _ingest._value.create_time
           formats:
             - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -58,55 +60,63 @@ processors:
             - EEE,dd MMM yyyy HH:mm:ss 'GMT'
           on_failure:
             - remove:
+                tag: remove_ingest_value_create_time_566c4544
                 field: _ingest._value.create_time
                 ignore_missing: true
   - foreach:
       field: axonius.compute.ebs_volumes
-      tag: foreach_ebs_volumes_size
+      tag: foreach_ebs_volumes_size_22691fcc
       if: ctx.axonius?.compute?.ebs_volumes instanceof List
       processor:
         convert:
           field: _ingest._value.size
-          tag: convert_ebs_volumes_size_to_double
+          tag: convert_ebs_volumes_size_to_double_f37c4462
           type: double
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_size_0f70b183
                 field: _ingest._value.size
                 ignore_missing: true
             - append:
+                tag: append_error_message_63ed47b2
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.compute.encrypted
-      tag: convert_encrypted_to_boolean
+      tag: convert_encrypted_to_boolean_2a50a63f
       target_field: axonius.compute.encrypted
       type: boolean
       ignore_missing: true
       if: ctx.axonius?.compute?.encrypted != ''
       on_failure:
         - remove:
+            tag: remove_axonius_compute_encrypted_572a65f6
             field: axonius.compute.encrypted
             ignore_missing: true
         - append:
+            tag: append_error_message_b9102b3f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.compute.size
-      tag: convert_size_to_double
+      tag: convert_size_to_double_5a813c8a
       target_field: axonius.compute.size
       type: double
       ignore_missing: true
       if: ctx.axonius?.compute?.size != ''
       on_failure:
         - remove:
+            tag: remove_axonius_compute_size_03dd581c
             field: axonius.compute.size
             ignore_missing: true
         - append:
+            tag: append_error_message_65375494
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -114,5 +124,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

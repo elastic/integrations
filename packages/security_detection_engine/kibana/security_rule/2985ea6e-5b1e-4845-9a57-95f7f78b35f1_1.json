@@ -1,0 +1,236 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies successful Active Directory Certificate Services (AD CS) certificate issuance events where a machine-account requester differs from the Remote Machine Discovery (RMD) chase target while the event's DNS subject alternative name (SAN) matches that target. This requester-to-target mismatch may indicate CertiGhost (CVE-2026-54121) or similar abuse of AD CS request-context chase processing.",
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.code",
+                "host.id",
+                "host.name",
+                "winlog.computer_name",
+                "winlog.record_id",
+                "winlog.event_data.RequestId",
+                "winlog.event_data.Requester",
+                "winlog.event_data.CertificateTemplate",
+                "winlog.event_data.Subject",
+                "winlog.event_data.SubjectAlternativeName",
+                "winlog.event_data.Attributes",
+                "winlog.event_data.Disposition",
+                "winlog.event_data.SubjectKeyIdentifier",
+                "Esql.effective_certificate_template",
+                "Esql.san_value",
+                "Esql.rmd_value",
+                "Esql.cdc_value",
+                "Esql.normalized_requester",
+                "Esql.normalized_san_target",
+                "Esql.normalized_rmd_target"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential CertiGhost AD CS Machine Identity Mismatch (CVE-2026-54121)",
+        "note": "## Triage and analysis\n\n### Investigating Potential CertiGhost AD CS Machine Identity Mismatch (CVE-2026-54121)\n\n#### Possible investigation steps\n\n- Does the matched AD CS issuance record validate the identity mismatch?\n  - Focus: `event.code`, `winlog.event_data.RequestId`, `winlog.event_data.Requester`, `Esql.san_value`, `Esql.rmd_value`\n  - Hint: Reopen the Windows Security 4887 record on the same CA host and request ID. Compare the parsed SAN and RMD with the complete `winlog.event_data.Attributes` and dedicated SAN field; additional SAN values or disagreement keep the case unresolved. !{investigate{\"description\":\"Finds the Windows Security 4887 certificate issuance record on the same CA host and request ID.\",\"label\":\"Matched certificate issuance\",\"providers\":[[{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4887\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.RequestId\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.RequestId}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-24h\",\"relativeTo\":\"now\"}}\n  - Implication: Event 4887 proves successful issuance, and the alert establishes that the requester differs from the RMD target while the parsed SAN matches that target. This is an operational anti-pattern. Close as benign only when CA records and test records identify an authorized CertiGhost or AD CS security test matching the exact CA, request ID, requester, target, template, and time.\n- What identity and authentication capability did the issued certificate receive?\n  - Focus: `Esql.effective_certificate_template`, `winlog.event_data.Subject`, `winlog.event_data.SubjectAlternativeName`, `winlog.event_data.SubjectKeyIdentifier`\n  - Hint: Retrieve the issued certificate and CA request/template configuration for the same request ID. Inspect the certificate's actual subject, SAN, EKUs or application policies, validity and revocation state, and the template's subject-name settings and enrollment permissions.\n  - Implication: Event 4887 and the template name alone do not establish the complete certificate contents or authentication capability. A certificate that represents the RMD target and permits authentication increases the likelihood and impact of credential abuse. Missing certificate or template configuration is unresolved, not benign.\n- What other issuances by the requester appear on the same CA host?\n  - Focus: `host.id`, `winlog.event_data.Requester`, `winlog.event_data.RequestId`, `winlog.event_data.Attributes`, `winlog.event_data.SubjectAlternativeName`\n  - Hint: Recover 4887 events for the same requester on this CA host. !{investigate{\"description\":\"Finds successful certificate issuance events for the same requester on the same CA host.\",\"label\":\"Same requester issuances\",\"providers\":[[{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4887\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.Requester\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.Requester}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-7d\",\"relativeTo\":\"now\"}}\n  - Implication: Repeated successful requests for different SAN/RMD targets expand the potential abuse scope. One isolated request does not reduce the significance of the current mismatch.\n- What other CA events reference the same target identity?\n  - Focus: `Esql.san_value`, `Esql.rmd_value`, `winlog.event_data.Attributes`, `winlog.event_data.SubjectAlternativeName`, `winlog.event_data.Requester`\n  - Hint: Copy the alert's exact SAN and RMD values into a scoped Timeline or Discover search for raw 4886, 4887, and 4888 records on the same CA host. Use contains or wildcard matching against `winlog.event_data.Attributes` and `winlog.event_data.SubjectAlternativeName`; derived `Esql.*` fields exist only on the alert.\n  - Implication: Requests for the same target from additional unexpected accounts expand the affected scope. The absence of other matching events does not clear the current issuance.\n- Did the CA connect to the CDC value during certificate processing?\n  - Focus: `host.id`, `Esql.cdc_value`, `destination.ip`, `destination.port`, `process.name`\n  - Hint: When the CDC value is an IP address, search network events from the CA host around issuance for that `destination.ip`. For a hostname, resolve it from collected DNS or asset evidence before comparing destination IPs. Review LDAP or LDAPS from `certsrv.exe` and SMB from `System` without requiring either process for all callback traffic.\n  - Implication: CA-host LDAP or SMB traffic to the CDC value supports request-context chase activity, but neither the CDC attribute nor a connection alone proves exploitation. Missing DNS or CA network telemetry is unresolved, not benign.\n- Does surrounding activity show requester creation or target-certificate use?\n  - Focus: `event.code`, `winlog.event_data.Requester`, `Esql.normalized_rmd_target`, `winlog.event_data.TargetUserName`, `winlog.event_data.PreAuthType`\n  - Hint: After validating the issuance, inspect account-management events where `winlog.event_data.TargetUserName` matches the requester account name without its domain prefix. Inspect successful 4768 events with `winlog.event_data.PreAuthType` equal to `16`. For DNS-shaped RMD values, compare `winlog.event_data.TargetUserName` with the normalized RMD target plus `$`; for IP-shaped values, first resolve the associated computer account from AD, asset, or CA evidence. Treat later authentication as corroboration unless identity and certificate evidence establish the relationship.\n  - Implication: Requester creation or change followed by target PKINIT strengthens the exploitation hypothesis. Missing account-management or domain-controller authentication telemetry is unresolved, not benign.\n\nEscalate when the mismatch is not an authorized test, the issued certificate can authenticate as the target, or callback and follow-on evidence corroborate abuse. Close only when CA, certificate, and test records establish the exact authorized scope; preserve and escalate when evidence or visibility is mixed or incomplete.\n\n### False positive analysis\n\nThe detected requester-to-target relationship is an operational anti-pattern and did not appear in the self-aligned enrollment controls. Authorized CertiGhost or AD CS security testing is the only currently validated benign explanation. Treat other claimed cross-identity enrollment workflows as unresolved until the 4887 source event, CA request record, issued certificate, template configuration, requester, target, CA, and time scope align without contradictions.\n\nDo not close on recurrence, absence of related alerts, or the requester account name alone. ES|QL fields created by the query cannot be used in rule exceptions. If an exception is required for recurring authorized testing, combine narrowly scoped source fields such as the CA `host.id`, `winlog.event_data.Requester`, and the exact `winlog.event_data.Attributes` pattern. Avoid exceptions based only on a host, requester, or template.\n\n### Response and remediation\n\n- Preserve the 4887 source record, CA request and database records, issued certificate and identifiers, template configuration, and relevant authentication and network evidence before disruptive action.\n- Identify affected certification authorities and apply the Microsoft security update or mitigation for CVE-2026-54121. Review request history for the requester and target to identify additional certificates requiring action.\n- If malicious activity is confirmed, revoke the affected certificate and verify that revocation information is distributed. Disable or remove an attacker-controlled requester account after preserving evidence. Rotate the target machine credentials and invalidate affected authentication material when certificate use or impersonation is established.\n- Isolate an endpoint only when host evidence attributes compromise to that system. The requester account may not map to a managed endpoint, and the target identity alone does not prove that the target endpoint was compromised.\n- Record confirmed certificate identifiers, affected principals, CA configuration gaps, and telemetry gaps for the responsible response, PKI, identity, and detection owners.\n",
+        "query": "FROM logs-system.security-* METADATA _id, _index, _version\n| WHERE event.code == \"4887\" AND\n    winlog.event_data.Requester LIKE \"*$\" AND\n    winlog.event_data.Attributes IS NOT NULL\n\n// Parse Attributes for RMD and CDC, and as a fallback when dedicated template or SAN fields are absent.\n// CDC and the effective template are retained for triage purposes\n| GROK winlog.event_data.Attributes\n    \"\"\"(?im)^[ \\t]*CertificateTemplate[ \\t]*:[ \\t]*(?<Esql.attributes_certificate_template>[^\\r\\n]+)\\r?$\"\"\"\n| GROK winlog.event_data.Attributes\n    \"\"\"(?im)^[ \\t]*SAN[ \\t]*:[ \\t]*dns[ \\t]*=[ \\t]*(?<Esql.attributes_san_value>[^\\r\\n]+)\\r?$\"\"\"\n| GROK winlog.event_data.SubjectAlternativeName\n    \"\"\"(?im)^[ \\t]*DNS[ \\t]+Name[ \\t]*=[ \\t]*(?<Esql.event_san_value>[^\\r\\n]+)\\r?$\"\"\"\n| GROK winlog.event_data.Attributes\n    \"\"\"(?im)^[ \\t]*cdc[ \\t]*:[ \\t]*(?<Esql.cdc_value>[^\\r\\n]+)\\r?$\"\"\"\n| GROK winlog.event_data.Attributes\n    \"\"\"(?im)^[ \\t]*rmd[ \\t]*:[ \\t]*(?<Esql.rmd_value>[^\\r\\n]+)\\r?$\"\"\"\n| EVAL Esql.effective_certificate_template = TRIM(COALESCE(\n         winlog.event_data.CertificateTemplate,\n         Esql.attributes_certificate_template\n       )),\n       Esql.san_value = TRIM(COALESCE(Esql.event_san_value, Esql.attributes_san_value)),\n       Esql.cdc_value = TRIM(Esql.cdc_value),\n       Esql.rmd_value = TRIM(Esql.rmd_value),\n       Esql.normalized_requester = TO_LOWER(\n         REPLACE(winlog.event_data.Requester, \"\"\"^.*\\\\|\\$$\"\"\", \"\")\n       ),\n       Esql.normalized_san_value = TO_LOWER(\n         REPLACE(Esql.san_value, \"\"\"\\.$\"\"\", \"\")\n       ),\n       Esql.normalized_rmd_value = TO_LOWER(\n         REPLACE(Esql.rmd_value, \"\"\"\\.$\"\"\", \"\")\n       )\n// Preserve IP-shaped values; shorten other SAN and RMD values to the first DNS label for machine-account comparison.\n| EVAL Esql.san_is_ip_shaped =\n          Esql.normalized_san_value RLIKE \"\"\"[0-9]{1,3}(\\.[0-9]{1,3}){3}\"\"\" OR Esql.normalized_san_value LIKE \"*:*\",\n       Esql.rmd_is_ip_shaped =\n          Esql.normalized_rmd_value RLIKE \"\"\"[0-9]{1,3}(\\.[0-9]{1,3}){3}\"\"\" OR Esql.normalized_rmd_value LIKE \"*:*\"\n| EVAL Esql.normalized_san_target = CASE(\n         Esql.san_is_ip_shaped,\n         Esql.normalized_san_value,\n         REPLACE(Esql.normalized_san_value, \"\"\"\\..*$\"\"\", \"\")\n       ),\n       Esql.normalized_rmd_target = CASE(\n         Esql.rmd_is_ip_shaped,\n         Esql.normalized_rmd_value,\n         REPLACE(Esql.normalized_rmd_value, \"\"\"\\..*$\"\"\", \"\")\n       )\n| WHERE Esql.normalized_requester IS NOT NULL AND\n    Esql.normalized_san_target IS NOT NULL AND\n    Esql.normalized_rmd_target IS NOT NULL\n| WHERE Esql.normalized_requester != Esql.normalized_rmd_target AND\n    Esql.normalized_san_target == Esql.normalized_rmd_target\n| KEEP @timestamp, _id, _index, _version, event.code, event.action, event.category, event.type, event.outcome,\n    event.created, event.ingested, data_stream.dataset, data_stream.namespace, host.id, host.name,\n    winlog.computer_name, winlog.record_id, winlog.event_data.RequestId, winlog.event_data.Requester,\n    winlog.event_data.CertificateTemplate, winlog.event_data.Subject, winlog.event_data.SubjectAlternativeName,\n    winlog.event_data.Attributes, winlog.event_data.Disposition, winlog.event_data.SubjectKeyIdentifier,\n    Esql.effective_certificate_template, Esql.san_value, Esql.cdc_value, Esql.rmd_value,\n    Esql.normalized_requester, Esql.normalized_san_target, Esql.normalized_rmd_target\n",
+        "references": [
+            "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-54121",
+            "https://gist.github.com/H0j3n/a5ef2609b5f2944ac2390a191a534c26",
+            "https://github.com/aniqfakhrul/CVE-2026-54121"
+        ],
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": ">=2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.namespace",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.created",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.ingested",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.computer_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.Attributes",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.CertificateTemplate",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.Disposition",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.RequestId",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.Requester",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.Subject",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.SubjectAlternativeName",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.SubjectKeyIdentifier",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.record_id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "2985ea6e-5b1e-4845-9a57-95f7f78b35f1",
+        "setup": "## Setup\n\nAudit Certification Services must be enabled on enterprise certification authorities so that successful certificate\nissuance generates Security event 4887.\n\nThe Windows Security integration must retain `winlog.event_data.Attributes`, including the requested SAN and chase\nattributes. The rule prefers dedicated certificate-template and subject-alternative-name fields when present and uses\n`Attributes` as a fallback. Dropped, truncated, or rewritten attributes create a visibility gap and do not indicate\nbenign activity.\n\nSetup instructions: https://ela.st/audit-certification-services\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "Domain: Identity",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Privilege Escalation",
+            "Use Case: Active Directory Monitoring",
+            "Use Case: Vulnerability",
+            "Data Source: Active Directory",
+            "Data Source: Windows Security Event Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1649",
+                        "name": "Steal or Forge Authentication Certificates",
+                        "reference": "https://attack.mitre.org/techniques/T1649/"
+                    },
+                    {
+                        "id": "T1212",
+                        "name": "Exploitation for Credential Access",
+                        "reference": "https://attack.mitre.org/techniques/T1212/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1068",
+                        "name": "Exploitation for Privilege Escalation",
+                        "reference": "https://attack.mitre.org/techniques/T1068/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "2985ea6e-5b1e-4845-9a57-95f7f78b35f1_1",
+    "type": "security-rule"
+}

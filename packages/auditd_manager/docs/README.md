@@ -471,6 +471,7 @@ An example event for `auditd` looks as following:
 | auditd.data.pi |  | keyword |
 | auditd.data.pp |  | keyword |
 | auditd.data.printer | printer name | keyword |
+| auditd.data.prog_id | The numeric kernel-assigned ID of the eBPF program associated with the event. | keyword |
 | auditd.data.prom | network promiscuity flag | keyword |
 | auditd.data.proto | network protocol | keyword |
 | auditd.data.qbytes | ipc objects quantity of bytes | keyword |

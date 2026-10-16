@@ -10,61 +10,64 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_execution_start_ms
+      tag: date_execution_start_ms_5de73867
       if: 'ctx.crowdstrike?.event?.ExecutionMetadata?.ExecutionStart != null && String.valueOf(ctx.crowdstrike.event.ExecutionMetadata.ExecutionStart).length() >= 12'
   - date:
       field: crowdstrike.event.ExecutionMetadata.SearchWindowStart
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_search_window_start_ms
+      tag: date_search_window_start_ms_0c8e867a
       if: 'ctx.crowdstrike?.event?.ExecutionMetadata?.SearchWindowStart != null && String.valueOf(ctx.crowdstrike.event.ExecutionMetadata.SearchWindowStart).length() >= 12'
   - date:
       field: crowdstrike.event.ExecutionMetadata.SearchWindowEnd
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_search_window_end_ms
+      tag: date_search_window_end_ms_708e5820
       if: 'ctx.crowdstrike?.event?.ExecutionMetadata?.SearchWindowEnd != null && String.valueOf(ctx.crowdstrike.event.ExecutionMetadata.SearchWindowEnd).length() >= 12'
   - convert:
       field: crowdstrike.event.ExecutionMetadata.ExecutionDuration
       type: long
-      tag: convert_ExecutionDuration
+      tag: convert_ExecutionDuration_9d7dd2e5
       ignore_missing: true
   - convert:
       field: crowdstrike.event.ExecutionMetadata.ResultCount
       type: long
-      tag: convert_ResultCount
+      tag: convert_ResultCount_98bae075
       ignore_missing: true
   - rename:
       field: crowdstrike.event.UserID
       target_field: user.id
       ignore_missing: true
-      tag: rename_userID
+      tag: rename_userID_1fa80963
   - dissect:
       if: ctx.user?.id != null && ctx.user.id.contains('@')
-      tag: dissect_user_id
+      tag: dissect_user_id_df35f03d
       field: user.id
       pattern: '%{user.name}@%{user.domain}'
   - set:
       field: user.email
       copy_from: user.id
-      tag: copy_user_email
+      tag: copy_user_email_59b9674a
       if: ctx.user?.id != null && ctx.user.id.indexOf("@") > 0
   - convert:
       field: crowdstrike.event.Status
       type: string
-      tag: convert_Status
+      tag: convert_Status_35599f2e
       ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
       value: |-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

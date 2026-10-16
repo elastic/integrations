@@ -1,0 +1,182 @@
+---
+description: Pipeline for parsing Salesforce AuraRequest logs collected through the AuraRequestEventLog object.
+processors:
+  # AuraRequestEventLog.Id is always the "Empty Key" sentinel, so it cannot identify a
+  # row. RequestIdentifier is the per-transaction id and was distinct and non-null on
+  # every row of a ~3100 row sandbox pull, so it anchors the document id; Timestamp and
+  # UserIdentifier widen the key in case Salesforce ever reuses an identifier. A stable
+  # _id makes a retried or overlapping poll overwrite instead of inserting duplicates.
+  # This also protects same-millisecond Timestamp rows on resume, because keyset resume
+  # on Id is not possible for this object.
+  - fingerprint:
+      fields:
+        - json.RequestIdentifier
+        - json.Timestamp
+        - json.UserIdentifier
+      tag: fingerprint_object_id
+      target_field: _id
+      ignore_missing: true
+
+  # Salesforce reports the "Empty Key" sentinel (`000000000000000AAA`) as the Id of
+  # every AuraRequestEventLog record observed so far, but the value is carried through
+  # so that a real record id is preserved if Salesforce ever populates it.
+  - rename:
+      field: json.Id
+      tag: rename_id_to_salesforce_id
+      target_field: salesforce.aura_request.id
+      ignore_missing: true
+
+  - date:
+      field: json.Timestamp
+      tag: date_timestamp
+      formats:
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - ISO8601
+      description: The REST query API returns a numeric `+0000` offset rather than the `Z` suffix shown in the object reference, so the offset form is tried first.
+      if: ctx.json?.Timestamp != null
+      on_failure:
+        - remove:
+            field: json.Timestamp
+            tag: remove_unparsable_timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_processor_failure_into_error_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - rename:
+      field: json.RequestIdentifier
+      tag: rename_request_identifier_to_http_request_id
+      target_field: http.request.id
+      ignore_missing: true
+  - rename:
+      field: json.RequestMethod
+      tag: rename_request_method_to_http_request_method
+      target_field: http.request.method
+      ignore_missing: true
+  - rename:
+      field: json.Uri
+      tag: rename_uri_to_url_original
+      target_field: url.original
+      ignore_missing: true
+  - rename:
+      field: json.UserIdentifier
+      tag: rename_user_identifier_to_user_id
+      target_field: user.id
+      ignore_missing: true
+      description: UserIdentifier is the 18-character case-safe user ID and matches USER_ID_DERIVED on the EventLogFile path.
+
+  # A Salesforce-internal request reports the literal string `Salesforce.com IP`
+  # instead of an address, which is not valid input for an `ip` field. Any value that
+  # is not a usable address is kept verbatim in a keyword field.
+  - convert:
+      field: json.ClientIp
+      tag: convert_client_ip_to_source_ip
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.ClientIp != ''
+      on_failure:
+        - remove:
+            field: source.ip
+            tag: remove_invalid_source_ip
+            ignore_missing: true
+        - rename:
+            field: json.ClientIp
+            tag: rename_client_ip_to_salesforce_client_ip
+            target_field: salesforce.aura_request.client_ip
+            ignore_missing: true
+
+  - rename:
+      field: json.UserAgent
+      tag: rename_user_agent_to_temp_user_agent
+      target_field: _temp.user_agent
+      ignore_missing: true
+
+  - rename:
+      field: json.ActionMessage
+      tag: rename_action_message_to_salesforce_action_message
+      target_field: salesforce.aura_request.action_message
+      ignore_missing: true
+      description: The key is omitted entirely on requests that invoke no server action, which is every GET request.
+
+  # The three timing fields are declared `double` and arrive as JSON numbers here,
+  # while the EventLogFile path delivers the same values as strings. Converting on both
+  # paths keeps the emitted types identical.
+  - convert:
+      field: json.RunTime
+      tag: convert_run_time_to_long
+      target_field: salesforce.aura_request.run_time
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.RunTime
+            tag: remove_unconvertible_run_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_processor_failure_into_error_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.CpuTime
+      tag: convert_cpu_time_to_long
+      target_field: salesforce.aura_request.cpu_time
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.CpuTime
+            tag: remove_unconvertible_cpu_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_processor_failure_into_error_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.DatabaseTotalTime
+      tag: convert_database_total_time_to_long
+      target_field: salesforce.aura_request.db_total_time
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.DatabaseTotalTime
+            tag: remove_unconvertible_database_total_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_processor_failure_into_error_message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - rename:
+      field: json.UserType
+      tag: rename_user_type_to_salesforce_user_type
+      target_field: salesforce.aura_request.user_type
+      ignore_missing: true
+  - rename:
+      field: json.LoginKey
+      tag: rename_login_key_to_salesforce_login_key
+      target_field: salesforce.aura_request.login_key
+      ignore_missing: true
+  - rename:
+      field: json.SessionKey
+      tag: rename_session_key_to_salesforce_session_key
+      target_field: salesforce.aura_request.session_key
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_into_tags_on_failure
+      value: preserve_original_event
+      allow_duplicates: false

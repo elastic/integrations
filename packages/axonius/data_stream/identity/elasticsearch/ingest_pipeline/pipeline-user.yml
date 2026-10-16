@@ -3,18 +3,20 @@ description: Pipeline for processing user logs.
 processors:
   - convert:
       field: axonius.identity.account_disabled
-      tag: convert_account_disabled_to_boolean
+      tag: convert_account_disabled_to_boolean_984a66ca
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_account_disabled_32d7f39d
             field: axonius.identity.account_disabled
             ignore_missing: true
         - append:
+            tag: append_error_message_077ea425
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_process_associated_entities
+      tag: script_process_associated_entities_f057184d
       lang: painless
       description: >-
         Copies associated_devices fields (device_id, device_model, device_serial) to ECS device.* fields
@@ -87,20 +89,21 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_527c4bbb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: cloud.service.name
-      tag: set_cloud_service_name_from_identity_aws_iam_identity_type
+      tag: set_cloud_service_name_from_identity_aws_iam_identity_type_8ee242e0
       copy_from: axonius.identity.aws_iam_identity_type
       ignore_empty_value: true
   - set:
       field: cloud.account.id
-      tag: set_cloud_account_id_from_identity_azure_account_id
+      tag: set_cloud_account_id_from_identity_azure_account_id_e078e1de
       copy_from: axonius.identity.azure_account_id
       ignore_empty_value: true
   - script:
-      tag: script_process_breaches_data
+      tag: script_process_breaches_data_cdfe1125
       lang: painless
       description: >-
         Processes each axonius.identity.breaches_data element in a single pass: parses added_date,
@@ -198,64 +201,73 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_ed4df357
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: cloud.provider
-      tag: set_cloud_provider_from_identity_cloud_provider
+      tag: set_cloud_provider_from_identity_cloud_provider_fd0dbb1b
       copy_from: axonius.identity.cloud_provider
       ignore_empty_value: true
   - convert:
       field: axonius.identity.distinct_associated_devices_count
-      tag: convert_distinct_associated_devices_count_to_long
+      tag: convert_distinct_associated_devices_count_to_long_c3cf0d05
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_distinct_associated_devices_count_2972e40b
             field: axonius.identity.distinct_associated_devices_count
             ignore_missing: true
         - append:
+            tag: append_error_message_964ec3da
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.email_activity.is_deleted
-      tag: convert_email_activity_is_deleted_to_boolean
+      tag: convert_email_activity_is_deleted_to_boolean_cf905f5b
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_email_activity_is_deleted_1730449a
             field: axonius.identity.email_activity.is_deleted
             ignore_missing: true
         - append:
+            tag: append_error_message_a680be12
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.email_activity.read_count
-      tag: convert_email_activity_read_count_to_long
+      tag: convert_email_activity_read_count_to_long_2c21cca9
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_email_activity_read_count_a0b52b66
             field: axonius.identity.email_activity.read_count
             ignore_missing: true
         - append:
+            tag: append_error_message_d50ac3b8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.email_activity.receive_count
-      tag: convert_email_activity_receive_count_to_long
+      tag: convert_email_activity_receive_count_to_long_8025fd4d
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_email_activity_receive_count_e73c66ce
             field: axonius.identity.email_activity.receive_count
             ignore_missing: true
         - append:
+            tag: append_error_message_84763771
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.identity.email_activity.report_date
-      tag: date_email_activity_report_date
+      tag: date_email_activity_report_date_a7a88dd3
       target_field: axonius.identity.email_activity.report_date
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -264,14 +276,16 @@ processors:
       if: ctx.axonius?.identity?.email_activity?.report_date != null && ctx.axonius.identity.email_activity.report_date != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_email_activity_report_date_9cf4c109
             field: axonius.identity.email_activity.report_date
             ignore_missing: true
         - append:
+            tag: append_error_message_35511294
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.identity.user_pass_last_used
-      tag: date_user_pass_last_used
+      tag: date_user_pass_last_used_c1a7f408
       target_field: axonius.identity.user_pass_last_used
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -280,74 +294,86 @@ processors:
       if: ctx.axonius?.identity?.user_pass_last_used != null && ctx.axonius.identity.user_pass_last_used != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_user_pass_last_used_1b42ab20
             field: axonius.identity.user_pass_last_used
             ignore_missing: true
         - append:
+            tag: append_error_message_196edf66
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - convert:
       field: axonius.identity.email_activity.report_period
-      tag: convert_email_activity_report_period_to_long
+      tag: convert_email_activity_report_period_to_long_1af20da6
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_email_activity_report_period_52e1ad56
             field: axonius.identity.email_activity.report_period
             ignore_missing: true
         - append:
+            tag: append_error_message_a02ffcce
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.email_activity.send_count
-      tag: convert_email_activity_send_count_to_long
+      tag: convert_email_activity_send_count_to_long_d86af026
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_email_activity_send_count_bfeaafe6
             field: axonius.identity.email_activity.send_count
             ignore_missing: true
         - append:
+            tag: append_error_message_789e3036
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.email_notification.alternative_host_reminder
-      tag: convert_email_notification_alternative_host_reminder_to_boolean
+      tag: convert_email_notification_alternative_host_reminder_to_boolean_4fa07aa0
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_email_notification_alternative_host_reminder_09c056ca
             field: axonius.identity.email_notification.alternative_host_reminder
             ignore_missing: true
         - append:
+            tag: append_error_message_63b3b6a3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.email_notification.cancel_meeting_reminder
-      tag: convert_email_notification_cancel_meeting_reminder_to_boolean
+      tag: convert_email_notification_cancel_meeting_reminder_to_boolean_a60965c9
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_email_notification_cancel_meeting_reminder_aa073402
             field: axonius.identity.email_notification.cancel_meeting_reminder
             ignore_missing: true
         - append:
+            tag: append_error_message_c991c4c5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.email_notification.jbh_reminder
-      tag: convert_email_notification_jbh_reminder_to_boolean
+      tag: convert_email_notification_jbh_reminder_to_boolean_518dc6c6
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_email_notification_jbh_reminder_e3bb69b2
             field: axonius.identity.email_notification.jbh_reminder
             ignore_missing: true
         - append:
+            tag: append_error_message_0131063f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_convert_feature_fields
+      tag: script_convert_feature_fields_2900e3a1
       lang: painless
       description: Converts feature boolean and long fields, removing values that cannot be converted.
       if: ctx.axonius?.identity?.feature != null
@@ -395,17 +421,18 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_ac96ed18
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.user
-      tag: append_identity_first_name_into_related_user
+      tag: append_identity_first_name_into_related_user_df8812fc
       value: '{{{axonius.identity.first_name}}}'
       allow_duplicates: false
       if: ctx.axonius?.identity?.first_name != null
   - date:
       field: axonius.identity.hire_date
-      tag: date_hire_date
+      tag: date_hire_date_d7f02af4
       target_field: axonius.identity.hire_date
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -414,13 +441,15 @@ processors:
       if: ctx.axonius?.identity?.hire_date != null && ctx.axonius.identity.hire_date != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_hire_date_0851876f
             field: axonius.identity.hire_date
             ignore_missing: true
         - append:
+            tag: append_error_message_76291296
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_convert_in_meeting_booleans
+      tag: script_convert_in_meeting_booleans_136c3062
       lang: painless
       description: Converts all in_meeting boolean fields, removing values that cannot be converted.
       if: ctx.axonius?.identity?.in_meeting != null
@@ -471,10 +500,11 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_f80d5e70
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_convert_identity_top_level_booleans
+      tag: script_convert_identity_top_level_booleans_ce042de4
       lang: painless
       description: Converts top-level identity boolean fields, removing values that cannot be converted.
       if: ctx.axonius?.identity != null
@@ -518,11 +548,12 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_cc0e2935
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.identity.last_login_attempt
-      tag: date_last_login_attempt
+      tag: date_last_login_attempt_d8f4961b
       target_field: axonius.identity.last_login_attempt
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -531,14 +562,16 @@ processors:
       if: ctx.axonius?.identity?.last_login_attempt != null && ctx.axonius.identity.last_login_attempt != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_last_login_attempt_1ca31f66
             field: axonius.identity.last_login_attempt
             ignore_missing: true
         - append:
+            tag: append_error_message_9589d512
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.identity.last_logon
-      tag: date_last_logon
+      tag: date_last_logon_21644250
       target_field: axonius.identity.last_logon
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -547,20 +580,22 @@ processors:
       if: ctx.axonius?.identity?.last_logon != null && ctx.axonius.identity.last_logon != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_last_logon_e00806fe
             field: axonius.identity.last_logon
             ignore_missing: true
         - append:
+            tag: append_error_message_3b33a662
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.user
-      tag: append_identity_last_name_into_related_user
+      tag: append_identity_last_name_into_related_user_dc7be44d
       value: '{{{axonius.identity.last_name}}}'
       allow_duplicates: false
       if: ctx.axonius?.identity?.last_name != null
   - date:
       field: axonius.identity.last_password_change
-      tag: date_last_password_change
+      tag: date_last_password_change_7e7cfb5b
       target_field: axonius.identity.last_password_change
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -569,14 +604,16 @@ processors:
       if: ctx.axonius?.identity?.last_password_change != null && ctx.axonius.identity.last_password_change != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_last_password_change_b1eba0bb
             field: axonius.identity.last_password_change
             ignore_missing: true
         - append:
+            tag: append_error_message_23c21da4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.identity.last_seen
-      tag: date_last_seen
+      tag: date_last_seen_843202f4
       target_field: axonius.identity.last_seen
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -585,36 +622,38 @@ processors:
       if: ctx.axonius?.identity?.last_seen != null && ctx.axonius.identity.last_seen != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_last_seen_bf9f90b0
             field: axonius.identity.last_seen
             ignore_missing: true
         - append:
+            tag: append_error_message_cdf1ebf2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: user.email
-      tag: set_user_email_from_identity_mail
+      tag: set_user_email_from_identity_mail_f3c2f9a2
       copy_from: axonius.identity.mail
       ignore_empty_value: true
   - dissect:
-      tag: dissect_user_email
+      tag: dissect_user_email_c7a077f3
       if: ctx.user?.email != null && ctx.user.email.contains('@')
       field: user.email
       pattern: '%{}@%{user.domain}'
   - append:
       field: related.user
-      tag: append_identity_mail_into_related_user
+      tag: append_identity_mail_into_related_user_f93fbdc6
       value: '{{{axonius.identity.mail}}}'
       allow_duplicates: false
       if: ctx.axonius?.identity?.mail != null
   - append:
       field: related.user
-      tag: append_identity_manager_id_into_related_user
+      tag: append_identity_manager_id_into_related_user_38d8f425
       value: '{{{axonius.identity.manager_id}}}'
       allow_duplicates: false
       if: ctx.axonius?.identity?.manager_id != null
   - date:
       field: axonius.identity.max_added_date
-      tag: date_max_added_date
+      tag: date_max_added_date_5047ee1a
       target_field: axonius.identity.max_added_date
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -623,14 +662,16 @@ processors:
       if: ctx.axonius?.identity?.max_added_date != null && ctx.axonius.identity.max_added_date != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_max_added_date_9d96f5c6
             field: axonius.identity.max_added_date
             ignore_missing: true
         - append:
+            tag: append_error_message_a2e05022
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.identity.max_breach_date
-      tag: date_max_breach_date
+      tag: date_max_breach_date_acb0e1c6
       target_field: axonius.identity.max_breach_date
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -639,14 +680,16 @@ processors:
       if: ctx.axonius?.identity?.max_breach_date != null && ctx.axonius.identity.max_breach_date != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_max_breach_date_35ac8903
             field: axonius.identity.max_breach_date
             ignore_missing: true
         - append:
+            tag: append_error_message_e693bc52
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.identity.max_modified_date
-      tag: date_max_modified_date
+      tag: date_max_modified_date_9ec22ab1
       target_field: axonius.identity.max_modified_date
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -655,14 +698,16 @@ processors:
       if: ctx.axonius?.identity?.max_modified_date != null && ctx.axonius.identity.max_modified_date != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_max_modified_date_b27fa071
             field: axonius.identity.max_modified_date
             ignore_missing: true
         - append:
+            tag: append_error_message_a6c1488e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.identity.nested_grants_managers_last_updated
-      tag: date_nested_grants_managers_last_updated
+      tag: date_nested_grants_managers_last_updated_98d2028a
       target_field: axonius.identity.nested_grants_managers_last_updated
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -671,113 +716,125 @@ processors:
       if: ctx.axonius?.identity?.nested_grants_managers_last_updated != null && ctx.axonius.identity.nested_grants_managers_last_updated != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_nested_grants_managers_last_updated_8e59e661
             field: axonius.identity.nested_grants_managers_last_updated
             ignore_missing: true
         - append:
+            tag: append_error_message_613ee4fa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.nested_managers
-      tag: foreach_nested_managers_value
+      tag: foreach_nested_managers_value_6a0ab6f1
       if: ctx.axonius?.identity?.nested_managers instanceof List
       processor:
         append:
           field: related.user
-          tag: append_nested_managers_value_into_related_user
+          tag: append_nested_managers_value_into_related_user_530970a5
           value: '{{{_ingest._value.value}}}'
           allow_duplicates: false
   - foreach:
       field: axonius.identity.nested_permissions
-      tag: foreach_nested_permissions_has_administrative_permissions
+      tag: foreach_nested_permissions_has_administrative_permissions_2085136f
       if: ctx.axonius?.identity?.nested_permissions instanceof List
       processor:
         convert:
           field: _ingest._value.has_administrative_permissions
-          tag: convert_nested_permissions_has_administrative_permissions_to_boolean
+          tag: convert_nested_permissions_has_administrative_permissions_to_boolean_53a8a0ad
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_has_administrative_permissions_560a6594
                 field: _ingest._value.has_administrative_permissions
                 ignore_missing: true
             - append:
+                tag: append_error_message_7b755cdf
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.nested_permissions
-      tag: foreach_nested_permissions_is_admin
+      tag: foreach_nested_permissions_is_admin_d6470a48
       if: ctx.axonius?.identity?.nested_permissions instanceof List
       processor:
         convert:
           field: _ingest._value.is_admin
-          tag: convert_nested_permissions_is_admin_to_boolean
+          tag: convert_nested_permissions_is_admin_to_boolean_958abda1
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_admin_b384bdbf
                 field: _ingest._value.is_admin
                 ignore_missing: true
             - append:
+                tag: append_error_message_1fe1bd73
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.oracle_cloud_cis_incompliant
-      tag: foreach_oracle_cloud_cis_incompliant_rule_section
+      tag: foreach_oracle_cloud_cis_incompliant_rule_section_5613bfeb
       if: ctx.axonius?.identity?.oracle_cloud_cis_incompliant instanceof List
       processor:
         convert:
           field: _ingest._value.rule_section
-          tag: convert_oracle_cloud_cis_incompliant_rule_section_to_float
+          tag: convert_oracle_cloud_cis_incompliant_rule_section_to_float_c077bd9f
           type: string
           ignore_missing: true
   - foreach:
       field: axonius.identity.oracle_cloud_cis_incompliant
-      tag: foreach_oracle_cloud_cis_incompliant_rule_cis_version
+      tag: foreach_oracle_cloud_cis_incompliant_rule_cis_version_0cc5ebe0
       if: ctx.axonius?.identity?.oracle_cloud_cis_incompliant instanceof List
       processor:
         convert:
           field: _ingest._value.rule_cis_version
-          tag: convert_oracle_cloud_cis_incompliant_rule_cis_version_to_float
+          tag: convert_oracle_cloud_cis_incompliant_rule_cis_version_to_float_1dab514b
           type: float
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_rule_cis_version_ff590b25
                 field: _ingest._value.rule_cis_version
                 ignore_missing: true
             - append:
+                tag: append_error_message_649ed7a7
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.password_never_expires
-      tag: convert_password_never_expires_to_boolean
+      tag: convert_password_never_expires_to_boolean_35fa4aff
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_password_never_expires_c47e34c1
             field: axonius.identity.password_never_expires
             ignore_missing: true
         - append:
+            tag: append_error_message_3cf9e5b6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.password_not_required
-      tag: convert_password_not_required_to_boolean
+      tag: convert_password_not_required_to_boolean_cb202030
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_password_not_required_fc55ad1f
             field: axonius.identity.password_not_required
             ignore_missing: true
         - append:
+            tag: append_error_message_4b8fdc98
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.pmi
-      tag: convert_pmi_into_keyword
+      tag: convert_pmi_into_keyword_81c3e376
       type: string
       ignore_missing: true
   - script:
-      tag: script_convert_recording_booleans
+      tag: script_convert_recording_booleans_204d3095
       lang: painless
       description: Converts all recording boolean fields, removing values that cannot be converted.
       if: ctx.axonius?.identity?.recording != null
@@ -816,22 +873,25 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_1eaf2529
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.recovery_question_set
-      tag: convert_recovery_question_set_to_boolean
+      tag: convert_recovery_question_set_to_boolean_669a2623
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_recovery_question_set_c353bec7
             field: axonius.identity.recovery_question_set
             ignore_missing: true
         - append:
+            tag: append_error_message_73ecb07e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_convert_schedule_meeting_booleans
+      tag: script_convert_schedule_meeting_booleans_e532b043
       lang: painless
       description: Converts all schedule_meeting boolean fields, removing values that cannot be converted.
       if: ctx.axonius?.identity?.schedule_meeting != null
@@ -869,17 +929,18 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_8af3b268
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.user
-      tag: append_identity_snow_full_name_into_related_user
+      tag: append_identity_snow_full_name_into_related_user_aced3843
       value: '{{{axonius.identity.snow_full_name}}}'
       allow_duplicates: false
       if: ctx.axonius?.identity?.snow_full_name != null
   - date:
       field: axonius.identity.status_changed
-      tag: date_status_changed
+      tag: date_status_changed_4e462423
       target_field: axonius.identity.status_changed
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -888,74 +949,86 @@ processors:
       if: ctx.axonius?.identity?.status_changed != null && ctx.axonius.identity.status_changed != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_status_changed_6f015edb
             field: axonius.identity.status_changed
             ignore_missing: true
         - append:
+            tag: append_error_message_10b893a0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.telephony.show_international_numbers_link
-      tag: convert_telephony_show_international_numbers_link_to_boolean
+      tag: convert_telephony_show_international_numbers_link_to_boolean_650ba44a
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_telephony_show_international_numbers_link_9c0457f0
             field: axonius.identity.telephony.show_international_numbers_link
             ignore_missing: true
         - append:
+            tag: append_error_message_b2abe86a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.telephony.third_party_audio
-      tag: convert_telephony_third_party_audio_to_boolean
+      tag: convert_telephony_third_party_audio_to_boolean_d16aed7d
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_telephony_third_party_audio_176b565c
             field: axonius.identity.telephony.third_party_audio
             ignore_missing: true
         - append:
+            tag: append_error_message_d9d4d79f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.tsp.call_out
-      tag: convert_tsp_call_out_to_boolean
+      tag: convert_tsp_call_out_to_boolean_e2401e34
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_tsp_call_out_dfeb444c
             field: axonius.identity.tsp.call_out
             ignore_missing: true
         - append:
+            tag: append_error_message_2211dccc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.tsp.show_international_numbers_link
-      tag: convert_tsp_show_international_numbers_link_to_boolean
+      tag: convert_tsp_show_international_numbers_link_to_boolean_a7739d22
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_tsp_show_international_numbers_link_69b99ad4
             field: axonius.identity.tsp.show_international_numbers_link
             ignore_missing: true
         - append:
+            tag: append_error_message_726bb5f7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.u_vip
-      tag: convert_u_vip_to_boolean
+      tag: convert_u_vip_to_boolean_14f954bb
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_u_vip_c8c10673
             field: axonius.identity.u_vip
             ignore_missing: true
         - append:
+            tag: append_error_message_29c9eac2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.identity.updated_on
-      tag: date_updated_on
+      tag: date_updated_on_80a138f7
       target_field: axonius.identity.updated_on
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -964,13 +1037,15 @@ processors:
       if: ctx.axonius?.identity?.updated_on != null && ctx.axonius.identity.updated_on != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_updated_on_ed83292b
             field: axonius.identity.updated_on
             ignore_missing: true
         - append:
+            tag: append_error_message_6fdbda28
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_convert_user_apps_booleans
+      tag: script_convert_user_apps_booleans_236380b5
       lang: painless
       description: Converts all user_apps boolean fields in each array element, removing values that cannot be converted.
       if: ctx.axonius?.identity?.user_apps instanceof List
@@ -1007,16 +1082,17 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_ecc58521
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.user_apps
-      tag: foreach_user_apps_last_access
+      tag: foreach_user_apps_last_access_1dddc942
       if: ctx.axonius?.identity?.user_apps instanceof List
       processor:
         date:
           field: _ingest._value.last_access
-          tag: date_user_apps_last_access
+          tag: date_user_apps_last_access_54fb5e5d
           target_field: _ingest._value.last_access
           formats:
             - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -1024,11 +1100,12 @@ processors:
             - EEE,dd MMM yyyy HH:mm:ss 'GMT'
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_access_274a8a3f
                 field: _ingest._value.last_access
                 ignore_missing: true
   - date:
       field: axonius.identity.user_created
-      tag: date_user_created
+      tag: date_user_created_5ed64354
       target_field: axonius.identity.user_created
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -1037,24 +1114,26 @@ processors:
       if: ctx.axonius?.identity?.user_created != null && ctx.axonius.identity.user_created != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_user_created_3fc4d0a2
             field: axonius.identity.user_created
             ignore_missing: true
         - append:
+            tag: append_error_message_8250378e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created_from_identity_user_created
+      tag: set_event_created_from_identity_user_created_b9a15ccf
       copy_from: axonius.identity.user_created
       ignore_empty_value: true
   - foreach:
       field: axonius.identity.user_factors
-      tag: foreach_user_factors_created
+      tag: foreach_user_factors_created_636bd284
       if: ctx.axonius?.identity?.user_factors instanceof List
       processor:
         date:
           field: _ingest._value.created
-          tag: date_user_factors_created
+          tag: date_user_factors_created_d4d8e3eb
           target_field: _ingest._value.created
           formats:
             - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -1062,33 +1141,36 @@ processors:
             - EEE,dd MMM yyyy HH:mm:ss 'GMT'
           on_failure:
             - remove:
+                tag: remove_ingest_value_created_de8b2c6e
                 field: _ingest._value.created
                 ignore_missing: true
   - foreach:
       field: axonius.identity.user_factors
-      tag: foreach_user_factors_is_enabled
+      tag: foreach_user_factors_is_enabled_c0d3cc0d
       if: ctx.axonius?.identity?.user_factors instanceof List
       processor:
         convert:
           field: _ingest._value.is_enabled
-          tag: convert_user_factors_is_enabled_to_boolean
+          tag: convert_user_factors_is_enabled_to_boolean_dc8784bd
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_enabled_4d092329
                 field: _ingest._value.is_enabled
                 ignore_missing: true
             - append:
+                tag: append_error_message_b5524010
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.user_factors
-      tag: foreach_user_factors_last_updated
+      tag: foreach_user_factors_last_updated_74196f9e
       if: ctx.axonius?.identity?.user_factors instanceof List
       processor:
         date:
           field: _ingest._value.last_updated
-          tag: date_user_factors_last_updated
+          tag: date_user_factors_last_updated_580ecdf9
           target_field: _ingest._value.last_updated
           formats:
             - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -1096,103 +1178,112 @@ processors:
             - EEE,dd MMM yyyy HH:mm:ss 'GMT'
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_updated_6f37951e
                 field: _ingest._value.last_updated
                 ignore_missing: true
   - set:
       field: user.full_name
-      tag: set_user_full_name_from_identity_user_full_name
+      tag: set_user_full_name_from_identity_user_full_name_78d71d55
       copy_from: axonius.identity.user_full_name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_identity_user_full_name_into_related_user
+      tag: append_identity_user_full_name_into_related_user_2e801774
       value: '{{{axonius.identity.user_full_name}}}'
       allow_duplicates: false
       if: ctx.axonius?.identity?.user_full_name != null
   - convert:
       field: axonius.identity.user_is_password_enabled
-      tag: convert_user_is_password_enabled_to_boolean
+      tag: convert_user_is_password_enabled_to_boolean_114fdd85
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_user_is_password_enabled_e6b3db6d
             field: axonius.identity.user_is_password_enabled
             ignore_missing: true
         - append:
+            tag: append_error_message_159797bb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.user
-      tag: append_identity_user_manager_into_related_user
+      tag: append_identity_user_manager_into_related_user_059b66c9
       value: '{{{axonius.identity.user_manager}}}'
       allow_duplicates: false
       if: ctx.axonius?.identity?.user_manager != null
   - append:
       field: related.user
-      tag: append_identity_user_manager_mail_into_related_user
+      tag: append_identity_user_manager_mail_into_related_user_25dd0084
       value: '{{{axonius.identity.user_manager_mail}}}'
       allow_duplicates: false
       if: ctx.axonius?.identity?.user_manager_mail != null
   - foreach:
       field: axonius.identity.user_permissions
-      tag: foreach_user_permissions_is_admin
+      tag: foreach_user_permissions_is_admin_8a1a9431
       if: ctx.axonius?.identity?.user_permissions instanceof List
       processor:
         convert:
           field: _ingest._value.is_admin
-          tag: convert_user_permissions_is_admin_to_boolean
+          tag: convert_user_permissions_is_admin_to_boolean_695ed169
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_admin_21a40e3e
                 field: _ingest._value.is_admin
                 ignore_missing: true
             - append:
+                tag: append_error_message_8d2cd2d6
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.user_related_resources
-      tag: foreach_user_related_resources_id
+      tag: foreach_user_related_resources_id_7d9fe184
       if: ctx.axonius?.identity?.user_related_resources instanceof List
       processor:
         convert:
           field: _ingest._value.id
-          tag: convert_user_related_resources_id_into_keyword
+          tag: convert_user_related_resources_id_into_keyword_bfdadf89
           type: string
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_id_2deabdff
                 field: _ingest._value.id
                 ignore_missing: true
             - append:
+                tag: append_error_message_e5721702
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: user.name
-      tag: set_user_name_from_identity_username
+      tag: set_user_name_from_identity_username_680f2347
       copy_from: axonius.identity.username
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_identity_username_into_related_user
+      tag: append_identity_username_into_related_user_3ab11971
       value: '{{{axonius.identity.username}}}'
       allow_duplicates: false
       if: ctx.axonius?.identity?.username != null
   - convert:
       field: axonius.identity.verified
-      tag: convert_verified_to_boolean
+      tag: convert_verified_to_boolean_11b94678
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_verified_24b7553d
             field: axonius.identity.verified
             ignore_missing: true
         - append:
+            tag: append_error_message_9fcc12d9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.associated_devices
-      tag: foreach_axonius_identity_associated_devices
+      tag: foreach_axonius_identity_associated_devices_9c924316
       if: ctx.axonius?.identity?.associated_devices instanceof List
       processor:
         remove:
@@ -1200,19 +1291,20 @@ processors:
             - _ingest._value.device_id
             - _ingest._value.device_model
             - _ingest._value.device_serial
-          tag: remove_identity_associated_devices_mapped_fields
+          tag: remove_identity_associated_devices_mapped_fields_3a9cfed3
           ignore_missing: true
   - foreach:
       field: axonius.identity.breaches_data
-      tag: foreach_axonius_identity_breaches_data
+      tag: foreach_axonius_identity_breaches_data_68c6ad44
       if: ctx.axonius?.identity?.breaches_data instanceof List
       processor:
         remove:
           field: _ingest._value.added_date
-          tag: remove_identity_breaches_data_added_date
+          tag: remove_identity_breaches_data_added_date_fc00c6ab
           ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -1220,5 +1312,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

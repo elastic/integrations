@@ -127,7 +127,7 @@ processors:
       target_field: threat.indicator.type
       ignore_missing: true
   - script:
-      tag: script_threat_indicator_name
+      tag: script_threat_indicator_name_225a5f0f
       lang: painless
       description: Set threat.indicator.name based on threat.indicator.type.
       if: ctx.threat?.indicator?.type != null
@@ -162,7 +162,7 @@ processors:
   # Add default deleted_at to expire all IOCs after duration: ioc_expiration_duration. If value not in d, h, or m, default to 90d.
   - script:
       lang: painless
-      tag: script-default-deleted_at
+      tag: script-default-deleted_at_fc022a0a
       if: (ctx.json?.deleted_at == null && ctx.json?.added_at != null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != '')
       description: >
         Add default deleted_at
@@ -205,7 +205,7 @@ processors:
   - date:
       field: json.added_at
       target_field: json.added_at
-      tag: date-added_at
+      tag: date-added_at_8cd4e9f4
       formats:
         - ISO8601
         - strict_date_optional_time_nanos
@@ -220,7 +220,7 @@ processors:
   - date:
       field: json.deleted_at
       target_field: json.deleted_at
-      tag: date-deleted_at
+      tag: date-deleted_at_f30b3f6d
       formats:
         - ISO8601
         - strict_date_optional_time_nanos
@@ -237,7 +237,7 @@ processors:
   - date:
       field: json.date_first
       target_field: threat.indicator.first_seen
-      tag: date-date_first
+      tag: date-date_first_bafcf2db
       formats:
         - ISO8601
       if: "ctx.json?.date_first != null"
@@ -250,7 +250,7 @@ processors:
   - date:
       field: json.date_last
       target_field: threat.indicator.last_seen
-      tag: date-last_seen
+      tag: date-last_seen_f70ce08d
       formats:
         - ISO8601
       if: "ctx.json?.date_last != null"
@@ -387,14 +387,14 @@ processors:
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_email_to_related_user
+      tag: append_email_to_related_user_1c67a3e4
       value: "{{{ json.email }}}"
       if: ctx.json?.email != null
       allow_duplicates: false
 
   - convert:
       field: json.srcip
-      tag: convert_srcip_to_ip
+      tag: convert_srcip_to_ip_9827bc74
       target_field: threat.indicator.ip
       type: ip
       ignore_missing: true
@@ -406,13 +406,13 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_srcip_to_related_ip
+      tag: append_srcip_to_related_ip_a626c04b
       value: "{{{ threat.indicator.ip }}}"
       if: ctx.threat?.indicator?.ip != null
       allow_duplicates: false
   - geoip:
       field: threat.indicator.ip
-      tag: geoip_threat_indicator_ip
+      tag: geoip_threat_indicator_ip_ab57f561
       target_field: threat.indicator.geo
       ignore_missing: true
       if: ctx.threat?.indicator?.ip != null
@@ -447,7 +447,7 @@ processors:
       if: ctx.threat?.indicator?.url?.domain == null
   - append:
       field: related.hosts
-      tag: append_domain_to_related_hosts
+      tag: append_domain_to_related_hosts_51fda19d
       value: "{{{ json.domain }}}"
       if: ctx.json?.domain != null
       allow_duplicates: false
@@ -487,7 +487,7 @@ processors:
       if: "ctx.json?.md5 != null && ctx.json.md5.length() == 128"
   - append:
       field: related.hash
-      tag: append_md5_to_related_hash
+      tag: append_md5_to_related_hash_c552e7e9
       value: "{{{ json.md5 }}}"
       if: ctx.json?.md5 != null
       allow_duplicates: false
@@ -508,7 +508,7 @@ processors:
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: set_event_severity
+      tag: set_event_severity_cabae48a
       if: ctx.json?.severity != null
       source: |-
         ctx.event = ctx.event ?: [:];
@@ -524,6 +524,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_fd957091
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -572,6 +573,7 @@ processors:
       ignore_missing: true
       processor:
         append:
+          tag: append_tags_8564c47d
           field: tags
           value: "{{{ _ingest._value }}}"
   #
@@ -616,7 +618,7 @@ processors:
       ignore_missing: true
 
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -650,12 +652,12 @@ processors:
       field: json
       target_field: anomali.threatstream
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_4fd8ffa8
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
-      tag: append_tags
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
@@ -663,12 +665,15 @@ processors:
 
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

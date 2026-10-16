@@ -10,28 +10,28 @@ description: |
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_8c2c9474
       value: '9.4.0'
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_bb754f36
       value: Doppler
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_62d0de8c
       value: Activity Logs
   - set:
       field: event.provider
-      tag: set_event_provider
+      tag: set_event_provider_b93fce9f
       copy_from: doppler.source
       ignore_empty_value: true
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - date:
       field: doppler.createdAt
-      tag: date_created_at
+      tag: date_created_at_f8484d74
       target_field: '@timestamp'
       formats:
         - ISO8601
@@ -39,7 +39,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            tag: append_date_error
+            tag: append_date_error_21815e51
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               with tag '{{{ _ingest.on_failure_processor_tag }}}'
@@ -52,22 +52,22 @@ processors:
   # unparseable createdAt is already captured by the date processor on_failure).
   - set:
       field: '@timestamp'
-      tag: set_timestamp_fallback
+      tag: set_timestamp_fallback_f20ac61d
       value: '{{{_ingest.timestamp}}}'
       if: ctx['@timestamp'] == null
   - append:
       field: error.message
-      tag: append_timestamp_fallback_note
+      tag: append_timestamp_fallback_note_4169bd9f
       value: 'doppler.createdAt missing; @timestamp set from ingest time'
       if: ctx.doppler?.createdAt == null
   - set:
       field: event.action
-      tag: set_event_action
+      tag: set_event_action_3945b22b
       copy_from: doppler.type
       ignore_empty_value: true
   - set:
       field: event.id
-      tag: set_event_id_from_slug
+      tag: set_event_id_from_slug_629a60f1
       copy_from: doppler.slug
       ignore_empty_value: true
   ##
@@ -77,48 +77,48 @@ processors:
   ##
   - rename:
       field: doppler.user
-      tag: rename_user_to_actor
+      tag: rename_user_to_actor_fcdcce33
       target_field: doppler.actor
       ignore_missing: true
   - rename:
       field: doppler.actor.slug
-      tag: rename_actor_slug
+      tag: rename_actor_slug_df7178f9
       target_field: user.id
       ignore_missing: true
   - rename:
       field: doppler.actor.username
-      tag: rename_actor_username
+      tag: rename_actor_username_4a2a9e2a
       target_field: user.name
       ignore_missing: true
   # Activity events carry only a display name (no login). Fall back to it so
   # user.name pivots still resolve, before the display name moves to full_name.
   - set:
       field: user.name
-      tag: set_user_name_fallback
+      tag: set_user_name_fallback_23582fde
       copy_from: doppler.actor.name
       ignore_empty_value: true
       if: ctx.user?.name == null
   - rename:
       field: doppler.actor.name
-      tag: rename_actor_name
+      tag: rename_actor_name_9fadc343
       target_field: user.full_name
       ignore_missing: true
   - rename:
       field: doppler.actor.email
-      tag: rename_actor_email
+      tag: rename_actor_email_1a4bc3bb
       target_field: user.email
       ignore_missing: true
   # doppler.actor.type is polymorphic: an object {id,name} for API tokens, a
   # string for the bot. Split it into typed fields to avoid a mapping conflict.
   - rename:
       field: doppler.actor.type
-      tag: rename_actor_token_type
+      tag: rename_actor_token_type_99d47f1a
       target_field: doppler.actor.token_type
       ignore_missing: true
       if: ctx.doppler?.actor?.type instanceof Map
   - rename:
       field: doppler.actor.type
-      tag: rename_actor_bot_type
+      tag: rename_actor_bot_type_3caa0bcc
       target_field: doppler.actor.bot_type
       ignore_missing: true
       if: ctx.doppler?.actor?.type instanceof String
@@ -127,7 +127,7 @@ processors:
   # token label) so user.name resolves for every actor kind.
   - set:
       field: user.name
-      tag: set_user_name_from_token_type
+      tag: set_user_name_from_token_type_b6117f7c
       copy_from: doppler.actor.token_type.name
       ignore_empty_value: true
       if: ctx.user?.name == null
@@ -140,7 +140,7 @@ processors:
         - '@timestamp'
         - user.id
         - doppler.metadata.secrets
-      tag: fingerprint_secret_read_event_id
+      tag: fingerprint_secret_read_event_id_5823def2
       target_field: event.id
       ignore_missing: true
       if: ctx.event?.action == 'security.secret_read' && ctx.event?.id == null
@@ -149,12 +149,12 @@ processors:
   ##
   - set:
       field: organization.id
-      tag: set_organization_id
+      tag: set_organization_id_e8cb88e5
       copy_from: doppler.workplace.id
       ignore_empty_value: true
   - set:
       field: organization.name
-      tag: set_organization_name
+      tag: set_organization_name_23f62d7e
       copy_from: doppler.workplace.name
       ignore_empty_value: true
   ##
@@ -164,7 +164,7 @@ processors:
   ##
   - script:
       lang: painless
-      tag: categorize_event
+      tag: categorize_event_48a7ab2a
       description: Derive ECS event.category and event.type from the Doppler event type.
       if: ctx.event?.action instanceof String
       source: |-
@@ -201,7 +201,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            tag: append_categorize_event_error
+            tag: append_categorize_event_error_61870dd9
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               with tag '{{{ _ingest.on_failure_processor_tag }}}'
@@ -209,7 +209,7 @@ processors:
               failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.outcome
-      tag: set_event_outcome
+      tag: set_event_outcome_5592503e
       value: success
   ##
   # Activity-only enrichment. security.secret_read events are rerouted to the
@@ -219,7 +219,7 @@ processors:
   ##
   - pipeline:
       name: '{{ IngestPipeline "activity_enrich" }}'
-      tag: pipeline_activity_enrich
+      tag: pipeline_activity_enrich_449153a0
       if: ctx.event?.action != 'security.secret_read'
   ##
   # related.* for cross-source correlation. Includes stable IDs (user.id,
@@ -227,43 +227,43 @@ processors:
   ##
   - append:
       field: related.user
-      tag: append_related_user_id
+      tag: append_related_user_id_23cff8dc
       value: '{{{user.id}}}'
       allow_duplicates: false
       if: ctx.user?.id != null
   - append:
       field: related.user
-      tag: append_related_user_name
+      tag: append_related_user_name_325195a6
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
       field: related.user
-      tag: append_related_user_email
+      tag: append_related_user_email_b9ac313b
       value: '{{{user.email}}}'
       allow_duplicates: false
       if: ctx.user?.email != null
   - append:
       field: related.user
-      tag: append_related_user_target_id
+      tag: append_related_user_target_id_410a320f
       value: '{{{user.target.id}}}'
       allow_duplicates: false
       if: ctx.user?.target?.id != null
   - append:
       field: related.user
-      tag: append_related_user_target_email
+      tag: append_related_user_target_email_423dd870
       value: '{{{user.target.email}}}'
       allow_duplicates: false
       if: ctx.user?.target?.email != null
   - append:
       field: related.user
-      tag: append_related_user_target_name
+      tag: append_related_user_target_name_9e603805
       value: '{{{user.target.name}}}'
       allow_duplicates: false
       if: ctx.user?.target?.name != null
   - append:
       field: related.user
-      tag: append_related_user_target_full_name
+      tag: append_related_user_target_full_name_e5db41d9
       value: '{{{user.target.full_name}}}'
       allow_duplicates: false
       if: ctx.user?.target?.full_name != null
@@ -278,11 +278,11 @@ processors:
         - doppler.type
         - doppler.actor.profile_image_url
         - doppler.actor.is_bot
-      tag: remove_consumed_envelope
+      tag: remove_consumed_envelope_1e925de3
       ignore_missing: true
   - script:
       lang: painless
-      tag: drop_null_values
+      tag: drop_null_values_235ed49c
       description: Drops null/empty values recursively.
       source: |-
         boolean drop(Object o) {
@@ -301,7 +301,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            tag: append_drop_null_values_error
+            tag: append_drop_null_values_error_d59f3c01
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               with tag '{{{ _ingest.on_failure_processor_tag }}}'
@@ -310,34 +310,34 @@ processors:
   - pipeline:
       name: logs-doppler.activity@custom
       ignore_missing_pipeline: true
-      tag: pipeline_logs_doppler_activity_custom
+      tag: pipeline_logs_doppler_activity_custom_75d6bb53
   # A processor above may have caught its own failure (appending to error.message)
   # and let the document continue. Reflect any such handled error in event.kind and
   # preserve the original event so the failure is still discoverable downstream.
   - append:
       field: tags
-      tag: append_preserve_original_event_on_error
+      tag: append_preserve_original_event_on_error_b6c08950
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
   - set:
       field: event.kind
-      tag: set_event_kind_pipeline_error
+      tag: set_event_kind_pipeline_error_72b1902f
       value: pipeline_error
   - append:
       field: tags
-      tag: append_preserve_original_event_on_failure
+      tag: append_preserve_original_event_on_failure_279d5a5c
       value: preserve_original_event
       allow_duplicates: false
   - append:
       field: error.message
-      tag: append_pipeline_failure_message
+      tag: append_pipeline_failure_message_e6ec426f
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         with tag '{{{ _ingest.on_failure_processor_tag }}}'

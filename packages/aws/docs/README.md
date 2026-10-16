@@ -22,6 +22,24 @@ CPU utilization of your instances, and more.
 
 For a complete list of all AWS services and the data streams available for each, check the [Reference](#reference) documentation.
 
+### Data retention
+
+The `config` data stream collects a full snapshot of AWS Config rule evaluations on every polling interval, so its backing indices hold one copy of each record per interval. The `inspector` data stream polls findings by `updatedAt` from a saved cursor and re-scans a short overlap window on each interval, which the ingest pipeline deduplicates on `_id`, so its growth comes from findings that keep changing rather than from full copies. Only these two data streams ship a retention. The other AWS data streams follow the default lifecycle.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-aws.config-*` | `logs-aws.config-default_policy`: roll over after 7d, delete 7d after rollover | delete 7d after rollover |
+| `logs-aws.inspector-*` | `logs-aws.inspector-default_policy`: roll over after 7d, delete 7d after rollover | delete 7d after rollover |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-aws.config-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
+
 ## API requests
 
 ### Overview
@@ -86,13 +104,17 @@ Before using the AWS integration you will need:
 ### AWS Credentials
 
 AWS credentials are required for running AWS integrations.
-There are a few ways to provide AWS credentials:
+In the integration policy, the **Setup Access** section has a **Preferred method** selector.
+Pick the option that matches how you want to authenticate; only the fields that option needs are shown, and those fields are required.
 
-* Use access keys directly
-* Use temporary security credentials
-* Use a shared credentials file
-* Use an IAM role Amazon Resource Name (ARN)
-* Use an EC2 instance's IAM Role
+| Preferred method | Fields | Details |
+|---|---|---|
+| Direct Access Keys | `access_key_id`, `secret_access_key` | [Use access keys directly](#use-access-keys-directly) |
+| Temporary Access Keys | `access_key_id`, `secret_access_key`, `session_token` | [Use temporary security credentials](#use-temporary-security-credentials) |
+| Shared Credentials | `shared_credential_file`, `credential_profile_name` | [Use a shared credentials file](#use-a-shared-credentials-file) |
+| Assume Role | `role_arn` | [Use an IAM role Amazon Resource Name (ARN)](#use-an-iam-role-amazon-resource-name-arn) |
+| Instance or Pod IAM Role | none | [Use an EC2 instance's or pod's IAM Role](#use-an-ec2-instances-or-pods-iam-role) |
+| Identity Federation | Federated identity (agentless only) | Cloud Connectors; shown only for Elastic-managed (agentless) deployments |
 
 #### Use access keys directly
 
@@ -156,26 +178,20 @@ Instead, when you assume a role it provides you with temporary security credenti
 IAM role ARN can be used to specify which AWS IAM role to assume to generate temporary credentials.
 For more details, refer to [AssumeRole API documentation](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html).
 
-To use an IAM role ARN, you need to provide either a [credential profile](#use-a-shared-credentials-file) or
-[access keys](#use-access-keys-directly) along with the `role_arn` advanced option.
-`role_arn` is used to specify which AWS IAM role to assume for generating temporary credentials.
+Select the **Assume Role** method and provide `role_arn`, the IAM role to assume for generating temporary credentials.
+The credentials used to call `AssumeRole` come from the AWS SDK default credential chain on the host running Elastic Agent
+(environment variables, the default shared credentials profile, or the EC2 instance profile / pod role).
 
-Note: If `role_arn` is given, the package will check if access keys are given.
-If they are not given, the package will check for a credential profile name.
-If neither is given, the default credential profile will be used. 
+Note: **Assume Role** always calls `AssumeRole` on the given `role_arn`. If you only want to use the role that is
+already attached to the EC2 instance or pod, use the **Instance or Pod IAM Role** method instead and leave `role_arn` unset.
 
-#### Use an EC2 instance's IAM Role
+#### Use an EC2 instance's or pod's IAM Role
 
 When Elastic Agent runs on an EC2 instance that has an IAM role attached via an instance profile, it can automatically authenticate to AWS services using a temporary access key pair and session token provided by the Instance Metadata Service (IMDS). For more details, refer to [IAM roles for Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html).
+The same applies to Elastic Agent running in Kubernetes on Amazon EKS with [EKS Pod Identity](https://docs.aws.amazon.com/eks/latest/userguide/pod-identities.html) or [IAM roles for service accounts (IRSA)](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html).
 
-To use the IAM role attached to the EC2 instance, leave all of the following options empty:
-
-* `access_key_id`
-* `secret_access_key`
-* `session_token`
-* `credential_profile_name`
-* `shared_credential_file`
-* `role_arn`
+To use the IAM role attached to the EC2 instance or pod, select the **Instance or Pod IAM Role** method under **Setup Access**.
+No credential fields are shown or required; Elastic Agent resolves credentials through the AWS SDK default credential chain.
 
 ### AWS Permissions
 
@@ -249,6 +265,7 @@ This is an overview of the type of data you can collect from each AWS service:
 | EBS              |    x    |         |
 | EC2              |    x    |    x    |
 | ECS              |    x    |         |
+| EKS              |         |    x    |
 | ELB              |    x    |    x    |
 | Fargate          |    x    |         |
 | Kinesis          |    x    |         |

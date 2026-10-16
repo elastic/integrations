@@ -1,0 +1,68 @@
+connectors:
+    forward/componentid-0: {}
+exporters:
+    elasticsearch/componentid-0:
+        endpoints:
+            - https://elasticsearch:9200
+inputs: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-temporal.cloud_metrics.otel-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+processors:
+    resourcedetection/componentid-0:
+        detectors:
+            - system
+    transform/componentid-1:
+        metric_statements:
+            - context: datapoint
+              statements:
+                - set(attributes["data_stream.type"], "metrics")
+                - set(attributes["data_stream.dataset"], "temporal.cloud_metrics")
+                - set(attributes["data_stream.namespace"], "ep")
+receivers:
+    prometheus/componentid-0:
+        config:
+            scrape_configs:
+                - authorization:
+                    credentials: test-temporal-api-key
+                    type: Bearer
+                  honor_labels: false
+                  honor_timestamps: true
+                  job_name: prometheus_scrape
+                  metrics_path: /v1/metrics
+                  scheme: https
+                  scrape_interval: 30s
+                  scrape_timeout: 10s
+                  static_configs:
+                    - targets:
+                        - metrics.example.local:443
+                  tls_config:
+                    ca_file: /etc/ssl/certs/ca.crt
+                    insecure_skip_verify: true
+secret_references: []
+service:
+    pipelines:
+        metrics/componentid-0:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward/componentid-0
+        metrics/componentid-1:
+            exporters:
+                - forward/componentid-0
+            processors:
+                - resourcedetection/componentid-0
+                - transform/componentid-1
+            receivers:
+                - prometheus/componentid-0

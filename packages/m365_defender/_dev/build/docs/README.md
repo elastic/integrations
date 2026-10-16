@@ -91,6 +91,27 @@ Follow the steps below to configure data collection from Microsoft sources.
 
 **Authentication:** The Event Hub input supports two authentication methods: **connection string** (default) and **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
 
+##### Proxy Support
+
+When the Elastic Agent must reach Azure Event Hubs through an HTTP/HTTPS proxy, set the **Event Hubs transport protocol** to **AMQP-over-WebSockets**. This routes Event Hub traffic over HTTPS (port 443) instead of AMQP (port 5671), which allows the proxy to handle it. Selecting AMQP-over-WebSockets automatically sets the processor version to v2.
+
+**Requirements:**
+
+- Elastic Agent 8.19.10, 9.1.10, 9.2.4, or later.
+- Set `HTTPS_PROXY` and, if needed, `NO_PROXY` in the Elastic Agent process environment (for example, a systemd drop-in file or container environment variable). These variables apply to the entire agent process, not just this integration. Use `NO_PROXY` to exclude traffic that should bypass the proxy.
+
+**Proxy allowlist:** the proxy must allow HTTPS (port 443) connections to:
+
+- `*.servicebus.windows.net` — Event Hub traffic. Sovereign clouds use a different suffix (for example, `*.servicebus.usgovcloudapi.net` for Azure Government).
+- `*.blob.core.windows.net` — checkpoint storage. Sovereign clouds use the storage suffix derived from **Authority Host** (for example, `*.blob.core.usgovcloudapi.net` for Azure Government).
+- The authority host (default `login.microsoftonline.com`) — required for client secret authentication.
+
+**TLS-intercepting proxies:** if the proxy performs TLS interception, the corporate CA certificate must be present in the system trust store on the agent host.
+
+**Sovereign clouds:** users on Azure Government, Azure China, or Azure Germany must set the **Authority Host** to the correct login endpoint. Processor v2 derives the storage endpoint suffix from this setting. The **Resource Manager Endpoint** setting is used only by processor v1 and is ignored by v2.
+
+**Note on processor version:** selecting AMQP-over-WebSockets moves the processor from v1 to v2 if the agent was previously running v1. Existing checkpoints are migrated automatically. However, switching back to v1 afterwards resumes from stale v1 checkpoints and may cause duplicate events.
+
 #### 2. Collecting Data using Microsoft Graph Security REST API (for Incidents & Alerts)
 
 - [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
@@ -136,7 +157,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
         - Configure **Client ID**, **Client Secret** and **Tenant ID**.
     * To **Collect vulnerabilities using Microsoft Defender for Endpoint API**, you'll need to:
 
-        - Configure **Client ID**, **Client Secret** and **Tenant ID**. Configure either **Subscription ID** or **Management Group Name** as the scope.
+        - Configure **Client ID**, **Client Secret** and **Tenant ID**.
     * To **Collect events using Azure Event Hub**, you'll need to:
 
         - Configure **Azure Event Hub**, **Connection String**, **Storage Account**, and **storage_account_key**.
@@ -158,9 +179,22 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 3. In the search bar, type **m365_defender**.
 4. All transforms from the search results should indicate **Healthy** under the **Health** column.
 
-### Data Retention and ILM Configuration
+### Data retention
 
-A full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we have set up an Index Lifecycle Management (ILM) policy that automatically deletes data older than 7 days. This helps keep storage usage under control.
+The `vulnerability` data stream collects vulnerability change events from the `SoftwareVulnerabilityChangesByMachine` delta API, resuming from a saved `sinceTime` cursor. Every change to a vulnerability on a machine is a new document, so the source stream grows with change volume rather than with the size of the estate, and the `latest_cdr_vulnerabilities` transform maintains the current state of each vulnerability. The other data streams collect incrementally and follow the default lifecycle for their destination indices.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-m365_defender.vulnerability-*` | `logs-m365_defender.vulnerability-default_policy`: roll over after 7d, delete 7d after rollover | delete 7d after rollover |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-m365_defender.vulnerability-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
 
 > **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index have the following permissions `delete`, `delete_index`.
 
@@ -176,6 +210,46 @@ The values used in `event.severity` are consistent with Elastic Detection Rules.
 | Critical               | 99               |
 
 ## Troubleshooting
+
+Most issues fall into one of the scenarios below. To confirm the integration is working end to end, see [Validation](#validation). For how long collected data is kept, see [Data retention](#data-retention).
+
+### Enabling request tracing
+
+When debugging a permissions issue or unexpected API responses on the Alerts, Incidents, or Vulnerabilities data streams, enable request tracing and inspect the request trace logs to see the interaction with the server. (The Events data stream is collected over Azure Event Hub and does not offer request tracing.) OAuth2 token values can be decoded using [https://jwt.ms/](https://jwt.ms/) and should include a `roles` section listing the configured permissions.
+
+**Security warning:** request trace files are not redacted. They contain the `Authorization` header and, during OAuth2 token exchange, the client secret in clear text. Only enable request tracing in a controlled debugging session, restrict access to the trace files, disable it as soon as you are finished, and rotate the client secret if a trace file that may contain it was exposed. On agentless deployments this setting is not user-configurable.
+
+### Authentication failures
+
+The Alerts, Incidents, and Vulnerabilities data streams authenticate to Microsoft with OAuth2 client credentials. If the integration reports a degraded status in Fleet and logs OAuth2 token errors, confirm that the client secret has not expired, that the Tenant ID and Client ID are correct, and that admin consent is still granted for the application. Generate a new client secret and update the integration if needed. The degraded status will clear on the next successful poll.
+
+The Events data stream authenticates to Azure Event Hub with a connection string or Microsoft Entra client secret. For those errors, verify the connection string, the storage account, and the RBAC role assignments (Azure Event Hubs Data Receiver and Storage Blob Data Contributor).
+
+### Missing permissions
+
+A `403 Forbidden` response means the Azure application is missing a required API permission. Alerts and Incidents require `SecurityIncident.Read.All`; Vulnerabilities require `Vulnerability.Read.All`. Add the permission, grant admin consent, and wait for the next poll.
+
+### No data is collected
+
+If the integration is healthy but no data appears, confirm that the collection method for the data stream you expect is enabled, and that there is activity in the tenant for that data stream and time window. For the Events data stream, also confirm that the Azure Event Hub and its Blob Storage account are reachable and that Microsoft Defender XDR is configured to stream events to that Event Hub. Check the logs for successful polls or Event Hub reads, then see [Validation](#validation).
+
+### Recovering after an outage
+
+Each data stream saves its position and resumes from there when the agent restarts, so a short outage backfills automatically on the following polls:
+
+- Alerts and Incidents resume from the last `lastUpdateDateTime` cursor and page forward through the backlog. Overlapping records are de-duplicated during ingest (a stable document `_id` is derived from each record), so a resume does not create duplicates.
+- Vulnerabilities resume from the saved delta link, so only changes since the last successful run are fetched.
+- Events resume from the offset stored in the configured Blob Storage account.
+
+The Vulnerabilities data stream ships a 7-day retention (see [Data retention](#data-retention)). The other data streams follow the default index lifecycle for their destination indices. This governs how long ingested data is kept in Elasticsearch and is separate from how far back the source APIs can backfill.
+
+### Rate limiting
+
+Repeated `429` responses mean the Microsoft Graph or Defender for Endpoint per-tenant throttling limit has been reached. The affected request fails and the integration retries on the next scheduled interval, so collection catches up once the limit resets. Persistent throttling for many tenants that share one Azure application registration can mean the application is over-subscribed; consider using a separate application registration per tenant.
+
+### Unhealthy transforms
+
+If the Microsoft Defender XDR transforms do not show **Healthy** (see [Validation](#validation)), open the transform to check its messages for the underlying error (for example, permissions or mapping conflicts). Resolve the error, then stop and restart the transform and confirm that it returns to **Healthy**.
 
 ### Vulnerability data stream: Fixed vulnerabilities appearing on the Findings page
 

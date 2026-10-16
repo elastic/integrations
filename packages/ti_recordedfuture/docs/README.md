@@ -32,8 +32,27 @@ Recorded Future documentation for the available lists for each entity or use the
 default. To fetch indicators from multiple entities, you need to create a
 separate integration policy for each.
 
-Alternatively, the `threat` data stream can fetch custom Fusion files by
-supplying the URL to the CSV file as an advanced configuration option.
+Alternatively, the `threat` data stream can fetch a custom Fusion file by
+supplying the URL to the CSV file as an advanced configuration option. The file
+must use the same CSV format as the risklist endpoints:
+
+| Column | Required | Notes |
+|---|---|---|
+| `Name` | Yes | The indicator value. Its type (IP, URL, domain, or file hash) is auto-detected from the value, independent of the configured `entity`. |
+| `Risk` | Recommended | Risk score from 0 to 99. Mapped to `event.risk_score`. |
+| `RiskString` | No | For example, `4/52`. |
+| `EvidenceDetails` | No | JSON-encoded evidence from Recorded Future. |
+| `Algorithm` | No | Hash algorithm (for example `SHA-256`); marks the row as a file-hash indicator. |
+
+Recorded Future's public VPN and proxy Fusion lists
+(`/public/vpn_proxy_lists/vpn_ips_list.csv` and `proxy_ips_list.csv`) use the
+columns `ip`, `risk_score`, and `service` instead. These files are supported
+when fetched through the custom Fusion file URL option:
+`ip` and `risk_score` are mapped onto `Name` and `Risk`, and `service` is kept
+under `recordedfuture.service`. Any other Fusion file that uses a different
+schema (no `Name`/`ip` column) is not supported; its documents are indexed with
+`event.kind: pipeline_error` and an explanatory `error.message`. Additional
+columns are preserved under `recordedfuture.*`.
 
 The `threat` data stream will check whether the available data has changed
 before actually downloading it. A short interval setting will mean that it
@@ -53,18 +72,27 @@ transform creates a destination index named
 unexpired IOCs. The destination index also has an alias
 `logs-ti_recordedfuture_latest.threat`. When setting up indicator match rules,
 use this latest destination index to avoid false positives from expired IOCs.
-Please refer to the [ILM Policy](#ilm-policy) section below for information on
+See [Data retention](#data-retention) for information on
 how source indices are managed to prevent unbounded growth.
 
 [elasticsearch_transforms]: https://www.elastic.co/docs/explore-analyze/transforms
 
-### ILM Policy
+### Data retention
 
-To facilitate IOC expiration, source datastream-backed indices
-`.ds-logs-ti_recordedfuture.threat-*` are allowed to contain duplicates from
-each polling interval. An ILM policy is added to these source indices to prevent
-unbounded growth. This means data in these source indices will be deleted after
-`5 days` from the ingestion date.
+Threat indicators are re-collected across polling intervals, and the latest transform keeps the active, deduplicated view in its destination index. The source data streams therefore hold repeated copies of the same indicators.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-ti_recordedfuture.threat-*` | `logs-ti_recordedfuture.threat-default_policy`: roll over after 2d, delete 3d after rollover | delete 5d after rollover |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-ti_recordedfuture.threat-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
 
 **NOTE:** For large risklist downloads, adjust the timeout setting so that the
 Agent has enough time to download and process the risklist.
@@ -255,6 +283,7 @@ An example event for `threat` looks as following:
 | recordedfuture.list | User-configured risklist. | keyword |
 | recordedfuture.name | Indicator value. | keyword |
 | recordedfuture.risk_string | Details of risk rules observed. | keyword |
+| recordedfuture.service | Service associated with the indicator in Recorded Future VPN/proxy Fusion lists (for example, the VPN or proxy provider name). | keyword |
 | threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
@@ -1241,6 +1270,13 @@ An example event for `playbook_alert` looks as following:
 | recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.uac |  | keyword |
 | recordedfuture.playbook_alert.panel_evidence_summary.dump.description |  | keyword |
 | recordedfuture.playbook_alert.panel_evidence_summary.dump.name |  | keyword |
+| recordedfuture.playbook_alert.panel_evidence_summary.evidence.assessments.id |  | keyword |
+| recordedfuture.playbook_alert.panel_evidence_summary.evidence.assessments.title |  | keyword |
+| recordedfuture.playbook_alert.panel_evidence_summary.evidence.assessments.value |  | keyword |
+| recordedfuture.playbook_alert.panel_evidence_summary.evidence.content |  | keyword |
+| recordedfuture.playbook_alert.panel_evidence_summary.evidence.published |  | date |
+| recordedfuture.playbook_alert.panel_evidence_summary.evidence.targets.name |  | keyword |
+| recordedfuture.playbook_alert.panel_evidence_summary.evidence.url |  | keyword |
 | recordedfuture.playbook_alert.panel_evidence_summary.explanation |  | keyword |
 | recordedfuture.playbook_alert.panel_evidence_summary.exposed_secret.details.clear_text_hint |  | keyword |
 | recordedfuture.playbook_alert.panel_evidence_summary.exposed_secret.details.clear_text_value |  | keyword |
@@ -1263,6 +1299,9 @@ An example event for `playbook_alert` looks as following:
 | recordedfuture.playbook_alert.panel_evidence_summary.malware_family.id |  | keyword |
 | recordedfuture.playbook_alert.panel_evidence_summary.malware_family.name |  | keyword |
 | recordedfuture.playbook_alert.panel_evidence_summary.phishing_malicious_behavior.threatTypes |  | keyword |
+| recordedfuture.playbook_alert.panel_evidence_summary.repository.id |  | keyword |
+| recordedfuture.playbook_alert.panel_evidence_summary.repository.name |  | keyword |
+| recordedfuture.playbook_alert.panel_evidence_summary.repository.owner.name |  | keyword |
 | recordedfuture.playbook_alert.panel_evidence_summary.reregistration.expiration |  | date |
 | recordedfuture.playbook_alert.panel_evidence_summary.reregistration.registrar |  | keyword |
 | recordedfuture.playbook_alert.panel_evidence_summary.reregistration.registrar_name |  | keyword |
@@ -1373,6 +1412,9 @@ An example event for `playbook_alert` looks as following:
 | recordedfuture.playbook_alert.panel_log_v2.created |  | date |
 | recordedfuture.playbook_alert.panel_log_v2.id |  | keyword |
 | recordedfuture.playbook_alert.panel_status.actions_taken |  | keyword |
+| recordedfuture.playbook_alert.panel_status.alert_rule.id |  | keyword |
+| recordedfuture.playbook_alert.panel_status.alert_rule.label |  | keyword |
+| recordedfuture.playbook_alert.panel_status.alert_rule.name |  | keyword |
 | recordedfuture.playbook_alert.panel_status.assignee_id |  | keyword |
 | recordedfuture.playbook_alert.panel_status.assignee_name |  | keyword |
 | recordedfuture.playbook_alert.panel_status.case_rule_id |  | keyword |
@@ -1385,6 +1427,10 @@ An example event for `playbook_alert` looks as following:
 | recordedfuture.playbook_alert.panel_status.entity_id |  | keyword |
 | recordedfuture.playbook_alert.panel_status.entity_name |  | keyword |
 | recordedfuture.playbook_alert.panel_status.lifecycle_stage |  | keyword |
+| recordedfuture.playbook_alert.panel_status.organisation_id |  | keyword |
+| recordedfuture.playbook_alert.panel_status.organisation_name |  | keyword |
+| recordedfuture.playbook_alert.panel_status.owner_id |  | keyword |
+| recordedfuture.playbook_alert.panel_status.owner_name |  | keyword |
 | recordedfuture.playbook_alert.panel_status.owner_organisation_details.enterprise_id |  | keyword |
 | recordedfuture.playbook_alert.panel_status.owner_organisation_details.enterprise_name |  | keyword |
 | recordedfuture.playbook_alert.panel_status.owner_organisation_details.organisations.organisation_id |  | keyword |

@@ -8,38 +8,38 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_ab1166ce
       value: alert
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_cf62be16
       target_field: crowdstrike.alert
       on_failure:
         - append:
@@ -48,15 +48,15 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - pipeline:
       name: '{{ IngestPipeline "automated_lead" }}'
-      tag: pipeline_automated_lead
+      tag: pipeline_automated_lead_26fe5210
       if: ctx.crowdstrike?.alert?.product == 'automated-lead' || ctx.crowdstrike?.alert?.product == 'automated-lead-context'
   - pipeline:
       name: '{{ IngestPipeline "correlation_detection" }}'
-      tag: pipeline_correlation_detection
+      tag: pipeline_correlation_detection_ba04af34
       if: ctx.crowdstrike?.alert?.product == 'ngsiem' && ctx.crowdstrike.alert.type == 'correlation-detection'
   - set:
       field: event.category
-      tag: set_event_category_process
+      tag: set_event_category_process_fe603562
       value: ['process']
       if: >-
         ctx.crowdstrike?.alert?.product != 'automated-lead' &&
@@ -64,7 +64,7 @@ processors:
         (ctx.crowdstrike?.alert?.process_id != null || ctx.crowdstrike?.alert?.triggering_process_graph_id != null)
   - set:
       field: event.type
-      tag: set_event_type_start
+      tag: set_event_type_start_f4a02c15
       value: ['start']
       if: >-
         ctx.crowdstrike?.alert?.product != 'automated-lead' &&
@@ -72,7 +72,7 @@ processors:
         ctx.crowdstrike?.alert?.process_start_time != null
   - convert:
       field: crowdstrike.alert.active_directory_authentication_method
-      tag: convert_active_directory_authentication_method_to_long
+      tag: convert_active_directory_authentication_method_to_long_0ae4a706
       type: long
       if: ctx.crowdstrike?.alert?.active_directory_authentication_method != ""
       ignore_missing: true
@@ -83,32 +83,32 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: crowdstrike.alert.activity_browser
-      tag: rename_activity_browser
+      tag: rename_activity_browser_495a1f9d
       target_field: crowdstrike.alert.activity.browser
       ignore_missing: true
   - rename:
       field: crowdstrike.alert.activity_device
-      tag: rename_activity_device
+      tag: rename_activity_device_0e5ea9b1
       target_field: crowdstrike.alert.activity.device
       ignore_missing: true
   - rename:
       field: crowdstrike.alert.activity_id
-      tag: rename_activity_id
+      tag: rename_activity_id_478eef66
       target_field: crowdstrike.alert.activity.id
       ignore_missing: true
   - rename:
       field: crowdstrike.alert.activity_os
-      tag: rename_activity_os
+      tag: rename_activity_os_7a9becbd
       target_field: crowdstrike.alert.activity.os
       ignore_missing: true
   - set:
       field: host.id
-      tag: set_host_id_from_alert_agent_id
+      tag: set_host_id_from_alert_agent_id_f1f85848
       copy_from: crowdstrike.alert.agent_id
       ignore_empty_value: true
   - convert:
       field: crowdstrike.alert.alert_attributes
-      tag: convert_alert_attributes_to_long
+      tag: convert_alert_attributes_to_long_8bd06ea3
       type: long
       if: ctx.crowdstrike?.alert?.alert_attributes != ""
       ignore_missing: true
@@ -119,23 +119,23 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: crowdstrike.alert.assigned_to_name
-      tag: rename_assigned_to_name
+      tag: rename_assigned_to_name_cc21192e
       target_field: crowdstrike.alert.assigned_to.name
       ignore_missing: true
   - rename:
       field: crowdstrike.alert.assigned_to_uid
-      tag: rename_assigned_to_uid
+      tag: rename_assigned_to_uid_8ed30018
       target_field: crowdstrike.alert.assigned_to.uid
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_crowdstrike_alert_assigned_to_uid_into_related_user
+      tag: append_crowdstrike_alert_assigned_to_uid_into_related_user_a8ac1a82
       value: '{{{crowdstrike.alert.assigned_to.uid}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.assigned_to?.uid != null
   - rename:
       field: crowdstrike.alert.assigned_to_uuid
-      tag: rename_assigned_to_uuid
+      tag: rename_assigned_to_uuid_59cf7fe1
       target_field: crowdstrike.alert.assigned_to.uuid
       ignore_missing: true
   - foreach:
@@ -145,12 +145,12 @@ processors:
       processor:
         append:
           field: related.hash
-          tag: append_associated_files_sha256_into_related_hash
+          tag: append_associated_files_sha256_into_related_hash_1ffe78d3
           value: '{{{_ingest._value.sha256}}}'
           allow_duplicates: false
   - convert:
       field: crowdstrike.alert.cloud_indicator
-      tag: convert_cloud_indicator_to_boolean
+      tag: convert_cloud_indicator_to_boolean_e4fcff2e
       type: boolean
       if: ctx.crowdstrike?.alert?.cloud_indicator != ""
       ignore_missing: true
@@ -161,7 +161,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.prevented
-      tag: convert_prevented_to_boolean
+      tag: convert_prevented_to_boolean_a7dc2671
       type: boolean
       if: ctx.crowdstrike?.alert?.prevented != ""
       ignore_missing: true
@@ -172,12 +172,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: process.command_line
-      tag: set_process_command_line
+      tag: set_process_command_line_99123ef5
       copy_from: crowdstrike.alert.command_line
       ignore_empty_value: true
   - convert:
       field: crowdstrike.alert.confidence
-      tag: convert_confidence_to_long
+      tag: convert_confidence_to_long_41327762
       type: long
       if: ctx.crowdstrike?.alert?.confidence != ""
       ignore_missing: true
@@ -188,7 +188,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: crowdstrike.alert.context_timestamp
-      tag: date_context_timestamp
+      tag: date_context_timestamp_a2c3c713
       target_field: crowdstrike.alert.context_timestamp
       formats:
         - ISO8601
@@ -200,7 +200,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: crowdstrike.alert.crawled_timestamp
-      tag: date_crawled_timestamp
+      tag: date_crawled_timestamp_3dd9a255
       target_field: crowdstrike.alert.crawled_timestamp
       formats:
         - ISO8601
@@ -212,7 +212,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: crowdstrike.alert.created_timestamp
-      tag: date_created_timestamp
+      tag: date_created_timestamp_305de263
       target_field: crowdstrike.alert.created_timestamp
       formats:
         - ISO8601
@@ -224,12 +224,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: message
-      tag: set_message_from_alert_description
+      tag: set_message_from_alert_description_7c658bcb
       copy_from: crowdstrike.alert.description
       ignore_empty_value: true
   - convert:
       field: crowdstrike.alert.device.agent_load_flags
-      tag: convert_device_agent_load_flags_to_long
+      tag: convert_device_agent_load_flags_to_long_2783053e
       type: long
       if: ctx.crowdstrike?.alert?.device?.agent_load_flags != ""
       ignore_missing: true
@@ -240,7 +240,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: crowdstrike.alert.device.agent_local_time
-      tag: date_device_agent_local_time
+      tag: date_device_agent_local_time_3199b845
       target_field: crowdstrike.alert.device.agent_local_time
       formats:
         - ISO8601
@@ -252,7 +252,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.device.config_id_platform
-      tag: convert_device_config_id_platform_to_long
+      tag: convert_device_config_id_platform_to_long_637640e2
       type: long
       if: ctx.crowdstrike?.alert?.device?.config_id_platform != ""
       ignore_missing: true
@@ -263,7 +263,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.device.external_ip
-      tag: convert_device_external_ip_to_ip
+      tag: convert_device_external_ip_to_ip_67a4a6d9
       type: ip
       ignore_missing: true
       if: ctx.crowdstrike?.alert?.device?.external_ip != null && ctx.crowdstrike.alert.device.external_ip != ''
@@ -274,19 +274,19 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_crowdstrike_alert_device_external_ip_into_related_ip
+      tag: append_crowdstrike_alert_device_external_ip_into_related_ip_cb87f867
       value: '{{{crowdstrike.alert.device.external_ip}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.device?.external_ip != null
   - append:
       field: host.ip
-      tag: append_crowdstrike_alert_device_external_ip_into_host_ip
+      tag: append_crowdstrike_alert_device_external_ip_into_host_ip_eaee1559
       value: '{{{crowdstrike.alert.device.external_ip}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.device?.external_ip != null
   - date:
       field: crowdstrike.alert.device.first_seen
-      tag: date_device_first_seen
+      tag: date_device_first_seen_ec540faf
       target_field: crowdstrike.alert.device.first_seen
       formats:
         - ISO8601
@@ -298,7 +298,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.domain
-      tag: set_host_domain_from_alert_device_hostinfo_domain
+      tag: set_host_domain_from_alert_device_hostinfo_domain_5727122e
       copy_from: crowdstrike.alert.device.hostinfo.domain
       ignore_empty_value: true
   - append:
@@ -309,7 +309,7 @@ processors:
       if: ctx.host?.domain != null
   - set:
       field: host.hostname
-      tag: set_host_hostname_from_alert_device_hostname
+      tag: set_host_hostname_from_alert_device_hostname_9e3b0639
       copy_from: crowdstrike.alert.device.hostname
       ignore_empty_value: true
   - append:
@@ -320,17 +320,17 @@ processors:
       if: ctx.host?.hostname != null
   - rename:
       field: crowdstrike.alert.device.device_id
-      tag: rename_device_device_id
+      tag: rename_device_device_id_7b4e76e6
       target_field: crowdstrike.alert.device.id
       ignore_missing: true
   - set:
       field: device.id
-      tag: set_device_id_from_alert_device_id
+      tag: set_device_id_from_alert_device_id_d2b7da99
       copy_from: crowdstrike.alert.device.id
       ignore_empty_value: true
   - date:
       field: crowdstrike.alert.device.last_seen
-      tag: date_device_last_seen
+      tag: date_device_last_seen_366a139a
       target_field: crowdstrike.alert.device.last_seen
       formats:
         - ISO8601
@@ -342,7 +342,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.device.local_ip
-      tag: convert_device_local_ip_to_ip
+      tag: convert_device_local_ip_to_ip_7aa4258d
       type: ip
       ignore_missing: true
       if: ctx.crowdstrike?.alert?.device?.local_ip != null && ctx.crowdstrike.alert.device.local_ip != ''
@@ -353,19 +353,19 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_crowdstrike_alert_device_local_ip_into_related_ip
+      tag: append_crowdstrike_alert_device_local_ip_into_related_ip_e1bd7819
       value: '{{{crowdstrike.alert.device.local_ip}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.device?.local_ip != null
   - append:
       field: host.ip
-      tag: append_crowdstrike_alert_device_local_ip_into_host_ip
+      tag: append_crowdstrike_alert_device_local_ip_into_host_ip_d4e8042a
       value: '{{{crowdstrike.alert.device.local_ip}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.device?.local_ip != null
   - gsub:
       field: crowdstrike.alert.device.mac_address
-      tag: gsub_device_mac_address
+      tag: gsub_device_mac_address_9c82b937
       pattern: '[:.]'
       replacement: '-'
       target_field: crowdstrike.alert.device.mac_address
@@ -377,7 +377,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uppercase:
       field: crowdstrike.alert.device.mac_address
-      tag: uppercase_device_mac_address
+      tag: uppercase_device_mac_address_0df330ac
       ignore_missing: true
       if: ctx.crowdstrike?.alert?.device?.mac_address != ''
       on_failure:
@@ -388,7 +388,7 @@ processors:
   - append:
       field: host.mac
       value: '{{{crowdstrike.alert.device.mac_address}}}'
-      tag: append_device_mac_address_into_host_mac
+      tag: append_device_mac_address_into_host_mac_d5a81169
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.device?.mac_address != null
   - append:
@@ -399,7 +399,7 @@ processors:
       if: ctx.crowdstrike?.alert?.device?.machine_domain != null
   - date:
       field: crowdstrike.alert.device.modified_timestamp
-      tag: date_device_modified_timestamp
+      tag: date_device_modified_timestamp_f9b638a3
       target_field: crowdstrike.alert.device.modified_timestamp
       formats:
         - ISO8601
@@ -411,22 +411,22 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.os.full
-      tag: set_host_os_full_from_alert_device_os_version
+      tag: set_host_os_full_from_alert_device_os_version_ee3beccf
       copy_from: crowdstrike.alert.device.os_version
       ignore_empty_value: true
   - set:
       field: host.os.platform
-      tag: set_host_os_platform_from_alert_device_platform_name
+      tag: set_host_os_platform_from_alert_device_platform_name_bffb58fd
       copy_from: crowdstrike.alert.device.platform_name
       ignore_empty_value: true
   - set:
       field: device.manufacturer
-      tag: set_device_manufacturer
+      tag: set_device_manufacturer_bea4a3a4
       copy_from: crowdstrike.alert.device.system_manufacturer
       ignore_empty_value: true
   - set:
       field: device.model.name
-      tag: set_device_model_name
+      tag: set_device_model_name_1b54a7a2
       copy_from: crowdstrike.alert.device.system_product_name
       ignore_empty_value: true
   - foreach:
@@ -436,7 +436,7 @@ processors:
       processor:
         append:
           field: tags
-          tag: append_device_tags_into_tags
+          tag: append_device_tags_into_tags_e40f4f7c
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
@@ -446,18 +446,19 @@ processors:
       processor:
         date:
           field: _ingest._value.timestamp
-          tag: date_documents_accessed_timestamp
+          tag: date_documents_accessed_timestamp_621865c4
           target_field: _ingest._value.timestamp
           formats:
             - UNIX
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_timestamp_5410a18f
                 field: _ingest._value.timestamp
                 ignore_missing: true
   - convert:
       field: crowdstrike.alert.email_sent
-      tag: convert_email_sent_to_boolean
+      tag: convert_email_sent_to_boolean_18d5edba
       type: boolean
       if: ctx.crowdstrike?.alert?.email_sent != ""
       ignore_missing: true
@@ -468,7 +469,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: crowdstrike.alert.end_time
-      tag: date_end_time
+      tag: date_end_time_40b1edab
       target_field: crowdstrike.alert.end_time
       formats:
         - ISO8601
@@ -480,7 +481,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.end
-      tag: set_event_end_from_alert_end_time
+      tag: set_event_end_from_alert_end_time_fef99f5e
       copy_from: crowdstrike.alert.end_time
       ignore_empty_value: true
   - foreach:
@@ -490,33 +491,34 @@ processors:
       processor:
         date:
           field: _ingest._value.timestamp
-          tag: date_executables_written_timestamp
+          tag: date_executables_written_timestamp_ec9fe0a7
           target_field: _ingest._value.timestamp
           formats:
             - UNIX
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_timestamp_4e559239
                 field: _ingest._value.timestamp
                 ignore_missing: true
   - set:
       field: file.name
-      tag: set_file_name_from_alert_filename
+      tag: set_file_name_from_alert_filename_7a636b62
       copy_from: crowdstrike.alert.filename
       ignore_empty_value: true
   - set:
       field: process.name
-      tag: set_process_name
+      tag: set_process_name_8fec19d5
       copy_from: crowdstrike.alert.filename
       ignore_empty_value: true
   - set:
       field: file.path
-      tag: set_file_path_from_alert_filepath
+      tag: set_file_path_from_alert_filepath_bf0b7fa9
       copy_from: crowdstrike.alert.filepath
       ignore_empty_value: true
   - set:
       field: process.executable
-      tag: set_process_executable
+      tag: set_process_executable_33a74bd7
       copy_from: crowdstrike.alert.filepath
       ignore_empty_value: true
   - foreach:
@@ -526,7 +528,7 @@ processors:
       processor:
         append:
           field: related.hash
-          tag: append_file_writes_sha256_into_related_hash
+          tag: append_file_writes_sha256_into_related_hash_e61a4d95
           value: '{{{_ingest._value.sha256}}}'
           allow_duplicates: false
   - foreach:
@@ -536,13 +538,14 @@ processors:
       processor:
         date:
           field: _ingest._value.timestamp
-          tag: date_files_accessed_timestamp
+          tag: date_files_accessed_timestamp_63757859
           target_field: _ingest._value.timestamp
           formats:
             - UNIX
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_timestamp_96983eaa
                 field: _ingest._value.timestamp
                 ignore_missing: true
   - foreach:
@@ -552,13 +555,14 @@ processors:
       processor:
         date:
           field: _ingest._value.timestamp
-          tag: date_files_written_timestamp
+          tag: date_files_written_timestamp_172a77ea
           target_field: _ingest._value.timestamp
           formats:
             - UNIX
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_timestamp_840cd398
                 field: _ingest._value.timestamp
                 ignore_missing: true
   - append:
@@ -575,7 +579,7 @@ processors:
       if: ctx.crowdstrike?.alert?.grandparent_details?.sha256 != null
   - date:
       field: crowdstrike.alert.grandparent_details.timestamp
-      tag: date_grandparent_details_timestamp
+      tag: date_grandparent_details_timestamp_186b4d34
       target_field: crowdstrike.alert.grandparent_details.timestamp
       formats:
         - ISO8601
@@ -587,25 +591,25 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.user
-      tag: append_user_graph_id_into_related_user
+      tag: append_user_graph_id_into_related_user_c372a452
       value: '{{{crowdstrike.alert.grandparent_details.user_graph_id}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.grandparent_details?.user_graph_id != null
   - append:
       field: related.user
-      tag: append_grandparent_details_user_id_into_related_user
+      tag: append_grandparent_details_user_id_into_related_user_e2cefb6d
       value: '{{{crowdstrike.alert.grandparent_details.user_id}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.grandparent_details?.user_id != null
   - append:
       field: related.user
-      tag: append_grandparent_details_user_name_into_related_user
+      tag: append_grandparent_details_user_name_into_related_user_f0020741
       value: '{{{crowdstrike.alert.grandparent_details.user_name}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.grandparent_details?.user_name != null
   - convert:
       field: crowdstrike.alert.has_script_or_module_ioc
-      tag: convert_has_script_or_module_ioc_to_boolean
+      tag: convert_has_script_or_module_ioc_to_boolean_bf5b4ff3
       type: boolean
       if: ctx.crowdstrike?.alert?.has_script_or_module_ioc != ""
       ignore_missing: true
@@ -616,7 +620,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.name
-      tag: set_host_name_from_alert_host_name
+      tag: set_host_name_from_alert_host_name_d6b0730e
       copy_from: crowdstrike.alert.host_name
       ignore_empty_value: true
   - append:
@@ -627,11 +631,11 @@ processors:
       if: ctx.host?.name != null
   - set:
       field: host.type
-      tag: set_host_type_from_alert_host_type
+      tag: set_host_type_from_alert_host_type_308da1d9
       copy_from: crowdstrike.alert.host_type
       ignore_empty_value: true
   - script:
-      tag: reconstruct_has_script_or_module_ioc_from_ioc_context
+      tag: reconstruct_has_script_or_module_ioc_from_ioc_context_fc4a4b1e
       lang: painless
       if: ctx.crowdstrike?.alert?.has_script_or_module_ioc == null && ctx.crowdstrike?.alert?.ioc_context instanceof List
       source: |
@@ -650,12 +654,12 @@ processors:
         ctx.crowdstrike.alert.has_script_or_module_ioc = false;
   - set:
       field: event.id
-      tag: set_event_id_from_alert_id
+      tag: set_event_id_from_alert_id_2c04b542
       copy_from: crowdstrike.alert.id
       ignore_empty_value: true
   - convert:
       field: crowdstrike.alert.idp_policy_enforced_externally
-      tag: convert_idp_policy_enforced_externally_to_long
+      tag: convert_idp_policy_enforced_externally_to_long_3fd8edea
       target_field: crowdstrike.alert.idp_policy.enforced_externally
       type: long
       if: ctx.crowdstrike?.alert?.idp_policy_enforced_externally != ""
@@ -667,7 +671,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.idp_policy_mfa_factor_type
-      tag: convert_idp_policy_mfa_factor_type_to_long
+      tag: convert_idp_policy_mfa_factor_type_to_long_8fa0c396
       target_field: crowdstrike.alert.idp_policy.mfa_factor_type
       type: long
       if: ctx.crowdstrike?.alert?.idp_policy_mfa_factor_type != ""
@@ -679,7 +683,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.idp_policy_mfa_provider
-      tag: convert_idp_policy_mfa_provider_to_long
+      tag: convert_idp_policy_mfa_provider_to_long_b66d3b49
       target_field: crowdstrike.alert.idp_policy.mfa_provider
       type: long
       if: ctx.crowdstrike?.alert?.idp_policy_mfa_provider != ""
@@ -691,7 +695,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.idp_policy_rule_action
-      tag: convert_idp_policy_rule_action_to_long
+      tag: convert_idp_policy_rule_action_to_long_4dc40782
       target_field: crowdstrike.alert.idp_policy.rule_action
       type: long
       if: ctx.crowdstrike?.alert?.idp_policy_rule_action != ""
@@ -703,7 +707,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.idp_policy_rule_trigger
-      tag: convert_idp_policy_rule_trigger_to_long
+      tag: convert_idp_policy_rule_trigger_to_long_1f848e1b
       target_field: crowdstrike.alert.idp_policy.rule_trigger
       type: long
       if: ctx.crowdstrike?.alert?.idp_policy_rule_trigger != ""
@@ -715,32 +719,32 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: crowdstrike.alert.idp_policy_rule_id
-      tag: rename_idp_policy_rule_id
+      tag: rename_idp_policy_rule_id_d80b4681
       target_field: crowdstrike.alert.idp_policy.rule_id
       ignore_missing: true
   - set:
       field: rule.id
-      tag: set_rule_id_from_alert_idp_policy_rule_id
+      tag: set_rule_id_from_alert_idp_policy_rule_id_d33f4bb4
       copy_from: crowdstrike.alert.idp_policy.rule_id
       ignore_empty_value: true
   - rename:
       field: crowdstrike.alert.idp_policy_rule_name
-      tag: rename_idp_policy_rule_name
+      tag: rename_idp_policy_rule_name_cce581aa
       target_field: crowdstrike.alert.idp_policy.rule_name
       ignore_missing: true
   - set:
       field: rule.name
-      tag: set_rule_name_from_alert_idp_policy_rule_name
+      tag: set_rule_name_from_alert_idp_policy_rule_name_3b2a7604
       copy_from: crowdstrike.alert.idp_policy.rule_name
       ignore_empty_value: true
   - set:
       field: file.path
-      tag: set_file_path_from_alert_image_file_name
+      tag: set_file_path_from_alert_image_file_name_d8649909
       copy_from: crowdstrike.alert.image_file_name
       ignore_empty_value: true
   - date:
       field: crowdstrike.alert.incident.created
-      tag: date_incident_created
+      tag: date_incident_created_2c49c2cb
       target_field: crowdstrike.alert.incident.created
       formats:
         - yyyy-MM-dd'T'HH:mm:ss'Z'
@@ -752,7 +756,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: crowdstrike.alert.incident.end
-      tag: date_incident_end
+      tag: date_incident_end_6af091ab
       target_field: crowdstrike.alert.incident.end
       formats:
         - yyyy-MM-dd'T'HH:mm:ss'Z'
@@ -764,7 +768,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.incident.score
-      tag: convert_incident_score_to_double
+      tag: convert_incident_score_to_double_fd64f886
       type: double
       if: ctx.crowdstrike?.alert?.incident?.score != ""
       ignore_missing: true
@@ -775,7 +779,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: crowdstrike.alert.incident.start
-      tag: date_incident_start
+      tag: date_incident_start_d3c2fde6
       target_field: crowdstrike.alert.incident.start
       formats:
         - yyyy-MM-dd'T'HH:mm:ss'Z'
@@ -794,7 +798,7 @@ processors:
       processor:
         append:
           field: related.hash
-          tag: append_ioc_context_md5_to_related_hash
+          tag: append_ioc_context_md5_to_related_hash_c7402617
           value: '{{{_ingest._value.md5}}}'
           allow_duplicates: false
   - foreach:
@@ -805,29 +809,29 @@ processors:
       processor:
         append:
           field: related.hash
-          tag: append_ioc_context_sha256_to_related_hash
+          tag: append_ioc_context_sha256_to_related_hash_805d2ce6
           value: '{{{_ingest._value.sha256}}}'
           allow_duplicates: false
   - append:
       field: crowdstrike.alert.ioc_values
-      tag: append_ioc_value_to_ioc_values
+      tag: append_ioc_value_to_ioc_values_5c1b3c4c
       value: '{{{crowdstrike.alert.ioc_value}}}'
       if: ctx.crowdstrike?.alert?.ioc_value != null
       allow_duplicates: false
   - foreach:
-      tag: reconstruct_ioc_values_from_ioc_context
+      tag: reconstruct_ioc_values_from_ioc_context_8f515b4f
       field: crowdstrike.alert.ioc_context
       if: ctx.crowdstrike?.alert?.ioc_context instanceof List
       ignore_failure: true
       processor:
         append:
           field: crowdstrike.alert.ioc_values
-          tag: append_ioc_context_ioc_value_to_ioc_values
+          tag: append_ioc_context_ioc_value_to_ioc_values_5ae78a6c
           value: '{{{_ingest._value.ioc_value}}}'
           allow_duplicates: false
   - convert:
       field: crowdstrike.alert.is_synthetic_quarantine_disposition
-      tag: convert_is_synthetic_quarantine_disposition_to_boolean
+      tag: convert_is_synthetic_quarantine_disposition_to_boolean_d431ee7a
       type: boolean
       if: ctx.crowdstrike?.alert?.is_synthetic_quarantine_disposition != ""
       ignore_missing: true
@@ -837,7 +841,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: reconstruct_is_synthetic_quarantine_disposition_from_pattern_disposition_details
+      tag: reconstruct_is_synthetic_quarantine_disposition_from_pattern_disposition_details_8fd3b533
       lang: painless
       if: ctx.crowdstrike?.alert?.is_synthetic_quarantine_disposition == null && ctx.crowdstrike?.alert?.pattern_disposition_details instanceof Map
       source: |
@@ -856,7 +860,7 @@ processors:
         ctx.crowdstrike.alert.is_synthetic_quarantine_disposition = false;
   - convert:
       field: crowdstrike.alert.ldap_search_query_attack
-      tag: convert_ldap_search_query_attack_to_long
+      tag: convert_ldap_search_query_attack_to_long_a56feba8
       type: long
       if: ctx.crowdstrike?.alert?.ldap_search_query_attack != ""
       ignore_missing: true
@@ -867,12 +871,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: observer.geo.country_iso_code
-      tag: set_observer_geo_country_iso_code_from_alert_location_country_code
+      tag: set_observer_geo_country_iso_code_from_alert_location_country_code_4494bab5
       copy_from: crowdstrike.alert.location_country_code
       ignore_empty_value: true
   - convert:
       field: crowdstrike.alert.location_latitude_as_int
-      tag: convert_location_latitude_as_int_to_long
+      tag: convert_location_latitude_as_int_to_long_6245d1a3
       type: long
       if: ctx.crowdstrike?.alert?.location_latitude_as_int != ""
       ignore_missing: true
@@ -883,7 +887,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.location_longitude_as_int
-      tag: convert_location_longitude_as_int_to_long
+      tag: convert_location_longitude_as_int_to_long_29dc65f8
       type: long
       if: ctx.crowdstrike?.alert?.location_longitude_as_int != ""
       ignore_missing: true
@@ -894,7 +898,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: combine latitude and longitude.
-      tag: script_to_combine_latitude_and_longitude
+      tag: script_to_combine_latitude_and_longitude_017e2206
       lang: painless
       if: ctx.crowdstrike?.alert?.location_latitude_as_int != null && ctx.crowdstrike?.alert?.location_longitude_as_int != null
       source: |-
@@ -910,7 +914,7 @@ processors:
           ctx.observer.geo.location = location;
   - set:
       field: process.hash.md5
-      tag: set_process_hash_md5
+      tag: set_process_hash_md5_9c799aac
       copy_from: crowdstrike.alert.md5
       ignore_empty_value: true
   - append:
@@ -926,13 +930,14 @@ processors:
       processor:
         date:
           field: _ingest._value.access_timestamp
-          tag: date_network_accesses_access_timestamp
+          tag: date_network_accesses_access_timestamp_72b33cca
           target_field: _ingest._value.access_timestamp
           formats:
             - UNIX
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_access_timestamp_c21d8b87
                 field: _ingest._value.access_timestamp
                 ignore_missing: true
   - foreach:
@@ -942,14 +947,16 @@ processors:
       processor:
         convert:
           field: _ingest._value.access_type
-          tag: convert_network_accesses_access_type_to_long
+          tag: convert_network_accesses_access_type_to_long_9151cdf6
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_access_type_95e20f6c
                 field: _ingest._value.access_type
                 ignore_missing: true
             - append:
+                tag: append_error_message_2ea24dd5
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -959,14 +966,16 @@ processors:
       processor:
         convert:
           field: _ingest._value.isIPV6
-          tag: convert_network_accesses_isIPV6_to_boolean
+          tag: convert_network_accesses_isIPV6_to_boolean_13f14fe8
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_isIPV6_ea71503f
                 field: _ingest._value.isIPV6
                 ignore_missing: true
             - append:
+                tag: append_error_message_9264cf14
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -976,14 +985,16 @@ processors:
       processor:
         convert:
           field: _ingest._value.local_address
-          tag: convert_network_accesses_local_address_to_ip
+          tag: convert_network_accesses_local_address_to_ip_88ae3c18
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_local_address_8d982406
                 field: _ingest._value.local_address
                 ignore_missing: true
             - append:
+                tag: append_error_message_e188ceec
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -993,7 +1004,7 @@ processors:
       processor:
         append:
           field: related.ip
-          tag: append_network_accesses_local_address_into_related_ip
+          tag: append_network_accesses_local_address_into_related_ip_066ea13a
           value: '{{{_ingest._value.local_address}}}'
           allow_duplicates: false
   - foreach:
@@ -1003,14 +1014,16 @@ processors:
       processor:
         convert:
           field: _ingest._value.local_port
-          tag: convert_network_accesses_local_port_to_long
+          tag: convert_network_accesses_local_port_to_long_42ead010
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_local_port_19983054
                 field: _ingest._value.local_port
                 ignore_missing: true
             - append:
+                tag: append_error_message_ca67a224
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1020,14 +1033,16 @@ processors:
       processor:
         convert:
           field: _ingest._value.remote_address
-          tag: convert_network_accesses_remote_address_to_ip
+          tag: convert_network_accesses_remote_address_to_ip_45964c5c
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_remote_address_d50c6677
                 field: _ingest._value.remote_address
                 ignore_missing: true
             - append:
+                tag: append_error_message_613cdf73
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -1037,7 +1052,7 @@ processors:
       processor:
         append:
           field: related.ip
-          tag: append_network_accesses_remote_address_into_related_ip
+          tag: append_network_accesses_remote_address_into_related_ip_b9b35b2f
           value: '{{{_ingest._value.remote_address}}}'
           allow_duplicates: false
   - foreach:
@@ -1047,24 +1062,26 @@ processors:
       processor:
         convert:
           field: _ingest._value.remote_port
-          tag: convert_network_accesses_remote_port_to_long
+          tag: convert_network_accesses_remote_port_to_long_78722dfc
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_remote_port_0ec35da4
                 field: _ingest._value.remote_port
                 ignore_missing: true
             - append:
+                tag: append_error_message_4e054c3e
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.os.name
-      tag: set_host_os_name_from_alert_operating_system
+      tag: set_host_os_name_from_alert_operating_system_d71b3ba5
       copy_from: crowdstrike.alert.operating_system
       ignore_empty_value: true
   - script:
       description: Dynamically set host.os.type values.
-      tag: script_map_host_os_type
+      tag: script_map_host_os_type_e0a79baa
       lang: painless
       params:
         os_type:
@@ -1094,22 +1111,22 @@ processors:
         }
   - set:
       field: host.os.family
-      tag: set_host_os_family_from_alert_os_name
+      tag: set_host_os_family_from_alert_os_name_abd49393
       copy_from: crowdstrike.alert.os_name
       ignore_empty_value: true
   - set:
       field: process.parent.command_line
-      tag: set_process_parent_command_line_from_alert_parent_details_cmdline
+      tag: set_process_parent_command_line_from_alert_parent_details_cmdline_365f4984
       copy_from: crowdstrike.alert.parent_details.cmdline
       ignore_empty_value: true
   - set:
       field: process.parent.name
-      tag: set_process_parent_name
+      tag: set_process_parent_name_cc84ceb0
       copy_from: crowdstrike.alert.parent_details.filename
       ignore_empty_value: true
   - set:
       field: process.parent.executable
-      tag: set_process_parent_executable
+      tag: set_process_parent_executable_45efeed0
       copy_from: crowdstrike.alert.parent_details.filepath
       ignore_empty_value: true
   - append:
@@ -1120,12 +1137,12 @@ processors:
       if: ctx.crowdstrike?.alert?.parent_details?.md5 != null
   - set:
       field: process.parent.hash.md5
-      tag: set_process_parent_hash_md5_from_alert_parent_details_md5
+      tag: set_process_parent_hash_md5_from_alert_parent_details_md5_876bd647
       copy_from: crowdstrike.alert.parent_details.md5
       ignore_empty_value: true
   - set:
       field: process.parent.hash.sha256
-      tag: set_process_parent_hash_sha256_from_alert_parent_details_sha256
+      tag: set_process_parent_hash_sha256_from_alert_parent_details_sha256_b26cef2b
       copy_from: crowdstrike.alert.parent_details.sha256
       ignore_empty_value: true
   - append:
@@ -1136,7 +1153,7 @@ processors:
       if: ctx.crowdstrike?.alert?.parent_details?.sha256 != null
   - date:
       field: crowdstrike.alert.parent_details.timestamp
-      tag: date_parent_details_timestamp
+      tag: date_parent_details_timestamp_73dbe598
       target_field: crowdstrike.alert.parent_details.timestamp
       formats:
         - ISO8601
@@ -1148,40 +1165,40 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.user
-      tag: append_parent_details_user_graph_id_into_related_user
+      tag: append_parent_details_user_graph_id_into_related_user_1d6fbcc1
       value: '{{{crowdstrike.alert.parent_details.user_graph_id}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.parent_details?.user_graph_id != null
   - set:
       field: process.user.id
-      tag: set_process_user_id_from_alert_parent_details_user_id
+      tag: set_process_user_id_from_alert_parent_details_user_id_fdb6498a
       copy_from: crowdstrike.alert.parent_details.user_id
       ignore_empty_value: true
   - set:
       field: process.user.name
-      tag: set_process_user_name_from_alert_parent_details_user_name
+      tag: set_process_user_name_from_alert_parent_details_user_name_0d2ce788
       copy_from: crowdstrike.alert.parent_details.user_name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_parent_details_user_id_into_related_user
+      tag: append_parent_details_user_id_into_related_user_4fa9900e
       value: '{{{crowdstrike.alert.parent_details.user_id}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.parent_details?.user_id != null
   - append:
       field: related.user
-      tag: append_parent_details_user_name_into_related_user
+      tag: append_parent_details_user_name_into_related_user_e3437620
       value: '{{{crowdstrike.alert.parent_details.user_name}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.parent_details?.user_name != null
   - set:
       field: process.parent.entity_id
-      tag: set_process_parent_entity_id
+      tag: set_process_parent_entity_id_72e592fc
       copy_from: crowdstrike.alert.parent_process_id
       ignore_empty_value: true
   - convert:
       field: crowdstrike.alert.parent_process_id
-      tag: convert_alert_parent_process_id
+      tag: convert_alert_parent_process_id_0589bd53
       target_field: process.parent.pid
       type: long
       if: ctx.crowdstrike?.alert?.parent_process_id != ''
@@ -1193,7 +1210,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition
-      tag: convert_pattern_disposition_to_long
+      tag: convert_pattern_disposition_to_long_b977465d
       type: long
       if: ctx.crowdstrike?.alert?.pattern_disposition != ""
       ignore_missing: true
@@ -1204,7 +1221,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.blocking_unsupported_or_disabled
-      tag: convert_pattern_disposition_details_blocking_unsupported_or_disabled_to_boolean
+      tag: convert_pattern_disposition_details_blocking_unsupported_or_disabled_to_boolean_ec4341c5
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.blocking_unsupported_or_disabled != ""
       ignore_missing: true
@@ -1215,7 +1232,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.bootup_safeguard_enabled
-      tag: convert_pattern_disposition_details_bootup_safeguard_enabled_to_boolean
+      tag: convert_pattern_disposition_details_bootup_safeguard_enabled_to_boolean_2fdfbe9e
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.bootup_safeguard_enabled != ""
       ignore_missing: true
@@ -1226,7 +1243,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.containment_file_system
-      tag: convert_pattern_disposition_details_containment_file_system_to_boolean
+      tag: convert_pattern_disposition_details_containment_file_system_to_boolean_645bdad3
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.containment_file_system != ""
       ignore_missing: true
@@ -1237,7 +1254,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.critical_process_disabled
-      tag: convert_pattern_disposition_details_critical_process_disabled_to_boolean
+      tag: convert_pattern_disposition_details_critical_process_disabled_to_boolean_72477e6a
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.critical_process_disabled != ""
       ignore_missing: true
@@ -1248,7 +1265,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.detect
-      tag: convert_pattern_disposition_details_detect_to_boolean
+      tag: convert_pattern_disposition_details_detect_to_boolean_75cd4e36
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.detect != ""
       ignore_missing: true
@@ -1259,7 +1276,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.fs_operation_blocked
-      tag: convert_pattern_disposition_details_fs_operation_blocked_to_boolean
+      tag: convert_pattern_disposition_details_fs_operation_blocked_to_boolean_ee20a4bd
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.fs_operation_blocked != ""
       ignore_missing: true
@@ -1270,7 +1287,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.handle_operation_downgraded
-      tag: convert_pattern_disposition_details_handle_operation_downgraded_to_boolean
+      tag: convert_pattern_disposition_details_handle_operation_downgraded_to_boolean_156b2ea1
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.handle_operation_downgraded != ""
       ignore_missing: true
@@ -1281,7 +1298,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.inddet_mask
-      tag: convert_pattern_disposition_details_inddet_mask_to_boolean
+      tag: convert_pattern_disposition_details_inddet_mask_to_boolean_8e518beb
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.inddet_mask != ""
       ignore_missing: true
@@ -1292,7 +1309,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.indicator
-      tag: convert_pattern_disposition_details_indicator_to_boolean
+      tag: convert_pattern_disposition_details_indicator_to_boolean_a5faface
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.indicator != ""
       ignore_missing: true
@@ -1303,7 +1320,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.kill_action_failed
-      tag: convert_pattern_disposition_details_kill_action_failed_to_boolean
+      tag: convert_pattern_disposition_details_kill_action_failed_to_boolean_1d8cd44b
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.kill_action_failed != ""
       ignore_missing: true
@@ -1314,7 +1331,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.kill_parent
-      tag: convert_pattern_disposition_details_kill_parent_to_boolean
+      tag: convert_pattern_disposition_details_kill_parent_to_boolean_3955ff16
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.kill_parent != ""
       ignore_missing: true
@@ -1325,7 +1342,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.kill_process
-      tag: convert_pattern_disposition_details_kill_process_to_boolean
+      tag: convert_pattern_disposition_details_kill_process_to_boolean_892f8ae4
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.kill_process != ""
       ignore_missing: true
@@ -1336,7 +1353,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.kill_subprocess
-      tag: convert_pattern_disposition_details_kill_subprocess_to_boolean
+      tag: convert_pattern_disposition_details_kill_subprocess_to_boolean_943fb60c
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.kill_subprocess != ""
       ignore_missing: true
@@ -1347,7 +1364,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.mfa_required
-      tag: convert_pattern_disposition_details_mfa_required_to_boolean
+      tag: convert_pattern_disposition_details_mfa_required_to_boolean_21653579
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.mfa_required != ""
       ignore_missing: true
@@ -1358,7 +1375,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.operation_blocked
-      tag: convert_pattern_disposition_details_operation_blocked_to_boolean
+      tag: convert_pattern_disposition_details_operation_blocked_to_boolean_286a872e
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.operation_blocked != ""
       ignore_missing: true
@@ -1369,7 +1386,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.policy_disabled
-      tag: convert_pattern_disposition_details_policy_disabled_to_boolean
+      tag: convert_pattern_disposition_details_policy_disabled_to_boolean_49262d9f
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.policy_disabled != ""
       ignore_missing: true
@@ -1380,7 +1397,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.prevention_provisioning_enabled
-      tag: convert_pattern_disposition_details_prevention_provisioning_enabled_to_boolean
+      tag: convert_pattern_disposition_details_prevention_provisioning_enabled_to_boolean_dc10180b
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.prevention_provisioning_enabled != ""
       ignore_missing: true
@@ -1391,7 +1408,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.process_blocked
-      tag: convert_pattern_disposition_details_process_blocked_to_boolean
+      tag: convert_pattern_disposition_details_process_blocked_to_boolean_c669b478
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.process_blocked != ""
       ignore_missing: true
@@ -1402,7 +1419,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.quarantine_file
-      tag: convert_pattern_disposition_details_quarantine_file_to_boolean
+      tag: convert_pattern_disposition_details_quarantine_file_to_boolean_9aefecde
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.quarantine_file != ""
       ignore_missing: true
@@ -1413,7 +1430,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.quarantine_machine
-      tag: convert_pattern_disposition_details_quarantine_machine_to_boolean
+      tag: convert_pattern_disposition_details_quarantine_machine_to_boolean_e18156be
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.quarantine_machine != ""
       ignore_missing: true
@@ -1424,7 +1441,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.registry_operation_blocked
-      tag: convert_pattern_disposition_details_registry_operation_blocked_to_boolean
+      tag: convert_pattern_disposition_details_registry_operation_blocked_to_boolean_a3193fb9
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.registry_operation_blocked != ""
       ignore_missing: true
@@ -1435,7 +1452,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.response_action_already_applied
-      tag: convert_pattern_disposition_details_response_action_already_applied_to_boolean
+      tag: convert_pattern_disposition_details_response_action_already_applied_to_boolean_d895ff63
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.response_action_already_applied != ""
       ignore_missing: true
@@ -1446,7 +1463,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.response_action_failed
-      tag: convert_pattern_disposition_details_response_action_failed_to_boolean
+      tag: convert_pattern_disposition_details_response_action_failed_to_boolean_63738c18
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.response_action_failed != ""
       ignore_missing: true
@@ -1457,7 +1474,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.response_action_triggered
-      tag: convert_pattern_disposition_details_response_action_triggered_to_boolean
+      tag: convert_pattern_disposition_details_response_action_triggered_to_boolean_5d17d9c9
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.response_action_triggered != ""
       ignore_missing: true
@@ -1468,7 +1485,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.rooting
-      tag: convert_pattern_disposition_details_rooting_to_boolean
+      tag: convert_pattern_disposition_details_rooting_to_boolean_1f3b3943
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.rooting != ""
       ignore_missing: true
@@ -1479,7 +1496,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.sensor_only
-      tag: convert_pattern_disposition_details_sensor_only_to_boolean
+      tag: convert_pattern_disposition_details_sensor_only_to_boolean_6af4a5d3
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.sensor_only != ""
       ignore_missing: true
@@ -1490,7 +1507,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.suspend_parent
-      tag: convert_pattern_disposition_details_suspend_parent_to_boolean
+      tag: convert_pattern_disposition_details_suspend_parent_to_boolean_3cc27891
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.suspend_parent != ""
       ignore_missing: true
@@ -1501,7 +1518,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_disposition_details.suspend_process
-      tag: convert_pattern_disposition_details_suspend_process_to_boolean
+      tag: convert_pattern_disposition_details_suspend_process_to_boolean_7080f21c
       type: boolean
       if: ctx.crowdstrike?.alert?.pattern_disposition_details?.suspend_process != ""
       ignore_missing: true
@@ -1512,12 +1529,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.pattern_id
-      tag: convert_pattern_id_to_string
+      tag: convert_pattern_id_to_string_b95f7991
       type: string
       ignore_missing: true
   - date:
       field: crowdstrike.alert.process_end_time
-      tag: date_process_end_time
+      tag: date_process_end_time_856f99be
       target_field: crowdstrike.alert.process_end_time
       formats:
         - UNIX
@@ -1530,17 +1547,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: process.end
-      tag: set_process_end
+      tag: set_process_end_4cdb0cac
       copy_from: crowdstrike.alert.process_end_time
       ignore_empty_value: true
   - set:
       field: process.entity_id
-      tag: set_process_entity_id
+      tag: set_process_entity_id_0c5c4ac8
       copy_from: crowdstrike.alert.process_id
       ignore_empty_value: true
   - convert:
       field: crowdstrike.alert.process_id
-      tag: convert_alert_process_id_to_long
+      tag: convert_alert_process_id_to_long_5b8b853e
       target_field: process.pid
       type: long
       ignore_missing: true
@@ -1552,7 +1569,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: crowdstrike.alert.process_start_time
-      tag: date_process_start_time
+      tag: date_process_start_time_93f59f8e
       target_field: crowdstrike.alert.process_start_time
       formats:
         - UNIX
@@ -1565,12 +1582,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: process.start
-      tag: set_process_start
+      tag: set_process_start_6d23f3db
       copy_from: crowdstrike.alert.process_start_time
       ignore_empty_value: true
   - convert:
       field: crowdstrike.alert.protocol_anomaly_classification
-      tag: convert_protocol_anomaly_classification_to_long
+      tag: convert_protocol_anomaly_classification_to_long_bc209f91
       type: long
       if: ctx.crowdstrike?.alert?.protocol_anomaly_classification != ""
       ignore_missing: true
@@ -1581,7 +1598,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.quarantined
-      tag: convert_quarantined_to_boolean
+      tag: convert_quarantined_to_boolean_2f064181
       type: boolean
       if: ctx.crowdstrike?.alert?.quarantined != ""
       ignore_missing: true
@@ -1598,12 +1615,12 @@ processors:
       processor:
         append:
           field: related.hash
-          tag: append_quarantined_files_to_related_hash
+          tag: append_quarantined_files_to_related_hash_f677823e
           value: '{{{_ingest._value.sha256}}}'
           allow_duplicates: false
   - convert:
       field: crowdstrike.alert.seconds_to_resolved
-      tag: convert_seconds_to_resolved_to_long
+      tag: convert_seconds_to_resolved_to_long_448e693a
       type: long
       if: ctx.crowdstrike?.alert?.seconds_to_resolved != ""
       ignore_missing: true
@@ -1614,7 +1631,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.seconds_to_triaged
-      tag: convert_seconds_to_triaged_to_long
+      tag: convert_seconds_to_triaged_to_long_ae458f40
       type: long
       if: ctx.crowdstrike?.alert?.seconds_to_triaged != ""
       ignore_missing: true
@@ -1625,7 +1642,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.alert.severity
-      tag: convert_severity_to_long
+      tag: convert_severity_to_long_f6de1f3a
       type: long
       if: ctx.crowdstrike?.alert?.severity != ""
       ignore_missing: true
@@ -1637,7 +1654,7 @@ processors:
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: set_event_severity_from_severity
+      tag: set_event_severity_from_severity_bb64fc14
       if: ctx.crowdstrike?.alert?.severity instanceof long && ctx.crowdstrike.alert.severity_name == null
       source: |-
         long severity = ctx.crowdstrike.alert.severity;
@@ -1660,7 +1677,7 @@ processors:
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: set_event_severity_from_severity_name
+      tag: set_event_severity_from_severity_name_02504e0a
       if: ctx.crowdstrike?.alert?.severity_name instanceof String
       source: |-
         ctx.event = ctx.event ?: [:];
@@ -1681,12 +1698,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: process.hash.sha1
-      tag: set_process_hash_sha1
+      tag: set_process_hash_sha1_70260900
       copy_from: crowdstrike.alert.sha1
       ignore_empty_value: true
   - set:
       field: process.hash.sha256
-      tag: set_process_hash_sha256
+      tag: set_process_hash_sha256_b0944109
       copy_from: crowdstrike.alert.sha256
       ignore_empty_value: true
   - append:
@@ -1703,7 +1720,7 @@ processors:
       if: ctx.crowdstrike?.alert?.sha256 != null
   - convert:
       field: crowdstrike.alert.show_in_ui
-      tag: convert_show_in_ui_to_boolean
+      tag: convert_show_in_ui_to_boolean_edaae28a
       type: boolean
       if: ctx.crowdstrike?.alert?.show_in_ui != ""
       ignore_missing: true
@@ -1714,85 +1731,85 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: crowdstrike.alert.source_account_azure_id
-      tag: rename_source_account_azure_id
+      tag: rename_source_account_azure_id_1a7e635c
       target_field: crowdstrike.alert.source.account_azure_id
       ignore_missing: true
   - set:
       field: cloud.account.id
-      tag: set_cloud_account_id
+      tag: set_cloud_account_id_2ea6a33f
       copy_from: crowdstrike.alert.source.account_azure_id
       ignore_empty_value: true
   - rename:
       field: crowdstrike.alert.source_account_domain
-      tag: rename_source_account_domain
+      tag: rename_source_account_domain_19924435
       target_field: crowdstrike.alert.source.account_domain
       ignore_missing: true
   - set:
       field: source.user.domain
-      tag: set_source_user_domain_from_alert_source_account_domain
+      tag: set_source_user_domain_from_alert_source_account_domain_cc618e34
       copy_from: crowdstrike.alert.source.account_domain
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_source_user_domain_into_related_hosts
+      tag: append_source_user_domain_into_related_hosts_87d7f976
       value: '{{{source.user.domain}}}'
       allow_duplicates: false
       if: ctx.source?.user?.domain != null
   - rename:
       field: crowdstrike.alert.source_account_name
-      tag: rename_source_account_name
+      tag: rename_source_account_name_856ad703
       target_field: crowdstrike.alert.source.account_name
       ignore_missing: true
   - set:
       field: source.user.name
-      tag: set_source_user_name_from_alert_source_account_name
+      tag: set_source_user_name_from_alert_source_account_name_72d7153f
       copy_from: crowdstrike.alert.source.account_name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_source_domain_into_related_user
+      tag: append_source_domain_into_related_user_d029b30f
       value: '{{{source.user.name}}}'
       allow_duplicates: false
       if: ctx.source?.user?.name != null
   - rename:
       field: crowdstrike.alert.source_account_object_guid
-      tag: rename_source_account_object_guid
+      tag: rename_source_account_object_guid_6c95d61c
       target_field: crowdstrike.alert.source.account_object_guid
       ignore_missing: true
   - rename:
       field: crowdstrike.alert.source_account_object_sid
-      tag: rename_source_account_object_sid
+      tag: rename_source_account_object_sid_eebdd609
       target_field: crowdstrike.alert.source.account_object_sid
       ignore_missing: true
   - rename:
       field: crowdstrike.alert.source_account_sam_account_name
-      tag: rename_source_account_sam_account_name
+      tag: rename_source_account_sam_account_name_8b345e68
       target_field: crowdstrike.alert.source.account_sam_account_name
       ignore_missing: true
   - rename:
       field: crowdstrike.alert.source_account_upn
-      tag: rename_source_account_upn
+      tag: rename_source_account_upn_27656184
       target_field: crowdstrike.alert.source.account_upn
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_crowdstrike_alert_source_account_upn_into_related_user
+      tag: append_crowdstrike_alert_source_account_upn_into_related_user_2441d324
       value: '{{{crowdstrike.alert.source.account_upn}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.source?.account_upn != null
   - rename:
       field: crowdstrike.alert.source_endpoint_account_object_guid
-      tag: rename_source_endpoint_account_object_guid
+      tag: rename_source_endpoint_account_object_guid_a80d14ec
       target_field: crowdstrike.alert.source.endpoint_account_object_guid
       ignore_missing: true
   - rename:
       field: crowdstrike.alert.source_endpoint_account_object_sid
-      tag: rename_source_endpoint_account_object_sid
+      tag: rename_source_endpoint_account_object_sid_5d8b2196
       target_field: crowdstrike.alert.source.endpoint_account_object_sid
       ignore_missing: true
   - convert:
       field: crowdstrike.alert.source_endpoint_address_ip4
-      tag: convert_source_endpoint_address_ip4_to_ip
+      tag: convert_source_endpoint_address_ip4_to_ip_6a5d11ed
       target_field: crowdstrike.alert.source.endpoint_address_ip4
       type: ip
       if: ctx.crowdstrike?.alert?.source_endpoint_address_ip4 != ''
@@ -1804,29 +1821,29 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_crowdstrike_alert_source_endpoint_address_ip4_into_related_ip
+      tag: append_crowdstrike_alert_source_endpoint_address_ip4_into_related_ip_44e5ba1f
       value: '{{{crowdstrike.alert.source.endpoint_address_ip4}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.source?.endpoint_address_ip4 != null
   - rename:
       field: crowdstrike.alert.source_endpoint_host_name
-      tag: rename_source_endpoint_host_name
+      tag: rename_source_endpoint_host_name_568b063e
       target_field: crowdstrike.alert.source.endpoint_host_name
       ignore_missing: true
   - set:
       field: source.domain
-      tag: set_source_domain_from_alert_source_endpoint_host_name
+      tag: set_source_domain_from_alert_source_endpoint_host_name_f4d5c30f
       copy_from: crowdstrike.alert.source.endpoint_host_name
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_source_domain_into_related_hosts
+      tag: append_source_domain_into_related_hosts_5daf74cc
       value: '{{{source.domain}}}'
       allow_duplicates: false
       if: ctx.source?.domain != null
   - convert:
       field: crowdstrike.alert.source_endpoint_ip_address
-      tag: convert_source_endpoint_ip_address_to_ip
+      tag: convert_source_endpoint_ip_address_to_ip_9e5f5ed9
       target_field: crowdstrike.alert.source.endpoint_ip_address
       type: ip
       if: ctx.crowdstrike?.alert?.source_endpoint_ip_address != ''
@@ -1838,18 +1855,18 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip_from_alert_source_endpoint_ip_address
+      tag: set_source_ip_from_alert_source_endpoint_ip_address_2723f862
       copy_from: crowdstrike.alert.source.endpoint_ip_address
       ignore_empty_value: true
   - append:
       field: related.ip
-      tag: append_source_ip_into_related_ip
+      tag: append_source_ip_into_related_ip_723473d3
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null
   - convert:
       field: crowdstrike.alert.source_endpoint_ip_reputation
-      tag: convert_source_endpoint_ip_reputation_to_long
+      tag: convert_source_endpoint_ip_reputation_to_long_cceacbfd
       target_field: crowdstrike.alert.source.endpoint_ip_reputation
       type: long
       if: ctx.crowdstrike?.alert?.source_endpoint_ip_reputation != ''
@@ -1861,12 +1878,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: crowdstrike.alert.source_endpoint_sensor_id
-      tag: rename_source_endpoint_sensor_id
+      tag: rename_source_endpoint_sensor_id_24541e89
       target_field: crowdstrike.alert.source.endpoint_sensor_id
       ignore_missing: true
   - convert:
       field: crowdstrike.alert.source_ip_isp_classification
-      tag: convert_source_ip_isp_classification_to_long
+      tag: convert_source_ip_isp_classification_to_long_57728ff0
       target_field: crowdstrike.alert.source.ip_isp_classification
       type: long
       if: ctx.crowdstrike?.alert?.source_ip_isp_classification != ''
@@ -1878,12 +1895,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: crowdstrike.alert.source_ip_isp_domain
-      tag: rename_source_ip_isp_domain
+      tag: rename_source_ip_isp_domain_c1db3b7e
       target_field: crowdstrike.alert.source.ip_isp_domain
       ignore_missing: true
   - date:
       field: crowdstrike.alert.start_time
-      tag: date_start_time
+      tag: date_start_time_89495131
       target_field: crowdstrike.alert.start_time
       formats:
         - ISO8601
@@ -1895,12 +1912,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
-      tag: set_event_start_from_alert_start_time
+      tag: set_event_start_from_alert_start_time_5bfc615b
       copy_from: crowdstrike.alert.start_time
       ignore_empty_value: true
   - script:
       lang: painless
-      tag: set_event_duration_from_start_and_end
+      tag: set_event_duration_from_start_and_end_a70850e4
       if: ctx.event?.start != null && ctx.event.end != null
       source: |-
         def start = ZonedDateTime.parse(ctx.event.start);
@@ -1916,13 +1933,13 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: threat.tactic.name
-      tag: append_threat_tactic_name
+      tag: append_threat_tactic_name_0f7003f5
       value: '{{{crowdstrike.alert.tactic}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.tactic != null
   - append:
       field: threat.tactic.id
-      tag: append_threat_tactic_id
+      tag: append_threat_tactic_id_358a01ef
       value: '{{{crowdstrike.alert.tactic_id}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.tactic_id != null
@@ -1933,96 +1950,96 @@ processors:
       processor:
         append:
           field: tags
-          tag: append_alert_tags_into_tags
+          tag: append_alert_tags_into_tags_b7e39907
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - rename:
       field: crowdstrike.alert.target_endpoint_host_name
-      tag: rename_target_endpoint_host_name
+      tag: rename_target_endpoint_host_name_cca2ea7b
       target_field: crowdstrike.alert.target.endpoint_host_name
       ignore_missing: true
   - set:
       field: destination.domain
-      tag: set_destination_domain_from_alert_target_endpoint_host_name
+      tag: set_destination_domain_from_alert_target_endpoint_host_name_b9ab9ec6
       copy_from: crowdstrike.alert.target.endpoint_host_name
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_destination_domain_into_related_hosts
+      tag: append_destination_domain_into_related_hosts_6a8d1772
       value: '{{{destination.domain}}}'
       allow_duplicates: false
       if: ctx.destination?.domain != null
   - rename:
       field: crowdstrike.alert.target_domain_controller_host_name
-      tag: rename_target_domain_controller_host_name
+      tag: rename_target_domain_controller_host_name_c5bd3721
       target_field: crowdstrike.alert.target.domain_controller_host_name
       ignore_missing: true
   - set:
       field: destination.user.domain
-      tag: set_destination_user_domain_from_alert_target_domain_controller_host_name
+      tag: set_destination_user_domain_from_alert_target_domain_controller_host_name_0171ab6a
       copy_from: crowdstrike.alert.target.domain_controller_host_name
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_destination_user_domain_into_related_hosts
+      tag: append_destination_user_domain_into_related_hosts_1e622d63
       value: '{{{destination.user.domain}}}'
       allow_duplicates: false
       if: ctx.destination?.user?.domain != null
   - rename:
       field: crowdstrike.alert.target_account_name
-      tag: rename_target_account_name
+      tag: rename_target_account_name_d01e5149
       target_field: crowdstrike.alert.target.account_name
       ignore_missing: true
   - set:
       field: destination.user.name
-      tag: set_destination_user_name_from_alert_target_account_name
+      tag: set_destination_user_name_from_alert_target_account_name_68caa048
       copy_from: crowdstrike.alert.target.account_name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_destination_user_name_into_related_user
+      tag: append_destination_user_name_into_related_user_1047ca69
       value: '{{{destination.user.name}}}'
       allow_duplicates: false
       if: ctx.destination?.user?.name != null
   - rename:
       field: crowdstrike.alert.target_domain_controller_object_guid
-      tag: rename_target_domain_controller_object_guid
+      tag: rename_target_domain_controller_object_guid_2265d03c
       target_field: crowdstrike.alert.target.domain_controller_object_guid
       ignore_missing: true
   - rename:
       field: crowdstrike.alert.target_domain_controller_object_sid
-      tag: rename_target_domain_controller_object_sid
+      tag: rename_target_domain_controller_object_sid_c26208d4
       target_field: crowdstrike.alert.target.domain_controller_object_sid
       ignore_missing: true
   - rename:
       field: crowdstrike.alert.target_endpoint_account_object_guid
-      tag: rename_target_endpoint_account_object_guid
+      tag: rename_target_endpoint_account_object_guid_99cfc0a7
       target_field: crowdstrike.alert.target.endpoint_account_object_guid
       ignore_missing: true
   - rename:
       field: crowdstrike.alert.target_endpoint_account_object_sid
-      tag: rename_target_endpoint_account_object_sid
+      tag: rename_target_endpoint_account_object_sid_21275743
       target_field: crowdstrike.alert.target.endpoint_account_object_sid
       ignore_missing: true
   - rename:
       field: crowdstrike.alert.target_endpoint_sensor_id
-      tag: rename_target_endpoint_sensor_id
+      tag: rename_target_endpoint_sensor_id_16ba5070
       target_field: crowdstrike.alert.target.endpoint_sensor_id
       ignore_missing: true
   - rename:
       field: crowdstrike.alert.target_service_access_identifier
-      tag: rename_target_service_access_identifier
+      tag: rename_target_service_access_identifier_8ee98e78
       target_field: crowdstrike.alert.target.service_access_identifier
       ignore_missing: true
   - append:
       field: threat.technique.name
-      tag: append_threat_technique_name
+      tag: append_threat_technique_name_1a3cfac7
       value: '{{{crowdstrike.alert.technique}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.technique != null
   - append:
       field: threat.technique.id
-      tag: append_threat_technique_id
+      tag: append_threat_technique_id_12c8777e
       value: '{{{crowdstrike.alert.technique_id}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.technique_id != null
@@ -2033,7 +2050,7 @@ processors:
       processor:
         append:
           field: threat.tactic.name
-          tag: append_threat_tactic_name
+          tag: append_threat_tactic_name_bcdf76aa
           value: '{{{_ingest._value.tactic}}}'
           allow_duplicates: false
   - foreach:
@@ -2043,7 +2060,7 @@ processors:
       processor:
         append:
           field: threat.tactic.id
-          tag: append_threat_tactic_id
+          tag: append_threat_tactic_id_ff94b039
           value: '{{{_ingest._value.tactic_id}}}'
           allow_duplicates: false
   - foreach:
@@ -2053,7 +2070,7 @@ processors:
       processor:
         append:
           field: threat.technique.name
-          tag: append_threat_technique_name
+          tag: append_threat_technique_name_d2998e71
           value: '{{{_ingest._value.technique}}}'
           allow_duplicates: false
   - foreach:
@@ -2063,7 +2080,7 @@ processors:
       processor:
         append:
           field: threat.technique.id
-          tag: append_threat_technique_id
+          tag: append_threat_technique_id_a0c7568e
           value: '{{{_ingest._value.technique_id}}}'
           allow_duplicates: false
   - foreach:
@@ -2073,20 +2090,21 @@ processors:
       processor:
         convert:
           field: _ingest._value.pattern_id
-          tag: convert_mitre_attack_pattern_id_to_string
+          tag: convert_mitre_attack_pattern_id_to_string_d2974793
           type: string
           ignore_missing: true
           on_failure:
             - remove:
                 field: _ingest._value.pattern_id
-                tag: remove_ingest_value_pattern_id
+                tag: remove_ingest_value_pattern_id_dbb20aa2
             - append:
+                tag: append_error_message_adee47db
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: Set threat.framework from threat.* fields using prefix matching and preference order.
       lang: painless
-      tag: script_threat_framework
+      tag: script_threat_framework_33b1a35e
       if: ctx.threat != null
       params:
         framework_preference:
@@ -2163,7 +2181,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: crowdstrike.alert.timestamp
-      tag: date_timestamp
+      tag: date_timestamp_4ed11ccb
       target_field: crowdstrike.alert.timestamp
       formats:
         - ISO8601
@@ -2175,12 +2193,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_alert_timestamp
+      tag: set_@timestamp_from_alert_timestamp_e2b5a13f
       copy_from: crowdstrike.alert.timestamp
       ignore_empty_value: true
   - date:
       field: crowdstrike.alert.overwatch_note_timestamp
-      tag: date_overwatch_note_timestamp
+      tag: date_overwatch_note_timestamp_7ebc1b71
       target_field: crowdstrike.alert.overwatch_note_timestamp
       formats:
         - ISO8601
@@ -2188,7 +2206,7 @@ processors:
       ignore_failure: true
   - date:
       field: crowdstrike.alert.updated_timestamp
-      tag: date_updated_timestamp
+      tag: date_updated_timestamp_2db0612d
       target_field: crowdstrike.alert.updated_timestamp
       formats:
         - ISO8601
@@ -2200,29 +2218,29 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: user.id
-      tag: set_user_id_from_alert_user_id
+      tag: set_user_id_from_alert_user_id_9d417aba
       copy_from: crowdstrike.alert.user_id
       ignore_empty_value: true
   - set:
       field: user.name
-      tag: set_user_name_from_alert_user_name
+      tag: set_user_name_from_alert_user_name_bee7f745
       copy_from: crowdstrike.alert.user_name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_id_into_related_user
+      tag: append_user_id_into_related_user_23cff8dc
       value: '{{{user.id}}}'
       allow_duplicates: false
       if: ctx.user?.id != null
   - append:
       field: related.user
-      tag: append_user_name_into_related_user
+      tag: append_user_name_into_related_user_325195a6
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
       field: related.user
-      tag: append_crowdstrike_alert_user_principal_into_related_user
+      tag: append_crowdstrike_alert_user_principal_into_related_user_071fbca1
       value: '{{{crowdstrike.alert.user_principal}}}'
       allow_duplicates: false
       if: ctx.crowdstrike?.alert?.user_principal != null
@@ -2275,7 +2293,7 @@ processors:
       target_field: _id
       ignore_missing: true
   - remove:
-      tag: remove_intentionally_unmapped_fields
+      tag: remove_intentionally_unmapped_fields_35e402b8
       ignore_missing: true
       field:
         - crowdstrike.alert.attack_types
@@ -2375,13 +2393,13 @@ processors:
         - crowdstrike.alert.timestamp
         - crowdstrike.alert.user_id
         - crowdstrike.alert.user_name
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_b52de211
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
       lang: painless
       description: Drops null/empty values recursively.
-      tag: painless_remove_null
+      tag: painless_remove_null_f6a89620
       source: |-
         boolean drop(Object object) {
           if (object == null || object == '') {
@@ -2398,7 +2416,7 @@ processors:
         drop(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind_processor
+      tag: set_pipeline_error_to_event_kind_processor_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
@@ -2409,13 +2427,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

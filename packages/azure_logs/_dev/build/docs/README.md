@@ -328,7 +328,9 @@ The Agent creates one SA container for the integration. The SA container name co
 
 ### Running the integration behind a firewall
 
-When you run the Elastic Agent behind a firewall, you must allow traffic on ports `5671` and `5672` for the event hub and port `443` for the Storage Account container to ensure proper communication with the necessary components.
+When the Elastic Agent runs in an environment with network restrictions, check that the required ports are open for the transport protocol used by the integration.
+
+The Elastic Agent requires access to Event Hubs and Storage Accounts.
 
 ```text
 ┌────────────────────────────────┐  ┌───────────────────┐  ┌───────────────────┐
@@ -356,18 +358,26 @@ When you run the Elastic Agent behind a firewall, you must allow traffic on port
 └─Azure──────────────────────────┘
 ```
 
-#### Event hub
+#### Event Hubs (AMQP)
 
-Port `5671` and `5672` are commonly used for secure communication with the event hub. These ports are used to receive events. The Elastic Agent can establish a secure connection with the event hub by allowing traffic on these ports. 
+By default, the integration uses AMQP to communicate with Event Hubs.
+
+AMQP uses ports `5671` and `5672`. The Elastic Agent initiates outbound TCP connections to these ports on the Azure Event Hubs service to receive events.
 
 For more information, check the following documents:
 
-* [What ports do I need to open on the firewall?](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-faq#what-ports-do-i-need-to-open-on-the-firewall) from the [Event Hubs frequently asked questions](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-faq#what-ports-do-i-need-to-open-on-the-firewall).
-* [AMQP outbound port requirements](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-amqp-protocol-guide#amqp-outbound-port-requirements)
+- [What ports do I need to open on the firewall?](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-faq#what-ports-do-i-need-to-open-on-the-firewall) from the [Event Hubs frequently asked questions](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-faq#what-ports-do-i-need-to-open-on-the-firewall).
+- [AMQP outbound port requirements](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-amqp-protocol-guide#amqp-outbound-port-requirements)
 
-#### Storage Account container
+#### Event Hubs (AMQP-over-WebSockets)
 
-Port `443` is used for secure communication with the Storage Account container. This port is commonly used for HTTPS traffic. By allowing traffic on port 443, the Elastic Agent can securely access and interact with the Storage Account container, essential for storing and retrieving checkpoint data for each event hub partition.
+If ports `5671` and `5672` are blocked, the integration can use AMQP-over-WebSockets. This protocol tunnels AMQP over port `443` (HTTPS), which is typically allowed through firewalls.
+
+To use it, set **Event Hubs transport protocol** to **AMQP-over-WebSockets** in the advanced options. This requires processor v2 and Elastic Agent 8.19.10, 9.1.10, 9.2.4, or later.
+
+#### Storage Account
+
+The Elastic Agent initiates outbound TCP connections to port `443` (HTTPS) to store and retrieve checkpoint data from the Azure Storage Account service.
 
 #### DNS
 
@@ -378,6 +388,17 @@ Optionally, you can restrict the traffic to the following domain names:
 *.blob.core.windows.net
 *.cloudapp.net
 ```
+
+#### Proxy support
+
+Proxy support is optional and requires **Event Hubs transport protocol** set to **AMQP-over-WebSockets**.
+
+To enable it:
+
+1. In the advanced options, set **Event Hubs transport protocol** to **AMQP-over-WebSockets**.
+2. Define the `HTTPS_PROXY` environment variable for the Elastic Agent process, for example `HTTPS_PROXY=http://proxy.example.com:8080`. Elastic Agent routes both Event Hubs and Storage Account traffic through the proxy.
+
+This requires processor v2 and Elastic Agent 8.19.10, 9.1.10, 9.2.4, or later.
 
 ## Settings
 
@@ -491,6 +512,15 @@ _string_
 (processor v2 only) Maximum number of messages from the event hub to wait for before processing them.
 
 The partition consumer waits up to a "receive count" or a "receive timeout", whichever comes first. Default is `100` messages.
+
+`transport` :
+_string_
+(processor v2 only) The transport protocol to use when connecting to Event Hubs. Possible values are:
+
+* `amqp` (default): Use AMQP on ports `5671` and `5672`.
+* `websocket`: Use AMQP-over-WebSockets on port `443`. Use this option when AMQP ports are blocked.
+
+When `websocket` is selected, traffic can be routed through a proxy by setting the `HTTPS_PROXY` environment variable.
 
 ## Handling Malformed JSON in Azure Logs
 

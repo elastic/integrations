@@ -8,580 +8,658 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_50075a0b
       value: asset
   - append:
       field: event.category
-      tag: append_event_category
+      tag: append_event_category_5098f71a
       value: host
   - append:
       field: event.type
-      tag: append_event_type
+      tag: append_event_type_5eab37e6
       value: info
   - rename:
       field: message
-      tag: rename_message
+      tag: rename_message_a7b1f822
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - drop:
+      tag: drop_41e92579
       if: ctx.event?.original != null && ctx.event.original.isEmpty()
   - json:
       field: event.original
-      tag: json_message
+      tag: json_message_c3a1053e
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_f3d9ca7e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.accountID
-      tag: rename_prisma_cloud_host_profile_accountID
+      tag: rename_prisma_cloud_host_profile_accountID_208dbbfb
       target_field: prisma_cloud.host_profile.account_id
       ignore_missing: true
   - set:
       field: cloud.account.id
-      tag: set_prisma_cloud_host_profile_account_id_to_cloud_account_id
+      tag: set_prisma_cloud_host_profile_account_id_to_cloud_account_id_f6df1bba
       copy_from: prisma_cloud.host_profile.account_id
       ignore_empty_value: true
   - rename:
       field: json._id
-      tag: rename_prisma_cloud_host_profile_id
+      tag: rename_prisma_cloud_host_profile_id_76c7c681
       target_field: prisma_cloud.host_profile._id
       ignore_missing: true
   - set:
       field: host.hostname
-      tag: set_prisma_cloud_host_profile_id_to_hostname
+      tag: set_prisma_cloud_host_profile_id_to_hostname_fbe39f02
       copy_from: prisma_cloud.host_profile._id
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_prisma_cloud_host_profile_id_to_related_hosts
+      tag: append_prisma_cloud_host_profile_id_to_related_hosts_b8a451ed
       value: '{{{prisma_cloud.host_profile._id}}}'
       allow_duplicates: false
       if: ctx.prisma_cloud?.host_profile?._id != null
   - rename:
       field: json.collections
-      tag: rename_prisma_cloud_host_profile_collections
+      tag: rename_prisma_cloud_host_profile_collections_8eeb7071
       target_field: prisma_cloud.host_profile.collections
       ignore_missing: true
   - date:
       field: json.created
-      tag: date_prisma_cloud_host_profile_created
+      tag: date_prisma_cloud_host_profile_created_3ddfa19e
       target_field: prisma_cloud.host_profile.created
       formats:
         - ISO8601
       if: ctx.json?.created != null && ctx.json.created != ''
       on_failure:
         - append:
+            tag: append_error_message_400166d1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_prisma_cloud_host_profile_created
+      tag: set_prisma_cloud_host_profile_created_52b7d107
       copy_from: prisma_cloud.host_profile.created
       ignore_empty_value: true
   - rename:
       field: json.labels
-      tag: rename_prisma_cloud_host_profile_labels
+      tag: rename_prisma_cloud_host_profile_labels_4d356903
       target_field: prisma_cloud.host_profile.labels
       ignore_missing: true
   - set:
       field: labels
-      tag: set_prisma_cloud_host_profile_labels
+      tag: set_prisma_cloud_host_profile_labels_a33dd647
       copy_from: prisma_cloud.host_profile.labels
       ignore_empty_value: true
   - rename:
       field: json.geoip.countries
-      tag: rename_prisma_cloud_host_profile_geoip_countries
+      tag: rename_prisma_cloud_host_profile_geoip_countries_735b4acb
       target_field: prisma_cloud.host_profile.geoip.countries
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_geoip_countries_a8866601
       field: prisma_cloud.host_profile.geoip.countries
       if: ctx.prisma_cloud?.host_profile?.geoip?.countries instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.ip
-          tag: convert_prisma_cloud_host_profile_ip_to_ip
+          tag: convert_prisma_cloud_host_profile_ip_to_ip_3adf4b6c
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_ip_1131138e
                 field: _ingest._value.ip
                 ignore_missing: true
             - append:
+                tag: append_error_message_a23f7cc2
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_geoip_countries_1aa26fa8
       field: prisma_cloud.host_profile.geoip.countries
       if: ctx.prisma_cloud?.host_profile?.geoip?.countries instanceof List
       ignore_failure: true
       processor:
         append:
           field: related.ip
-          tag: append_prisma_cloud_host_profile_ip_into_related_ip_1
+          tag: append_prisma_cloud_host_profile_ip_into_related_ip_1_1ce14eb1
           value: '{{{_ingest._value.ip}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_geoip_countries_eda5fe94
       field: prisma_cloud.host_profile.geoip.countries
       if: ctx.prisma_cloud?.host_profile?.geoip?.countries instanceof List
       ignore_failure: true
       processor:
         date:
+          tag: date_ingest_value_modified_to_ingest_value_modified_838839f6
           field: _ingest._value.modified
           target_field: _ingest._value.modified
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_modified_6797e37c
                 field: _ingest._value.modified
                 ignore_missing: true
   - date:
       field: json.geoip.modified
-      tag: date_prisma_cloud_host_profile_modified
+      tag: date_prisma_cloud_host_profile_modified_4f6a3d15
       target_field: prisma_cloud.host_profile.geoip.modified
       formats:
         - ISO8601
       if: ctx.json?.geoip?.modified != null && ctx.json.geoip.modified != ''
       on_failure:
         - append:
+            tag: append_error_message_3bc412c7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.hash
-      tag: convert_prisma_cloud_host_profile_hash_keyword
+      tag: convert_prisma_cloud_host_profile_hash_keyword_d822d5dd
       target_field: prisma_cloud.host_profile.hash
       type: string
       ignore_missing: true
       if: ctx.json?.hash != ''
       on_failure:
         - append:
+            tag: append_error_message_fa573b65
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.hash
-      tag: append_json_hash_into_related_hash
+      tag: append_json_hash_into_related_hash_e0e89dd3
       value: '{{{prisma_cloud.host_profile.hash}}}'
       allow_duplicates: false
   - rename:
       field: json.apps
-      tag: rename_prisma_cloud_host_profile_apps
+      tag: rename_prisma_cloud_host_profile_apps_eb2639d8
       target_field: prisma_cloud.host_profile.apps
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_1bf76f52
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.startupProcess
-          tag: rename_prisma_cloud_host_profile_apps_startupProcess
+          tag: rename_prisma_cloud_host_profile_apps_startupProcess_dde5cab5
           target_field: _ingest._value.startup_process
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_83709707
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         append:
           field: process.command_line
-          tag: append_prisma_cloud_host_profile_apps_startupProcess_command_line
+          tag: append_prisma_cloud_host_profile_apps_startupProcess_command_line_7856d00b
           value: '{{{_ingest._value.startup_process.command}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_b4b324d9
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.startup_process.interactive
-          tag: convert_prisma_cloud_host_profile_apps_startupProcess_interactive_to_interactive
+          tag: convert_prisma_cloud_host_profile_apps_startupProcess_interactive_to_interactive_c656ea39
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_startup_process_interactive_99945af3
                 field: _ingest._value.startup_process.interactive
                 ignore_missing: true
             - append:
+                tag: append_error_message_25b8eab1
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_c14be5d4
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         append:
           field: process.interactive
-          tag: append_prisma_cloud_host_profile_apps_startupProcess_interactive
+          tag: append_prisma_cloud_host_profile_apps_startupProcess_interactive_50561e1d
           value: '{{{_ingest._value.startup_process.interactive}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_83f29a9e
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         append:
           field: process.hash.md5
-          tag: append_prisma_cloud_host_profile_apps_startupProcess_md5
+          tag: append_prisma_cloud_host_profile_apps_startupProcess_md5_a73ea3e7
           value: '{{{_ingest._value.startup_process.md5}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_e657852e
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         append:
           field: related.hash
-          tag: append_prisma_cloud_host_profile_apps_startupProcess_md5_into_related_hash
+          tag: append_prisma_cloud_host_profile_apps_startupProcess_md5_into_related_hash_11426228
           value: '{{{_ingest._value.startup_process.md5}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_25da8a75
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.startup_process.modified
-          tag: convert_prisma_cloud_host_profile_apps_startupProcess_modified_to_modified
+          tag: convert_prisma_cloud_host_profile_apps_startupProcess_modified_to_modified_a9e8fa78
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_startup_process_modified_40b577dc
                 field: _ingest._value.startup_process.modified
                 ignore_missing: true
             - append:
+                tag: append_error_message_e110a080
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_77f88030
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         date:
+          tag: date_ingest_value_startup_process_time_to_ingest_value_startup_process_time_17ab33d2
           field: _ingest._value.startup_process.time
           target_field: _ingest._value.startup_process.time
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_startup_process_time_f3668292
                 field: _ingest._value.startup_process.time
                 ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_4d906489
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       ignore_failure: true
       processor:
         remove:
-          tag: remove_ecs_duplicate_fields_apps_startup_process_fields
+          tag: remove_ecs_duplicate_fields_apps_startup_process_fields_f735b75f
           field:
             - _ingest._value.startup_process.command
             - _ingest._value.startup_process.interactive
             - _ingest._value.startup_process.md5
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_c2a37650
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.outgoingPorts
-          tag: rename_prisma_cloud_host_profile_apps_outgoingPorts
+          tag: rename_prisma_cloud_host_profile_apps_outgoingPorts_8ca313d8
           target_field: _ingest._value.outgoing_ports
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_dbd50a71
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_outgoing_ports_a6844a7a
           field: _ingest._value.outgoing_ports
           ignore_failure: true
           processor:
             rename:
               field: _ingest._value.processPath
-              tag: rename_prisma_cloud_host_profile_apps_outgoing_ports_processPath
+              tag: rename_prisma_cloud_host_profile_apps_outgoing_ports_processPath_79c28580
               target_field: _ingest._value.process_path
               ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_c1467fd8
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_outgoing_ports_f61a572f
           field: _ingest._value.outgoing_ports
           ignore_failure: true
           processor:
             convert:
               field: _ingest._value.ip
-              tag: convert_prisma_cloud_host_profile_apps_outgoing_ports_ip_to_ip
+              tag: convert_prisma_cloud_host_profile_apps_outgoing_ports_ip_to_ip_909cda02
               type: ip
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_ip_4daa2695
                     field: _ingest._value.ip
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_03442110
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_88406eda
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_outgoing_ports_09a95306
           field: _ingest._value.outgoing_ports
           ignore_failure: true
           processor:
             append:
               field: related.ip
-              tag: append_prisma_cloud_host_profile_outgoing_ports_ip_into_related_ip_1
+              tag: append_prisma_cloud_host_profile_outgoing_ports_ip_into_related_ip_1_b6ea1869
               value: '{{{_ingest._value.ip}}}'
               allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_9700a920
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_outgoing_ports_2ddd0f13
           field: _ingest._value.outgoing_ports
           ignore_failure: true
           processor:
             convert:
               field: _ingest._value.port
-              tag: convert_prisma_cloud_host_profile_outgoing_ports_port
+              tag: convert_prisma_cloud_host_profile_outgoing_ports_port_7b1b4f6c
               type: long
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_port_b1a3eef6
                     field: _ingest._value.port
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_63537a30
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_6f8f1ffa
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_outgoing_ports_397d06b7
           field: _ingest._value.outgoing_ports
           ignore_failure: true
           processor:
             date:
+              tag: date_ingest_value_modified_to_ingest_value_modified_6ecf0835
               field: _ingest._value.modified
               target_field: _ingest._value.modified
               formats:
                 - ISO8601
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_modified_e22c203a
                     field: _ingest._value.modified
                     ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_12a60059
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.listeningPorts
-          tag: rename_ingest_value_listeningPorts
+          tag: rename_ingest_value_listeningPorts_50e5a735
           target_field: _ingest._value.listening_ports
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_c0bedf10
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_listening_ports_b1530caf
           field: _ingest._value.listening_ports
           ignore_failure: true
           processor:
             rename:
               field: _ingest._value.processPath
-              tag: rename_prisma_cloud_host_profile_listening_ports_processPath
+              tag: rename_prisma_cloud_host_profile_listening_ports_processPath_64d8f8d1
               target_field: _ingest._value.process_path
               ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_08944461
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_listening_ports_25e70db7
           field: _ingest._value.listening_ports
           ignore_failure: true
           processor:
             date:
+              tag: date_ingest_value_modified_to_ingest_value_modified_d8b88c17
               field: _ingest._value.modified
               target_field: _ingest._value.modified
               formats:
                 - ISO8601
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_modified_282b55ca
                     field: _ingest._value.modified
                     ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_e3a4bcb5
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_listening_ports_70145322
           field: _ingest._value.listening_ports
           ignore_failure: true
           processor:
             convert:
               field: _ingest._value.port
-              tag: convert_prisma_cloud_host_profile_listening_ports_port_to_long
+              tag: convert_prisma_cloud_host_profile_listening_ports_port_to_long_bbe6bdc8
               type: long
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_port_b694a07d
                     field: _ingest._value.port
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_2595f990
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_1fdbe9f4
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_processes_03afaadf
           field: _ingest._value.processes
           ignore_failure: true
           processor:
             convert:
               field: _ingest._value.interactive
-              tag: convert_prisma_cloud_host_profile_listening_ports_interactive
+              tag: convert_prisma_cloud_host_profile_listening_ports_interactive_c092ab07
               type: boolean
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_interactive_b96a71c8
                     field: _ingest._value.interactive
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_4c2234fa
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_02b6ab8d
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_processes_5d2c8e43
           field: _ingest._value.processes
           ignore_failure: true
           processor:
             append:
               field: process.interactive
               value: '{{{_ingest._value.interactive}}}'
-              tag: append_prisma_cloud_host_profile_apps_processes_interactive_into_process_interactive
+              tag: append_prisma_cloud_host_profile_apps_processes_interactive_into_process_interactive_db18dd4e
               allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_825e0b12
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_processes_09d0d5de
           field: _ingest._value.processes
           ignore_failure: true
           processor:
             date:
+              tag: date_ingest_value_time_to_ingest_value_time_a992a0b2
               field: _ingest._value.time
               target_field: _ingest._value.time
               formats:
                 - ISO8601
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_time_cadcca88
                     field: _ingest._value.time
                     ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_53f70fbf
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_processes_8630bf28
           field: _ingest._value.processes
           ignore_failure: true
           processor:
             convert:
               field: _ingest._value.modified
-              tag: convert_prisma_cloud_host_profile_apps_processes_modified_to_modified
+              tag: convert_prisma_cloud_host_profile_apps_processes_modified_to_modified_f1a208ed
               type: boolean
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_modified_e691c18d
                     field: _ingest._value.modified
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_4f725367
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_ce3362f3
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_processes_ab1f97b9
           field: _ingest._value.processes
           ignore_failure: true
           processor:
             append:
               field: process.hash.md5
-              tag: append_prisma_cloud_host_profile_app_processes_md5_into_process_hash_md5
+              tag: append_prisma_cloud_host_profile_app_processes_md5_into_process_hash_md5_93566985
               value: '{{{_ingest._value.md5}}}'
               allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_133cfbf2
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_processes_b1faa1e4
           field: _ingest._value.processes
           ignore_failure: true
           processor:
             append:
               field: related.hash
-              tag: append_prisma_cloud_host_profile_app_processes_md5_into_related_hash
+              tag: append_prisma_cloud_host_profile_app_processes_md5_into_related_hash_ed035533
               value: '{{{_ingest._value.md5}}}'
               allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_9d3fe78e
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_processes_eb9e614b
           field: _ingest._value.processes
           ignore_failure: true
           processor:
             append:
               field: process.command_line
-              tag: append_prisma_cloud_host_profile_app_processes_command_into_process_command_line
+              tag: append_prisma_cloud_host_profile_app_processes_command_into_process_command_line_3f49b534
               value: '{{{_ingest._value.command}}}'
               allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_apps_a8fe760b
       field: prisma_cloud.host_profile.apps
       if: ctx.prisma_cloud?.host_profile?.apps instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_processes_ec610adf
           field: _ingest._value.processes
           ignore_failure: true
           processor:
             remove:
-              tag: remove_ecs_duplicate_fields_apps_startup_process_fields
+              tag: remove_ecs_duplicate_fields_apps_startup_process_fields_a10ce622
               field:
                 - _ingest._value.command
                 - _ingest._value.interactive
@@ -589,27 +667,31 @@ processors:
               ignore_missing: true
   - rename:
       field: json.sshEvents
-      tag: rename_prisma_cloud_host_profile_sshEvents
+      tag: rename_prisma_cloud_host_profile_sshEvents_5547e619
       target_field: prisma_cloud.host_profile.ssh_events
       ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_ssh_events_c87b0f7b
       field: prisma_cloud.host_profile.ssh_events
       if: ctx.prisma_cloud?.host_profile?.ssh_events instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.interactive
-          tag: convert_prisma_cloud_host_profile_ssh_events_interactive
+          tag: convert_prisma_cloud_host_profile_ssh_events_interactive_491e07fa
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_interactive_cb5c5f48
                 field: _ingest._value.interactive
                 ignore_missing: true
             - append:
+                tag: append_error_message_ad58f42f
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_ssh_events_df6ce6e8
       field: prisma_cloud.host_profile.ssh_events
       if: ctx.prisma_cloud?.host_profile?.ssh_events instanceof List
       ignore_failure: true
@@ -617,129 +699,147 @@ processors:
         append:
           field: process.interactive
           value: '{{{_ingest._value.interactive}}}'
-          tag: append_prisma_cloud_host_profile_ssh_events_interactive_into_process_interactive
+          tag: append_prisma_cloud_host_profile_ssh_events_interactive_into_process_interactive_cc0a5760
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_ssh_events_cce2c918
       field: prisma_cloud.host_profile.ssh_events
       if: ctx.prisma_cloud?.host_profile?.ssh_events instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.modified
-          tag: convert_prisma_cloud_host_profile_ssh_events_modified_to_modified
+          tag: convert_prisma_cloud_host_profile_ssh_events_modified_to_modified_cde8aab1
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_modified_5111030d
                 field: _ingest._value.modified
                 ignore_missing: true
             - append:
+                tag: append_error_message_66b73b57
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_ssh_events_ccc3dd19
       field: prisma_cloud.host_profile.ssh_events
       if: ctx.prisma_cloud?.host_profile?.ssh_events instanceof List
       ignore_failure: true
       processor:
         append:
           field: process.hash.md5
-          tag: append_prisma_cloud_host_profile_ssh_events_md5_into_process_hash_md5_1
+          tag: append_prisma_cloud_host_profile_ssh_events_md5_into_process_hash_md5_1_5f564d04
           value: '{{{_ingest._value.md5}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_ssh_events_3d6c8100
       field: prisma_cloud.host_profile.ssh_events
       if: ctx.prisma_cloud?.host_profile?.ssh_events instanceof List
       ignore_failure: true
       processor:
         append:
           field: related.hash
-          tag: append_prisma_cloud_host_profile_ssh_events_md5_into_related_hash
+          tag: append_prisma_cloud_host_profile_ssh_events_md5_into_related_hash_015cd4c2
           value: '{{{_ingest._value.md5}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_ssh_events_e4ee9fd3
       field: prisma_cloud.host_profile.ssh_events
       if: ctx.prisma_cloud?.host_profile?.ssh_events instanceof List
       ignore_failure: true
       processor:
         append:
           field: process.command_line
-          tag: append_prisma_cloud_host_profile_ssh_events_command_into_process_cmd_line
+          tag: append_prisma_cloud_host_profile_ssh_events_command_into_process_cmd_line_5d681de6
           value: '{{{_ingest._value.command}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_ssh_events_ee7ef98e
       field: prisma_cloud.host_profile.ssh_events
       if: ctx.prisma_cloud?.host_profile?.ssh_events instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       ignore_failure: true
       processor:
         remove:
-          tag: remove_ecs_duplicate_ssh_events_fields
+          tag: remove_ecs_duplicate_ssh_events_fields_0f413845
           field:
             - _ingest._value.command
             - _ingest._value.interactive
             - _ingest._value.md5
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_ssh_events_7da3f301
       field: prisma_cloud.host_profile.ssh_events
       if: ctx.prisma_cloud?.host_profile?.ssh_events instanceof List
       ignore_failure: true
       processor:
         date:
+          tag: date_ingest_value_loginTime_to_ingest_value_login_time_997439e3
           field: _ingest._value.loginTime
           target_field: _ingest._value.login_time
           formats:
             - UNIX
           on_failure:
             - remove:
+                tag: remove_ingest_value_loginTime_3bc5257e
                 field: _ingest._value.loginTime
                 ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_ssh_events_1af314b4
       field: prisma_cloud.host_profile.ssh_events
       if: ctx.prisma_cloud?.host_profile?.ssh_events instanceof List
       ignore_failure: true
       processor:
         remove:
+          tag: remove_ingest_value_loginTime_d364c472
           field:
             - _ingest._value.loginTime
           ignore_missing: true
   - foreach:
+      tag: foreach_prisma_cloud_host_profile_ssh_events_7280a467
       field: prisma_cloud.host_profile.ssh_events
       if: ctx.prisma_cloud?.host_profile?.ssh_events instanceof List
       ignore_failure: true
       processor:
         date:
+          tag: date_ingest_value_time_to_ingest_value_time_0906ef9d
           field: _ingest._value.time
           target_field: _ingest._value.time
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_time_a38c070b
                 field: _ingest._value.time
                 ignore_missing: true
   - date:
       field: json.time
-      tag: 'date_rename_time_to_custom_name'
+      tag: date_rename_time_to_custom_name_80dca1b1
       target_field: prisma_cloud.host_profile.time
       formats:
         - ISO8601
       if: ctx.json?.time != null && ctx.json.time != ''
       on_failure:
         - append:
+            tag: append_error_message_57c6ca31
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_e5a80934
       field:
         - json
       ignore_missing: true
   - remove:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_missing: true
-      tag: remove_preserve_duplicate_custom_fields
+      tag: remove_preserve_duplicate_custom_fields_b6873932
       field:
         - prisma_cloud.host_profile.account_id
         - prisma_cloud.host_profile._id
         - prisma_cloud.host_profile.created
         - prisma_cloud.host_profile.labels
   - script:
+      tag: script_drops_null_empty_values_recursively_06971239
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -757,24 +857,27 @@ processors:
         }
         drop(ctx);
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_cdab1230
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_be9a4ccf
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
-
-

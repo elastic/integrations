@@ -1,0 +1,56 @@
+{
+    "id": "supabase_otel-postgrest-pool-timeouts",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when PostgREST records database pool timeouts. Every increment is an API request that gave up waiting for a database connection, so this is a user-visible failure and the highest-signal PostgREST error metric.",
+        "name": "[Supabase OTel] PostgREST database pool timeouts",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "postgrest",
+            "errors"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-0fedaab5-00a9-45ce-8340-fcf6e510d215"
+                },
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## PostgREST Database Pool Timeouts\n\nPostgREST holds its own connection pool. A timeout means an incoming REST request waited for a database connection and never got one, so the caller received an error. This is user-visible.\n\n### Triage Steps\n1. Read the `Pool Waiting` column: a non-zero value confirms requests are queueing for connections rather than failing for another reason.\n2. Treat this as a symptom, not a cause. Work up the chain: disk IO utilisation, then mean query time from `pg_stat_statements_total_time_seconds / pg_stat_statements_total_queries`, then long-running transactions, and only then pool sizing.\n3. Check whether the whole Postgres connection budget is exhausted — if it is, PostgREST cannot grow its pool no matter how it is configured.\n4. `pgrst_db_pool_available` versus `pgrst_db_pool_max` is easily misread: the pool is established lazily, so a low `available` at idle is normal. Trust `waiting` and `timeouts` instead.\n\n### Tuning\nAny timeout is actionable, so the threshold is greater than zero. Raise it if your clients retry transparently and you only care about sustained failure.\n\n### Related content\nThe absence of pool timeouts over a rolling window is tracked as an SLO. This rule targets the acute occurrence."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// pgrst_db_pool_timeouts_total is a counter; INCREASE() gives how many timeouts actually\n// happened inside the window (the dashboard charts the same metric as a per-second rate).\n// pool_waiting and pool_available are gauges, carried here as diagnostic context.\n| STATS\n    `Pool Timeouts` = SUM(INCREASE(pgrst_db_pool_timeouts_total)),\n    `Pool Waiting` = MAX(MAX_OVER_TIME(pgrst_db_pool_waiting)),\n    `Pool Available` = MIN(MIN_OVER_TIME(pgrst_db_pool_available))\n  BY resource.attributes.supabase_project_ref\n// Any timeout is a failed API request. Raise if your clients retry transparently.\n| WHERE `Pool Timeouts` > 0\n| SORT `Pool Timeouts` DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.supabase_project_ref",
+            "termSize": 50
+        }
+    }
+}

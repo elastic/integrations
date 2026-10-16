@@ -12,614 +12,757 @@ description: |
   See https://www.elastic.co/guide/en/ecs/current/ecs-category-field-values-reference.html
 processors:
   - set:
+      tag: set_event_kind_d452ef2c
       field: event.kind
       value: event
   - set:
+      tag: set_event_outcome_a5a1c482
       field: event.outcome
       value: ['failure']
       if: 'ctx.event.code.endsWith("E") || ctx.event.code.endsWith("W")'
   # Events related to access list activity.
   - set:
+      tag: set_event_category_bd2b2bd2
       field: event.category
       value: ['configuration', 'iam']
       if: 'ctx.event.action.startsWith("access_list.")'
   - set:
+      tag: set_event_type_0b6edf23
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "access_list.create"'
   - set:
+      tag: set_event_type_2f6d89d2
       field: event.type
       value: ['deletion']
       if: 'ctx.event.action == "access_list.delete"'
   - set:
+      tag: set_event_type_5af0eae1
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "access_list.member.create"'
   - set:
+      tag: set_event_type_fc1ce9b7
       field: event.type
       value: ['deletion']
       if: 'ctx.event.action == "access_list.member.delete"'
   - set:
+      tag: set_event_type_1083b067
       field: event.type
       value: ['deletion']
       if: 'ctx.event.action == "access_list.member.delete_all_members"'
   - set:
+      tag: set_event_type_77ad3f3d
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "access_list.member.update"'
   - set:
+      tag: set_event_type_a32f443b
       field: event.type
       value: ['info']
       if: 'ctx.event.action == "access_list.review"'
   - set:
+      tag: set_event_type_53b78d4c
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "access_list.update"'
   # Events related to access requests.
   - set:
+      tag: set_event_category_a227fa5c
       field: event.category
       value: ['session', 'iam']
       if: 'ctx.event.action.startsWith("access_request.")'
   - set:
+      tag: set_event_type_449bb666
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "access_request.create"'
   - set:
+      tag: set_event_type_43bde780
       field: event.type
       value: ['deletion']
       if: 'ctx.event.action == "access_request.delete"'
   - set:
+      tag: set_event_type_bc7c178b
       field: event.type
       value: ['info']
       if: 'ctx.event.action == "access_request.review"'
   - set:
+      tag: set_event_type_60a74eaf
       field: event.type
       value: ['info']
       if: 'ctx.event.action == "access_request.search"'
   - set:
+      tag: set_event_type_55de52e9
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "access_request.update"'
   # Events related to application activity.
   - set:
+      tag: set_event_category_796d902c
       field: event.category
       value: ['process', 'configuration']
       if: 'ctx.event.action.startsWith("app.") && !ctx.event.action.startsWith("app.session.")'
   - set:
+      tag: set_event_category_a4d44742
       field: event.category
       value: ['session']
       if: 'ctx.event.action.startsWith("app.session.")'
   - set:
+      tag: set_event_type_7a19c00c
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "app.create"'
   - set:
+      tag: set_event_type_ce5e258b
       field: event.type
       value: ['deletion']
       if: 'ctx.event.action == "app.delete"'
   - set:
+      tag: set_event_type_8def2393
       field: event.type
       value: ['info']
       if: 'ctx.event.action == "app.session.chunk" || ctx.event.action == "app.session.dynamodb.request"'
   - set:
+      tag: set_event_type_48a397d7
       field: event.type
       value: ['end']
       if: 'ctx.event.action == "app.session.end"'
   - set:
+      tag: set_event_type_9c045f84
       field: event.type
       value: ['start']
       if: 'ctx.event.action == "app.session.start"'
   - set:
+      tag: set_event_type_1a3e9a67
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "app.update"'
   # Events related to authentication.
   - set:
+      tag: set_event_category_26011933
       field: event.category
       value: ['authentication']
       if: 'ctx.event.action.startsWith("auth")'
   - set:
+      tag: set_event_type_99f55f63
       field: event.type
       value: ['info']
       if: 'ctx.event.action == "auth"'
   - set:
+      tag: set_event_type_7855fe30
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "auth_preference.update"'
   # Events related to billing information.
   - set:
+      tag: set_event_category_fbe0d11b
       field: event.category
       value: ['configuration', 'iam']
       if: 'ctx.event.action.startsWith("billing.")'
   - set:
+      tag: set_event_type_b1b3a377
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "billing.create_card"'
   - set:
+      tag: set_event_type_0f399898
       field: event.type
       value: ['deletion']
       if: 'ctx.event.action == "billing.delete_card"'
   - set:
+      tag: set_event_type_95a43711
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "billing.update_card" || ctx.event.action == "billing.update_info"'
   # Events related to bot activity.
   - set:
+      tag: set_event_category_68fa7f88
       field: event.category
       value: ['process', 'host']
       if: 'ctx.event.action.startsWith("bot.")'
   - set:
+      tag: set_event_type_856ff442
       field: event.type
       value: ['start']
       if: 'ctx.event.action == "bot.create"'
   - set:
+      tag: set_event_type_766183b6
       field: event.type
       value: ['end']
       if: 'ctx.event.action == "bot.delete"'
   - set:
+      tag: set_event_type_906f8b2a
       field: event.type
       value: ['info']
       if: 'ctx.event.action == "bot.join" || ctx.event.action == "bot.update"'
   # Events related to certificate issuance.
   - set:
+      tag: set_event_category_00b8ddd9
       field: event.category
       value: ['configuration', 'iam']
       if: 'ctx.event.action.startsWith("cert.")'
   - set:
+      tag: set_event_type_59bf34a0
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "cert.create"'
   # Events related to client disconnection.
   - set:
+      tag: set_event_category_698ec7c7
       field: event.category
       value: ['network']
       if: 'ctx.event.action.startsWith("client.")'
   - set:
+      tag: set_event_type_22002c75
       field: event.type
       value: ['end']
       if: 'ctx.event.action == "client.disconnect"'
   # Events related to cluster networking configuration.
   - set:
+      tag: set_event_category_abf4b25a
       field: event.category
       value: ['configuration']
       if: 'ctx.event.action.startsWith("cluster_networking_config.")'
   - set:
+      tag: set_event_type_1535c8c9
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "cluster_networking_config.update"'
   # Events related to database activity.
   - set:
+      tag: set_event_category_d3e46d95
       field: event.category
       value: ['database']
       if: 'ctx.event.action.startsWith("db.")'
   - set:
+      tag: set_event_type_c0046ed1
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "db.create"'
   - set:
+      tag: set_event_type_06b3a189
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "db.delete"'
   - set:
+      tag: set_event_type_200216d5
       field: event.type
       value: ['info']
       if: 'ctx.event.action == "db.session.cassandra.batch" || ctx.event.action == "db.session.cassandra.execute" || ctx.event.action == "db.session.cassandra.prepare" || ctx.event.action == "db.session.cassandra.register" || ctx.event.action == "db.session.dynamodb.request" || ctx.event.action == "db.session.elasticsearch.request" || ctx.event.action == "db.session.opensearch.request" || ctx.event.action == "db.session.permissions.update" || ctx.event.action == "db.session.postgres.function" || ctx.event.action == "db.session.postgres.statements.bind" || ctx.event.action == "db.session.postgres.statements.close" || ctx.event.action == "db.session.postgres.statements.execute" || ctx.event.action == "db.session.postgres.statements.parse" || ctx.event.action == "db.session.query" || ctx.event.action == "db.session.spanner.rpc" || ctx.event.action == "db.session.sqlserver.rpc_request" || ctx.event.action == "db.session.start" || ctx.event.action == "db.session.user.create" || ctx.event.action == "db.session.user.deactivate"'
   - set:
+      tag: set_event_type_57232a93
       field: event.type
       value: ['info']
       if: 'ctx.event.action == "db.session.end"'
   - set:
+      tag: set_event_type_5456a358
       field: event.type
       value: ['error']
       if: 'ctx.event.action == "db.session.malformed_packet" || ctx.event.action == "db.session.query.failed"'
   - set:
+      tag: set_event_type_6c849743
       field: event.type
       value: ['info']
       if: 'ctx.event.action == "db.session.start"'
   - set:
+      tag: set_event_type_eedb2a6f
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "db.update"'
   # Events related to desktop activity.
   - set:
+      tag: set_event_category_9bac66aa
       field: event.category
       value: ['host', 'file']
       if: 'ctx.event.action.startsWith("desktop.")'
   - set:
+      tag: set_event_type_89b58e57
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "desktop.clipboard.receive" || ctx.event.action == "desktop.clipboard.send"'
   - set:
+      tag: set_event_type_d458949b
       field: event.type
       value: ['access']
       if: 'ctx.event.action == "desktop.directory.read" || ctx.event.action == "desktop.directory.share"'
   - set:
+      tag: set_event_type_2d6b1b4b
       field: event.type
       value: ['creation', 'deletion']
       if: 'ctx.event.action == "desktop.directory.write"'
   # Events related to device management.
   - set:
+      tag: set_event_category_79e2010c
       field: event.category
       value: ['configuration', 'iam']
       if: 'ctx.event.action.startsWith("device.")'
   - set:
+      tag: set_event_type_fd935975
       field: event.type
       value: ['info']
       if: 'ctx.event.action == "device.authenticate.confirm" || ctx.event.action == "device.authenticate"'
   - set:
+      tag: set_event_type_5e70e336
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "device.create" || ctx.event.action == "device.token.create" || ctx.event.action == "device.webtoken.create"'
   - set:
+      tag: set_event_type_0f2c1f8c
       field: event.type
       value: ['deletion']
       if: 'ctx.event.action == "device.delete"'
   - set:
+      tag: set_event_type_b8d2bd50
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "device.enroll" || ctx.event.action == "device.update" || ctx.event.action == "device.token.spent"'
   # Events related to command execution.
   - set:
+      tag: set_event_category_f0611539
       field: event.category
       value: ['process', 'host']
       if: 'ctx.event.action.startsWith("exec")'
   - set:
+      tag: set_event_type_7d88256d
       field: event.type
       value: ['start']
       if: 'ctx.event.action == "exec"'
   # Events related to external audit storage.
   - set:
+      tag: set_event_category_4c053285
       field: event.category
       value: ['configuration']
       if: 'ctx.event.action.startsWith("external_audit_storage.")'
   - set:
+      tag: set_event_type_dfae70c8
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "external_audit_storage.disable" || ctx.event.action == "external_audit_storage.enable"'
   # Events related to GitHub auth connectors.
   - set:
+      tag: set_event_category_dca58c33
       field: event.category
       value: ['authentication', 'iam']
       if: 'ctx.event.action.startsWith("github.")'
   - set:
+      tag: set_event_type_4b807481
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "github.created"'
   - set:
+      tag: set_event_type_6520376f
       field: event.type
       value: ['deletion']
       if: 'ctx.event.action == "github.deleted"'
   - set:
+      tag: set_event_type_4d9db5e1
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "github.updated"'
   # Events related to instance joining.
   - set:
+      tag: set_event_category_8e26be24
       field: event.category
       value: ['network', 'host']
       if: 'ctx.event.action.startsWith("instance.")'
   - set:
+      tag: set_event_type_71a413db
       field: event.type
       value: ['start']
       if: 'ctx.event.action == "instance.join"'
   # Events related to join token creation.
   - set:
+      tag: set_event_category_6ba76035
       field: event.category
       value: ['session', 'iam']
       if: 'ctx.event.action.startsWith("join_token.")'
   - set:
+      tag: set_event_type_01f1464d
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "join_token.create"'
   # Events related to Kubernetes activity.
   - set:
+      tag: set_event_category_9f58db16
       field: event.category
       value: ['process', 'host']
       if: 'ctx.event.action.startsWith("kube.")'
   - set:
+      tag: set_event_type_5f85129f
       field: event.type
       value: ['start']
       if: 'ctx.event.action == "kube.create"'
   - set:
+      tag: set_event_type_96989e67
       field: event.type
       value: ['end']
       if: 'ctx.event.action == "kube.delete"'
   - set:
+      tag: set_event_type_dc6e7b5a
       field: event.type
       value: ['info']
       if: 'ctx.event.action == "kube.request"'
   - set:
+      tag: set_event_type_84f786ec
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "kube.update"'
   # Events related to Teleport lock management.
   - set:
+      tag: set_event_category_716027f7
       field: event.category
       value: ['configuration', 'iam']
       if: 'ctx.event.action.startsWith("lock.")'
   - set:
+      tag: set_event_type_5c728663
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "lock.created"'
   - set:
+      tag: set_event_type_62ec0da4
       field: event.type
       value: ['deletion']
       if: 'ctx.event.action == "lock.deleted"'
   # Events related to login rules.
   - set:
+      tag: set_event_category_04c97fee
       field: event.category
       value: ['authentication', 'iam']
       if: 'ctx.event.action.startsWith("login_rule.")'
   - set:
+      tag: set_event_type_6727609e
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "login_rule.create"'
   - set:
+      tag: set_event_type_3b883c4a
       field: event.type
       value: ['deletion']
       if: 'ctx.event.action == "login_rule.delete"'
   # Events related to multi-factor authentication.
   - set:
+      tag: set_event_category_c9a77209
       field: event.category
       value: ['authentication', 'iam']
       if: 'ctx.event.action.startsWith("mfa.")'
   - set:
+      tag: set_event_type_cf7038b4
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "mfa.add"'
   - set:
+      tag: set_event_type_2dd7c7ce
       field: event.type
       value: ['deletion']
       if: 'ctx.event.action == "mfa.delete"'
   - set:
+      tag: set_event_type_f07ebabb
       field: event.type
       value: ['start']
       if: 'ctx.event.action == "mfa_auth_challenge.create"'
   - set:
+      tag: set_event_type_07f5e2ce
       field: event.type
       value: ['end']
       if: 'ctx.event.action == "mfa_auth_challenge.validate"'
   # Events related to OIDC auth connectors.
   - set:
+      tag: set_event_category_676d4b3d
       field: event.category
       value: ['authentication', 'iam']
       if: 'ctx.event.action.startsWith("oidc.")'
   - set:
+      tag: set_event_type_41433785
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "oidc.created"'
   - set:
+      tag: set_event_type_505c9101
       field: event.type
       value: ['deletion']
       if: 'ctx.event.action == "oidc.deleted"'
   - set:
+      tag: set_event_type_b4e27acf
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "oidc.updated"'
   # Events related to Okta synchronization and assignment.
   - set:
+      tag: set_event_category_c621da93
       field: event.category
       value: ['iam']
       if: 'ctx.event.action.startsWith("okta.")'
   - set:
+      tag: set_event_type_88548861
       field: event.type
       value: ['change']
       if: 'ctx.event.action.startsWith("okta.assignment") || ctx.event.action.startsWith("okta.") && ctx.event.action.endsWith(".update")'
   - set:
+      tag: set_event_type_97b6bd40
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "okta.sync" || ctx.event.action == "okta.access_list.sync"'
   # Events related to port forwarding.
   - set:
+      tag: set_event_category_a8304bba
       field: event.category
       value: ['network']
       if: 'ctx.event.action.startsWith("port")'
   - set:
+      tag: set_event_type_98cad574
       field: event.type
       value: ['start']
       if: 'ctx.event.action == "port"'
   # Events related to privilege tokens.
   - set:
+      tag: set_event_category_de8ab2c2
       field: event.category
       value: ['session', 'iam']
       if: 'ctx.event.action.startsWith("privilege_token.")'
   - set:
+      tag: set_event_type_2a474eae
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "privilege_token.create"'
   # Events related to recovery codes and tokens.
   - set:
+      tag: set_event_category_8112a893
       field: event.category
       value: ['session', 'iam']
       if: 'ctx.event.action.startsWith("recovery_") || ctx.event.action.startsWith("reset_password_token.")'
   - set:
+      tag: set_event_type_db30e203
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "recovery_code.generated" || ctx.event.action == "recovery_token.create" || ctx.event.action == "reset_password_token.create"'
   - set:
+      tag: set_event_type_0f498ac3
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "recovery_code.used"'
   # Events related to terminal resizing.
   - set:
+      tag: set_event_category_10bd9567
       field: event.category
       value: ['process']
       if: 'ctx.event.action == "resize"'
   - set:
+      tag: set_event_type_6d51bdbd
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "resize"'
   # Events related to roles.
   - set:
+      tag: set_event_category_c355dacf
       field: event.category
       value: ['iam']
       if: 'ctx.event.action.startsWith("role.")'
   - set:
+      tag: set_event_type_1d27e9fe
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "role.created"'
   - set:
+      tag: set_event_type_63e03ed7
       field: event.type
       value: ['deletion']
       if: 'ctx.event.action == "role.deleted"'
   - set:
+      tag: set_event_type_8a7fb2b1
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "role.updated"'
   # Events related to SAML connectors.
   - set:
+      tag: set_event_category_eaecf7a7
       field: event.category
       value: ['authentication', 'iam']
       if: 'ctx.event.action.startsWith("saml.")'
   - set:
+      tag: set_event_type_6a8774ec
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "saml.created" || ctx.event.action == "saml.idp.service.provider.create"'
   - set:
+      tag: set_event_type_00fd9856
       field: event.type
       value: ['deletion']
       if: 'ctx.event.action == "saml.deleted" || ctx.event.action == "saml.idp.service.provider.delete" || ctx.event.action == "saml.idp.service.provider.delete_all"'
   - set:
+      tag: set_event_type_e6952806
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "saml.updated" || ctx.event.action == "saml.idp.service.provider.update"'
   - set:
+      tag: set_event_type_672b9ecf
       field: event.type
       value: ['info']
       if: 'ctx.event.action == "saml.idp.auth"'
   # Events related to SCP file transfers.
   - set:
+      tag: set_event_category_a2d6d702
       field: event.category
       value: ['file']
       if: 'ctx.event.action.startsWith("scp.")'
   # Events related to security reports.
   - set:
+      tag: set_event_category_ee54c7b0
       field: event.category
       value: ['threat']
       if: 'ctx.event.action.startsWith("secreports.")'
   - set:
+      tag: set_event_type_47a6f1e9
       field: event.type
       value: ['indicator']
       if: 'ctx.event.action == "secreports.audit.query.run" || ctx.event.action == "secreports.report.run"'
   # Events related to sessions.
   - set:
+      tag: set_event_category_62caff83
       field: event.category
       value: ['session']
       if: 'ctx.event.action.startsWith("session.")'
   - set:
+      tag: set_event_type_e121b3f4
       field: event.type
       value: ['start']
       if: 'ctx.event.action == "session.start"'
   - set:
+      tag: set_event_type_fdc7bec0
       field: event.type
       value: ['end']
       if: 'ctx.event.action == "session.end"'
   - set:
+      tag: set_event_type_6fa98d30
       field: event.type
       value: ['info']
       if: 'ctx.event.action == "session.connect" || ctx.event.action == "session.command" || ctx.event.action == "session.data" || ctx.event.action == "session.disk" || ctx.event.action == "session.join" || ctx.event.action == "session.network" || ctx.event.action == "session.leave" || ctx.event.action == "session.process_exit" || ctx.event.action == "session.recording.access" || ctx.event.action == "session.upload"'
   - set:
+      tag: set_event_type_8d13998f
       field: event.type
       value: ['denied']
       if: 'ctx.event.action == "session.rejected"'
   # Events related to session recording configuration.
   - set:
+      tag: set_event_category_615748e7
       field: event.category
       value: ['configuration']
       if: 'ctx.event.action.startsWith("session_recording_config.")'
   - set:
+      tag: set_event_type_7033d58e
       field: event.type
       value: ['change']
       if: 'ctx.event.action == "session_recording_config.update"'
   # Events related to SFTP file transfers.
   - set:
+      tag: set_event_category_4bb169c2
       field: event.category
       value: ['file', 'network']
       if: 'ctx.event.action.startsWith("sftp")'
   # Events related to SPIFFE SVID issuance.
   - set:
+      tag: set_event_category_b57d4613
       field: event.category
       value: ['iam', 'process']
       if: 'ctx.event.action.startsWith("spiffe.")'
   - set:
+      tag: set_event_type_d705131b
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "spiffe.svid.issued"'
   # Events related to SSM command execution.
   - set:
+      tag: set_event_category_a23103d9
       field: event.category
       value: ['process']
       if: 'ctx.event.action.startsWith("ssm.")'
   - set:
+      tag: set_event_type_8de6ae98
       field: event.type
       value: ['start']
       if: 'ctx.event.action == "ssm.run"'
   # Events related to subsystem requests.
   - set:
+      tag: set_event_category_f6f05187
       field: event.category
       value: ['process']
       if: 'ctx.event.action == "subsystem"'
   - set:
+      tag: set_event_type_43997a6a
       field: event.type
       value: ['start']
       if: 'ctx.event.action == "subsystem"'
   # Events related to trusted clusters.
   - set:
+      tag: set_event_category_345bf154
       field: event.category
       value: ['network', 'host']
       if: 'ctx.event.action.startsWith("trusted_cluster.")'
   - set:
+      tag: set_event_type_0bc912a9
       field: event.type
       value: ['creation']
       if: 'ctx.event.action == "trusted_cluster.create" || ctx.event.action == "trusted_cluster_token.create"'
   - set:
+      tag: set_event_type_18cae041
       field: event.type
       value: ['deletion']
       if: 'ctx.event.action == "trusted_cluster.delete"'
   # Events related to users.
   - set:
+      tag: set_event_category_d79e762a
       field: event.category
       value: ['iam']
       if: 'ctx.event.action.startsWith("user.") && ctx.event.action != "user.login"'
   - set:
+      tag: set_event_category_b8e72b4b
       field: event.category
       value: ['authentication']
       if: 'ctx.event.action == "user.login"'
   - set:
+      tag: set_event_type_efd91888
       field: event.type
       value: ['creation', 'user']
       if: 'ctx.event.action == "user.create"'
   - set:
+      tag: set_event_type_d9e79781
       field: event.type
       value: ['deletion', 'user']
       if: 'ctx.event.action == "user.delete"'
   - set:
+      tag: set_event_type_c45efef5
       field: event.type
       value: ['change', 'user']
       if: 'ctx.event.action == "user.password_change" || ctx.event.action == "user.update"'
   - set:
+      tag: set_event_type_5ab697df
       field: event.type
       value: ['start']
       if: 'ctx.event.action == "user.login"'
   # Events related to Windows desktop sessions.
   - set:
+      tag: set_event_category_2a627333
       field: event.category
       value: ['host', 'session']
       if: 'ctx.event.action.startsWith("windows.")'
   - set:
+      tag: set_event_type_553cb9b3
       field: event.type
       value: ['start']
       if: 'ctx.event.action == "windows.desktop.session.start"'
   - set:
+      tag: set_event_type_ca53358c
       field: event.type
       value: ['end']
       if: 'ctx.event.action == "windows.desktop.session.end"'
   # Events related to X11 forwarding.
   - set:
+      tag: set_event_category_11c2bb0e
       field: event.category
       value: ['network']
       if: 'ctx.event.action == "x11-forward"'
   - set:
+      tag: set_event_type_38972902
       field: event.type
       value: ['start']
       if: 'ctx.event.action == "x11-forward"'

@@ -2,84 +2,103 @@
 description: Pipeline for processing alert logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_39295792
       field: event.kind
       value: alert
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - append:
+      tag: append_event_category_5a2092f1
       field: event.category
       value: threat
       allow_duplicates: false
   - append:
+      tag: append_event_type_46bf75e8
       field: event.type
       value: indicator
       allow_duplicates: false
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - fingerprint:
+      tag: fingerprint_to_id_29432682
       fields:
         - json.id
       target_field: _id
       ignore_missing: true
   - date:
+      tag: date_json_created_date_7609c938
       field: json.created_date
       formats:
         - ISO8601
   - date:
+      tag: date_json_updated_date_to_blacklens_alert_updated_date_49829d1e
       field: json.updated_date
       target_field: blacklens.alert.updated_date
       formats:
         - ISO8601
   - convert:
+      tag: convert_json_id_to_event_id_7fbde318
       field: json.id
       target_field: event.id
       type: string
       ignore_missing: true
   - rename:
+      tag: rename_json_id_to_blacklens_alert_id_a4fe1c5b
       field: json.id
       target_field: blacklens.alert.id
       ignore_missing: true
   - rename:
+      tag: rename_json_severity_to_blacklens_alert_severity_1dc6d87f
       field: json.severity
       target_field: blacklens.alert.severity
       ignore_missing: true
   - rename:
+      tag: rename_json_status_to_blacklens_alert_status_2ac288e7
       field: json.status
       target_field: blacklens.alert.status
       ignore_missing: true
   - rename:
+      tag: rename_json_analysis_to_blacklens_alert_analysis_e09172a7
       field: json.analysis
       target_field: blacklens.alert.analysis
       ignore_missing: true
   - rename:
+      tag: rename_json_category_to_blacklens_alert_category_c317f8ab
       field: json.category
       target_field: blacklens.alert.category
       ignore_missing: true
   - rename:
+      tag: rename_json_name_to_blacklens_alert_name_5a4668bf
       field: json.name
       target_field: blacklens.alert.name
       ignore_missing: true
   - rename:
+      tag: rename_json_activities_to_blacklens_alert_activities_f00791bb
       field: json.activities
       target_field: blacklens.alert.activities
       ignore_missing: true
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
   - script:
+      tag: script_drops_null_empty_values_recursively_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -98,12 +117,15 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

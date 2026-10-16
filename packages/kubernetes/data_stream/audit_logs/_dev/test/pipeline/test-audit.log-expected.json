@@ -177,7 +177,7 @@
             "event": {
                 "action": "get",
                 "kind": "event",
-                "original": "{\"kind\":\"Event\",\"apiVersion\":\"audit.k8s.io/v1\",\"level\":\"Metadata\",\"auditID\":\"abcde12345\",\"stage\":\"ResponseComplete\",\"requestURI\":\"/apis/coordination.k8s.io/v1/namespaces/kube-system/leases/elastic-agent-cluster-test\",\"verb\":\"get\",\"user\":{\"username\":\"system:serviceaccount:kube-system:elastic-agent\",\"uid\":\"12345678\",\"groups\":[\"system:serviceaccounts\",\"system:serviceaccounts:kube-system\",\"system:authenticated\"],\"extra\":{}},\"sourceIPs\":[\"67.43.156.1\"],\"userAgent\":\"elastic-agent/v0.0.0 (linux/amd64) kubernetes/$Format\",\"objectRef\":{\"resource\":\"leases\",\"namespace\":\"kube-system\",\"name\":\"elastic-agent-cluster-test\",\"apiGroup\":\"coordination.k8s.io\",\"apiVersion\":\"v1\"},\"responseStatus\":{\"metadata\":{},\"code\":200},\"requestReceivedTimestamp\":\"2025-07-16T10:12:56.525137Z\",\"stageTimestamp\":\"2025-07-16T10:12:56.563177Z\",\"annotations\":{\"authorization.k8s.io/decision\":\"allow\",\"authorization.k8s.io/reason\":\"RBAC: allowed by RoleBinding \\\"elastic-agent/kube-system\\\" of Role \\\"elastic-agent\\\" to ServiceAccount \\\"elastic-agent/kube-system\\\"\"}}",
+                "original": "{\"kind\":\"Event\",\"apiVersion\":\"audit.k8s.io/v1\",\"level\":\"Metadata\",\"auditID\":\"abcde12345\",\"stage\":\"ResponseComplete\",\"requestURI\":\"/apis/coordination.k8s.io/v1/namespaces/kube-system/leases/elastic-agent-cluster-test\",\"verb\":\"get\",\"user\":{\"username\":\"system:serviceaccount:kube-system:elastic-agent\",\"uid\":\"12345678\",\"groups\":[\"system:serviceaccounts\",\"system:serviceaccounts:kube-system\",\"system:authenticated\"],\"extra\": { \"authentication.kubernetes.io/credential-id\": [\"JTI=da6c51f4-1075-4661-aaa6-b74caadf6d48\"] }},\"impersonatedUser\":{\"username\":\"admin@example.com\",\"groups\":[\"system:masters\",\"system:authenticated\"],\"extra\":{\"authentication.kubernetes.io/credential-id\":[\"JTI=4025f98d-98bf-4501-af0d-4c75f36a17f6\"]}},\"sourceIPs\":[\"67.43.156.1\"],\"userAgent\":\"elastic-agent/v0.0.0 (linux/amd64) kubernetes/$Format\",\"objectRef\":{\"resource\":\"leases\",\"namespace\":\"kube-system\",\"name\":\"elastic-agent-cluster-test\",\"apiGroup\":\"coordination.k8s.io\",\"apiVersion\":\"v1\"},\"responseStatus\":{\"metadata\":{},\"code\":200},\"requestReceivedTimestamp\":\"2025-07-16T10:12:56.525137Z\",\"stageTimestamp\":\"2025-07-16T10:12:56.563177Z\",\"annotations\":{\"authorization.k8s.io/decision\":\"allow\",\"authorization.k8s.io/reason\":\"RBAC: allowed by RoleBinding \\\"elastic-agent/kube-system\\\" of Role \\\"elastic-agent\\\" to ServiceAccount \\\"elastic-agent/kube-system\\\"\"}}",
                 "outcome": "success"
             },
             "kubernetes": {
@@ -188,6 +188,18 @@
                     },
                     "apiVersion": "audit.k8s.io/v1",
                     "auditID": "abcde12345",
+                    "impersonatedUser": {
+                        "extra": {
+                            "authentication.kubernetes.io/credential-id": [
+                                "JTI=4025f98d-98bf-4501-af0d-4c75f36a17f6"
+                            ]
+                        },
+                        "groups": [
+                            "system:masters",
+                            "system:authenticated"
+                        ],
+                        "username": "admin@example.com"
+                    },
                     "kind": "Event",
                     "level": "Metadata",
                     "objectRef": {
@@ -208,6 +220,11 @@
                     "stage": "ResponseComplete",
                     "stageTimestamp": "2025-07-16T10:12:56.563177Z",
                     "user": {
+                        "extra": {
+                            "authentication.kubernetes.io/credential-id": [
+                                "JTI=da6c51f4-1075-4661-aaa6-b74caadf6d48"
+                            ]
+                        },
                         "groups": [
                             "system:serviceaccounts",
                             "system:serviceaccounts:kube-system",
