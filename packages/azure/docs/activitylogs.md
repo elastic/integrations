@@ -120,17 +120,33 @@ An example event for `activitylogs` looks as following:
             "result_signature": "Succeeded.",
             "result_type": "Success"
         },
-        "correlation_id": "876190b4-5b99-4a39-b725-4f5644911cf0",
         "resource": {
-            "group": "OBS-TEST",
-            "id": "/SUBSCRIPTIONS/3f041b6d-fc31-41d8-8ff6-e5f16e6747ff/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.RESOURCES/DEPLOYMENTS/NOMARKETPLACE",
             "name": "NOMARKETPLACE",
+            "id": "/SUBSCRIPTIONS/3f041b6d-fc31-41d8-8ff6-e5f16e6747ff/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.RESOURCES/DEPLOYMENTS/NOMARKETPLACE",
+            "group": "OBS-TEST",
             "provider": "MICROSOFT.RESOURCES/DEPLOYMENTS"
         },
-        "subscription_id": "3f041b6d-fc31-41d8-8ff6-e5f16e6747ff"
+        "subscription": {
+            "id": "3f041b6d-fc31-41d8-8ff6-e5f16e6747ff"
+        },
+        "subscription_id": "3f041b6d-fc31-41d8-8ff6-e5f16e6747ff",
+        "resource_group": {
+            "name": "OBS-TEST"
+        },
+        "resource_provider": {
+            "namespace": "MICROSOFT.RESOURCES/DEPLOYMENTS"
+        },
+        "correlation": {
+            "id": "876190b4-5b99-4a39-b725-4f5644911cf0"
+        },
+        "correlation_id": "876190b4-5b99-4a39-b725-4f5644911cf0"
     },
     "cloud": {
-        "provider": "azure"
+        "provider": "azure",
+        "resource_id": "/SUBSCRIPTIONS/3f041b6d-fc31-41d8-8ff6-e5f16e6747ff/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.RESOURCES/DEPLOYMENTS/NOMARKETPLACE",
+        "account": {
+            "id": "3f041b6d-fc31-41d8-8ff6-e5f16e6747ff"
+        }
     },
     "data_stream": {
         "dataset": "azure.activitylogs",
@@ -186,17 +202,23 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.activitylogs.properties | Event properties | flattened |
 | azure.activitylogs.result_signature | Result signature | keyword |
 | azure.activitylogs.result_type | Result type | keyword |
-| azure.activitylogs.tenant_id | Tenant ID | keyword |
-| azure.correlation_id | Correlation ID | keyword |
-| azure.resource.authorization_rule | Authorization rule | keyword |
-| azure.resource.group | Resource group | keyword |
-| azure.resource.id | Resource ID | keyword |
-| azure.resource.name | Name | keyword |
-| azure.resource.namespace | Resource type/namespace | keyword |
-| azure.resource.provider | Resource type/namespace | keyword |
-| azure.subscription_id | Azure subscription ID | keyword |
-| azure.tenant_id | tenant ID | keyword |
+| azure.activitylogs.tenant_id | Legacy flat name for the tenant ID, still populated. Prefer `azure.tenant.id`. | keyword |
+| azure.correlation.id | Correlation ID for grouping related operations. | keyword |
+| azure.correlation_id | Legacy flat name for the correlation ID, still populated. Prefer `azure.correlation.id`. | keyword |
+| azure.resource.authorization_rule | Authorization rule. | keyword |
+| azure.resource.group | Legacy name for the resource group, still populated. Prefer `azure.resource_group.name`. | keyword |
+| azure.resource.id | Legacy name for the ARM resource ID, still populated. Prefer `cloud.resource_id`. | keyword |
+| azure.resource.name | Resource name. | keyword |
+| azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
+| azure.resource.provider | Legacy name for the resource provider namespace, still populated. Prefer `azure.resource_provider.namespace`. | keyword |
+| azure.resource_group.name | Azure resource group name. | keyword |
+| azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
+| azure.subscription.id | Azure subscription ID. | keyword |
+| azure.subscription_id | Legacy flat name for the subscription ID, still populated. Prefer `azure.subscription.id`. | keyword |
+| azure.tenant.id | Azure tenant ID. | keyword |
+| azure.tenant_id | Legacy flat name for the tenant ID, still populated. Prefer `azure.tenant.id`. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
