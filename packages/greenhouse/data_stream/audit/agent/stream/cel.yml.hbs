@@ -16,8 +16,10 @@ resource.url: {{url}}
 state:
   initial_interval: {{initial_interval}}
   token_url: {{token_url}}
+  harvest_url: {{harvest_url}}
   client_id: {{client_id}}
   client_secret: {{client_secret}}
+  enrich_rejections: {{enrich_rejections}}
 {{#if user_id}}
   user_id: "{{user_id}}"
 {{/if}}
@@ -51,6 +53,46 @@ Endpoints:
     - Response: {paging: {pit_id, next_search_after}, results: [...]}
     - next_search_after is null on the last page.
 
+Rejection enrichment (optional, enrich_rejections):
+
+  When enabled, rejection events are enriched with data from the Harvest
+  API in a collect → fetch → apply pattern:
+
+  1. Collect: identify "Candidate or Prospect rejected" action events and
+     correlate each to its sibling "RejectionDetails" audit event via
+     request.id. Extract the application_id from unambiguous (1:1) matches.
+     The API does not document result ordering, so a sibling may land on
+     any page of the window. Correlation is therefore resolved only once the
+     whole window has been paged (has_more == false): rejection actions are
+     held in the cursor (pending_actions) while pages remain, and the
+     {request.id, application_id} pairs of every RejectionDetails seen in
+     the window are accumulated (rd_win). At window end an action is still
+     held for one more poll when it has no sibling yet, or when it is so
+     recent that its request may still be writing audit events (a poll can
+     land mid-request, or mid bulk-rejection, and see only some siblings).
+     An action is never held past the end of the following window. All
+     other events are emitted immediately.
+
+  2. Fetch (batched): rejection_details are retrieved for all matched
+     application_ids in chunks of 50 (the Harvest cap on application_ids);
+     notes are batch-fetched the same way (ids cap of 50). A failed chunk
+     only marks its own ids as failed. Rejection reasons require individual
+     /{id} calls (the list endpoint is broken) but are de-duplicated so each
+     unique reason is fetched only once.
+
+  3. Apply: each rejection event is enriched from pre-built lookup maps.
+     Events with 0 or >1 RejectionDetails matches get an error instead.
+
+  Endpoints used:
+    GET /v3/rejection_details?application_ids=<comma-separated>
+    GET /v3/rejection_reasons/{id}
+    GET /v3/notes?ids=<comma-separated>
+
+  Required scopes on the OAuth credential:
+    harvest:rejection_details:list
+    harvest:rejection_reasons:show
+    harvest:notes:list
+
 State:
   auth_token — shallow-replaced object holding token and expires.
     Cleared to {} on 401 so the fields are absent, not sentinel-valued.
@@ -62,31 +104,44 @@ Cursor:
     Cleared when the window completes; preserved when an expired PIT
     forces a retry of the same window.
   pit_id, search_after — pagination state; cleared between poll intervals.
+  rd_win — compact RejectionDetails pairs accumulated over the pages of the
+    current window. Reset when the window completes or a PIT-expiry retry
+    restarts it.
+  rd_carry — pairs from the previous window whose request.id matched no
+    rejection action in it (their action may arrive in this window).
+  pending_actions — [{e: event, w: windows_held}] rejection actions awaiting
+    resolution. Entries with w == 0 belong to the current window and are
+    dropped on a PIT-expiry retry (the retry re-reads them); w == 1 entries
+    came from the previous window and are always resolved at this window's
+    end. Duplicates are collapsed by the ingest pipeline fingerprint.
 --}}
 program: |-
-  state.with(
+  // 1. Resolve auth token (sequential state pipeline — avoids nesting the event fetch inside the auth block).
+  (
     (
-      !state.?auth_token.token.hasValue() || !state.?auth_token.expires.hasValue() ||
-      timestamp(state.auth_token.expires) < now-duration("30s")
-    ).as(need_token,
-      need_token ?
-        request("POST", state.token_url).with(
-          {
-            "Header": {
-              "Content-Type": ["application/x-www-form-urlencoded"],
-              "Authorization": ["Basic " + base64(state.client_id + ":" + state.client_secret)],
-            },
-            "Body": bytes(
-              {
-                "grant_type": ["client_credentials"],
-                ?"sub": state.?user_id.optFlatMap(v,
-                  (v != "") ? optional.of([v]) : optional.none()
-                ),
-              }.format_query()
-            ),
-          }
-        ).do_request().as(resp,
-          (resp.StatusCode == 200) ?
+      state.?auth_token.token.hasValue() &&
+      state.?auth_token.expires.optMap(expires, timestamp(expires) >= now + duration("30s")).orValue(false)
+    ) ?
+      state
+    :
+      request("POST", state.token_url).with(
+        {
+          "Header": {
+            "Content-Type": ["application/x-www-form-urlencoded"],
+            "Authorization": ["Basic " + base64(state.client_id + ":" + state.client_secret)],
+          },
+          "Body": bytes(
+            {
+              "grant_type": ["client_credentials"],
+              ?"sub": state.?user_id.optFlatMap(v,
+                (v != "") ? optional.of([v]) : optional.none()
+              ),
+            }.format_query()
+          ),
+        }
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          state.with(
             resp.Body.decode_json().as(tok,
               {
                 "auth_token": {
@@ -95,54 +150,50 @@ program: |-
                 },
               }
             )
-          :
+          )
+        :
+          state.with(
             {
               "events": {
                 "error": {
                   "code": string(resp.StatusCode),
                   "id": string(resp.Status),
                   "message": "POST " + state.token_url + ": " + (
-                    size(resp.Body) != 0 ?
+                    (size(resp.Body) != 0) ?
                       string(resp.Body)
                     :
-                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
                   ),
                 },
               },
               "want_more": false,
             }
-        )
-      :
-        {
-          "auth_token": state.auth_token,
-        }
-    ).as(auth,
-      has(auth.events) ?
-        auth
-      :
-        (
-          (state.?cursor.window_start_time.orValue("") != "") ?
-            state.cursor.window_start_time
-          :
-            (now - duration(state.initial_interval)).format(time_layout.RFC3339)
-        ).as(window_start_time,
-          (
-            // Query params must stay consistent across all pages in a session
-            // (per API docs). after_time is fixed to window_start_time for the
-            // entire pagination window, including retries after PIT expiry.
-            state.url.trim_right("/") + "/events?" + {
-              "paging": ["true"],
-              "after_time": [window_start_time],
-              ?"performer_ids": state.?performer_ids.optFlatMap(v,
-                (v != "") ? optional.of([v]) : optional.none()
-              ),
-              ?"event_types": state.?event_types.optFlatMap(v,
-                (v != "") ? optional.of([v]) : optional.none()
-              ),
-            }.format_query()
-          ).as(url,
-            {
-              "Authorization": ["Bearer " + auth.auth_token.token],
+          )
+      )
+  ).as(state,
+    // Exit early if auth failed.
+    has(state.events) ? state :
+    // 2. Determine the start of the current collection window.
+    state.?cursor.window_start_time.orValue(
+      (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+    ).as(window_start_time,
+      state.with(
+        request(
+          "GET",
+          state.url.trim_right("/") + "/events?" + {
+            "paging": ["true"],
+            "after_time": [window_start_time],
+            ?"performer_ids": state.?performer_ids.optFlatMap(v,
+              (v != "") ? optional.of([v]) : optional.none()
+            ),
+            ?"event_types": state.?event_types.optFlatMap(v,
+              (v != "") ? optional.of([v]) : optional.none()
+            ),
+          }.format_query()
+        ).with(
+          {
+            "Header": {
+              "Authorization": ["Bearer " + state.auth_token.token],
               "Size": [string(int(state.batch_size))],
               ?"Pit-Id": state.?cursor.pit_id.optFlatMap(v,
                 (v != "") ? optional.of([v]) : optional.none()
@@ -150,90 +201,348 @@ program: |-
               ?"Search-After": state.?cursor.search_after.optFlatMap(v,
                 (v != "") ? optional.of([v]) : optional.none()
               ),
-            }.as(headers,
-              request("GET", url).with({"Header": headers}).do_request().as(resp,
-                (resp.StatusCode == 200) ?
-                  resp.Body.decode_json().as(body,
-                    body.?results.orValue([]).as(results,
-                      (body.?paging.next_search_after.orValue(null) != null).as(has_more,
-                        (size(results) > 0).as(has_results,
-                          (has_results ? body.results[0].event_time : "").as(page_newest_event_time,
-                            (state.?cursor.max_event_time.orValue("") != "").as(has_max_event_time,
-                              (has_results ?
-                                (has_max_event_time && timestamp(state.cursor.max_event_time) > timestamp(page_newest_event_time)).as(use_existing,
-                                  use_existing ? state.cursor.max_event_time : page_newest_event_time
+            },
+          }
+        ).do_request().as(resp,
+          (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              // 3. Collect: page metadata, the RejectionDetails seen on this page, and the
+              //    rejection action events that need correlating.
+              {
+                "results": body.?results.orValue([]),
+                "has_more": body.?paging.next_search_after.orValue(null) != null,
+                "harvest_hdr": {"Header": {"Authorization": ["Bearer " + state.auth_token.token]}},
+                // Newest event_time seen so far in the window. Result ordering is undocumented,
+                // so take the maximum over the whole page rather than results[0].
+                "next_max": state.?cursor.max_event_time.orValue("").as(prev_max,
+                  body.?results.orValue([]).filter(e, type(e.?event_time.orValue(null)) == string).map(e, timestamp(e.event_time)).as(ts,
+                    (ts.size() > 0 && (prev_max == "" || ts.max() > timestamp(prev_max))) ?
+                      ts.max().format(time_layout.RFC3339Nano)
+                    :
+                      prev_max
+                  )
+                ),
+                // Compact {request.id, application_id} pairs for the RejectionDetails on this page.
+                "rd_now": !state.enrich_rejections ? [] :
+                  body.?results.orValue([]).filter(rd_e,
+                    rd_e.?event.target_type.orValue("") == "RejectionDetails" &&
+                    rd_e.?event.type.orValue("") == "data_change_create" &&
+                    type(rd_e.?event.meta.application_id.orValue(null)) in [int, double, string] &&
+                    rd_e.?request.id.orValue("") != ""
+                  ).map(rd_e, rd_e.event.meta.application_id.as(a,
+                    {"r": rd_e.request.id, "a": (type(a) == string) ? a : string(int(a))}
+                  )),
+                // Rejection action events on this page (empty when enrichment is disabled).
+                "acts_now": body.?results.orValue([]).filter(e,
+                  state.enrich_rejections && e.?event.type.orValue("") == "action" &&
+                  e.?event.target_type.orValue("") == "Candidate or Prospect rejected"
+                ),
+                // Everything else is emitted unchanged. If enrichment was switched off while
+                // actions were held, release them unchanged too.
+                "passthrough": body.?results.orValue([]).filter(e,
+                  !(
+                    state.enrich_rejections && e.?event.type.orValue("") == "action" &&
+                    e.?event.target_type.orValue("") == "Candidate or Prospect rejected"
+                  )
+                ) + (state.enrich_rejections ? [] : state.?cursor.pending_actions.orValue([]).map(p, p.e)),
+                // Rejection actions held from earlier evaluations, as {e: event, w: windows_held}.
+                "held": state.enrich_rejections ? state.?cursor.pending_actions.orValue([]) : [],
+              }.as(pg,
+                // 4. Correlate against every RejectionDetails seen in this window so far, plus the
+                //    unconsumed pairs carried over from the previous window. Nothing is resolved while
+                //    pages remain. At window end an action is resolved unless it is being seen for the
+                //    first time and either has no sibling yet or is recent enough that its request may
+                //    still be writing audit events; such actions are held for exactly one more window.
+                (state.?cursor.rd_carry.orValue([]) + state.?cursor.rd_win.orValue([]) + pg.rd_now).as(rd_all,
+                  (pg.held + pg.acts_now.map(e, {"e": e, "w": 0})).map(p,
+                    // Unique application IDs sharing this action's request.id.
+                    rd_all.filter(rd,
+                      p.e.?request.id.orValue("") != "" && rd.r == p.e.?request.id.orValue("")
+                    ).map(rd, rd.a).as(ids, ids.zip(ids).keys()).as(m,
+                      {
+                        "e": p.e,
+                        "w": p.w,
+                        "n": m.size(),
+                        "app_id": (m.size() == 1) ? m[0] : "",
+                        "ambiguous_ids": (m.size() > 1) ? m : [],
+                        "hold": pg.has_more || (
+                          p.w == 0 && (
+                            m.size() == 0 ||
+                            (m.size() == 1 && p.e.?event_time.optMap(t, now - timestamp(t) < duration("2m")).orValue(false))
+                          )
+                        ),
+                      }
+                    )
+                  ).as(corr,
+                    {
+                      "resolve": corr.filter(c, !c.hold),
+                      // Held entries advance to w=1 when the window completes.
+                      "hold": corr.filter(c, c.hold).map(c, {"e": c.e, "w": pg.has_more ? c.w : 1}),
+                      // This window's pairs not consumed by a resolved action: their action may be in the
+                      // next window, or is held above and must still see them next time. Pairs carried in
+                      // from the previous window are not carried again, which bounds the cursor size.
+                      "rd_carry": corr.filter(c, !c.hold).map(c, c.e.?request.id.orValue("")).as(rids,
+                        (state.?cursor.rd_win.orValue([]) + pg.rd_now).filter(rd, !(rd.r in rids))
+                      ),
+                    }.as(cx,
+                      // 5. Fetch: batch-retrieve rejection_details for all unambiguous matches. Harvest caps
+                      //    application_ids at 50 per request, so the ids are fetched in chunks of 50; a failed
+                      //    chunk only marks its own ids as failed ({a: application_id, s: status}).
+                      cx.resolve.map(c, c.n == 1, c.app_id).as(ids0, ids0.zip(ids0).keys()).as(ids,
+                        ids.transformList(i, v, i % 50 == 0, i / 50).map(k, ids.transformList(i, v, i / 50 == k, v)).map(chunk,
+                          request(
+                            "GET",
+                            state.harvest_url.trim_right("/") + "/v3/rejection_details?application_ids=" + chunk.join(",")
+                          ).with(pg.harvest_hdr).do_request().as(rd_resp,
+                            (rd_resp.StatusCode == 200) ?
+                              {"data": rd_resp.Body.decode_json(), "failed": []}
+                            :
+                              {"data": [], "failed": chunk.map(a, {"a": a, "s": rd_resp.StatusCode})}
+                          )
+                        )
+                      ).as(parts,
+                        {"data": parts.map(p, p.data).flatten(), "failed": parts.map(p, p.failed).flatten()}
+                      ).as(rd_fetch,
+                        // Build lookup maps keyed by application_id, rejection reason id, and note id.
+                        {
+                          // Keyed by application_id. Harvest may return several records for one
+                          // application (re-rejections); keep the last, since a duplicate key would
+                          // abort the whole evaluation.
+                          "rd_map": rd_fetch.data.filter(rd, rd.?application_id.orValue(null) != null).as(rds,
+                            rds.map(rd, string(int(rd.application_id))).as(ids, ids.zip(ids).keys()).transformMapEntry(_, id,
+                              {id: rds.filter(rd, string(int(rd.application_id)) == id).as(l, l[l.size() - 1])}
+                            )
+                          ),
+                          "reason_map": rd_fetch.data.map(rd, rd.?rejection_reason_id.orValue(null) != null, string(int(rd.rejection_reason_id))).as(rr_ids,
+                            // Deduplicate: zip with self produces {id: id} map; keys() extracts the unique ids.
+                            rr_ids.zip(rr_ids).keys()
+                          ).as(unique_rr_ids,
+                            unique_rr_ids.size() > 0 ?
+                              unique_rr_ids.map(id,
+                                request(
+                                  "GET",
+                                  state.harvest_url.trim_right("/") + "/v3/rejection_reasons/" + id
+                                ).with(pg.harvest_hdr).do_request().as(rr_resp,
+                                  (rr_resp.StatusCode == 200) ?
+                                    {"id": id, "val": rr_resp.Body.decode_json()}
+                                  :
+                                    {"id": id, "error": "rejection_reason fetch failed: HTTP " + string(rr_resp.StatusCode)}
                                 )
-                              :
-                                (has_max_event_time ? state.cursor.max_event_time : "")
-                              ).as(next_max_event_time,
-                                {
-                                  "auth_token": auth.auth_token,
-                                  "events": results.map(e, {"message": e.encode_json()}),
-                                  "cursor": {
-                                    // Keep window_start_time fixed until the final
-                                    // page succeeds so the whole window can be
-                                    // retried safely if the PIT expires.
-                                    "window_start_time": has_more ?
-                                      window_start_time
-                                    :
-                                      (next_max_event_time != "") ?
-                                        next_max_event_time
-                                      :
-                                        window_start_time,
-                                    "max_event_time": has_more ? next_max_event_time : "",
-                                    "pit_id": has_more ? string(body.paging.pit_id) : "",
-                                    "search_after": has_more ? string(body.paging.next_search_after) : "",
-                                  },
-                                  "want_more": has_more,
-                                }
+                              ).transformMapEntry(_, r, {r.id: has(r.val) ? r.val : {"_error": r.error}})
+                            :
+                              {}
+                          ),
+                          // Notes are fetched in chunks of 50 ids (Harvest cap); a failed chunk only marks its
+                          // own note ids as failed. Result: {map: {note_id: body}, failed: [{a: note_id, s: status}]}.
+                          "notes": rd_fetch.data.map(rd, rd.?rejection_note_id.orValue(null) != null, string(int(rd.rejection_note_id))).as(ids0, ids0.zip(ids0).keys()).as(ids,
+                            ids.transformList(i, v, i % 50 == 0, i / 50).map(k, ids.transformList(i, v, i / 50 == k, v)).map(chunk,
+                              request(
+                                "GET",
+                                state.harvest_url.trim_right("/") + "/v3/notes?ids=" + chunk.join(",")
+                              ).with(pg.harvest_hdr).do_request().as(n_resp,
+                                (n_resp.StatusCode == 200) ?
+                                  {"notes": n_resp.Body.decode_json().filter(note, note.?id.orValue(null) != null), "failed": []}
+                                :
+                                  {"notes": [], "failed": chunk.map(a, {"a": a, "s": n_resp.StatusCode})}
                               )
                             )
-                          )
+                          ).as(parts,
+                            parts.map(p, p.notes).flatten().as(notes,
+                              {
+                                "map": notes.map(note, string(int(note.id))).as(ids, ids.zip(ids).keys()).transformMapEntry(_, id,
+                                  {id: notes.filter(note, string(int(note.id)) == id)[0].?body.orValue("")}
+                                ),
+                                "failed": parts.map(p, p.failed).flatten(),
+                              }
+                            )
+                          ),
+                        }.as(lookups,
+                          // 6. Apply: emit passthrough events unchanged and resolved rejections enriched.
+                          {
+                            "auth_token": state.auth_token,
+                            "events": pg.passthrough.map(e, {"message": e.encode_json()}) + cx.resolve.map(c,
+                              {
+                                "message": c.e.as(e,
+                                  (c.n == 0) ?
+                                    e.with(
+                                      {
+                                        "event": e.event.with(
+                                          {
+                                            "rejection": {
+                                              "error": "no RejectionDetails audit event found sharing request.id " + e.?request.id.orValue(""),
+                                            },
+                                          }
+                                        ),
+                                      }
+                                    )
+                                  : (c.n > 1) ?
+                                    e.with(
+                                      {
+                                        "event": e.event.with(
+                                          {
+                                            "rejection": {
+                                              "error": "ambiguous: " + string(c.n) + " RejectionDetails events share request.id " + e.?request.id.orValue("") + " (likely a bulk rejection)",
+                                              "ambiguous_application_ids": c.ambiguous_ids,
+                                            },
+                                          }
+                                        ),
+                                      }
+                                    )
+                                  :
+                                    c.app_id.as(app_id,
+                                      rd_fetch.failed.filter(f, f.a == app_id).as(fl,
+                                      (fl.size() > 0) ?
+                                        e.with(
+                                          {
+                                            "event": e.event.with(
+                                              {
+                                                "rejection": {
+                                                  "application_id": app_id,
+                                                  "error": "rejection_details fetch failed: " + string(fl[0].s),
+                                                },
+                                              }
+                                            ),
+                                          }
+                                        )
+                                      : !(app_id in lookups.rd_map) ?
+                                        // API returned 200 but no record for this application — flag as a diagnosable failure.
+                                        e.with(
+                                          {
+                                            "event": e.event.with(
+                                              {
+                                                "rejection": {
+                                                  "application_id": app_id,
+                                                  "error": "rejection_details returned 200 but contained no record for application_id " + app_id,
+                                                },
+                                              }
+                                            ),
+                                          }
+                                        )
+                                      :
+                                        lookups.rd_map[app_id].as(rd,
+                                          {
+                                            "reason": rd.?rejection_reason_id.orValue(null).as(rr_id,
+                                              (rr_id != null) ? lookups.reason_map[?string(int(rr_id))].orValue(null) : null
+                                            ),
+                                            "notes_text": rd.?rejection_note_id.orValue(null).as(rn_id,
+                                              (rn_id != null) ? lookups.notes.map[?string(int(rn_id))].orValue("") : ""
+                                            ),
+                                            // Non-empty when the notes chunk holding this note returned non-200.
+                                            "note_error": rd.?rejection_note_id.orValue(null).as(rn_id,
+                                              (rn_id != null) ?
+                                                lookups.notes.failed.filter(f, f.a == string(int(rn_id))).as(fl,
+                                                  (fl.size() > 0) ? "notes fetch failed: HTTP " + string(fl[0].s) : ""
+                                                )
+                                              : ""
+                                            ),
+                                          }.as(enrich,
+                                            e.with(
+                                              {
+                                                "event": e.event.with(
+                                                  {
+                                                    "rejection": {
+                                                      "application_id": app_id,
+                                                      ?"reason": (enrich.reason == null) ?
+                                                        // No rejection_reason_id on the record; try the legacy notes fallback.
+                                                        // Parenthesised: CEL only allows a nested ternary in the true branch when wrapped.
+                                                        (
+                                                          enrich.notes_text.startsWith("Reason: ") ?
+                                                            optional.of(
+                                                              {
+                                                                "name": enrich.notes_text.split("\n")[0].trim_prefix("Reason: "),
+                                                                "type": "",
+                                                              }
+                                                            )
+                                                          : optional.none()
+                                                        )
+                                                      : ("_error" in enrich.reason) ?
+                                                        // Reason lookup failed; surface the error so it's diagnosable.
+                                                        optional.of({"error": enrich.reason["_error"]})
+                                                      :
+                                                        optional.of(
+                                                          {
+                                                            ?"id": enrich.reason.?id.optMap(v, string(int(v))),
+                                                            "name": enrich.reason.?name.orValue(""),
+                                                            "type": enrich.reason.?type.?name.orValue(""),
+                                                          }
+                                                        ),
+                                                      ?"notes": (enrich.notes_text == "") ? optional.none() : optional.of(enrich.notes_text),
+                                                      ?"notes_error": (enrich.note_error == "") ? optional.none() : optional.of(enrich.note_error),
+                                                      ?"rejected_at": rd.?rejected_at,
+                                                    },
+                                                  }
+                                                ),
+                                              }
+                                            )
+                                          )
+                                        )
+                                      )
+                                    )
+                                ).encode_json(),
+                              }
+                            ),
+                            "cursor": {
+                              "window_start_time": (pg.has_more || pg.next_max == "") ?
+                                window_start_time
+                              :
+                                pg.next_max,
+                              "max_event_time": pg.has_more ? pg.next_max : "",
+                              "pit_id": pg.has_more ? string(body.paging.pit_id) : "",
+                              "search_after": pg.has_more ? string(body.paging.next_search_after) : "",
+                              "rd_win": pg.has_more ? state.?cursor.rd_win.orValue([]) + pg.rd_now : [],
+                              "rd_carry": pg.has_more ? state.?cursor.rd_carry.orValue([]) : cx.rd_carry,
+                              "pending_actions": cx.hold,
+                            },
+                            "want_more": pg.has_more,
+                          }
                         )
                       )
                     )
                   )
-                : (resp.StatusCode == 401) ?
-                  {
-                    "auth_token": {},
-                    "events": [],
-                    "want_more": false,
-                  }
-                : (resp.StatusCode == 429) ?
-                  {
-                    "events": [],
-                    "want_more": false,
-                  }
-                : string(resp.Body).contains("Pit_Id") ?
-                  // Pit_Id expired — clear pagination tokens but keep the
-                  // current window so the next poll retries the same range.
-                  // Emit a dummy event so the cursor reset is persisted.
-                  {
-                    "auth_token": auth.auth_token,
-                    "events": [{"retry": true}],
-                    "cursor": {
-                      "window_start_time": window_start_time,
-                      "max_event_time": state.?cursor.max_event_time.orValue(""),
-                      "pit_id": "",
-                      "search_after": "",
-                    },
-                    "want_more": false,
-                  }
-                :
-                  {
-                    "events": {
-                      "error": {
-                        "code": string(resp.StatusCode),
-                        "id": string(resp.Status),
-                        "message": "GET /events: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
-                      },
-                    },
-                    "want_more": false,
-                  }
+                )
               )
             )
-          )
+          : (resp.StatusCode == 401) ?
+            {
+              "auth_token": {},
+              "events": [],
+              "want_more": false,
+            }
+          : (resp.StatusCode == 429) ?
+            {
+              "events": [],
+              "want_more": false,
+            }
+          : string(resp.Body).contains("Pit_Id") ?
+            {
+              "auth_token": state.auth_token,
+              "events": [{"retry": true}],
+              "cursor": {
+                "window_start_time": window_start_time,
+                "max_event_time": state.?cursor.max_event_time.orValue(""),
+                "pit_id": "",
+                "search_after": "",
+                // The window is re-read from the start, so drop this window's accumulated pairs and
+                // held actions (they will be seen again); keep entries carried from the previous window.
+                "rd_win": [],
+                "rd_carry": state.?cursor.rd_carry.orValue([]),
+                "pending_actions": state.?cursor.pending_actions.orValue([]).filter(p, p.w > 0),
+              },
+              "want_more": false,
+            }
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET /events: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+                },
+              },
+              "want_more": false,
+            }
         )
+      )
     )
   )
 tags:
