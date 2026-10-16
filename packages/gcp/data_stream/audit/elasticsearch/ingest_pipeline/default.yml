@@ -98,6 +98,14 @@ processors:
       field: cloud.instance.id
       copy_from: json.resource.labels.instance_id
       if: ctx.json?.resource?.labels?.instance_id != null
+  # The numeric Compute Engine instance id is the host.id Cloud Asset Inventory uses, so the
+  # instance target resolves to the same host entity.
+  - set:
+      tag: set_host_target_id_f0cbbc2a
+      field: host.target.id
+      copy_from: json.resource.labels.instance_id
+      ignore_empty_value: true
+      if: ctx.json?.resource?.type == 'gce_instance' && ctx.json?.resource?.labels?.instance_id != null
   - set:
       tag: set_cloud_availability_zone_24b38f5a
       field: cloud.availability_zone
@@ -295,6 +303,57 @@ processors:
           }
         }
         
+        boolean isNumeric(String s) {
+          if (s.length() == 0) {
+            return false;
+          }
+          for (int i = 0; i < s.length(); i++) {
+            if ("0123456789".indexOf(s.substring(i, i + 1)) < 0) {
+              return false;
+            }
+          }
+          return true;
+        }
+
+        // Cloud Asset Inventory names assets //<service>/<resourceName>. Returns that name when
+        // the target is a concrete resource the inventory collects, or null when it cannot be
+        // determined (collections, wildcards, resources the inventory names differently).
+        // The audit serviceName is not always the asset's service, so the owning service is
+        // derived from the resource path where it differs.
+        String inventoryName(String service, String target) {
+          String[] p = target.splitOnToken('/');
+          int n = p.length;
+          if (n < 2) {
+            return null;
+          }
+          // Wildcard and placeholder segments do not identify a single asset.
+          for (String segment : p) {
+            if (segment.length() == 0 || segment.contains("*") || segment == "-") {
+              return null;
+            }
+          }
+          // Resource Manager assets are named by number, whichever service logged the event.
+          if (n == 2 && isNumeric(p[1]) && (p[0] == "projects" || p[0] == "organizations" || p[0] == "folders")) {
+            return "//cloudresourcemanager.googleapis.com/" + target;
+          }
+          if (service == "compute.googleapis.com" && p[0] == "projects") {
+            if (n == 6 && p[2] == "zones" && (p[4] == "instances" || p[4] == "disks")) {
+              return "//" + service + "/" + target;
+            }
+            if (n == 6 && p[2] == "regions" && (p[4] == "disks" || p[4] == "subnetworks" || p[4] == "forwardingRules" || p[4] == "backendServices")) {
+              return "//" + service + "/" + target;
+            }
+            if (n == 5 && p[2] == "global" && (p[3] == "networks" || p[3] == "firewalls" || p[3] == "forwardingRules" || p[3] == "backendServices")) {
+              return "//" + service + "/" + target;
+            }
+          }
+          // The inventory names buckets by bucket name alone.
+          if (service == "storage.googleapis.com" && n == 4 && p[0] == "projects" && p[1] == "_" && p[2] == "buckets") {
+            return "//" + service + "/" + p[3];
+          }
+          return null;
+        }
+
         // Classify actor entities
         if (ctx.actor?.entity?.id instanceof List) {
           for (def actorId : ctx.actor.entity.id) {
@@ -331,15 +390,22 @@ processors:
         }
         
         // Classify target entities
+        // The inventory name is written to entity.target.id to resolve to the inventory's
+        // generic entity.
+        String targetService = ctx.json?.protoPayload?.serviceName;
+        def hostTargetId = ctx.host?.target?.id;
+        boolean hasHostTargetId = hostTargetId != null && hostTargetId != "";
         if (ctx.target?.entity?.id instanceof List) {
           for (def targetId : ctx.target.entity.id) {
             if (targetId == null || targetId == "") {
               continue;
             }
             String target = targetId.toString();
+            String fullName = inventoryName(targetService, target);
+            boolean isInstance = target.contains("/instances");
             
             // Compute instances
-            if (target.contains("/instances")) {
+            if (isInstance) {
               addNestedValue(ctx, "host.target.entity.id", target);
             }
             // Service accounts: projects/*/serviceAccounts/* or email addresses ending with .gserviceaccount.com
@@ -378,8 +444,13 @@ processors:
               addNestedValue(ctx, "service.target.entity.id", target);
             }
             // Everything else (projects, zones, workloadIdentityPools, etc.)
-            else {
+            else if (fullName == null) {
               addNestedValue(ctx, "entity.target.id", target);
+            }
+
+            // An instance with a host.target.id resolves through it; otherwise fall back to the name.
+            if (fullName != null && (!isInstance || !hasHostTargetId)) {
+              addNestedValue(ctx, "entity.target.id", fullName);
             }
           }
         }
