@@ -139,11 +139,16 @@ For the kind, unit, and labels of each system metric, refer to [Kubernetes metri
 
 ## Panels that need kube state metrics
 
-Without kube state metrics, the following panels show 0, no rows, or N/A, and the listed table columns stay empty. All other panels work with system metrics alone.
+Without kube state metrics, the following panels show 0, no rows, or N/A, and the listed table columns and hex map colors stay empty. All other panels work with system metrics alone.
 
 | Dashboard | Panels | Table columns |
 |-----------|--------|---------------|
-| **[GCP OTel] GKE Overview** | Top 10 clusters by problem pods, Top 10 namespaces by problem pods, Top 10 namespaces by containers not ready, Deployments, StatefulSets, DaemonSets, Workloads short of desired, Deployment replicas over time, DaemonSet scheduling over time, Top 10 clusters by replica shortfall, List of workloads short of desired, Total pods, Running, Pending, Failed, Succeeded, Unknown, Pods by phase, Pods by phase over time, List of containers not ready | **Problem pods** in List of clusters. **Problem pods**, **Pods**, and **Deployments** in List of namespaces. **Phase** in List of pods. |
+| **[GCP OTel] GKE At a glance** | Deployments, StatefulSets, DaemonSets, Short of desired, Deployment replicas over time, DaemonSet scheduling over time, Top 10 clusters by replica shortfall, Total pods, Running, Pending, Failed, Succeeded, Unknown, Pods by phase | |
+| **[GCP OTel] GKE Clusters** | Top 10 clusters by problem pods, and the **Problem pods** color of the cluster map | **Problem pods** in List of clusters. |
+| **[GCP OTel] GKE Nodes** | None | |
+| **[GCP OTel] GKE Namespaces** | Top 10 namespaces by problem pods, Top 10 namespaces by containers not ready, and the **Problem pods** color of the namespace map | **Problem pods**, **Pods**, and **Deployments** in List of namespaces. |
+| **[GCP OTel] GKE Workloads** | Every panel, including the workload map and List of workloads | |
+| **[GCP OTel] GKE Pods** | Total pods, Running, Pending, Failed, Succeeded, Unknown, Pods by phase, Pods by phase over time, List of containers not ready, and the **Phase** color of the pod map | **Phase** in List of pods. |
 | **[GCP OTel] GKE Cluster Detail** | Deployments, List of workloads short of desired, Total pods, Running, Pending, Failed, Succeeded, Unknown | |
 | **[GCP OTel] GKE Node Detail** | None | |
 | **[GCP OTel] GKE Namespace Detail** | Pods by phase over time, Total pods, Running, Pending, Failed, Succeeded, Unknown, List of workloads | **Phase** in List of pods. |
@@ -151,12 +156,17 @@ Without kube state metrics, the following panels show 0, no rows, or N/A, and th
 
 ## Dashboards
 
-Start from the overview. Click a hexagon or a table row to open the matching detail dashboard, filtered to that cluster, node, namespace, or pod.
+Start from **[GCP OTel] GKE At a glance**. The tabs under the dashboard title open a list dashboard for each entity type. Click a hexagon or a table row to open the matching detail dashboard, filtered to that cluster, node, namespace, or pod. The tile at the top left of a detail dashboard returns to its list dashboard.
 
 | Dashboard | Description |
 |-----------|-------------|
-| **[GCP OTel] GKE Overview** | Fleet view of GKE clusters, in sections for clusters, nodes, namespaces, workload resources, and pods. Cluster health, CPU, memory, and ephemeral storage use against allocatable capacity and requests, log volume, a hexagon map of node saturation and readiness, node interruptions, startup time, and network traffic, top namespaces and pods by usage and restarts, pods closest to their CPU limit, the fullest PersistentVolumeClaims, pods by phase, workloads short of desired replicas, containers not ready, and a list table for clusters, nodes, namespaces, and pods. |
-| **[GCP OTel] GKE Cluster Detail** | One GKE cluster. CPU, memory, and ephemeral storage used against requests and allocatable capacity, the nodes and their network traffic, the namespaces, workloads, and pods in the cluster, and log volume by type and by node. Open it from the clusters table on the overview. |
-| **[GCP OTel] GKE Node Detail** | One GKE node. Readiness and pressure conditions, CPU, memory, ephemeral storage, PID, and network capacity, log volume, and node daemon resource use. Open it from a hexagon or a node name on the overview or on Cluster Detail. |
-| **[GCP OTel] GKE Namespace Detail** | One namespace in one cluster. CPU and memory against requests and limits, PersistentVolumeClaim fill, pod phases, and the pods and workloads in the namespace. Open it from a namespace or workload row on the overview or on Cluster Detail. |
-| **[GCP OTel] GKE Pod Detail** | One pod. Phase, restarts, time to ready, CPU and memory against requests and limits, volume usage, a container breakdown, network I/O, memory composition, and restarts and page faults by container. Open it from a pod row on the overview, Cluster Detail, or Namespace Detail. |
+| **[GCP OTel] GKE At a glance** | Headline metrics in sections for clusters, nodes, namespaces, workload resources, and pods: cluster and node health, the top 10 clusters and nodes by CPU, memory, and ephemeral storage use, the top namespaces by usage and restarts, workload replica counts, and pods by phase. |
+| **[GCP OTel] GKE Clusters** | A hexagon map of clusters colored by saturation, CPU, memory, ephemeral storage, or problem pods, the list of clusters, the top 10 clusters by CPU, memory, and ephemeral storage use, CPU and memory requested against allocatable and used, cluster health over time, problem pods, and log volume. |
+| **[GCP OTel] GKE Nodes** | A hexagon map of nodes colored by saturation, CPU, memory, ephemeral storage, PID use, or conditions, the list of nodes, the top 10 nodes by CPU, memory, ephemeral storage, and network use, readiness over time, interruptions, startup time, and network traffic. |
+| **[GCP OTel] GKE Namespaces** | A hexagon map of namespaces colored by saturation, CPU or memory limit utilization, restarts, or problem pods, the list of namespaces, and the top 10 namespaces by CPU, memory, container restarts, problem pods, and containers not ready. |
+| **[GCP OTel] GKE Workloads** | A hexagon map of Deployments, StatefulSets, and DaemonSets colored by replica shortfall or rollout, the list of workloads, and replica counts over time. |
+| **[GCP OTel] GKE Pods** | A hexagon map of the 500 worst pods colored by memory or CPU limit utilization, restarts, or phase, the list of pods, pods by phase over time, the top pods by container restarts, CPU, memory, and CPU limit utilization, the fullest PersistentVolumeClaims, startup time, and containers not ready. |
+| **[GCP OTel] GKE Cluster Detail** | One GKE cluster. CPU, memory, and ephemeral storage used against requests and allocatable capacity, the nodes and their network traffic, the namespaces, workloads, and pods in the cluster, and log volume by type and by node. Open it from a hexagon or a row on GKE Clusters. |
+| **[GCP OTel] GKE Node Detail** | One GKE node. Readiness and pressure conditions, CPU, memory, ephemeral storage, PID, and network capacity, log volume, and node daemon resource use. Open it from a hexagon or a node name on GKE Nodes or on Cluster Detail. |
+| **[GCP OTel] GKE Namespace Detail** | One namespace in one cluster. CPU and memory against requests and limits, PersistentVolumeClaim fill, pod phases, and the pods and workloads in the namespace. Open it from a hexagon or a row on GKE Namespaces or GKE Workloads, or from Cluster Detail. |
+| **[GCP OTel] GKE Pod Detail** | One pod. Phase, restarts, time to ready, CPU and memory against requests and limits, volume usage, a container breakdown, network I/O, memory composition, and restarts and page faults by container. Open it from a hexagon or a row on GKE Pods, or from Cluster Detail or Namespace Detail. |

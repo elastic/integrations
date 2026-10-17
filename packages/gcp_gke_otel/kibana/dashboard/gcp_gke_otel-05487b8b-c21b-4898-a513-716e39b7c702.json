@@ -1,8 +1,10 @@
 {
     "attributes": {
-        "description": "Detail view of a single GKE namespace: CPU and memory used against requests and limits, PVC fill, pod phase mix, and the pods and workloads in the namespace. Open it from a namespace or workload row on [GCP OTel] GKE Overview or [GCP OTel] GKE Cluster Detail.",
+        "description": "Detail view of a single GKE namespace: CPU and memory used against requests and limits, PVC fill, pod phase mix, and the pods and workloads in the namespace. Open it from a hexagon or a row on [GCP OTel] GKE Namespaces or [GCP OTel] GKE Workloads, or from [GCP OTel] GKE Cluster Detail.",
         "kibanaSavedObjectMeta": {
-            "searchSourceJSON": {}
+            "searchSourceJSON": {
+                "filter": []
+            }
         },
         "optionsJSON": {
             "autoApplyFilters": true,
@@ -47,7 +49,7 @@
                                             "ignoreGlobalFilters": true,
                                             "index": "gke-nav-back",
                                             "query": {
-                                                "esql": "ROW `Open` = \"< Overview\""
+                                                "esql": "SET unmapped_fields = \"nullify\";\nROW `Open` = \"< Namespaces\""
                                             }
                                         }
                                     }
@@ -62,7 +64,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "ROW `Open` = \"< Overview\""
+                                "esql": "SET unmapped_fields = \"nullify\";\nROW `Open` = \"< Namespaces\""
                             },
                             "visualization": {
                                 "density": "compact",
@@ -82,15 +84,15 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Returns to [GCP OTel] GKE Overview in the same tab, keeping the current time range.",
+                    "description": "Returns to [GCP OTel] GKE Namespaces in the same tab, keeping the current time range.",
                     "drilldowns": [
                         {
                             "encode_url": false,
-                            "label": "Overview",
+                            "label": "GKE Namespaces",
                             "open_in_new_tab": false,
                             "trigger": "on_click_value",
                             "type": "url_drilldown",
-                            "url": "{{kibanaUrl}}/app/dashboards#/view/gcp_gke_otel-e870661f-f53e-4a1d-b614-827bb2a3bcf2?_g=(time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))"
+                            "url": "{{kibanaUrl}}/app/dashboards#/view/gcp_gke_otel-af2e90f0-abec-4756-91d7-542cdc2c41d3?_g=(time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))"
                         }
                     ],
                     "hide_border": true,
@@ -110,7 +112,7 @@
                 "embeddableConfig": {
                     "description": "Name of the namespace selected by the current filters, with the cluster it belongs to.",
                     "esql_query": [
-                        "FROM metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_container\" | STATS last_seen = MAX(@timestamp) BY namespace = COALESCE(resource.attributes.namespace_name, resource.attributes.namespace), cluster = COALESCE(resource.attributes.cluster_name, resource.attributes.cluster) | SORT last_seen DESC | KEEP namespace, cluster | LIMIT 1"
+                        "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_container\" | STATS last_seen = MAX(@timestamp) BY namespace = COALESCE(resource.attributes.namespace_name, resource.attributes.namespace), cluster = COALESCE(resource.attributes.cluster_name, resource.attributes.cluster) | SORT last_seen DESC | KEEP namespace, cluster | LIMIT 1"
                     ],
                     "hide_border": true,
                     "template": "<style>\n  body {\n    margin: 0;\n    padding: var(--cc-space-xs) var(--cc-space-l) var(--cc-space-l) var(--cc-space-l);\n    box-sizing: border-box;\n    font-family: var(--cc-font-family);\n    color: var(--cc-color-text);\n    background: var(--cc-color-background);\n  }\n  .wrap {\n    display: flex;\n    flex-wrap: wrap;\n    align-items: baseline;\n    column-gap: var(--cc-space-m);\n  }\n  .instance-name {\n    font-size: 1.25rem;\n    font-weight: 600;\n    color: var(--cc-color-text);\n    text-align: left;\n    word-break: break-word;\n    margin: 0;\n  }\n  .context {\n    font-size: 0.875rem;\n    opacity: 0.7;\n  }\n  .empty {\n    font-size: 0.875rem;\n    opacity: 0.6;\n    text-align: left;\n  }\n</style>\n<div class=\"wrap\">\n{% if rows.size == 0 %}\n  <div class=\"empty\">No namespace matches the current filters.</div>\n{% else %}\n  {% for row in rows %}\n    <div class=\"instance-name\">{{ row[\"namespace\"].value }}</div>\n    <div class=\"context\">{{ row[\"cluster\"].value }}</div>\n  {% endfor %}\n{% endif %}\n</div>\n"
@@ -158,7 +160,7 @@
                                             "ignoreGlobalFilters": true,
                                             "index": "gke-nav-discover",
                                             "query": {
-                                                "esql": "ROW `Open` = \"View metrics in Discover\""
+                                                "esql": "SET unmapped_fields = \"nullify\";\nROW `Open` = \"View metrics in Discover\""
                                             }
                                         }
                                     }
@@ -173,7 +175,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "ROW `Open` = \"View metrics in Discover\""
+                                "esql": "SET unmapped_fields = \"nullify\";\nROW `Open` = \"View metrics in Discover\""
                             },
                             "visualization": {
                                 "density": "compact",
@@ -223,9 +225,9 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-b6fdcc8083597dd19635f2e1e10152018fa1f4c5edab9d0194aa923bd4c86d5d": {
+                                "metrics-gcp.gke.otel-default-440e801b144f2b7651435bb265b21dc70bfc97dcbdaf146d999a0158d034514b": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-b6fdcc8083597dd19635f2e1e10152018fa1f4c5edab9d0194aa923bd4c86d5d",
+                                    "id": "metrics-gcp.gke.otel-default-440e801b144f2b7651435bb265b21dc70bfc97dcbdaf146d999a0158d034514b",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
                                     "title": "metrics-gcp.gke.otel-default",
@@ -258,9 +260,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-b6fdcc8083597dd19635f2e1e10152018fa1f4c5edab9d0194aa923bd4c86d5d",
+                                            "index": "metrics-gcp.gke.otel-default-440e801b144f2b7651435bb265b21dc70bfc97dcbdaf146d999a0158d034514b",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS used = SUM(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`)), lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/cpu/limit_cores`)) BY resource.attributes.pod_name, resource.attributes.container_name\n| WHERE lim > 0\n| STATS cpu_limit_utilization_pct = 100 * SUM(used) / SUM(lim)"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS used = MAX(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`)), lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/cpu/limit_cores`)) BY resource.attributes.pod_name, resource.attributes.container_name\n| WHERE lim > 0\n| STATS cpu_limit_utilization_pct = 100 * SUM(used) / SUM(lim)"
                                             }
                                         }
                                     }
@@ -269,13 +271,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-b6fdcc8083597dd19635f2e1e10152018fa1f4c5edab9d0194aa923bd4c86d5d",
+                                    "id": "metrics-gcp.gke.otel-default-440e801b144f2b7651435bb265b21dc70bfc97dcbdaf146d999a0158d034514b",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS used = SUM(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`)), lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/cpu/limit_cores`)) BY resource.attributes.pod_name, resource.attributes.container_name\n| WHERE lim > 0\n| STATS cpu_limit_utilization_pct = 100 * SUM(used) / SUM(lim)"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS used = MAX(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`)), lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/cpu/limit_cores`)) BY resource.attributes.pod_name, resource.attributes.container_name\n| WHERE lim > 0\n| STATS cpu_limit_utilization_pct = 100 * SUM(used) / SUM(lim)"
                             },
                             "visualization": {
                                 "applyColorTo": "value",
@@ -301,14 +303,11 @@
                                             }
                                         ],
                                         "continuity": "above",
-                                        "maxSteps": 5,
                                         "name": "custom",
-                                        "progression": "fixed",
                                         "rangeMax": null,
                                         "rangeMin": 0,
                                         "rangeType": "number",
                                         "reverse": false,
-                                        "steps": 3,
                                         "stops": [
                                             {
                                                 "color": "#24c292",
@@ -357,11 +356,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-f880a55b24817c6269822964d241cd480aa0a02ee3a88e1b588937861d407344": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-f880a55b24817c6269822964d241cd480aa0a02ee3a88e1b588937861d407344",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -385,6 +385,16 @@
                                                     "label": "Used",
                                                     "meta": {
                                                         "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 2,
+                                                                "suffix": " cores"
+                                                            }
+                                                        }
                                                     }
                                                 },
                                                 {
@@ -394,6 +404,16 @@
                                                     "label": "Requested",
                                                     "meta": {
                                                         "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 2,
+                                                                "suffix": " cores"
+                                                            }
+                                                        }
                                                     }
                                                 },
                                                 {
@@ -403,14 +423,25 @@
                                                     "label": "Limit",
                                                     "meta": {
                                                         "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 2,
+                                                                "suffix": " cores"
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-f880a55b24817c6269822964d241cd480aa0a02ee3a88e1b588937861d407344",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS used = SUM(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`)),\n        req = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/cpu/request_cores`)),\n        lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/cpu/limit_cores`))\n    BY resource.attributes.pod_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS cpu_used_cores = SUM(used), cpu_requested_cores = SUM(req), cpu_limit_cores = SUM(CASE(lim > 0, lim, NULL)) BY bucket\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS used = MAX(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`)),\n        req = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/cpu/request_cores`)),\n        lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/cpu/limit_cores`))\n    BY resource.attributes.pod_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS cpu_used_cores = SUM(used), cpu_requested_cores = SUM(req), cpu_limit_cores = SUM(CASE(lim > 0, lim, NULL)) BY bucket\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -418,19 +449,31 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-f880a55b24817c6269822964d241cd480aa0a02ee3a88e1b588937861d407344",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS used = SUM(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`)),\n        req = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/cpu/request_cores`)),\n        lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/cpu/limit_cores`))\n    BY resource.attributes.pod_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS cpu_used_cores = SUM(used), cpu_requested_cores = SUM(req), cpu_limit_cores = SUM(CASE(lim > 0, lim, NULL)) BY bucket\n| SORT bucket ASC"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS used = MAX(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`)),\n        req = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/cpu/request_cores`)),\n        lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/cpu/limit_cores`))\n    BY resource.attributes.pod_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS cpu_used_cores = SUM(used), cpu_requested_cores = SUM(req), cpu_limit_cores = SUM(CASE(lim > 0, lim, NULL)) BY bucket\n| SORT bucket ASC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": false,
                                     "yLeft": false,
                                     "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
                                 },
                                 "layers": [
                                     {
@@ -465,11 +508,23 @@
                                     "layout": "list",
                                     "position": "bottom"
                                 },
+                                "pointVisibility": "auto",
                                 "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -533,7 +588,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-6470b342a20a7216c18d34589befed630227551c5760cf0bb2917cc8da39c651",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`)), lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_bytes`)) BY resource.attributes.pod_name, resource.attributes.container_name\n| WHERE lim > 0\n| STATS memory_limit_utilization_pct = 100 * TO_DOUBLE(SUM(used)) / SUM(lim)"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`)), lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_bytes`)) BY resource.attributes.pod_name, resource.attributes.container_name\n| WHERE lim > 0\n| STATS memory_limit_utilization_pct = 100 * TO_DOUBLE(SUM(used)) / SUM(lim)"
                                             }
                                         }
                                     }
@@ -548,7 +603,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`)), lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_bytes`)) BY resource.attributes.pod_name, resource.attributes.container_name\n| WHERE lim > 0\n| STATS memory_limit_utilization_pct = 100 * TO_DOUBLE(SUM(used)) / SUM(lim)"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`)), lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_bytes`)) BY resource.attributes.pod_name, resource.attributes.container_name\n| WHERE lim > 0\n| STATS memory_limit_utilization_pct = 100 * TO_DOUBLE(SUM(used)) / SUM(lim)"
                             },
                             "visualization": {
                                 "applyColorTo": "value",
@@ -574,14 +629,11 @@
                                             }
                                         ],
                                         "continuity": "above",
-                                        "maxSteps": 5,
                                         "name": "custom",
-                                        "progression": "fixed",
                                         "rangeMax": null,
                                         "rangeMin": 0,
                                         "rangeType": "number",
                                         "reverse": false,
-                                        "steps": 3,
                                         "stops": [
                                             {
                                                 "color": "#24c292",
@@ -630,11 +682,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-a28a6b7e972c511e2bf6d9f34c2c4fb85bb2332f92f9ae845d2e7d7bdb0067cd": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-a28a6b7e972c511e2bf6d9f34c2c4fb85bb2332f92f9ae845d2e7d7bdb0067cd",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -665,7 +718,7 @@
                                                             "params": {
                                                                 "compact": false,
                                                                 "decimals": 1,
-                                                                "suffix": "GiB"
+                                                                "suffix": " GiB"
                                                             }
                                                         }
                                                     }
@@ -684,7 +737,7 @@
                                                             "params": {
                                                                 "compact": false,
                                                                 "decimals": 1,
-                                                                "suffix": "GiB"
+                                                                "suffix": " GiB"
                                                             }
                                                         }
                                                     }
@@ -703,17 +756,18 @@
                                                             "params": {
                                                                 "compact": false,
                                                                 "decimals": 1,
-                                                                "suffix": "GiB"
+                                                                "suffix": " GiB"
                                                             }
                                                         }
                                                     }
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-a28a6b7e972c511e2bf6d9f34c2c4fb85bb2332f92f9ae845d2e7d7bdb0067cd",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`)),\n        req = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/request_bytes`)),\n        lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_bytes`))\n    BY resource.attributes.pod_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS memory_used_gib = SUM(used) / 1073741824.0, memory_requested_gib = SUM(req) / 1073741824.0, memory_limit_gib = SUM(CASE(lim > 0, lim, NULL)) / 1073741824.0 BY bucket\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`)),\n        req = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/request_bytes`)),\n        lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_bytes`))\n    BY resource.attributes.pod_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS memory_used_gib = SUM(used) / 1073741824.0, memory_requested_gib = SUM(req) / 1073741824.0, memory_limit_gib = SUM(CASE(lim > 0, lim, NULL)) / 1073741824.0 BY bucket\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -721,19 +775,31 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-a28a6b7e972c511e2bf6d9f34c2c4fb85bb2332f92f9ae845d2e7d7bdb0067cd",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`)),\n        req = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/request_bytes`)),\n        lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_bytes`))\n    BY resource.attributes.pod_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS memory_used_gib = SUM(used) / 1073741824.0, memory_requested_gib = SUM(req) / 1073741824.0, memory_limit_gib = SUM(CASE(lim > 0, lim, NULL)) / 1073741824.0 BY bucket\n| SORT bucket ASC"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`)),\n        req = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/request_bytes`)),\n        lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_bytes`))\n    BY resource.attributes.pod_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS memory_used_gib = SUM(used) / 1073741824.0, memory_requested_gib = SUM(req) / 1073741824.0, memory_limit_gib = SUM(CASE(lim > 0, lim, NULL)) / 1073741824.0 BY bucket\n| SORT bucket ASC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": false,
                                     "yLeft": false,
                                     "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
                                 },
                                 "layers": [
                                     {
@@ -768,11 +834,23 @@
                                     "layout": "list",
                                     "position": "bottom"
                                 },
+                                "pointVisibility": "auto",
                                 "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -836,7 +914,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-3145d11d1e47d6946a1a99deac3250dca9c3d11bfbade78856fa8b57891bf8f6",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/cpu/limit_cores`)) BY resource.attributes.pod_name, resource.attributes.container_name\n| STATS cpu_limits_cores = COALESCE(SUM(CASE(lim > 0, lim, NULL)), 0)"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/cpu/limit_cores`)) BY resource.attributes.pod_name, resource.attributes.container_name\n| STATS cpu_limits_cores = COALESCE(SUM(CASE(lim > 0, lim, NULL)), 0)"
                                             }
                                         }
                                     }
@@ -851,7 +929,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/cpu/limit_cores`)) BY resource.attributes.pod_name, resource.attributes.container_name\n| STATS cpu_limits_cores = COALESCE(SUM(CASE(lim > 0, lim, NULL)), 0)"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/cpu/limit_cores`)) BY resource.attributes.pod_name, resource.attributes.container_name\n| STATS cpu_limits_cores = COALESCE(SUM(CASE(lim > 0, lim, NULL)), 0)"
                             },
                             "visualization": {
                                 "density": "default",
@@ -926,7 +1004,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-423e7d5a9847474cdfa3a1522dfbe1280afd55a62dbad8074c93ab33dc51e6b7",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_bytes`)) BY resource.attributes.pod_name, resource.attributes.container_name\n| STATS memory_limits_gib = COALESCE(SUM(CASE(lim > 0, lim, NULL)), 0) / 1073741824.0"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_bytes`)) BY resource.attributes.pod_name, resource.attributes.container_name\n| STATS memory_limits_gib = COALESCE(SUM(CASE(lim > 0, lim, NULL)), 0) / 1073741824.0"
                                             }
                                         }
                                     }
@@ -941,7 +1019,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_bytes`)) BY resource.attributes.pod_name, resource.attributes.container_name\n| STATS memory_limits_gib = COALESCE(SUM(CASE(lim > 0, lim, NULL)), 0) / 1073741824.0"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS lim = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_bytes`)) BY resource.attributes.pod_name, resource.attributes.container_name\n| STATS memory_limits_gib = COALESCE(SUM(CASE(lim > 0, lim, NULL)), 0) / 1073741824.0"
                             },
                             "visualization": {
                                 "density": "default",
@@ -1016,7 +1094,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-00b8c9210d893870f5dca9b453848668d7576806863e346450720b72ef157746",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_pod\" AND attributes.persistentvolumeclaim_name IS NOT NULL\n| STATS util = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/utilization`)) BY resource.attributes.pod_name, attributes.volume_name\n| STATS fullest_pvc_pct = MAX(util) * 100\n| KEEP fullest_pvc_pct"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_pod\" AND attributes.persistentvolumeclaim_name IS NOT NULL\n| STATS util = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/utilization`)) BY resource.attributes.pod_name, attributes.volume_name\n| STATS fullest_pvc_pct = MAX(util) * 100\n| KEEP fullest_pvc_pct"
                                             }
                                         }
                                     }
@@ -1031,7 +1109,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_pod\" AND attributes.persistentvolumeclaim_name IS NOT NULL\n| STATS util = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/utilization`)) BY resource.attributes.pod_name, attributes.volume_name\n| STATS fullest_pvc_pct = MAX(util) * 100\n| KEEP fullest_pvc_pct"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_pod\" AND attributes.persistentvolumeclaim_name IS NOT NULL\n| STATS util = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/utilization`)) BY resource.attributes.pod_name, attributes.volume_name\n| STATS fullest_pvc_pct = MAX(util) * 100\n| KEEP fullest_pvc_pct"
                             },
                             "visualization": {
                                 "applyColorTo": "value",
@@ -1057,14 +1135,11 @@
                                             }
                                         ],
                                         "continuity": "above",
-                                        "maxSteps": 5,
                                         "name": "custom",
-                                        "progression": "fixed",
                                         "rangeMax": null,
                                         "rangeMin": 0,
                                         "rangeType": "number",
                                         "reverse": false,
-                                        "steps": 3,
                                         "stops": [
                                             {
                                                 "color": "#24c292",
@@ -1113,11 +1188,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-295fa442d5b666094f6422e7a0cca00791d58bc98d0c5dd88ea11b32c65c95e9": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-295fa442d5b666094f6422e7a0cca00791d58bc98d0c5dd88ea11b32c65c95e9",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -1174,10 +1250,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-295fa442d5b666094f6422e7a0cca00791d58bc98d0c5dd88ea11b32c65c95e9",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_pod\" AND attributes.persistentvolumeclaim_name IS NOT NULL\n| STATS pvc_used_bytes = SUM(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/used_bytes`)), pvc_capacity_bytes = SUM(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/total_bytes`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL pvc_used_gib = pvc_used_bytes/1073741824.0, pvc_capacity_gib = pvc_capacity_bytes/1073741824.0\n| SORT bucket ASC\n| KEEP bucket, pvc_used_gib, pvc_capacity_gib"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_pod\" AND attributes.persistentvolumeclaim_name IS NOT NULL\n| STATS pvc_used_bytes = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/used_bytes`)), pvc_capacity_bytes = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/total_bytes`))\n    BY resource.attributes.project_id, resource.attributes.cluster_name, attributes.persistentvolumeclaim_namespace, attributes.persistentvolumeclaim_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS pvc_used_bytes = SUM(pvc_used_bytes), pvc_capacity_bytes = SUM(pvc_capacity_bytes) BY bucket\n| EVAL pvc_used_gib = pvc_used_bytes/1073741824.0, pvc_capacity_gib = pvc_capacity_bytes/1073741824.0\n| SORT bucket ASC\n| KEEP bucket, pvc_used_gib, pvc_capacity_gib"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -1185,19 +1262,31 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-295fa442d5b666094f6422e7a0cca00791d58bc98d0c5dd88ea11b32c65c95e9",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_pod\" AND attributes.persistentvolumeclaim_name IS NOT NULL\n| STATS pvc_used_bytes = SUM(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/used_bytes`)), pvc_capacity_bytes = SUM(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/total_bytes`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL pvc_used_gib = pvc_used_bytes/1073741824.0, pvc_capacity_gib = pvc_capacity_bytes/1073741824.0\n| SORT bucket ASC\n| KEEP bucket, pvc_used_gib, pvc_capacity_gib"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_pod\" AND attributes.persistentvolumeclaim_name IS NOT NULL\n| STATS pvc_used_bytes = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/used_bytes`)), pvc_capacity_bytes = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/total_bytes`))\n    BY resource.attributes.project_id, resource.attributes.cluster_name, attributes.persistentvolumeclaim_namespace, attributes.persistentvolumeclaim_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS pvc_used_bytes = SUM(pvc_used_bytes), pvc_capacity_bytes = SUM(pvc_capacity_bytes) BY bucket\n| EVAL pvc_used_gib = pvc_used_bytes/1073741824.0, pvc_capacity_gib = pvc_capacity_bytes/1073741824.0\n| SORT bucket ASC\n| KEEP bucket, pvc_used_gib, pvc_capacity_gib"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": false,
                                     "yLeft": false,
                                     "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
                                 },
                                 "layers": [
                                     {
@@ -1227,11 +1316,23 @@
                                     "layout": "list",
                                     "position": "bottom"
                                 },
+                                "pointVisibility": "auto",
                                 "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -1258,11 +1359,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-33a348f808cc3ec0612042e9f6ca646ea428151a410891262208af7cea595866": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-33a348f808cc3ec0612042e9f6ca646ea428151a410891262208af7cea595866",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -1295,10 +1397,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-33a348f808cc3ec0612042e9f6ca646ea428151a410891262208af7cea595866",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp) BY pod = attributes.pod, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS pods = COUNT(*) BY phase, bucket\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp) BY pod = attributes.pod, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS pods = COUNT(*) BY phase, bucket\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -1306,19 +1409,30 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-33a348f808cc3ec0612042e9f6ca646ea428151a410891262208af7cea595866",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-bar_stacked_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp) BY pod = attributes.pod, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS pods = COUNT(*) BY phase, bucket\n| SORT bucket ASC"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp) BY pod = attributes.pod, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS pods = COUNT(*) BY phase, bucket\n| SORT bucket ASC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": false,
                                     "yLeft": false,
                                     "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
                                 },
                                 "layers": [
                                     {
@@ -1337,8 +1451,7 @@
                                                             "type": "raw",
                                                             "value": "Running"
                                                         }
-                                                    ],
-                                                    "touched": false
+                                                    ]
                                                 },
                                                 {
                                                     "color": {
@@ -1350,8 +1463,7 @@
                                                             "type": "raw",
                                                             "value": "Succeeded"
                                                         }
-                                                    ],
-                                                    "touched": false
+                                                    ]
                                                 },
                                                 {
                                                     "color": {
@@ -1363,8 +1475,7 @@
                                                             "type": "raw",
                                                             "value": "Pending"
                                                         }
-                                                    ],
-                                                    "touched": false
+                                                    ]
                                                 },
                                                 {
                                                     "color": {
@@ -1376,8 +1487,7 @@
                                                             "type": "raw",
                                                             "value": "Failed"
                                                         }
-                                                    ],
-                                                    "touched": false
+                                                    ]
                                                 },
                                                 {
                                                     "color": {
@@ -1389,8 +1499,7 @@
                                                             "type": "raw",
                                                             "value": "Unknown"
                                                         }
-                                                    ],
-                                                    "touched": false
+                                                    ]
                                                 }
                                             ],
                                             "colorMode": {
@@ -1406,8 +1515,7 @@
                                                         {
                                                             "type": "other"
                                                         }
-                                                    ],
-                                                    "touched": false
+                                                    ]
                                                 }
                                             ]
                                         },
@@ -1431,11 +1539,24 @@
                                     "layout": "list",
                                     "position": "bottom"
                                 },
+                                "minBarHeight": 1,
                                 "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -1462,9 +1583,9 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-a9532e585f0e4c4cd3a12d0834c5ea611cc3bda779207f1c9ebc338e4fe98e59": {
+                                "metrics-gcp.gke.otel-default-d5770853fa83e5a462543f366ae7514e65b16828f08cb4e12cdd03e90556120d": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-a9532e585f0e4c4cd3a12d0834c5ea611cc3bda779207f1c9ebc338e4fe98e59",
+                                    "id": "metrics-gcp.gke.otel-default-d5770853fa83e5a462543f366ae7514e65b16828f08cb4e12cdd03e90556120d",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
                                     "title": "metrics-gcp.gke.otel-default",
@@ -1488,17 +1609,18 @@
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
-                                                                "compact": true,
-                                                                "decimals": 1
+                                                                "compact": false,
+                                                                "decimals": 1,
+                                                                "suffix": " GiB"
                                                             }
                                                         }
                                                     }
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-a9532e585f0e4c4cd3a12d0834c5ea611cc3bda779207f1c9ebc338e4fe98e59",
+                                            "index": "metrics-gcp.gke.otel-default-d5770853fa83e5a462543f366ae7514e65b16828f08cb4e12cdd03e90556120d",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_pod\" AND attributes.persistentvolumeclaim_name IS NOT NULL\n| STATS pvc_capacity_bytes = SUM(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/total_bytes`))\n| EVAL pvc_capacity_gib = pvc_capacity_bytes / 1073741824.0\n| KEEP pvc_capacity_gib"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_pod\" AND attributes.persistentvolumeclaim_name IS NOT NULL\n| STATS pvc_capacity_bytes = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/total_bytes`))\n    BY resource.attributes.project_id, resource.attributes.cluster_name, attributes.persistentvolumeclaim_namespace, attributes.persistentvolumeclaim_name\n| STATS pvc_capacity_bytes = SUM(pvc_capacity_bytes)\n| EVAL pvc_capacity_gib = pvc_capacity_bytes / 1073741824.0\n| KEEP pvc_capacity_gib"
                                             }
                                         }
                                     }
@@ -1507,13 +1629,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-a9532e585f0e4c4cd3a12d0834c5ea611cc3bda779207f1c9ebc338e4fe98e59",
+                                    "id": "metrics-gcp.gke.otel-default-d5770853fa83e5a462543f366ae7514e65b16828f08cb4e12cdd03e90556120d",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_pod\" AND attributes.persistentvolumeclaim_name IS NOT NULL\n| STATS pvc_capacity_bytes = SUM(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/total_bytes`))\n| EVAL pvc_capacity_gib = pvc_capacity_bytes / 1073741824.0\n| KEEP pvc_capacity_gib"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_pod\" AND attributes.persistentvolumeclaim_name IS NOT NULL\n| STATS pvc_capacity_bytes = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/total_bytes`))\n    BY resource.attributes.project_id, resource.attributes.cluster_name, attributes.persistentvolumeclaim_namespace, attributes.persistentvolumeclaim_name\n| STATS pvc_capacity_bytes = SUM(pvc_capacity_bytes)\n| EVAL pvc_capacity_gib = pvc_capacity_bytes / 1073741824.0\n| KEEP pvc_capacity_gib"
                             },
                             "visualization": {
                                 "density": "default",
@@ -1551,11 +1673,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-e1406a3308f69b99e2581962ccbf501c8fd616f6b5d5916dbd3613291504d2be": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-e1406a3308f69b99e2581962ccbf501c8fd616f6b5d5916dbd3613291504d2be",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -1598,10 +1721,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-e1406a3308f69b99e2581962ccbf501c8fd616f6b5d5916dbd3613291504d2be",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS memory_used_bytes = SUM(MAX_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`))\n    BY attributes.memory_type, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL memory_used_gib = memory_used_bytes / 1073741824.0\n| SORT bucket ASC\n| KEEP bucket, attributes.memory_type, memory_used_gib"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS memory_used_bytes = MAX(MAX_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`))\n    BY attributes.memory_type, resource.attributes.project_id, resource.attributes.cluster_name, resource.attributes.namespace_name, resource.attributes.pod_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS memory_used_bytes = SUM(memory_used_bytes) BY attributes.memory_type, bucket\n| EVAL memory_used_gib = memory_used_bytes / 1073741824.0\n| SORT bucket ASC\n| KEEP bucket, attributes.memory_type, memory_used_gib"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -1609,13 +1733,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-e1406a3308f69b99e2581962ccbf501c8fd616f6b5d5916dbd3613291504d2be",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-area_stacked_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS memory_used_bytes = SUM(MAX_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`))\n    BY attributes.memory_type, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL memory_used_gib = memory_used_bytes / 1073741824.0\n| SORT bucket ASC\n| KEEP bucket, attributes.memory_type, memory_used_gib"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS memory_used_bytes = MAX(MAX_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`))\n    BY attributes.memory_type, resource.attributes.project_id, resource.attributes.cluster_name, resource.attributes.namespace_name, resource.attributes.pod_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS memory_used_bytes = SUM(memory_used_bytes) BY attributes.memory_type, bucket\n| EVAL memory_used_gib = memory_used_bytes / 1073741824.0\n| SORT bucket ASC\n| KEEP bucket, attributes.memory_type, memory_used_gib"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -1626,6 +1750,17 @@
                                 },
                                 "curveType": "LINEAR",
                                 "fillOpacity": 0.3,
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
                                 "layers": [
                                     {
                                         "accessors": [
@@ -1646,8 +1781,7 @@
                                                         {
                                                             "type": "other"
                                                         }
-                                                    ],
-                                                    "touched": false
+                                                    ]
                                                 }
                                             ]
                                         },
@@ -1671,11 +1805,23 @@
                                     "layout": "list",
                                     "position": "bottom"
                                 },
+                                "pointVisibility": "auto",
                                 "preferredSeriesType": "area_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -1702,11 +1848,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-eaedb69ffcab966880acb217a3effc7f349634c00c716368fb8c6c08d02ca96d": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-eaedb69ffcab966880acb217a3effc7f349634c00c716368fb8c6c08d02ca96d",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -1759,10 +1906,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-eaedb69ffcab966880acb217a3effc7f349634c00c716368fb8c6c08d02ca96d",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_pod\"\n| STATS received_bytes_per_sec = SUM(RATE(`metrics.kubernetes.io/pod/network/received_bytes_count`)), sent_bytes_per_sec = SUM(RATE(`metrics.kubernetes.io/pod/network/sent_bytes_count`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_pod\"\n| STATS received_bytes_per_sec = MAX(RATE(`metrics.kubernetes.io/pod/network/received_bytes_count`)), sent_bytes_per_sec = MAX(RATE(`metrics.kubernetes.io/pod/network/sent_bytes_count`))\n    BY resource.attributes.project_id, resource.attributes.cluster_name, resource.attributes.namespace_name, resource.attributes.pod_name, attributes.interface, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS received_bytes_per_sec = SUM(received_bytes_per_sec), sent_bytes_per_sec = SUM(sent_bytes_per_sec) BY bucket\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -1770,19 +1918,31 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-eaedb69ffcab966880acb217a3effc7f349634c00c716368fb8c6c08d02ca96d",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_pod\"\n| STATS received_bytes_per_sec = SUM(RATE(`metrics.kubernetes.io/pod/network/received_bytes_count`)), sent_bytes_per_sec = SUM(RATE(`metrics.kubernetes.io/pod/network/sent_bytes_count`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_pod\"\n| STATS received_bytes_per_sec = MAX(RATE(`metrics.kubernetes.io/pod/network/received_bytes_count`)), sent_bytes_per_sec = MAX(RATE(`metrics.kubernetes.io/pod/network/sent_bytes_count`))\n    BY resource.attributes.project_id, resource.attributes.cluster_name, resource.attributes.namespace_name, resource.attributes.pod_name, attributes.interface, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS received_bytes_per_sec = SUM(received_bytes_per_sec), sent_bytes_per_sec = SUM(sent_bytes_per_sec) BY bucket\n| SORT bucket ASC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": false,
                                     "yLeft": false,
                                     "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
                                 },
                                 "layers": [
                                     {
@@ -1811,11 +1971,23 @@
                                     "layout": "list",
                                     "position": "bottom"
                                 },
+                                "pointVisibility": "auto",
                                 "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -1842,11 +2014,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-2744148dc1db9070b7689314938b98a79835706fe0466745a8e3d29a68afdbfc": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-2744148dc1db9070b7689314938b98a79835706fe0466745a8e3d29a68afdbfc",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -1889,10 +2062,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-2744148dc1db9070b7689314938b98a79835706fe0466745a8e3d29a68afdbfc",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS cpu_used_cores = SUM(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`))\n    BY pod = resource.attributes.pod_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC, cpu_used_cores DESC, pod ASC\n| LIMIT 10 BY bucket"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS cpu_used_cores = MAX(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`))\n    BY pod = resource.attributes.pod_name, resource.attributes.project_id, resource.attributes.cluster_name, resource.attributes.namespace_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS cpu_used_cores = SUM(cpu_used_cores) BY pod, bucket\n| SORT bucket ASC, cpu_used_cores DESC, pod ASC\n| LIMIT 10 BY bucket"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -1900,19 +2074,31 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-2744148dc1db9070b7689314938b98a79835706fe0466745a8e3d29a68afdbfc",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS cpu_used_cores = SUM(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`))\n    BY pod = resource.attributes.pod_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC, cpu_used_cores DESC, pod ASC\n| LIMIT 10 BY bucket"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS cpu_used_cores = MAX(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`))\n    BY pod = resource.attributes.pod_name, resource.attributes.project_id, resource.attributes.cluster_name, resource.attributes.namespace_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS cpu_used_cores = SUM(cpu_used_cores) BY pod, bucket\n| SORT bucket ASC, cpu_used_cores DESC, pod ASC\n| LIMIT 10 BY bucket"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": false,
                                     "yLeft": false,
                                     "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
                                 },
                                 "layers": [
                                     {
@@ -1934,8 +2120,7 @@
                                                         {
                                                             "type": "other"
                                                         }
-                                                    ],
-                                                    "touched": false
+                                                    ]
                                                 }
                                             ]
                                         },
@@ -1960,11 +2145,23 @@
                                     "position": "right",
                                     "shouldTruncate": true
                                 },
+                                "pointVisibility": "auto",
                                 "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -1991,11 +2188,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-db65c3f4937456d9c3ae8df26c1388ec5d6f0ed23bc57842cd0b5324812c57ff": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-db65c3f4937456d9c3ae8df26c1388ec5d6f0ed23bc57842cd0b5324812c57ff",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -2017,6 +2215,16 @@
                                                     "fieldName": "memory_used_gib",
                                                     "meta": {
                                                         "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 1,
+                                                                "suffix": " GiB"
+                                                            }
+                                                        }
                                                     }
                                                 },
                                                 {
@@ -2028,10 +2236,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-db65c3f4937456d9c3ae8df26c1388ec5d6f0ed23bc57842cd0b5324812c57ff",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS memory_used_bytes = SUM(MAX_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`))\n    BY pod = resource.attributes.pod_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL memory_used_gib = memory_used_bytes / 1073741824.0\n| SORT bucket ASC, memory_used_gib DESC, pod ASC\n| LIMIT 10 BY bucket\n| KEEP bucket, pod, memory_used_gib"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS memory_used_bytes = MAX(MAX_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`))\n    BY pod = resource.attributes.pod_name, resource.attributes.project_id, resource.attributes.cluster_name, resource.attributes.namespace_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS memory_used_bytes = SUM(memory_used_bytes) BY pod, bucket\n| EVAL memory_used_gib = memory_used_bytes / 1073741824.0\n| SORT bucket ASC, memory_used_gib DESC, pod ASC\n| LIMIT 10 BY bucket\n| KEEP bucket, pod, memory_used_gib"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -2039,19 +2248,31 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-db65c3f4937456d9c3ae8df26c1388ec5d6f0ed23bc57842cd0b5324812c57ff",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS memory_used_bytes = SUM(MAX_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`))\n    BY pod = resource.attributes.pod_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL memory_used_gib = memory_used_bytes / 1073741824.0\n| SORT bucket ASC, memory_used_gib DESC, pod ASC\n| LIMIT 10 BY bucket\n| KEEP bucket, pod, memory_used_gib"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS memory_used_bytes = MAX(MAX_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`))\n    BY pod = resource.attributes.pod_name, resource.attributes.project_id, resource.attributes.cluster_name, resource.attributes.namespace_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS memory_used_bytes = SUM(memory_used_bytes) BY pod, bucket\n| EVAL memory_used_gib = memory_used_bytes / 1073741824.0\n| SORT bucket ASC, memory_used_gib DESC, pod ASC\n| LIMIT 10 BY bucket\n| KEEP bucket, pod, memory_used_gib"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": false,
                                     "yLeft": false,
                                     "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
                                 },
                                 "layers": [
                                     {
@@ -2073,8 +2294,7 @@
                                                         {
                                                             "type": "other"
                                                         }
-                                                    ],
-                                                    "touched": false
+                                                    ]
                                                 }
                                             ]
                                         },
@@ -2099,11 +2319,23 @@
                                     "position": "right",
                                     "shouldTruncate": true
                                 },
+                                "pointVisibility": "auto",
                                 "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -2130,11 +2362,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-7f920aa3e8aa3279904616195ab4075dbd7d502a10211c5e4a769566d63711b4": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-7f920aa3e8aa3279904616195ab4075dbd7d502a10211c5e4a769566d63711b4",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -2176,10 +2409,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-7f920aa3e8aa3279904616195ab4075dbd7d502a10211c5e4a769566d63711b4",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS restarts = SUM(INCREASE(`metrics.kubernetes.io/container/restart_count`))\n    BY pod = resource.attributes.pod_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL restarts = ROUND(restarts)\n| SORT bucket ASC, restarts DESC, pod ASC\n| LIMIT 10 BY bucket"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS restarts = MAX(INCREASE(`metrics.kubernetes.io/container/restart_count`))\n    BY pod = resource.attributes.pod_name, resource.attributes.project_id, resource.attributes.cluster_name, resource.attributes.namespace_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS restarts = SUM(restarts) BY pod, bucket\n| EVAL restarts = ROUND(restarts)\n| SORT bucket ASC, restarts DESC, pod ASC\n| LIMIT 10 BY bucket"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -2187,19 +2421,31 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-7f920aa3e8aa3279904616195ab4075dbd7d502a10211c5e4a769566d63711b4",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS restarts = SUM(INCREASE(`metrics.kubernetes.io/container/restart_count`))\n    BY pod = resource.attributes.pod_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL restarts = ROUND(restarts)\n| SORT bucket ASC, restarts DESC, pod ASC\n| LIMIT 10 BY bucket"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_container\"\n| STATS restarts = MAX(INCREASE(`metrics.kubernetes.io/container/restart_count`))\n    BY pod = resource.attributes.pod_name, resource.attributes.project_id, resource.attributes.cluster_name, resource.attributes.namespace_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| STATS restarts = SUM(restarts) BY pod, bucket\n| EVAL restarts = ROUND(restarts)\n| SORT bucket ASC, restarts DESC, pod ASC\n| LIMIT 10 BY bucket"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": false,
                                     "yLeft": false,
                                     "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
                                 },
                                 "layers": [
                                     {
@@ -2221,8 +2467,7 @@
                                                         {
                                                             "type": "other"
                                                         }
-                                                    ],
-                                                    "touched": false
+                                                    ]
                                                 }
                                             ]
                                         },
@@ -2247,11 +2492,23 @@
                                     "position": "right",
                                     "shouldTruncate": true
                                 },
+                                "pointVisibility": "auto",
                                 "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -2305,7 +2562,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-ffe397e51cf0e4607ddca056b55949644089c18f046064951d2a3ed5261ff1ef",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes\n| STATS total_pods = COUNT(*)"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes\n| STATS total_pods = COUNT(*)"
                                             }
                                         }
                                     }
@@ -2320,14 +2577,18 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes\n| STATS total_pods = COUNT(*)"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes\n| STATS total_pods = COUNT(*)"
                             },
                             "visualization": {
                                 "density": "default",
                                 "layerId": "layer_0",
                                 "layerType": "data",
                                 "metricAccessor": "metric_accessor_metric",
-                                "showBar": false
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
                             }
                         },
                         "title": "",
@@ -2338,7 +2599,7 @@
                     "title": "Total pods"
                 },
                 "gridData": {
-                    "h": 3,
+                    "h": 4,
                     "i": "0e4f9e8f-f2c5-4d77-9a37-96abe1424987",
                     "sectionId": "bb135f0a-4224-4fdf-a2d9-ea6f57738a88",
                     "w": 8,
@@ -2381,7 +2642,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-958dd030e8bb477be1df1f73a7fe2c33f9bbafaf7ac3b999647745074cd61c52",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Running\"\n| STATS running_pods = COUNT(*)"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Running\"\n| STATS running_pods = COUNT(*)"
                                             }
                                         }
                                     }
@@ -2396,14 +2657,18 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Running\"\n| STATS running_pods = COUNT(*)"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Running\"\n| STATS running_pods = COUNT(*)"
                             },
                             "visualization": {
                                 "density": "default",
                                 "layerId": "layer_0",
                                 "layerType": "data",
                                 "metricAccessor": "metric_accessor_metric",
-                                "showBar": false
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
                             }
                         },
                         "title": "",
@@ -2414,7 +2679,7 @@
                     "title": "Running"
                 },
                 "gridData": {
-                    "h": 3,
+                    "h": 4,
                     "i": "3f907e7a-f3c9-455e-91b6-d870887e5153",
                     "sectionId": "bb135f0a-4224-4fdf-a2d9-ea6f57738a88",
                     "w": 8,
@@ -2457,7 +2722,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-1bcc2fd0e5e5b93aa4afb52ba879ecda018c383cdcb4875b8ca5be3e22f5e423",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Pending\"\n| STATS pending_pods = COUNT(*)"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Pending\"\n| STATS pending_pods = COUNT(*)"
                                             }
                                         }
                                     }
@@ -2472,7 +2737,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Pending\"\n| STATS pending_pods = COUNT(*)"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Pending\"\n| STATS pending_pods = COUNT(*)"
                             },
                             "visualization": {
                                 "applyColorTo": "value",
@@ -2494,14 +2759,11 @@
                                             }
                                         ],
                                         "continuity": "none",
-                                        "maxSteps": 5,
                                         "name": "custom",
-                                        "progression": "fixed",
                                         "rangeMax": 100000,
                                         "rangeMin": 0,
                                         "rangeType": "number",
                                         "reverse": false,
-                                        "steps": 2,
                                         "stops": [
                                             {
                                                 "color": "#24c292",
@@ -2515,7 +2777,11 @@
                                     },
                                     "type": "palette"
                                 },
-                                "showBar": false
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
                             }
                         },
                         "title": "",
@@ -2526,7 +2792,7 @@
                     "title": "Pending"
                 },
                 "gridData": {
-                    "h": 3,
+                    "h": 4,
                     "i": "6ba50c1b-e8ad-4535-b130-dfe7077cfd15",
                     "sectionId": "bb135f0a-4224-4fdf-a2d9-ea6f57738a88",
                     "w": 8,
@@ -2569,7 +2835,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-f98c59e9b10405f6ac21d769a45f65caae7aba0dde8cf0d9f5ba73141ae59125",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Failed\"\n| STATS failed_pods = COUNT(*)"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Failed\"\n| STATS failed_pods = COUNT(*)"
                                             }
                                         }
                                     }
@@ -2584,7 +2850,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Failed\"\n| STATS failed_pods = COUNT(*)"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Failed\"\n| STATS failed_pods = COUNT(*)"
                             },
                             "visualization": {
                                 "applyColorTo": "value",
@@ -2606,14 +2872,11 @@
                                             }
                                         ],
                                         "continuity": "none",
-                                        "maxSteps": 5,
                                         "name": "custom",
-                                        "progression": "fixed",
                                         "rangeMax": 1000000,
                                         "rangeMin": 0,
                                         "rangeType": "number",
                                         "reverse": false,
-                                        "steps": 2,
                                         "stops": [
                                             {
                                                 "color": "#24c292",
@@ -2627,7 +2890,11 @@
                                     },
                                     "type": "palette"
                                 },
-                                "showBar": false
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
                             }
                         },
                         "title": "",
@@ -2638,7 +2905,7 @@
                     "title": "Failed"
                 },
                 "gridData": {
-                    "h": 3,
+                    "h": 4,
                     "i": "3e03af85-01f3-4cf7-9a5c-009de8adf345",
                     "sectionId": "bb135f0a-4224-4fdf-a2d9-ea6f57738a88",
                     "w": 8,
@@ -2681,7 +2948,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-3e0bdc3a15c05803b6b27a4bf97ac5d7016e1688213429e0c32f26fb0e49ef88",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Succeeded\"\n| STATS succeeded_pods = COUNT(*)"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Succeeded\"\n| STATS succeeded_pods = COUNT(*)"
                                             }
                                         }
                                     }
@@ -2696,14 +2963,18 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Succeeded\"\n| STATS succeeded_pods = COUNT(*)"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Succeeded\"\n| STATS succeeded_pods = COUNT(*)"
                             },
                             "visualization": {
                                 "density": "default",
                                 "layerId": "layer_0",
                                 "layerType": "data",
                                 "metricAccessor": "metric_accessor_metric",
-                                "showBar": false
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
                             }
                         },
                         "title": "",
@@ -2714,7 +2985,7 @@
                     "title": "Succeeded"
                 },
                 "gridData": {
-                    "h": 3,
+                    "h": 4,
                     "i": "6e61e8e1-f528-4439-a9f3-e7e211c55b38",
                     "sectionId": "bb135f0a-4224-4fdf-a2d9-ea6f57738a88",
                     "w": 8,
@@ -2757,7 +3028,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-6493a0ee8afe45529efac81ece133ab3635770af945c6f797eaaf08ade91190b",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Unknown\"\n| STATS unknown_pods = COUNT(*)"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Unknown\"\n| STATS unknown_pods = COUNT(*)"
                                             }
                                         }
                                     }
@@ -2772,7 +3043,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Unknown\"\n| STATS unknown_pods = COUNT(*)"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND `metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge` == 1\n| STATS phase = LAST(attributes.phase, @timestamp), last_seen = MAX(@timestamp) BY pod = attributes.pod\n| INLINE STATS newest = MAX(last_seen)\n| WHERE last_seen >= newest - 5 minutes AND phase == \"Unknown\"\n| STATS unknown_pods = COUNT(*)"
                             },
                             "visualization": {
                                 "applyColorTo": "value",
@@ -2794,14 +3065,11 @@
                                             }
                                         ],
                                         "continuity": "none",
-                                        "maxSteps": 5,
                                         "name": "custom",
-                                        "progression": "fixed",
                                         "rangeMax": 999999999,
                                         "rangeMin": 0,
                                         "rangeType": "number",
                                         "reverse": false,
-                                        "steps": 2,
                                         "stops": [
                                             {
                                                 "color": "#24c292",
@@ -2815,7 +3083,11 @@
                                     },
                                     "type": "palette"
                                 },
-                                "showBar": false
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
                             }
                         },
                         "title": "",
@@ -2826,7 +3098,7 @@
                     "title": "Unknown"
                 },
                 "gridData": {
-                    "h": 3,
+                    "h": 4,
                     "i": "4715eaaf-35ec-4487-b8e6-8b62133b0698",
                     "sectionId": "bb135f0a-4224-4fdf-a2d9-ea6f57738a88",
                     "w": 8,
@@ -2954,7 +3226,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-abfc922bd2df66291ce932cad844c0b340dff3107143fec016b44a57a05ae583",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND (attributes.deployment IS NOT NULL OR attributes.statefulset IS NOT NULL OR attributes.daemonset IS NOT NULL)\n| STATS deployment_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_spec_replicas/gauge`)),\n        deployment_avail = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_available/gauge`)),\n        deployment_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_updated/gauge`)),\n        statefulset_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_replicas/gauge`)),\n        statefulset_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_ready/gauge`)),\n        statefulset_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_updated/gauge`)),\n        daemonset_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_desired_number_scheduled/gauge`)),\n        daemonset_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_ready/gauge`)),\n        daemonset_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_updated_number_scheduled/gauge`)),\n        daemonset_misscheduled = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_misscheduled/gauge`))\n    BY kind = CASE(attributes.deployment IS NOT NULL, \"Deployment\", attributes.statefulset IS NOT NULL, \"StatefulSet\", \"DaemonSet\"),\n       name = COALESCE(attributes.deployment, attributes.statefulset, attributes.daemonset)\n| EVAL desired = COALESCE(TO_DOUBLE(deployment_desired), TO_DOUBLE(statefulset_desired), TO_DOUBLE(daemonset_desired)),\n       ready_or_available = COALESCE(TO_DOUBLE(deployment_avail), TO_DOUBLE(statefulset_ready), TO_DOUBLE(daemonset_ready)),\n       updated = COALESCE(TO_DOUBLE(deployment_updated), TO_DOUBLE(statefulset_updated), TO_DOUBLE(daemonset_updated)),\n       misscheduled = TO_DOUBLE(daemonset_misscheduled)\n| KEEP kind, name, desired, ready_or_available, updated, misscheduled\n| SORT kind ASC, name ASC\n| LIMIT 100"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND (attributes.deployment IS NOT NULL OR attributes.statefulset IS NOT NULL OR attributes.daemonset IS NOT NULL)\n| STATS deployment_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_spec_replicas/gauge`)),\n        deployment_avail = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_available/gauge`)),\n        deployment_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_updated/gauge`)),\n        statefulset_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_replicas/gauge`)),\n        statefulset_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_ready/gauge`)),\n        statefulset_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_updated/gauge`)),\n        daemonset_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_desired_number_scheduled/gauge`)),\n        daemonset_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_ready/gauge`)),\n        daemonset_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_updated_number_scheduled/gauge`)),\n        daemonset_misscheduled = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_misscheduled/gauge`))\n    BY kind = CASE(attributes.deployment IS NOT NULL, \"Deployment\", attributes.statefulset IS NOT NULL, \"StatefulSet\", \"DaemonSet\"),\n       name = COALESCE(attributes.deployment, attributes.statefulset, attributes.daemonset)\n| EVAL desired = COALESCE(TO_DOUBLE(deployment_desired), TO_DOUBLE(statefulset_desired), TO_DOUBLE(daemonset_desired)),\n       ready_or_available = COALESCE(TO_DOUBLE(deployment_avail), TO_DOUBLE(statefulset_ready), TO_DOUBLE(daemonset_ready)),\n       updated = COALESCE(TO_DOUBLE(deployment_updated), TO_DOUBLE(statefulset_updated), TO_DOUBLE(daemonset_updated)),\n       misscheduled = TO_DOUBLE(daemonset_misscheduled)\n| KEEP kind, name, desired, ready_or_available, updated, misscheduled\n| SORT kind ASC, name ASC\n| LIMIT 100"
                                             }
                                         }
                                     }
@@ -2969,7 +3241,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND (attributes.deployment IS NOT NULL OR attributes.statefulset IS NOT NULL OR attributes.daemonset IS NOT NULL)\n| STATS deployment_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_spec_replicas/gauge`)),\n        deployment_avail = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_available/gauge`)),\n        deployment_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_updated/gauge`)),\n        statefulset_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_replicas/gauge`)),\n        statefulset_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_ready/gauge`)),\n        statefulset_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_updated/gauge`)),\n        daemonset_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_desired_number_scheduled/gauge`)),\n        daemonset_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_ready/gauge`)),\n        daemonset_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_updated_number_scheduled/gauge`)),\n        daemonset_misscheduled = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_misscheduled/gauge`))\n    BY kind = CASE(attributes.deployment IS NOT NULL, \"Deployment\", attributes.statefulset IS NOT NULL, \"StatefulSet\", \"DaemonSet\"),\n       name = COALESCE(attributes.deployment, attributes.statefulset, attributes.daemonset)\n| EVAL desired = COALESCE(TO_DOUBLE(deployment_desired), TO_DOUBLE(statefulset_desired), TO_DOUBLE(daemonset_desired)),\n       ready_or_available = COALESCE(TO_DOUBLE(deployment_avail), TO_DOUBLE(statefulset_ready), TO_DOUBLE(daemonset_ready)),\n       updated = COALESCE(TO_DOUBLE(deployment_updated), TO_DOUBLE(statefulset_updated), TO_DOUBLE(daemonset_updated)),\n       misscheduled = TO_DOUBLE(daemonset_misscheduled)\n| KEEP kind, name, desired, ready_or_available, updated, misscheduled\n| SORT kind ASC, name ASC\n| LIMIT 100"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\" AND (attributes.deployment IS NOT NULL OR attributes.statefulset IS NOT NULL OR attributes.daemonset IS NOT NULL)\n| STATS deployment_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_spec_replicas/gauge`)),\n        deployment_avail = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_available/gauge`)),\n        deployment_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_updated/gauge`)),\n        statefulset_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_replicas/gauge`)),\n        statefulset_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_ready/gauge`)),\n        statefulset_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_updated/gauge`)),\n        daemonset_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_desired_number_scheduled/gauge`)),\n        daemonset_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_ready/gauge`)),\n        daemonset_updated = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_updated_number_scheduled/gauge`)),\n        daemonset_misscheduled = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_misscheduled/gauge`))\n    BY kind = CASE(attributes.deployment IS NOT NULL, \"Deployment\", attributes.statefulset IS NOT NULL, \"StatefulSet\", \"DaemonSet\"),\n       name = COALESCE(attributes.deployment, attributes.statefulset, attributes.daemonset)\n| EVAL desired = COALESCE(TO_DOUBLE(deployment_desired), TO_DOUBLE(statefulset_desired), TO_DOUBLE(daemonset_desired)),\n       ready_or_available = COALESCE(TO_DOUBLE(deployment_avail), TO_DOUBLE(statefulset_ready), TO_DOUBLE(daemonset_ready)),\n       updated = COALESCE(TO_DOUBLE(deployment_updated), TO_DOUBLE(statefulset_updated), TO_DOUBLE(daemonset_updated)),\n       misscheduled = TO_DOUBLE(daemonset_misscheduled)\n| KEEP kind, name, desired, ready_or_available, updated, misscheduled\n| SORT kind ASC, name ASC\n| LIMIT 100"
                             },
                             "visualization": {
                                 "columns": [
@@ -3041,7 +3313,7 @@
                     "sectionId": "bb135f0a-4224-4fdf-a2d9-ea6f57738a88",
                     "w": 48,
                     "x": 0,
-                    "y": 15
+                    "y": 16
                 },
                 "panelIndex": "5e6c5791-c389-4b6d-a402-39b3a367403c",
                 "type": "vis"
@@ -3052,9 +3324,9 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-c7933cd1b5de3dd672e9c7b8b1b2f245af70a95e65ba99094266453a61c5804e": {
+                                "metrics-gcp.gke.otel-default-42c39e1a96e4503d1623808073126bcf5aa406edcf67fe2d5bf8833d0564343a": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-c7933cd1b5de3dd672e9c7b8b1b2f245af70a95e65ba99094266453a61c5804e",
+                                    "id": "metrics-gcp.gke.otel-default-42c39e1a96e4503d1623808073126bcf5aa406edcf67fe2d5bf8833d0564343a",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
                                     "title": "metrics-gcp.gke.otel-default",
@@ -3195,9 +3467,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-c7933cd1b5de3dd672e9c7b8b1b2f245af70a95e65ba99094266453a61c5804e",
+                                            "index": "metrics-gcp.gke.otel-default-42c39e1a96e4503d1623808073126bcf5aa406edcf67fe2d5bf8833d0564343a",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type IN (\"k8s_container\", \"prometheus_target\")\n    AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS mem_util = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_utilization`)),\n        cpu_used = SUM(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`)),\n        mem_used = SUM(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`)),\n        restarts = SUM(INCREASE(`metrics.kubernetes.io/container/restart_count`)),\n        eph_used = SUM(LAST_OVER_TIME(`metrics.kubernetes.io/container/ephemeral_storage/used_bytes`)),\n        eph_limit = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/ephemeral_storage/limit_bytes`)),\n        phase_on = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge`))\n    BY pod = COALESCE(resource.attributes.pod_name, attributes.pod), resource.attributes.container_name, attributes.phase\n| STATS memory_limit_util = MAX(mem_util),\n        cpu_used_cores = SUM(cpu_used),\n        memory_used_bytes = SUM(mem_used),\n        restarts = SUM(restarts),\n        ephemeral_used_bytes = SUM(eph_used),\n        ephemeral_limit_bytes = SUM(CASE(eph_limit > 0, eph_limit, NULL)),\n        phase = MAX(CASE(phase_on == 1, attributes.phase, NULL))\n    BY pod\n| EVAL restarts = ROUND(restarts), memory_used_gib = memory_used_bytes / 1073741824.0, ephemeral_used_gib = ephemeral_used_bytes / 1073741824.0, ephemeral_limit = COALESCE(CONCAT(TO_STRING(ROUND(ephemeral_limit_bytes / 1073741824.0, 2)), \" GiB\"), \"No limit\")\n| SORT memory_limit_util DESC NULLS LAST\n| LIMIT 100\n| KEEP pod, memory_limit_util, phase, restarts, cpu_used_cores, memory_used_gib, ephemeral_used_gib, ephemeral_limit"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type IN (\"k8s_container\", \"prometheus_target\")\n    AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS mem_util = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_utilization`)),\n        cpu_used = MAX(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`)),\n        mem_used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`)),\n        restarts = MAX(INCREASE(`metrics.kubernetes.io/container/restart_count`)),\n        eph_used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/ephemeral_storage/used_bytes`)),\n        eph_limit = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/ephemeral_storage/limit_bytes`)),\n        phase_on = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge`))\n    BY pod = COALESCE(resource.attributes.pod_name, attributes.pod), resource.attributes.container_name, attributes.phase\n| STATS memory_limit_util = MAX(mem_util),\n        cpu_used_cores = SUM(cpu_used),\n        memory_used_bytes = SUM(mem_used),\n        restarts = SUM(restarts),\n        ephemeral_used_bytes = SUM(eph_used),\n        ephemeral_limit_bytes = SUM(CASE(eph_limit > 0, eph_limit, NULL)),\n        phase = MAX(CASE(phase_on == 1, attributes.phase, NULL))\n    BY pod\n| EVAL restarts = ROUND(restarts), memory_used_gib = memory_used_bytes / 1073741824.0, ephemeral_used_gib = ephemeral_used_bytes / 1073741824.0, ephemeral_limit = COALESCE(CONCAT(TO_STRING(ROUND(ephemeral_limit_bytes / 1073741824.0, 2)), \" GiB\"), \"No limit\")\n| SORT memory_limit_util DESC NULLS LAST\n| LIMIT 100\n| KEEP pod, memory_limit_util, phase, restarts, cpu_used_cores, memory_used_gib, ephemeral_used_gib, ephemeral_limit"
                                             }
                                         }
                                     }
@@ -3206,13 +3478,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-c7933cd1b5de3dd672e9c7b8b1b2f245af70a95e65ba99094266453a61c5804e",
+                                    "id": "metrics-gcp.gke.otel-default-42c39e1a96e4503d1623808073126bcf5aa406edcf67fe2d5bf8833d0564343a",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type IN (\"k8s_container\", \"prometheus_target\")\n    AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS mem_util = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_utilization`)),\n        cpu_used = SUM(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`)),\n        mem_used = SUM(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`)),\n        restarts = SUM(INCREASE(`metrics.kubernetes.io/container/restart_count`)),\n        eph_used = SUM(LAST_OVER_TIME(`metrics.kubernetes.io/container/ephemeral_storage/used_bytes`)),\n        eph_limit = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/ephemeral_storage/limit_bytes`)),\n        phase_on = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge`))\n    BY pod = COALESCE(resource.attributes.pod_name, attributes.pod), resource.attributes.container_name, attributes.phase\n| STATS memory_limit_util = MAX(mem_util),\n        cpu_used_cores = SUM(cpu_used),\n        memory_used_bytes = SUM(mem_used),\n        restarts = SUM(restarts),\n        ephemeral_used_bytes = SUM(eph_used),\n        ephemeral_limit_bytes = SUM(CASE(eph_limit > 0, eph_limit, NULL)),\n        phase = MAX(CASE(phase_on == 1, attributes.phase, NULL))\n    BY pod\n| EVAL restarts = ROUND(restarts), memory_used_gib = memory_used_bytes / 1073741824.0, ephemeral_used_gib = ephemeral_used_bytes / 1073741824.0, ephemeral_limit = COALESCE(CONCAT(TO_STRING(ROUND(ephemeral_limit_bytes / 1073741824.0, 2)), \" GiB\"), \"No limit\")\n| SORT memory_limit_util DESC NULLS LAST\n| LIMIT 100\n| KEEP pod, memory_limit_util, phase, restarts, cpu_used_cores, memory_used_gib, ephemeral_used_gib, ephemeral_limit"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type IN (\"k8s_container\", \"prometheus_target\")\n    AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS mem_util = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/limit_utilization`)),\n        cpu_used = MAX(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`)),\n        mem_used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`)),\n        restarts = MAX(INCREASE(`metrics.kubernetes.io/container/restart_count`)),\n        eph_used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/ephemeral_storage/used_bytes`)),\n        eph_limit = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/ephemeral_storage/limit_bytes`)),\n        phase_on = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_pod_status_phase/gauge`))\n    BY pod = COALESCE(resource.attributes.pod_name, attributes.pod), resource.attributes.container_name, attributes.phase\n| STATS memory_limit_util = MAX(mem_util),\n        cpu_used_cores = SUM(cpu_used),\n        memory_used_bytes = SUM(mem_used),\n        restarts = SUM(restarts),\n        ephemeral_used_bytes = SUM(eph_used),\n        ephemeral_limit_bytes = SUM(CASE(eph_limit > 0, eph_limit, NULL)),\n        phase = MAX(CASE(phase_on == 1, attributes.phase, NULL))\n    BY pod\n| EVAL restarts = ROUND(restarts), memory_used_gib = memory_used_bytes / 1073741824.0, ephemeral_used_gib = ephemeral_used_bytes / 1073741824.0, ephemeral_limit = COALESCE(CONCAT(TO_STRING(ROUND(ephemeral_limit_bytes / 1073741824.0, 2)), \" GiB\"), \"No limit\")\n| SORT memory_limit_util DESC NULLS LAST\n| LIMIT 100\n| KEEP pod, memory_limit_util, phase, restarts, cpu_used_cores, memory_used_gib, ephemeral_used_gib, ephemeral_limit"
                             },
                             "visualization": {
                                 "columns": [
@@ -3249,14 +3521,11 @@
                                                     }
                                                 ],
                                                 "continuity": "all",
-                                                "maxSteps": 5,
                                                 "name": "custom",
-                                                "progression": "fixed",
                                                 "rangeMax": null,
                                                 "rangeMin": null,
                                                 "rangeType": "number",
                                                 "reverse": false,
-                                                "steps": 3,
                                                 "stops": [
                                                     {
                                                         "color": "#aee8d2",
@@ -3363,7 +3632,7 @@
                     "sectionId": "bb135f0a-4224-4fdf-a2d9-ea6f57738a88",
                     "w": 48,
                     "x": 0,
-                    "y": 25
+                    "y": 26
                 },
                 "panelIndex": "e17d70ee-2e52-4b4f-bb11-1e1d2bd995b6",
                 "type": "vis"
@@ -3451,7 +3720,7 @@
         "title": "[GCP OTel] GKE Namespace Detail"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-10-09T20:00:09.938Z",
+    "created_at": "2026-10-17T17:34:27.518Z",
     "id": "gcp_gke_otel-05487b8b-c21b-4898-a513-716e39b7c702",
     "references": [],
     "type": "dashboard",

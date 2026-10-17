@@ -1,8 +1,10 @@
 {
     "attributes": {
-        "description": "Detail view of a single GKE node: readiness and pressure conditions, CPU, memory, ephemeral storage, PID and network capacity, log volume, and node daemon resource use. Open it from a hexagon or a node name on [GCP OTel] GKE Overview or [GCP OTel] GKE Cluster Detail.",
+        "description": "Detail view of a single GKE node: readiness and pressure conditions, CPU, memory, ephemeral storage, PID and network capacity, log volume, and node daemon resource use. Open it from a hexagon or a node name on [GCP OTel] GKE Nodes or [GCP OTel] GKE Cluster Detail.",
         "kibanaSavedObjectMeta": {
-            "searchSourceJSON": {}
+            "searchSourceJSON": {
+                "filter": []
+            }
         },
         "optionsJSON": {
             "autoApplyFilters": true,
@@ -18,7 +20,7 @@
                 "embeddableConfig": {
                     "description": "Name of the GKE node selected by the current filter, with the cluster it belongs to.",
                     "esql_query": [
-                        "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| KEEP resource.attributes.node_name, resource.attributes.cluster_name, @timestamp\n| SORT @timestamp DESC\n| LIMIT 1"
+                        "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| KEEP resource.attributes.node_name, resource.attributes.cluster_name, @timestamp\n| SORT @timestamp DESC\n| LIMIT 1"
                     ],
                     "hide_border": true,
                     "template": "<style>\n  body {\n    margin: 0;\n    padding: var(--cc-space-xs) var(--cc-space-l) var(--cc-space-l) var(--cc-space-l);\n    box-sizing: border-box;\n    font-family: var(--cc-font-family);\n    color: var(--cc-color-text);\n    background: var(--cc-color-background);\n  }\n  .wrap {\n    display: flex;\n    flex-wrap: wrap;\n    align-items: baseline;\n    column-gap: var(--cc-space-m);\n  }\n  .instance-name {\n    font-size: 1.25rem;\n    font-weight: 600;\n    color: var(--cc-color-text);\n    text-align: left;\n    word-break: break-word;\n    margin: 0;\n  }\n  .context {\n    font-size: 0.875rem;\n    opacity: 0.7;\n  }\n  .empty {\n    font-size: 0.875rem;\n    opacity: 0.6;\n    text-align: left;\n  }\n</style>\n<div class=\"wrap\">\n{% if rows.size == 0 %}\n  <div class=\"empty\">No node matches the current filters.</div>\n{% else %}\n  {% for row in rows %}\n    <div class=\"instance-name\">{{ row[\"resource.attributes.node_name\"].value }}</div>\n    <div class=\"context\">{{ row[\"resource.attributes.cluster_name\"].value }}</div>\n  {% endfor %}\n{% endif %}\n</div>\n"
@@ -37,7 +39,7 @@
                 "embeddableConfig": {
                     "description": "Latest status of the node's `Ready` condition (`node/status_condition`). True means the kubelet reports the node healthy; False or Unknown means it is not ready and its pods are evicted and rescheduled.",
                     "esql_query": [
-                        "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"Ready\" AND TRANGE(?_tstart, ?_tend)\n| STATS ready = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP ready\n| LIMIT 1"
+                        "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"Ready\" AND `metrics.kubernetes.io/node/status_condition` == 1 AND TRANGE(?_tstart, ?_tend)\n| STATS ready = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP ready\n| LIMIT 1"
                     ],
                     "hide_border": true,
                     "template": "<style>\n  body {\n    margin: 0;\n    padding: var(--cc-space-xs) var(--cc-space-m);\n    box-sizing: border-box;\n    font-family: var(--cc-font-family);\n    color: var(--cc-color-text);\n    background: var(--cc-color-background);\n  }\n  .label {\n    font-size: 0.75rem;\n    opacity: 0.7;\n    line-height: 1.2;\n  }\n  .value {\n    font-size: 1.25rem;\n    font-weight: 600;\n    line-height: 1.3;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n  }\n  .good { color: #24c292; }\n  .warn { color: #d6bf57; }\n  .bad { color: #f6726a; }\n</style>\n{% assign v = nil %}{% for row in rows limit: 1 %}{% assign v = row[\"ready\"].value %}{% endfor %}\n<div class=\"label\">Ready</div>\n{% if v == nil or v == blank %}<div class=\"value\">N/A</div>{% else %}<div class=\"value {% if v == \"True\" %}good{% else %}bad{% endif %}\">{{ v }}</div>{% endif %}\n"
@@ -85,7 +87,7 @@
                                             "ignoreGlobalFilters": true,
                                             "index": "gke-nav-back",
                                             "query": {
-                                                "esql": "ROW `Open` = \"< Overview\""
+                                                "esql": "SET unmapped_fields = \"nullify\";\nROW `Open` = \"< Nodes\""
                                             }
                                         }
                                     }
@@ -100,7 +102,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "ROW `Open` = \"< Overview\""
+                                "esql": "SET unmapped_fields = \"nullify\";\nROW `Open` = \"< Nodes\""
                             },
                             "visualization": {
                                 "density": "compact",
@@ -120,15 +122,15 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Returns to [GCP OTel] GKE Overview in the same tab, keeping the current time range.",
+                    "description": "Returns to [GCP OTel] GKE Nodes in the same tab, keeping the current time range.",
                     "drilldowns": [
                         {
                             "encode_url": false,
-                            "label": "Overview",
+                            "label": "GKE Nodes",
                             "open_in_new_tab": false,
                             "trigger": "on_click_value",
                             "type": "url_drilldown",
-                            "url": "{{kibanaUrl}}/app/dashboards#/view/gcp_gke_otel-e870661f-f53e-4a1d-b614-827bb2a3bcf2?_g=(time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))"
+                            "url": "{{kibanaUrl}}/app/dashboards#/view/gcp_gke_otel-b3188cbe-aa34-4bbe-8384-a089fcf9c6d0?_g=(time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))"
                         }
                     ],
                     "hide_border": true,
@@ -177,7 +179,7 @@
                                             "ignoreGlobalFilters": true,
                                             "index": "gke-nav-discover",
                                             "query": {
-                                                "esql": "ROW `Open` = \"View metrics in Discover\""
+                                                "esql": "SET unmapped_fields = \"nullify\";\nROW `Open` = \"View metrics in Discover\""
                                             }
                                         }
                                     }
@@ -192,7 +194,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "ROW `Open` = \"View metrics in Discover\""
+                                "esql": "SET unmapped_fields = \"nullify\";\nROW `Open` = \"View metrics in Discover\""
                             },
                             "visualization": {
                                 "density": "compact",
@@ -269,7 +271,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-5c0f7c9ac7e65265d6e22e1359905a5cf2fc7ef91aadc5fbba408c2450324ce2",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"Ready\"\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"Ready\" AND `metrics.kubernetes.io/node/status_condition` == 1\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
                                             }
                                         }
                                     }
@@ -284,7 +286,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"Ready\"\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"Ready\" AND `metrics.kubernetes.io/node/status_condition` == 1\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
                             },
                             "visualization": {
                                 "density": "default",
@@ -349,7 +351,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-10d76907fb3ac4a6af693b7aedbcb8a56054b841347810acbc9e62772c9d5127",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"MemoryPressure\"\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"MemoryPressure\" AND `metrics.kubernetes.io/node/status_condition` == 1\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
                                             }
                                         }
                                     }
@@ -364,7 +366,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"MemoryPressure\"\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"MemoryPressure\" AND `metrics.kubernetes.io/node/status_condition` == 1\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
                             },
                             "visualization": {
                                 "density": "default",
@@ -429,7 +431,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-afddb8b82951f58e13f822b943a3a22dc08320b39664580ff56cbb399a5401a5",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"DiskPressure\"\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"DiskPressure\" AND `metrics.kubernetes.io/node/status_condition` == 1\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
                                             }
                                         }
                                     }
@@ -444,7 +446,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"DiskPressure\"\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"DiskPressure\" AND `metrics.kubernetes.io/node/status_condition` == 1\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
                             },
                             "visualization": {
                                 "density": "default",
@@ -509,7 +511,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-644c92958b435af90e7b1abb2822623da1d8f4da71240c7eb4a45944a7309a86",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"PIDPressure\"\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"PIDPressure\" AND `metrics.kubernetes.io/node/status_condition` == 1\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
                                             }
                                         }
                                     }
@@ -524,7 +526,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"PIDPressure\"\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"PIDPressure\" AND `metrics.kubernetes.io/node/status_condition` == 1\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
                             },
                             "visualization": {
                                 "density": "default",
@@ -562,11 +564,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-2332552d9bb8034f622f75d9ae20f7c8e17dc61f94d19cbc23e6facf5c050dee": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-2332552d9bb8034f622f75d9ae20f7c8e17dc61f94d19cbc23e6facf5c050dee",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -599,10 +602,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-2332552d9bb8034f622f75d9ae20f7c8e17dc61f94d19cbc23e6facf5c050dee",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND attributes.condition NOT IN (\"KubeletConfigChanged\", \"SysctlChanged\")\n  AND NOT STARTS_WITH(attributes.condition, \"Deprecated\")\n  AND ((attributes.condition != \"Ready\" AND attributes.status == \"True\") OR (attributes.condition == \"Ready\" AND attributes.status != \"True\"))\n| STATS present = MAX(MAX_OVER_TIME(`metrics.kubernetes.io/node/status_condition`)) BY attributes.condition, bucket = TBUCKET(75, ?_tstart, ?_tend)"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND attributes.condition NOT IN (\"KubeletConfigChanged\", \"SysctlChanged\")\n  AND NOT STARTS_WITH(attributes.condition, \"Deprecated\")\n  AND ((attributes.condition != \"Ready\" AND attributes.status == \"True\") OR (attributes.condition == \"Ready\" AND attributes.status != \"True\"))\n| STATS present = MAX(MAX_OVER_TIME(`metrics.kubernetes.io/node/status_condition`)) BY attributes.condition, bucket = TBUCKET(75, ?_tstart, ?_tend)"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -610,19 +614,31 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-2332552d9bb8034f622f75d9ae20f7c8e17dc61f94d19cbc23e6facf5c050dee",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND attributes.condition NOT IN (\"KubeletConfigChanged\", \"SysctlChanged\")\n  AND NOT STARTS_WITH(attributes.condition, \"Deprecated\")\n  AND ((attributes.condition != \"Ready\" AND attributes.status == \"True\") OR (attributes.condition == \"Ready\" AND attributes.status != \"True\"))\n| STATS present = MAX(MAX_OVER_TIME(`metrics.kubernetes.io/node/status_condition`)) BY attributes.condition, bucket = TBUCKET(75, ?_tstart, ?_tend)"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND attributes.condition NOT IN (\"KubeletConfigChanged\", \"SysctlChanged\")\n  AND NOT STARTS_WITH(attributes.condition, \"Deprecated\")\n  AND ((attributes.condition != \"Ready\" AND attributes.status == \"True\") OR (attributes.condition == \"Ready\" AND attributes.status != \"True\"))\n| STATS present = MAX(MAX_OVER_TIME(`metrics.kubernetes.io/node/status_condition`)) BY attributes.condition, bucket = TBUCKET(75, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": false,
                                     "yLeft": false,
                                     "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
                                 },
                                 "layers": [
                                     {
@@ -644,8 +660,7 @@
                                                         {
                                                             "type": "other"
                                                         }
-                                                    ],
-                                                    "touched": false
+                                                    ]
                                                 }
                                             ]
                                         },
@@ -670,11 +685,23 @@
                                     "position": "right",
                                     "shouldTruncate": true
                                 },
+                                "pointVisibility": "auto",
                                 "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -699,7 +726,7 @@
                 "embeddableConfig": {
                     "description": "Conditions of this node whose latest status is a problem: `Ready` not True, or a pressure or node-problem-detector condition that is True. Since is when that status was first seen in the selected range. Informational conditions are left out.",
                     "esql_query": [
-                        "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS since = MIN(@timestamp), seen = MAX(@timestamp) BY attributes.condition, attributes.status\n| STATS status = LAST(attributes.status, seen), since = LAST(since, seen) BY attributes.condition\n| WHERE (attributes.condition != \"Ready\" AND status == \"True\" AND attributes.condition NOT IN (\"KubeletConfigChanged\", \"SysctlChanged\") AND NOT STARTS_WITH(attributes.condition, \"Deprecated\"))\n   OR (attributes.condition == \"Ready\" AND status != \"True\")\n| SORT since DESC\n| LIMIT 100"
+                        "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND `metrics.kubernetes.io/node/status_condition` == 1\n| STATS since = MIN(@timestamp), seen = MAX(@timestamp) BY attributes.condition, attributes.status\n| STATS status = LAST(attributes.status, seen), since = LAST(since, seen) BY attributes.condition\n| WHERE (attributes.condition != \"Ready\" AND status == \"True\" AND attributes.condition NOT IN (\"KubeletConfigChanged\", \"SysctlChanged\") AND NOT STARTS_WITH(attributes.condition, \"Deprecated\"))\n   OR (attributes.condition == \"Ready\" AND status != \"True\")\n| SORT since DESC\n| LIMIT 100"
                     ],
                     "template": "<style>\n  body { margin: 0; padding: var(--cc-space-s) var(--cc-space-l) var(--cc-space-l) var(--cc-space-l); box-sizing: border-box; font-family: var(--cc-font-family); color: var(--cc-color-text); background: var(--cc-color-background); }\n  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }\n  th, td { text-align: left; padding: var(--cc-space-s) var(--cc-space-m); border-bottom: 1px solid var(--cc-color-border); }\n  th { font-size: 0.75rem; font-weight: 600; }\n  .pill { display: inline-block; padding: 2px var(--cc-space-s); border-radius: var(--cc-radius-s); font-size: 0.75rem; font-weight: 600; background: #f6726a; color: #1d1e24; }\n  .empty { font-size: 0.875rem; opacity: 0.7; padding: var(--cc-space-m) 0; }\n</style>\n{% if rows.size == 0 %}\n  <div class=\"empty\">No active problem conditions.</div>\n{% else %}\n  <table>\n    <thead><tr><th>Condition</th><th>Status</th><th>Since</th></tr></thead>\n    <tbody>\n    {% for row in rows %}\n      <tr>\n        <td>{{ row[\"attributes.condition\"].value }}</td>\n        <td><span class=\"pill\">{{ row[\"status\"].value }}</span></td>\n        <td>{{ row[\"since\"].value | date: \"%b %-d, %Y @ %H:%M:%S\" }}</td>\n      </tr>\n    {% endfor %}\n    </tbody>\n  </table>\n{% endif %}\n",
                     "title": "List of active problem conditions"
@@ -757,7 +784,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-1568f5b1f57a0f40de46b5e80dd3d63ed94c81db41cc2981c2467c9451160deb",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND `metrics.kubernetes.io/node/interruption_count` IS NOT NULL\n| STATS interruptions = SUM(`metrics.kubernetes.io/node/interruption_count`)\n| EVAL interruptions = COALESCE(interruptions, 0)"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND `metrics.kubernetes.io/node/interruption_count` IS NOT NULL\n| STATS interruptions = SUM(`metrics.kubernetes.io/node/interruption_count`)\n| EVAL interruptions = COALESCE(interruptions, 0)"
                                             }
                                         }
                                     }
@@ -772,7 +799,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND `metrics.kubernetes.io/node/interruption_count` IS NOT NULL\n| STATS interruptions = SUM(`metrics.kubernetes.io/node/interruption_count`)\n| EVAL interruptions = COALESCE(interruptions, 0)"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND `metrics.kubernetes.io/node/interruption_count` IS NOT NULL\n| STATS interruptions = SUM(`metrics.kubernetes.io/node/interruption_count`)\n| EVAL interruptions = COALESCE(interruptions, 0)"
                             },
                             "visualization": {
                                 "applyColorTo": "value",
@@ -794,14 +821,11 @@
                                             }
                                         ],
                                         "continuity": "none",
-                                        "maxSteps": 5,
                                         "name": "custom",
-                                        "progression": "fixed",
                                         "rangeMax": 999999999999,
                                         "rangeMin": 0,
                                         "rangeType": "number",
                                         "reverse": false,
-                                        "steps": 2,
                                         "stops": [
                                             {
                                                 "color": "#24c292",
@@ -883,7 +907,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-d36257dc851a357767187a078dcb2ae4036e5d7216666f5555200f6b46f1844d",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND `metrics.kubernetes.io/node/latencies/startup` IS NOT NULL\n| STATS startup = MAX(`metrics.kubernetes.io/node/latencies/startup`) BY resource.attributes.node_name\n| KEEP startup"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND `metrics.kubernetes.io/node/latencies/startup` IS NOT NULL\n| STATS startup = MAX(`metrics.kubernetes.io/node/latencies/startup`) BY resource.attributes.node_name\n| KEEP startup"
                                             }
                                         }
                                     }
@@ -898,7 +922,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND `metrics.kubernetes.io/node/latencies/startup` IS NOT NULL\n| STATS startup = MAX(`metrics.kubernetes.io/node/latencies/startup`) BY resource.attributes.node_name\n| KEEP startup"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND `metrics.kubernetes.io/node/latencies/startup` IS NOT NULL\n| STATS startup = MAX(`metrics.kubernetes.io/node/latencies/startup`) BY resource.attributes.node_name\n| KEEP startup"
                             },
                             "visualization": {
                                 "density": "default",
@@ -984,7 +1008,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-45a10686889db9d09a918c355f529378dc837eb17864314dbbbfe290c35bce42",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND `metrics.kubernetes.io/node/interruption_count` IS NOT NULL\n| STATS interruptions = SUM(`metrics.kubernetes.io/node/interruption_count`) BY attributes.interruption_type, attributes.interruption_reason"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND `metrics.kubernetes.io/node/interruption_count` IS NOT NULL\n| STATS interruptions = SUM(`metrics.kubernetes.io/node/interruption_count`) BY attributes.interruption_type, attributes.interruption_reason"
                                             }
                                         }
                                     }
@@ -999,13 +1023,24 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND `metrics.kubernetes.io/node/interruption_count` IS NOT NULL\n| STATS interruptions = SUM(`metrics.kubernetes.io/node/interruption_count`) BY attributes.interruption_type, attributes.interruption_reason"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND `metrics.kubernetes.io/node/interruption_count` IS NOT NULL\n| STATS interruptions = SUM(`metrics.kubernetes.io/node/interruption_count`) BY attributes.interruption_type, attributes.interruption_reason"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": false,
                                     "yLeft": false,
                                     "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
                                 },
                                 "layers": [
                                     {
@@ -1027,8 +1062,7 @@
                                                         {
                                                             "type": "other"
                                                         }
-                                                    ],
-                                                    "touched": false
+                                                    ]
                                                 }
                                             ]
                                         },
@@ -1052,11 +1086,24 @@
                                     "layout": "list",
                                     "position": "bottom"
                                 },
+                                "minBarHeight": 1,
                                 "preferredSeriesType": "bar_horizontal",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -1120,7 +1167,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-f0ca53acab1f342647d0b3aa1becde86b90d1b09ce1632d1c7762799fd8d3a9b",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS util = SUM(SUM_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_utilization`)) / SUM(COUNT_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_utilization`))\n| EVAL util_pct = util * 100\n| KEEP util_pct"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS util = SUM(SUM_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_utilization`)) / SUM(COUNT_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_utilization`))\n| EVAL util_pct = util * 100\n| KEEP util_pct"
                                             }
                                         }
                                     }
@@ -1135,7 +1182,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS util = SUM(SUM_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_utilization`)) / SUM(COUNT_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_utilization`))\n| EVAL util_pct = util * 100\n| KEEP util_pct"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS util = SUM(SUM_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_utilization`)) / SUM(COUNT_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_utilization`))\n| EVAL util_pct = util * 100\n| KEEP util_pct"
                             },
                             "visualization": {
                                 "applyColorTo": "value",
@@ -1161,14 +1208,11 @@
                                             }
                                         ],
                                         "continuity": "above",
-                                        "maxSteps": 5,
                                         "name": "custom",
-                                        "progression": "fixed",
                                         "rangeMax": null,
                                         "rangeMin": 0,
                                         "rangeType": "number",
                                         "reverse": false,
-                                        "steps": 3,
                                         "stops": [
                                             {
                                                 "color": "#24c292",
@@ -1217,11 +1261,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-9ee7fac8d330780b4d5fb1686b42116b944c3ecf5f7a02c5f64f5e7cf84d030f": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-9ee7fac8d330780b4d5fb1686b42116b944c3ecf5f7a02c5f64f5e7cf84d030f",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -1257,10 +1302,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-9ee7fac8d330780b4d5fb1686b42116b944c3ecf5f7a02c5f64f5e7cf84d030f",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(RATE(`metrics.kubernetes.io/node/cpu/core_usage_time`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_cores`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/total_cores`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(RATE(`metrics.kubernetes.io/node/cpu/core_usage_time`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_cores`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/total_cores`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         },
                                         "line_1": {
                                             "columns": [
@@ -1290,10 +1336,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-9ee7fac8d330780b4d5fb1686b42116b944c3ecf5f7a02c5f64f5e7cf84d030f",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(RATE(`metrics.kubernetes.io/node/cpu/core_usage_time`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_cores`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/total_cores`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(RATE(`metrics.kubernetes.io/node/cpu/core_usage_time`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_cores`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/total_cores`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         },
                                         "line_2": {
                                             "columns": [
@@ -1323,10 +1370,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-9ee7fac8d330780b4d5fb1686b42116b944c3ecf5f7a02c5f64f5e7cf84d030f",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(RATE(`metrics.kubernetes.io/node/cpu/core_usage_time`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_cores`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/total_cores`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(RATE(`metrics.kubernetes.io/node/cpu/core_usage_time`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_cores`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/total_cores`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -1334,23 +1382,23 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-9ee7fac8d330780b4d5fb1686b42116b944c3ecf5f7a02c5f64f5e7cf84d030f",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-area_0",
                                     "type": "index-pattern"
                                 },
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-9ee7fac8d330780b4d5fb1686b42116b944c3ecf5f7a02c5f64f5e7cf84d030f",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-line_1",
                                     "type": "index-pattern"
                                 },
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-9ee7fac8d330780b4d5fb1686b42116b944c3ecf5f7a02c5f64f5e7cf84d030f",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-line_2",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(RATE(`metrics.kubernetes.io/node/cpu/core_usage_time`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_cores`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/total_cores`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(RATE(`metrics.kubernetes.io/node/cpu/core_usage_time`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_cores`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/total_cores`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
                             },
                             "visualization": {
                                 "areaFill": "solid",
@@ -1361,6 +1409,17 @@
                                 },
                                 "curveType": "LINEAR",
                                 "fillOpacity": 0.3,
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
                                 "layers": [
                                     {
                                         "accessors": [
@@ -1411,13 +1470,26 @@
                                 ],
                                 "legend": {
                                     "isVisible": false,
+                                    "maxLines": 1,
                                     "position": "right"
                                 },
+                                "pointVisibility": "auto",
                                 "preferredSeriesType": "area",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -1481,7 +1553,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-45cfa190b694353d86464d5f19e597bd9e40e24e1c3e1835d0cf4c63510840d8",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS util = SUM(SUM_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_utilization`)) / SUM(COUNT_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_utilization`))\n| EVAL util_pct = util * 100\n| KEEP util_pct"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS util = SUM(SUM_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_utilization`)) / SUM(COUNT_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_utilization`))\n| EVAL util_pct = util * 100\n| KEEP util_pct"
                                             }
                                         }
                                     }
@@ -1496,7 +1568,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS util = SUM(SUM_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_utilization`)) / SUM(COUNT_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_utilization`))\n| EVAL util_pct = util * 100\n| KEEP util_pct"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS util = SUM(SUM_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_utilization`)) / SUM(COUNT_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_utilization`))\n| EVAL util_pct = util * 100\n| KEEP util_pct"
                             },
                             "visualization": {
                                 "applyColorTo": "value",
@@ -1522,14 +1594,11 @@
                                             }
                                         ],
                                         "continuity": "above",
-                                        "maxSteps": 5,
                                         "name": "custom",
-                                        "progression": "fixed",
                                         "rangeMax": null,
                                         "rangeMin": 0,
                                         "rangeType": "number",
                                         "reverse": false,
-                                        "steps": 3,
                                         "stops": [
                                             {
                                                 "color": "#24c292",
@@ -1578,11 +1647,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-be9a101d37bb40a48b459a31f891d996abedf497f26cef854f79317676d1ed36": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-be9a101d37bb40a48b459a31f891d996abedf497f26cef854f79317676d1ed36",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -1618,10 +1688,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-be9a101d37bb40a48b459a31f891d996abedf497f26cef854f79317676d1ed36",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS used = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/used_bytes`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_bytes`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/total_bytes`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL used_gib = used / 1073741824.0, allocatable_gib = allocatable / 1073741824.0, total_gib = total / 1073741824.0\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS used = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/used_bytes`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_bytes`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/total_bytes`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL used_gib = used / 1073741824.0, allocatable_gib = allocatable / 1073741824.0, total_gib = total / 1073741824.0\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         },
                                         "line_1": {
                                             "columns": [
@@ -1651,10 +1722,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-be9a101d37bb40a48b459a31f891d996abedf497f26cef854f79317676d1ed36",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS used = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/used_bytes`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_bytes`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/total_bytes`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL used_gib = used / 1073741824.0, allocatable_gib = allocatable / 1073741824.0, total_gib = total / 1073741824.0\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS used = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/used_bytes`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_bytes`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/total_bytes`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL used_gib = used / 1073741824.0, allocatable_gib = allocatable / 1073741824.0, total_gib = total / 1073741824.0\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         },
                                         "line_2": {
                                             "columns": [
@@ -1684,10 +1756,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-be9a101d37bb40a48b459a31f891d996abedf497f26cef854f79317676d1ed36",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS used = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/used_bytes`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_bytes`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/total_bytes`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL used_gib = used / 1073741824.0, allocatable_gib = allocatable / 1073741824.0, total_gib = total / 1073741824.0\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS used = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/used_bytes`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_bytes`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/total_bytes`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL used_gib = used / 1073741824.0, allocatable_gib = allocatable / 1073741824.0, total_gib = total / 1073741824.0\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -1695,23 +1768,23 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-be9a101d37bb40a48b459a31f891d996abedf497f26cef854f79317676d1ed36",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-area_0",
                                     "type": "index-pattern"
                                 },
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-be9a101d37bb40a48b459a31f891d996abedf497f26cef854f79317676d1ed36",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-line_1",
                                     "type": "index-pattern"
                                 },
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-be9a101d37bb40a48b459a31f891d996abedf497f26cef854f79317676d1ed36",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-line_2",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS used = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/used_bytes`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_bytes`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/total_bytes`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL used_gib = used / 1073741824.0, allocatable_gib = allocatable / 1073741824.0, total_gib = total / 1073741824.0\n| SORT bucket ASC"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS used = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/used_bytes`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_bytes`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/total_bytes`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL used_gib = used / 1073741824.0, allocatable_gib = allocatable / 1073741824.0, total_gib = total / 1073741824.0\n| SORT bucket ASC"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -1722,6 +1795,17 @@
                                 },
                                 "curveType": "LINEAR",
                                 "fillOpacity": 0.3,
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
                                 "layers": [
                                     {
                                         "accessors": [
@@ -1775,11 +1859,23 @@
                                     "layout": "list",
                                     "position": "bottom"
                                 },
+                                "pointVisibility": "auto",
                                 "preferredSeriesType": "area",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -1843,7 +1939,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-81b9b4974f4898e9c18f042beb9d59b73668013c735623d00e95e8f1d389a59a",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS allocatable = MAX(`metrics.kubernetes.io/node/cpu/allocatable_cores`), total = MAX(`metrics.kubernetes.io/node/cpu/total_cores`)\n| KEEP allocatable, total"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS allocatable = MAX(`metrics.kubernetes.io/node/cpu/allocatable_cores`), total = MAX(`metrics.kubernetes.io/node/cpu/total_cores`)\n| KEEP allocatable, total"
                                             }
                                         }
                                     }
@@ -1858,7 +1954,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS allocatable = MAX(`metrics.kubernetes.io/node/cpu/allocatable_cores`), total = MAX(`metrics.kubernetes.io/node/cpu/total_cores`)\n| KEEP allocatable, total"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS allocatable = MAX(`metrics.kubernetes.io/node/cpu/allocatable_cores`), total = MAX(`metrics.kubernetes.io/node/cpu/total_cores`)\n| KEEP allocatable, total"
                             },
                             "visualization": {
                                 "density": "default",
@@ -1933,7 +2029,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-9ca47ee4a96929f5e938ed06a20f8eec49eb8f08e8629cc36c298f5396949584",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS allocatable = MAX(`metrics.kubernetes.io/node/memory/allocatable_bytes`)\n| EVAL allocatable_gib = allocatable / 1073741824.0\n| KEEP allocatable_gib"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS allocatable = MAX(`metrics.kubernetes.io/node/memory/allocatable_bytes`)\n| EVAL allocatable_gib = allocatable / 1073741824.0\n| KEEP allocatable_gib"
                                             }
                                         }
                                     }
@@ -1948,7 +2044,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS allocatable = MAX(`metrics.kubernetes.io/node/memory/allocatable_bytes`)\n| EVAL allocatable_gib = allocatable / 1073741824.0\n| KEEP allocatable_gib"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS allocatable = MAX(`metrics.kubernetes.io/node/memory/allocatable_bytes`)\n| EVAL allocatable_gib = allocatable / 1073741824.0\n| KEEP allocatable_gib"
                             },
                             "visualization": {
                                 "density": "default",
@@ -2023,7 +2119,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-373f95b8d10752a61172d4e1af07f384aad0dddcfded2511c23d206a3d63d7e5",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(`metrics.kubernetes.io/node/ephemeral_storage/used_bytes`), total = AVG(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`)\n| EVAL pct = CASE(total > 0, TO_DOUBLE(used) / total * 100, NULL)\n| KEEP pct"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(`metrics.kubernetes.io/node/ephemeral_storage/used_bytes`), total = AVG(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`)\n| EVAL pct = CASE(total > 0, TO_DOUBLE(used) / total * 100, NULL)\n| KEEP pct"
                                             }
                                         }
                                     }
@@ -2038,7 +2134,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(`metrics.kubernetes.io/node/ephemeral_storage/used_bytes`), total = AVG(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`)\n| EVAL pct = CASE(total > 0, TO_DOUBLE(used) / total * 100, NULL)\n| KEEP pct"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(`metrics.kubernetes.io/node/ephemeral_storage/used_bytes`), total = AVG(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`)\n| EVAL pct = CASE(total > 0, TO_DOUBLE(used) / total * 100, NULL)\n| KEEP pct"
                             },
                             "visualization": {
                                 "applyColorTo": "value",
@@ -2064,14 +2160,11 @@
                                             }
                                         ],
                                         "continuity": "above",
-                                        "maxSteps": 5,
                                         "name": "custom",
-                                        "progression": "fixed",
                                         "rangeMax": null,
                                         "rangeMin": 0,
                                         "rangeType": "number",
                                         "reverse": false,
-                                        "steps": 3,
                                         "stops": [
                                             {
                                                 "color": "#24c292",
@@ -2120,11 +2213,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-8dc303b7f9695a71e7c0ca1caa1d3ac41f765f22f1525f985b68b2fcfe2bc1b5": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-8dc303b7f9695a71e7c0ca1caa1d3ac41f765f22f1525f985b68b2fcfe2bc1b5",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -2160,10 +2254,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-8dc303b7f9695a71e7c0ca1caa1d3ac41f765f22f1525f985b68b2fcfe2bc1b5",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/used_bytes`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/allocatable_bytes`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL used_gib = used / 1073741824.0, allocatable_gib = allocatable / 1073741824.0, total_gib = total / 1073741824.0\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/used_bytes`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/allocatable_bytes`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL used_gib = used / 1073741824.0, allocatable_gib = allocatable / 1073741824.0, total_gib = total / 1073741824.0\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         },
                                         "line_1": {
                                             "columns": [
@@ -2210,10 +2305,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-8dc303b7f9695a71e7c0ca1caa1d3ac41f765f22f1525f985b68b2fcfe2bc1b5",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/used_bytes`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/allocatable_bytes`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL used_gib = used / 1073741824.0, allocatable_gib = allocatable / 1073741824.0, total_gib = total / 1073741824.0\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/used_bytes`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/allocatable_bytes`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL used_gib = used / 1073741824.0, allocatable_gib = allocatable / 1073741824.0, total_gib = total / 1073741824.0\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -2221,18 +2317,18 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-8dc303b7f9695a71e7c0ca1caa1d3ac41f765f22f1525f985b68b2fcfe2bc1b5",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-area_0",
                                     "type": "index-pattern"
                                 },
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-8dc303b7f9695a71e7c0ca1caa1d3ac41f765f22f1525f985b68b2fcfe2bc1b5",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-line_1",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/used_bytes`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/allocatable_bytes`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL used_gib = used / 1073741824.0, allocatable_gib = allocatable / 1073741824.0, total_gib = total / 1073741824.0\n| SORT bucket ASC"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/used_bytes`)),\n        allocatable = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/allocatable_bytes`)),\n        total = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL used_gib = used / 1073741824.0, allocatable_gib = allocatable / 1073741824.0, total_gib = total / 1073741824.0\n| SORT bucket ASC"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -2243,6 +2339,17 @@
                                 },
                                 "curveType": "LINEAR",
                                 "fillOpacity": 0.3,
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
                                 "layers": [
                                     {
                                         "accessors": [
@@ -2286,11 +2393,23 @@
                                     "layout": "list",
                                     "position": "bottom"
                                 },
+                                "pointVisibility": "auto",
                                 "preferredSeriesType": "area",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -2317,11 +2436,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-c6d6950062e08a967fc6ec8d978f0a4638eba0a39f4a78bb90f6cec5ca19c7aa": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-c6d6950062e08a967fc6ec8d978f0a4638eba0a39f4a78bb90f6cec5ca19c7aa",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -2356,10 +2476,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-c6d6950062e08a967fc6ec8d978f0a4638eba0a39f4a78bb90f6cec5ca19c7aa",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS pid_used = AVG(`metrics.kubernetes.io/node/pid_used`), pid_limit = AVG(`metrics.kubernetes.io/node/pid_limit`)\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS pid_used = AVG(`metrics.kubernetes.io/node/pid_used`), pid_limit = AVG(`metrics.kubernetes.io/node/pid_limit`)\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         },
                                         "line_1": {
                                             "columns": [
@@ -2388,10 +2509,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-c6d6950062e08a967fc6ec8d978f0a4638eba0a39f4a78bb90f6cec5ca19c7aa",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS pid_used = AVG(`metrics.kubernetes.io/node/pid_used`), pid_limit = AVG(`metrics.kubernetes.io/node/pid_limit`)\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS pid_used = AVG(`metrics.kubernetes.io/node/pid_used`), pid_limit = AVG(`metrics.kubernetes.io/node/pid_limit`)\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -2399,18 +2521,18 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-c6d6950062e08a967fc6ec8d978f0a4638eba0a39f4a78bb90f6cec5ca19c7aa",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-area_0",
                                     "type": "index-pattern"
                                 },
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-c6d6950062e08a967fc6ec8d978f0a4638eba0a39f4a78bb90f6cec5ca19c7aa",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-line_1",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS pid_used = AVG(`metrics.kubernetes.io/node/pid_used`), pid_limit = AVG(`metrics.kubernetes.io/node/pid_limit`)\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS pid_used = AVG(`metrics.kubernetes.io/node/pid_used`), pid_limit = AVG(`metrics.kubernetes.io/node/pid_limit`)\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
                             },
                             "visualization": {
                                 "areaFill": "solid",
@@ -2421,6 +2543,17 @@
                                 },
                                 "curveType": "LINEAR",
                                 "fillOpacity": 0.3,
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
                                 "layers": [
                                     {
                                         "accessors": [
@@ -2459,11 +2592,23 @@
                                     "layout": "list",
                                     "position": "bottom"
                                 },
+                                "pointVisibility": "auto",
                                 "preferredSeriesType": "area",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -2527,7 +2672,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-26992eef3dfbf0492e1383cb448baa8b48fc83c183c843d1c2f85cee87fb63dd",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS total = AVG(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`), allocatable = AVG(`metrics.kubernetes.io/node/ephemeral_storage/allocatable_bytes`)\n| EVAL total_gib = total / 1073741824.0, allocatable_gib = allocatable / 1073741824.0\n| KEEP total_gib, allocatable_gib"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS total = AVG(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`), allocatable = AVG(`metrics.kubernetes.io/node/ephemeral_storage/allocatable_bytes`)\n| EVAL total_gib = total / 1073741824.0, allocatable_gib = allocatable / 1073741824.0\n| KEEP total_gib, allocatable_gib"
                                             }
                                         }
                                     }
@@ -2542,7 +2687,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS total = AVG(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`), allocatable = AVG(`metrics.kubernetes.io/node/ephemeral_storage/allocatable_bytes`)\n| EVAL total_gib = total / 1073741824.0, allocatable_gib = allocatable / 1073741824.0\n| KEEP total_gib, allocatable_gib"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS total = AVG(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`), allocatable = AVG(`metrics.kubernetes.io/node/ephemeral_storage/allocatable_bytes`)\n| EVAL total_gib = total / 1073741824.0, allocatable_gib = allocatable / 1073741824.0\n| KEEP total_gib, allocatable_gib"
                             },
                             "visualization": {
                                 "density": "default",
@@ -2580,11 +2725,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-f414cf6a2288ced81b064f3bce7eac461bb81c6e00e9c59e75b406c452e28391": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-f414cf6a2288ced81b064f3bce7eac461bb81c6e00e9c59e75b406c452e28391",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -2627,10 +2773,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-f414cf6a2288ced81b064f3bce7eac461bb81c6e00e9c59e75b406c452e28391",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/used_bytes`)) BY attributes.memory_type, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL used_gib = used / 1073741824.0\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/used_bytes`)) BY attributes.memory_type, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL used_gib = used / 1073741824.0\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -2638,19 +2785,30 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-f414cf6a2288ced81b064f3bce7eac461bb81c6e00e9c59e75b406c452e28391",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-bar_stacked_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/used_bytes`)) BY attributes.memory_type, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL used_gib = used / 1073741824.0\n| SORT bucket ASC"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS used = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/used_bytes`)) BY attributes.memory_type, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL used_gib = used / 1073741824.0\n| SORT bucket ASC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": false,
                                     "yLeft": false,
                                     "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
                                 },
                                 "layers": [
                                     {
@@ -2672,8 +2830,7 @@
                                                         {
                                                             "type": "other"
                                                         }
-                                                    ],
-                                                    "touched": false
+                                                    ]
                                                 }
                                             ]
                                         },
@@ -2697,11 +2854,24 @@
                                     "layout": "list",
                                     "position": "bottom"
                                 },
+                                "minBarHeight": 1,
                                 "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -2728,11 +2898,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-caf85f6fe0508361d39e3560d9538aa405b87a75efe41a506cf3c42ce2c309ec": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-caf85f6fe0508361d39e3560d9538aa405b87a75efe41a506cf3c42ce2c309ec",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -2781,10 +2952,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-caf85f6fe0508361d39e3560d9538aa405b87a75efe41a506cf3c42ce2c309ec",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS received = AVG(RATE(`metrics.kubernetes.io/node/network/received_bytes_count`)),\n        sent = AVG(RATE(`metrics.kubernetes.io/node/network/sent_bytes_count`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS received = AVG(RATE(`metrics.kubernetes.io/node/network/received_bytes_count`)),\n        sent = AVG(RATE(`metrics.kubernetes.io/node/network/sent_bytes_count`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -2792,19 +2964,31 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-caf85f6fe0508361d39e3560d9538aa405b87a75efe41a506cf3c42ce2c309ec",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS received = AVG(RATE(`metrics.kubernetes.io/node/network/received_bytes_count`)),\n        sent = AVG(RATE(`metrics.kubernetes.io/node/network/sent_bytes_count`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS received = AVG(RATE(`metrics.kubernetes.io/node/network/received_bytes_count`)),\n        sent = AVG(RATE(`metrics.kubernetes.io/node/network/sent_bytes_count`))\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": false,
                                     "yLeft": false,
                                     "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
                                 },
                                 "layers": [
                                     {
@@ -2833,11 +3017,23 @@
                                     "layout": "list",
                                     "position": "bottom"
                                 },
+                                "pointVisibility": "auto",
                                 "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -2864,11 +3060,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-ff2d40fbed24ccb90e299ab852e4754eaa0e8eeee95b565aa2374ee96bab83a2": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-ff2d40fbed24ccb90e299ab852e4754eaa0e8eeee95b565aa2374ee96bab83a2",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -2903,10 +3100,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-ff2d40fbed24ccb90e299ab852e4754eaa0e8eeee95b565aa2374ee96bab83a2",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS inodes_free = AVG(`metrics.kubernetes.io/node/ephemeral_storage/inodes_free`), inodes_total = AVG(`metrics.kubernetes.io/node/ephemeral_storage/inodes_total`)\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS inodes_free = AVG(`metrics.kubernetes.io/node/ephemeral_storage/inodes_free`), inodes_total = AVG(`metrics.kubernetes.io/node/ephemeral_storage/inodes_total`)\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         },
                                         "line_1": {
                                             "columns": [
@@ -2935,10 +3133,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-ff2d40fbed24ccb90e299ab852e4754eaa0e8eeee95b565aa2374ee96bab83a2",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS inodes_free = AVG(`metrics.kubernetes.io/node/ephemeral_storage/inodes_free`), inodes_total = AVG(`metrics.kubernetes.io/node/ephemeral_storage/inodes_total`)\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS inodes_free = AVG(`metrics.kubernetes.io/node/ephemeral_storage/inodes_free`), inodes_total = AVG(`metrics.kubernetes.io/node/ephemeral_storage/inodes_total`)\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -2946,18 +3145,18 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-ff2d40fbed24ccb90e299ab852e4754eaa0e8eeee95b565aa2374ee96bab83a2",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-area_0",
                                     "type": "index-pattern"
                                 },
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-ff2d40fbed24ccb90e299ab852e4754eaa0e8eeee95b565aa2374ee96bab83a2",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-line_1",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "FROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS inodes_free = AVG(`metrics.kubernetes.io/node/ephemeral_storage/inodes_free`), inodes_total = AVG(`metrics.kubernetes.io/node/ephemeral_storage/inodes_total`)\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS inodes_free = AVG(`metrics.kubernetes.io/node/ephemeral_storage/inodes_free`), inodes_total = AVG(`metrics.kubernetes.io/node/ephemeral_storage/inodes_total`)\n    BY bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
                             },
                             "visualization": {
                                 "areaFill": "solid",
@@ -2968,6 +3167,17 @@
                                 },
                                 "curveType": "LINEAR",
                                 "fillOpacity": 0.3,
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
                                 "layers": [
                                     {
                                         "accessors": [
@@ -3006,11 +3216,23 @@
                                     "layout": "list",
                                     "position": "bottom"
                                 },
+                                "pointVisibility": "auto",
                                 "preferredSeriesType": "area",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -3037,11 +3259,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-0baaff389eb1bbcecfff232731c86c07aed47bca1e47ad90d75ee65e8724b2df": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-0baaff389eb1bbcecfff232731c86c07aed47bca1e47ad90d75ee65e8724b2df",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -3082,10 +3305,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-0baaff389eb1bbcecfff232731c86c07aed47bca1e47ad90d75ee65e8724b2df",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS logs = SUM(SUM_OVER_TIME(`metrics.kubernetes.io/node/logs/input_bytes`)) BY attributes.type, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS logs = SUM(SUM_OVER_TIME(`metrics.kubernetes.io/node/logs/input_bytes`)) BY attributes.type, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -3093,19 +3317,30 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-0baaff389eb1bbcecfff232731c86c07aed47bca1e47ad90d75ee65e8724b2df",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-bar_stacked_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS logs = SUM(SUM_OVER_TIME(`metrics.kubernetes.io/node/logs/input_bytes`)) BY attributes.type, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS logs = SUM(SUM_OVER_TIME(`metrics.kubernetes.io/node/logs/input_bytes`)) BY attributes.type, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": false,
                                     "yLeft": false,
                                     "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
                                 },
                                 "layers": [
                                     {
@@ -3127,8 +3362,7 @@
                                                         {
                                                             "type": "other"
                                                         }
-                                                    ],
-                                                    "touched": false
+                                                    ]
                                                 }
                                             ]
                                         },
@@ -3152,11 +3386,24 @@
                                     "layout": "list",
                                     "position": "bottom"
                                 },
+                                "minBarHeight": 1,
                                 "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
@@ -3183,11 +3430,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-4fede9672612e0c969a8b65f134fc97e741a2d56b3ce08b9e1f7044e3c5588a9": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-4fede9672612e0c969a8b65f134fc97e741a2d56b3ce08b9e1f7044e3c5588a9",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -3230,10 +3478,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-4fede9672612e0c969a8b65f134fc97e741a2d56b3ce08b9e1f7044e3c5588a9",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS cpu = AVG(RATE(`metrics.kubernetes.io/node_daemon/cpu/core_usage_time`)) BY attributes.component, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS cpu = AVG(RATE(`metrics.kubernetes.io/node_daemon/cpu/core_usage_time`)) BY attributes.component, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -3241,19 +3490,31 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-4fede9672612e0c969a8b65f134fc97e741a2d56b3ce08b9e1f7044e3c5588a9",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS cpu = AVG(RATE(`metrics.kubernetes.io/node_daemon/cpu/core_usage_time`)) BY attributes.component, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n| STATS cpu = AVG(RATE(`metrics.kubernetes.io/node_daemon/cpu/core_usage_time`)) BY attributes.component, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| SORT bucket ASC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": false,
                                     "yLeft": false,
                                     "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
                                 },
                                 "layers": [
                                     {
@@ -3275,8 +3536,7 @@
                                                         {
                                                             "type": "other"
                                                         }
-                                                    ],
-                                                    "touched": false
+                                                    ]
                                                 }
                                             ]
                                         },
@@ -3300,18 +3560,30 @@
                                     "layout": "list",
                                     "position": "bottom"
                                 },
+                                "pointVisibility": "auto",
                                 "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "CPU cores used by node daemons (`node_daemon/cpu/core_usage_time` rate) by component: `kubelet`, `docker-daemon` (the container runtime) and `pods`.",
+                    "description": "CPU cores used by node daemons (`node_daemon/cpu/core_usage_time` rate) by component, such as `kubelet` and `container-runtime`.",
                     "title": "Node daemon CPU by component"
                 },
                 "gridData": {
@@ -3331,11 +3603,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-3edf8ed2f72e60f89036dd1e540825933737c56a7d32d9b2e704adc61f11268a": {
+                                "metrics-gcp.gke.otel-default-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-3edf8ed2f72e60f89036dd1e540825933737c56a7d32d9b2e704adc61f11268a",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "metrics-gcp.gke.otel-default",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-gcp.gke.otel-default",
                                     "type": "esql"
                                 }
@@ -3378,10 +3651,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-3edf8ed2f72e60f89036dd1e540825933737c56a7d32d9b2e704adc61f11268a",
+                                            "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS mem = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node_daemon/memory/used_bytes`)) BY attributes.component, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL mem_gib = mem / 1073741824.0\n| SORT bucket ASC"
-                                            }
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS mem = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node_daemon/memory/used_bytes`)) BY attributes.component, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL mem_gib = mem / 1073741824.0\n| SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -3389,19 +3663,31 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-gcp.gke.otel-default-3edf8ed2f72e60f89036dd1e540825933737c56a7d32d9b2e704adc61f11268a",
+                                    "id": "metrics-gcp.gke.otel-default-@timestamp",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS mem = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node_daemon/memory/used_bytes`)) BY attributes.component, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL mem_gib = mem / 1073741824.0\n| SORT bucket ASC"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n  AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL)\n| STATS mem = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node_daemon/memory/used_bytes`)) BY attributes.component, bucket = TBUCKET(75, ?_tstart, ?_tend)\n| EVAL mem_gib = mem / 1073741824.0\n| SORT bucket ASC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": false,
                                     "yLeft": false,
                                     "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
                                 },
                                 "layers": [
                                     {
@@ -3423,8 +3709,7 @@
                                                         {
                                                             "type": "other"
                                                         }
-                                                    ],
-                                                    "touched": false
+                                                    ]
                                                 }
                                             ]
                                         },
@@ -3448,18 +3733,30 @@
                                     "layout": "list",
                                     "position": "bottom"
                                 },
+                                "pointVisibility": "auto",
                                 "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
                                 "yLeftExtent": {
                                     "mode": "full",
                                     "niceValues": true
-                                }
+                                },
+                                "yLeftScale": "linear"
                             }
                         },
                         "title": "",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Non-evictable memory used by node daemons (`node_daemon/memory/used_bytes`) by component: `kubelet`, `docker-daemon` (the container runtime) and `pods`.",
+                    "description": "Non-evictable memory used by node daemons (`node_daemon/memory/used_bytes`) by component, such as `kubelet` and `container-runtime`.",
                     "title": "Node daemon memory by component"
                 },
                 "gridData": {
@@ -3556,7 +3853,7 @@
         "title": "[GCP OTel] GKE Node Detail"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-10-09T19:44:48.567Z",
+    "created_at": "2026-10-17T17:34:23.893Z",
     "id": "gcp_gke_otel-ff682663-564f-4b10-bd9a-8cba4d15d1dd",
     "references": [],
     "type": "dashboard",
