@@ -18,7 +18,7 @@ such as OpenAI, Anthropic, Google, Meta, Nvidia, and others.
 - **Cache efficiency**: Measure cache hit rates to optimize prompt caching and reduce cost
 - **BYOK visibility**: Separate spend on your own provider keys (and OpenRouter's BYOK fees) from spend on OpenRouter credits
 - **Budget alerting**: Surface spend anomalies before they accumulate
-- **SLO tracking**: Alert on model-level latency regressions
+- **Latency monitoring**: Alert on model-level latency regressions
 
 ## What do I need to use this integration?
 
