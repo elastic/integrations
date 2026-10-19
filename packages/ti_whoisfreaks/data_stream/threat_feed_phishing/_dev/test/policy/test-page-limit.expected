@@ -11,42 +11,300 @@ inputs:
           fields:
             _conf:
                 ioc_expiration_duration: 90d
+                replace_previous_file: true
           fields_under_root: true
-          interval: 24h
-          program: |
+          interval: 1h
+          processors:
+            - drop_event.when.equals.retry: true
+          program: |-
+            // Each poll first reads the public status endpoint. By default the file date is
+            // the status threat_feed.<feed>.last_update. A configured file_date is validated
+            // and fetched once (recorded in cursor.pinned_date); after that, polls follow the
+            // latest file again. When the date is not ingested yet, the cursor switches to
+            // phase "page" and the file for that date is paged with limit/offset; at the end
+            // of the file the date is recorded and the cursor returns to phase "idle".
             state.with(
-              request("GET", state.url + "?" + {
-                "apiKey": [state.api_key],
-                "offset": [string(int(state.cur_offset))],
-                "limit": [string(int(state.page_limit))],
-              }.format_query()).do_request().as(resp,
-                (resp.StatusCode != 200) ?
+              {
+                "c": state.?cursor.orValue({}),
+                "pin": state.file_date.trim_space(),
+                "paging": state.?cursor.phase.orValue("") == "page",
+                "date": state.?cursor.date.orValue(""),
+                "offset": int(state.?cursor.cur_offset.orValue(0)),
+              }.as(s,
+                s.with(
+                  {
+                    "pin_ok": s.pin == "" || s.pin.matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$") &&
+                    type(try(s.pin.parse_time("2006-01-02"))) != string,
+                    // Pinned files are tracked apart from cursor.last_date, so fetching a
+                    // historical file never rewinds the latest-file cursor.
+                    "pin_done": s.pin != "" && s.pin == s.c.?pinned_date.orValue(""),
+                    // Request target without the API key, also used in error messages.
+                    "target": s.paging ?
+                      (
+                        state.url + "?" + {
+                          "date": [s.date],
+                          "limit": [string(int(state.page_limit))],
+                          "offset": [string(s.offset)],
+                        }.format_query()
+                      )
+                    :
+                      state.status_url,
+                  }
+                )
+              ).as(s,
+                s.with(
+                  {
+                    // Every request is normalised to {ok, code, detail, body, json}. A code of 0
+                    // is a transport error. A 200 stream response with a JSON body is treated as
+                    // an error, using the body's numeric status when it has one.
+                    "r": (s.paging || s.pin_ok || s.pin_done) ?
+                      try(
+                        request(
+                          "GET",
+                          s.paging ? (s.target + "&" + {"apiKey": [state.api_key]}.format_query()) : s.target
+                        ).do_request()
+                      ).as(resp,
+                        (type(resp) == string) ?
+                          {
+                            "ok": false,
+                            "code": 0,
+                            "detail": "request failed: " + ((resp.index("\": ") >= 0) ? (resp.substring(resp.index("\": ") + 3, size(resp))) : resp).as(m, (state.api_key != "") ? (m.replace_all(state.api_key, "REDACTED")) : m),
+                          }
+                        :
+                          (
+                            (!s.paging || resp.StatusCode != 200 || string(resp.Body).trim_space().startsWith("{")) ?
+                              try(resp.Body.decode_json())
+                            :
+                              ""
+                          ).as(j,
+                            {
+                              "ok": resp.StatusCode == 200 && (
+                                s.paging ?
+                                  !string(resp.Body).trim_space().startsWith("{")
+                                :
+                                  !(
+                                    type(j) == map && type(j.?status.orValue(false)) == double &&
+                                    j.status >= 400.0
+                                  )
+                              ),
+                              "code": (
+                                resp.StatusCode == 200 && type(j) == map && type(j.?status.orValue(false)) == double &&
+                                j.status >= 400.0
+                              ) ?
+                                int(j.status)
+                              :
+                                int(resp.StatusCode),
+                              "detail": (
+                                (type(j) == map) ?
+                                  [j.?error.orValue(""), j.?message.orValue("")].map(v, (type(v) == string) ? v : v.encode_json()).filter(v, v != "").join(": ")
+                                :
+                                  ""
+                              ).as(d,
+                                (d != "") ?
+                                  d
+                                : (size(string(resp.Body)) > 512) ?
+                                  (string(resp.Body).substring(0, 512) + "...")
+                                : (size(resp.Body) != 0) ?
+                                  string(resp.Body)
+                                :
+                                  string(resp.Status)
+                              ),
+                              "body": resp.Body,
+                              "json": j,
+                            }
+                          )
+                      )
+                    :
+                      {"ok": false, "code": -1},
+                  }
+                )
+              ).as(s,
+                s.with(
+                  {
+                    // Status analysis for this feed: status.threat_feed.<feed>.
+                    "feed": (!s.paging && s.r.ok && type(s.r.json) == map) ?
+                      {
+                        "last": s.r.json.?threat_feed[?state.feed].?last_update.orValue(""),
+                        "from": s.r.json.?threat_feed[?state.feed].?available_from.orValue(""),
+                        "done": s.c.?last_date.orValue(""),
+                      }.as(f,
+                        f.with(
+                          {
+                            "valid": type(f.last) == string && type(f.from) == string && f.last.matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$") &&
+                            f.from.matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$"),
+                            // The pinned date is used until it has been fetched once.
+                            "usepin": s.pin != "" && !s.pin_done,
+                            "want": (s.pin != "" && !s.pin_done) ? s.pin : string(f.last),
+                          }
+                        )
+                      )
+                    :
+                      {},
+                  }
+                )
+              ).as(s,
+                (!s.paging && !s.pin_ok && !s.pin_done) ?
+                  // Pinned file_date with an invalid format: report it once, record it as
+                  // handled, and continue with the latest file.
                   {
                     "events": [
                       {
                         "error": {
-                          "code": string(resp.StatusCode),
-                          "id": string(resp.Status),
-                          "message": "GET " + state.url + " at offset " + string(int(state.cur_offset)) + ": " + (
-                            (size(resp.Body) != 0) ?
-                              string(resp.Body)
-                            :
-                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                          ),
+                          "message": "file_date \"" + s.pin + "\" is not a valid date: expected yyyy-MM-dd, for example 2026-08-04; no request was made for it, the " + state.feed + " feed follows the latest file instead",
                         },
                       },
                     ],
-                    "cur_offset": 0,
-                    "want_more": false,
+                    "cursor": s.c.with({"pinned_date": s.pin}),
+                    "want_more": true,
                   }
-                :
-                  string(resp.Body).split("\n").map(row, row.trim_space()).filter(row, row != "" && !row.startsWith("domain,")).as(rows,
+                : !s.r.ok ?
+                  (
+                    // WhoisFreaks answers a missing or invalid apiKey with HTTP 400 and an
+                    // "Api Access Exception" error, so that is an auth error, not a permanent one.
+                    (s.r.code in [401, 403] || s.r.code == 400 && s.r.detail.contains("Api Access")) ?
+                      "auth"
+                    : (s.r.code >= 400 && s.r.code < 500 && !(s.r.code in [408, 429])) ?
+                      "permanent"
+                    :
+                      "retry"
+                  ).as(kind,
                     {
-                      "events": rows.map(row, {"message": row}),
-                      "cur_offset": (size(rows) < int(state.page_limit)) ? 0 : int(state.cur_offset) + int(state.page_limit),
-                      "want_more": size(rows) >= int(state.page_limit),
+                      "events": [
+                        {
+                          "error": {
+                            ?"code": (s.r.code > 0) ? optional.of(string(s.r.code)) : optional.none(),
+                            "message": "GET " + s.target + ((s.r.code > 0) ? (" failed with HTTP " + string(s.r.code)) : " failed") + ": " + s.r.detail + (
+                              (kind == "auth") ?
+                                " (check the API key and the WhoisFreaks Threat Feed subscription; will retry on the next poll)"
+                              : (kind == "permanent" && s.paging) ?
+                                (" (permanent error: skipping the " + state.feed + " file for " + s.date + ")")
+                              :
+                                " (will retry on the next poll)"
+                            ),
+                          },
+                        },
+                      ],
+                      // Permanent client errors on a stream request will not succeed on retry,
+                      // so record the date as done. Every other error keeps the cursor so the
+                      // next poll retries the same request.
+                      "cursor": (kind == "permanent" && s.paging) ?
+                        s.c.with(
+                          {
+                            "phase": "idle",
+                            "cur_offset": 0,
+                            "date": "",
+                            "header": "",
+                            s.c.?pinned.orValue(false) ? "pinned_date" : "last_date": s.date,
+                          }
+                        )
+                      :
+                        s.c,
+                      // After a skipped pinned file, continue with the latest file.
+                      "want_more": kind == "permanent" && s.paging && s.c.?pinned.orValue(false),
                     }
                   )
+                : s.paging ?
+                  // Stream page: one CSV row per indicator. The header row of the first page
+                  // is kept in the cursor and sent with every row, so the ingest pipeline maps
+                  // every column by name and never drops one, whether or not later pages
+                  // repeat the header.
+                  string(s.r.body).split("\n").map(row, row.trim_space()).filter(row, row != "").as(lines,
+                    ((s.offset == 0 && size(lines) > 0) ? (lines[0]) : s.c.?header.orValue("")).as(hdr,
+                      lines.filter(row, row != hdr).as(rows,
+                        {
+                          "events": (size(rows) > 0) ?
+                            dyn(
+                              rows.map(row,
+                                {
+                                  "message": row,
+                                  "whoisfreaks": {"file_date": s.date},
+                                  ?"_csv_header": (hdr != "") ? optional.of(hdr) : optional.none(),
+                                }
+                              )
+                            )
+                          :
+                            // Keep the cursor update; the placeholder is dropped by the drop_event processor.
+                            dyn([{"retry": true}]),
+                          "cursor": (int(state.page_limit) > 0 && size(rows) >= int(state.page_limit)) ?
+                            s.c.with({"cur_offset": s.offset + int(state.page_limit), "header": hdr})
+                          :
+                            s.c.with(
+                              {
+                                "phase": "idle",
+                                "cur_offset": 0,
+                                "date": "",
+                                "header": "",
+                                s.c.?pinned.orValue(false) ? "pinned_date" : "last_date": s.date,
+                              }
+                            ),
+                          // More pages, or (after a pinned file) the latest file.
+                          "want_more": int(state.page_limit) > 0 && size(rows) >= int(state.page_limit) ||
+                          s.c.?pinned.orValue(false),
+                        }
+                      )
+                    )
+                  )
+                : (type(s.r.json) != map) ?
+                  {
+                    "events": [
+                      {
+                        "error": {
+                          "message": "GET " + s.target + " returned a body that is not a JSON object: " + s.r.detail + " (will retry on the next poll)",
+                        },
+                      },
+                    ],
+                    "cursor": s.c,
+                    "want_more": false,
+                  }
+                : !s.feed.valid ?
+                  {
+                    "events": [
+                      {
+                        "error": {
+                          "message": "GET " + s.target + " did not report a usable threat_feed." + state.feed + " date (last_update " + s.feed.last.encode_json() + ", available_from " + s.feed.from.encode_json() + "; will retry on the next poll)",
+                        },
+                      },
+                    ],
+                    "cursor": s.c,
+                    "want_more": false,
+                  }
+                : (s.feed.usepin && (s.pin < s.feed.from || s.pin > s.feed.last)) ?
+                  // Pinned date outside the available range: report it once, record it as
+                  // handled, and continue with the latest file.
+                  {
+                    "events": [
+                      {
+                        "error": {
+                          "message": "file_date " + s.pin + " is outside the available range " + s.feed.from + ".." + s.feed.last + " for the " + state.feed + " feed (no stream request was made for it; following the latest file instead)",
+                        },
+                      },
+                    ],
+                    "cursor": s.c.with({"pinned_date": s.pin}),
+                    "want_more": true,
+                  }
+                : (s.feed.usepin || s.feed.want > s.feed.done) ?
+                  // A new (or pinned, not yet fetched) file: start paging it now. The
+                  // placeholder event makes the input persist the cursor and re-evaluate.
+                  {
+                    "events": [{"retry": true}],
+                    "cursor": s.c.with(
+                      {
+                        "phase": "page",
+                        "cur_offset": 0,
+                        "date": s.feed.want,
+                        "header": "",
+                        "pinned": s.feed.usepin,
+                        "last_date": s.feed.done,
+                      }
+                    ),
+                    "want_more": true,
+                  }
+                :
+                  // Nothing new since the last ingested file.
+                  {
+                    "events": [],
+                    "want_more": false,
+                  }
               )
             )
           publisher_pipeline.disable_host: true
@@ -62,8 +320,10 @@ inputs:
           resource.url: https://files.whoisfreaks.com/v3.4/stream/threat-feed/phishing
           state:
             api_key: ${SECRET_0}
-            cur_offset: 0
+            feed: phishing
+            file_date: ""
             page_limit: 100
+            status_url: https://files.whoisfreaks.com/v3.4/status
           tags:
             - forwarded
             - whoisfreaks-threat-feed-phishing

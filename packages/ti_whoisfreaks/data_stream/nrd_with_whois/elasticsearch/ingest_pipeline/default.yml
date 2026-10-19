@@ -43,6 +43,24 @@ processors:
       field: whoisfreaks.num
       type: long
       ignore_missing: true
+      # A non-numeric value is kept as whoisfreaks.num_raw and tagged instead of
+      # failing the record.
+      on_failure:
+        - rename:
+            tag: rename_invalid_whoisfreaks_num
+            field: whoisfreaks.num
+            target_field: whoisfreaks.num_raw
+            ignore_missing: true
+        - append:
+            tag: append_tags_invalid_whoisfreaks_num
+            field: tags
+            value: invalid_whoisfreaks_num
+            allow_duplicates: false
+        - append:
+            tag: append_tags_preserve_original_event_invalid_num
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
   - date:
       tag: date_whoisfreaks_query_time
       field: whoisfreaks.query_time
@@ -60,6 +78,22 @@ processors:
         - 'yyyy-MM-dd'
         - ISO8601
       if: ctx.whoisfreaks?.create_date != null
+      # Optional WHOIS date: drop an unparseable value and flag it instead of failing the whole record.
+      on_failure:
+        - remove:
+            tag: remove_invalid_whoisfreaks_create_date
+            field: whoisfreaks.create_date
+            ignore_missing: true
+        - append:
+            tag: append_tags_invalid_whoisfreaks_create_date
+            field: tags
+            value: invalid_whoisfreaks_create_date
+            allow_duplicates: false
+        - append:
+            tag: append_tags_preserve_original_event_invalid_create_date
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
   - date:
       tag: date_whoisfreaks_update_date
       field: whoisfreaks.update_date
@@ -69,6 +103,22 @@ processors:
         - 'yyyy-MM-dd'
         - ISO8601
       if: ctx.whoisfreaks?.update_date != null
+      # Optional WHOIS date: drop an unparseable value and flag it instead of failing the whole record.
+      on_failure:
+        - remove:
+            tag: remove_invalid_whoisfreaks_update_date
+            field: whoisfreaks.update_date
+            ignore_missing: true
+        - append:
+            tag: append_tags_invalid_whoisfreaks_update_date
+            field: tags
+            value: invalid_whoisfreaks_update_date
+            allow_duplicates: false
+        - append:
+            tag: append_tags_preserve_original_event_invalid_update_date
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
   - date:
       tag: date_whoisfreaks_expiry_date
       field: whoisfreaks.expiry_date
@@ -78,22 +128,70 @@ processors:
         - 'yyyy-MM-dd'
         - ISO8601
       if: ctx.whoisfreaks?.expiry_date != null
+      # Optional WHOIS date: drop an unparseable value and flag it instead of failing the whole record.
+      on_failure:
+        - remove:
+            tag: remove_invalid_whoisfreaks_expiry_date
+            field: whoisfreaks.expiry_date
+            ignore_missing: true
+        - append:
+            tag: append_tags_invalid_whoisfreaks_expiry_date
+            field: tags
+            value: invalid_whoisfreaks_expiry_date
+            allow_duplicates: false
+        - append:
+            tag: append_tags_preserve_original_event_invalid_expiry_date
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
   # Derived fields for dashboards and rules.
   - script:
       tag: script_compute_expiry_and_age_fields
       description: Computes whoisfreaks.days_until_expiry and whoisfreaks.is_newly_registered.
       lang: painless
       if: ctx.whoisfreaks?.domain_name != null
+      # Both values are compared in UTC against the parsed query_time (@timestamp), and
+      # only when @timestamp really came from query_time rather than ingest time.
       source: |-
-        if (ctx.whoisfreaks.expiry_date != null && ctx['@timestamp'] != null) {
-          long nowMillis = ZonedDateTime.parse(ctx['@timestamp']).toInstant().toEpochMilli();
-          long expiryMillis = ZonedDateTime.parse(ctx.whoisfreaks.expiry_date).toInstant().toEpochMilli();
-          ctx.whoisfreaks.days_until_expiry = (long) Math.floor((expiryMillis - nowMillis) / 86400000.0);
+        if (ctx.whoisfreaks.query_time == null || ctx['@timestamp'] == null) {
+          return;
         }
-        if (ctx.whoisfreaks.create_date != null && ctx.whoisfreaks.query_time != null) {
-          String createDay = ctx.whoisfreaks.create_date.substring(0, 10);
-          String queryDay = ctx.whoisfreaks.query_time.substring(0, 10);
-          ctx.whoisfreaks.is_newly_registered = createDay.equals(queryDay);
+        ZonedDateTime queried = ZonedDateTime.parse(ctx['@timestamp']).withZoneSameInstant(ZoneOffset.UTC);
+        if (ctx.whoisfreaks.expiry_date != null) {
+          long expiryMillis = ZonedDateTime.parse(ctx.whoisfreaks.expiry_date).toInstant().toEpochMilli();
+          ctx.whoisfreaks.days_until_expiry = (long) Math.floor((expiryMillis - queried.toInstant().toEpochMilli()) / 86400000.0);
+        }
+        if (ctx.whoisfreaks.create_date != null) {
+          ZonedDateTime created = ZonedDateTime.parse(ctx.whoisfreaks.create_date).withZoneSameInstant(ZoneOffset.UTC);
+          ctx.whoisfreaks.is_newly_registered = created.toLocalDate().equals(queried.toLocalDate());
+        }
+  - append:
+      tag: append_related_hosts_domain_name
+      field: related.hosts
+      value: '{{{whoisfreaks.domain_name}}}'
+      allow_duplicates: false
+      if: ctx.whoisfreaks?.domain_name instanceof String && ctx.whoisfreaks.domain_name != ''
+  - script:
+      tag: script_name_servers_to_related_hosts
+      description: Adds name_server_1..4 to related.hosts.
+      lang: painless
+      if: ctx.whoisfreaks instanceof Map
+      params:
+        max_name_servers: 4
+      source: |-
+        for (int i = 1; i <= params.max_name_servers; i++) {
+          def ns = ctx.whoisfreaks['name_server_' + i];
+          if (ns instanceof String && ns.trim() != '') {
+            if (ctx.related == null) {
+              ctx.related = new HashMap();
+            }
+            if (ctx.related.hosts == null) {
+              ctx.related.hosts = new ArrayList();
+            }
+            if (!ctx.related.hosts.contains(ns)) {
+              ctx.related.hosts.add(ns);
+            }
+          }
         }
   # Deduplicate so a re-polled file does not create duplicate documents.
   - fingerprint:
@@ -110,9 +208,8 @@ on_failure:
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
-        with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        in pipeline '{{{ _ingest.pipeline }}}'
-        failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       tag: set_pipeline_error_to_event_kind
       field: event.kind

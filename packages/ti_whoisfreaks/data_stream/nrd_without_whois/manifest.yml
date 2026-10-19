@@ -29,7 +29,7 @@ streams:
           same file. This endpoint is public and does not require the API key.
         required: true
         show_user: false
-        default: https://files.whoisfreaks.com/v3.3/status
+        default: https://files.whoisfreaks.com/v3.4/status
       - name: page_limit
         type: integer
         title: "Page Size"
@@ -38,6 +38,7 @@ streams:
           `offset` until a page comes back short, so this only controls memory and
           request count per poll, not how much data is ingested. 5000 is a safe
           default; increase it only when the endpoint responds within the timeout.
+          Must be greater than 0.
         required: true
         show_user: true
         default: 5000
@@ -45,9 +46,12 @@ streams:
         type: text
         title: "File Date (optional)"
         description: |-
-          Specific file date to ingest, format yyyy-MM-dd (e.g. 2026-08-10).
-          Leave empty to always page the most recently published file, which is
-          the recommended setting for a recurring poll.
+          Optional file date to ingest once, format yyyy-MM-dd (e.g. 2026-08-10). Leave empty
+          (recommended) to always fetch the latest file reported by the status endpoint
+          (`last_update`). When set, the date is validated against the range the status
+          endpoint reports for each feed (`newly.gtld` and `newly.cctld`, `available_from` to `last_update`). A valid date is fetched once, after which polls go back to
+          the latest file. An invalid or out-of-range date is reported once as an error event,
+          with no stream request for it, and polls continue with the latest file.
         required: false
         show_user: true
         default: ""
@@ -58,11 +62,12 @@ streams:
           How often the status endpoint is checked for a new file. When a newer
           date is found the whole day is paged in one burst; otherwise the poll
           does nothing. WhoisFreaks publishes current-day files by 17:00 UTC.
-          A 24h production default is recommended for the daily domain-only feeds.
-          Supports seconds, minutes and hours.
+          Polls without a new file only call the public status endpoint, so the
+          1h default picks up a new file within an hour of publication and
+          retries failed pages hourly. Supports seconds, minutes and hours.
         required: true
         show_user: true
-        default: 24h
+        default: 1h
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout

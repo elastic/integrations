@@ -1,6 +1,8 @@
 rules:
-  # Public file status endpoint used by both newly registered domain streams.
-  - path: /v3.3/status
+  # Public file status endpoint used by every stream to pick the file date. Same
+  # shape as the real endpoint, including sections the integration ignores and a
+  # "Not Available" value.
+  - path: /v3.4/status
     methods: ["GET"]
     responses:
       - status_code: 200
@@ -8,8 +10,51 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
-          {"newly":{"gtld":{"last_update":"2026-08-04","available_from":"2026-05-01"},"cctld":{"last_update":"2026-08-04","available_from":"2026-05-01"}}}
+          {{ minify_json `
+          {
+            "newly": {
+              "gtld": {"last_update": "2026-08-04", "available_from": "2026-05-06"},
+              "cctld": {"last_update": "2026-08-04", "available_from": "2026-05-05"},
+              "cleaned_gtld": {"last_update": "2026-08-04", "available_from": "2026-05-06"},
+              "cleaned_cctld": {"last_update": "2026-08-04", "available_from": "2026-05-05"},
+              "dns": {"last_update": "Not Available", "available_from": "Not Available"}
+            },
+            "threat_feed": {
+              "phishing": {"last_update": "2026-08-25", "available_from": "2026-05-27"},
+              "malware": {"last_update": "2026-08-25", "available_from": "2026-05-27"},
+              "spam": {"last_update": "2026-08-25", "available_from": "2026-05-27"}
+            }
+          }
+          ` }}
+  # Status endpoint failure variants, selected through the status_url test var.
+  - path: /v3.4/status-unavailable
+    methods: ["GET"]
+    responses:
+      - status_code: 503
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: "service unavailable"
+  - path: /v3.4/status-not-available
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"newly":{"gtld":{"last_update":"Not Available","available_from":"Not Available"}},"threat_feed":{"malware":{"last_update":"Not Available","available_from":"Not Available"}}}
+  - path: /v3.4/status-malformed
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/html"
+        body: "<html><body>maintenance</body></html>"
   # Newly registered gTLD domains with WHOIS: 3 rows split over two pages (limit 2).
+  # The second page does not repeat the header, like the threat feed pages; the
+  # input reuses the first page's header for it.
   - path: /v3.3/stream/domainer/gtld
     methods: ["GET"]
     query_params:
@@ -41,7 +86,6 @@ rules:
           Content-Type:
             - "text/plain; charset=UTF-8"
         body: |
-          num,domain_name,query_time,create_date,update_date,expiry_date,domain_registrar_id,domain_registrar_name,domain_registrar_whois,domain_registrar_url,registrant_name,registrant_company,registrant_address,registrant_city,registrant_country_code,registrant_email,name_server_1,name_server_2,domain_status_1,domain_status_2
           3,charlie-login.example,2026-08-04 09:54:02,2026-08-04,2026-08-04,2026-11-02,9999,Example Registrar Inc,whois.registrar.example,http://www.registrar.example,John Doe,,456 Sample Avenue,Shelbyville,GB,admin@example.org,ns1.example.net,,addperiod,
   # Newly registered ccTLD domains with WHOIS: a single short page.
   - path: /v3.3/stream/domainer/cctld
@@ -108,11 +152,127 @@ rules:
             - "text/plain; charset=UTF-8"
         body: |
           delta-mail.example
+  # Pinned file_date 2026-08-03 (inside the status range): one gTLD and one ccTLD
+  # domain per feed, used by the NRD pinned-date system tests.
+  - path: /v3.3/stream/domainer/gtld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["test_api_key"]
+      whois: ["true"]
+      date: ["2026-08-03"]
+      limit: ["2"]
+      offset: ["0"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          num,domain_name,query_time,create_date,update_date,expiry_date,domain_registrar_id,domain_registrar_name,domain_registrar_whois,domain_registrar_url,registrant_name,registrant_company,registrant_address,registrant_city,registrant_country_code,registrant_email,name_server_1,name_server_2,domain_status_1,domain_status_2
+          1,echo-pinned.example,2026-08-03 09:54:02,2026-08-02,2026-08-02,2027-08-02,9999,Example Registrar Inc,whois.registrar.example,http://www.registrar.example,,,,,,,ns1.example.net,,addperiod,
+  - path: /v3.3/stream/domainer/cctld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["test_api_key"]
+      whois: ["true"]
+      date: ["2026-08-03"]
+      limit: ["2"]
+      offset: ["0"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          num,domain_name,query_time,create_date,update_date,expiry_date,domain_registrar_id,domain_registrar_name,domain_registrar_whois,domain_registrar_url,registrant_name,registrant_company,registrant_address,registrant_city,registrant_country_code,registrant_email,name_server_1,name_server_2,domain_status_1,domain_status_2
+          1,foxtrot-pinned.example,2026-08-03 09:54:02,2026-08-01,,2027-08-01,9997,Test Registry Services,whois.test-registry.example,http://www.test-registry.example,,,,,,,ns1.example.com,,ok,
+  - path: /v3.3/stream/domainer/gtld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["test_api_key"]
+      whois: ["false"]
+      date: ["2026-08-03"]
+      limit: ["2"]
+      offset: ["0"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          echo-pinned.example
+  - path: /v3.3/stream/domainer/cctld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["test_api_key"]
+      whois: ["false"]
+      date: ["2026-08-03"]
+      limit: ["2"]
+      offset: ["0"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          foxtrot-pinned.example
+  # Malformed CSV: the second row has a bare quote in an unquoted field. The input
+  # keeps the valid rows, indexes one error event for the bad row, and goes on paging.
+  - path: /v3.3/stream/domainer/gtld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["badcsv_api_key"]
+      whois: ["true"]
+      date: ["2026-08-04"]
+      limit: ["2"]
+      offset: ["0"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          num,domain_name,query_time,create_date,update_date,expiry_date,domain_registrar_id,domain_registrar_name,domain_registrar_whois,domain_registrar_url,registrant_name,registrant_company,registrant_address,registrant_city,registrant_country_code,registrant_email,name_server_1,name_server_2,domain_status_1,domain_status_2
+          1,alpha-shop.example,2026-08-04 09:54:02,2026-08-03,2026-08-03,2027-08-03,9999,Example Registrar Inc,whois.registrar.example,http://www.registrar.example,Jane Doe,Example Org,123 Example Street,Springfield,US,registrant@example.com,ns1.example.net,ns2.example.net,addperiod,clienttransferprohibited
+          2,bravo-pay.example,2026-08-04 09:54:02,2026-08-04,2026-08-04,2027-08-04,9998,Sample Registrar LLC,whois.sample-registrar.example,http://www.sample-registrar.example,,Acme "Q" Ltd,,,,,ns1.example.org,,addperiod,
+  - path: /v3.3/stream/domainer/gtld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["badcsv_api_key"]
+      whois: ["true"]
+      date: ["2026-08-04"]
+      limit: ["2"]
+      offset: ["2"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          3,charlie-login.example,2026-08-04 09:54:02,2026-08-04,2026-08-04,2026-11-02,9999,Example Registrar Inc,whois.registrar.example,http://www.registrar.example,John Doe,,456 Sample Avenue,Shelbyville,GB,admin@example.org,ns1.example.net,,addperiod,
+  - path: /v3.3/stream/domainer/cctld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["badcsv_api_key"]
+      whois: ["true"]
+      date: ["2026-08-04"]
+      limit: ["2"]
+      offset: ["0"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          num,domain_name,query_time,create_date,update_date,expiry_date,domain_registrar_id,domain_registrar_name,domain_registrar_whois,domain_registrar_url,registrant_name,registrant_company,registrant_address,registrant_city,registrant_country_code,registrant_email,name_server_1,name_server_2,domain_status_1,domain_status_2
+          1,delta-mail.example,2026-08-04 09:54:02,2026-08-02,,2027-08-02,9997,Test Registry Services,whois.test-registry.example,http://www.test-registry.example,,,,,,,ns1.example.com,ns2.example.com,ok,
+  # Threat feeds: the date must be the status threat_feed.<type>.last_update.
   # Malware threat feed: 3 rows split over two pages (limit 2).
   - path: /v3.4/stream/threat-feed/malware
     methods: ["GET"]
     query_params:
       apiKey: ["test_api_key"]
+      date: ["2026-08-25"]
       offset: ["0"]
       limit: ["2"]
     responses:
@@ -128,6 +288,7 @@ rules:
     methods: ["GET"]
     query_params:
       apiKey: ["test_api_key"]
+      date: ["2026-08-25"]
       offset: ["2"]
       limit: ["2"]
     responses:
@@ -137,11 +298,28 @@ rules:
             - "text/plain; charset=UTF-8"
         body: |
           malware-host-3.example,malware,0.6,2026-08-20 11:11:11.123456789+00,2026-08-25 01:02:03+00,2
+  # Malware threat feed for the pinned file_date 2026-08-20: a single short page.
+  - path: /v3.4/stream/threat-feed/malware
+    methods: ["GET"]
+    query_params:
+      apiKey: ["test_api_key"]
+      date: ["2026-08-20"]
+      offset: ["0"]
+      limit: ["2"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          domain,threat_type,confidence,first_seen,last_seen,no_of_threat_matched_pivots
+          malware-host-4.example,malware,0.9,2026-08-19 10:00:00+00,2026-08-20 06:30:00+00,1
   # Phishing threat feed: 3 rows split over two pages (limit 2).
   - path: /v3.4/stream/threat-feed/phishing
     methods: ["GET"]
     query_params:
       apiKey: ["test_api_key"]
+      date: ["2026-08-25"]
       offset: ["0"]
       limit: ["2"]
     responses:
@@ -157,6 +335,7 @@ rules:
     methods: ["GET"]
     query_params:
       apiKey: ["test_api_key"]
+      date: ["2026-08-25"]
       offset: ["2"]
       limit: ["2"]
     responses:
@@ -171,6 +350,7 @@ rules:
     methods: ["GET"]
     query_params:
       apiKey: ["test_api_key"]
+      date: ["2026-08-25"]
       offset: ["0"]
       limit: ["2"]
     responses:
@@ -186,6 +366,7 @@ rules:
     methods: ["GET"]
     query_params:
       apiKey: ["test_api_key"]
+      date: ["2026-08-25"]
       offset: ["2"]
       limit: ["2"]
     responses:
@@ -195,3 +376,188 @@ rules:
             - "text/plain; charset=UTF-8"
         body: |
           spam-sender-3.example,spam,0.6,2026-08-20 11:11:11.123456789+00,2026-08-25 01:02:03+00,2
+  # Error paths. These rules match only the error_api_key / bad_date_api_key test
+  # keys, so they never overlap with the test_api_key success rules above.
+  # Retriable error: the CEL programs emit one error event and keep the cursor.
+  - path: /v3.4/stream/threat-feed/malware
+    methods: ["GET"]
+    query_params:
+      apiKey: ["error_api_key"]
+    responses:
+      - status_code: 503
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: "service unavailable"
+  - path: /v3.3/stream/domainer/gtld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["error_api_key"]
+    responses:
+      - status_code: 503
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: "service unavailable"
+  # Permanent error: the gTLD file for the date is unavailable (404), so the NRD
+  # programs record the date as done and continue with the pending ccTLD file.
+  - path: /v3.3/stream/domainer/gtld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["bad_date_api_key"]
+    responses:
+      - status_code: 404
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"status":false,"message":"File not found for the requested date."}
+  - path: /v3.3/stream/domainer/cctld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["bad_date_api_key"]
+      whois: ["true"]
+      date: ["2026-08-04"]
+      limit: ["2"]
+      offset: ["0"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          num,domain_name,query_time,create_date,update_date,expiry_date,domain_registrar_id,domain_registrar_name,domain_registrar_whois,domain_registrar_url,registrant_name,registrant_company,registrant_address,registrant_city,registrant_country_code,registrant_email,name_server_1,name_server_2,domain_status_1,domain_status_2
+          1,delta-mail.example,2026-08-04 09:54:02,2026-08-02,,2027-08-02,9997,Test Registry Services,whois.test-registry.example,http://www.test-registry.example,,,,,,,ns1.example.com,ns2.example.com,ok,
+  - path: /v3.3/stream/domainer/cctld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["bad_date_api_key"]
+      whois: ["false"]
+      date: ["2026-08-04"]
+      limit: ["2"]
+      offset: ["0"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "text/plain; charset=UTF-8"
+        body: |
+          delta-mail.example
+  # Authentication failure: the CEL programs emit one error event with an API key
+  # and subscription hint, and keep the cursor.
+  - path: /v3.4/stream/threat-feed/malware
+    methods: ["GET"]
+    query_params:
+      apiKey: ["unauthorized_api_key"]
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"timestamp":1792145583168,"status":401,"error":"Unauthorized","message":"Invalid API key."}
+  - path: /v3.3/stream/domainer/gtld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["unauthorized_api_key"]
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"timestamp":1792145583168,"status":401,"error":"Unauthorized","message":"Invalid API key."}
+  # Invalid API key: the real API answers HTTP 400 "Api Access Exception". The CEL
+  # programs treat this as an auth error and keep the cursor (no file is skipped).
+  - path: /v3.4/stream/threat-feed/malware
+    methods: ["GET"]
+    query_params:
+      apiKey: ["invalid_api_key"]
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"timestamp":1792384180897,"status":400,"error":"Api Access Exception","message":"Please pass valid apiKey param value","path":"/v3.4/stream/threat-feed/malware"}
+  - path: /v3.4/stream/threat-feed/phishing
+    methods: ["GET"]
+    query_params:
+      apiKey: ["invalid_api_key"]
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"timestamp":1792384180897,"status":400,"error":"Api Access Exception","message":"Please pass valid apiKey param value","path":"/v3.4/stream/threat-feed/phishing"}
+  - path: /v3.4/stream/threat-feed/spam
+    methods: ["GET"]
+    query_params:
+      apiKey: ["invalid_api_key"]
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"timestamp":1792384180897,"status":400,"error":"Api Access Exception","message":"Please pass valid apiKey param value","path":"/v3.4/stream/threat-feed/spam"}
+  - path: /v3.3/stream/domainer/gtld
+    methods: ["GET"]
+    query_params:
+      apiKey: ["invalid_api_key"]
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"timestamp":1792384180897,"status":400,"error":"Api Access Exception","message":"Please pass valid apiKey param value","path":"/v3.3/stream/domainer/gtld"}
+  # Regression guards: any stream request that did not match a rule above (for
+  # example one without a date, or with a date the status endpoint never
+  # reported) gets the real API's missing-date response.
+  - path: /v3.4/stream/threat-feed/malware
+    methods: ["GET"]
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"timestamp":1792145583168,"status":400,"error":"Invalid Parameter Exception","message":"Please provide the date parameter (YYYY-MM-DD)."}
+  - path: /v3.4/stream/threat-feed/phishing
+    methods: ["GET"]
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"timestamp":1792145583168,"status":400,"error":"Invalid Parameter Exception","message":"Please provide the date parameter (YYYY-MM-DD)."}
+  - path: /v3.4/stream/threat-feed/spam
+    methods: ["GET"]
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"timestamp":1792145583168,"status":400,"error":"Invalid Parameter Exception","message":"Please provide the date parameter (YYYY-MM-DD)."}
+  - path: /v3.3/stream/domainer/gtld
+    methods: ["GET"]
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"timestamp":1792145583168,"status":400,"error":"Invalid Parameter Exception","message":"Please provide the date parameter (YYYY-MM-DD)."}
+  - path: /v3.3/stream/domainer/cctld
+    methods: ["GET"]
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"timestamp":1792145583168,"status":400,"error":"Invalid Parameter Exception","message":"Please provide the date parameter (YYYY-MM-DD)."}

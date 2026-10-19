@@ -38,6 +38,12 @@ processors:
         - 'yyyy-MM-dd HH:mm:ss'
         - ISO8601
       if: ctx.whoisfreaks?.query_time != null && ctx.whoisfreaks.query_time != ''
+  - append:
+      tag: append_related_hosts_domain_name
+      field: related.hosts
+      value: '{{{whoisfreaks.domain_name}}}'
+      allow_duplicates: false
+      if: ctx.whoisfreaks?.domain_name instanceof String && ctx.whoisfreaks.domain_name != ''
   # Deduplicate so a re-polled file does not create duplicate documents.
   - fingerprint:
       tag: fingerprint_for_dedup
@@ -53,9 +59,8 @@ on_failure:
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
-        with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        in pipeline '{{{ _ingest.pipeline }}}'
-        failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       tag: set_pipeline_error_to_event_kind
       field: event.kind

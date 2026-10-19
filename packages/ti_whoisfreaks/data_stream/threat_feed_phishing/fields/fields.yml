@@ -13,7 +13,19 @@
       description: Number of infrastructure pivots (shared registrant, name server, MX, or CNAME attributes) that matched known threat seed domains.
     - name: deleted_at
       type: date
-      description: The indicator expiration timestamp, computed as `threat.indicator.last_seen` plus the configured IOC expiration duration.
+      description: The indicator expiration timestamp, computed as `threat.indicator.last_seen` plus the configured IOC expiration duration, capped at the file date plus 2 days when "Replace indicators from the previous file" is enabled.
     - name: ioc_expiration_duration
       type: keyword
       description: The configured IOC expiration duration.
+    - name: "*"
+      type: object
+      object_type: keyword
+      object_type_mapping_type: "*"
+      description: >-
+        Any other column of the feed, kept by its (lowercased) header name, so that no column is dropped. Values beyond the header are kept as `column_<n>`, a non-numeric `confidence` or `no_of_threat_matched_pivots` as `<column>_raw`, columns named like computed fields under a `feed_` prefix, and a repeated column name with a `_<position>` suffix.
+- name: whoisfreaks.file_date
+  type: date
+  description: The WhoisFreaks daily file date (yyyy-MM-dd) the indicator was fetched for, sent as the `date` parameter of the feed request.
+- name: whoisfreaks.pinned_file
+  type: boolean
+  description: True when the indicator comes from a file fetched once through the File Date setting. Such rows stay in the source data stream but are excluded from the latest (active) indicator index.
