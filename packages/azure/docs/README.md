@@ -598,6 +598,8 @@ This release is **additive**: the semantic-convention field names above were add
 | `azure.activitylogs.tenant_id` | `azure.tenant.id` |
 | `azure.correlation_id` | `azure.correlation.id` |
 
+A legacy name is only populated in the data streams that populated it before this release. For example, `azure.correlation_id` is not added to eventhub, firewall_logs, application_gateway or aadgraphactivitylogs, which never had it.
+
 New integrations and queries should prefer the semconv names. The legacy names are retained for compatibility and might be removed in a future major version.
 
 Three fields were declared in earlier releases but never actually populated by any pipeline. Because no document ever carried them, they are now `type: alias` fields rather than concrete ones, which keeps them queryable at no storage cost:

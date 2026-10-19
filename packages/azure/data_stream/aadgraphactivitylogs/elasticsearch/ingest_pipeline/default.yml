@@ -590,6 +590,13 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline-resource" }}'
       tag: pipeline-azure-shared-pipeline_431c6aae
+  # Backward compatibility (non-breaking): this stream wrote azure.tenant_id
+  # before 1.41.0, so it stays populated alongside azure.tenant.id.
+  - set:
+      tag: set_legacy_azure_tenant_id_5b3d8e91
+      field: azure.tenant_id
+      copy_from: azure.tenant.id
+      ignore_empty_value: true
   # url.original is set from properties.request_uri by the
   # set-url_original_request_uri_aad processor above (PII markers
   # included) and carries the same value the field held before it

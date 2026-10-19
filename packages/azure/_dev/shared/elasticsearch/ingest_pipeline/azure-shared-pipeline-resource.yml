@@ -117,16 +117,10 @@ processors:
       field: azure.resource.provider
       copy_from: azure.resource_provider.namespace
       ignore_empty_value: true
-  - set:
-      tag: set_legacy_azure_tenant_id_5b3d8e91
-      field: azure.tenant_id
-      copy_from: azure.tenant.id
-      ignore_empty_value: true
-  - set:
-      tag: set_legacy_azure_correlation_id_1a7e4f62
-      field: azure.correlation_id
-      copy_from: azure.correlation.id
-      ignore_empty_value: true
+  # The legacy azure.tenant_id and azure.correlation_id are not set here: only
+  # some of the streams using this pipeline wrote them before 1.41.0, so each
+  # of those streams copies them itself after calling this pipeline. Setting
+  # them here would add a field to streams that never had it.
 on_failure:
   - set:
       tag: set_event_kind_72b1902f

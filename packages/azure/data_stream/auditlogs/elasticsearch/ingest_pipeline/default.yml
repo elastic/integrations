@@ -380,6 +380,21 @@ processors:
   - pipeline:
       tag: pipeline_azure_shared_pipeline_7877e1a4
       name: '{{ IngestPipeline "azure-shared-pipeline-resource" }}'
+  # Backward compatibility (non-breaking): this stream wrote azure.tenant_id
+  # before 1.41.0, so it stays populated alongside azure.tenant.id.
+  - set:
+      tag: set_legacy_azure_tenant_id_5b3d8e91
+      field: azure.tenant_id
+      copy_from: azure.tenant.id
+      ignore_empty_value: true
+  # Backward compatibility (non-breaking): this stream wrote
+  # azure.correlation_id before 1.41.0, so it stays populated alongside
+  # azure.correlation.id.
+  - set:
+      tag: set_legacy_azure_correlation_id_1a7e4f62
+      field: azure.correlation_id
+      copy_from: azure.correlation.id
+      ignore_empty_value: true
   - set:
       tag: set-cloud_account_id_3e7d9f2b
       field: cloud.account.id
