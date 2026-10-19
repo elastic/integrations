@@ -82,6 +82,7 @@ processors:
           - location
           - login
           - mobappname
+          - prompt_req
           - refererhost
           - rulelabel
           - upload_filename
@@ -1122,11 +1123,16 @@ processors:
       tag: rename_productversion_7fa1f81e
       target_field: zscaler_zia.web.product_version
       ignore_missing: true
-  - rename:
+  - urldecode:
       field: json.prompt_req
-      tag: rename_prompt_req_9d686ca7
+      tag: urldecode_prompt_req_9d686ca7
       target_field: zscaler_zia.web.prompt_req
       ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_b7d40e19
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.proto
       tag: rename_proto_e37ef847
