@@ -1,98 +1,6 @@
 {
     "attributes": {
-        "controlGroupInput": {
-            "chainingSystem": "HIERARCHICAL",
-            "controlStyle": "oneLine",
-            "ignoreParentSettingsJSON": {
-                "ignoreFilters": false,
-                "ignoreQuery": false,
-                "ignoreTimerange": false,
-                "ignoreValidations": false
-            },
-            "panelsJSON": {
-                "2c7df183-8a05-4ee0-b7db-415e874636cd": {
-                    "explicitInput": {
-                        "dataViewId": "chargeback_integration",
-                        "exclude": false,
-                        "existsSelected": false,
-                        "fieldName": "deployment_name",
-                        "searchTechnique": "prefix",
-                        "selectedOptions": [],
-                        "sort": {
-                            "by": "_count",
-                            "direction": "desc"
-                        },
-                        "title": "Deployment name",
-                        "id": "2c7df183-8a05-4ee0-b7db-415e874636cd"
-                    },
-                    "grow": false,
-                    "order": 1,
-                    "type": "optionsListControl",
-                    "width": "medium"
-                },
-                "b680ef70-4697-41e5-bf5f-e7e1e700ec3e": {
-                    "explicitInput": {
-                        "dataViewId": "chargeback_integration",
-                        "exclude": false,
-                        "existsSelected": false,
-                        "fieldName": "deployment_group",
-                        "searchTechnique": "prefix",
-                        "selectedOptions": [],
-                        "sort": {
-                            "by": "_count",
-                            "direction": "desc"
-                        },
-                        "title": "Deployment group",
-                        "id": "b680ef70-4697-41e5-bf5f-e7e1e700ec3e"
-                    },
-                    "grow": false,
-                    "order": 0,
-                    "type": "optionsListControl",
-                    "width": "medium"
-                },
-                "929895f7-b618-ac2e-c7d7-61502d6acb50": {
-                    "explicitInput": {
-                        "dataViewId": "chargeback_integration",
-                        "exclude": false,
-                        "existsSelected": false,
-                        "fieldName": "cost_category",
-                        "id": "929895f7-b618-ac2e-c7d7-61502d6acb50",
-                        "searchTechnique": "prefix",
-                        "selectedOptions": [],
-                        "sort": {
-                            "by": "_count",
-                            "direction": "desc"
-                        },
-                        "title": "Cost Category"
-                    },
-                    "grow": false,
-                    "order": 2,
-                    "type": "optionsListControl",
-                    "width": "medium"
-                },
-                "456d8f2e-65b3-eaab-1d98-ef80690574ad": {
-                    "explicitInput": {
-                        "dataViewId": "chargeback_integration",
-                        "exclude": false,
-                        "existsSelected": false,
-                        "fieldName": "cost_type",
-                        "id": "456d8f2e-65b3-eaab-1d98-ef80690574ad",
-                        "searchTechnique": "prefix",
-                        "selectedOptions": [],
-                        "sort": {
-                            "by": "_count",
-                            "direction": "desc"
-                        },
-                        "title": "Cost Type"
-                    },
-                    "grow": false,
-                    "order": 3,
-                    "type": "optionsListControl",
-                    "width": "medium"
-                }
-            },
-            "showApplySelections": false
-        },
+        "controlGroupInput": {},
         "description": "Cost breakdown by SKU, deployment, and tier. Shows total billing, cost by component, and deployment cost comparison.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
@@ -166,6 +74,94 @@
             },
             {
                 "embeddableConfig": {
+                    "control_type": "VALUES_FROM_QUERY",
+                    "esql_query": "FROM billing_cluster_cost_lookup\n| WHERE deployment_group != \"\"\n| STATS COUNT(*) BY deployment_group\n| KEEP deployment_group\n| SORT deployment_group",
+                    "selected_options": [
+                        "__chargeback_unfiltered__"
+                    ],
+                    "single_select": false,
+                    "title": "Deployment group",
+                    "variable_name": "dg_selected",
+                    "variable_type": "multi_values"
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "c42ec760-734f-46bb-8e0f-e52f3d4a1f4d",
+                    "w": 12,
+                    "x": 0,
+                    "y": 2
+                },
+                "panelIndex": "c42ec760-734f-46bb-8e0f-e52f3d4a1f4d",
+                "type": "esql_control"
+            },
+            {
+                "embeddableConfig": {
+                    "control_type": "VALUES_FROM_QUERY",
+                    "esql_query": "FROM billing_cluster_cost_lookup\n| WHERE deployment_group != \"\"\n| STATS COUNT(*) BY deployment_name\n| KEEP deployment_name\n| SORT deployment_name",
+                    "selected_options": [
+                        "__chargeback_unfiltered__"
+                    ],
+                    "single_select": false,
+                    "title": "Deployment name",
+                    "variable_name": "deployment_selected",
+                    "variable_type": "multi_values"
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "5d11a79f-3957-4c0c-a42a-35616191a6fa",
+                    "w": 12,
+                    "x": 12,
+                    "y": 2
+                },
+                "panelIndex": "5d11a79f-3957-4c0c-a42a-35616191a6fa",
+                "type": "esql_control"
+            },
+            {
+                "embeddableConfig": {
+                    "control_type": "VALUES_FROM_QUERY",
+                    "esql_query": "FROM billing_cluster_cost_lookup\n| WHERE cost_category IS NOT NULL\n| STATS COUNT(*) BY cost_category\n| KEEP cost_category\n| SORT cost_category",
+                    "selected_options": [
+                        "__chargeback_unfiltered__"
+                    ],
+                    "single_select": false,
+                    "title": "Cost category",
+                    "variable_name": "cost_category_selected",
+                    "variable_type": "multi_values"
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "2cc4273b-85a3-46d8-aebd-019a383c4b64",
+                    "w": 12,
+                    "x": 24,
+                    "y": 2
+                },
+                "panelIndex": "2cc4273b-85a3-46d8-aebd-019a383c4b64",
+                "type": "esql_control"
+            },
+            {
+                "embeddableConfig": {
+                    "control_type": "VALUES_FROM_QUERY",
+                    "esql_query": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| STATS COUNT(*) BY cost_type\n| KEEP cost_type\n| SORT cost_type",
+                    "selected_options": [
+                        "__chargeback_unfiltered__"
+                    ],
+                    "single_select": false,
+                    "title": "Cost type",
+                    "variable_name": "cost_type_selected",
+                    "variable_type": "multi_values"
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "18543502-9e06-4644-9a39-34e39d2eecd4",
+                    "w": 12,
+                    "x": 36,
+                    "y": 2
+                },
+                "panelIndex": "18543502-9e06-4644-9a39-34e39d2eecd4",
+                "type": "esql_control"
+            },
+            {
+                "embeddableConfig": {
                     "attributes": {
                         "references": [],
                         "state": {
@@ -229,7 +225,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0), deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| WHERE ts IS NOT NULL\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY ts, deployment\n| RENAME ts AS `@timestamp`\n| SORT `@timestamp` DESC\n| LIMIT 5000"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0), deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| WHERE ts IS NOT NULL\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY ts, deployment\n| RENAME ts AS `@timestamp`\n| SORT `@timestamp` DESC\n| LIMIT 5000"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -239,7 +235,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0), deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| WHERE ts IS NOT NULL\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY ts, deployment\n| RENAME ts AS `@timestamp`\n| SORT `@timestamp` DESC\n| LIMIT 5000"
+                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0), deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| WHERE ts IS NOT NULL\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY ts, deployment\n| RENAME ts AS `@timestamp`\n| SORT `@timestamp` DESC\n| LIMIT 5000"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -393,7 +389,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)\n| WHERE ts IS NOT NULL\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY ts, deployment_group\n| RENAME ts AS `@timestamp`\n| SORT `@timestamp` DESC\n| LIMIT 5000"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)\n| WHERE ts IS NOT NULL\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY ts, deployment_group\n| RENAME ts AS `@timestamp`\n| SORT `@timestamp` DESC\n| LIMIT 5000"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -403,7 +399,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)\n| WHERE ts IS NOT NULL\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY ts, deployment_group\n| RENAME ts AS `@timestamp`\n| SORT `@timestamp` DESC\n| LIMIT 5000"
+                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL total_chargeable_units_value = total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)\n| WHERE ts IS NOT NULL\n| STATS `Normalized cost` = SUM(total_chargeable_units_value) BY ts, deployment_group\n| RENAME ts AS `@timestamp`\n| SORT `@timestamp` DESC\n| LIMIT 5000"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -637,7 +633,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_group | RENAME deployment_group AS `Deployment Group`\n| SORT `Normalized cost` DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_group | RENAME deployment_group AS `Deployment Group`\n| SORT `Normalized cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -647,7 +643,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_group | RENAME deployment_group AS `Deployment Group`\n| SORT `Normalized cost` DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_group | RENAME deployment_group AS `Deployment Group`\n| SORT `Normalized cost` DESC"
                             },
                             "visualization": {
                                 "columns": [
@@ -678,7 +674,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_group | RENAME deployment_group AS `Deployment Group`\n| SORT `Normalized cost` DESC"
+                        "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_group | RENAME deployment_group AS `Deployment Group`\n| SORT `Normalized cost` DESC"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -775,7 +771,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| WHERE (CASE(?cost_category_selected IS NULL OR MV_INTERSECTS(?cost_category_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?cost_category_selected, cost_category)))\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -785,7 +781,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| WHERE (CASE(?cost_category_selected IS NULL OR MV_INTERSECTS(?cost_category_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?cost_category_selected, cost_category)))\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
                             },
                             "visualization": {
                                 "columns": [
@@ -821,7 +817,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
+                        "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| WHERE (CASE(?cost_category_selected IS NULL OR MV_INTERSECTS(?cost_category_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?cost_category_selected, cost_category)))\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -921,7 +917,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| WHERE (CASE(?cost_category_selected IS NULL OR MV_INTERSECTS(?cost_category_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?cost_category_selected, cost_category)))\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -931,7 +927,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| WHERE (CASE(?cost_category_selected IS NULL OR MV_INTERSECTS(?cost_category_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?cost_category_selected, cost_category)))\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` >= conf_start_date AND\n            `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalized cost` DESC"
                             },
                             "visualization": {
                                 "layers": [
@@ -1209,7 +1205,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n  | WHERE cost_type IS NOT NULL\n  | EVAL `ts` = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type,\n      Deployment = deployment_name\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON `ts` >= conf_start_date AND `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY Deployment, `Cost Category`, `Cost Type`\n  | SORT `Normalized cost` DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| WHERE (CASE(?cost_category_selected IS NULL OR MV_INTERSECTS(?cost_category_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?cost_category_selected, cost_category)))\n| WHERE (CASE(?cost_type_selected IS NULL OR MV_INTERSECTS(?cost_type_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?cost_type_selected, cost_type)))\n  | WHERE cost_type IS NOT NULL\n  | EVAL `ts` = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type,\n      Deployment = deployment_name\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON `ts` >= conf_start_date AND `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY Deployment, `Cost Category`, `Cost Type`\n  | SORT `Normalized cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1219,7 +1215,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n  | WHERE cost_type IS NOT NULL\n  | EVAL `ts` = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type,\n      Deployment = deployment_name\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON `ts` >= conf_start_date AND `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY Deployment, `Cost Category`, `Cost Type`\n  | SORT `Normalized cost` DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| WHERE (CASE(?cost_category_selected IS NULL OR MV_INTERSECTS(?cost_category_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?cost_category_selected, cost_category)))\n| WHERE (CASE(?cost_type_selected IS NULL OR MV_INTERSECTS(?cost_type_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?cost_type_selected, cost_type)))\n  | WHERE cost_type IS NOT NULL\n  | EVAL `ts` = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type,\n      Deployment = deployment_name\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON `ts` >= conf_start_date AND `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY Deployment, `Cost Category`, `Cost Type`\n  | SORT `Normalized cost` DESC"
                             },
                             "visualization": {
                                 "columns": [
@@ -1260,7 +1256,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM billing_cluster_cost_lookup\n  | WHERE cost_type IS NOT NULL\n  | EVAL `ts` = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type,\n      Deployment = deployment_name\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON `ts` >= conf_start_date AND `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY Deployment, `Cost Category`, `Cost Type`\n  | SORT `Normalized cost` DESC"
+                        "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| WHERE (CASE(?cost_category_selected IS NULL OR MV_INTERSECTS(?cost_category_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?cost_category_selected, cost_category)))\n| WHERE (CASE(?cost_type_selected IS NULL OR MV_INTERSECTS(?cost_type_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?cost_type_selected, cost_type)))\n  | WHERE cost_type IS NOT NULL\n  | EVAL `ts` = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type,\n      Deployment = deployment_name\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON `ts` >= conf_start_date AND `ts` <= conf_end_date\n  | STATS\n      `Normalized cost` =\n        SUM(\n          total_chargeable_units *\n            COALESCE(conf_chargeable_unit_rate, 1.0))\n        BY Deployment, `Cost Category`, `Cost Type`\n  | SORT `Normalized cost` DESC"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -1400,7 +1396,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_name, cost_category\n| RENAME cost_category AS `Cost Category`, deployment_name AS `Deployment`\n| SORT `Normalized cost` DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| WHERE (CASE(?cost_category_selected IS NULL OR MV_INTERSECTS(?cost_category_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?cost_category_selected, cost_category)))\n| WHERE (CASE(?cost_type_selected IS NULL OR MV_INTERSECTS(?cost_type_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?cost_type_selected, cost_type)))\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_name, cost_category\n| RENAME cost_category AS `Cost Category`, deployment_name AS `Deployment`\n| SORT `Normalized cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1410,7 +1406,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_name, cost_category\n| RENAME cost_category AS `Cost Category`, deployment_name AS `Deployment`\n| SORT `Normalized cost` DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| WHERE (CASE(?cost_category_selected IS NULL OR MV_INTERSECTS(?cost_category_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?cost_category_selected, cost_category)))\n| WHERE (CASE(?cost_type_selected IS NULL OR MV_INTERSECTS(?cost_type_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?cost_type_selected, cost_type)))\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_name, cost_category\n| RENAME cost_category AS `Cost Category`, deployment_name AS `Deployment`\n| SORT `Normalized cost` DESC"
                             },
                             "visualization": {
                                 "layers": [
@@ -1573,7 +1569,7 @@
                                             ],
                                             "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
                                             "query": {
-                                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_name, cost_type\n| RENAME cost_type AS `Cost Type`, deployment_name as `Deployment`\n| SORT `Normalized cost` DESC"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| WHERE (CASE(?cost_type_selected IS NULL OR MV_INTERSECTS(?cost_type_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?cost_type_selected, cost_type)))\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_name, cost_type\n| RENAME cost_type AS `Cost Type`, deployment_name as `Deployment`\n| SORT `Normalized cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1583,7 +1579,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_name, cost_type\n| RENAME cost_type AS `Cost Type`, deployment_name as `Deployment`\n| SORT `Normalized cost` DESC"
+                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE (CASE(?dg_selected IS NULL OR MV_INTERSECTS(?dg_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?dg_selected, deployment_group)))\n| WHERE (CASE(?deployment_selected IS NULL OR MV_INTERSECTS(?deployment_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?deployment_selected, deployment_name)))\n| WHERE (CASE(?cost_type_selected IS NULL OR MV_INTERSECTS(?cost_type_selected, [\"__chargeback_unfiltered__\"]), true, MV_INTERSECTS(?cost_type_selected, cost_type)))\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| STATS `Normalized cost` = SUM(total_chargeable_units * COALESCE(conf_chargeable_unit_rate, 1.0)) BY deployment_name, cost_type\n| RENAME cost_type AS `Cost Type`, deployment_name as `Deployment`\n| SORT `Normalized cost` DESC"
                             },
                             "visualization": {
                                 "layers": [
@@ -1652,7 +1648,8 @@
         "timeRestore": true,
         "timeTo": "now",
         "title": "[Chargeback] Billing Components Overview",
-        "version": 1
+        "version": 1,
+        "pinned_panels": null
     },
     "id": "chargeback-b6cecac0-ebe7-43de-bfc6-1ff287ad860a",
     "references": [
