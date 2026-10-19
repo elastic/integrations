@@ -22,6 +22,7 @@ Chargeback costs are presented based on a configured rate and unit, used to conv
 
 **Monitoring cluster:**
 - Must be on Elasticsearch version **9.2.0+** due to the use of smart [ES|QL LOOKUP JOIN](https://www.elastic.co/docs/reference/query-languages/esql/esql-lookup-join) (conditional joins) in transforms and dashboard queries.
+- Kibana version **9.4.0+** is required for package **0.5.1** and later. **Kibana 9.3 is not supported** — Billing and Usage dashboards fail to render (`No embeddable factory found for type: vis`) and lack GA support for ES|QL multi-select variable controls.
 - This is where the Chargeback integration should be installed.
 
 **Required integrations:**
@@ -155,7 +156,7 @@ The integration creates eight transforms to aggregate cost and usage data:
 
 **Usage transforms** (from monitoring indices):
 5. **`cluster_deployment_contribution`**: indexing, querying, and storage metrics per deployment/day.
-6. **`cluster_datastream_contribution`**: same metrics split by data stream. The usage ingest pipeline also sets `ds_type` (first `-` segment) and `ds_namespace` (last `-` segment) from the data stream name, or `other` when the name is non-conforming.
+6. **`cluster_datastream_contribution`**: same metrics split by data stream. The usage ingest pipeline also sets `ds_type` (first `-` segment) and `ds_namespace` (last `-` segment) from the data stream name, or `other` when the name has fewer than three hyphen-separated segments.
 7. **`cluster_tier_contribution`**: same metrics split by data tier.
 8. **`cluster_tier_and_ds_contribution`**: same metrics split by both tier and data stream (includes `ds_type` and `ds_namespace`).
 
@@ -197,6 +198,8 @@ Answers: *which data streams and tiers drive cost, and how efficiently are we us
 
 **Source:** `cluster_tier_contribution_lookup` and related usage lookups. Totals reflect the chargeable pool (allocatable data-tier ECU discounted by utilization) and will not equal the full invoice. ML, Kibana, snapshots, and data transfer are excluded.
 
+**Controls:** deployment group, deployment name, data tier, full data stream name, **data stream type** (`ds_type`), and **data stream namespace** (`ds_namespace`).
+
 Sections:
 - **Deployment cost allocation (usage-based)**: normalized cost per deployment split by data tier (usage-weighted). Shows which deployments consume the most of their chargeable pool across tiers.
 - **Datatiers / utilization**: provisioned capacity vs chargeable pool, utilization p95 per deployment.
@@ -205,7 +208,29 @@ Sections:
 
 #### Namespace-based ownership on shared deployments
 
-When several teams share one deployment, assign each team a unique Fleet **namespace** so their data lands in distinct data streams (`<type>-<dataset>-<namespace>`). Chargeback parses `ds_namespace` and `ds_type` from the full data stream name and shows them on the Workload Breakdown table. Interactive control-bar filters on those fields are not part of this release line; use the table columns (or a KQL/ES|QL query) until a later package that ships ES|QL variable controls.
+Document-level chargeback (for example by a field such as `application.id`) is not available: billing and monitoring allocate at deployment, tier, and data stream level. On a **shared deployment**, assign each team a unique [Fleet data stream namespace](https://www.elastic.co/docs/reference/fleet/data-streams) so ownership follows the naming scheme:
+
+```text
+<type>-<dataset>-<namespace>
+```
+
+Examples: `logs-nginx.access-team_a` → `ds_type=logs`, `ds_namespace=team_a`.
+
+Chargeback parses every usage `datastream` value into:
+
+| Field | Rule |
+|-------|------|
+| `ds_type` | First `-`-separated segment |
+| `ds_namespace` | Last `-`-separated segment |
+| (not a v1 control) | Middle segment(s) are the dataset |
+
+Names with fewer than three hyphen-separated segments (including two-segment names such as `logs-nginx`) set both fields to `other` so panels keep working. Use the **Data stream type** and **Data stream namespace** controls on **Usage & Cost Allocation** to filter cost. A dataset control is intentionally out of scope for this release (high cardinality; weak team signal). The full data stream name control remains available separately.
+
+Guidance:
+
+1. Give each team a unique namespace (no hyphens; max 100 bytes).
+2. Use separate agent policies or per-integration namespace overrides so data lands in distinct streams.
+3. Filter or break down by `ds_namespace` (and optionally `ds_type`) on the Usage dashboard.
 
 ![Usage and Cost Allocation](../img/chargeback-usage-allocation.png)
 
@@ -259,6 +284,18 @@ Three alert rule templates are included and can be installed from the integratio
 For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
 
 ## Upgrade Notes
+
+### Upgrading to 0.5.1
+
+1. Upgrade the Fleet package to **0.5.1** (Kibana **9.4.0+** required).
+2. Transforms are reinstalled with `fleet_transform_version: 0.5.1`. Usage transforms pick up the tightened `ds_type` / `ds_namespace` parser (fewer than three segments → `other`). Reset usage transforms if you need historical lookup rows re-enriched.
+3. Billing and Usage dashboards use embedded ES|QL multi-select variable controls (including **Data stream type** and **Data stream namespace** on Usage). Delete stale dashboard saved objects from **Stack Management → Saved Objects** if duplicates appear after upgrade.
+
+### Upgrading to 0.5.0
+
+1. Upgrade the Fleet package to **0.5.0**. Kibana requirement remains `^9.2.0` for this release line until 0.5.1.
+2. Transforms are reinstalled with `fleet_transform_version: 0.5.0` (Serverless capacity pool, monitoring source, and fielddata runtime-field fixes). Reset transforms if lookup documents lack the updated classification or runtime-field behavior.
+3. Re-import or replace Chargeback dashboard saved objects if Kibana did not refresh them on upgrade.
 
 ### Upgrading to 0.4.5
 
