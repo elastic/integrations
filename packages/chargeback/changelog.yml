@@ -1,4 +1,15 @@
 # later versions go on top
+- version: 0.5.0
+  changes:
+    - description: "Elastic Cloud Serverless support: billing_realized_pool also matches Serverless capacity SKUs (deployment_type elasticsearch with elasticsearch.*-search-vcu_*, elasticsearch.*-ingest-vcu_*, elasticsearch.retained_*), so serverless projects get an allocatable capacity pool. Previously only ECH *.es.data*.* node SKUs matched, leaving every serverless cost row is_allocatable false and billing_realized_pool_lookup empty for serverless projects, so no serverless cost could be attributed to a tier or data stream. ML VCU is deliberately excluded to match ECH semantics, where ML is cost_category platform."
+      type: enhancement
+      link: https://github.com/elastic/elasticsearch-chargeback/pull/106
+    - description: "Cloud Console Logs and metrics remain supported through the Elasticsearch integration index_pivot into monitoring-indices* (no Agent collector required when Cloud Console already writes .monitoring-es-*). Usage transforms use monitoring-indices* as the single canonical source so raw .monitoring-es-* rows are not double-counted with their pivoted copies. Keyword runtime fields fix Fielddata is disabled on elasticsearch.cluster.name when dynamic mapping produces text plus a .keyword subfield. Tier preference fallbacks now use frozen, cold, warm, then hot/content order to match monitoring_indices.yml. billing.yml marks Serverless search/ingest VCU and retained storage as allocatable data_tier (ML VCU stays platform) so classification matches billing_realized_pool."
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/22057
+    - description: "Fix Fielddata is disabled on [elasticsearch.cluster.name] causing the transforms to retry forever. Where the .monitoring-es-mb index template is not governing the .monitoring-es-8-mb data stream, dynamic mapping produces text plus a .keyword subfield and a terms aggregation on the text field throws. elasticsearch.cluster.name, index.name, index.datastream, index.tier and index.tier_preference are now read through keyword runtime fields that prefer the .keyword subfield when the mapping has one and fall back to the field itself; both branches use doc values. Also affects cluster_capacity_utilization, which has sourced .monitoring-es-* since 0.4.0."
+      type: bugfix
+      link: https://github.com/elastic/elasticsearch-chargeback/pull/106
 - version: 0.4.7
   changes:
     - description: "Move all ingest pipelines into a stub data_stream/lookup to satisfy Kibana Fleet upload validator (elastic/kibana#286094) which rejects top-level package pipelines. Update transform dest.pipeline refs to Fleet naming convention logs-chargeback.lookup-{version}-{name}."
