@@ -96,15 +96,16 @@ pivot:
       terms:
         script:
           lang: painless
-          source: >
+          # Use | not >: folded > turns newlines into spaces so // comments eat the preference checks.
+          source: |
             if (doc.containsKey('cb_index_tier') && !doc['cb_index_tier'].empty) {
               def tier = doc['cb_index_tier'].value;
               if (tier != null && tier != 'unknown') return tier;
             }
             def pref = doc.containsKey('cb_index_tier_preference') && !doc['cb_index_tier_preference'].empty ? doc['cb_index_tier_preference'].value : null;
             if (pref == null) return 'unknown';
-            // Match monitoring_indices.yml: frozen → cold → warm → hot/content
-            // (preference lists like data_cold,data_warm,data_hot must not resolve to hot)
+            /* Match monitoring_indices.yml: frozen → cold → warm → hot/content
+               (preference lists like data_cold,data_warm,data_hot must not resolve to hot) */
             if (pref.contains('data_frozen')) return 'frozen';
             if (pref.contains('data_cold')) return 'cold';
             if (pref.contains('data_warm')) return 'warm';
@@ -114,7 +115,7 @@ pivot:
       terms:
         script:
           lang: painless
-          source: >
+          source: |
             if (doc.containsKey('cb_index_datastream') && !doc['cb_index_datastream'].empty) {
               return doc['cb_index_datastream'].value;
             }
