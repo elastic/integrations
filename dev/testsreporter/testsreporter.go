@@ -15,6 +15,8 @@ import (
 	"github.com/elastic/integrations/dev/codeowners"
 )
 
+const defaultPackagesPath = "packages"
+
 type CheckOptions struct {
 	Serverless        bool
 	ServerlessProject string
@@ -24,8 +26,8 @@ type CheckOptions struct {
 	BuildURL          string
 	CodeownersPath    string
 	// PackagesPath is the path to the folder with the packages, relative to the root of the repository.
-	// If it is set, the owners of the packages are found using the name of the package in its manifest
-	// or the name of its folder. If it is not set, only the name of the folder is used.
+	// The owners of the packages are found using the name of the package in its manifest or the name
+	// of its folder. Defaults to "packages".
 	PackagesPath string
 
 	MaxPreviousLinks int
@@ -39,6 +41,9 @@ func Check(ctx context.Context, resultsPath string, options CheckOptions) error 
 	if options.CodeownersPath == "" {
 		// set default value for the GitHub CODEOWNERS file
 		options.CodeownersPath = codeowners.DefaultCodeownersPath
+	}
+	if options.PackagesPath == "" {
+		options.PackagesPath = defaultPackagesPath
 	}
 
 	if options.DryRun {
@@ -134,19 +139,16 @@ func reportPackageErrors(ctx context.Context, resultsPath string, options CheckO
 }
 
 func errorsFromTests(resultsPath string, options CheckOptions) ([]*packageError, error) {
-	var resolver *ownersResolver
+	// Failures are still reported, without owners, if the resolver cannot be created,
+	// and the error is returned at the end.
 	var resolverErr error
-	if options.PackagesPath != "" {
-		var err error
-		resolver, err = newOwnersResolver(options.CodeownersPath, options.PackagesPath)
-		if err != nil {
-			// Failures are still reported, without owners, and the error is returned at the end.
-			resolverErr = fmt.Errorf("failed to create resolver of package owners: %w", err)
-		}
+	resolver, err := newOwnersResolver(options.CodeownersPath, options.PackagesPath)
+	if err != nil {
+		resolverErr = fmt.Errorf("failed to create resolver of package owners: %w", err)
 	}
 
 	var packageErrors []*packageError
-	err := filepath.Walk(resultsPath, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(resultsPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -170,7 +172,6 @@ func errorsFromTests(resultsPath string, options CheckOptions) ([]*packageError,
 				Subscription:      options.Subscription,
 				BuildURL:          options.BuildURL,
 				TestCase:          c,
-				CodeownersPath:    options.CodeownersPath,
 				OwnersResolver:    resolver,
 				OwnersError:       resolverErr,
 				// A package without owners must not avoid reporting the rest of failures.

@@ -5,10 +5,9 @@
 package testsreporter
 
 import (
+	"errors"
 	"fmt"
 	"strings"
-
-	"github.com/elastic/integrations/dev/codeowners"
 )
 
 type packageError struct {
@@ -30,13 +29,12 @@ type packageErrorOptions struct {
 	Subscription      string
 	BuildURL          string
 	TestCase          testCase
-	CodeownersPath    string
 	ClosedIssueURL    string
 	PreviousBuilds    []string
 	Teams             []string
 
-	// OwnersResolver is used to find the owners of the package. If it is not set,
-	// the owners are looked up using the name of the package as the name of its folder.
+	// OwnersResolver is used to find the owners of the package. It is required unless
+	// Teams or OwnersError are set.
 	OwnersResolver *ownersResolver
 
 	// OwnersError is a previous problem preparing the lookup of owners (e.g. invalid CODEOWNERS file).
@@ -84,7 +82,7 @@ func newPackageError(options packageErrorOptions) (*packageError, error) {
 			owners = details.owners
 			p.packagePath = details.path
 		default:
-			owners, err = codeowners.PackageOwners(p.packageName, p.dataStream, options.CodeownersPath)
+			return nil, errors.New("owners resolver, owners error or teams are required to create a package error")
 		}
 		switch {
 		case err != nil && options.AllowMissingOwners:

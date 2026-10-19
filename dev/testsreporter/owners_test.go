@@ -41,6 +41,26 @@ func createPackagesTree(t *testing.T, packages map[string]string, owners []strin
 	return codeownersPath, packagesPath
 }
 
+// createDefaultPackagesTree creates the packages and owners used by the results in testdata.
+func createDefaultPackagesTree(t *testing.T) (string, string) {
+	t.Helper()
+
+	return createPackagesTree(t,
+		map[string]string{
+			"fortinet_fortigate":       "fortinet_fortigate",
+			"elastic_package_registry": "elastic_package_registry",
+			"sql_input":                "sql_input",
+			"cisco_umbrella":           "cisco_umbrella",
+		},
+		[]string{
+			"/packages/fortinet_fortigate @elastic/integration-experience",
+			"/packages/elastic_package_registry @elastic/ecosystem",
+			"/packages/sql_input @elastic/obs-infraobs-integrations",
+			"/packages/cisco_umbrella @elastic/security-service-integrations",
+		},
+	)
+}
+
 func TestOwnersResolverLookup(t *testing.T) {
 	codeownersPath, packagesPath := createPackagesTree(t,
 		map[string]string{

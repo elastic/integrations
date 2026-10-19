@@ -37,6 +37,7 @@ func TestErrorsFromTest(t *testing.T) {
 					teams:       []string{"@elastic/security-service-integrations"},
 					dataStream:  "log",
 					packageName: "cisco_umbrella",
+					packagePath: "packages/cisco_umbrella",
 				},
 				{
 					dataError: dataError{
@@ -51,6 +52,7 @@ func TestErrorsFromTest(t *testing.T) {
 					teams:       []string{"@elastic/ecosystem"},
 					dataStream:  "metrics",
 					packageName: "elastic_package_registry",
+					packagePath: "packages/elastic_package_registry",
 				},
 				{
 					dataError: dataError{
@@ -73,6 +75,7 @@ func TestErrorsFromTest(t *testing.T) {
 `,
 					},
 					packageName: "fortinet_fortigate",
+					packagePath: "packages/fortinet_fortigate",
 					dataStream:  "log",
 					teams:       []string{"@elastic/integration-experience"},
 				},
@@ -87,6 +90,7 @@ func TestErrorsFromTest(t *testing.T) {
 						Failure:       "one or more errors found in documents stored in metrics-sql.sql-12466 data stream: [0] found error.message in event: cannot open connection: testing connection: mssql: login error: Login failed for user 'SA'.",
 					},
 					packageName: "sql_input",
+					packagePath: "packages/sql_input",
 					dataStream:  "",
 					teams:       []string{"@elastic/obs-infraobs-integrations"},
 				},
@@ -101,6 +105,7 @@ func TestErrorsFromTest(t *testing.T) {
 						Failure:       "one or more errors found in documents stored in metrics-sql.sql-98584 data stream: [0] found error.message in event: cannot open connection: testing connection: dial tcp 172.21.0.6:3306: connect: connection refused",
 					},
 					packageName: "sql_input",
+					packagePath: "packages/sql_input",
 					dataStream:  "",
 					teams:       []string{"@elastic/obs-infraobs-integrations"},
 				},
@@ -110,11 +115,17 @@ func TestErrorsFromTest(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			errors, err := errorsFromTests(c.xmlFolder, CheckOptions{
+			// The tree changes the working directory.
+			xmlFolder, err := filepath.Abs(c.xmlFolder)
+			require.NoError(t, err)
+			codeownersPath, packagesPath := createDefaultPackagesTree(t)
+
+			errors, err := errorsFromTests(xmlFolder, CheckOptions{
 				Serverless:     false,
 				StackVersion:   "",
 				BuildURL:       "",
-				CodeownersPath: "testdata/CODEOWNERS-default-tests",
+				CodeownersPath: codeownersPath,
+				PackagesPath:   packagesPath,
 			})
 			require.NoError(t, err)
 
@@ -146,11 +157,17 @@ func TestErrorDataStream(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			errors, err := errorsFromTests(c.xmlFolder, CheckOptions{
+			// The tree changes the working directory.
+			xmlFolder, err := filepath.Abs(c.xmlFolder)
+			require.NoError(t, err)
+			codeownersPath, packagesPath := createDefaultPackagesTree(t)
+
+			errors, err := errorsFromTests(xmlFolder, CheckOptions{
 				Serverless:     false,
 				StackVersion:   "",
 				BuildURL:       "",
-				CodeownersPath: "testdata/CODEOWNERS-default-tests",
+				CodeownersPath: codeownersPath,
+				PackagesPath:   packagesPath,
 			})
 			require.NoError(t, err)
 
@@ -186,11 +203,17 @@ func TestErrorPackageName(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			errors, err := errorsFromTests(c.xmlFolder, CheckOptions{
+			// The tree changes the working directory.
+			xmlFolder, err := filepath.Abs(c.xmlFolder)
+			require.NoError(t, err)
+			codeownersPath, packagesPath := createDefaultPackagesTree(t)
+
+			errors, err := errorsFromTests(xmlFolder, CheckOptions{
 				Serverless:     false,
 				StackVersion:   "",
 				BuildURL:       "",
-				CodeownersPath: "testdata/CODEOWNERS-default-tests",
+				CodeownersPath: codeownersPath,
+				PackagesPath:   packagesPath,
 			})
 			require.NoError(t, err)
 
@@ -234,17 +257,6 @@ func TestErrorsFromTestsManifestName(t *testing.T) {
 		assert.Equal(t, "packages/sql_input", errors[0].packagePath)
 		assert.Equal(t, []string{"@elastic/sql-team"}, errors[0].teams)
 	})
-
-	t.Run("without packages path the folder name is used", func(t *testing.T) {
-		errors, err := errorsFromTests(resultsPath, CheckOptions{
-			CodeownersPath: codeownersPath,
-		})
-		require.NoError(t, err)
-		require.Len(t, errors, 1)
-		// The owners are not found for the name in the manifest, the failure is reported without owners.
-		assert.Equal(t, "sql", errors[0].packageName)
-		assert.Empty(t, errors[0].teams)
-	})
 }
 
 func TestErrorsFromTestsMissingOwners(t *testing.T) {
@@ -266,54 +278,31 @@ func TestErrorsFromTestsMissingOwners(t *testing.T) {
 </testsuites>`
 	require.NoError(t, os.WriteFile(filepath.Join(resultsPath, "results.xml"), []byte(results), 0o644))
 
-	cases := []struct {
-		title   string
-		options CheckOptions
-	}{
-		{
-			title:   "with package owners resolver",
-			options: CheckOptions{CodeownersPath: codeownersPath, PackagesPath: packagesPath},
-		},
-		{
-			title:   "without package owners resolver",
-			options: CheckOptions{CodeownersPath: codeownersPath},
-		},
-	}
+	errors, err := errorsFromTests(resultsPath, CheckOptions{CodeownersPath: codeownersPath, PackagesPath: packagesPath})
+	require.NoError(t, err)
 
-	for _, c := range cases {
-		t.Run(c.title, func(t *testing.T) {
-			errors, err := errorsFromTests(resultsPath, c.options)
-			require.NoError(t, err)
+	// All the failures are reported, also the ones with owners found after the missing one.
+	require.Len(t, errors, 4)
+	assert.Equal(t, "apache", errors[0].packageName)
+	assert.Equal(t, []string{"@elastic/apache-team"}, errors[0].teams)
+	assert.Equal(t, "packages/apache", errors[0].packagePath)
+	assert.Equal(t, "not_a_package", errors[1].packageName)
+	assert.Empty(t, errors[1].teams)
+	assert.Empty(t, errors[1].packagePath)
+	assert.Equal(t, "apache", errors[2].packageName)
+	assert.Equal(t, []string{"@elastic/apache-team"}, errors[2].teams)
 
-			// All the failures are reported, also the ones with owners found after the missing one.
-			require.Len(t, errors, 4)
-			assert.Equal(t, "apache", errors[0].packageName)
-			assert.Equal(t, []string{"@elastic/apache-team"}, errors[0].teams)
-			assert.Equal(t, "not_a_package", errors[1].packageName)
-			assert.Empty(t, errors[1].teams)
-			assert.Equal(t, "apache", errors[2].packageName)
-			assert.Equal(t, []string{"@elastic/apache-team"}, errors[2].teams)
+	// The path of the package is known even if it has no owners.
+	assert.Equal(t, "no_owner", errors[3].packageName)
+	assert.Empty(t, errors[3].teams)
+	assert.Equal(t, "packages/no_owner", errors[3].packagePath)
 
-			// The path of the package is known only when the resolver is used, even if it has no owners.
-			assert.Equal(t, "no_owner", errors[3].packageName)
-			assert.Empty(t, errors[3].teams)
-			if c.options.PackagesPath != "" {
-				assert.Equal(t, "packages/apache", errors[0].packagePath)
-				assert.Empty(t, errors[1].packagePath)
-				assert.Equal(t, "packages/no_owner", errors[3].packagePath)
-			} else {
-				assert.Empty(t, errors[0].packagePath)
-				assert.Empty(t, errors[3].packagePath)
-			}
-
-			// The problems are returned to fail after reporting.
-			problems := ownersProblems(errors)
-			require.Error(t, problems)
-			assert.Contains(t, problems.Error(), "not_a_package")
-			assert.Contains(t, problems.Error(), "no_owner")
-			assert.NotContains(t, problems.Error(), "apache")
-		})
-	}
+	// The problems are returned to fail after reporting.
+	problems := ownersProblems(errors)
+	require.Error(t, problems)
+	assert.Contains(t, problems.Error(), "not_a_package")
+	assert.Contains(t, problems.Error(), "no_owner")
+	assert.NotContains(t, problems.Error(), "apache")
 }
 
 func TestErrorsFromTestsInvalidCodeowners(t *testing.T) {
