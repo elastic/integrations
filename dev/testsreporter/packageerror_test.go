@@ -156,6 +156,11 @@ func TestNewPackageError(t *testing.T) {
 			}
 			require.NoError(t, err)
 
+			if c.options.AllowMissingOwners && len(c.expected.teams) == 0 {
+				// The problem looking for owners is kept to be returned after reporting.
+				assert.Error(t, packageError.ownersErr)
+				packageError.ownersErr = nil
+			}
 			assert.Equal(t, c.expected, *packageError)
 		})
 	}

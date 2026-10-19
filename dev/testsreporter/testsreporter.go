@@ -51,6 +51,34 @@ func Check(ctx context.Context, resultsPath string, options CheckOptions) error 
 		return err
 	}
 
+	// Failures are reported even if their owners cannot be found, the problems with the
+	// owners are returned once all the failures have been reported.
+	reportErr := reportPackageErrors(ctx, resultsPath, options, packageErrors)
+	return errors.Join(reportErr, ownersProblems(packageErrors))
+}
+
+// ownersProblems returns the distinct errors found looking for the owners of the packages.
+func ownersProblems(packageErrors []*packageError) error {
+	var problems error
+	seen := map[string]struct{}{}
+	for _, pError := range packageErrors {
+		if pError.ownersErr == nil {
+			continue
+		}
+		msg := pError.ownersErr.Error()
+		if _, found := seen[msg]; found {
+			continue
+		}
+		seen[msg] = struct{}{}
+		problems = errors.Join(problems, pError.ownersErr)
+	}
+	if problems == nil {
+		return nil
+	}
+	return fmt.Errorf("failures reported without owners: %w", problems)
+}
+
+func reportPackageErrors(ctx context.Context, resultsPath string, options CheckOptions, packageErrors []*packageError) error {
 	ghCli := newGhCli(githubOptions{
 		DryRun: options.DryRun,
 	})
@@ -107,11 +135,13 @@ func Check(ctx context.Context, resultsPath string, options CheckOptions) error 
 
 func errorsFromTests(resultsPath string, options CheckOptions) ([]*packageError, error) {
 	var resolver *ownersResolver
+	var resolverErr error
 	if options.PackagesPath != "" {
 		var err error
 		resolver, err = newOwnersResolver(options.CodeownersPath, options.PackagesPath)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create resolver of package owners: %w", err)
+			// Failures are still reported, without owners, and the error is returned at the end.
+			resolverErr = fmt.Errorf("failed to create resolver of package owners: %w", err)
 		}
 	}
 
@@ -142,6 +172,7 @@ func errorsFromTests(resultsPath string, options CheckOptions) ([]*packageError,
 				TestCase:          c,
 				CodeownersPath:    options.CodeownersPath,
 				OwnersResolver:    resolver,
+				OwnersError:       resolverErr,
 				// A package without owners must not avoid reporting the rest of failures.
 				AllowMissingOwners: true,
 			})

@@ -18,6 +18,8 @@ type packageError struct {
 	packageName string
 	packagePath string
 	dataStream  string
+	// ownersErr is the problem found looking for the owners, if the error was created without them.
+	ownersErr error
 }
 
 type packageErrorOptions struct {
@@ -36,6 +38,11 @@ type packageErrorOptions struct {
 	// OwnersResolver is used to find the owners of the package. If it is not set,
 	// the owners are looked up using the name of the package as the name of its folder.
 	OwnersResolver *ownersResolver
+
+	// OwnersError is a previous problem preparing the lookup of owners (e.g. invalid CODEOWNERS file).
+	// If it is set, no owners are looked up and the error is kept in the package error.
+	// It requires AllowMissingOwners.
+	OwnersError error
 
 	// AllowMissingOwners avoids failing when the owners of the package are not found,
 	// the package error is created without owners.
@@ -68,17 +75,20 @@ func newPackageError(options packageErrorOptions) (*packageError, error) {
 
 	if len(options.Teams) == 0 {
 		var owners []string
-		var err error
-		if options.OwnersResolver != nil {
+		err := options.OwnersError
+		switch {
+		case err != nil:
+		case options.OwnersResolver != nil:
 			var details packageDetails
 			details, err = options.OwnersResolver.lookup(p.packageName, p.dataStream)
 			owners = details.owners
 			p.packagePath = details.path
-		} else {
+		default:
 			owners, err = codeowners.PackageOwners(p.packageName, p.dataStream, options.CodeownersPath)
 		}
 		switch {
 		case err != nil && options.AllowMissingOwners:
+			p.ownersErr = err
 			fmt.Printf("WARNING: the failure of %q will be reported without owners: %s\n", p.testCase.String(), err)
 		case err != nil:
 			return nil, fmt.Errorf("failed to find owners for package %s: %w", p.packageName, err)

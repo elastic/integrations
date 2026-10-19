@@ -7,6 +7,7 @@ package testsreporter
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -304,8 +305,45 @@ func TestErrorsFromTestsMissingOwners(t *testing.T) {
 				assert.Empty(t, errors[0].packagePath)
 				assert.Empty(t, errors[3].packagePath)
 			}
+
+			// The problems are returned to fail after reporting.
+			problems := ownersProblems(errors)
+			require.Error(t, problems)
+			assert.Contains(t, problems.Error(), "not_a_package")
+			assert.Contains(t, problems.Error(), "no_owner")
+			assert.NotContains(t, problems.Error(), "apache")
 		})
 	}
+}
+
+func TestErrorsFromTestsInvalidCodeowners(t *testing.T) {
+	codeownersPath, packagesPath := createPackagesTree(t,
+		map[string]string{"apache": "apache"},
+		// The second rule would remove the owners of the first one.
+		[]string{"/packages/apache @elastic/apache-team", "/packages/apache"},
+	)
+
+	resultsPath := t.TempDir()
+	results := `<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="system" tests="2" failures="2">
+    <testcase name="first" classname="apache.access" time="1"><failure>could not find hits</failure></testcase>
+    <testcase name="second" classname="apache.error" time="1"><failure>could not find hits</failure></testcase>
+  </testsuite>
+</testsuites>`
+	require.NoError(t, os.WriteFile(filepath.Join(resultsPath, "results.xml"), []byte(results), 0o644))
+
+	errors, err := errorsFromTests(resultsPath, CheckOptions{CodeownersPath: codeownersPath, PackagesPath: packagesPath})
+	require.NoError(t, err)
+
+	// All the failures are reported without owners, and the problem is returned once.
+	require.Len(t, errors, 2)
+	assert.Empty(t, errors[0].teams)
+	assert.Empty(t, errors[1].teams)
+	problems := ownersProblems(errors)
+	require.Error(t, problems)
+	assert.Contains(t, problems.Error(), "would remove owners")
+	assert.Equal(t, 1, strings.Count(problems.Error(), "would remove owners"))
 }
 
 func TestPreviousBuildLinksFromDescription(t *testing.T) {
