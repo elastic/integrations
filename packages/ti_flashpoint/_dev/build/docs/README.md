@@ -21,6 +21,8 @@ This integration collects log messages of the following type:
 - `Alert`: Collects `alert` logs from the Flashpoint Ignite API (endpoint: `/alert-management/v1/notifications`),
 - `Indicator`: Collects `indicator` logs from the Flashpoint Ignite API (endpoint: `/technical-intelligence/v2/indicators`),
 - `Vulnerabilities`: Collects `vulnerability` logs from the Flashpoint Ignite API (endpoint: `/vulnerability-intelligence/v1/vulnerabilities`),
+- `Sighting`: Collects Compromised Credentials Monitoring - Enterprise (CCM-E) credential sighting logs from the Flashpoint Ignite API (endpoint: `/sources/v1/noncommunities/search`),
+- `Breach`: Collects Compromised Credentials Monitoring - Enterprise (CCM-E) breach metadata logs from the Flashpoint Ignite API (endpoint: `/sources/v1/noncommunities/search`),
 
 **Note**: This integration uses Elastic transforms to deduplicate **incident** data and maintain the latest view of each incident for analysis and reporting.
 
@@ -142,6 +144,28 @@ For more information on architectures that can be used for scaling this integrat
 {{event "vulnerability"}}
 
 
+#### Sighting
+
+{{fields "sighting"}}
+
+### Example event
+
+#### Sighting
+
+{{event "sighting"}}
+
+
+#### Breach
+
+{{fields "breach"}}
+
+### Example event
+
+#### Breach
+
+{{event "breach"}}
+
+
 ### Inputs used
 
 These input is used in the integration:
@@ -155,3 +179,5 @@ This integration dataset uses the following API:
 * List Alerts (endpoint: `/alert-management/v1/notifications`)|
 * List Indicators (endpoint: `/technical-intelligence/v2/indicators`)
 * List Vulberabilities (endpoint: `/vulnerability-intelligence/v1/vulnerabilities`)
+* Search Compromised Credential Sightings (endpoint: `/sources/v1/noncommunities/search`)
+* Search Compromised Credential Breaches (endpoint: `/sources/v1/noncommunities/search`)
