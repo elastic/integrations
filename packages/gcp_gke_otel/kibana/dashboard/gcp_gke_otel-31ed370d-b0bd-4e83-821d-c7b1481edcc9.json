@@ -1,6 +1,6 @@
 {
     "attributes": {
-        "description": "GKE pods: a hexagon map of the 500 worst pods colored by limit utilization, restarts or phase, the list of pods, and pod phase, resource use, PVC fill, startup time and containers not ready. Click a hexagon or a row to open pod detail.",
+        "description": "GKE pods: a hexagon map of the 500 worst pods colored by limit utilization, restarts or phase, the list of pods, and pod phase, resource use, PVC fill, startup time and containers not ready. Click a hexagon or a pod name to open pod detail.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": []
@@ -439,7 +439,7 @@
                                         "hidden": false,
                                         "isMetric": false,
                                         "isTransposed": false,
-                                        "oneClickFilter": false
+                                        "oneClickFilter": true
                                     },
                                     {
                                         "alignment": "left",
@@ -585,11 +585,27 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Pods worst first by the highest container memory limit utilization (`container/memory/limit_utilization`); CPU limit % is the highest container CPU limit utilization and can pass 100%. Phase comes from kube-state-metrics. Ephemeral storage limit sums the container limits that are set.",
+                    "description": "Pods worst first by the highest container memory limit utilization (`container/memory/limit_utilization`); CPU limit % is the highest container CPU limit utilization and can pass 100%. Phase comes from kube-state-metrics. Ephemeral storage limit sums the container limits that are set. Click a pod name to open its detail or Discover, matched by name in every cluster; the row menu (⋮) has the same links for this cluster only and the Google Cloud console.",
                     "drilldowns": [
                         {
                             "encode_url": true,
                             "label": "1. View pod detail",
+                            "open_in_new_tab": false,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Pod>\" \"\")}}{{else}}{{kibanaUrl}}/app/dashboards#/view/gcp_gke_otel-f4e74d4e-c3b1-40aa-872f-901840e8d3fb?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(filters:!((meta:(alias:'pod: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.pod_name',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.pod_name:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.pod',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(attributes.pod:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.pod_name:'{{event.value}}')),(match_phrase:(attributes.pod:'{{event.value}}')))))))){{/if}}"
+                        },
+                        {
+                            "encode_url": true,
+                            "label": "2. View metrics in Discover",
+                            "open_in_new_tab": false,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Pod>\" \"\")}}{{else}}{{kibanaUrl}}/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(dataViewId:'metrics-*',type:dataView),filters:!((meta:(alias:'pod: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.pod_name',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.pod_name:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.pod',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(attributes.pod:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.pod_name:'{{event.value}}')),(match_phrase:(attributes.pod:'{{event.value}}'))))))),interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc))){{/if}}"
+                        },
+                        {
+                            "encode_url": true,
+                            "label": "1. View pod detail (this cluster only)",
                             "open_in_new_tab": false,
                             "trigger": "on_click_row",
                             "type": "url_drilldown",
@@ -597,7 +613,7 @@
                         },
                         {
                             "encode_url": true,
-                            "label": "2. View metrics in Discover",
+                            "label": "2. View metrics in Discover (this cluster only)",
                             "open_in_new_tab": false,
                             "trigger": "on_click_row",
                             "type": "url_drilldown",
@@ -2684,7 +2700,7 @@
                                         "hidden": false,
                                         "isMetric": false,
                                         "isTransposed": false,
-                                        "oneClickFilter": false
+                                        "oneClickFilter": true
                                     },
                                     {
                                         "alignment": "left",
@@ -2708,11 +2724,27 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Containers whose latest readiness (`kube_pod_container_status_ready`, kube-state-metrics) is not ready, leaving out pods that completed (Succeeded). Empty when every container is ready or kube-state-metrics is not enabled.",
+                    "description": "Containers whose latest readiness (`kube_pod_container_status_ready`, kube-state-metrics) is not ready, leaving out pods that completed (Succeeded). Empty when every container is ready or kube-state-metrics is not enabled. Click a pod name to open its detail or Discover, matched by name in every cluster; the row menu (⋮) has the same links for this cluster only.",
                     "drilldowns": [
                         {
                             "encode_url": true,
                             "label": "1. View pod detail",
+                            "open_in_new_tab": false,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Pod>\" \"\")}}{{else}}{{kibanaUrl}}/app/dashboards#/view/gcp_gke_otel-f4e74d4e-c3b1-40aa-872f-901840e8d3fb?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(filters:!((meta:(alias:'pod: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.pod_name',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.pod_name:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.pod',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(attributes.pod:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.pod_name:'{{event.value}}')),(match_phrase:(attributes.pod:'{{event.value}}')))))))){{/if}}"
+                        },
+                        {
+                            "encode_url": true,
+                            "label": "2. View metrics in Discover",
+                            "open_in_new_tab": false,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Pod>\" \"\")}}{{else}}{{kibanaUrl}}/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(dataViewId:'metrics-*',type:dataView),filters:!((meta:(alias:'pod: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.pod_name',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.pod_name:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.pod',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(attributes.pod:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.pod_name:'{{event.value}}')),(match_phrase:(attributes.pod:'{{event.value}}'))))))),interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc))){{/if}}"
+                        },
+                        {
+                            "encode_url": true,
+                            "label": "1. View pod detail (this cluster only)",
                             "open_in_new_tab": false,
                             "trigger": "on_click_row",
                             "type": "url_drilldown",
@@ -2720,7 +2752,7 @@
                         },
                         {
                             "encode_url": true,
-                            "label": "2. View metrics in Discover",
+                            "label": "2. View metrics in Discover (this cluster only)",
                             "open_in_new_tab": false,
                             "trigger": "on_click_row",
                             "type": "url_drilldown",
@@ -2842,7 +2874,7 @@
         "title": "[GCP OTel] GKE Pods"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-10-17T17:34:46.509Z",
+    "created_at": "2026-10-19T19:53:34.983Z",
     "id": "gcp_gke_otel-31ed370d-b0bd-4e83-821d-c7b1481edcc9",
     "references": [
         {

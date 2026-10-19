@@ -1,6 +1,6 @@
 {
     "attributes": {
-        "description": "GKE Deployments, StatefulSets and DaemonSets from kube state metrics: a hexagon map colored by replica shortfall or rollout, the list of workloads, and replica counts over time. Click a hexagon or a row to open the namespace detail.",
+        "description": "GKE Deployments, StatefulSets and DaemonSets from kube state metrics: a hexagon map colored by replica shortfall or rollout, the list of workloads, and replica counts over time. Click a hexagon or a namespace to open the namespace detail.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": []
@@ -405,7 +405,7 @@
                                         "hidden": false,
                                         "isMetric": false,
                                         "isTransposed": false,
-                                        "oneClickFilter": false
+                                        "oneClickFilter": true
                                     },
                                     {
                                         "alignment": "left",
@@ -421,7 +421,7 @@
                                         "hidden": false,
                                         "isMetric": false,
                                         "isTransposed": false,
-                                        "oneClickFilter": false
+                                        "oneClickFilter": true
                                     },
                                     {
                                         "alignment": "left",
@@ -497,11 +497,35 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Every Deployment, StatefulSet and DaemonSet from kube state metrics, largest replica shortfall first, then misscheduled DaemonSet pods. Shortfall is desired minus available replicas for Deployments and desired minus ready for StatefulSets and DaemonSets; 0 is healthy. Click a row to open its namespace detail or Discover. Empty without kube state metrics.",
+                    "description": "Every Deployment, StatefulSet and DaemonSet from kube state metrics, largest replica shortfall first, then misscheduled DaemonSet pods. Shortfall is desired minus available replicas for Deployments and desired minus ready for StatefulSets and DaemonSets; 0 is healthy. Click a name for its metrics in Discover, or a namespace to open its detail or Discover, matched by name in every cluster; the row menu (⋮) opens the namespace for this cluster only. Empty without kube state metrics.",
                     "drilldowns": [
                         {
                             "encode_url": true,
+                            "label": "View metrics in Discover",
+                            "open_in_new_tab": false,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Name>\" \"\")}}{{else}}{{kibanaUrl}}/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(dataViewId:'metrics-*',type:dataView),filters:!((meta:(alias:'workload: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.deployment',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(attributes.deployment:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.statefulset',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(attributes.statefulset:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.daemonset',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(attributes.daemonset:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(attributes.deployment:'{{event.value}}')),(match_phrase:(attributes.statefulset:'{{event.value}}')),(match_phrase:(attributes.daemonset:'{{event.value}}'))))))),interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc))){{/if}}"
+                        },
+                        {
+                            "encode_url": true,
                             "label": "1. View namespace detail",
+                            "open_in_new_tab": false,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Namespace>\" \"\")}}{{else}}{{kibanaUrl}}/app/dashboards#/view/gcp_gke_otel-05487b8b-c21b-4898-a513-716e39b7c702?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(filters:!((meta:(alias:'namespace: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.namespace_name',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.namespace_name:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.namespace',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.namespace:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.namespace_name:'{{event.value}}')),(match_phrase:(resource.attributes.namespace:'{{event.value}}')))))))){{/if}}"
+                        },
+                        {
+                            "encode_url": true,
+                            "label": "2. View metrics in Discover",
+                            "open_in_new_tab": false,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Namespace>\" \"\")}}{{else}}{{kibanaUrl}}/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(dataViewId:'metrics-*',type:dataView),filters:!((meta:(alias:'namespace: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.namespace_name',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.namespace_name:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.namespace',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.namespace:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.namespace_name:'{{event.value}}')),(match_phrase:(resource.attributes.namespace:'{{event.value}}'))))))),interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc))){{/if}}"
+                        },
+                        {
+                            "encode_url": true,
+                            "label": "1. View namespace detail (this cluster only)",
                             "open_in_new_tab": false,
                             "trigger": "on_click_row",
                             "type": "url_drilldown",
@@ -509,7 +533,7 @@
                         },
                         {
                             "encode_url": true,
-                            "label": "2. View metrics in Discover",
+                            "label": "2. View namespace metrics in Discover (this cluster only)",
                             "open_in_new_tab": false,
                             "trigger": "on_click_row",
                             "type": "url_drilldown",
@@ -1525,7 +1549,7 @@
         "title": "[GCP OTel] GKE Workloads"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-10-17T17:34:43.361Z",
+    "created_at": "2026-10-19T19:53:31.709Z",
     "id": "gcp_gke_otel-a3f8f035-4f7d-4977-a112-e6ad46c6c8ea",
     "references": [
         {

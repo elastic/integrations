@@ -1,6 +1,6 @@
 {
     "attributes": {
-        "description": "GKE clusters: a hexagon map colored by saturation, CPU, memory, ephemeral storage or problem pods, the list of clusters, and capacity, health and log volume over time. Click a hexagon or a row to open cluster detail.",
+        "description": "GKE clusters: a hexagon map colored by saturation, CPU, memory, ephemeral storage or problem pods, the list of clusters, and capacity, health and log volume over time. Click a hexagon or a cluster name to open cluster detail.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": []
@@ -497,7 +497,7 @@
                                         "hidden": false,
                                         "isMetric": false,
                                         "isTransposed": false,
-                                        "oneClickFilter": false
+                                        "oneClickFilter": true
                                     },
                                     {
                                         "alignment": "left",
@@ -648,27 +648,27 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "GKE clusters worst first by saturation: the higher of CPU and memory utilization, where CPU and memory are pods' use over allocatable on the cluster's nodes, averaged over the range. Nodes ready uses each node's latest `Ready` condition. Problem pods counts Pending, Failed and Unknown pods from kube-state-metrics and is empty without it.",
+                    "description": "GKE clusters worst first by saturation: the higher of CPU and memory utilization, where CPU and memory are pods' use over allocatable on the cluster's nodes, averaged over the range. Nodes ready uses each node's latest `Ready` condition. Problem pods counts Pending, Failed and Unknown pods from kube-state-metrics and is empty without it. Click a cluster name to open its detail or Discover; the row menu (⋮) opens it in the Google Cloud console.",
                     "drilldowns": [
                         {
                             "encode_url": true,
                             "label": "1. View cluster detail",
                             "open_in_new_tab": false,
-                            "trigger": "on_click_row",
+                            "trigger": "on_click_value",
                             "type": "url_drilldown",
-                            "url": "{{kibanaUrl}}/app/dashboards#/view/gcp_gke_otel-a8c033b4-994a-4ec7-9b6f-82d41ea34078?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(filters:!((meta:(alias:'cluster: {{lookup event.values 0}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.cluster_name',negate:!f,params:(query:'{{lookup event.values 0}}'),type:phrase),query:(match_phrase:(resource.attributes.cluster_name:'{{lookup event.values 0}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.cluster',negate:!f,params:(query:'{{lookup event.values 0}}'),type:phrase),query:(match_phrase:(resource.attributes.cluster:'{{lookup event.values 0}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.cluster_name:'{{lookup event.values 0}}')),(match_phrase:(resource.attributes.cluster:'{{lookup event.values 0}}'))))))))"
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Cluster>\" \"\")}}{{else}}{{kibanaUrl}}/app/dashboards#/view/gcp_gke_otel-a8c033b4-994a-4ec7-9b6f-82d41ea34078?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(filters:!((meta:(alias:'cluster: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.cluster_name',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.cluster_name:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.cluster',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.cluster:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.cluster_name:'{{event.value}}')),(match_phrase:(resource.attributes.cluster:'{{event.value}}')))))))){{/if}}"
                         },
                         {
                             "encode_url": true,
                             "label": "2. View metrics in Discover",
                             "open_in_new_tab": false,
-                            "trigger": "on_click_row",
+                            "trigger": "on_click_value",
                             "type": "url_drilldown",
-                            "url": "{{kibanaUrl}}/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(dataViewId:'metrics-*',type:dataView),filters:!((meta:(alias:'cluster: {{lookup event.values 0}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.cluster_name',negate:!f,params:(query:'{{lookup event.values 0}}'),type:phrase),query:(match_phrase:(resource.attributes.cluster_name:'{{lookup event.values 0}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.cluster',negate:!f,params:(query:'{{lookup event.values 0}}'),type:phrase),query:(match_phrase:(resource.attributes.cluster:'{{lookup event.values 0}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.cluster_name:'{{lookup event.values 0}}')),(match_phrase:(resource.attributes.cluster:'{{lookup event.values 0}}'))))))),interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc)))"
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Cluster>\" \"\")}}{{else}}{{kibanaUrl}}/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(dataViewId:'metrics-*',type:dataView),filters:!((meta:(alias:'cluster: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.cluster_name',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.cluster_name:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.cluster',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.cluster:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.cluster_name:'{{event.value}}')),(match_phrase:(resource.attributes.cluster:'{{event.value}}'))))))),interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc))){{/if}}"
                         },
                         {
                             "encode_url": true,
-                            "label": "3. View in Google Cloud console ↗",
+                            "label": "View in Google Cloud console ↗",
                             "open_in_new_tab": true,
                             "trigger": "on_click_row",
                             "type": "url_drilldown",
@@ -2586,7 +2586,7 @@
         "title": "[GCP OTel] GKE Clusters"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-10-17T17:34:33.744Z",
+    "created_at": "2026-10-19T19:53:21.947Z",
     "id": "gcp_gke_otel-e045e040-ce0b-4057-986c-ecd534a569b7",
     "references": [
         {

@@ -1,6 +1,6 @@
 {
     "attributes": {
-        "description": "Detail view of a single GKE namespace: CPU and memory used against requests and limits, PVC fill, pod phase mix, and the pods and workloads in the namespace. Open it from a hexagon or a row on [GCP OTel] GKE Namespaces or [GCP OTel] GKE Workloads, or from [GCP OTel] GKE Cluster Detail.",
+        "description": "Detail view of a single GKE namespace: CPU and memory used against requests and limits, PVC fill, pod phase mix, and the pods and workloads in the namespace. Open it from a hexagon or a namespace name on [GCP OTel] GKE Namespaces or [GCP OTel] GKE Workloads, or from [GCP OTel] GKE Cluster Detail.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": []
@@ -3494,7 +3494,7 @@
                                         "hidden": false,
                                         "isMetric": false,
                                         "isTransposed": false,
-                                        "oneClickFilter": false
+                                        "oneClickFilter": true
                                     },
                                     {
                                         "alignment": "right",
@@ -3605,23 +3605,23 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Pods of the namespace, worst first by the highest container memory limit utilization (`container/memory/limit_utilization`). Phase comes from kube-state-metrics. Ephemeral storage limit sums the container limits that are set. Click a pod to open its detail.",
+                    "description": "Pods of the namespace, worst first by the highest container memory limit utilization (`container/memory/limit_utilization`). Phase comes from kube-state-metrics. Ephemeral storage limit sums the container limits that are set. Click a pod name to open its detail or Discover.",
                     "drilldowns": [
                         {
                             "encode_url": true,
                             "label": "1. View pod detail",
                             "open_in_new_tab": false,
-                            "trigger": "on_click_row",
+                            "trigger": "on_click_value",
                             "type": "url_drilldown",
-                            "url": "{{kibanaUrl}}/app/dashboards#/view/gcp_gke_otel-f4e74d4e-c3b1-40aa-872f-901840e8d3fb?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(filters:!({{#each context.panel.filters}}{{rison this}},{{/each}}(meta:(alias:'pod: {{lookup event.values 0}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.pod_name',negate:!f,params:(query:'{{lookup event.values 0}}'),type:phrase),query:(match_phrase:(resource.attributes.pod_name:'{{lookup event.values 0}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.pod',negate:!f,params:(query:'{{lookup event.values 0}}'),type:phrase),query:(match_phrase:(attributes.pod:'{{lookup event.values 0}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.pod_name:'{{lookup event.values 0}}')),(match_phrase:(attributes.pod:'{{lookup event.values 0}}'))))))))"
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Pod>\" \"\")}}{{else}}{{kibanaUrl}}/app/dashboards#/view/gcp_gke_otel-f4e74d4e-c3b1-40aa-872f-901840e8d3fb?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(filters:!({{#each context.panel.filters}}{{rison this}},{{/each}}(meta:(alias:'pod: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.pod_name',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.pod_name:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.pod',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(attributes.pod:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.pod_name:'{{event.value}}')),(match_phrase:(attributes.pod:'{{event.value}}')))))))){{/if}}"
                         },
                         {
                             "encode_url": true,
                             "label": "2. View metrics in Discover",
                             "open_in_new_tab": false,
-                            "trigger": "on_click_row",
+                            "trigger": "on_click_value",
                             "type": "url_drilldown",
-                            "url": "{{kibanaUrl}}/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(dataViewId:'metrics-*',type:dataView),filters:!({{#each context.panel.filters}}{{rison this}},{{/each}}(meta:(alias:'pod: {{lookup event.values 0}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.pod_name',negate:!f,params:(query:'{{lookup event.values 0}}'),type:phrase),query:(match_phrase:(resource.attributes.pod_name:'{{lookup event.values 0}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.pod',negate:!f,params:(query:'{{lookup event.values 0}}'),type:phrase),query:(match_phrase:(attributes.pod:'{{lookup event.values 0}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.pod_name:'{{lookup event.values 0}}')),(match_phrase:(attributes.pod:'{{lookup event.values 0}}'))))))),interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc)))"
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Pod>\" \"\")}}{{else}}{{kibanaUrl}}/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(dataViewId:'metrics-*',type:dataView),filters:!({{#each context.panel.filters}}{{rison this}},{{/each}}(meta:(alias:'pod: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.pod_name',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.pod_name:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.pod',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(attributes.pod:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.pod_name:'{{event.value}}')),(match_phrase:(attributes.pod:'{{event.value}}'))))))),interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc))){{/if}}"
                         }
                     ],
                     "title": "List of pods"
@@ -3720,7 +3720,7 @@
         "title": "[GCP OTel] GKE Namespace Detail"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-10-17T17:34:27.518Z",
+    "created_at": "2026-10-19T19:53:43.203Z",
     "id": "gcp_gke_otel-05487b8b-c21b-4898-a513-716e39b7c702",
     "references": [],
     "type": "dashboard",

@@ -1,6 +1,6 @@
 {
     "attributes": {
-        "description": "GKE namespaces: a hexagon map colored by limit utilization, restarts or problem pods, the list of namespaces, and problem pods and containers not ready by namespace. Click a hexagon or a row to open namespace detail.",
+        "description": "GKE namespaces: a hexagon map colored by limit utilization, restarts or problem pods, the list of namespaces, and problem pods and containers not ready by namespace. Click a hexagon or a namespace name to open namespace detail.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": []
@@ -486,7 +486,7 @@
                                         "hidden": false,
                                         "isMetric": false,
                                         "isTransposed": false,
-                                        "oneClickFilter": false
+                                        "oneClickFilter": true
                                     },
                                     {
                                         "alignment": "left",
@@ -638,11 +638,27 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Namespaces per cluster, most container restarts in the range first. CPU and Memory limit % are use over limits for containers that have one; Fullest PVC % is the fullest PersistentVolumeClaim volume. Problem pods, Pods and Deployments come from kube-state-metrics and are empty without it.",
+                    "description": "Namespaces per cluster, most container restarts in the range first. CPU and Memory limit % are use over limits for containers that have one; Fullest PVC % is the fullest PersistentVolumeClaim volume. Problem pods, Pods and Deployments come from kube-state-metrics and are empty without it. Click a namespace name to open its detail or Discover, matched by name in every cluster; the row menu (⋮) has the same links for this cluster only.",
                     "drilldowns": [
                         {
                             "encode_url": true,
                             "label": "1. View namespace detail",
+                            "open_in_new_tab": false,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Namespace>\" \"\")}}{{else}}{{kibanaUrl}}/app/dashboards#/view/gcp_gke_otel-05487b8b-c21b-4898-a513-716e39b7c702?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(filters:!((meta:(alias:'namespace: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.namespace_name',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.namespace_name:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.namespace',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.namespace:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.namespace_name:'{{event.value}}')),(match_phrase:(resource.attributes.namespace:'{{event.value}}')))))))){{/if}}"
+                        },
+                        {
+                            "encode_url": true,
+                            "label": "2. View metrics in Discover",
+                            "open_in_new_tab": false,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Namespace>\" \"\")}}{{else}}{{kibanaUrl}}/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(dataViewId:'metrics-*',type:dataView),filters:!((meta:(alias:'namespace: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.namespace_name',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.namespace_name:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.namespace',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.namespace:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.namespace_name:'{{event.value}}')),(match_phrase:(resource.attributes.namespace:'{{event.value}}'))))))),interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc))){{/if}}"
+                        },
+                        {
+                            "encode_url": true,
+                            "label": "1. View namespace detail (this cluster only)",
                             "open_in_new_tab": false,
                             "trigger": "on_click_row",
                             "type": "url_drilldown",
@@ -650,7 +666,7 @@
                         },
                         {
                             "encode_url": true,
-                            "label": "2. View metrics in Discover",
+                            "label": "2. View metrics in Discover (this cluster only)",
                             "open_in_new_tab": false,
                             "trigger": "on_click_row",
                             "type": "url_drilldown",
@@ -1621,7 +1637,7 @@
         "title": "[GCP OTel] GKE Namespaces"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-10-17T17:57:02.674Z",
+    "created_at": "2026-10-19T19:53:28.834Z",
     "id": "gcp_gke_otel-af2e90f0-abec-4756-91d7-542cdc2c41d3",
     "references": [
         {
