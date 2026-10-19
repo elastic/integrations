@@ -9,6 +9,58 @@ rules:
         - 'Bearer test-snowflake-pat'
       X-Snowflake-Authorization-Token-Type:
         - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: /.*ACCESS_HISTORY.*AND QUERY_ID.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06d7-0000-df4f-0000-00400009591f",
+            "createdOn": 1592190000789,
+            "statementStatusUrl": "/api/v2/statements/019c06d7-0000-df4f-0000-00400009591f",
+            "resultSetMetaData": {
+              "numRows": 1,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "QUERY_ID", "type": "text", "nullable": true},
+                {"name": "QUERY_START_TIME", "type": "timestamp_ltz", "nullable": true},
+                {"name": "USER_NAME", "type": "text", "nullable": true},
+                {"name": "DIRECT_OBJECTS_ACCESSED", "type": "array", "nullable": true},
+                {"name": "BASE_OBJECTS_ACCESSED", "type": "array", "nullable": true},
+                {"name": "OBJECTS_MODIFIED", "type": "array", "nullable": true},
+                {"name": "OBJECT_MODIFIED_BY_DDL", "type": "object", "nullable": true},
+                {"name": "POLICIES_REFERENCED", "type": "array", "nullable": true},
+                {"name": "PARENT_QUERY_ID", "type": "text", "nullable": true},
+                {"name": "ROOT_QUERY_ID", "type": "text", "nullable": true},
+                {"name": "EVENT_SOURCE", "type": "text", "nullable": false},
+                {"name": "ADDITIONAL_PROPERTIES", "type": "variant", "nullable": true},
+                {"name": "INVOKER_IDENTITY", "type": "variant", "nullable": true},
+                {"name": "AGENTS_INFO", "type": "array", "nullable": true}
+              ],
+              "partitionInfo": [
+                {"rowCount": 1, "uncompressedSize": 260}
+              ]
+            },
+            "data": [
+              ["01b5a1c2-0000-1a2b-0000-000100000009", "2020-06-15 12:00:00.000 +0000", "frank.miller", "[]", "[]", "[]", null, "[]", null, null, "snowflake_sql", null, null, null]
+            ]
+          }
+          `}}
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
     request_body: /.*(ACCESS_HISTORY.*2020-06-15 09:00:00|2020-06-15 09:00:00.*ACCESS_HISTORY).*/
     responses:
       - status_code: 200
@@ -157,7 +209,7 @@ rules:
             ]
           }
           `}}
-  # data_transfer_history
+  # access_history: statement partition GETs
   - path: /api/v2/statements/019c06d7-0000-df4f-0000-00400009589e
     methods: ['GET']
     query_params:
@@ -255,6 +307,52 @@ rules:
           }
           `}}
   # data_transfer_history
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: /.*DATA_TRANSFER_HISTORY.*COALESCE.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06e8-0000-df4f-0000-00500010591f",
+            "createdOn": 1592200800789,
+            "statementStatusUrl": "/api/v2/statements/019c06e8-0000-df4f-0000-00500010591f",
+            "resultSetMetaData": {
+              "numRows": 1,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "START_TIME", "type": "timestamp_ltz", "nullable": true},
+                {"name": "END_TIME", "type": "timestamp_ltz", "nullable": true},
+                {"name": "SOURCE_CLOUD", "type": "text", "nullable": true},
+                {"name": "SOURCE_REGION", "type": "text", "nullable": true},
+                {"name": "TARGET_CLOUD", "type": "text", "nullable": true},
+                {"name": "TARGET_REGION", "type": "text", "nullable": true},
+                {"name": "BYTES_TRANSFERRED", "type": "real", "nullable": true},
+                {"name": "TRANSFER_TYPE", "type": "text", "nullable": true}
+              ],
+              "partitionInfo": [
+                {"rowCount": 1, "uncompressedSize": 140}
+              ]
+            },
+            "data": [
+              ["2020-06-15 12:00:00.000 +0000", "2020-06-15 13:00:00.000 +0000", "gcp", "europe-west1", "azure", "westeurope", "1048576.0", "COPY"]
+            ]
+          }
+          `}}
   - path: /api/v2/statements
     methods: ['POST']
     query_params:
@@ -394,7 +492,7 @@ rules:
             ]
           }
           `}}
-  # stages
+  # data_transfer_history: statement partition GETs
   - path: /api/v2/statements/019c06e8-0000-df4f-0000-00500010589e
     methods: ['GET']
     query_params:
@@ -486,6 +584,61 @@ rules:
           }
           `}}
   # stages
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: /.*ACCOUNT_USAGE\.STAGES.*AND STAGE_ID.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06f9-0000-df4f-0000-00600011591f",
+            "createdOn": 1592208000789,
+            "statementStatusUrl": "/api/v2/statements/019c06f9-0000-df4f-0000-00600011591f",
+            "resultSetMetaData": {
+              "numRows": 1,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "STAGE_ID", "type": "fixed", "nullable": true},
+                {"name": "STAGE_NAME", "type": "text", "nullable": true},
+                {"name": "STAGE_SCHEMA_ID", "type": "fixed", "nullable": true},
+                {"name": "STAGE_SCHEMA", "type": "text", "nullable": true},
+                {"name": "STAGE_CATALOG_ID", "type": "fixed", "nullable": true},
+                {"name": "STAGE_CATALOG", "type": "text", "nullable": true},
+                {"name": "STAGE_URL", "type": "text", "nullable": true},
+                {"name": "STAGE_REGION", "type": "text", "nullable": true},
+                {"name": "STAGE_TYPE", "type": "text", "nullable": true},
+                {"name": "STAGE_OWNER", "type": "text", "nullable": true},
+                {"name": "COMMENT", "type": "text", "nullable": true},
+                {"name": "CREATED", "type": "timestamp_ltz", "nullable": true},
+                {"name": "LAST_ALTERED", "type": "timestamp_ltz", "nullable": true},
+                {"name": "DELETED", "type": "timestamp_ltz", "nullable": true},
+                {"name": "OWNER_ROLE_TYPE", "type": "text", "nullable": true},
+                {"name": "INSTANCE_ID", "type": "fixed", "nullable": true},
+                {"name": "STORAGE_INTEGRATION", "type": "text", "nullable": true}
+              ],
+              "partitionInfo": [
+                {"rowCount": 1, "uncompressedSize": 320}
+              ]
+            },
+            "data": [
+              ["25", "EXAMPLE_KEYSET_STAGE", "1003", "RAW", "2002", "EXAMPLE_DB", "s3://example-bucket/keyset/", "us-west-2", "External Named", "SYSADMIN", null, "2020-06-15 12:00:00.000 +0000", "2020-06-15 12:00:00.000 +0000", null, "ROLE", null, "EXAMPLE_S3_INTEGRATION"]
+            ]
+          }
+          `}}
   - path: /api/v2/statements
     methods: ['POST']
     query_params:
@@ -652,6 +805,7 @@ rules:
             ]
           }
           `}}
+  # stages: statement partition GETs
   - path: /api/v2/statements/019c06f9-0000-df4f-0000-00600011589e
     methods: ['GET']
     query_params:

@@ -63,6 +63,7 @@ program: |-
       :
         (now - duration(state.initial_interval)).format("2006-01-02 15:04:05.000 -0700")
     ),
+    "catching_up": state.?cursor.catching_up.orValue(false) && state.?cursor.after_ts.orValue("") != "",
   }.as(req,
     state.with(
       request(
@@ -79,20 +80,58 @@ program: |-
           },
           ?"Body": (req.http_method == "POST") ?
             optional.of(
-              {
-                "statement": "SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.DATA_TRANSFER_HISTORY WHERE START_TIME > ? ORDER BY START_TIME ASC, SOURCE_CLOUD ASC, SOURCE_REGION ASC, TARGET_CLOUD ASC, TARGET_REGION ASC, TRANSFER_TYPE ASC LIMIT " + string(state.batch_size),
-                "warehouse": state.warehouse,
-                "role": state.role,
-                "bindings": {
-                  "1": {
-                    "type": "TEXT",
-                    "value": req.since,
-                  },
-                },
-                "parameters": {
-                  "TIMESTAMP_LTZ_OUTPUT_FORMAT": "YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM",
-                },
-              }.encode_json()
+              (
+                req.catching_up ?
+                  {
+                    "statement": "SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.DATA_TRANSFER_HISTORY WHERE (START_TIME, COALESCE(SOURCE_CLOUD, ''), COALESCE(SOURCE_REGION, ''), COALESCE(TARGET_CLOUD, ''), COALESCE(TARGET_REGION, ''), COALESCE(TRANSFER_TYPE, '')) > (?, ?, ?, ?, ?, ?) ORDER BY START_TIME ASC, SOURCE_CLOUD ASC, SOURCE_REGION ASC, TARGET_CLOUD ASC, TARGET_REGION ASC, TRANSFER_TYPE ASC LIMIT " + string(state.batch_size),
+                    "warehouse": state.warehouse,
+                    "role": state.role,
+                    "bindings": {
+                      "1": {
+                        "type": "TEXT",
+                        "value": string(state.cursor.after_ts),
+                      },
+                      "2": {
+                        "type": "TEXT",
+                        "value": string(state.?cursor.after_source_cloud.orValue("")),
+                      },
+                      "3": {
+                        "type": "TEXT",
+                        "value": string(state.?cursor.after_source_region.orValue("")),
+                      },
+                      "4": {
+                        "type": "TEXT",
+                        "value": string(state.?cursor.after_target_cloud.orValue("")),
+                      },
+                      "5": {
+                        "type": "TEXT",
+                        "value": string(state.?cursor.after_target_region.orValue("")),
+                      },
+                      "6": {
+                        "type": "TEXT",
+                        "value": string(state.?cursor.after_transfer_type.orValue("")),
+                      },
+                    },
+                    "parameters": {
+                      "TIMESTAMP_LTZ_OUTPUT_FORMAT": "YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM",
+                    },
+                  }
+                :
+                  {
+                    "statement": "SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.DATA_TRANSFER_HISTORY WHERE START_TIME > ? ORDER BY START_TIME ASC, SOURCE_CLOUD ASC, SOURCE_REGION ASC, TARGET_CLOUD ASC, TARGET_REGION ASC, TRANSFER_TYPE ASC LIMIT " + string(state.batch_size),
+                    "warehouse": state.warehouse,
+                    "role": state.role,
+                    "bindings": {
+                      "1": {
+                        "type": "TEXT",
+                        "value": req.since,
+                      },
+                    },
+                    "parameters": {
+                      "TIMESTAMP_LTZ_OUTPUT_FORMAT": "YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM",
+                    },
+                  }
+              ).encode_json()
             )
           :
             optional.none(),
@@ -152,9 +191,10 @@ program: |-
                 :
                   state.?cursor.filled_batch.orValue(false),
               }.as(result,
-                result.rows.map(row, result.names.zip(row)).map(record, record.?START_TIME.orValue(null) != null,
-                  string(record.START_TIME)
-                ).as(row_timestamps,
+                result.rows.map(row, result.names.zip(row)).as(records,
+                  records.map(record, record.?START_TIME.orValue(null) != null,
+                    string(record.START_TIME)
+                  ).as(row_timestamps,
                   {
                     "events": (size(result.rows) > 0) ?
                       dyn(result.rows.map(row, {"message": result.names.zip(row).encode_json()}))
@@ -177,6 +217,27 @@ program: |-
                       :
                         state.?cursor.last_timestamp.orValue(""),
                     }.with(
+                      (size(records) > 0 && records[int(size(records)) - 1].?START_TIME.orValue(null) != null) ?
+                        records[int(size(records)) - 1].as(last,
+                          {
+                            "after_ts": string(last.START_TIME).parse_time("2006-01-02 15:04:05.000 Z0700").format("2006-01-02 15:04:05.000 -0700"),
+                            "after_source_cloud": (last.?SOURCE_CLOUD.orValue(null) != null) ? string(last.SOURCE_CLOUD) : "",
+                            "after_source_region": (last.?SOURCE_REGION.orValue(null) != null) ? string(last.SOURCE_REGION) : "",
+                            "after_target_cloud": (last.?TARGET_CLOUD.orValue(null) != null) ? string(last.TARGET_CLOUD) : "",
+                            "after_target_region": (last.?TARGET_REGION.orValue(null) != null) ? string(last.TARGET_REGION) : "",
+                            "after_transfer_type": (last.?TRANSFER_TYPE.orValue(null) != null) ? string(last.TRANSFER_TYPE) : "",
+                          }
+                        )
+                      :
+                        {
+                          ?"after_ts": (state.?cursor.after_ts.orValue("") != "") ? optional.of(string(state.cursor.after_ts)) : optional.none(),
+                          ?"after_source_cloud": (state.?cursor.after_source_cloud.orValue("") != "") ? optional.of(string(state.cursor.after_source_cloud)) : optional.none(),
+                          ?"after_source_region": (state.?cursor.after_source_region.orValue("") != "") ? optional.of(string(state.cursor.after_source_region)) : optional.none(),
+                          ?"after_target_cloud": (state.?cursor.after_target_cloud.orValue("") != "") ? optional.of(string(state.cursor.after_target_cloud)) : optional.none(),
+                          ?"after_target_region": (state.?cursor.after_target_region.orValue("") != "") ? optional.of(string(state.cursor.after_target_region)) : optional.none(),
+                          ?"after_transfer_type": (state.?cursor.after_transfer_type.orValue("") != "") ? optional.of(string(state.cursor.after_transfer_type)) : optional.none(),
+                        }
+                    ).with(
                       (int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count) ?
                         {
                           "handle": result.handle,
@@ -192,6 +253,7 @@ program: |-
                     ),
                     "want_more": int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count || result.filled_batch,
                   }
+                )
                 )
               )
           )

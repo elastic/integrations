@@ -12,7 +12,7 @@ This integration queries Snowflake `ACCOUNT_USAGE` historical views through SQL 
 
 ### How it works
 
-Elastic Agent submits SQL statements to `POST /api/v2/statements` and pages result partitions. If Snowflake returns HTTP 202, the agent polls the statement handle until results are ready. Each data stream queries one `ACCOUNT_USAGE` view and advances a timestamp watermark with lookback to cover view latency. When a statement returns a full `batch_size` page, the next request continues from the watermark without the lag overlap until the backlog is drained.
+Elastic Agent submits SQL statements to `POST /api/v2/statements` and pages result partitions. If Snowflake returns HTTP 202, the agent polls the statement handle until results are ready. Each data stream queries one `ACCOUNT_USAGE` view and advances a timestamp watermark with lookback to cover view latency. When a statement returns a full `batch_size` page, the next request continues from the last returned `ORDER BY` key without the lag overlap until the backlog is drained.
 
 ## What data does this integration collect?
 
@@ -435,7 +435,6 @@ The `stages` data stream provides stage lifecycle events from `SNOWFLAKE.ACCOUNT
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | snowflake.stages.created | Date and time when the stage was created. | date |
 | snowflake.stages.deleted | Date and time when the stage was dropped. | date |
 | snowflake.stages.instance_id | Internal, Snowflake-generated identifier of the application instance that owns the stage, when the owner is an application. | keyword |
@@ -505,11 +504,6 @@ An example event for `stages` looks as following:
     "observer": {
         "product": "Snowflake",
         "vendor": "Snowflake"
-    },
-    "related": {
-        "user": [
-            "SYSADMIN"
-        ]
     },
     "snowflake": {
         "stages": {
