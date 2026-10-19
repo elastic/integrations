@@ -70,6 +70,26 @@ processors:
             ctx.is_allocatable = true;
             return;
           }
+          // Serverless capacity pool (matches billing_realized_pool). ML VCU stays platform.
+          if (sku.startsWith('elasticsearch.')
+              && (sku.contains('-search-vcu_') || sku.contains('-ingest-vcu_')
+                  || sku.startsWith('elasticsearch.retained_'))) {
+            ctx.cost_category = 'data_tier';
+            ctx.is_allocatable = true;
+            return;
+          }
+          if ((sku.startsWith('elasticsearch.') && sku.contains('-ml-vcu_'))
+              || sku.contains('.es.ml.')) {
+            ctx.cost_category = 'platform';
+            ctx.is_allocatable = false;
+            return;
+          }
+          if (sku.startsWith('serverless.support-')) {
+            ctx.cost_type = 'serverless_premium_support';
+            ctx.cost_category = 'support';
+            ctx.is_allocatable = false;
+            return;
+          }
         }
         if (ctx.cost_type != null) {
           if (ctx.cost_type == 'ml' || ctx.cost_type == 'kibana' || ctx.cost_type == 'apm'

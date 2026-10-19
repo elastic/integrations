@@ -4,28 +4,11 @@ source:
     # Wildcard matches default monitoring-indices and custom pivot destinations named monitoring-indices* (Elasticsearch integration).
     - "monitoring-indices*"
     - "*:monitoring-indices*" # Same pattern on all remote clusters (CCS).
-    # Elastic Cloud Console "Logs and metrics" (Cloud-managed Metricbeat) writes the
-    # .monitoring-es-8-mb data stream, whose "index" metricset carries the same field names as
-    # the Elasticsearch integration index_pivot output, so Chargeback can run without the
-    # Agent-based Elasticsearch integration. Serverless usage is also collected into an index
-    # matching monitoring-indices*, which the first pattern already covers.
-    - ".monitoring-es-*"
-  # Restrict .monitoring-es-* to the index metricset. Other Metricbeat metricsets
-  # (node_stats, cluster_stats, shard, ...) also carry elasticsearch.cluster.name and
-  # would inflate scan cost and can create unknown/zero-sum buckets. Docs without
-  # metricset.name (monitoring-indices* / index_pivot) are kept.
-  query:
-    bool:
-      should:
-        - term:
-            metricset.name: index
-        - term:
-            metricset.name.keyword: index
-        - bool:
-            must_not:
-              exists:
-                field: metricset.name
-      minimum_should_match: 1
+    # Canonical usage source: Elasticsearch integration index_pivot output and
+    # Serverless staging (monitoring-indices*). Cloud Console Logs and metrics
+    # (.monitoring-es-*) feed Chargeback through index_pivot into this pattern.
+    # Do not also source .monitoring-es-* here — that double-counts when the pivot
+    # is running (raw Metricbeat rows plus their pivoted copies).
   # These read whichever of <field> / <field>.keyword the mapping actually makes
   # aggregatable. Where the .monitoring-es-mb index template is not governing the
   # .monitoring-es-8-mb data stream, dynamic mapping produces `text` plus a `.keyword`
