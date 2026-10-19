@@ -19,6 +19,44 @@ If you're collecting Windows event logs, note that there are three related integ
 - **System integration** (this integration): Collects logs from the Windows `Application`, `System`, and `Security` channels with specialized ingest pipelines optimized for observability use cases.
 - **[Windows integration](https://www.elastic.co/docs/reference/integrations/windows)**: Collects logs from Windows-specific channels like PowerShell, Sysmon, Windows Defender, and AppLocker with specialized security-focused ingest pipelines. Use this for security monitoring and advanced Windows telemetry.
 - **[Custom Windows event log package](https://www.elastic.co/docs/reference/integrations/winlog)**: Collects logs from any user-defined Windows event log channel. Use this when you need to collect from channels not covered by the System or Windows integrations. Note that this integration does not include specialized ingest pipelines—you'll need to create custom pipelines if additional processing is required.
+
+### AD FS security audits
+
+The `system.security` data stream extracts AD FS Security audit XML for event IDs
+**1200-1210**. Per the [Microsoft AD FS event reference](https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/troubleshooting/ad-fs-tshoot-logging#types-of-events),
+1200/1201 are token issuance success/failure, 1202/1203 are credential validation
+success/failure, 1204/1205 are password change request success/failure, and
+1206/1207 are sign-out success/failure. Event 1210 is an extranet smart lockout
+([Microsoft documentation](https://learn.microsoft.com/en-us/windows-server/identity/ad-fs/operations/configure-ad-fs-extranet-smart-lockout-protection#ad-fs-extranet-smart-lockout-events)).
+Microsoft does not assign 1208 and 1209 meanings in those references, so the
+integration extracts available XML fields without inventing `event.action` or
+changing the event classification for those two IDs.
+Enable the AD FS service's Security audit logging and the Windows `Application Generated`
+audit subcategory to collect these events. The `AD FS/Admin` channel is separate and
+is not covered by `system.security`.
+
+The integration decodes the audit XML on the agent and populates `user.name`,
+`user.domain`, `source.ip`, `related.user`, `event.action`, and `winlog.adfs.*`
+without removing the original XML in `winlog.event_data.param2`. `winlog.user`
+identifies the account that emits the audit, often the AD FS service account;
+`user.name` identifies the user in the audited request, when available. Password
+change requests use `event.category: iam`, sign-outs use `event.type: end`. A UPN
+(`user@domain`) or down-level logon name (`DOMAIN\user`) is split into
+`user.name` and `user.domain`. `winlog.adfs.user_id` retains the original value.
+
+The `IpAddress` audit field can contain multiple IPs. The first candidate is
+used as `source.ip` when it is a valid address, while the unmodified value is
+stored in `winlog.adfs.ip_address`. Proxies can affect the reported IP. Use
+`winlog.adfs.activity_id` to investigate related events, but do not count
+different event IDs (for example 1201 and 1203) as separate sign-in attempts.
+AD FS event 1210 requires extranet smart lockout and traffic through an AD FS
+proxy; an intranet password failure alone does not produce it. `event.type`
+for 1210 is `info`, as AD FS log-only mode does not necessarily block the user.
+
+For application-local MFA, `winlog.adfs.mfa_performed` remains `false` even if
+the application validates a second factor after AD FS has issued a token.
+The Custom Windows event log integration does not apply this specialized
+System pipeline to its own data streams.
   
 ## Data streams
 
@@ -564,3 +602,5 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ## Alerting Rule Template
 {{alertRuleTemplates}}
+
+For AD FS audit fields and event IDs, see [AD FS security audits](#ad-fs-security-audits).

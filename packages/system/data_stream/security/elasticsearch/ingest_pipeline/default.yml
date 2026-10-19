@@ -15,6 +15,14 @@ processors:
       name: '{{ IngestPipeline "standard" }}'
       if: 'ctx.winlog?.provider_name != null && ["Microsoft-Windows-Eventlog", "Microsoft-Windows-Security-Auditing"].contains(ctx.winlog.provider_name)'
   - pipeline:
+      name: '{{ IngestPipeline "adfs" }}'
+      tag: process_adfs_security_audit
+      if: >-
+        ctx.winlog?.channel == 'Security' &&
+        ctx.winlog.provider_name == 'AD FS Auditing' &&
+        ctx.event?.code != null &&
+        ['1200', '1201', '1202', '1203', '1204', '1205', '1206', '1207', '1208', '1209', '1210'].contains(ctx.event.code)
+  - pipeline:
       name: '{{ IngestPipeline "scheduled_task" }}'
       if: >-
         ctx.winlog != null &&
@@ -33,6 +41,11 @@ processors:
         )
   - remove:
       field: winlog._tmp.scheduled_task
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      tag: remove_decoded_adfs_audit_xml
+      field: winlog._tmp.adfs
       ignore_missing: true
       ignore_failure: true
   - remove:
