@@ -1056,7 +1056,41 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
+| journald.audit.login_uid | The login UID of the process the journal entry originates from, as maintained by the kernel audit subsystem. | long |
+| journald.audit.session | The session of the process the journal entry originates from, as maintained by the kernel audit subsystem. | keyword |
+| journald.code.file | The code location generating this message, if known. Contains the source filename. | keyword |
+| journald.code.func | The code location generating this message, if known. Contains the function name. | keyword |
+| journald.code.line | The code location generating this message, if known. Contains the line number. | long |
+| journald.coredump.unit | Used to annotate messages containing coredumps from system units. | keyword |
+| journald.coredump.user_unit | Used to annotate messages containing coredumps from user units. | keyword |
+| journald.custom | Structured fields added to the log message by the caller. | flattened |
+| journald.gid | The group ID of the process the journal entry originates from formatted as a decimal string. Note that entries obtained via "stdout" or "stderr" of forked processes will contain credentials valid for a parent process. | long |
+| journald.host.boot_id | The kernel boot ID for the boot the message was generated in, formatted as a 128-bit hexadecimal string. | keyword |
+| journald.kernel.device | The kernel device name. If the entry is associated to a block device, contains the major and minor numbers of the device node, separated by ":" and prefixed by "b". Similarly for character devices, but prefixed by "c". For network devices, this is the interface index prefixed by "n". For all other devices, this is the subsystem name prefixed by "+", followed by ":", followed by the kernel device name. | keyword |
+| journald.kernel.device_name | The kernel device name as it shows up in the device tree below `/sys/`. | keyword |
+| journald.kernel.device_node_path | The device node path of this device in `/dev/`. | keyword |
+| journald.kernel.device_symlinks | Additional symlink names pointing to the device node in `/dev/`. This field is frequently set more than once per entry. | keyword |
+| journald.kernel.subsystem | The kernel subsystem name. | keyword |
+| journald.object.audit.login_uid |  | long |
+| journald.object.audit.session |  | long |
+| journald.object.gid |  | long |
+| journald.object.pid | Privileged programs (currently UID 0) may attach OBJECT_PID= to a message. This will instruct systemd-journald to attach additional `journald.object.\*` on behalf of the caller. These additional fields added automatically by systemd-journald. These additional `journald.object.\*` fields are the same as the equivalent `journald.\*` field except that the process identified by PID is described, instead of the process which logged the message. | long |
+| journald.object.process.command_line |  | keyword |
+| journald.object.process.executable |  | keyword |
+| journald.object.process.name |  | keyword |
+| journald.object.systemd.owner_uid |  | long |
+| journald.object.systemd.session |  | keyword |
+| journald.object.systemd.unit |  | keyword |
+| journald.object.systemd.user_unit |  | keyword |
+| journald.object.uid |  | long |
+| journald.pid | The process ID of the process the journal entry originates from formatted as a decimal string. Note that entries obtained via "stdout" or "stderr" of forked processes will contain credentials valid for a parent process. | long |
+| journald.process.capabilities | The effective capabilities(7) of the process the journal entry originates from. | keyword |
+| journald.process.command_line | The command line of the process the journal entry originates from. | keyword |
+| journald.process.executable | The executable path of the process the journal entry originates from. | keyword |
+| journald.process.name | The name of the process the journal entry originates from. | keyword |
+| journald.uid | The user ID of the process the journal entry originates from formatted as a decimal string. Note that entries obtained via "stdout" or "stderr" of forked processes will contain credentials valid for a parent process. | long |
 | log.offset | Log offset | long |
+| process.thread.capabilities.effective | This is the set of capabilities used by the kernel to perform permission checks for the thread. | keyword |
 | service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
 | system.auth.ssh.dropped_ip | The client IP from SSH connections that are open and immediately dropped. | ip |
 | system.auth.ssh.event | The SSH event as found in the logs (Accepted, Invalid, Failed, etc.) | keyword |
@@ -1070,6 +1104,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | system.auth.syslog.version |  | keyword |
 | system.auth.useradd.home | The home folder for the new user. | keyword |
 | system.auth.useradd.shell | The default shell for the new user. | keyword |
+| systemd.cgroup | The control group path in the systemd hierarchy. | keyword |
+| systemd.invocation_id | The invocation ID for the runtime cycle of the unit the message was generated in, as available to processes of the unit in $INVOCATION_ID. | keyword |
+| systemd.owner_uid | The owner UID of the systemd user unit or systemd session (if any) of the process the journal entry originates from. | long |
+| systemd.session | The systemd session ID (if any). | keyword |
+| systemd.slice | The systemd slice unit name. | keyword |
+| systemd.transport | How the entry was received by the journal service. | keyword |
+| systemd.unit | The systemd unit name. | keyword |
+| systemd.user_slice | The systemd user slice name. | keyword |
+| systemd.user_unit | The unit name in the systemd user manager (if any). | keyword |
 | version | Operating system version as a raw string. | keyword |
 
 
@@ -1105,7 +1148,50 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
+| journald.audit.login_uid | The login UID of the process the journal entry originates from, as maintained by the kernel audit subsystem. | long |
+| journald.audit.session | The session of the process the journal entry originates from, as maintained by the kernel audit subsystem. | keyword |
+| journald.code.file | The code location generating this message, if known. Contains the source filename. | keyword |
+| journald.code.func | The code location generating this message, if known. Contains the function name. | keyword |
+| journald.code.line | The code location generating this message, if known. Contains the line number. | long |
+| journald.coredump.unit | Used to annotate messages containing coredumps from system units. | keyword |
+| journald.coredump.user_unit | Used to annotate messages containing coredumps from user units. | keyword |
+| journald.custom | Structured fields added to the log message by the caller. | flattened |
+| journald.gid | The group ID of the process the journal entry originates from formatted as a decimal string. Note that entries obtained via "stdout" or "stderr" of forked processes will contain credentials valid for a parent process. | long |
+| journald.host.boot_id | The kernel boot ID for the boot the message was generated in, formatted as a 128-bit hexadecimal string. | keyword |
+| journald.kernel.device | The kernel device name. If the entry is associated to a block device, contains the major and minor numbers of the device node, separated by ":" and prefixed by "b". Similarly for character devices, but prefixed by "c". For network devices, this is the interface index prefixed by "n". For all other devices, this is the subsystem name prefixed by "+", followed by ":", followed by the kernel device name. | keyword |
+| journald.kernel.device_name | The kernel device name as it shows up in the device tree below `/sys/`. | keyword |
+| journald.kernel.device_node_path | The device node path of this device in `/dev/`. | keyword |
+| journald.kernel.device_symlinks | Additional symlink names pointing to the device node in `/dev/`. This field is frequently set more than once per entry. | keyword |
+| journald.kernel.subsystem | The kernel subsystem name. | keyword |
+| journald.object.audit.login_uid |  | long |
+| journald.object.audit.session |  | long |
+| journald.object.gid |  | long |
+| journald.object.pid | Privileged programs (currently UID 0) may attach OBJECT_PID= to a message. This will instruct systemd-journald to attach additional `journald.object.\*` on behalf of the caller. These additional fields added automatically by systemd-journald. These additional `journald.object.\*` fields are the same as the equivalent `journald.\*` field except that the process identified by PID is described, instead of the process which logged the message. | long |
+| journald.object.process.command_line |  | keyword |
+| journald.object.process.executable |  | keyword |
+| journald.object.process.name |  | keyword |
+| journald.object.systemd.owner_uid |  | long |
+| journald.object.systemd.session |  | keyword |
+| journald.object.systemd.unit |  | keyword |
+| journald.object.systemd.user_unit |  | keyword |
+| journald.object.uid |  | long |
+| journald.pid | The process ID of the process the journal entry originates from formatted as a decimal string. Note that entries obtained via "stdout" or "stderr" of forked processes will contain credentials valid for a parent process. | long |
+| journald.process.capabilities | The effective capabilities(7) of the process the journal entry originates from. | keyword |
+| journald.process.command_line | The command line of the process the journal entry originates from. | keyword |
+| journald.process.executable | The executable path of the process the journal entry originates from. | keyword |
+| journald.process.name | The name of the process the journal entry originates from. | keyword |
+| journald.uid | The user ID of the process the journal entry originates from formatted as a decimal string. Note that entries obtained via "stdout" or "stderr" of forked processes will contain credentials valid for a parent process. | long |
 | log.offset | Log offset | long |
+| process.thread.capabilities.effective | This is the set of capabilities used by the kernel to perform permission checks for the thread. | keyword |
+| systemd.cgroup | The control group path in the systemd hierarchy. | keyword |
+| systemd.invocation_id | The invocation ID for the runtime cycle of the unit the message was generated in, as available to processes of the unit in $INVOCATION_ID. | keyword |
+| systemd.owner_uid | The owner UID of the systemd user unit or systemd session (if any) of the process the journal entry originates from. | long |
+| systemd.session | The systemd session ID (if any). | keyword |
+| systemd.slice | The systemd slice unit name. | keyword |
+| systemd.transport | How the entry was received by the journal service. | keyword |
+| systemd.unit | The systemd unit name. | keyword |
+| systemd.user_slice | The systemd user slice name. | keyword |
+| systemd.user_unit | The unit name in the systemd user manager (if any). | keyword |
 
 
 ## Metrics reference
