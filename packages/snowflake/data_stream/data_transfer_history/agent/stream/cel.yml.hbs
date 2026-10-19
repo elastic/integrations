@@ -83,7 +83,7 @@ program: |-
               (
                 req.catching_up ?
                   {
-                    "statement": "SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.DATA_TRANSFER_HISTORY WHERE (START_TIME, COALESCE(SOURCE_CLOUD, ''), COALESCE(SOURCE_REGION, ''), COALESCE(TARGET_CLOUD, ''), COALESCE(TARGET_REGION, ''), COALESCE(TRANSFER_TYPE, '')) > (?, ?, ?, ?, ?, ?) ORDER BY START_TIME ASC, SOURCE_CLOUD ASC, SOURCE_REGION ASC, TARGET_CLOUD ASC, TARGET_REGION ASC, TRANSFER_TYPE ASC LIMIT " + string(state.batch_size),
+                    "statement": "SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.DATA_TRANSFER_HISTORY WHERE (START_TIME, COALESCE(SOURCE_CLOUD, ''), COALESCE(SOURCE_REGION, ''), COALESCE(TARGET_CLOUD, ''), COALESCE(TARGET_REGION, ''), COALESCE(TRANSFER_TYPE, '')) > (?, ?, ?, ?, ?, ?) ORDER BY START_TIME ASC, COALESCE(SOURCE_CLOUD, '') ASC, COALESCE(SOURCE_REGION, '') ASC, COALESCE(TARGET_CLOUD, '') ASC, COALESCE(TARGET_REGION, '') ASC, COALESCE(TRANSFER_TYPE, '') ASC LIMIT " + string(state.batch_size),
                     "warehouse": state.warehouse,
                     "role": state.role,
                     "bindings": {
@@ -118,7 +118,7 @@ program: |-
                   }
                 :
                   {
-                    "statement": "SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.DATA_TRANSFER_HISTORY WHERE START_TIME > ? ORDER BY START_TIME ASC, SOURCE_CLOUD ASC, SOURCE_REGION ASC, TARGET_CLOUD ASC, TARGET_REGION ASC, TRANSFER_TYPE ASC LIMIT " + string(state.batch_size),
+                    "statement": "SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.DATA_TRANSFER_HISTORY WHERE START_TIME > ? ORDER BY START_TIME ASC, COALESCE(SOURCE_CLOUD, '') ASC, COALESCE(SOURCE_REGION, '') ASC, COALESCE(TARGET_CLOUD, '') ASC, COALESCE(TARGET_REGION, '') ASC, COALESCE(TRANSFER_TYPE, '') ASC LIMIT " + string(state.batch_size),
                     "warehouse": state.warehouse,
                     "role": state.role,
                     "bindings": {
