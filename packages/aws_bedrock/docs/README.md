@@ -141,6 +141,8 @@ When CloudWatch log collection is enabled, you can retrieve logs from all log st
 | gen_ai.compliance.violation_code | Code identifying the specific compliance rule that was violated. | keyword |
 | gen_ai.compliance.violation_detected | Indicates if any compliance violation was detected during the interaction. | boolean |
 | gen_ai.guardrail_id | Guardrail ID if a guardrail was executed. | keyword |
+| gen_ai.input.messages | The chat history provided to the model as an input. | flattened |
+| gen_ai.output.messages | Messages returned by the model where each message represents a specific model response (choice, candidate). | flattened |
 | gen_ai.owasp.description | Description of the OWASP risk triggered. | text |
 | gen_ai.owasp.id | Identifier for the OWASP risk addressed. | keyword |
 | gen_ai.performance.request_size | Size of the request payload in bytes. | long |
@@ -156,21 +158,21 @@ When CloudWatch log collection is enabled, you can retrieve logs from all log st
 | gen_ai.policy.violation | Specifies if a security policy was violated. | boolean |
 | gen_ai.prompt | The full text of the user's request to the gen_ai. | text |
 | gen_ai.request.id | Unique identifier for the LLM request. | keyword |
-| gen_ai.request.max_tokens | Maximum number of tokens the LLM generates for a request. | integer |
+| gen_ai.request.max_tokens | The maximum number of tokens the model generates for a request. | long |
 | gen_ai.request.model.description | Description of the LLM model. | keyword |
 | gen_ai.request.model.id | Unique identifier for the LLM model. | keyword |
 | gen_ai.request.model.instructions | Custom instructions for the LLM model. | text |
 | gen_ai.request.model.role | Role of the LLM model in the interaction. | keyword |
 | gen_ai.request.model.type | Type of LLM model. | keyword |
 | gen_ai.request.model.version | Version of the LLM model used to generate the response. | keyword |
-| gen_ai.request.temperature | Temperature setting for the LLM request. | float |
+| gen_ai.request.temperature | The temperature setting for the GenAI request. | double |
 | gen_ai.request.timestamp | Timestamp when the request was made. | date |
-| gen_ai.request.top_k | The top_k sampling setting for the LLM request. | float |
-| gen_ai.request.top_p | The top_p sampling setting for the LLM request. | float |
+| gen_ai.request.top_k | The top_k sampling setting for the GenAI request. | double |
+| gen_ai.request.top_p | The top_p sampling setting for the GenAI request. | double |
 | gen_ai.response.error_code | Error code returned in the LLM response. | keyword |
 | gen_ai.response.finish_reasons | Reason the LLM response stopped. | keyword |
-| gen_ai.response.id | Unique identifier for the LLM response. | keyword |
-| gen_ai.response.model | Name of the LLM a response was generated from. | keyword |
+| gen_ai.response.id | The unique identifier for the completion. | keyword |
+| gen_ai.response.model | The name of the model that generated the response. | keyword |
 | gen_ai.response.timestamp | Timestamp when the response was received. | date |
 | gen_ai.security.hallucination_consistency | Consistency check between multiple responses. | float |
 | gen_ai.security.jailbreak_score | Measures similarity to known jailbreak attempts. | float |

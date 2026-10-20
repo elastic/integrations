@@ -1,0 +1,43 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: microsoft_defender_cloud
+      name: test-websocket-override-microsoft_defender_cloud
+      streams:
+        - auth_type: connection_string
+          authority_host: https://login.microsoftonline.com
+          connection_string: ${SECRET_0}
+          consumer_group: $Default
+          data_stream:
+            dataset: microsoft_defender_cloud.event
+          eventhub: example
+          processor_version: v2
+          publisher_pipeline.disable_host: true
+          storage_account: default
+          storage_account_container: azure-eventhub-input-example
+          storage_account_key: ${SECRET_1}
+          tags:
+            - forwarded
+            - microsoft_defender_cloud-event
+          transport: websocket
+      type: azure-eventhub
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-microsoft_defender_cloud.event-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
+    - {}

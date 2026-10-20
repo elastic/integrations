@@ -5,6 +5,21 @@ processors:
       tag: dot_expander_log_level
       if: ctx['log.level'] != null
       field: 'log.level'
+  - script:
+      tag: rename_osquerybeat_string_component
+      description: |
+        Rename osquerybeat's string component field (introduced in
+        9.5) to log.logger to prevent mapping conflicts.
+      lang: painless
+      if: ctx['service.name'] == 'osquerybeat' && ctx.component instanceof String
+      source: |-
+        if (ctx.log == null) {
+          ctx.log = new HashMap();
+        }
+        if (ctx.log.logger == null) {
+          ctx.log.logger = ctx.component;
+        }
+        ctx.remove('component');
   - grok:
       description: Parse the log level from Elastic Defend service installation log messages.
       if: ctx.context == "command output" && ctx['log.logger'] instanceof String && ctx['log.logger'].startsWith('component.runtime.endpoint-')

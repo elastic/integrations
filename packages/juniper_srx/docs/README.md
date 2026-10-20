@@ -691,6 +691,7 @@ The `log` data stream provides events from Juniper SRX devices. These logs inclu
 | juniper.srx.uplink_rx_bytes | uplink rx bytes | integer |
 | juniper.srx.uplink_tx_bytes | uplink tx bytes | integer |
 | juniper.srx.url | url domain | keyword |
+| juniper.srx.user_type | user type | keyword |
 | juniper.srx.username | username | keyword |
 | juniper.srx.verdict_number | verdict number | integer |
 | juniper.srx.verdict_source | verdict source | keyword |

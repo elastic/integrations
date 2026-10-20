@@ -8,7 +8,9 @@ rules:
     request_headers:
       X-Api-Key:
         - "test-api-key"
-    responses:
+      x-doppel-client:
+        - "elastic/1.2.0"
+    responses: &alerts_page_0
       - status_code: 200
         headers:
           Content-Type:
@@ -73,7 +75,9 @@ rules:
     request_headers:
       X-Api-Key:
         - "test-api-key"
-    responses:
+      x-doppel-client:
+        - "elastic/1.2.0"
+    responses: &alerts_page_1
       - status_code: 200
         headers:
           Content-Type:
@@ -147,7 +151,9 @@ rules:
     request_headers:
       X-Api-Key:
         - "test-api-key"
-    responses:
+      x-doppel-client:
+        - "elastic/1.2.0"
+    responses: &alerts_overshoot
       - status_code: 200
         headers:
           Content-Type:
@@ -184,3 +190,54 @@ rules:
               "total_pages": 2
             }
           }
+
+  # --- API V2: OAuth 2.0 client credentials ---
+  # Filebeat's CEL input mints the token itself (form-encoded), then sends it as a
+  # bearer token on every alerts request. The alert payloads are identical to V1,
+  # so the V2 rules alias the response blocks defined above.
+  - path: /oauth/token
+    methods: ['POST']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "access_token": "test-access-token",
+            "token_type": "Bearer",
+            "expires_in": 86400
+          }
+  - path: /v2/alerts
+    methods: ['GET']
+    query_params:
+      page: "0"
+      page_size: "1"
+    request_headers:
+      Authorization:
+        - "Bearer test-access-token"
+      x-doppel-client:
+        - "elastic/1.2.0"
+    responses: *alerts_page_0
+  - path: /v2/alerts
+    methods: ['GET']
+    query_params:
+      page: "1"
+      page_size: "1"
+    request_headers:
+      Authorization:
+        - "Bearer test-access-token"
+      x-doppel-client:
+        - "elastic/1.2.0"
+    responses: *alerts_page_1
+  - path: /v2/alerts
+    methods: ['GET']
+    query_params:
+      page: "2"
+      page_size: "1"
+    request_headers:
+      Authorization:
+        - "Bearer test-access-token"
+      x-doppel-client:
+        - "elastic/1.2.0"
+    responses: *alerts_overshoot

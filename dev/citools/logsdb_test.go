@@ -26,7 +26,7 @@ func TestIsVersionLessThanLogsDBGA(t *testing.T) {
 			expected: true,
 		},
 		{
-			title:    "greater or equal than LogsSB GA",
+			title:    "greater or equal than LogsDB GA",
 			version:  semver.MustParse("8.17.0"),
 			expected: false,
 		},
@@ -38,7 +38,6 @@ func TestIsVersionLessThanLogsDBGA(t *testing.T) {
 			assert.Equal(t, c.expected, value)
 		})
 	}
-
 }
 
 func TestIsLogsDBSupportedInPackage(t *testing.T) {
@@ -100,5 +99,4 @@ conditions:
 			}
 		})
 	}
-
 }

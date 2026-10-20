@@ -1,17 +1,6 @@
 ---
 description: Pipeline for processing Endpoint DLP logs.
 processors:
-  - remove:
-      field:
-        - organization
-        - division
-        - team
-      ignore_missing: true
-      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags_e6856012
-      description: >-
-        Removes the fields added by Agentless as metadata,
-        as they can collide with ECS fields.
   - set:
       field: ecs.version
       tag: set_ecs_version_6b2cef5e
@@ -440,7 +429,7 @@ processors:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
-        - yyyy-mm-dd HH:mm:ss
+        - yyyy-MM-dd HH:mm:ss
       timezone: '{{{event.timezone}}}'
       if: ctx.json?.eventtime != null && ctx.json.eventtime != ''
       on_failure:
@@ -461,7 +450,7 @@ processors:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
-        - yyyy-mm-dd HH:mm:ss
+        - yyyy-MM-dd HH:mm:ss
       timezone: '{{{event.timezone}}}'
       if: ctx.json?.feedtime != null && ctx.json.feedtime != ''
       on_failure:
@@ -752,7 +741,7 @@ processors:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
-        - yyyy-mm-dd HH:mm:ss
+        - yyyy-MM-dd HH:mm:ss
       timezone: '{{{event.timezone}}}'
       if: ctx.json?.datetime != null && ctx.json.datetime != ''
       on_failure:
