@@ -110,28 +110,29 @@
                 - name: san
                   type: keyword
                   ignore_above: 4096
-                  description: Ordered, outer-trimmed SAN request values.
+                  description: Ordered, outer-trimmed SAN request values parsed from `winlog.event_data.Attributes`.
             - name: subject_alt_name
               type: group
-              description: Allowlisted subject alternative name request claims.
+              description: >
+                SAN request claims parsed only from `winlog.event_data.Attributes`. These values describe submitted request attributes and do not establish the contents of the issued certificate. They may be absent when SAN data is carried elsewhere in the request or is not recorded in `Attributes`.
               fields:
                 - name: upn
                   type: keyword
                   ignore_above: 4096
-                  description: Ordered UPN SAN request claims.
+                  description: Ordered UPN SAN request claims parsed from `winlog.event_data.Attributes`.
                 - name: dns
                   type: keyword
                   ignore_above: 4096
-                  description: Ordered DNS SAN request claims.
+                  description: Ordered DNS SAN request claims parsed from `winlog.event_data.Attributes`.
                 - name: uri
                   type: keyword
                   ignore_above: 4096
-                  description: Ordered URL or URI SAN request claims.
+                  description: Ordered URL or URI SAN request claims parsed from `winlog.event_data.Attributes`.
                 - name: sid
                   type: keyword
                   ignore_above: 4096
                   description: >
-                    Exact unvalidated suffix from a recognized Microsoft SID URI.
+                    Exact unvalidated suffix from a recognized Microsoft SID URI parsed from `winlog.event_data.Attributes`.
 
     - name: computer_name
       type: keyword
@@ -249,6 +250,18 @@
           type: keyword
         - name: CertificateTemplate
           type: keyword
+        - name: CertIssuerName
+          type: keyword
+          description: >
+            Issuer name of the certificate presented for certificate-based Kerberos authentication.
+        - name: CertSerialNumber
+          type: keyword
+          description: >
+            Serial number of the certificate presented for certificate-based Kerberos authentication.
+        - name: CertThumbprint
+          type: keyword
+          description: >
+            Thumbprint of the certificate presented for certificate-based Kerberos authentication.
         - name: ClientAddress
           type: keyword
         - name: ClientInfo

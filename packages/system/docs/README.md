@@ -619,7 +619,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.adcs.request.attributes.certificate_template | Ordered CertificateTemplate request values, kept separate from the native `winlog.event_data.CertificateTemplate` field. | keyword |
 | winlog.adcs.request.attributes.request_client_info | Ordered RequestClientInfo request values. | keyword |
 | winlog.adcs.request.attributes.rmd | Machine object FQDNs supplied in the rmd enrollment attribute for the certificate request. Values are preserved in request order without hostname validation. | keyword |
-| winlog.adcs.request.attributes.san | Ordered, outer-trimmed SAN request values. | keyword |
+| winlog.adcs.request.attributes.san | Ordered, outer-trimmed SAN request values parsed from `winlog.event_data.Attributes`. | keyword |
 | winlog.adcs.request.disposition.code | Strict signed-ASCII-decimal disposition code derived from `winlog.event_data.Disposition`. | long |
 | winlog.adcs.request.disposition.name | Canonical CR_DISP_\* or CERTSRV_E_\* name for a recognized Certificate Services disposition or HRESULT in `winlog.adcs.request.disposition.code`. Signed and unsigned decimal representations of an HRESULT resolve to the same name. Unknown codes have no derived name. | keyword |
 | winlog.adcs.request.extension.name | Exact nonblank event 4873 ExtensionName without value decoding. | keyword |
@@ -627,10 +627,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.adcs.request.id | Strict signed-ASCII-decimal request identifier derived from `winlog.event_data.RequestId`. | long |
 | winlog.adcs.request.requester.domain | Exact requester domain component from `winlog.event_data.Requester`, with source case preserved. | keyword |
 | winlog.adcs.request.requester.name | Exact requester name component from `winlog.event_data.Requester`, with source case preserved. | keyword |
-| winlog.adcs.request.subject_alt_name.dns | Ordered DNS SAN request claims. | keyword |
-| winlog.adcs.request.subject_alt_name.sid | Exact unvalidated suffix from a recognized Microsoft SID URI. | keyword |
-| winlog.adcs.request.subject_alt_name.upn | Ordered UPN SAN request claims. | keyword |
-| winlog.adcs.request.subject_alt_name.uri | Ordered URL or URI SAN request claims. | keyword |
+| winlog.adcs.request.subject_alt_name.dns | Ordered DNS SAN request claims parsed from `winlog.event_data.Attributes`. | keyword |
+| winlog.adcs.request.subject_alt_name.sid | Exact unvalidated suffix from a recognized Microsoft SID URI parsed from `winlog.event_data.Attributes`. | keyword |
+| winlog.adcs.request.subject_alt_name.upn | Ordered UPN SAN request claims parsed from `winlog.event_data.Attributes`. | keyword |
+| winlog.adcs.request.subject_alt_name.uri | Ordered URL or URI SAN request claims parsed from `winlog.event_data.Attributes`. | keyword |
 | winlog.api | The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API. The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs. | keyword |
 | winlog.channel | The name of the channel from which this record was read. This value is one of the names from the `event_logs` collection in the configuration. | keyword |
 | winlog.computerObject.domain |  | keyword |
@@ -684,6 +684,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.CalloutType |  | keyword |
 | winlog.event_data.Category |  | keyword |
 | winlog.event_data.CategoryId |  | keyword |
+| winlog.event_data.CertIssuerName | Issuer name of the certificate presented for certificate-based Kerberos authentication. | keyword |
+| winlog.event_data.CertSerialNumber | Serial number of the certificate presented for certificate-based Kerberos authentication. | keyword |
+| winlog.event_data.CertThumbprint | Thumbprint of the certificate presented for certificate-based Kerberos authentication. | keyword |
 | winlog.event_data.CertificateDatabaseHash |  | keyword |
 | winlog.event_data.CertificateSerialNumber |  | keyword |
 | winlog.event_data.CertificateTemplate |  | keyword |
