@@ -16,10 +16,17 @@ data_stream:
     batch_size: 500
     enrich_rejections: true
     enable_request_tracer: true
+    # Short poll so the rejection with no RejectionDetails sibling, which is held for one
+    # window, is resolved (with an error) within the test.
+    interval: 10s
 assert:
-  hit_count: 4
-  # Verify the Harvest lookups actually populated the rejection fields; hit_count alone passes
-  # even if every lookup silently fails.
+  # Mock: 10 audit events over two pages. Four are rejections: one correlated across pages
+  # (and whose application has two rejection_details records), one ambiguous bulk rejection,
+  # one with no sibling, and one whose rejection reason lookup returns 404.
+  hit_count: 10
+  # Verify the Harvest lookups actually populated the rejection fields and that every failure
+  # path is exercised; hit_count alone passes even if every lookup silently fails. Exact values
+  # are asserted by the script test in _dev/test/scripts/.
   fields_present:
     - greenhouse.audit.event.rejection.application_id
     - greenhouse.audit.event.rejection.reason.id
@@ -27,3 +34,6 @@ assert:
     - greenhouse.audit.event.rejection.reason.type
     - greenhouse.audit.event.rejection.notes
     - greenhouse.audit.event.rejection.rejected_at
+    - greenhouse.audit.event.rejection.error
+    - greenhouse.audit.event.rejection.ambiguous_application_ids
+    - greenhouse.audit.event.rejection.reason.error

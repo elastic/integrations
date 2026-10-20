@@ -12,6 +12,109 @@ rules:
             "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlRlc3QgVXNlciIsImlhdCI6MTUxNjIzOTAyMn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
             "expires_at": "2099-12-31T23:59:59.999Z"
           }
+  # Audit log, page 2. Matched first on the Search-After header that page 1 hands out.
+  # Holds the RejectionDetails siblings for the actions on page 1, so correlation must span pages.
+  - path: /events
+    methods: ["GET"]
+    request_headers:
+      Search-After:
+        - "sa-page-2"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          {
+            "paging": {
+              "pit_id": "pit-1",
+              "search_after": "sa-page-2",
+              "size": "500",
+              "next_search_after": null
+            },
+            "hits": 10,
+            "results": [
+              {
+                "request": {
+                  "id": "7890dID",
+                  "type": "people#change_application_state"
+                },
+                "performer": {
+                  "meta": {
+                    "name": "Recruiter One",
+                    "username": "recruiter.one@omniva-corp.com"
+                  },
+                  "id": 22222,
+                  "ip_address": "198.51.100.5",
+                  "type": "user"
+                },
+                "organization_id": 123,
+                "event": {
+                  "meta": {
+                    "application_id": 294326368002,
+                    "id": 221864428002
+                  },
+                  "target_type": "RejectionDetails",
+                  "type": "data_change_create",
+                  "target_id": 221864428002
+                },
+                "event_time": "2023-06-05T09:00:00.048Z"
+              },
+              {
+                "request": {
+                  "id": "7891eID",
+                  "type": "people#change_application_state"
+                },
+                "performer": {
+                  "meta": {
+                    "name": "Recruiter Two",
+                    "username": "recruiter.two@omniva-corp.com"
+                  },
+                  "id": 33333,
+                  "ip_address": "198.51.100.6",
+                  "type": "user"
+                },
+                "organization_id": 123,
+                "event": {
+                  "meta": {
+                    "application_id": 111111,
+                    "id": 331000000001
+                  },
+                  "target_type": "RejectionDetails",
+                  "type": "data_change_create",
+                  "target_id": 331000000001
+                },
+                "event_time": "2023-06-05T09:05:00.048Z"
+              },
+              {
+                "request": {
+                  "id": "7891eID",
+                  "type": "people#change_application_state"
+                },
+                "performer": {
+                  "meta": {
+                    "name": "Recruiter Two",
+                    "username": "recruiter.two@omniva-corp.com"
+                  },
+                  "id": 33333,
+                  "ip_address": "198.51.100.6",
+                  "type": "user"
+                },
+                "organization_id": 123,
+                "event": {
+                  "meta": {
+                    "application_id": 222222,
+                    "id": 332000000001
+                  },
+                  "target_type": "RejectionDetails",
+                  "type": "data_change_create",
+                  "target_id": 332000000001
+                },
+                "event_time": "2023-06-05T09:05:00.049Z"
+              }
+            ]
+          }
+  # Audit log, page 1 (any other /events request).
   - path: /events
     methods: ["GET"]
     responses:
@@ -22,12 +125,12 @@ rules:
         body: |
           {
             "paging": {
-              "pit_id": "cmFuZG9tX3ZhbHVl",
+              "pit_id": "pit-1",
               "search_after": null,
               "size": "500",
-              "next_search_after": null
+              "next_search_after": "sa-page-2"
             },
-            "hits": 4,
+            "hits": 10,
             "results": [
               {
                 "request": {
@@ -68,12 +171,18 @@ rules:
                 "organization_id": 123,
                 "event": {
                   "meta": {
-                    "id": [null, 1234],
-                    "value": [null, "johnny.c@omniva-corp.com"]
+                    "id": [
+                      null,
+                      1234
+                    ],
+                    "value": [
+                      null,
+                      "johnny.c@omniva-corp.com"
+                    ]
                   },
                   "target_type": "OrganizationEmail",
-                  "target_id": 1234,
-                  "type": "data_change_create"
+                  "type": "data_change_create",
+                  "target_id": 1234
                 },
                 "event_time": "2023-06-02T16:06:19.137Z"
               },
@@ -101,32 +210,100 @@ rules:
               },
               {
                 "request": {
-                  "id": "7890dID",
+                  "id": "7891eID",
                   "type": "people#change_application_state"
                 },
                 "performer": {
                   "meta": {
-                    "name": "Recruiter One",
-                    "username": "recruiter.one@omniva-corp.com"
+                    "name": "Recruiter Two",
+                    "username": "recruiter.two@omniva-corp.com"
                   },
-                  "id": 22222,
-                  "ip_address": "198.51.100.5",
+                  "id": 33333,
+                  "ip_address": "198.51.100.6",
+                  "type": "user"
+                },
+                "organization_id": 123,
+                "event": {
+                  "meta": null,
+                  "target_type": "Candidate or Prospect rejected",
+                  "type": "action"
+                },
+                "event_time": "2023-06-05T09:05:00.000Z"
+              },
+              {
+                "request": {
+                  "id": "7892fID",
+                  "type": "people#change_application_state"
+                },
+                "performer": {
+                  "meta": {
+                    "name": "Recruiter Three",
+                    "username": "recruiter.three@omniva-corp.com"
+                  },
+                  "id": 44444,
+                  "ip_address": "198.51.100.7",
+                  "type": "user"
+                },
+                "organization_id": 123,
+                "event": {
+                  "meta": null,
+                  "target_type": "Candidate or Prospect rejected",
+                  "type": "action"
+                },
+                "event_time": "2023-06-05T09:10:00.000Z"
+              },
+              {
+                "request": {
+                  "id": "7893gID",
+                  "type": "people#change_application_state"
+                },
+                "performer": {
+                  "meta": {
+                    "name": "Recruiter Four",
+                    "username": "recruiter.four@omniva-corp.com"
+                  },
+                  "id": 55555,
+                  "ip_address": "198.51.100.8",
+                  "type": "user"
+                },
+                "organization_id": 123,
+                "event": {
+                  "meta": null,
+                  "target_type": "Candidate or Prospect rejected",
+                  "type": "action"
+                },
+                "event_time": "2023-06-05T09:15:00.000Z"
+              },
+              {
+                "request": {
+                  "id": "7893gID",
+                  "type": "people#change_application_state"
+                },
+                "performer": {
+                  "meta": {
+                    "name": "Recruiter Four",
+                    "username": "recruiter.four@omniva-corp.com"
+                  },
+                  "id": 55555,
+                  "ip_address": "198.51.100.8",
                   "type": "user"
                 },
                 "organization_id": 123,
                 "event": {
                   "meta": {
-                    "application_id": 294326368002,
-                    "id": 221864428002
+                    "application_id": 300000000001,
+                    "id": 333000000001
                   },
-                  "target_id": 221864428002,
                   "target_type": "RejectionDetails",
-                  "type": "data_change_create"
+                  "type": "data_change_create",
+                  "target_id": 333000000001
                 },
-                "event_time": "2023-06-05T09:00:00.048Z"
+                "event_time": "2023-06-05T09:15:00.040Z"
               }
             ]
           }
+  # Harvest rejection_details for any application_ids. Application 294326368002 has two records
+  # (a re-rejection); the CEL program must pick the one whose id matches the RejectionDetails event.
   - path: /v3/rejection_details
     methods: ["GET"]
     responses:
@@ -137,6 +314,17 @@ rules:
         body: |
           [
             {
+              "id": 221864428001,
+              "application_id": 294326368002,
+              "created_at": "2023-01-10T10:00:00.000Z",
+              "updated_at": "2023-01-10T10:00:00.000Z",
+              "rejected_at": "2023-01-10T10:00:00.000Z",
+              "rejected_by_id": 22222,
+              "rejection_reason_id": 556,
+              "rejection_note_id": 788,
+              "question_custom_fields": null
+            },
+            {
               "id": 221864428002,
               "application_id": 294326368002,
               "created_at": "2023-06-05T09:00:00.000Z",
@@ -145,6 +333,17 @@ rules:
               "rejected_by_id": 22222,
               "rejection_reason_id": 555,
               "rejection_note_id": 789,
+              "question_custom_fields": null
+            },
+            {
+              "id": 333000000001,
+              "application_id": 300000000001,
+              "created_at": "2023-06-05T09:15:00.000Z",
+              "updated_at": "2023-06-05T09:15:00.000Z",
+              "rejected_at": "2023-06-05T09:15:00.000Z",
+              "rejected_by_id": 55555,
+              "rejection_reason_id": 999,
+              "rejection_note_id": 790,
               "question_custom_fields": null
             }
           ]
@@ -165,6 +364,36 @@ rules:
               "name": "We rejected them"
             }
           }
+  # Reason of the older (ignored) rejection record; must not appear on any event.
+  - path: /v3/rejection_reasons/556
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          {
+            "id": 556,
+            "name": "Position closed",
+            "type": {
+              "id": 1,
+              "key": "we_rejected_them",
+              "name": "We rejected them"
+            }
+          }
+  # Reason lookup failure for application 300000000001.
+  - path: /v3/rejection_reasons/999
+    methods: ["GET"]
+    responses:
+      - status_code: 404
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          {
+            "message": "Resource not found"
+          }
   - path: /v3/notes
     methods: ["GET"]
     responses:
@@ -175,10 +404,24 @@ rules:
         body: |
           [
             {
+              "id": 788,
+              "subject": null,
+              "body": "Older rejection: role was put on hold.",
+              "created_at": "2023-01-10T10:00:00.000Z",
+              "updated_at": "2023-01-10T10:00:00.000Z"
+            },
+            {
               "id": 789,
               "subject": null,
               "body": "Candidate lacked required experience with distributed systems.",
               "created_at": "2023-06-05T09:00:00.000Z",
               "updated_at": "2023-06-05T09:00:00.000Z"
+            },
+            {
+              "id": 790,
+              "subject": null,
+              "body": "Interview feedback was negative.",
+              "created_at": "2023-06-05T09:15:00.000Z",
+              "updated_at": "2023-06-05T09:15:00.000Z"
             }
           ]

@@ -70,8 +70,10 @@ Rejection enrichment (optional, enrich_rejections):
      held for one more poll when it has no sibling yet, or when it is so
      recent that its request may still be writing audit events (a poll can
      land mid-request, or mid bulk-rejection, and see only some siblings).
-     An action is never held past the end of the following window. All
-     other events are emitted immediately.
+     An action is never held past the end of the following window. While
+     actions are held the next window is started shortly before the oldest
+     of them (see Cursor below) so that a sibling indexed late is still
+     read. All other events are emitted immediately.
 
   2. Fetch (batched): rejection_details are retrieved for all matched
      application_ids in chunks of 50 (the Harvest cap on application_ids);
@@ -82,6 +84,10 @@ Rejection enrichment (optional, enrich_rejections):
 
   3. Apply: each rejection event is enriched from pre-built lookup maps.
      Events with 0 or >1 RejectionDetails matches get an error instead.
+     Harvest returns one rejection_details record per rejection of an
+     application, so the record whose id equals the RejectionDetails audit
+     event's target_id is used; when several records exist and none
+     matches, an error is emitted rather than guessing by response order.
      The enrichment is emitted beside the untouched audit event (as the
      `rejection` field, which the ingest pipeline moves to
      greenhouse.audit.event.rejection) rather than merged into it, so that
@@ -111,7 +117,11 @@ State:
 
 Cursor:
   window_start_time — frozen after_time used for every request in the
-    current window. Advances only when a full window completes.
+    current window. Advances only when a full window completes: to the
+    newest event_time seen, or, while actions are held, to two minutes
+    before the oldest held action (never earlier than the current value)
+    so that late-indexed siblings are still read. The overlap is bounded
+    because held actions are always resolved at the end of the next window.
   max_event_time — newest event_time seen anywhere in the current window.
     Cleared when the window completes; preserved when an expired PIT
     forces a retry of the same window.
@@ -125,7 +135,9 @@ Cursor:
     resolution. Entries with w == 0 belong to the current window and are
     dropped on a PIT-expiry retry (the retry re-reads them); w == 1 entries
     came from the previous window and are always resolved at this window's
-    end. Duplicates are collapsed by the ingest pipeline fingerprint.
+    end. An action read again because of the window overlap is ignored while
+    its held copy is pending. Duplicates are collapsed by the ingest pipeline
+    fingerprint.
 --}}
 program: |-
   // 1. Resolve auth token (sequential state pipeline — avoids nesting the event fetch inside the auth block).
@@ -234,7 +246,8 @@ program: |-
                       prev_max
                   )
                 ),
-                // Compact {request.id, application_id} pairs for the RejectionDetails on this page.
+                // Compact {request.id, application_id, rejection_details id} tuples for the
+                // RejectionDetails on this page.
                 "rd_now": !state.enrich_rejections ? [] :
                   body.?results.orValue([]).filter(rd_e,
                     rd_e.?event.target_type.orValue("") == "RejectionDetails" &&
@@ -242,12 +255,26 @@ program: |-
                     type(rd_e.?event.meta.application_id.orValue(null)) in [int, double, string] &&
                     rd_e.?request.id.orValue("") != ""
                   ).map(rd_e, rd_e.event.meta.application_id.as(a,
-                    {"r": rd_e.request.id, "a": (type(a) == string) ? a : string(int(a))}
+                    {
+                      "r": rd_e.request.id,
+                      "a": (type(a) == string) ? a : string(int(a)),
+                      // Id of the RejectionDetails record itself (target_id, else meta.id). Used to pick
+                      // the matching rejection_details record when an application was rejected more than once.
+                      "d": rd_e.?event.target_id.orValue(null).as(t, (t != null) ? t : rd_e.?event.meta.id.orValue(null)).as(d,
+                        (d == null) ? "" : ((type(d) == string) ? d : string(int(d)))
+                      ),
+                    }
                   )),
                 // Rejection action events on this page (empty when enrichment is disabled).
                 "acts_now": body.?results.orValue([]).filter(e,
                   state.enrich_rejections && e.?event.type.orValue("") == "action" &&
-                  e.?event.target_type.orValue("") == "Candidate or Prospect rejected"
+                  e.?event.target_type.orValue("") == "Candidate or Prospect rejected" &&
+                  // The next window overlaps this one while actions are held (see cursor.window_start_time),
+                  // so a held action can be read again; the held copy is the one that gets resolved.
+                  !state.?cursor.pending_actions.orValue([]).exists(p,
+                    p.e.?request.id.orValue("") == e.?request.id.orValue("") &&
+                    p.e.?event_time.orValue("") == e.?event_time.orValue("")
+                  )
                 ),
                 // Everything else is emitted unchanged. If enrichment was switched off while
                 // actions were held, release them unchanged too.
@@ -267,15 +294,17 @@ program: |-
                 //    still be writing audit events; such actions are held for exactly one more window.
                 (state.?cursor.rd_carry.orValue([]) + state.?cursor.rd_win.orValue([]) + pg.rd_now).as(rd_all,
                   (pg.held + pg.acts_now.map(e, {"e": e, "w": 0})).map(p,
-                    // Unique application IDs sharing this action's request.id.
+                    // RejectionDetails sharing this action's request.id, and their unique application IDs.
                     rd_all.filter(rd,
                       p.e.?request.id.orValue("") != "" && rd.r == p.e.?request.id.orValue("")
-                    ).map(rd, rd.a).as(ids, ids.zip(ids).keys()).as(m,
+                    ).as(rds, rds.map(rd, rd.a).as(ids, ids.zip(ids).keys()).as(m,
                       {
                         "e": p.e,
                         "w": p.w,
                         "n": m.size(),
                         "app_id": (m.size() == 1) ? m[0] : "",
+                        // Ids of the RejectionDetails records for the matched application (normally one).
+                        "rd_ids": (m.size() == 1) ? rds.map(rd, rd.?d.orValue("") != "", rd.d) : [],
                         "ambiguous_ids": (m.size() > 1) ? m : [],
                         "hold": pg.has_more || (
                           p.w == 0 && (
@@ -284,7 +313,7 @@ program: |-
                           )
                         ),
                       }
-                    )
+                    ))
                   ).as(corr,
                     {
                       "resolve": corr.filter(c, !c.hold),
@@ -317,12 +346,12 @@ program: |-
                       ).as(rd_fetch,
                         // Build lookup maps keyed by application_id, rejection reason id, and note id.
                         {
-                          // Keyed by application_id. Harvest may return several records for one
-                          // application (re-rejections); keep the last, since a duplicate key would
-                          // abort the whole evaluation.
+                          // Keyed by application_id, holding every record returned for it. Harvest returns one
+                          // record per rejection of an application (re-rejections); the record for an action is
+                          // chosen below by matching its id to the action's RejectionDetails audit event.
                           "rd_map": rd_fetch.data.filter(rd, rd.?application_id.orValue(null) != null).as(rds,
                             rds.map(rd, string(int(rd.application_id))).as(ids, ids.zip(ids).keys()).transformMapEntry(_, id,
-                              {id: rds.filter(rd, string(int(rd.application_id)) == id).as(l, l[l.size() - 1])}
+                              {id: rds.filter(rd, string(int(rd.application_id)) == id)}
                             )
                           ),
                           "reason_map": rd_fetch.data.map(rd, rd.?rejection_reason_id.orValue(null) != null, string(int(rd.rejection_reason_id))).as(rr_ids,
@@ -402,53 +431,66 @@ program: |-
                                           "error": "rejection_details returned 200 but contained no record for application_id " + app_id,
                                         }
                                       :
-                                        lookups.rd_map[app_id].as(rd,
-                                          {
-                                          "reason": rd.?rejection_reason_id.orValue(null).as(rr_id,
-                                            (rr_id != null) ? lookups.reason_map[?string(int(rr_id))].orValue(null) : null
-                                          ),
-                                          "notes_text": rd.?rejection_note_id.orValue(null).as(rn_id,
-                                            (rn_id != null) ? lookups.notes.map[?string(int(rn_id))].orValue("") : ""
-                                          ),
-                                          // Non-empty when the notes chunk holding this note returned non-200.
-                                          "note_error": rd.?rejection_note_id.orValue(null).as(rn_id,
-                                            (rn_id != null) ?
-                                              lookups.notes.failed.filter(f, f.a == string(int(rn_id))).as(fl,
-                                                (fl.size() > 0) ? "notes fetch failed: HTTP " + string(fl[0].s) : ""
-                                              )
-                                            : ""
-                                          ),
-                                          }.as(enrich,
-                                            {
-                                              "application_id": app_id,
-                                              ?"reason": (enrich.reason == null) ?
-                                                // No rejection_reason_id on the record; try the legacy notes fallback.
-                                                // Parenthesised: CEL only allows a nested ternary in the true branch when wrapped.
-                                                (
-                                                  enrich.notes_text.startsWith("Reason: ") ?
+                                        lookups.rd_map[app_id].as(recs,
+                                          // Harvest returns one record per rejection of the application (re-rejections). Use
+                                          // the record whose id matches the RejectionDetails audit event; fall back to the only
+                                          // record when there is just one.
+                                          recs.filter(rd, rd.?id.orValue(null) != null && string(int(rd.id)) in c.rd_ids).as(exact,
+                                            (exact.size() == 1) ? exact[0] : ((exact.size() == 0 && recs.size() == 1) ? recs[0] : null)
+                                          ).as(rd,
+                                            (rd == null) ?
+                                              {
+                                                "application_id": app_id,
+                                                "error": "rejection_details returned " + string(recs.size()) + " records for application_id " + app_id + " and none matches RejectionDetails id " + c.rd_ids.join(","),
+                                              }
+                                            :
+                                              {
+                                              "reason": rd.?rejection_reason_id.orValue(null).as(rr_id,
+                                                (rr_id != null) ? lookups.reason_map[?string(int(rr_id))].orValue(null) : null
+                                              ),
+                                              "notes_text": rd.?rejection_note_id.orValue(null).as(rn_id,
+                                                (rn_id != null) ? lookups.notes.map[?string(int(rn_id))].orValue("") : ""
+                                              ),
+                                              // Non-empty when the notes chunk holding this note returned non-200.
+                                              "note_error": rd.?rejection_note_id.orValue(null).as(rn_id,
+                                                (rn_id != null) ?
+                                                  lookups.notes.failed.filter(f, f.a == string(int(rn_id))).as(fl,
+                                                    (fl.size() > 0) ? "notes fetch failed: HTTP " + string(fl[0].s) : ""
+                                                  )
+                                                : ""
+                                              ),
+                                              }.as(enrich,
+                                                {
+                                                  "application_id": app_id,
+                                                  ?"reason": (enrich.reason == null) ?
+                                                    // No rejection_reason_id on the record; try the legacy notes fallback.
+                                                    // Parenthesised: CEL only allows a nested ternary in the true branch when wrapped.
+                                                    (
+                                                      enrich.notes_text.startsWith("Reason: ") ?
+                                                        optional.of(
+                                                          {
+                                                            "name": enrich.notes_text.split("\n")[0].trim_prefix("Reason: "),
+                                                            "type": "",
+                                                          }
+                                                        )
+                                                      : optional.none()
+                                                    )
+                                                  : ("_error" in enrich.reason) ?
+                                                    // Reason lookup failed; surface the error so it's diagnosable.
+                                                    optional.of({"error": enrich.reason["_error"]})
+                                                  :
                                                     optional.of(
                                                       {
-                                                        "name": enrich.notes_text.split("\n")[0].trim_prefix("Reason: "),
-                                                        "type": "",
+                                                        ?"id": enrich.reason.?id.optMap(v, string(int(v))),
+                                                        "name": enrich.reason.?name.orValue(""),
+                                                        "type": enrich.reason.?type.?name.orValue(""),
                                                       }
-                                                    )
-                                                  : optional.none()
-                                                )
-                                              : ("_error" in enrich.reason) ?
-                                                // Reason lookup failed; surface the error so it's diagnosable.
-                                                optional.of({"error": enrich.reason["_error"]})
-                                              :
-                                                optional.of(
-                                                  {
-                                                    ?"id": enrich.reason.?id.optMap(v, string(int(v))),
-                                                    "name": enrich.reason.?name.orValue(""),
-                                                    "type": enrich.reason.?type.?name.orValue(""),
-                                                  }
-                                                ),
-                                              ?"notes": (enrich.notes_text == "") ? optional.none() : optional.of(enrich.notes_text),
-                                              ?"notes_error": (enrich.note_error == "") ? optional.none() : optional.of(enrich.note_error),
-                                              ?"rejected_at": rd.?rejected_at,
-                                            }
+                                                    ),
+                                                  ?"notes": (enrich.notes_text == "") ? optional.none() : optional.of(enrich.notes_text),
+                                                  ?"notes_error": (enrich.note_error == "") ? optional.none() : optional.of(enrich.note_error),
+                                                  ?"rejected_at": rd.?rejected_at,
+                                                }
+                                              )
                                           )
                                         )
                                     )
@@ -458,8 +500,18 @@ program: |-
                             "cursor": {
                               "window_start_time": (pg.has_more || pg.next_max == "") ?
                                 window_start_time
+                              : (cx.hold.size() == 0) ?
+                                pg.next_max
                               :
-                                pg.next_max,
+                                // Actions are being held for siblings that may still be indexed with an event_time at
+                                // or before next_max. Start the next window shortly before the oldest held action so
+                                // those siblings are read; re-read events collapse on the ingest pipeline fingerprint.
+                                cx.hold.map(p, p.e.?event_time.orValue("") != "", timestamp(p.e.event_time)).as(ts,
+                                  (ts.size() == 0) ? pg.next_max :
+                                  (ts.min() - duration("2m")).as(from,
+                                    (from > timestamp(window_start_time)) ? from.format(time_layout.RFC3339Nano) : window_start_time
+                                  )
+                                ),
                               "max_event_time": pg.has_more ? pg.next_max : "",
                               "pit_id": pg.has_more ? string(body.paging.pit_id) : "",
                               "search_after": pg.has_more ? string(body.paging.next_search_after) : "",
