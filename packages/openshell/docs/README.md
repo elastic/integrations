@@ -13,13 +13,13 @@ The integration collects one data stream, `ocsf`, which contains every OCSF even
 | 4001        | Network Activity            | Allowed, denied and failed outbound connections (CONNECT, transparent TCP, DNS policy decisions) |
 | 4002        | HTTP Activity               | Layer-7 request decisions for policy-inspected endpoints               |
 | 4007        | SSH Activity                | SSH sessions accepted on the supervisor socket                          |
-| 1007        | Process Activity            | Process events, when enabled by the supervisor                          |
-| 2004        | Detection Finding           | Supervisor findings                                                     |
+| 1007        | Process Activity            | Workload process launch and termination, mapped to `process.*` (the initiating process is `process.parent.*`) |
+| 2004        | Detection Finding           | Supervisor findings such as unavailable sandboxing primitives or uninspectable traffic, mapped to `rule.*` and, when ATT&CK data is present, `threat.*` |
 | 5019        | Device Config State Change  | Policy revisions loaded, published or detected by the supervisor        |
-| 6002        | Application Lifecycle       | Supervisor lifecycle events                                             |
+| 6002        | Application Lifecycle       | Supervisor component start, stop, install, remove and update events     |
 | 0           | Base Event                  | Relay open/close notifications and other operational events             |
 
-Every event carries `observer.product: "OpenShell Sandbox Supervisor"`, the sandbox in `container.name` / `container.id`, and `event.code` set to the OCSF `class_uid`. Policy decisions are exposed as `event.action` (`allowed` / `denied`), `event.outcome`, `event.reason` (the OCSF `status_detail`, for example `transparent_tcp_policy_denied`) and `rule.name` / `rule.category` (the matching policy rule). Denied activity is categorized as `event.kind: alert`.
+Every event carries `observer.product: "OpenShell Sandbox Supervisor"`, the sandbox in `container.name` / `container.id`, and `event.code` set to the OCSF `class_uid`. Policy decisions are exposed as `event.action` (`allowed` / `denied`), `event.outcome`, `event.reason` (the OCSF `status_detail`, for example `transparent_tcp_policy_denied`) and `rule.name` / `rule.category` (the matching policy rule). Denied activity and Detection Findings are categorized as `event.kind: alert`. Records that cannot be parsed are kept with `event.kind: pipeline_error`, the raw line in `event.original`, and the failure in `error.message`.
 
 ## Requirements
 
@@ -33,18 +33,18 @@ openshell settings set --global --key ocsf_json_enabled --value true
 openshell settings set my-sandbox --key ocsf_json_enabled --value true
 ```
 
-The setting takes effect on the next supervisor poll cycle (10 seconds by default). Leave `ocsf_schema_version` unset so records are written at the native OCSF 1.8.0 version; downgraded records are also parsed but lose the `container` object.
+The setting takes effect on the next supervisor poll cycle (10 seconds by default). Leave `ocsf_schema_version` unset so records are written at the native OCSF 1.8.0 version. Downgraded records are also parsed but lose the `container` object.
 
 ## Setup
 
 ### Linux sandbox supervisors
 
-The supervisor writes records to `/var/log/openshell-ocsf.YYYY-MM-DD.log` inside the sandbox, rotating daily and keeping the three most recent files. Elastic Agent must be able to read that directory:
+The supervisor writes records to `/var/log/openshell-ocsf.YYYY-MM-DD.jsonl` inside the sandbox (earlier OpenShell releases used the `.log` extension), rotating daily and keeping the three most recent files. Elastic Agent must be able to read that directory:
 
 - With the Docker driver, mount the sandbox's `/var/log` on a volume that is also mounted into the Elastic Agent container, or run Elastic Agent in a sidecar container that shares the volume.
 - With the Kubernetes driver, mount the sandbox pod's `/var/log` on a `hostPath` or shared volume and point the Elastic Agent DaemonSet at it.
 
-Then add the integration to an agent policy and set **Paths** to the mounted location, for example `/var/lib/openshell/logs/*/openshell-ocsf.*.log`. The default path, `/var/log/openshell-ocsf.*.log`, matches an agent running inside the sandbox network namespace.
+Then add the integration to an agent policy and set **Paths** to the mounted location, for example `/var/lib/openshell/logs/*/openshell-ocsf.*.jsonl`. The default paths, `/var/log/openshell-ocsf.*.jsonl` and `/var/log/openshell-ocsf.*.log`, match an agent running inside the sandbox network namespace.
 
 ### Windows MXC gateways
 
@@ -61,12 +61,11 @@ $env:OPENSHELL_OCSF_LOG_DIR = "D:\OpenShell\audit"   # optional, defaults to %PR
 openshell-gateway --drivers mxc --config gateway.toml
 ```
 
-Set **Paths** to the chosen directory, for example `C:\ProgramData\OpenShell\logs\openshell-ocsf.*.log`.
+Set **Paths** to the chosen directory, for example `C:\ProgramData\OpenShell\logs\openshell-ocsf.*.jsonl`.
 
 ### Options
 
 - **Preserve original event** keeps the raw JSON record in `event.original`.
-- **Preserve duplicate custom fields** keeps the `openshell.ocsf.*` fields that were copied to ECS fields.
 
 ## Logs reference
 
@@ -98,7 +97,7 @@ An example event for `ocsf` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.17.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "3b1f9a44-1b1e-4a71-9f0a-6a2a7f1c9d2e",
@@ -116,6 +115,7 @@ An example event for `ocsf` looks as following:
         "ingested": "2026-09-29T13:50:10Z",
         "kind": "alert",
         "module": "openshell",
+        "original": "{\"action\":\"Denied\",\"action_id\":2,\"activity_id\":1,\"activity_name\":\"Open\",\"actor\":{\"process\":{\"cmd_line\":\"/dev/null\",\"name\":\"/usr/bin/curl\",\"parent_process\":{\"name\":\"/usr/bin/bash\",\"pid\":0},\"pid\":0}},\"category_name\":\"Network Activity\",\"category_uid\":4,\"class_name\":\"Network Activity\",\"class_uid\":4001,\"container\":{\"name\":\"sandbox-a\",\"uid\":\"f5be9de4-94f0-49a0-af70-3262192e50f9\"},\"device\":{\"hostname\":\"docker-desktop\",\"os\":{\"name\":\"Linux\"},\"type\":\"Sandbox\",\"type_id\":99},\"disposition\":\"Blocked\",\"disposition_id\":2,\"dst_endpoint\":{\"ip\":\"169.254.169.254\",\"port\":80},\"is_src_dst_assignment_known\":true,\"message\":\"Transparent TCP denied before relay: endpoint 169.254.169.254:80 is not allowed by any policy\",\"metadata\":{\"product\":{\"name\":\"OpenShell Sandbox Supervisor\",\"vendor_name\":\"OpenShell\",\"version\":\"0.1.2\"},\"profiles\":[\"security_control\",\"network_proxy\",\"container\",\"host\"],\"uid\":\"4f8a1500-1048-40f5-bfa8-3c187b086f20\",\"version\":\"1.8.0\"},\"proxy_endpoint\":{\"ip\":\"127.0.0.1\",\"port\":3128},\"severity\":\"Medium\",\"severity_id\":3,\"status\":\"Failure\",\"status_detail\":\"transparent_tcp_policy_denied\",\"status_id\":2,\"time\":1790689808267,\"type_name\":\"Network Activity: Open\",\"type_uid\":400101}",
         "outcome": "failure",
         "reason": "transparent_tcp_policy_denied",
         "severity": 3,
@@ -123,27 +123,6 @@ An example event for `ocsf` looks as following:
             "connection",
             "denied"
         ]
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "openshell-node-1",
-        "id": "6f2f9a0b4c1d4e8f9a7b6c5d4e3f2a1b",
-        "ip": [
-            "10.42.0.31"
-        ],
-        "mac": [
-            "02-42-0A-2A-00-1F"
-        ],
-        "name": "openshell-node-1",
-        "os": {
-            "family": "debian",
-            "kernel": "6.6.0",
-            "name": "Linux",
-            "platform": "debian",
-            "type": "linux",
-            "version": "12 (bookworm)"
-        }
     },
     "input": {
         "type": "log"
@@ -221,7 +200,7 @@ An example event for `ocsf` looks as following:
         ]
     },
     "tags": [
-        "openshell-ocsf"
+        "preserve_original_event"
     ]
 }
 ```
@@ -271,62 +250,44 @@ An example event for `ocsf` looks as following:
 | observer.product | The product name of the observer. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | observer.version | Observer version. | keyword |
-| openshell.ocsf.action | Policy decision applied to the activity (Allowed, Denied). | keyword |
 | openshell.ocsf.action_id | Normalized identifier of the action. | long |
 | openshell.ocsf.activity_id | Normalized identifier of the activity. | long |
-| openshell.ocsf.activity_name | Activity name (Open, Refuse, Fail, Other, Log, Relay open, Relay closed). | keyword |
-| openshell.ocsf.actor.process.cmd_line | Command line of the sandbox process that initiated the activity. | keyword |
-| openshell.ocsf.actor.process.name | Executable path of the sandbox process that initiated the activity. | keyword |
-| openshell.ocsf.actor.process.parent_process.cmd_line | Command line of the parent process. | keyword |
-| openshell.ocsf.actor.process.parent_process.name | Executable path of the parent process. | keyword |
-| openshell.ocsf.actor.process.parent_process.parent_process.name | Executable path of the grandparent process. | keyword |
-| openshell.ocsf.actor.process.parent_process.parent_process.pid | PID of the grandparent process. | long |
-| openshell.ocsf.actor.process.parent_process.pid | PID of the parent process. | long |
-| openshell.ocsf.actor.process.pid | PID of the sandbox process that initiated the activity. | long |
+| openshell.ocsf.activity_name | Activity name (Open, Refuse, Fail, Other, Log, Relay open, Relay closed, Launch, Terminate, Create, Start, Stop). | keyword |
+| openshell.ocsf.actor.process.cmd_line | Command line of the initiating process, retained only when it was not mapped to `process.\*`. | keyword |
+| openshell.ocsf.actor.process.name | Executable path of the initiating process, retained only when it was not mapped to `process.\*`. | keyword |
+| openshell.ocsf.actor.process.pid | PID of the initiating process, retained only when it was not mapped to `process.\*`. | long |
+| openshell.ocsf.app.name | Name of the application that changed lifecycle state (Application Lifecycle events). | keyword |
+| openshell.ocsf.app.vendor_name | Vendor of the application that changed lifecycle state. | keyword |
+| openshell.ocsf.app.version | Version of the application that changed lifecycle state. | keyword |
+| openshell.ocsf.attacks | MITRE ATT&CK technique and tactic pairs attached to a Detection Finding, retained when they could not be mapped to `threat.\*`. | flattened |
 | openshell.ocsf.category_name | OCSF category name. | keyword |
 | openshell.ocsf.category_uid | OCSF category identifier. | long |
 | openshell.ocsf.class_name | OCSF event class name. | keyword |
-| openshell.ocsf.class_uid | OCSF event class identifier (0, 4001, 4002, 4007, 1007, 2004, 5019, 6002). | long |
-| openshell.ocsf.container.name | Sandbox name. | keyword |
-| openshell.ocsf.container.uid | Sandbox identifier. | keyword |
-| openshell.ocsf.device.hostname | Hostname of the node running the sandbox. | keyword |
-| openshell.ocsf.device.os.name | Operating system of the node running the sandbox. | keyword |
+| openshell.ocsf.class_uid | OCSF event class identifier (0, 1007, 2004, 4001, 4002, 4007, 5019, 6002). | long |
+| openshell.ocsf.confidence | Confidence label of a Detection Finding (Low, Medium, High). | keyword |
+| openshell.ocsf.confidence_id | Normalized identifier of the finding confidence. | long |
 | openshell.ocsf.device.type | Device type reported by OpenShell (Sandbox). | keyword |
 | openshell.ocsf.device.type_id | Normalized identifier of the device type. | long |
 | openshell.ocsf.disposition | Disposition of the security control (Allowed, Blocked). | keyword |
 | openshell.ocsf.disposition_id | Normalized identifier of the disposition. | long |
-| openshell.ocsf.dst_endpoint.domain | Destination hostname requested by the sandbox. | keyword |
-| openshell.ocsf.dst_endpoint.ip | Destination IP address. | ip |
-| openshell.ocsf.dst_endpoint.port | Destination port. | long |
-| openshell.ocsf.firewall_rule.name | Name of the policy rule that matched the activity. | keyword |
-| openshell.ocsf.firewall_rule.type | Type of the policy rule that matched the activity (l7, opa). | keyword |
-| openshell.ocsf.http_request.http_method | HTTP request method. | keyword |
-| openshell.ocsf.http_request.url.hostname | Hostname component of the request URL. | keyword |
-| openshell.ocsf.http_request.url.path | Path component of the request URL. | keyword |
-| openshell.ocsf.http_request.url.port | Port component of the request URL. | long |
-| openshell.ocsf.http_request.url.scheme | Scheme component of the request URL. | keyword |
-| openshell.ocsf.http_response.code | HTTP response status code. | long |
+| openshell.ocsf.evidences | Evidence artifacts attached to a Detection Finding, such as the policy name, host, protocol or decision. | flattened |
+| openshell.ocsf.is_alert | Whether a Detection Finding is raised as an alert. | boolean |
 | openshell.ocsf.is_src_dst_assignment_known | Whether the source and destination roles are known. | boolean |
-| openshell.ocsf.message | Human-readable description of the event. | keyword |
-| openshell.ocsf.metadata.product.name | Product that emitted the record. | keyword |
-| openshell.ocsf.metadata.product.vendor_name | Vendor of the product that emitted the record. | keyword |
-| openshell.ocsf.metadata.product.version | Version of the product that emitted the record. | keyword |
+| openshell.ocsf.launch_type | How a process was launched (Spawn, Fork, Exec). | keyword |
+| openshell.ocsf.launch_type_id | Normalized identifier of the launch type. | long |
 | openshell.ocsf.metadata.profiles | OCSF profiles applied to the record. | keyword |
-| openshell.ocsf.metadata.uid | Unique identifier of the record. | keyword |
 | openshell.ocsf.metadata.version | OCSF schema version of the record. | keyword |
 | openshell.ocsf.observation_point_id | Normalized identifier of the observation point. | long |
 | openshell.ocsf.proxy_endpoint.ip | IP address of the supervisor proxy listener that observed the activity. | ip |
 | openshell.ocsf.proxy_endpoint.port | Port of the supervisor proxy listener that observed the activity. | long |
+| openshell.ocsf.remediation.desc | Remediation guidance attached to a Detection Finding. | keyword |
+| openshell.ocsf.risk_level | Risk level label of a Detection Finding (Info, Low, Medium, High, Critical). | keyword |
+| openshell.ocsf.risk_level_id | Normalized identifier of the finding risk level. | long |
 | openshell.ocsf.severity | Severity label. | keyword |
-| openshell.ocsf.severity_id | Normalized severity identifier. | long |
-| openshell.ocsf.src_endpoint.ip | Source IP address inside the sandbox. | ip |
-| openshell.ocsf.src_endpoint.port | Source port inside the sandbox. | long |
 | openshell.ocsf.state | Configuration state for Device Config State Change events. | keyword |
 | openshell.ocsf.state_id | Normalized identifier of the configuration state. | long |
 | openshell.ocsf.status | Outcome status (Success, Failure). | keyword |
-| openshell.ocsf.status_detail | Detailed reason for the status, such as the policy decision code. | keyword |
 | openshell.ocsf.status_id | Normalized identifier of the status. | long |
-| openshell.ocsf.time | Event time. | date |
 | openshell.ocsf.type_name | OCSF event type name. | keyword |
 | openshell.ocsf.type_uid | OCSF event type identifier. | long |
 | openshell.ocsf.unmapped | OpenShell-specific attributes that are not part of the OCSF schema, such as policy generation, mapping identifiers and allowed ports. | flattened |
@@ -334,6 +295,7 @@ An example event for `ocsf` looks as following:
 | process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.exit_code | The exit code of the process, if this is a termination event. The field should be absent if there is no exit code for the event (e.g. process start). | long |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.parent.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
@@ -347,10 +309,18 @@ An example event for `ocsf` looks as following:
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
+| rule.description | The description of the rule generating the event. | keyword |
+| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.framework | Name of the threat framework used to further categorize and classify the tactic and technique of the reported threat. Framework classification can be provided by detecting systems, evaluated at ingest time, or retrospectively tagged to events. | keyword |
+| threat.tactic.id | The id of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ ) | keyword |
+| threat.tactic.name | Name of the type of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/) | keyword |
+| threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
+| threat.technique.name | The name of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
+| threat.technique.name.text | Multi-field of `threat.technique.name`. | match_only_text |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.path | Path of the request, such as "/search". | wildcard |
 | url.port | Port of the request, such as 443. | long |

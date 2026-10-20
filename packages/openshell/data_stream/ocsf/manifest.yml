@@ -11,11 +11,12 @@ streams:
         type: text
         title: Paths
         description: >-
-          Paths of the OCSF JSONL files. Linux sandbox supervisors write `/var/log/openshell-ocsf.YYYY-MM-DD.log` inside the sandbox; mount that directory into the Elastic Agent container or host. Windows MXC gateways write to `%PROGRAMDATA%\OpenShell\logs` or `OPENSHELL_OCSF_LOG_DIR`.
+          Paths of the OCSF JSONL files. Linux sandbox supervisors write `/var/log/openshell-ocsf.YYYY-MM-DD.jsonl` (`.log` on OpenShell releases before the extension change) inside the sandbox; mount that directory into the Elastic Agent container or host. Windows MXC gateways write to `%PROGRAMDATA%\OpenShell\logs` or `OPENSHELL_OCSF_LOG_DIR`.
         multi: true
         required: true
         show_user: true
         default:
+          - /var/log/openshell-ocsf.*.jsonl
           - /var/log/openshell-ocsf.*.log
       - name: tags
         type: text
@@ -32,14 +33,6 @@ streams:
         multi: false
         required: true
         show_user: true
-        default: false
-      - name: preserve_duplicate_custom_fields
-        type: bool
-        title: Preserve duplicate custom fields
-        description: Preserve `openshell.ocsf.*` fields that were copied to Elastic Common Schema (ECS) fields.
-        multi: false
-        required: true
-        show_user: false
         default: false
       - name: processors
         type: yaml

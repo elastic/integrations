@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 8.17.0
+      value: 9.5.0
   - terminate:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
@@ -41,6 +41,11 @@ processors:
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.openshell?.ocsf == null || !(ctx.openshell.ocsf instanceof Map)
+  - append:
+      field: error.message
+      tag: append_error_message_on_non_object_record
+      value: 'OCSF record is not a JSON object'
+      if: ctx.openshell?.ocsf != null && !(ctx.openshell.ocsf instanceof Map)
   - remove:
       field: openshell
       tag: remove_non_object_record
@@ -269,20 +274,24 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-  # ---- Actor process ---------------------------------------------------------------
+  # ---- Process ----------------------------------------------------------------------
   - script:
-      tag: script_map_actor_process
+      tag: script_map_process
       lang: painless
       description: >-
-        Map actor.process to ECS process fields. OpenShell reports the executable path in `name`, and uses
-        `0` / `-` / `/dev/null` as placeholders when the PID or command line is unknown.
+        Map the OCSF process objects to ECS process fields. For Process Activity (1007) the subject is the
+        top-level `process` and `actor.process` is the initiating (parent) process; for every other class the
+        initiating process is `actor.process`. OpenShell reports the executable path in `name`, and uses
+        `unknown` / `0` / `-` / `/dev/null` as placeholders when the executable, PID or command line is not
+        known. Existing `process.*`
+        fields (for example added by agent processors) are preserved and only OCSF-derived keys are written.
       source: |-
         void mapProcess(Map src, Map dst) {
           if (src == null) {
             return;
           }
           def exe = src.name;
-          if (exe instanceof String && exe != '-' && exe != '') {
+          if (exe instanceof String && exe != '-' && exe != 'unknown' && exe != '') {
             dst.executable = exe;
             int idx = exe.lastIndexOf('/');
             if (idx < 0) {
@@ -299,15 +308,29 @@ processors:
             dst.command_line = cmd;
           }
         }
-        def actor = ctx.openshell.ocsf.actor;
-        if (actor == null || actor.process == null) {
+        def o = ctx.openshell.ocsf;
+        def cls = o.class_uid instanceof Number ? o.class_uid.intValue() : -1;
+        def actorProcess = o.actor instanceof Map ? o.actor.process : null;
+        def subject = null;
+        def parentSrc = null;
+        if (cls == 1007 && o.process instanceof Map) {
+          subject = o.process;
+          parentSrc = subject.parent_process instanceof Map ? subject.parent_process : actorProcess;
+        } else if (actorProcess instanceof Map) {
+          subject = actorProcess;
+          parentSrc = subject.parent_process;
+        }
+        if (subject == null) {
           return;
         }
-        Map proc = new HashMap();
-        mapProcess(actor.process, proc);
-        if (actor.process.parent_process != null) {
-          Map parent = new HashMap();
-          mapProcess(actor.process.parent_process, parent);
+        Map proc = ctx.process instanceof Map ? ctx.process : new HashMap();
+        mapProcess(subject, proc);
+        if (cls == 1007 && o.exit_code instanceof Number) {
+          proc.exit_code = o.exit_code.longValue();
+        }
+        if (parentSrc instanceof Map) {
+          Map parent = proc.parent instanceof Map ? proc.parent : new HashMap();
+          mapProcess(parentSrc, parent);
           if (!parent.isEmpty()) {
             proc.parent = parent;
           }
@@ -381,6 +404,85 @@ processors:
       copy_from: openshell.ocsf.firewall_rule.type
       ignore_empty_value: true
 
+  # ---- Detection Finding (2004) -----------------------------------------------------
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_finding_info
+      copy_from: openshell.ocsf.finding_info.uid
+      ignore_empty_value: true
+      if: ctx.openshell.ocsf.class_uid == 2004
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_finding_info
+      copy_from: openshell.ocsf.finding_info.title
+      ignore_empty_value: true
+      if: ctx.openshell.ocsf.class_uid == 2004 && ctx.rule?.name == null
+  - set:
+      field: rule.description
+      tag: set_rule_description_from_finding_info
+      copy_from: openshell.ocsf.finding_info.desc
+      ignore_empty_value: true
+      if: ctx.openshell.ocsf.class_uid == 2004
+  - script:
+      tag: script_map_attacks_to_threat
+      lang: painless
+      description: Map OCSF `attacks` (MITRE ATT&CK technique/tactic pairs) to ECS threat fields.
+      if: ctx.openshell.ocsf.class_uid == 2004 && ctx.openshell.ocsf.attacks instanceof List
+      source: |-
+        def techniqueIds = new ArrayList();
+        def techniqueNames = new ArrayList();
+        def tacticIds = new ArrayList();
+        def tacticNames = new ArrayList();
+        for (def attack : ctx.openshell.ocsf.attacks) {
+          if (!(attack instanceof Map)) {
+            continue;
+          }
+          def technique = attack.technique;
+          if (technique instanceof Map) {
+            if (technique.uid != null && !techniqueIds.contains(technique.uid)) {
+              techniqueIds.add(technique.uid);
+            }
+            if (technique.name != null && !techniqueNames.contains(technique.name)) {
+              techniqueNames.add(technique.name);
+            }
+          }
+          def tactic = attack.tactic;
+          if (tactic instanceof Map) {
+            if (tactic.uid != null && !tacticIds.contains(tactic.uid)) {
+              tacticIds.add(tactic.uid);
+            }
+            if (tactic.name != null && !tacticNames.contains(tactic.name)) {
+              tacticNames.add(tactic.name);
+            }
+          }
+        }
+        if (techniqueIds.isEmpty() && tacticIds.isEmpty()) {
+          return;
+        }
+        Map threat = ctx.threat instanceof Map ? ctx.threat : new HashMap();
+        threat.framework = 'MITRE ATT&CK';
+        if (!techniqueIds.isEmpty()) {
+          Map technique = threat.technique instanceof Map ? threat.technique : new HashMap();
+          technique.id = techniqueIds;
+          if (!techniqueNames.isEmpty()) {
+            technique.name = techniqueNames;
+          }
+          threat.technique = technique;
+        }
+        if (!tacticIds.isEmpty()) {
+          Map tactic = threat.tactic instanceof Map ? threat.tactic : new HashMap();
+          tactic.id = tacticIds;
+          if (!tacticNames.isEmpty()) {
+            tactic.name = tacticNames;
+          }
+          threat.tactic = tactic;
+        }
+        ctx.threat = threat;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
   # ---- ECS event categorization and network context -------------------------------
   - script:
       tag: script_event_categorization
@@ -420,14 +522,43 @@ processors:
           network.protocol = 'ssh';
         } else if (cls == 1007) {
           category.add('process');
-          type.add('start');
+          if (activity == 'Launch') {
+            type.add('start');
+          } else if (activity == 'Terminate') {
+            type.add('end');
+          } else if (activity == 'Inject') {
+            type.add('change');
+          } else {
+            type.add('info');
+          }
         } else if (cls == 2004) {
           category.add('intrusion_detection');
           type.add('info');
-          kind = 'alert';
+          if (o.is_alert == null || o.is_alert == true) {
+            kind = 'alert';
+          }
         } else if (cls == 5019) {
           category.add('configuration');
           type.add('change');
+        } else if (cls == 6002) {
+          if (activity == 'Start' || activity == 'Restart') {
+            category.add('process');
+            type.add('start');
+          } else if (activity == 'Stop') {
+            category.add('process');
+            type.add('end');
+          } else {
+            category.add('package');
+            if (activity == 'Install') {
+              type.add('installation');
+            } else if (activity == 'Remove') {
+              type.add('deletion');
+            } else if (activity == 'Enable' || activity == 'Disable' || activity == 'Update') {
+              type.add('change');
+            } else {
+              type.add('info');
+            }
+          }
         } else if (cls == 0 && activity.toLowerCase().startsWith('relay')) {
           category.add('network');
           category.add('session');
@@ -435,10 +566,13 @@ processors:
         } else {
           type.add('info');
         }
+        boolean decisionTypesAllowed = category.contains('network') || category.contains('intrusion_detection');
         if (denied) {
-          type.add('denied');
+          if (decisionTypesAllowed) {
+            type.add('denied');
+          }
           kind = 'alert';
-        } else if (allowed) {
+        } else if (allowed && decisionTypesAllowed) {
           type.add('allowed');
         }
         if (status == 'Success') {
@@ -503,6 +637,10 @@ processors:
         - openshell.ocsf.device.hostname
         - openshell.ocsf.device.os.name
         - openshell.ocsf.dst_endpoint
+        - openshell.ocsf.exit_code
+        - openshell.ocsf.finding_info.desc
+        - openshell.ocsf.finding_info.title
+        - openshell.ocsf.finding_info.uid
         - openshell.ocsf.firewall_rule
         - openshell.ocsf.http_request
         - openshell.ocsf.http_response.code
@@ -515,31 +653,42 @@ processors:
         - openshell.ocsf.time
       tag: remove_custom_duplicate_fields
       ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: openshell.ocsf.attacks
+      tag: remove_attacks_when_mapped
+      ignore_missing: true
+      if: ctx.threat?.technique?.id != null || ctx.threat?.tactic?.id != null
   - script:
       tag: script_remove_mapped_process_fields
       lang: painless
-      description: Remove actor.process fields that were mapped to ECS unless duplicate custom fields are preserved.
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      description: >-
+        Remove the OCSF process fields that were mapped to ECS process fields. Values that were not mapped are
+        OpenShell placeholders (`unknown`, `0`, `-`, `/dev/null`) and are dropped as well.
       source: |-
-        def actor = ctx.openshell.ocsf.actor;
-        if (actor == null || actor.process == null) {
-          return;
+        void strip(def p) {
+          if (!(p instanceof Map)) {
+            return;
+          }
+          p.remove('name');
+          p.remove('pid');
+          p.remove('cmd_line');
+          strip(p.parent_process);
         }
-        def p = actor.process;
-        p.remove('name');
-        p.remove('pid');
-        p.remove('cmd_line');
-        if (p.parent_process != null) {
-          p.parent_process.remove('name');
-          p.parent_process.remove('pid');
-          p.parent_process.remove('cmd_line');
+        def o = ctx.openshell.ocsf;
+        if (o.class_uid == 1007 && o.process instanceof Map) {
+          boolean actorUsedAsParent = !(o.process.parent_process instanceof Map);
+          strip(o.process);
+          if (actorUsedAsParent && o.actor instanceof Map) {
+            strip(o.actor.process);
+          }
+        } else if (o.actor instanceof Map) {
+          strip(o.actor.process);
         }
   - remove:
       field: event.original
       tag: remove_event_original
       ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      if: ctx.error?.message == null && (ctx.tags == null || !(ctx.tags.contains('preserve_original_event')))
   - script:
       tag: script_remove_null_values
       lang: painless

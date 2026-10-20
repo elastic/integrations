@@ -1,10 +1,7 @@
 - name: openshell.ocsf
   type: group
-  description: OCSF record fields emitted by OpenShell that have no direct ECS equivalent, or that are preserved when `preserve_duplicate_custom_fields` is enabled.
+  description: OCSF record fields emitted by OpenShell that have no direct ECS equivalent. Fields copied to ECS are removed from this object.
   fields:
-    - name: action
-      type: keyword
-      description: Policy decision applied to the activity (Allowed, Denied).
     - name: action_id
       type: long
       description: Normalized identifier of the action.
@@ -13,31 +10,28 @@
       description: Normalized identifier of the activity.
     - name: activity_name
       type: keyword
-      description: Activity name (Open, Refuse, Fail, Other, Log, Relay open, Relay closed).
+      description: Activity name (Open, Refuse, Fail, Other, Log, Relay open, Relay closed, Launch, Terminate, Create, Start, Stop).
     - name: actor.process.cmd_line
       type: keyword
-      description: Command line of the sandbox process that initiated the activity.
+      description: Command line of the initiating process, retained only when it was not mapped to `process.*`.
     - name: actor.process.name
       type: keyword
-      description: Executable path of the sandbox process that initiated the activity.
+      description: Executable path of the initiating process, retained only when it was not mapped to `process.*`.
     - name: actor.process.pid
       type: long
-      description: PID of the sandbox process that initiated the activity.
-    - name: actor.process.parent_process.cmd_line
+      description: PID of the initiating process, retained only when it was not mapped to `process.*`.
+    - name: app.name
       type: keyword
-      description: Command line of the parent process.
-    - name: actor.process.parent_process.name
+      description: Name of the application that changed lifecycle state (Application Lifecycle events).
+    - name: app.vendor_name
       type: keyword
-      description: Executable path of the parent process.
-    - name: actor.process.parent_process.pid
-      type: long
-      description: PID of the parent process.
-    - name: actor.process.parent_process.parent_process.name
+      description: Vendor of the application that changed lifecycle state.
+    - name: app.version
       type: keyword
-      description: Executable path of the grandparent process.
-    - name: actor.process.parent_process.parent_process.pid
-      type: long
-      description: PID of the grandparent process.
+      description: Version of the application that changed lifecycle state.
+    - name: attacks
+      type: flattened
+      description: MITRE ATT&CK technique and tactic pairs attached to a Detection Finding, retained when they could not be mapped to `threat.*`.
     - name: category_name
       type: keyword
       description: OCSF category name.
@@ -49,19 +43,13 @@
       description: OCSF event class name.
     - name: class_uid
       type: long
-      description: OCSF event class identifier (0, 4001, 4002, 4007, 1007, 2004, 5019, 6002).
-    - name: container.name
+      description: OCSF event class identifier (0, 1007, 2004, 4001, 4002, 4007, 5019, 6002).
+    - name: confidence
       type: keyword
-      description: Sandbox name.
-    - name: container.uid
-      type: keyword
-      description: Sandbox identifier.
-    - name: device.hostname
-      type: keyword
-      description: Hostname of the node running the sandbox.
-    - name: device.os.name
-      type: keyword
-      description: Operating system of the node running the sandbox.
+      description: Confidence label of a Detection Finding (Low, Medium, High).
+    - name: confidence_id
+      type: long
+      description: Normalized identifier of the finding confidence.
     - name: device.type
       type: keyword
       description: Device type reported by OpenShell (Sandbox).
@@ -74,60 +62,24 @@
     - name: disposition_id
       type: long
       description: Normalized identifier of the disposition.
-    - name: dst_endpoint.domain
-      type: keyword
-      description: Destination hostname requested by the sandbox.
-    - name: dst_endpoint.ip
-      type: ip
-      description: Destination IP address.
-    - name: dst_endpoint.port
-      type: long
-      description: Destination port.
-    - name: firewall_rule.name
-      type: keyword
-      description: Name of the policy rule that matched the activity.
-    - name: firewall_rule.type
-      type: keyword
-      description: Type of the policy rule that matched the activity (l7, opa).
-    - name: http_request.http_method
-      type: keyword
-      description: HTTP request method.
-    - name: http_request.url.hostname
-      type: keyword
-      description: Hostname component of the request URL.
-    - name: http_request.url.path
-      type: keyword
-      description: Path component of the request URL.
-    - name: http_request.url.port
-      type: long
-      description: Port component of the request URL.
-    - name: http_request.url.scheme
-      type: keyword
-      description: Scheme component of the request URL.
-    - name: http_response.code
-      type: long
-      description: HTTP response status code.
+    - name: evidences
+      type: flattened
+      description: Evidence artifacts attached to a Detection Finding, such as the policy name, host, protocol or decision.
+    - name: is_alert
+      type: boolean
+      description: Whether a Detection Finding is raised as an alert.
     - name: is_src_dst_assignment_known
       type: boolean
       description: Whether the source and destination roles are known.
-    - name: message
+    - name: launch_type
       type: keyword
-      description: Human-readable description of the event.
-    - name: metadata.product.name
-      type: keyword
-      description: Product that emitted the record.
-    - name: metadata.product.vendor_name
-      type: keyword
-      description: Vendor of the product that emitted the record.
-    - name: metadata.product.version
-      type: keyword
-      description: Version of the product that emitted the record.
+      description: How a process was launched (Spawn, Fork, Exec).
+    - name: launch_type_id
+      type: long
+      description: Normalized identifier of the launch type.
     - name: metadata.profiles
       type: keyword
       description: OCSF profiles applied to the record.
-    - name: metadata.uid
-      type: keyword
-      description: Unique identifier of the record.
     - name: metadata.version
       type: keyword
       description: OCSF schema version of the record.
@@ -140,18 +92,18 @@
     - name: proxy_endpoint.port
       type: long
       description: Port of the supervisor proxy listener that observed the activity.
+    - name: remediation.desc
+      type: keyword
+      description: Remediation guidance attached to a Detection Finding.
+    - name: risk_level
+      type: keyword
+      description: Risk level label of a Detection Finding (Info, Low, Medium, High, Critical).
+    - name: risk_level_id
+      type: long
+      description: Normalized identifier of the finding risk level.
     - name: severity
       type: keyword
       description: Severity label.
-    - name: severity_id
-      type: long
-      description: Normalized severity identifier.
-    - name: src_endpoint.ip
-      type: ip
-      description: Source IP address inside the sandbox.
-    - name: src_endpoint.port
-      type: long
-      description: Source port inside the sandbox.
     - name: state
       type: keyword
       description: Configuration state for Device Config State Change events.
@@ -161,15 +113,9 @@
     - name: status
       type: keyword
       description: Outcome status (Success, Failure).
-    - name: status_detail
-      type: keyword
-      description: Detailed reason for the status, such as the policy decision code.
     - name: status_id
       type: long
       description: Normalized identifier of the status.
-    - name: time
-      type: date
-      description: Event time.
     - name: type_name
       type: keyword
       description: OCSF event type name.
