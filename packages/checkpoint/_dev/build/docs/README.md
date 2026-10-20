@@ -161,6 +161,14 @@ For more information on architectures that can be used for scaling this integrat
 
 The `firewall` data stream provides events from Check Point devices, including firewall traffic, VPN logs, audit logs, and system events.
 
+#### RFC 3164 system logs
+
+Check Point Log Exporter sends firewall, VPN, and audit events as RFC 5424 syslog. The same syslog input can also receive device and operating system messages in RFC 3164 (BSD) format.
+
+The firewall data stream parses an RFC 3164 line into ECS fields: `log.syslog.priority`, `log.syslog.facility.code`, `log.syslog.severity.code`, `process.name`, `process.pid`, `message`, and `@timestamp`. The syslog host is copied to both `host.hostname`/`host.ip` and `observer.hostname`/`observer.ip`. The BSD timestamp has no timezone, so the integration applies the configured timezone offset. The timestamp also has no year; the year is the calendar year of the ingest time in the configured timezone, rolled back one year when that local time would fall after ingest time.
+
+These events are not Check Point security logs. They do not populate `checkpoint.*` fields.
+
 #### Gateway identification fields
 
 Check Point Security Gateways identify themselves in syslog payloads through two distinct fields, which the integration maps to ECS as follows:
