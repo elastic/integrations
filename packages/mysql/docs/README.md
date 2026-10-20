@@ -51,10 +51,11 @@ You need Elasticsearch for storing and searching your data and Kibana for visual
 
 To ingest data from MySQL, you have to:
 
-- Specify the hostname, username, and password to connect to the MySQL database. Additionally, there is query parameter in replica_status data stream(default query is `SHOW REPLICA STATUS;` user can change it to `SHOW SLAVE STATUS`).
+- Specify the hostname, username, and password to connect to the MySQL database. Additionally, the `replica_status` data stream has a query parameter (the default query is `SHOW REPLICA STATUS;`, which you can change to `SHOW SLAVE STATUS;`).
+- For replica status metrics, set the MySQL DSN without credentials (for example `tcp(127.0.0.1:3306)/`) and enter the username and password in the Username and Password fields. Do not put the password in the DSN. Passwords in the DSN are stored as plain text in the integration policy. Existing DSNs that still include `username:password@` continue to work if you leave Username and Password empty. Special characters in the Password field are supported. Do not percent-encode the username or password; the MySQL driver treats `%xx` as literal characters. Do not use a colon or single quote in the username.
 - Specify the paths of MySQL error logs and slow logs. (default paths are:- Error logs: `/var/log/mysql/error.log*` and `/var/log/mysqld.log*`, Slow logs: `/var/log/mysql/*-slow.log*` and `/var/lib/mysql/*-slow.log*`)
 
-Before you can start sending data to Elastic, make sure you have the necessary MySQL user permissions configured appropriately. It's important to create a user password that does not include special characters to ensure compatibility with the integration.
+Before you can start sending data to Elastic, make sure you have the necessary MySQL user permissions configured appropriately. Prefer the Username and Password fields instead of embedding credentials in a DSN.
 
 To create a MySQL user with the correct permissions and configure this user account within the Elastic Agent integration for metric collection follow these steps:
 
@@ -64,7 +65,7 @@ To create a MySQL user with the correct permissions and configure this user acco
 
    `CREATE USER 'elastic_monitor'@'localhost' IDENTIFIED BY 'YourPasswordHere';`
 
-    **NOTE**: Replace `YourPasswordHere` with a secure password that does not contain special characters. For example, a password like `p@$$w0rd!` will fail.
+    **NOTE**: Prefer the Username and Password fields in the integration policy. If you embed credentials in a DSN string, characters such as `:`, `#`, or `'` can break YAML or DSN parsing. Do not percent-encode MySQL passwords; the driver treats `%xx` as literal characters. Do not use a colon or single quote in the username.
 
 2. Grant the necessary permissions.
 
