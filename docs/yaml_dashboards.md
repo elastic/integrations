@@ -33,7 +33,7 @@ YAML dashboards work best for new dashboards, especially those using ES|QL or Le
 - You prefer version-controllable, diffable source files over opaque JSON.
 - Your dashboards use ES|QL queries, Lens charts, or standard panel types (markdown, links, metrics, pie, XY, heatmap, gauge, datatable, tagcloud).
 
-For existing integrations that already have JSON dashboards built through the Kibana UI, there is no requirement to migrate. The traditional export workflow described in [Create and export dashboards](/extend/create-dashboards.md) remains fully supported.
+For existing integrations that already have JSON dashboards built through the Kibana UI, there is no requirement to migrate. The traditional export workflow described in [Add dashboards to an integration](/extend/create-dashboards.md) remains fully supported.
 
 ## Quick start
 
