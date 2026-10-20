@@ -22,24 +22,24 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2001-01-01T01:01:01.000-05:00",
     "agent": {
-        "ephemeral_id": "599c360c-711b-41f0-8b3b-03101ce1808b",
-        "id": "0874c904-40cc-4817-b0f8-557b17245c75",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "95b8691b-6d41-4aca-8cc5-170e6706b86c",
+        "id": "e3932e00-4e19-4ed1-8901-7ad2903af14a",
+        "name": "elastic-agent-40990",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.11.0"
     },
     "data_stream": {
         "dataset": "microsoft_dhcp.log",
-        "namespace": "ep",
+        "namespace": "84212",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "0874c904-40cc-4817-b0f8-557b17245c75",
+        "id": "e3932e00-4e19-4ed1-8901-7ad2903af14a",
         "snapshot": false,
-        "version": "8.8.0"
+        "version": "8.11.0"
     },
     "event": {
         "action": "dhcp-dns-update",
@@ -49,7 +49,7 @@ An example event for `log` looks as following:
         ],
         "code": "35",
         "dataset": "microsoft_dhcp.log",
-        "ingested": "2023-10-24T00:08:40Z",
+        "ingested": "2026-10-08T07:19:18Z",
         "kind": "event",
         "original": "35,01/01/01,01:01:01,DNS update request failed,192.168.2.1,host.test.com,000000000000,",
         "outcome": "failure",
@@ -62,12 +62,14 @@ An example event for `log` looks as following:
     },
     "host": {
         "ip": [
-            "192.168.128.7"
+            "192.168.128.2",
+            "172.18.0.7"
         ],
         "mac": [
-            "02-42-C0-A8-80-07"
+            "72-19-0F-7C-33-0A",
+            "8E-33-C5-8D-7C-EE"
         ],
-        "name": "docker-fleet-agent"
+        "name": "elastic-agent-40990"
     },
     "input": {
         "type": "log"
@@ -80,12 +82,21 @@ An example event for `log` looks as following:
     },
     "message": "DNS update request failed",
     "observer": {
-        "hostname": "docker-fleet-agent",
+        "hostname": "elastic-agent-40990",
         "ip": [
-            "192.168.128.7"
+            "192.168.128.2",
+            "172.18.0.7"
         ],
         "mac": [
-            "02-42-C0-A8-80-07"
+            "72-19-0F-7C-33-0A",
+            "8E-33-C5-8D-7C-EE"
+        ]
+    },
+    "related": {
+        "ip": [
+            "192.168.2.1",
+            "192.168.128.2",
+            "172.18.0.7"
         ]
     },
     "source": {
@@ -150,6 +161,7 @@ An example event for `log` looks as following:
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
