@@ -101,7 +101,7 @@ func TestBuildComment(t *testing.T) {
 				{Package: "aws", Branches: []backports.ActiveResult{awsBranch("backport-aws-6.14")}},
 			},
 			checked:      map[string]bool{},
-			wantContains: []string{"PRs will be created automatically on merge, or when you update this checklist after merge."},
+			wantContains: []string{"A backport PR will be opened automatically for each branch you check."},
 		},
 		{
 			title: "intro links to the backport guidance wiki",
