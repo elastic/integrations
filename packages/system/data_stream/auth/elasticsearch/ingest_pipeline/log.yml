@@ -10,11 +10,7 @@ processors:
         GREEDYMULTILINE: '(.|\n)*'
         TIMESTAMP: (?:%{TIMESTAMP_ISO8601}|%{SYSLOGTIMESTAMP})
       patterns:
-        - '^<%{NONNEGINT:log.syslog.priority:int}>(?:%{NONNEGINT:system.auth.syslog.version} )?+(?:-|%{TIMESTAMP:system.auth.timestamp}) 
-            +(?:-|%{IPORHOST:host.hostname}) +(?:-|%{SYSLOG5424PRINTASCII:process.name}) 
-            +(?:-|%{POSINT:process.pid:long}) +(?:-|%{SYSLOG5424PRINTASCII:event.code}) 
-            +(?:-|%{SYSLOG5424SD:syslog5424_sd})? 
-            +%{GREEDYDATA:message}$'
+        - '^<%{NONNEGINT:log.syslog.priority:int}>(?:%{NONNEGINT:system.auth.syslog.version} )?+(?:-|%{TIMESTAMP:system.auth.timestamp}) +(?:-|%{IPORHOST:host.hostname}) +(?:-|%{SYSLOG5424PRINTASCII:process.name}) +(?:-|%{POSINT:process.pid:long}) +(?:-|%{SYSLOG5424PRINTASCII:event.code}) +(?:-|%{SYSLOG5424SD:syslog5424_sd})? +%{GREEDYDATA:message}$'
         - '^%{TIMESTAMP:system.auth.timestamp} %{SYSLOGHOST:host.hostname}? %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?:%{SPACE}%{GREEDYMULTILINE:message}$'
         - '^<%{NONNEGINT:log.syslog.priority:int}>(?:%{NONNEGINT:system.auth.syslog.version} )?%{TIMESTAMP:system.auth.timestamp} %{SYSLOGHOST:host.hostname}? %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?:%{SPACE}%{GREEDYMULTILINE:message}$'
   - pipeline:

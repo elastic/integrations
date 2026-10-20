@@ -1,0 +1,24 @@
+wait_for_data_timeout: 1m
+input: cel
+service: sailpoint-machine-identities
+vars:
+  api_version: v2026
+  client_id: test-client-id
+  client_secret: test-client-secret
+  api_host: http://{{Hostname}}:{{Port}}
+  token_scopes:
+    - sp:scopes:all
+data_stream:
+  vars:
+    interval: 2s
+    batch_size: 2
+    preserve_original_event: true
+    tags:
+      - forwarded
+      - sailpoint_identity_sc.machine_identities
+assert:
+  # The CEL program performs a continuous full scan (no cursor/deduplication).
+  # With interval: 2s and batch_size: 2, each cycle produces 3 events (page1=2 + page2=1).
+  # Use min_count instead of hit_count because the data stream grows continuously
+  # and hit_count requires a stable (non-changing) document count to pass.
+  min_count: 6

@@ -1,0 +1,96 @@
+# Test that a non-JSON (HTML error page, e.g. a 414/synthetic-200 from a
+# load balancer) response for /v2/alert does not break ingestion. The mock
+# alternates between an HTML body and a valid alert response on successive
+# calls. The CEL program must skip the HTML body gracefully (emitting no
+# events, no eval failure) and still collect the valid alert on a later
+# poll. Regression guard for the response-decode error handling added in
+# 4.3.1.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} error-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Exactly one alert should be collected despite the interleaved HTML
+# responses. The pipeline fingerprints _id, so repeated valid responses
+# deduplicate to a single document; -confirm guards against the HTML body
+# producing any spurious document.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+exec jq -r '.hits.hits[]._source.event.id' got_docs.json
+stdout '^N-9999$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down error-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  username: xxxx
+  password: xxxx
+data_stream:
+  vars:
+    url: http://error-mock:8080
+    interval: 30s
+    time_amount: 1
+    time_unit: hour
+    batch_size: 100
+    preserve_original_event: true
+
+-- error-mock/docker-compose.yml --
+version: '2.3'
+services:
+  error-mock:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: error-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+
+-- error-mock/config.yml --
+rules:
+  - path: /login
+    methods: ['POST']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"message":"login_successful","token":"xxxx"}
+
+  # /v2/alert alternates: HTML error page, then a valid alert response.
+  - path: /v2/alert
+    methods: ['POST']
+    request_headers:
+      x-redlock-auth:
+        - 'xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/html'
+        body: |-
+          <html>
+          <head><title>414 Request-URI Too Large</title></head>
+          <body><center><h1>414 Request-URI Too Large</h1></center></body>
+          </html>
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"totalRows":1,"items":[{"id":"N-9999","alertAdditionalInfo":{"scannerVersion":"CS_2.0"},"alertAttribution":{"attributionEventList":[{"event":"first_event","event_ts":1694003441966,"username":"alex123"}],"resourceCreatedBy":"string","resourceCreatedOn":0},"status":"open","reason":"NEW_ALERT","firstSeen":1694003441966,"history":[{"modifiedOn":"1694003441966","modifiedBy":"alex123","reason":"Reason1","status":"OPEN"}],"lastSeen":1694003441966,"alertTime":1694003441966,"lastUpdated":1694003441966,"policyId":"ad23603d-754e-4499-8988-b801xxx85898","metadata":null,"policy":{"policyId":"ad23603d-754e-4499-8988-b8017xxxx98","name":"AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0\/0)","policyType":"network","systemDefault":true,"complianceMetadata":[{"complianceId":"qwer345bv","customAssigned":true,"policyId":"werf435tr","requirementDescription":"Description of policy compliance.","requirementId":"req-123-xyz","requirementName":"rigidity","sectionDescription":"Description of section.","sectionId":"sect-453-abc","sectionLabel":"label-1","standardDescription":"Description of standard.","standardId":"stand-543-pqr","standardName":"Class 1"}],"description":"This policy identifies AWS EC2 instances that are internet reachable with unrestricted access (0.0.0.0\/0).","severity":"high","recommendation":"Restrict traffic from unknown IP addresses.","labels":["Prisma_Cloud","Attack Path Rule"],"lastModifiedOn":1687474999057,"lastModifiedBy":"template@redlock.io","deleted":false,"findingTypes":[],"remediable":false,"remediation":{"actions":[{"operation":"buy","payload":"erefwsdf"}],"cliScriptTemplate":"temp1","description":"Description of CLI Script Template."}},"alertRules":[],"resource":{"rrn":"rrn:aws:instance:us-east-1:710000059376:e7ddce5a1ffcb47bxxxxxerf2635a3b4d9da3:i-04578e0008100947","id":"i-04578exxxx8100947","name":"IS-37133","account":"AWS Cloud Account","accountId":"710002259376","cloudAccountGroups":["Default Account Group"],"region":"AWS Virginia","regionId":"us-east-1","resourceType":"INSTANCE","resourceApiName":"aws-ec2-describe-instances","cloudServiceName":"Amazon EC2","url":"https:\/\/console.aws.amazon.com\/ec2\/v2\/home?region=us-east-1#Instances:instanceId=i-0457xxxxx00947","data":null,"additionalInfo":null,"cloudType":"aws","resourceTs":1694003441915,"unifiedAssetId":"66c543b6261c4d9edxxxxxb42e15f4","resourceConfigJsonAvailable":false,"resourceDetailsAvailable":true},"investigateOptions":{"alertId":"N-9999"}}]}

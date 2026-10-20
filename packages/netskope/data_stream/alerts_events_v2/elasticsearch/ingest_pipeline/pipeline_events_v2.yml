@@ -337,6 +337,62 @@ processors:
             tag: append_error_message_6a49b14a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - json:
+      tag: json_dlp_match_info
+      description: >-
+        Decode dlp_match_info when it is received as serialized JSON. Values
+        that are not valid JSON are moved to dlp_match_info_text.
+      field: netskope.events_v2.dlp_match_info
+      if: >-
+        ctx.netskope?.events_v2?.dlp_match_info instanceof String &&
+        (ctx.netskope.events_v2.dlp_match_info.trim().startsWith('{') || ctx.netskope.events_v2.dlp_match_info.trim().startsWith('['))
+      on_failure:
+        - rename:
+            tag: rename_dlp_match_info_to_text
+            field: netskope.events_v2.dlp_match_info
+            target_field: netskope.events_v2.dlp_match_info_text
+  - script:
+      tag: script_move_dlp_match_info_text
+      lang: painless
+      description: >-
+        dlp_match_info is mapped as an object. Move any non-object values to
+        dlp_match_info_text so that they do not cause mapping failures.
+      if: ctx.netskope?.events_v2?.dlp_match_info != null && !(ctx.netskope.events_v2.dlp_match_info instanceof Map)
+      source: |-
+        def value = ctx.netskope.events_v2.dlp_match_info;
+        List items = value instanceof List ? value : [value];
+        List objects = new ArrayList();
+        List text = new ArrayList();
+        for (def item : items) {
+          if (item instanceof Map) {
+            objects.add(item);
+          } else if (item != null) {
+            text.add(String.valueOf(item));
+          }
+        }
+        if (objects.isEmpty()) {
+          ctx.netskope.events_v2.remove('dlp_match_info');
+        } else {
+          ctx.netskope.events_v2.dlp_match_info = objects;
+        }
+        if (!text.isEmpty()) {
+          ctx.netskope.events_v2.dlp_match_info_text = text.size() == 1 ? text.get(0) : text;
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_script_move_dlp_match_info_text
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_inline_dlp_match_info_to_object
+      description: >-
+        inline_dlp_match_info is polymorphic: the Netskope API sends it as
+        either a plain string or a JSON array of objects. Structured values are
+        moved to inline_dlp_match_info_object.
+      field: netskope.events_v2.inline_dlp_match_info
+      target_field: netskope.events_v2.inline_dlp_match_info_object
+      if: ctx.netskope?.events_v2?.inline_dlp_match_info instanceof Map || ctx.netskope?.events_v2?.inline_dlp_match_info instanceof List
+      ignore_missing: true
   - convert:
       field: netskope.events_v2.domain_ip
       tag: convert_domain_ip_to_ip_86d89a81
