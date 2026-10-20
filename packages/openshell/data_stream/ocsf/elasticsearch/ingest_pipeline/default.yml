@@ -662,8 +662,9 @@ processors:
       tag: script_remove_mapped_process_fields
       lang: painless
       description: >-
-        Remove the OCSF process fields that were mapped to ECS process fields. Values that were not mapped are
-        OpenShell placeholders (`unknown`, `0`, `-`, `/dev/null`) and are dropped as well.
+        Remove the OCSF process fields that were mapped to ECS (the subject process and the one parent level
+        mapped to `process.parent.*`). Deeper ancestors are kept under `openshell.ocsf.*`, minus OpenShell
+        placeholder values (`unknown`, `0`, `-`, `/dev/null`).
       source: |-
         void strip(def p) {
           if (!(p instanceof Map)) {
@@ -672,23 +673,43 @@ processors:
           p.remove('name');
           p.remove('pid');
           p.remove('cmd_line');
-          strip(p.parent_process);
+        }
+        void scrub(def p) {
+          if (!(p instanceof Map)) {
+            return;
+          }
+          if (p.name == '-' || p.name == 'unknown' || p.name == '') {
+            p.remove('name');
+          }
+          if (p.pid instanceof Number && p.pid.longValue() <= 0) {
+            p.remove('pid');
+          }
+          if (p.cmd_line == '-' || p.cmd_line == '/dev/null' || p.cmd_line == '') {
+            p.remove('cmd_line');
+          }
+          scrub(p.parent_process);
         }
         def o = ctx.openshell.ocsf;
+        def actorProcess = o.actor instanceof Map ? o.actor.process : null;
         if (o.class_uid == 1007 && o.process instanceof Map) {
-          boolean actorUsedAsParent = !(o.process.parent_process instanceof Map);
           strip(o.process);
-          if (actorUsedAsParent && o.actor instanceof Map) {
-            strip(o.actor.process);
+          if (o.process.parent_process instanceof Map) {
+            strip(o.process.parent_process);
+            scrub(o.process.parent_process.parent_process);
+            scrub(actorProcess);
+          } else {
+            strip(actorProcess);
+            if (actorProcess instanceof Map) {
+              scrub(actorProcess.parent_process);
+            }
           }
-        } else if (o.actor instanceof Map) {
-          strip(o.actor.process);
+        } else if (actorProcess instanceof Map) {
+          strip(actorProcess);
+          strip(actorProcess.parent_process);
+          if (actorProcess.parent_process instanceof Map) {
+            scrub(actorProcess.parent_process.parent_process);
+          }
         }
-  - remove:
-      field: event.original
-      tag: remove_event_original
-      ignore_missing: true
-      if: ctx.error?.message == null && (ctx.tags == null || !(ctx.tags.contains('preserve_original_event')))
   - script:
       tag: script_remove_null_values
       lang: painless

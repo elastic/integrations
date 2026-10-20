@@ -255,6 +255,12 @@ An example event for `ocsf` looks as following:
 | openshell.ocsf.activity_name | Activity name (Open, Refuse, Fail, Other, Log, Relay open, Relay closed, Launch, Terminate, Create, Start, Stop). | keyword |
 | openshell.ocsf.actor.process.cmd_line | Command line of the initiating process, retained only when it was not mapped to `process.\*`. | keyword |
 | openshell.ocsf.actor.process.name | Executable path of the initiating process, retained only when it was not mapped to `process.\*`. | keyword |
+| openshell.ocsf.actor.process.parent_process.cmd_line | Command line of the initiating process's parent, retained only when it was not mapped to `process.parent.\*`. | keyword |
+| openshell.ocsf.actor.process.parent_process.name | Executable path of the initiating process's parent, retained only when it was not mapped to `process.parent.\*`. | keyword |
+| openshell.ocsf.actor.process.parent_process.parent_process.cmd_line | Command line of the grandparent of the initiating process (ECS has no `process.parent.parent`). | keyword |
+| openshell.ocsf.actor.process.parent_process.parent_process.name | Executable path of the grandparent of the initiating process. | keyword |
+| openshell.ocsf.actor.process.parent_process.parent_process.pid | PID of the grandparent of the initiating process. | long |
+| openshell.ocsf.actor.process.parent_process.pid | PID of the initiating process's parent, retained only when it was not mapped to `process.parent.\*`. | long |
 | openshell.ocsf.actor.process.pid | PID of the initiating process, retained only when it was not mapped to `process.\*`. | long |
 | openshell.ocsf.app.name | Name of the application that changed lifecycle state (Application Lifecycle events). | keyword |
 | openshell.ocsf.app.vendor_name | Vendor of the application that changed lifecycle state. | keyword |
@@ -278,6 +284,9 @@ An example event for `ocsf` looks as following:
 | openshell.ocsf.metadata.profiles | OCSF profiles applied to the record. | keyword |
 | openshell.ocsf.metadata.version | OCSF schema version of the record. | keyword |
 | openshell.ocsf.observation_point_id | Normalized identifier of the observation point. | long |
+| openshell.ocsf.process.parent_process.parent_process.cmd_line | Command line of the grandparent of the subject process (Process Activity events). | keyword |
+| openshell.ocsf.process.parent_process.parent_process.name | Executable path of the grandparent of the subject process (Process Activity events). | keyword |
+| openshell.ocsf.process.parent_process.parent_process.pid | PID of the grandparent of the subject process (Process Activity events). | long |
 | openshell.ocsf.proxy_endpoint.ip | IP address of the supervisor proxy listener that observed the activity. | ip |
 | openshell.ocsf.proxy_endpoint.port | Port of the supervisor proxy listener that observed the activity. | long |
 | openshell.ocsf.remediation.desc | Remediation guidance attached to a Detection Finding. | keyword |
