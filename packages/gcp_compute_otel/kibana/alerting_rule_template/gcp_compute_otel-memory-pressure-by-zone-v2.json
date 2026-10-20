@@ -1,0 +1,75 @@
+{
+  "id": "gcp_compute_otel-memory-pressure-by-zone-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Compute OTel] Memory pressure across a zone",
+        "description": "Alerts when multiple VMs in a zone are under memory pressure: at least 95% of guest RAM in use (balloon driver view) or sustained swap-in of at least 1 MiB/s, averaged over 15 minutes. Fleet-level by design. Returns one row per breaching project and zone.",
+        "tags": [
+          "observability",
+          "gcp",
+          "gcp_compute",
+          "compute_engine"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.compute.otel-*\n// Compute Engine VM instances only\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\"\n// Hypervisor (balloon driver) view of guest memory; no guest agent required.\n// swap_*_bytes_count are DELTA metrics stored as gauges (bytes per 60s sample) and are only emitted for some machine families.\n| STATS\n    ram_used = MAX(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_used`)),\n    ram_size = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`)),\n    swap_in_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_in_bytes_count`)) / 60\n  BY resource.attributes.project_id, resource.attributes.zone, resource.attributes.instance_id, attributes.instance_name\n| WHERE ram_size > 0 AND ram_used IS NOT NULL\n| EVAL mem_used_pct = ram_used * 100.0 / ram_size, swap_in_bps = COALESCE(swap_in_bps, 0.0)\n// Per-VM pressure: >= 95% RAM used OR >= 1 MiB/s sustained swap-in. Tune both to your environment.\n| EVAL is_pressured = mem_used_pct >= 95 OR swap_in_bps >= 1048576\n| STATS\n    instances = COUNT(*),\n    pressured_instances = COUNT(*) WHERE is_pressured,\n    max_mem_used_pct = ROUND(MAX(mem_used_pct), 1),\n    max_swap_in_bps = ROUND(MAX(swap_in_bps), 0),\n    pressured_instance_names = VALUES(attributes.instance_name) WHERE is_pressured\n  BY resource.attributes.project_id, resource.attributes.zone\n| EVAL pressured_pct = ROUND(pressured_instances * 100.0 / instances, 1)",
+        "breach": {
+          "segment": "// Breach: at least 10% of the zone's VMs AND at least 2 VMs under pressure.\n// Lower pressured_instances to 1 for small fleets; raise thresholds for node pools designed to run memory-full (for example Kubernetes nodes).\nWHERE pressured_pct >= 10 AND pressured_instances >= 2\n| KEEP resource.attributes.project_id, resource.attributes.zone, pressured_pct, pressured_instances, instances, max_mem_used_pct, max_swap_in_bps, pressured_instance_names\n| SORT pressured_pct DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.zone"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_compute_otel-memory-pressure-by-zone-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Memory pressure across a zone\n\nSeveral VMs in this zone are close to their RAM limit (>= 95% used, per the hypervisor balloon driver) or are actively swapping memory in. Sustained swap-in means the guest is overcommitted and performance is degrading.\n\n### Triage\n1. Review the listed instances: is memory growth tied to traffic growth or a recent deployment (possible leak)?\n2. Check swap-in versus swap-out. Steady swap-in means pages are being faulted back in, which usually means memory thrashing.\n3. Check CPU utilisation on the same VMs: thrashing often inflates CPU and disk I/O.\n4. These are hypervisor-side metrics. Confirm in-guest memory (processes, page cache, OOM kills) with a guest agent or host logs before acting.\n\n### Remediation\nResize to a machine type with more memory, scale out the instance group, or fix the memory-hungry workload.\n\n### Tuning\n`mem_used_pct >= 95`, `swap_in_bps >= 1048576`, and the fleet condition `pressured_pct >= 10 AND pressured_instances >= 2` are all adjustable. Swap metrics are emitted only for some machine families; missing swap data counts as zero. GCP Cloud Monitoring metrics typically arrive several minutes late, so the most recent minutes of the lookback window may be empty; the window is sized to tolerate this."
+          }
+        },
+        {
+          "id": "gcp_compute_otel-memory-pressure-by-zone-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_compute_otel-00311620-fcdf-435c-945b-3d912867b913"
+          }
+        },
+        {
+          "id": "gcp_compute_otel-memory-pressure-by-zone-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_compute_otel-62a27720-651a-4446-a1ba-0512a69a6ced"
+          }
+        }
+      ]
+    }
+  }
+}

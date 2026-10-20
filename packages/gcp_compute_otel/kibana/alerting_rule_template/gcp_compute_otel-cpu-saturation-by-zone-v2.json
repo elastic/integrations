@@ -1,0 +1,75 @@
+{
+  "id": "gcp_compute_otel-cpu-saturation-by-zone-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Compute OTel] CPU saturation across a zone",
+        "description": "Alerts when a significant share of the VM fleet in a zone runs at or above 90% of its reserved CPU cores (averaged over 15 minutes). Fleet-level by design: a single busy VM does not page. Returns one row per breaching project and zone with the saturated instance names.",
+        "tags": [
+          "observability",
+          "gcp",
+          "gcp_compute",
+          "compute_engine"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.compute.otel-*\n// Compute Engine VM instances only (the data stream also holds instance_group metrics)\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\"\n// Per-VM average CPU utilisation over the lookback window.\n// utilization is a fraction of RESERVED cores and can exceed 1.0 on shared-core / burstable types.\n| STATS cpu_util = MAX(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`))\n    BY resource.attributes.project_id, resource.attributes.zone, resource.attributes.instance_id, attributes.instance_name\n| WHERE cpu_util IS NOT NULL\n// Per-VM saturation threshold (fraction of reserved cores). Tune to your workload headroom policy.\n| EVAL is_saturated = cpu_util >= 0.9\n// Roll up to the zone: how much of the fleet is saturated?\n| STATS\n    instances = COUNT(*),\n    saturated_instances = COUNT(*) WHERE is_saturated,\n    zone_avg_cpu_util = ROUND(AVG(cpu_util), 3),\n    max_cpu_util = ROUND(MAX(cpu_util), 3),\n    saturated_instance_names = VALUES(attributes.instance_name) WHERE is_saturated\n  BY resource.attributes.project_id, resource.attributes.zone\n| EVAL saturated_pct = ROUND(saturated_instances * 100.0 / instances, 1)",
+        "breach": {
+          "segment": "// Breach: at least 20% of the zone's VMs AND at least 2 VMs are saturated.\n// Lower saturated_instances to 1 for small fleets where every VM matters.\nWHERE saturated_pct >= 20 AND saturated_instances >= 2\n| KEEP resource.attributes.project_id, resource.attributes.zone, saturated_pct, saturated_instances, instances, zone_avg_cpu_util, max_cpu_util, saturated_instance_names\n| SORT saturated_pct DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.zone"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_compute_otel-cpu-saturation-by-zone-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## CPU saturation across a zone\n\nA large share of the Compute Engine VMs in this zone are running at or above 90% of their reserved CPU cores (15-minute average). This signals fleet-wide capacity pressure, not a single busy VM.\n\n### Triage\n1. Check whether `scheduler_wait_time` (CPU steal) is also elevated in the zone. High utilisation with near-zero steal points to workload growth; high steal points to host contention (see the CPU steal rule).\n2. Compare network and disk throughput for the saturated instances. Rising traffic alongside CPU confirms organic load growth.\n3. If the instances belong to a managed instance group, check whether the autoscaler reached its maximum size or is configured with too high a CPU target.\n4. Look for recent deployments or batch jobs that started across the fleet.\n\n### Remediation\nScale out (raise the MIG max size or add instances), resize to a larger machine type, or rebalance workloads to other zones.\n\n### Tuning\n`cpu_util >= 0.9` sets the per-VM threshold. `saturated_pct >= 20 AND saturated_instances >= 2` sets the fleet condition. Values above 1.0 are normal on shared-core (E2 micro/small/medium) VMs during bursts. GCP Cloud Monitoring metrics typically arrive several minutes late, so the most recent minutes of the lookback window may be empty; the window is sized to tolerate this."
+          }
+        },
+        {
+          "id": "gcp_compute_otel-cpu-saturation-by-zone-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_compute_otel-00311620-fcdf-435c-945b-3d912867b913"
+          }
+        },
+        {
+          "id": "gcp_compute_otel-cpu-saturation-by-zone-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_compute_otel-62a27720-651a-4446-a1ba-0512a69a6ced"
+          }
+        }
+      ]
+    }
+  }
+}

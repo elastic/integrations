@@ -1,0 +1,75 @@
+{
+  "id": "gcp_compute_otel-zone-interruption-cluster-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Compute OTel] Clustered VM interruptions in a zone",
+        "description": "Alerts when at least 3 distinct VMs in the same zone record an interruption (live-migration maintenance event or preemption) within 30 minutes. Single maintenance events are expected background noise and do not alert. Returns one row per affected project and zone.",
+        "tags": [
+          "observability",
+          "gcp",
+          "gcp_compute",
+          "compute_engine"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "30m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.compute.otel-*\n// Compute Engine VM instances only\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\"\n    AND attributes.interruption_type IS NOT NULL\n    AND attributes.interruption_type != \"none\"\n// interruption_count is a GAUGE: 1 (or more) in the minute an interruption occurred, otherwise 0 or absent.\n| STATS events = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/interruption_count`))\n  BY resource.attributes.project_id, resource.attributes.zone, resource.attributes.instance_id, attributes.instance_name, attributes.interruption_type\n| WHERE events > 0\n// Optional: restrict to a type, for example | WHERE attributes.interruption_type == \"MaintenanceEvent\"\n| STATS\n    interrupted_instances = COUNT_DISTINCT(resource.attributes.instance_id),\n    interruption_types = VALUES(attributes.interruption_type),\n    interrupted_instance_names = VALUES(attributes.instance_name)\n  BY resource.attributes.project_id, resource.attributes.zone",
+        "breach": {
+          "segment": "// Breach: 3 or more distinct VMs interrupted in the zone within the window. Raise for large fleets.\nWHERE interrupted_instances >= 3\n| KEEP resource.attributes.project_id, resource.attributes.zone, interrupted_instances, interruption_types, interrupted_instance_names\n| SORT interrupted_instances DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.zone"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_compute_otel-zone-interruption-cluster-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Clustered VM interruptions in a zone\n\nSeveral VMs in this zone were interrupted within 30 minutes, either by live migration for host maintenance (`MaintenanceEvent`) or by Spot/preemptible reclamation (`Preemption`). One-off maintenance events are normal; a cluster points to a GCE maintenance wave, a capacity crunch for Spot VMs, or a zone-level infrastructure event.\n\n### Triage\n1. Check `interruption_types`. A preemption cluster means Spot capacity is being reclaimed; expect more to follow.\n2. Check whether the interrupted VMs share a workload (for example one instance group) and whether that service degraded.\n3. Check CPU steal and disk latency on the interrupted VMs around the event time: live migration can cause brief performance dips.\n4. Check the Google Cloud status dashboard for the zone.\n\n### Remediation\nFor Spot preemptions, make sure workloads tolerate termination or shift capacity to on-demand or another zone. For maintenance waves, verify instance availability policies (`onHostMaintenance`) and that services spread replicas across zones.\n\n### Tuning\nAdjust `interrupted_instances >= 3` relative to the fleet size per zone, or filter on `interruption_type`. The 30-minute window controls how long the alert stays active after the cluster. GCP Cloud Monitoring metrics typically arrive several minutes late, so the most recent minutes of the lookback window may be empty; the window is sized to tolerate this."
+          }
+        },
+        {
+          "id": "gcp_compute_otel-zone-interruption-cluster-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_compute_otel-00311620-fcdf-435c-945b-3d912867b913"
+          }
+        },
+        {
+          "id": "gcp_compute_otel-zone-interruption-cluster-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_compute_otel-62a27720-651a-4446-a1ba-0512a69a6ced"
+          }
+        }
+      ]
+    }
+  }
+}

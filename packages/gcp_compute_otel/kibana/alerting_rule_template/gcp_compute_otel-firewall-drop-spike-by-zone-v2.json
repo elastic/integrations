@@ -1,0 +1,75 @@
+{
+  "id": "gcp_compute_otel-firewall-drop-spike-by-zone-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Compute OTel] Firewall dropped packet spike",
+        "description": "Alerts when the VPC firewall dropped-packet rate for a zone spikes: the peak 5-minute rate is at least 1000 packets/s and at least 5 times the median 5-minute rate over the last hour. Returns one row per affected project and zone.",
+        "tags": [
+          "observability",
+          "gcp",
+          "gcp_compute",
+          "compute_engine"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "60m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.compute.otel-*\n// Compute Engine VM instances only\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\"\n    // Only docs carrying the firewall metric (keeps per-bucket state small)\n    AND `compute.googleapis.com/firewall/dropped_packets_count` IS NOT NULL\n// dropped_packets_count is a DELTA metric stored as a gauge (packets per 60s sample). Never use RATE().\n// Zone-wide dropped packets/s per 5-minute bucket.\n| STATS dropped_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_packets_count`)) / 60\n  BY time_bucket = TBUCKET(5 minutes), resource.attributes.project_id, resource.attributes.zone\n| WHERE dropped_pps IS NOT NULL\n// Compare the peak bucket with the typical (median) bucket in the lookback window.\n| STATS\n    peak_dropped_pps = MAX(dropped_pps),\n    baseline_dropped_pps = MEDIAN(dropped_pps),\n    buckets = COUNT(*)\n  BY resource.attributes.project_id, resource.attributes.zone\n// Floor of 1 packet/s avoids division by zero when the baseline is silent.\n| EVAL spike_ratio = ROUND(peak_dropped_pps / GREATEST(baseline_dropped_pps, 1.0), 1)\n| EVAL peak_dropped_pps = ROUND(peak_dropped_pps, 1), baseline_dropped_pps = ROUND(baseline_dropped_pps, 1)",
+        "breach": {
+          "segment": "// Breach: absolute floor (packets/s) AND relative spike vs baseline. Need several buckets for a baseline.\nWHERE buckets >= 4 AND peak_dropped_pps >= 1000 AND spike_ratio >= 5\n| KEEP resource.attributes.project_id, resource.attributes.zone, peak_dropped_pps, baseline_dropped_pps, spike_ratio, buckets\n| SORT spike_ratio DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.zone"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_compute_otel-firewall-drop-spike-by-zone-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Firewall dropped packet spike\n\nVPC firewall rules in this zone are dropping traffic at a much higher rate than usual. Drops are enforced at the hypervisor, so the VMs never see these packets. A sudden spike typically means a firewall rule change is blocking legitimate traffic, a misconfigured client is retrying, or an external scan/DDoS is hitting the instances.\n\n### Triage\n1. Break dropped packets down by instance to find which VMs are targeted.\n2. Check recent VPC firewall rule or network tag changes (Cloud Audit Logs) that coincide with the spike.\n3. Check whether the affected VMs' received traffic or service health changed. If legitimate traffic dropped at the same time, a rule change is likely blocking it.\n4. Enable firewall rule logging on the relevant deny rules to see source addresses and ports.\n\n### Remediation\nRoll back an incorrect rule change, or, for hostile traffic, consider Cloud Armor or tighter ingress rules.\n\n### Tuning\n`peak_dropped_pps >= 1000` is the absolute floor and `spike_ratio >= 5` the relative condition. The baseline is the median 5-minute bucket in the 60-minute lookback, so a sustained step change stops alerting once it becomes the new median. GCP Cloud Monitoring metrics typically arrive several minutes late, so the most recent minutes of the lookback window may be empty; the window is sized to tolerate this."
+          }
+        },
+        {
+          "id": "gcp_compute_otel-firewall-drop-spike-by-zone-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_compute_otel-00311620-fcdf-435c-945b-3d912867b913"
+          }
+        },
+        {
+          "id": "gcp_compute_otel-firewall-drop-spike-by-zone-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_compute_otel-62a27720-651a-4446-a1ba-0512a69a6ced"
+          }
+        }
+      ]
+    }
+  }
+}

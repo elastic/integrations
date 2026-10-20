@@ -1,0 +1,78 @@
+{
+  "id": "gcp_compute_otel-disk-queue-saturation-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Compute OTel] Persistent disk I/O saturation",
+        "description": "Alerts when an attached disk has a sustained deep I/O queue (average queue depth >= 8) combined with elevated average I/O latency over 15 minutes, indicating it is at its IOPS or throughput ceiling. Latency thresholds differ by storage type. Returns one row per saturated disk.",
+        "tags": [
+          "observability",
+          "gcp",
+          "gcp_compute",
+          "compute_engine"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.compute.otel-*\n// Compute Engine VM instances only\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\"\n// Queue depth and latency are GAUGEs keyed by device. instance_name is NOT a dimension of these series,\n// so disks are identified by instance_id + device_name.\n| STATS\n    queue_depth = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_queue_depth`)),\n    latency_us = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_latency`))\n  BY resource.attributes.project_id, resource.attributes.zone, resource.attributes.instance_id, attributes.device_name, attributes.storage_type",
+        "breach": {
+          "segment": "WHERE queue_depth IS NOT NULL AND latency_us IS NOT NULL\n| EVAL latency_ms = ROUND(latency_us / 1000.0, 2), queue_depth = ROUND(queue_depth, 2)\n// Latency threshold (ms) per storage type: HDD-backed pd-standard is naturally slower.\n// Adjust per disk type as needed (for example add a branch for hyperdisk-* types).\n| EVAL latency_threshold_ms = CASE(attributes.storage_type == \"pd-standard\", 50.0, 10.0)\n// Breach: deep queue AND slow I/O. A deep queue with fast I/O is a healthy throughput workload.\n| WHERE queue_depth >= 8 AND latency_ms >= latency_threshold_ms\n| KEEP resource.attributes.project_id, resource.attributes.zone, resource.attributes.instance_id, attributes.device_name, attributes.storage_type, queue_depth, latency_ms, latency_threshold_ms\n| SORT queue_depth DESC\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.zone",
+          "resource.attributes.instance_id",
+          "attributes.device_name",
+          "attributes.storage_type"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_compute_otel-disk-queue-saturation-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Persistent disk I/O saturation\n\nThis disk has averaged a queue depth of at least 8 outstanding I/Os for 15 minutes while average I/O latency is also elevated. Persistent Disk and Hyperdisk performance is capped by disk type and size, so this pattern usually means the disk is at its IOPS or throughput limit and requests are queuing.\n\n### Triage\n1. Check read/write IOPS and throughput for the disk. A plateau at a constant level suggests the disk's performance cap has been reached.\n2. Check `performance_status`. If latency is high but the queue is shallow, suspect infrastructure degradation rather than saturation (see the severely degraded disk rule).\n3. Identify the workload: compactions, backups, log bursts, or batch jobs often cause temporary saturation.\n4. `instance_name` is not available on these series; use `instance_id` (and the device name, which usually matches the VM name for boot disks) to find the VM.\n\n### Remediation\nIncrease disk size (size-based PD performance scales with capacity), move to a faster disk type (pd-ssd, Hyperdisk), raise provisioned IOPS/throughput on Hyperdisk, or spread I/O across more disks or instances.\n\n### Tuning\n`queue_depth >= 8` and the per-storage-type `latency_threshold_ms` CASE (50 ms for pd-standard, 10 ms for others) are adjustable. GCP Cloud Monitoring metrics typically arrive several minutes late, so the most recent minutes of the lookback window may be empty; the window is sized to tolerate this."
+          }
+        },
+        {
+          "id": "gcp_compute_otel-disk-queue-saturation-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_compute_otel-00311620-fcdf-435c-945b-3d912867b913"
+          }
+        },
+        {
+          "id": "gcp_compute_otel-disk-queue-saturation-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_compute_otel-62a27720-651a-4446-a1ba-0512a69a6ced"
+          }
+        }
+      ]
+    }
+  }
+}
