@@ -233,18 +233,20 @@ program: |-
                       :
                         state.?cursor.last_deleted_on.orValue(""),
                       "last_grantee_name": (size(result.rows) > 0 && int(state.?cursor.next_partition.orValue(0)) + 1 >= result.partition_count) ?
-                        string(
-                          result.names.zip(result.rows[int(size(result.rows)) - 1]).?GRANTEE_NAME.orValue(
+                        (
+                          (result.names.zip(result.rows[int(size(result.rows)) - 1]).?GRANTEE_NAME.orValue(null) == null) ?
                             state.?cursor.last_grantee_name.orValue("")
-                          )
+                          :
+                            string(result.names.zip(result.rows[int(size(result.rows)) - 1]).GRANTEE_NAME)
                         )
                       :
                         state.?cursor.last_grantee_name.orValue(""),
                       "last_role": (size(result.rows) > 0 && int(state.?cursor.next_partition.orValue(0)) + 1 >= result.partition_count) ?
-                        string(
-                          result.names.zip(result.rows[int(size(result.rows)) - 1]).?ROLE.orValue(
+                        (
+                          (result.names.zip(result.rows[int(size(result.rows)) - 1]).?ROLE.orValue(null) == null) ?
                             state.?cursor.last_role.orValue("")
-                          )
+                          :
+                            string(result.names.zip(result.rows[int(size(result.rows)) - 1]).ROLE)
                         )
                       :
                         state.?cursor.last_role.orValue(""),
