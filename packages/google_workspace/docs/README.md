@@ -280,6 +280,8 @@ Two optional settings add more information to each user document. Both are off b
 
 `user.roles` always includes `super_admin` or `delegated_admin` when Google flags the user as one, even when the roles option is off.
 
+When an option is on and its requests succeed, every user document carries `google_workspace.users.groups` or `google_workspace.users.role_assignments`, as an empty list (`[]`) if the user has no direct membership or assignment. When the option is off, or its requests failed in that cycle, the field is left out of the document, and a failure also produces an error document. Elasticsearch does not index empty lists, so the difference is visible in the document source but cannot be used in a query.
+
 ## Requirements
 
 The `users` data stream uses the same service account and `Delegated Account` as the Reports API data streams. It needs these extra scopes and privileges:
@@ -483,24 +485,24 @@ An example event for `users` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-13T10:03:38.984Z",
+    "@timestamp": "2026-10-16T17:05:49.111Z",
     "agent": {
-        "ephemeral_id": "efe720d3-2e9b-45dd-a471-11f33bed2beb",
-        "id": "f8f1ef20-6577-4fd1-b9fa-1d2535e50c5b",
-        "name": "elastic-agent-33890",
+        "ephemeral_id": "71e3f74c-f5a0-4a3d-9dda-d9af26a9d448",
+        "id": "cc99c84d-25b0-47c5-9689-e53869cfa3c5",
+        "name": "elastic-agent-98327",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "google_workspace.users",
-        "namespace": "86091",
+        "namespace": "15028",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "f8f1ef20-6577-4fd1-b9fa-1d2535e50c5b",
+        "id": "cc99c84d-25b0-47c5-9689-e53869cfa3c5",
         "snapshot": false,
         "version": "9.5.3"
     },
@@ -510,7 +512,7 @@ An example event for `users` looks as following:
             "iam"
         ],
         "dataset": "google_workspace.users",
-        "ingested": "2026-10-13T10:03:42Z",
+        "ingested": "2026-10-16T17:05:53Z",
         "kind": "asset",
         "module": "google_workspace",
         "original": "{\"agreedToTerms\":true,\"aliases\":[\"a.johnson@example.com\"],\"archived\":false,\"changePasswordAtNextLogin\":false,\"creationTime\":\"2021-03-04T09:12:44.000Z\",\"customSchemas\":{\"EmployeeInfo\":{\"EmployeeType\":\"FTE\",\"StartDate\":\"2021-03-04\"}},\"customerId\":\"C0example1\",\"emails\":[{\"address\":\"alice.johnson@example.com\",\"primary\":true},{\"address\":\"a.johnson@example.com\"}],\"etag\":\"\\\"exampleEtag_user_1\\\"\",\"externalIds\":[{\"type\":\"organization\",\"value\":\"EMP-000123\"}],\"id\":\"100000000000000000001\",\"includeInGlobalAddressList\":true,\"ipWhitelisted\":false,\"isAdmin\":false,\"isDelegatedAdmin\":true,\"isEnforcedIn2Sv\":true,\"isEnrolledIn2Sv\":true,\"isMailboxSetup\":true,\"kind\":\"admin#directory#user\",\"lastLoginTime\":\"2026-09-30T08:15:42.000Z\",\"name\":{\"displayName\":\"Alice J.\",\"familyName\":\"Johnson\",\"fullName\":\"Alice Johnson\",\"givenName\":\"Alice\"},\"nonEditableAliases\":[\"alice.johnson@example.org\"],\"orgUnitPath\":\"/Engineering/Platform\",\"organizations\":[{\"costCenter\":\"CC-0001\",\"customType\":\"\",\"department\":\"Platform\",\"description\":\"Platform team\",\"location\":\"Example City\",\"name\":\"Example Corp\",\"primary\":true,\"title\":\"Staff Engineer\",\"type\":\"work\"}],\"phones\":[{\"type\":\"work\",\"value\":\"+1 734-555-0100\"}],\"primaryEmail\":\"alice.johnson@example.com\",\"recoveryEmail\":\"alice.personal@example.net\",\"relations\":[{\"type\":\"manager\",\"value\":\"bob.smith@example.com\"},{\"type\":\"dotted_line_manager\",\"value\":\"carol.white@example.com\"}],\"suspended\":false,\"thumbnailPhotoUrl\":\"https://www.example.com/photos/100000000000000000001\"}",
@@ -540,7 +542,7 @@ An example event for `users` looks as following:
                 ],
                 "primary": true
             },
-            "etag": "\"exampleEtag_user_1\"",
+            "etag": "exampleEtag_user_1",
             "external_ids": {
                 "type": "organization",
                 "value": "EMP-000123"
@@ -620,7 +622,7 @@ An example event for `users` looks as following:
             },
             "display_name": "Alice Johnson",
             "id": "100000000000000000001",
-            "last_seen_timestamp": "2026-10-13T10:03:38.984Z",
+            "last_seen_timestamp": "2026-10-16T17:05:49.111Z",
             "lifecycle": {
                 "last_activity": "2026-09-30T08:15:42.000Z"
             },
@@ -4570,7 +4572,7 @@ An example event for `keep` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
-| google_workspace.actor.caller_type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.actor.caller_type | The type of actor. Values can be:    \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
 | google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
 | google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
 | google_workspace.actor.profile_id | The unique Google Workspace profile ID of the actor. | keyword |
@@ -5013,7 +5015,7 @@ An example event for `gemini` looks as following:
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| google_workspace.actor.caller_type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.actor.caller_type | The type of actor. Values can be:    \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
 | google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
 | google_workspace.etag | ETag of the entry. | keyword |
 | google_workspace.gemini.action | Action performed by the user within a Workspace application, initiated or assisted by Gemini. | keyword |

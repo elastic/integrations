@@ -223,7 +223,7 @@ program: |-
                   ["phase", "page_token", "roles", "assignments", "groups_todo", "memberships"]
               ).with(
                 {
-                  "events": (size(body.?users.orValue([])) > 0) ?
+                  "events": body.?users[0].hasValue() ?
                     dyn(
                       body.users.map(u,
                         {
@@ -249,12 +249,12 @@ program: |-
           {
             "error": {
               "code": string(resp.StatusCode),
-              "id": string(resp.Status),
+              "id": resp.Status,
               "message": "GET " + state.url.trim_right("/") + "/admin/directory/v1" + req.path + ": " + (
                 (size(resp.Body) != 0) ?
                   string(resp.Body)
                 :
-                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  resp.Status + " (" + string(resp.StatusCode) + ")"
               ),
             },
           }.as(err,

@@ -280,6 +280,8 @@ Two optional settings add more information to each user document. Both are off b
 
 `user.roles` always includes `super_admin` or `delegated_admin` when Google flags the user as one, even when the roles option is off.
 
+When an option is on and its requests succeed, every user document carries `google_workspace.users.groups` or `google_workspace.users.role_assignments`, as an empty list (`[]`) if the user has no direct membership or assignment. When the option is off, or its requests failed in that cycle, the field is left out of the document, and a failure also produces an error document. Elasticsearch does not index empty lists, so the difference is visible in the document source but cannot be used in a query.
+
 ## Requirements
 
 The `users` data stream uses the same service account and `Delegated Account` as the Reports API data streams. It needs these extra scopes and privileges:

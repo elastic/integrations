@@ -5228,7 +5228,21 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
-          {"error":{"code":403,"message":"Not Authorized to access this resource/api","errors":[{"message":"Not Authorized to access this resource/api","domain":"global","reason":"forbidden"}]}}
+          {{ minify_json `
+          {
+            "error": {
+              "code": 403,
+              "message": "Not Authorized to access this resource/api",
+              "errors": [
+                {
+                  "message": "Not Authorized to access this resource/api",
+                  "domain": "global",
+                  "reason": "forbidden"
+                }
+              ]
+            }
+          }
+          `}}
   - path: /admin/directory/v1/groups
     methods: [GET]
     query_params:
@@ -5242,7 +5256,21 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
-          {"error":{"code":403,"message":"Not Authorized to access this resource/api","errors":[{"message":"Not Authorized to access this resource/api","domain":"global","reason":"forbidden"}]}}
+          {{ minify_json `
+          {
+            "error": {
+              "code": 403,
+              "message": "Not Authorized to access this resource/api",
+              "errors": [
+                {
+                  "message": "Not Authorized to access this resource/api",
+                  "domain": "global",
+                  "reason": "forbidden"
+                }
+              ]
+            }
+          }
+          `}}
   - path: /admin/directory/v1/users
     methods: [GET]
     query_params:
@@ -5259,4 +5287,67 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
-          {"kind":"admin#directory#users","users":[{"kind":"admin#directory#user","id":"100000000000000000101","primaryEmail":"domain.one@example.com","name":{"givenName":"Domain","familyName":"One","fullName":"Domain One"},"customerId":"C0forbidden","orgUnitPath":"/","isAdmin":false,"isDelegatedAdmin":false,"isEnrolledIn2Sv":false,"agreedToTerms":true},{"kind":"admin#directory#user","id":"100000000000000000102","primaryEmail":"domain.two@example.com","name":{"givenName":"Domain","familyName":"Two","fullName":"Domain Two"},"customerId":"C0forbidden","orgUnitPath":"/","isAdmin":false,"isDelegatedAdmin":false,"isEnrolledIn2Sv":true,"agreedToTerms":true}]}
+          {{ minify_json `
+          {
+            "kind": "admin#directory#users",
+            "users": [
+              {
+                "kind": "admin#directory#user",
+                "id": "100000000000000000101",
+                "primaryEmail": "domain.one@example.com",
+                "name": {"givenName": "Domain", "familyName": "One", "fullName": "Domain One"},
+                "customerId": "C0forbidden",
+                "orgUnitPath": "/",
+                "isAdmin": false,
+                "isDelegatedAdmin": false,
+                "isEnrolledIn2Sv": false,
+                "agreedToTerms": true
+              },
+              {
+                "kind": "admin#directory#user",
+                "id": "100000000000000000102",
+                "primaryEmail": "domain.two@example.com",
+                "name": {"givenName": "Domain", "familyName": "Two", "fullName": "Domain Two"},
+                "customerId": "C0forbidden",
+                "orgUnitPath": "/",
+                "isAdmin": false,
+                "isDelegatedAdmin": false,
+                "isEnrolledIn2Sv": true,
+                "agreedToTerms": true
+              }
+            ]
+          }
+          `}}
+  # [CONSTRUCTED EXAMPLE] users base-inventory error-path test
+  # (test-users-error-config.yml): the delegated admin cannot list users.
+  - path: /admin/directory/v1/users
+    methods: [GET]
+    query_params:
+      domain: forbidden.example.com
+      projection: full
+      maxResults: "3"
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 403
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "error": {
+              "code": 403,
+              "message": "Not Authorized to access this resource/api",
+              "errors": [
+                {
+                  "message": "Not Authorized to access this resource/api",
+                  "domain": "global",
+                  "reason": "forbidden"
+                }
+              ]
+            }
+          }
+          `}}
