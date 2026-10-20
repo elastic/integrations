@@ -152,7 +152,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.correlation.id | Correlation ID for grouping related operations. | keyword |
-| azure.correlation_id | Legacy flat name for the correlation ID, still populated. Prefer `azure.correlation.id`. | keyword |
+| azure.correlation_id | Legacy flat name for the correlation ID. Populated only in data streams that set it before 1.41.0. Prefer `azure.correlation.id`. | keyword |
 | azure.platformlogs.ActivityId | ActivityId | keyword |
 | azure.platformlogs.Caller | Caller | keyword |
 | azure.platformlogs.Cloud | Cloud | keyword |
@@ -185,7 +185,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.subscription.id | Azure subscription ID. | keyword |
 | azure.subscription_id | Legacy flat name for the subscription ID, still populated. Prefer `azure.subscription.id`. | keyword |
 | azure.tenant.id | Azure tenant ID. | keyword |
-| azure.tenant_id | Legacy flat name for the tenant ID, still populated. Prefer `azure.tenant.id`. | keyword |
+| azure.tenant_id | Legacy flat name for the tenant ID. Populated only in data streams that set it before 1.41.0. Prefer `azure.tenant.id`. | keyword |
 | azure_log_forwarder.category | Azure log category | keyword |
 | azure_log_forwarder.resource_type | Azure resource type | keyword |
 | azure_log_forwarder.service_provider | Azure service provider | keyword |

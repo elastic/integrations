@@ -153,7 +153,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure-eventhub.partition_id | Partition ID | keyword |
 | azure-eventhub.sequence_number | Sequence number | long |
 | azure.correlation.id | Correlation ID for grouping related operations. | keyword |
-| azure.correlation_id | Legacy flat name for the correlation ID, still populated. Prefer `azure.correlation.id`. | keyword |
+| azure.correlation_id | Legacy flat name for the correlation ID. Populated only in data streams that set it before 1.41.0. Prefer `azure.correlation.id`. | keyword |
 | azure.eventhub.Region | Region from the parsed message envelope (`parse_message` only). Also copied to `cloud.region` when `location` is absent. | keyword |
 | azure.eventhub.ResourceId | Resource ID from the parsed message envelope, capitalised variant (`parse_message` only). Also copied to `azure.resource_id` when `resourceId` is absent. | keyword |
 | azure.eventhub.TenantId | Tenant ID from the parsed message envelope, capitalised variant (`parse_message` only). Also copied to `azure.tenant.id`. | keyword |
@@ -174,7 +174,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.subscription.id | Azure subscription ID. | keyword |
 | azure.subscription_id | Legacy flat name for the subscription ID, still populated. Prefer `azure.subscription.id`. | keyword |
 | azure.tenant.id | Azure tenant ID. | keyword |
-| azure.tenant_id | Legacy flat name for the tenant ID, still populated. Prefer `azure.tenant.id`. | keyword |
+| azure.tenant_id | Legacy flat name for the tenant ID. Populated only in data streams that set it before 1.41.0. Prefer `azure.tenant.id`. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |

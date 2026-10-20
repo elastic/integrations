@@ -239,7 +239,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.correlation.id | Correlation ID for grouping related operations. | keyword |
-| azure.correlation_id | Legacy flat name for the correlation ID, still populated. Prefer `azure.correlation.id`. | keyword |
+| azure.correlation_id | Legacy flat name for the correlation ID. Populated only in data streams that set it before 1.41.0. Prefer `azure.correlation.id`. | keyword |
 | azure.graphactivitylogs.category | Azure Event Category. For example, Graph Activity Logs has value `MicrosoftGraphActivityLogs`. | keyword |
 | azure.graphactivitylogs.operation_name | Operation name. | keyword |
 | azure.graphactivitylogs.operation_version | The Graph API version of the event. | keyword |
@@ -277,7 +277,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.subscription.id | Azure subscription ID. | keyword |
 | azure.subscription_id | Legacy flat name for the subscription ID, still populated. Prefer `azure.subscription.id`. | keyword |
 | azure.tenant.id | Azure tenant ID. | keyword |
-| azure.tenant_id | Legacy flat name for the tenant ID, still populated. Prefer `azure.tenant.id`. | keyword |
+| azure.tenant_id | Legacy flat name for the tenant ID. Populated only in data streams that set it before 1.41.0. Prefer `azure.tenant.id`. | keyword |
 | client.geo.location | Longitude and latitude. | geo_point |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |

@@ -234,7 +234,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.correlation.id | Correlation ID for grouping related operations. | keyword |
-| azure.correlation_id | Legacy flat name for the correlation ID, still populated. Prefer `azure.correlation.id`. | keyword |
+| azure.correlation_id | Legacy flat name for the correlation ID. Populated only in data streams that set it before 1.41.0. Prefer `azure.correlation.id`. | keyword |
 | azure.resource.authorization_rule | Authorization rule. | keyword |
 | azure.resource.group | Legacy name for the resource group, still populated. Prefer `azure.resource_group.name`. | keyword |
 | azure.resource.id | Legacy name for the ARM resource ID, still populated. Prefer `cloud.resource_id`. | keyword |
@@ -306,7 +306,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.subscription.id | Azure subscription ID. | keyword |
 | azure.subscription_id | Legacy flat name for the subscription ID, still populated. Prefer `azure.subscription.id`. | keyword |
 | azure.tenant.id | Azure tenant ID. | keyword |
-| azure.tenant_id | Legacy flat name for the tenant ID, still populated. Prefer `azure.tenant.id`. | keyword |
+| azure.tenant_id | Legacy flat name for the tenant ID. Populated only in data streams that set it before 1.41.0. Prefer `azure.tenant.id`. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
@@ -453,7 +453,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.correlation.id | Correlation ID for grouping related operations. | keyword |
-| azure.correlation_id | Legacy flat name for the correlation ID, still populated. Prefer `azure.correlation.id`. | keyword |
+| azure.correlation_id | Legacy flat name for the correlation ID. Populated only in data streams that set it before 1.41.0. Prefer `azure.correlation.id`. | keyword |
 | azure.identityprotection.category | Category | keyword |
 | azure.identityprotection.operation_name | Operation name | keyword |
 | azure.identityprotection.operation_version | Operation version | keyword |
@@ -498,7 +498,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.subscription.id | Azure subscription ID. | keyword |
 | azure.subscription_id | Legacy flat name for the subscription ID, still populated. Prefer `azure.subscription.id`. | keyword |
 | azure.tenant.id | Azure tenant ID. | keyword |
-| azure.tenant_id | Legacy flat name for the tenant ID, still populated. Prefer `azure.tenant.id`. | keyword |
+| azure.tenant_id | Legacy flat name for the tenant ID. Populated only in data streams that set it before 1.41.0. Prefer `azure.tenant.id`. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
@@ -692,7 +692,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.correlation.id | Correlation ID for grouping related operations. | keyword |
-| azure.correlation_id | Legacy flat name for the correlation ID, still populated. Prefer `azure.correlation.id`. | keyword |
+| azure.correlation_id | Legacy flat name for the correlation ID. Populated only in data streams that set it before 1.41.0. Prefer `azure.correlation.id`. | keyword |
 | azure.provisioning.category | Category | keyword |
 | azure.provisioning.identity | Describes the identity of the user or application that performed the operation | keyword |
 | azure.provisioning.level | The severity level of the event | long |
@@ -756,7 +756,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.subscription.id | Azure subscription ID. | keyword |
 | azure.subscription_id | Legacy flat name for the subscription ID, still populated. Prefer `azure.subscription.id`. | keyword |
 | azure.tenant.id | Azure tenant ID. | keyword |
-| azure.tenant_id | Legacy flat name for the tenant ID, still populated. Prefer `azure.tenant.id`. | keyword |
+| azure.tenant_id | Legacy flat name for the tenant ID. Populated only in data streams that set it before 1.41.0. Prefer `azure.tenant.id`. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
@@ -888,7 +888,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.auditlogs.result_signature | Result signature | keyword |
 | azure.auditlogs.tenant_id | Deprecated: use `azure.tenant.id`. | alias |
 | azure.correlation.id | Correlation ID for grouping related operations. | keyword |
-| azure.correlation_id | Legacy flat name for the correlation ID, still populated. Prefer `azure.correlation.id`. | keyword |
+| azure.correlation_id | Legacy flat name for the correlation ID. Populated only in data streams that set it before 1.41.0. Prefer `azure.correlation.id`. | keyword |
 | azure.resource.authorization_rule | Authorization rule. | keyword |
 | azure.resource.group | Legacy name for the resource group, still populated. Prefer `azure.resource_group.name`. | keyword |
 | azure.resource.id | Legacy name for the ARM resource ID, still populated. Prefer `cloud.resource_id`. | keyword |
@@ -900,7 +900,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.subscription.id | Azure subscription ID. | keyword |
 | azure.subscription_id | Legacy flat name for the subscription ID, still populated. Prefer `azure.subscription.id`. | keyword |
 | azure.tenant.id | Azure tenant ID. | keyword |
-| azure.tenant_id | Legacy flat name for the tenant ID, still populated. Prefer `azure.tenant.id`. | keyword |
+| azure.tenant_id | Legacy flat name for the tenant ID. Populated only in data streams that set it before 1.41.0. Prefer `azure.tenant.id`. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
