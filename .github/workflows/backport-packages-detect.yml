@@ -2,59 +2,171 @@
 name: Backport — detect packages
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  push:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
-  detect-packages:
+  post-checklist:
     runs-on: ubuntu-latest
-    # Skip PRs created by the sync-changelog workflow — those backport changelog
-    # entries back to main and do not need a backport checklist of their own.
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'backport:sync-changelog') }}
-    # No permissions — this job runs in the restricted pull_request context
-    # and must be fork-safe. Write permissions live in post-backport-checklist.yml
-    # which is triggered via workflow_run and runs in the base repository context.
+    concurrency:
+      # One run per merge commit — rapid pushes are unusual but serialise safely.
+      group: backport-post-checklist|${{ github.sha }}
+      cancel-in-progress: true
     permissions:
       contents: read
+      pull-requests: write
 
     steps:
+      - name: Find merged PR
+        id: find-pr
+        # Pure API call — no checkout needed. All subsequent steps are skipped
+        # when no PR is associated with this push (e.g. direct commits to main).
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          MERGE_SHA: ${{ github.sha }}
+        run: |
+          PR_DATA=$(gh api "repos/$REPOSITORY/commits/$MERGE_SHA/pulls" \
+            --jq 'map(select(.base.ref == "main")) | first // empty')
+          if [[ -z "$PR_DATA" ]]; then
+            echo "No PR found for commit $MERGE_SHA — skipping"
+            exit 0
+          fi
+
+          LABELS=$(jq -r '[.labels[].name] | join(",")' <<< "$PR_DATA")
+          if [[ "$LABELS" == *"backport:sync-changelog"* ]]; then
+            echo "PR carries backport:sync-changelog label — skipping"
+            exit 0
+          fi
+
+          PR_NUMBER=$(jq -r '.number'   <<< "$PR_DATA")
+          BASE_SHA=$(jq -r  '.base.sha' <<< "$PR_DATA")
+          HEAD_SHA=$(jq -r  '.head.sha' <<< "$PR_DATA")
+          PR_AUTHOR=$(jq -r '.user.login' <<< "$PR_DATA")
+
+          # merged_by is only present on the full PR object, not the list
+          # representation returned by /commits/{sha}/pulls.
+          FULL_PR=$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER")
+          PR_MERGER=$(jq -r '.merged_by.login // empty' <<< "$FULL_PR")
+
+          echo "PR #$PR_NUMBER — base: $BASE_SHA, head: $HEAD_SHA"
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "base_sha=$BASE_SHA"   >> "$GITHUB_OUTPUT"
+          echo "head_sha=$HEAD_SHA"   >> "$GITHUB_OUTPUT"
+          echo "pr_author=$PR_AUTHOR" >> "$GITHUB_OUTPUT"
+          echo "pr_merger=$PR_MERGER" >> "$GITHUB_OUTPUT"
+
       - name: Checkout repository
+        if: steps.find-pr.outputs.pr_number != ''
         uses: actions/checkout@v7
         with:
-          # Full history is required so that git diff can resolve both the PR
-          # base SHA and the head SHA, which may not be present in a shallow clone.
+          # Full history so git diff can resolve the PR base SHA, which is a
+          # commit on main. The PR head SHA is fetched separately below.
           fetch-depth: 0
 
       - name: Set up Go
+        if: steps.find-pr.outputs.pr_number != ''
         uses: actions/setup-go@v7
         with:
-          # Use the backport tool's own Go version (pinned to main's version).
           go-version-file: cmd/backport/.go-version
 
       - name: Build backport tool
+        if: steps.find-pr.outputs.pr_number != ''
         run: mkdir -p "$GITHUB_WORKSPACE/build" && go build -C cmd/backport -o "$GITHUB_WORKSPACE/build/backport" .
 
-      - name: Detect packages touched by this PR
+      - name: Detect packages
+        id: detect
+        if: steps.find-pr.outputs.pr_number != ''
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
+          BASE_SHA: ${{ steps.find-pr.outputs.base_sha }}
+          HEAD_SHA: ${{ steps.find-pr.outputs.head_sha }}
         run: |
+          # refs/pull/<N>/head is available in the base repository for all PRs
+          # (including merged ones) so the PR head SHA is resolvable by git diff.
+          git fetch origin "refs/pull/$PR_NUMBER/head"
+
           PACKAGES_JSON=$("$GITHUB_WORKSPACE/build/backport" detect-packages --json "$BASE_SHA" "$HEAD_SHA")
-
-          jq -n \
-            --argjson pkgs "$PACKAGES_JSON" \
-            --argjson pr "$PR_NUMBER" \
-            '{"pr_number": $pr, "packages": $pkgs}' > pr-packages.json
-
           echo "Detected packages: $PACKAGES_JSON"
+          jq -n --argjson pkgs "$PACKAGES_JSON" '{"packages": $pkgs}' \
+            > "$GITHUB_WORKSPACE/detected-packages.json"
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: pr-packages-${{ github.run_id }}
-          path: pr-packages.json
-          if-no-files-found: ignore
-          retention-days: 1
+      - name: Find checklist comment
+        id: find-comment
+        if: steps.find-pr.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
+        run: |
+          MATCHING=$(gh api "repos/$REPOSITORY/issues/$PR_NUMBER/comments" \
+            --paginate \
+            --jq '.[] | select(.body | contains("<!-- backport-checklist -->"))' \
+            | jq -s '.')
+
+          COUNT=$(jq 'length' <<< "$MATCHING")
+          if [[ "$COUNT" -gt 1 ]]; then
+            IDS=$(jq -r '.[].id' <<< "$MATCHING" | paste -sd ', ')
+            gh api --method POST \
+              "repos/$REPOSITORY/issues/$PR_NUMBER/comments" \
+              --field body=":warning: **Backport checklist error**: found ${COUNT} duplicate checklist comments (IDs: ${IDS}). Please delete the extras manually so the checklist can be updated automatically."
+            echo "Duplicate checklist comments found — posted notice to PR #$PR_NUMBER" >&2
+            exit 1
+          fi
+
+          echo "comment_id=$(jq -r 'first.id // empty' <<< "$MATCHING")" >> "$GITHUB_OUTPUT"
+
+      - name: Render and post checklist comment
+        if: steps.find-pr.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          ARTIFACT: ${{ github.workspace }}/detected-packages.json
+          PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
+          COMMENT_ID: ${{ steps.find-comment.outputs.comment_id }}
+          PR_AUTHOR: ${{ steps.find-pr.outputs.pr_author }}
+          PR_MERGER: ${{ steps.find-pr.outputs.pr_merger }}
+        run: |
+          EXISTING_BODY=""
+          if [[ -n "$COMMENT_ID" ]]; then
+            EXISTING_BODY=$(gh api "repos/$REPOSITORY/issues/comments/$COMMENT_ID" \
+              --jq '.body // empty')
+          fi
+
+          # Render the new comment body. The existing body is piped into stdin so
+          # the backport tool can parse previously-checked branches and preserve
+          # their state. Prints nothing when no package has any active branch.
+          NEW_BODY=$(printf '%s' "$EXISTING_BODY" | \
+            "$GITHUB_WORKSPACE/build/backport" render-checklist "$ARTIFACT")
+
+          if [[ -z "$NEW_BODY" ]]; then
+            echo "No active backport branches — nothing to post"
+            exit 0
+          fi
+
+          # Append author/merger mentions so GitHub notifies them.
+          # Two newlines produce a blank line in the rendered markdown, which closes
+          # the preceding [!TIP] blockquote so the cc line appears outside it.
+          # (Command substitution strips the trailing newline from render-checklist
+          # output, so a single \n would land inside the callout.)
+          MENTIONS="@${PR_AUTHOR}"
+          if [[ -n "$PR_MERGER" && "$PR_MERGER" != "$PR_AUTHOR" ]]; then
+            MENTIONS="${MENTIONS} @${PR_MERGER}"
+          fi
+          NEW_BODY=$(printf '%s\n\ncc %s' "$NEW_BODY" "$MENTIONS")
+
+          BODY_FILE=$(mktemp)
+          trap 'rm -f "$BODY_FILE"' EXIT
+          printf '%s' "$NEW_BODY" > "$BODY_FILE"
+
+          if [[ -n "$COMMENT_ID" ]]; then
+            gh api --method DELETE "repos/$REPOSITORY/issues/comments/$COMMENT_ID"
+          fi
+          gh api --method POST \
+            "repos/$REPOSITORY/issues/$PR_NUMBER/comments" \
+            --field body=@"$BODY_FILE"
+          echo "Posted checklist comment on PR #$PR_NUMBER"

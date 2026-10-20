@@ -91,6 +91,27 @@ Follow the steps below to configure data collection from Microsoft sources.
 
 **Authentication:** The Event Hub input supports two authentication methods: **connection string** (default) and **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
 
+##### Proxy Support
+
+When the Elastic Agent must reach Azure Event Hubs through an HTTP/HTTPS proxy, set the **Event Hubs transport protocol** to **AMQP-over-WebSockets**. This routes Event Hub traffic over HTTPS (port 443) instead of AMQP (port 5671), which allows the proxy to handle it. Selecting AMQP-over-WebSockets automatically sets the processor version to v2.
+
+**Requirements:**
+
+- Elastic Agent 8.19.10, 9.1.10, 9.2.4, or later.
+- Set `HTTPS_PROXY` and, if needed, `NO_PROXY` in the Elastic Agent process environment (for example, a systemd drop-in file or container environment variable). These variables apply to the entire agent process, not just this integration. Use `NO_PROXY` to exclude traffic that should bypass the proxy.
+
+**Proxy allowlist:** the proxy must allow HTTPS (port 443) connections to:
+
+- `*.servicebus.windows.net` — Event Hub traffic. Sovereign clouds use a different suffix (for example, `*.servicebus.usgovcloudapi.net` for Azure Government).
+- `*.blob.core.windows.net` — checkpoint storage. Sovereign clouds use the storage suffix derived from **Authority Host** (for example, `*.blob.core.usgovcloudapi.net` for Azure Government).
+- The authority host (default `login.microsoftonline.com`) — required for client secret authentication.
+
+**TLS-intercepting proxies:** if the proxy performs TLS interception, the corporate CA certificate must be present in the system trust store on the agent host.
+
+**Sovereign clouds:** users on Azure Government, Azure China, or Azure Germany must set the **Authority Host** to the correct login endpoint. Processor v2 derives the storage endpoint suffix from this setting. The **Resource Manager Endpoint** setting is used only by processor v1 and is ignored by v2.
+
+**Note on processor version:** selecting AMQP-over-WebSockets moves the processor from v1 to v2 if the agent was previously running v1. Existing checkpoints are migrated automatically. However, switching back to v1 afterwards resumes from stale v1 checkpoints and may cause duplicate events.
+
 #### 2. Collecting Data using Microsoft Graph Security REST API (for Incidents & Alerts)
 
 - [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
@@ -158,9 +179,22 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 3. In the search bar, type **m365_defender**.
 4. All transforms from the search results should indicate **Healthy** under the **Health** column.
 
-### Data Retention and ILM Configuration
+### Data retention
 
-The Vulnerabilities data stream performs a full sync that pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, it ships an Index Lifecycle Management (ILM) policy that automatically deletes data older than 7 days, keeping storage usage under control. The other data streams do not define a custom ILM policy and follow the default index lifecycle for their destination indices.
+The `vulnerability` data stream collects vulnerability change events from the `SoftwareVulnerabilityChangesByMachine` delta API, resuming from a saved `sinceTime` cursor. Every change to a vulnerability on a machine is a new document, so the source stream grows with change volume rather than with the size of the estate, and the `latest_cdr_vulnerabilities` transform maintains the current state of each vulnerability. The other data streams collect incrementally and follow the default lifecycle for their destination indices.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-m365_defender.vulnerability-*` | `logs-m365_defender.vulnerability-default_policy`: roll over after 7d, delete 7d after rollover | delete 7d after rollover |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-m365_defender.vulnerability-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
 
 > **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index have the following permissions `delete`, `delete_index`.
 
@@ -177,7 +211,7 @@ The values used in `event.severity` are consistent with Elastic Detection Rules.
 
 ## Troubleshooting
 
-Most issues fall into one of the scenarios below. To confirm the integration is working end to end, see [Validation](#validation). For how long collected data is kept, see [Data Retention and ILM Configuration](#data-retention-and-ilm-configuration).
+Most issues fall into one of the scenarios below. To confirm the integration is working end to end, see [Validation](#validation). For how long collected data is kept, see [Data retention](#data-retention).
 
 ### Enabling request tracing
 
@@ -207,7 +241,7 @@ Each data stream saves its position and resumes from there when the agent restar
 - Vulnerabilities resume from the saved delta link, so only changes since the last successful run are fetched.
 - Events resume from the offset stored in the configured Blob Storage account.
 
-The Vulnerabilities data stream applies an ILM policy that deletes data after 7 days (see [Data Retention and ILM Configuration](#data-retention-and-ilm-configuration)); the other data streams follow the default index lifecycle for their destination indices. This governs how long ingested data is kept in Elasticsearch and is separate from how far back the source APIs can backfill.
+The Vulnerabilities data stream ships a 7-day retention (see [Data retention](#data-retention)). The other data streams follow the default index lifecycle for their destination indices. This governs how long ingested data is kept in Elasticsearch and is separate from how far back the source APIs can backfill.
 
 ### Rate limiting
 
