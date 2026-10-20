@@ -102,6 +102,22 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 - If you encounter rate limiting errors, consider decreasing the `Resource Rate Limit` parameter or increasing the `Interval` value.
 
+- **`Maximum Pages Per Cycle` (`max_executions`) and rate limiting**: this setting does not change how fast requests are sent, so raising it does not increase the request rate. The request rate stays bounded by the API response time (about 43 requests per minute at 1.4 seconds per request) and by `Resource Rate Limit` (default 1.6 requests per second, below the 100 requests per minute limit). However, Cato Networks applies this limit per query to the whole account, shared across all of its API keys, as described in [Understanding Cato API Rate Limiting](https://knowledge.catonetworks.com/docs/understanding-cato-api-rate-limiting). Every other consumer of the EventsFeed API on the same account (other Elastic Agents or integration instances, other SIEM connectors, scripts) draws from the same budget. If more than one consumer queries the account, lower `Resource Rate Limit` on each so that the total stays under 100 requests per minute. Any API error, including rate limiting, makes the input report an error and retry at the next `Interval`.
+
+### Throughput and ingestion delay
+
+The `event` data stream collects events sequentially: each request returns at most **3000 events** (a limit of the Cato Networks API that automatically enables pagination when more than 3000 events are present in the API server queue, see [Cato API - EventsFeed](https://knowledge.catonetworks.com/docs/cato-api-eventsfeed-large-scale-event-monitoring#understanding-fetched-events)), and the next request needs the marker from the previous response, so requests cannot be issued in parallel. The maximum sustained collection rate is therefore bounded by:
+
+`3000 events / (API response time + processing time)`
+
+For example, at about 1.4 seconds per request the integration can collect roughly 2,100 events per second. If your Cato Networks account produces events faster than that, the integration falls behind and the difference between `@timestamp` and `event.ingested` keeps growing, without any errors in Fleet or Elasticsearch. Slower API response times, for example during busy periods, lower this ceiling.
+
+- **`Maximum Pages Per Cycle` (`max_executions`)**: limits how many pages the integration requests back to back in one cycle (default `1000`, up to 3,000,000 events). When the limit is reached, the Elastic Agent logs a warning containing `maximum number of CEL executions`, and the next cycle starts at the next `Interval` tick, which is immediately if the cycle took longer than the `Interval`. A full-`Interval` pause therefore only happens on the first cycle after the input starts or restarts (for example after a policy change or an Elastic Agent restart), or when cycles are shorter than the `Interval`. Raising this value does not raise the throughput ceiling described above.
+- **Processors such as `drop_event`** run after events have been fetched. They reduce the volume indexed in Elasticsearch, but not the number of events fetched per second, so they do not reduce the delay.
+- **Elasticsearch and Elastic Agent output tuning** does not help when the bottleneck is retrieval from the Cato Networks API.
+
+A delay that keeps growing should be addressed promptly: the marker expires after 3 days (see [Limitation](#limitation)), after which events that were not yet collected are permanently lost.
+
 ## Limitation:
 
 - The EventsFeed API operates with a time-based data retrieval mechanism. On the initial API call, no data will be returned as it establishes a baseline marker. Subsequent requests will retrieve events that occurred between the current request and the previous one. Due to this behavior, data ingestion begins only after the first interval has elapsed, so it is expected to have a delay equal to the configured interval before seeing the first events in Elasticsearch.
