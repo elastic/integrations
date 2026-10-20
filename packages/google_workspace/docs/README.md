@@ -4572,7 +4572,7 @@ An example event for `keep` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
-| google_workspace.actor.caller_type | The type of actor. Values can be:    \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.actor.caller_type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
 | google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
 | google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
 | google_workspace.actor.profile_id | The unique Google Workspace profile ID of the actor. | keyword |
@@ -5015,7 +5015,7 @@ An example event for `gemini` looks as following:
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| google_workspace.actor.caller_type | The type of actor. Values can be:    \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.actor.caller_type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
 | google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
 | google_workspace.etag | ETag of the entry. | keyword |
 | google_workspace.gemini.action | Action performed by the user within a Workspace application, initiated or assisted by Gemini. | keyword |
