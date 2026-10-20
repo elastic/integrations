@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_postgresql_otel-cpu-utilization-high-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL PostgreSQL OTel] CPU utilization high",
+        "description": "Alerts when the average CPU utilization of a PostgreSQL instance is at or above 90% of its reserved vCPUs over 15 minutes, for 3 consecutive checks (about 25 minutes sustained). Sustained CPU saturation increases query latency for all clients. Applies the PostgreSQL engine marker. Grouped by database_id.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "postgresql"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_postgresql.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// Exact mean across fragments: SUM(SUM_OVER_TIME) / SUM(COUNT_OVER_TIME), not AVG(AVG_OVER_TIME)\n| STATS cpu_sum = SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/cpu/utilization`)),\n        cpu_n = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/cpu/utilization`)),\n        cpu_peak = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/cpu/utilization`)),\n        pg = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/postgresql/num_backends`))\n    BY database_id",
+        "breach": {
+          "segment": "// PostgreSQL engine marker: excludes MySQL / SQL Server instances that share these metrics\nWHERE pg > 0 AND cpu_n > 0\n// cpu/utilization is the fraction of reserved vCPUs in use\n| EVAL cpu_avg_pct = ROUND(cpu_sum / cpu_n * 100.0, 1),\n       cpu_peak_pct = ROUND(cpu_peak * 100.0, 1)\n// Minimum samples: require ~5 minutes of data so a single late sample cannot trigger\n| WHERE cpu_n >= 5\n// Alert threshold: average CPU utilization (percent) over the rule window\n| WHERE cpu_avg_pct >= 90\n| KEEP database_id, cpu_avg_pct, cpu_peak_pct, cpu_n\n| SORT cpu_avg_pct DESC\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 2
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_postgresql_otel-cpu-utilization-high-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL PostgreSQL CPU utilization high\n\nThe instance has used at least 90% of its reserved vCPUs for a sustained period.\n\n### Triage\n1. On the Instance Detail dashboard, compare CPU with transaction and statement throughput: a traffic increase versus the same traffic with more CPU (a query plan regression or missing index).\n2. With Query Insights enabled, find the databases and users with the highest execution time.\n3. Check `backends_in_wait` for `LWLock` contention and autovacuum activity.\n4. Mitigate by tuning or cancelling expensive queries, adding read replicas for read traffic, or moving to a larger tier.\n\n### Tuning\n- Lower the threshold to 80 or reduce the alert delay for latency-sensitive workloads."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-cpu-utilization-high-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-86472830-c83c-4f8b-8753-5d275d1d9391"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-cpu-utilization-high-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-b8e67303-561a-4a0c-9acf-b35357a26541"
+          }
+        }
+      ]
+    }
+  }
+}

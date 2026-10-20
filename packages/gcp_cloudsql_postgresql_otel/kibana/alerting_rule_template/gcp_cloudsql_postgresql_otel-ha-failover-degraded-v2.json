@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_postgresql_otel-ha-failover-degraded-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL PostgreSQL OTel] HA failover occurred or standby unavailable",
+        "description": "Alerts when a high-availability (regional) PostgreSQL instance requested an automatic failover in the last 15 minutes, or its latest available_for_failover sample is 0 (the standby cannot take over), for 2 consecutive checks. Optional metrics: both are reported only for HA instances, so zonal instances never alert. Applies the PostgreSQL engine marker. Grouped by database_id.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "postgresql"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_postgresql.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// Resolve per minute first (fragmentation-safe).\n// available_for_failover (GAUGE, >0 = standby ready) and auto_failover_request_count\n// (DELTA) are reported only for HA (regional) instances; zonal instances never alert.\n| STATS failover_ready = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/available_for_failover`)),\n        failovers = SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/auto_failover_request_count`)),\n        pg = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/postgresql/num_backends`))\n    BY `@timestamp` = TBUCKET(1 minute), database_id\n// PostgreSQL engine marker: excludes MySQL / SQL Server HA instances\n| INLINE STATS pg_total = SUM(pg) BY database_id\n| WHERE pg_total > 0 AND (failover_ready IS NOT NULL OR failovers IS NOT NULL)\n| EVAL ready_ts = CASE(failover_ready IS NOT NULL, `@timestamp`, NULL)\n| STATS failover_ready = LAST(failover_ready, ready_ts),\n        ready_minutes = COUNT(failover_ready),\n        failovers = SUM(failovers)\n    BY database_id\n| EVAL failovers = COALESCE(failovers, 0)",
+        "breach": {
+          "segment": "// Breach when either:\n//  - an automatic failover was requested in the window (the primary failed over), or\n//  - the latest readiness sample says the standby cannot take over (HA protection lost).\nWHERE failovers > 0 OR (ready_minutes > 0 AND failover_ready == 0)\n| EVAL reason = CASE(\n    failovers > 0 AND failover_ready == 0, \"automatic failover occurred; standby not ready\",\n    failovers > 0, \"automatic failover occurred\",\n    \"standby not available for failover\")\n| KEEP database_id, reason, failovers, failover_ready\n| SORT database_id\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_postgresql_otel-ha-failover-degraded-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL PostgreSQL HA failover occurred or standby unavailable\n\nEither the primary failed over to its standby, or the instance has lost its ability to fail over.\n\n### Triage\n1. `automatic failover occurred`: the primary zone or VM failed. Check the Cloud SQL operations log and Google Cloud status for the region. Clients reconnect to the same IP; verify application error rates and connection storms after the event.\n2. `standby not available for failover`: HA protection is lost. This is expected briefly during maintenance or right after a failover while the standby is rebuilt. If it persists, check the operations log and open a support case.\n3. Check the instance down and restarted alerts for the same instance.\n\n### Tuning\n- Increase the alert delay if maintenance regularly causes short readiness gaps."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-ha-failover-degraded-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-86472830-c83c-4f8b-8753-5d275d1d9391"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-ha-failover-degraded-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-b8e67303-561a-4a0c-9acf-b35357a26541"
+          }
+        }
+      ]
+    }
+  }
+}

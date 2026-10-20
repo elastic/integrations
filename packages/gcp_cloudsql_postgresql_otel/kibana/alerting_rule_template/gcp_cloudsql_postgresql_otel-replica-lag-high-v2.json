@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_postgresql_otel-replica-lag-high-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL PostgreSQL OTel] Read replica lag high",
+        "description": "Alerts when a PostgreSQL read replica stays at least 120 seconds behind its primary for the whole 15-minute window (minimum lag at or above the threshold), for 2 consecutive checks. Optional metric: replica_lag is only reported on replica instances, so the rule is silent for instances without replicas. Requires at least 5 lag samples and applies the PostgreSQL engine marker (num_backends reported, or no MySQL/SQL Server-only network/connections in the window, so replicas missing some engine metrics stay covered). Grouped by the replica's database_id.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "postgresql"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_postgresql.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// replica_lag (seconds) is reported on the REPLICA instance only; the rule is\n// silent for instances without read replicas.\n// MIN(MIN_OVER_TIME) and MAX(MAX_OVER_TIME) are exact across fragments.\n| STATS lag_min = MIN(MIN_OVER_TIME(`cloudsql.googleapis.com/database/replication/replica_lag`)),\n        lag_max = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/replication/replica_lag`)),\n        network_lag_max = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/replication/network_lag`)),\n        lag_n = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/replication/replica_lag`)),\n        pg = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/postgresql/num_backends`)),\n        conn = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/network/connections`))\n    BY database_id",
+        "breach": {
+          "segment": "// PostgreSQL engine marker: excludes MySQL / SQL Server replicas that share this metric.\n// Keep instances that reported num_backends, or that reported no network/connections\n// (MySQL / SQL Server only) in the window, so a replica that does not report every\n// PostgreSQL engine metric is still covered.\nWHERE (pg > 0 OR COALESCE(conn, 0) == 0) AND lag_n > 0\n// Require ~5 minutes of lag samples so one late sample cannot trigger\n| WHERE lag_n >= 5\n// Alert threshold (seconds): the replica stayed behind its primary for the WHOLE\n// window (the minimum lag is above the threshold), i.e. it is not catching up\n// after bursts. Lower for latency-sensitive read traffic; raise for cross-region\n// replicas or batch-heavy primaries.\n| WHERE lag_min >= 120\n| KEEP database_id, lag_min, lag_max, network_lag_max\n| SORT lag_min DESC\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_postgresql_otel-replica-lag-high-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL PostgreSQL read replica lag high\n\nThe replica is persistently behind its primary: reads from it are stale, and if lag keeps growing the primary retains WAL, which can fill its disk.\n\n### Triage\n1. Compare `lag_max` with `network_lag_max`: if network lag dominates, check cross-region networking; otherwise the replica cannot replay fast enough.\n2. Check the replica's CPU and disk I/O (replay is single-threaded) and look for long queries on the replica that conflict with replay.\n3. Check the primary for a write burst (bulk load, large index build, VACUUM FULL) and its disk utilization.\n4. Consider a larger replica tier, or redirect latency-sensitive reads to the primary until it catches up.\n\n### Tuning\n- Lower the threshold for latency-sensitive read traffic; raise it for cross-region replicas or batch-heavy primaries."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-replica-lag-high-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-86472830-c83c-4f8b-8753-5d275d1d9391"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-replica-lag-high-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-b8e67303-561a-4a0c-9acf-b35357a26541"
+          }
+        }
+      ]
+    }
+  }
+}
