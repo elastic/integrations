@@ -28,30 +28,11 @@
                 "gridData": {
                     "h": 2,
                     "i": "4a24e958-1523-41b2-ac1a-99e7504df510",
-                    "w": 30,
+                    "w": 37,
                     "x": 4,
                     "y": 0
                 },
                 "panelIndex": "4a24e958-1523-41b2-ac1a-99e7504df510",
-                "type": "custom_content"
-            },
-            {
-                "embeddableConfig": {
-                    "description": "Latest status of the node's `Ready` condition (`node/status_condition`). True means the kubelet reports the node healthy; False or Unknown means it is not ready and its pods are evicted and rescheduled.",
-                    "esql_query": [
-                        "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"Ready\" AND `metrics.kubernetes.io/node/status_condition` == 1 AND TRANGE(?_tstart, ?_tend)\n| STATS ready = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP ready\n| LIMIT 1"
-                    ],
-                    "hide_border": true,
-                    "template": "<style>\n  body {\n    margin: 0;\n    padding: var(--cc-space-xs) var(--cc-space-m);\n    box-sizing: border-box;\n    font-family: var(--cc-font-family);\n    color: var(--cc-color-text);\n    background: var(--cc-color-background);\n  }\n  .label {\n    font-size: 0.75rem;\n    opacity: 0.7;\n    line-height: 1.2;\n  }\n  .value {\n    font-size: 1.25rem;\n    font-weight: 600;\n    line-height: 1.3;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n  }\n  .good { color: #24c292; }\n  .warn { color: #d6bf57; }\n  .bad { color: #f6726a; }\n</style>\n{% assign v = nil %}{% for row in rows limit: 1 %}{% assign v = row[\"ready\"].value %}{% endfor %}\n<div class=\"label\">Ready</div>\n{% if v == nil or v == blank %}<div class=\"value\">N/A</div>{% else %}<div class=\"value {% if v == \"True\" %}good{% else %}bad{% endif %}\">{{ v }}</div>{% endif %}\n"
-                },
-                "gridData": {
-                    "h": 2,
-                    "i": "7846eaef-1243-48eb-8586-85057fbfb415",
-                    "w": 7,
-                    "x": 34,
-                    "y": 0
-                },
-                "panelIndex": "7846eaef-1243-48eb-8586-85057fbfb415",
                 "type": "custom_content"
             },
             {
@@ -214,7 +195,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Opens this node's metric documents in Discover in the same tab, with the current filters and time range.",
+                    "description": "Opens this node's metric documents in Discover (ES|QL) in the same tab, with the current time range, query and filters. Range and custom filters are not carried.",
                     "drilldowns": [
                         {
                             "encode_url": true,
@@ -222,7 +203,7 @@
                             "open_in_new_tab": false,
                             "trigger": "on_click_value",
                             "type": "url_drilldown",
-                            "url": "{{kibanaUrl}}/app/discover#/?_g=(filters:!(),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(dataViewId:'metrics-*',type:dataView),filters:{{rison context.panel.filters}},interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc)))"
+                            "url": "{{kibanaUrl}}/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(type:esql),query:(esql:'SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default{{#each context.panel.filters}}{{#unless (lookup meta \"disabled\")}}{{#if (lookup meta \"relation\")}}\n| WHERE {{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}({{#if (replace meta.relation \"AND\" \"\")}}{{#each meta.params}}{{#unless @first}} OR {{/unless}}{{#if (lookup (lookup this \"query\") \"match_phrase\")}}{{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}{{#each query.match_phrase}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup (lookup this \"query\") \"bool\") \"should\")}}{{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}({{#each query.bool.should}}{{#unless @first}} OR {{/unless}}{{#each (lookup this \"match_phrase\")}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{/each}}){{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup this \"query\") \"exists\")}}`{{query.exists.field}}` IS {{#if (lookup (lookup this \"meta\") \"negate\")}}NULL{{else}}NOT NULL{{/if}}{{else}}TRUE{{/if}}{{/if}}{{/if}}{{/each}}{{else}}{{#each meta.params}}{{#unless @first}} AND {{/unless}}{{#if (lookup (lookup this \"query\") \"match_phrase\")}}{{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}{{#each query.match_phrase}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup (lookup this \"query\") \"bool\") \"should\")}}{{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}({{#each query.bool.should}}{{#unless @first}} OR {{/unless}}{{#each (lookup this \"match_phrase\")}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{/each}}){{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup this \"query\") \"exists\")}}`{{query.exists.field}}` IS {{#if (lookup (lookup this \"meta\") \"negate\")}}NULL{{else}}NOT NULL{{/if}}{{else}}TRUE{{/if}}{{/if}}{{/if}}{{/each}}{{/if}}){{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup this \"query\") \"match_phrase\")}}\n| WHERE {{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}{{#each query.match_phrase}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup (lookup this \"query\") \"bool\") \"should\")}}\n| WHERE {{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}({{#each query.bool.should}}{{#unless @first}} OR {{/unless}}{{#each (lookup this \"match_phrase\")}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{/each}}){{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup this \"query\") \"exists\")}}\n| WHERE `{{query.exists.field}}` IS {{#if (lookup (lookup this \"meta\") \"negate\")}}NULL{{else}}NOT NULL{{/if}}{{else}}{{/if}}{{/if}}{{/if}}{{/if}}{{/unless}}{{/each}}{{#if (lookup (lookup context.panel \"query\") \"query\")}}\n| WHERE {{#if (replace context.panel.query.language \"kuery\" \"\")}}QSTR{{else}}KQL{{/if}}(\"\"\"{{replace (replace context.panel.query.query \"!\" \"!!\") \"'\" \"!'\"}}\"\"\"){{/if}}'))"
                         }
                     ],
                     "hide_border": true,
@@ -240,71 +221,27 @@
             },
             {
                 "embeddableConfig": {
-                    "attributes": {
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-5c0f7c9ac7e65265d6e22e1359905a5cf2fc7ef91aadc5fbba408c2450324ce2": {
-                                    "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-5c0f7c9ac7e65265d6e22e1359905a5cf2fc7ef91aadc5fbba408c2450324ce2",
-                                    "name": "metrics-gcp.gke.otel-default",
-                                    "sourceFilters": [],
-                                    "title": "metrics-gcp.gke.otel-default",
-                                    "type": "esql"
+                    "description": "Latest status of the `Ready` condition (`node/status_condition`). True is healthy. False means the kubelet reports the node unhealthy; Unknown means the control plane lost contact with it. Shown in red when False.",
+                    "hide_title": false,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
                                 }
-                            },
-                            "datasourceStates": {
-                                "textBased": {
-                                    "layers": {
-                                        "layer_0": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "metric_accessor_metric",
-                                                    "customLabel": true,
-                                                    "fieldName": "status",
-                                                    "label": " ",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    }
-                                                }
-                                            ],
-                                            "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-5c0f7c9ac7e65265d6e22e1359905a5cf2fc7ef91aadc5fbba408c2450324ce2",
-                                            "query": {
-                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"Ready\" AND `metrics.kubernetes.io/node/status_condition` == 1\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [
-                                {
-                                    "id": "metrics-gcp.gke.otel-default-5c0f7c9ac7e65265d6e22e1359905a5cf2fc7ef91aadc5fbba408c2450324ce2",
-                                    "name": "indexpattern-datasource-layer-layer_0",
-                                    "type": "index-pattern"
-                                }
-                            ],
-                            "query": {
-                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"Ready\" AND `metrics.kubernetes.io/node/status_condition` == 1\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
-                            },
-                            "visualization": {
-                                "density": "default",
-                                "layerId": "layer_0",
-                                "layerType": "data",
-                                "metricAccessor": "metric_accessor_metric",
-                                "primaryAlign": "right",
-                                "primaryPosition": "bottom",
-                                "showBar": false,
-                                "titlesTextAlign": "left",
-                                "valueFontMode": "default"
                             }
                         },
-                        "title": "",
-                        "version": 2,
-                        "visualizationType": "lnsMetric"
+                        "description": "Latest status of the `Ready` condition (`node/status_condition`). True is healthy. False means the kubelet reports the node unhealthy; Unknown means the control plane lost contact with it. Shown in red when False.",
+                        "params": {
+                            "spec": "{\n  \"$schema\": \"https://vega.github.io/schema/vega/v5.json\",\n  \"description\": \"Latest Ready condition status, red when False.\",\n  \"autosize\": {\n    \"type\": \"fit\",\n    \"contains\": \"padding\"\n  },\n  \"padding\": {\n    \"top\": 0,\n    \"left\": 8,\n    \"right\": 8,\n    \"bottom\": 4\n  },\n  \"background\": \"transparent\",\n  \"data\": [\n    {\n      \"name\": \"status\",\n      \"url\": {\n        \"%type%\": \"esql\",\n        \"%context%\": true,\n        \"%timefield%\": \"@timestamp\",\n        \"query\": \"SET unmapped_fields = \\\"nullify\\\";\\nFROM metrics-gcp.gke.otel-default\\n| WHERE resource.attributes.gcp.resource_type == \\\"k8s_node\\\" AND attributes.condition == \\\"Ready\\\" AND `metrics.kubernetes.io/node/status_condition` == 1\\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\\n| KEEP status\"\n      }\n    }\n  ],\n  \"signals\": [\n    {\n      \"name\": \"status\",\n      \"update\": \"length(data('status')) > 0 && data('status')[0].status != null ? data('status')[0].status : 'N/A'\"\n    }\n  ],\n  \"marks\": [\n    {\n      \"type\": \"text\",\n      \"name\": \"status_text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width\"\n          },\n          \"y\": {\n            \"signal\": \"height\"\n          },\n          \"align\": {\n            \"value\": \"right\"\n          },\n          \"baseline\": {\n            \"value\": \"bottom\"\n          },\n          \"text\": {\n            \"signal\": \"status\"\n          },\n          \"fill\": {\n            \"signal\": \"status === 'False' ? '#f6726a' : '#92a0b8'\"\n          },\n          \"font\": {\n            \"value\": \"Inter, 'Inter UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif\"\n          },\n          \"fontWeight\": {\n            \"value\": 700\n          },\n          \"fontSize\": {\n            \"signal\": \"max(12, min(height * 0.9, width / 4))\"\n          }\n        }\n      }\n    }\n  ]\n}"
+                        },
+                        "title": "Ready",
+                        "type": "vega",
+                        "uiState": {}
                     },
-                    "description": "Latest status of the `Ready` condition (`node/status_condition`). True is healthy. False means the kubelet reports the node unhealthy; Unknown means the control plane lost contact with it.",
                     "title": "Ready"
                 },
                 "gridData": {
@@ -316,75 +253,31 @@
                     "y": 0
                 },
                 "panelIndex": "33608525-18ea-4e20-8f53-c60e64c9c252",
-                "type": "vis"
+                "type": "legacy_vis"
             },
             {
                 "embeddableConfig": {
-                    "attributes": {
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-10d76907fb3ac4a6af693b7aedbcb8a56054b841347810acbc9e62772c9d5127": {
-                                    "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-10d76907fb3ac4a6af693b7aedbcb8a56054b841347810acbc9e62772c9d5127",
-                                    "name": "metrics-gcp.gke.otel-default",
-                                    "sourceFilters": [],
-                                    "title": "metrics-gcp.gke.otel-default",
-                                    "type": "esql"
+                    "description": "Latest status of the `MemoryPressure` condition (`node/status_condition`). True means the kubelet is evicting pods to reclaim memory. Shown in yellow when True.",
+                    "hide_title": false,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
                                 }
-                            },
-                            "datasourceStates": {
-                                "textBased": {
-                                    "layers": {
-                                        "layer_0": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "metric_accessor_metric",
-                                                    "customLabel": true,
-                                                    "fieldName": "status",
-                                                    "label": " ",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    }
-                                                }
-                                            ],
-                                            "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-10d76907fb3ac4a6af693b7aedbcb8a56054b841347810acbc9e62772c9d5127",
-                                            "query": {
-                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"MemoryPressure\" AND `metrics.kubernetes.io/node/status_condition` == 1\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [
-                                {
-                                    "id": "metrics-gcp.gke.otel-default-10d76907fb3ac4a6af693b7aedbcb8a56054b841347810acbc9e62772c9d5127",
-                                    "name": "indexpattern-datasource-layer-layer_0",
-                                    "type": "index-pattern"
-                                }
-                            ],
-                            "query": {
-                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"MemoryPressure\" AND `metrics.kubernetes.io/node/status_condition` == 1\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
-                            },
-                            "visualization": {
-                                "density": "default",
-                                "layerId": "layer_0",
-                                "layerType": "data",
-                                "metricAccessor": "metric_accessor_metric",
-                                "primaryAlign": "right",
-                                "primaryPosition": "bottom",
-                                "showBar": false,
-                                "titlesTextAlign": "left",
-                                "valueFontMode": "default"
                             }
                         },
-                        "title": "",
-                        "version": 2,
-                        "visualizationType": "lnsMetric"
+                        "description": "Latest status of the `MemoryPressure` condition (`node/status_condition`). True means the kubelet is evicting pods to reclaim memory. Shown in yellow when True.",
+                        "params": {
+                            "spec": "{\n  \"$schema\": \"https://vega.github.io/schema/vega/v5.json\",\n  \"description\": \"Latest MemoryPressure condition status, yellow when True.\",\n  \"autosize\": {\n    \"type\": \"fit\",\n    \"contains\": \"padding\"\n  },\n  \"padding\": {\n    \"top\": 0,\n    \"left\": 8,\n    \"right\": 8,\n    \"bottom\": 4\n  },\n  \"background\": \"transparent\",\n  \"data\": [\n    {\n      \"name\": \"status\",\n      \"url\": {\n        \"%type%\": \"esql\",\n        \"%context%\": true,\n        \"%timefield%\": \"@timestamp\",\n        \"query\": \"SET unmapped_fields = \\\"nullify\\\";\\nFROM metrics-gcp.gke.otel-default\\n| WHERE resource.attributes.gcp.resource_type == \\\"k8s_node\\\" AND attributes.condition == \\\"MemoryPressure\\\" AND `metrics.kubernetes.io/node/status_condition` == 1\\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\\n| KEEP status\"\n      }\n    }\n  ],\n  \"signals\": [\n    {\n      \"name\": \"status\",\n      \"update\": \"length(data('status')) > 0 && data('status')[0].status != null ? data('status')[0].status : 'N/A'\"\n    }\n  ],\n  \"marks\": [\n    {\n      \"type\": \"text\",\n      \"name\": \"status_text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width\"\n          },\n          \"y\": {\n            \"signal\": \"height\"\n          },\n          \"align\": {\n            \"value\": \"right\"\n          },\n          \"baseline\": {\n            \"value\": \"bottom\"\n          },\n          \"text\": {\n            \"signal\": \"status\"\n          },\n          \"fill\": {\n            \"signal\": \"status === 'True' ? '#fcd883' : '#92a0b8'\"\n          },\n          \"font\": {\n            \"value\": \"Inter, 'Inter UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif\"\n          },\n          \"fontWeight\": {\n            \"value\": 700\n          },\n          \"fontSize\": {\n            \"signal\": \"max(12, min(height * 0.9, width / 4))\"\n          }\n        }\n      }\n    }\n  ]\n}"
+                        },
+                        "title": "Memory pressure",
+                        "type": "vega",
+                        "uiState": {}
                     },
-                    "description": "Latest status of the `MemoryPressure` condition (`node/status_condition`). True means the kubelet is evicting pods to reclaim memory.",
                     "title": "Memory pressure"
                 },
                 "gridData": {
@@ -396,75 +289,31 @@
                     "y": 0
                 },
                 "panelIndex": "08a79b0e-34e8-4a42-8b9c-f7a73275a46b",
-                "type": "vis"
+                "type": "legacy_vis"
             },
             {
                 "embeddableConfig": {
-                    "attributes": {
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-afddb8b82951f58e13f822b943a3a22dc08320b39664580ff56cbb399a5401a5": {
-                                    "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-afddb8b82951f58e13f822b943a3a22dc08320b39664580ff56cbb399a5401a5",
-                                    "name": "metrics-gcp.gke.otel-default",
-                                    "sourceFilters": [],
-                                    "title": "metrics-gcp.gke.otel-default",
-                                    "type": "esql"
+                    "description": "Latest status of the `DiskPressure` condition (`node/status_condition`). True means free boot disk space is below the eviction threshold, about 10% of total, and pods are being evicted. Shown in yellow when True.",
+                    "hide_title": false,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
                                 }
-                            },
-                            "datasourceStates": {
-                                "textBased": {
-                                    "layers": {
-                                        "layer_0": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "metric_accessor_metric",
-                                                    "customLabel": true,
-                                                    "fieldName": "status",
-                                                    "label": " ",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    }
-                                                }
-                                            ],
-                                            "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-afddb8b82951f58e13f822b943a3a22dc08320b39664580ff56cbb399a5401a5",
-                                            "query": {
-                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"DiskPressure\" AND `metrics.kubernetes.io/node/status_condition` == 1\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [
-                                {
-                                    "id": "metrics-gcp.gke.otel-default-afddb8b82951f58e13f822b943a3a22dc08320b39664580ff56cbb399a5401a5",
-                                    "name": "indexpattern-datasource-layer-layer_0",
-                                    "type": "index-pattern"
-                                }
-                            ],
-                            "query": {
-                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"DiskPressure\" AND `metrics.kubernetes.io/node/status_condition` == 1\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
-                            },
-                            "visualization": {
-                                "density": "default",
-                                "layerId": "layer_0",
-                                "layerType": "data",
-                                "metricAccessor": "metric_accessor_metric",
-                                "primaryAlign": "right",
-                                "primaryPosition": "bottom",
-                                "showBar": false,
-                                "titlesTextAlign": "left",
-                                "valueFontMode": "default"
                             }
                         },
-                        "title": "",
-                        "version": 2,
-                        "visualizationType": "lnsMetric"
+                        "description": "Latest status of the `DiskPressure` condition (`node/status_condition`). True means free boot disk space is below the eviction threshold, about 10% of total, and pods are being evicted. Shown in yellow when True.",
+                        "params": {
+                            "spec": "{\n  \"$schema\": \"https://vega.github.io/schema/vega/v5.json\",\n  \"description\": \"Latest DiskPressure condition status, yellow when True.\",\n  \"autosize\": {\n    \"type\": \"fit\",\n    \"contains\": \"padding\"\n  },\n  \"padding\": {\n    \"top\": 0,\n    \"left\": 8,\n    \"right\": 8,\n    \"bottom\": 4\n  },\n  \"background\": \"transparent\",\n  \"data\": [\n    {\n      \"name\": \"status\",\n      \"url\": {\n        \"%type%\": \"esql\",\n        \"%context%\": true,\n        \"%timefield%\": \"@timestamp\",\n        \"query\": \"SET unmapped_fields = \\\"nullify\\\";\\nFROM metrics-gcp.gke.otel-default\\n| WHERE resource.attributes.gcp.resource_type == \\\"k8s_node\\\" AND attributes.condition == \\\"DiskPressure\\\" AND `metrics.kubernetes.io/node/status_condition` == 1\\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\\n| KEEP status\"\n      }\n    }\n  ],\n  \"signals\": [\n    {\n      \"name\": \"status\",\n      \"update\": \"length(data('status')) > 0 && data('status')[0].status != null ? data('status')[0].status : 'N/A'\"\n    }\n  ],\n  \"marks\": [\n    {\n      \"type\": \"text\",\n      \"name\": \"status_text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width\"\n          },\n          \"y\": {\n            \"signal\": \"height\"\n          },\n          \"align\": {\n            \"value\": \"right\"\n          },\n          \"baseline\": {\n            \"value\": \"bottom\"\n          },\n          \"text\": {\n            \"signal\": \"status\"\n          },\n          \"fill\": {\n            \"signal\": \"status === 'True' ? '#fcd883' : '#92a0b8'\"\n          },\n          \"font\": {\n            \"value\": \"Inter, 'Inter UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif\"\n          },\n          \"fontWeight\": {\n            \"value\": 700\n          },\n          \"fontSize\": {\n            \"signal\": \"max(12, min(height * 0.9, width / 4))\"\n          }\n        }\n      }\n    }\n  ]\n}"
+                        },
+                        "title": "Disk pressure",
+                        "type": "vega",
+                        "uiState": {}
                     },
-                    "description": "Latest status of the `DiskPressure` condition (`node/status_condition`). True means free boot disk space is below the eviction threshold, about 10% of total, and pods are being evicted.",
                     "title": "Disk pressure"
                 },
                 "gridData": {
@@ -476,75 +325,31 @@
                     "y": 0
                 },
                 "panelIndex": "362dc464-867c-4093-86e8-b624f45b8d19",
-                "type": "vis"
+                "type": "legacy_vis"
             },
             {
                 "embeddableConfig": {
-                    "attributes": {
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "metrics-gcp.gke.otel-default-644c92958b435af90e7b1abb2822623da1d8f4da71240c7eb4a45944a7309a86": {
-                                    "allowNoIndex": false,
-                                    "id": "metrics-gcp.gke.otel-default-644c92958b435af90e7b1abb2822623da1d8f4da71240c7eb4a45944a7309a86",
-                                    "name": "metrics-gcp.gke.otel-default",
-                                    "sourceFilters": [],
-                                    "title": "metrics-gcp.gke.otel-default",
-                                    "type": "esql"
+                    "description": "Latest status of the `PIDPressure` condition (`node/status_condition`). True means the node is running out of process IDs and pods are being evicted. Shown in yellow when True.",
+                    "hide_title": false,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
                                 }
-                            },
-                            "datasourceStates": {
-                                "textBased": {
-                                    "layers": {
-                                        "layer_0": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "metric_accessor_metric",
-                                                    "customLabel": true,
-                                                    "fieldName": "status",
-                                                    "label": " ",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    }
-                                                }
-                                            ],
-                                            "ignoreGlobalFilters": false,
-                                            "index": "metrics-gcp.gke.otel-default-644c92958b435af90e7b1abb2822623da1d8f4da71240c7eb4a45944a7309a86",
-                                            "query": {
-                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"PIDPressure\" AND `metrics.kubernetes.io/node/status_condition` == 1\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [
-                                {
-                                    "id": "metrics-gcp.gke.otel-default-644c92958b435af90e7b1abb2822623da1d8f4da71240c7eb4a45944a7309a86",
-                                    "name": "indexpattern-datasource-layer-layer_0",
-                                    "type": "index-pattern"
-                                }
-                            ],
-                            "query": {
-                                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND attributes.condition == \"PIDPressure\" AND `metrics.kubernetes.io/node/status_condition` == 1\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\n| KEEP status"
-                            },
-                            "visualization": {
-                                "density": "default",
-                                "layerId": "layer_0",
-                                "layerType": "data",
-                                "metricAccessor": "metric_accessor_metric",
-                                "primaryAlign": "right",
-                                "primaryPosition": "bottom",
-                                "showBar": false,
-                                "titlesTextAlign": "left",
-                                "valueFontMode": "default"
                             }
                         },
-                        "title": "",
-                        "version": 2,
-                        "visualizationType": "lnsMetric"
+                        "description": "Latest status of the `PIDPressure` condition (`node/status_condition`). True means the node is running out of process IDs and pods are being evicted. Shown in yellow when True.",
+                        "params": {
+                            "spec": "{\n  \"$schema\": \"https://vega.github.io/schema/vega/v5.json\",\n  \"description\": \"Latest PIDPressure condition status, yellow when True.\",\n  \"autosize\": {\n    \"type\": \"fit\",\n    \"contains\": \"padding\"\n  },\n  \"padding\": {\n    \"top\": 0,\n    \"left\": 8,\n    \"right\": 8,\n    \"bottom\": 4\n  },\n  \"background\": \"transparent\",\n  \"data\": [\n    {\n      \"name\": \"status\",\n      \"url\": {\n        \"%type%\": \"esql\",\n        \"%context%\": true,\n        \"%timefield%\": \"@timestamp\",\n        \"query\": \"SET unmapped_fields = \\\"nullify\\\";\\nFROM metrics-gcp.gke.otel-default\\n| WHERE resource.attributes.gcp.resource_type == \\\"k8s_node\\\" AND attributes.condition == \\\"PIDPressure\\\" AND `metrics.kubernetes.io/node/status_condition` == 1\\n| STATS status = LAST(attributes.status, @timestamp) BY resource.attributes.node_name\\n| KEEP status\"\n      }\n    }\n  ],\n  \"signals\": [\n    {\n      \"name\": \"status\",\n      \"update\": \"length(data('status')) > 0 && data('status')[0].status != null ? data('status')[0].status : 'N/A'\"\n    }\n  ],\n  \"marks\": [\n    {\n      \"type\": \"text\",\n      \"name\": \"status_text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width\"\n          },\n          \"y\": {\n            \"signal\": \"height\"\n          },\n          \"align\": {\n            \"value\": \"right\"\n          },\n          \"baseline\": {\n            \"value\": \"bottom\"\n          },\n          \"text\": {\n            \"signal\": \"status\"\n          },\n          \"fill\": {\n            \"signal\": \"status === 'True' ? '#fcd883' : '#92a0b8'\"\n          },\n          \"font\": {\n            \"value\": \"Inter, 'Inter UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif\"\n          },\n          \"fontWeight\": {\n            \"value\": 700\n          },\n          \"fontSize\": {\n            \"signal\": \"max(12, min(height * 0.9, width / 4))\"\n          }\n        }\n      }\n    }\n  ]\n}"
+                        },
+                        "title": "PID pressure",
+                        "type": "vega",
+                        "uiState": {}
                     },
-                    "description": "Latest status of the `PIDPressure` condition (`node/status_condition`). True means the node is running out of process IDs and pods are being evicted.",
                     "title": "PID pressure"
                 },
                 "gridData": {
@@ -556,7 +361,7 @@
                     "y": 0
                 },
                 "panelIndex": "f758338a-cabd-4841-a135-48e704bc1336",
-                "type": "vis"
+                "type": "legacy_vis"
             },
             {
                 "embeddableConfig": {
@@ -682,7 +487,7 @@
                                 "legend": {
                                     "isVisible": true,
                                     "maxLines": 1,
-                                    "position": "right",
+                                    "position": "bottom",
                                     "shouldTruncate": true
                                 },
                                 "pointVisibility": "auto",
@@ -724,11 +529,11 @@
             },
             {
                 "embeddableConfig": {
-                    "description": "Conditions of this node whose latest status is a problem: `Ready` not True, or a pressure or node-problem-detector condition that is True. Since is when that status was first seen in the selected range. Informational conditions are left out.",
+                    "description": "Conditions of this node whose latest status is a problem: `Ready` not True, or a pressure or node-problem-detector condition that is True. Since is when that status was first seen in the selected range. Informational conditions are left out. Status is yellow for a pressure condition and red for the others.",
                     "esql_query": [
                         "SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND `metrics.kubernetes.io/node/status_condition` == 1\n| STATS since = MIN(@timestamp), seen = MAX(@timestamp) BY attributes.condition, attributes.status\n| STATS status = LAST(attributes.status, seen), since = LAST(since, seen) BY attributes.condition\n| WHERE (attributes.condition != \"Ready\" AND status == \"True\" AND attributes.condition NOT IN (\"KubeletConfigChanged\", \"SysctlChanged\") AND NOT STARTS_WITH(attributes.condition, \"Deprecated\"))\n   OR (attributes.condition == \"Ready\" AND status != \"True\")\n| SORT since DESC\n| LIMIT 100"
                     ],
-                    "template": "<style>\n  body { margin: 0; padding: var(--cc-space-s) var(--cc-space-l) var(--cc-space-l) var(--cc-space-l); box-sizing: border-box; font-family: var(--cc-font-family); color: var(--cc-color-text); background: var(--cc-color-background); }\n  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }\n  th, td { text-align: left; padding: var(--cc-space-s) var(--cc-space-m); border-bottom: 1px solid var(--cc-color-border); }\n  th { font-size: 0.75rem; font-weight: 600; }\n  .pill { display: inline-block; padding: 2px var(--cc-space-s); border-radius: var(--cc-radius-s); font-size: 0.75rem; font-weight: 600; background: #f6726a; color: #1d1e24; }\n  .empty { font-size: 0.875rem; opacity: 0.7; padding: var(--cc-space-m) 0; }\n</style>\n{% if rows.size == 0 %}\n  <div class=\"empty\">No active problem conditions.</div>\n{% else %}\n  <table>\n    <thead><tr><th>Condition</th><th>Status</th><th>Since</th></tr></thead>\n    <tbody>\n    {% for row in rows %}\n      <tr>\n        <td>{{ row[\"attributes.condition\"].value }}</td>\n        <td><span class=\"pill\">{{ row[\"status\"].value }}</span></td>\n        <td>{{ row[\"since\"].value | date: \"%b %-d, %Y @ %H:%M:%S\" }}</td>\n      </tr>\n    {% endfor %}\n    </tbody>\n  </table>\n{% endif %}\n",
+                    "template": "<style>\n  body { margin: 0; padding: var(--cc-space-s) var(--cc-space-l) var(--cc-space-l) var(--cc-space-l); box-sizing: border-box; font-family: var(--cc-font-family); color: var(--cc-color-text); background: var(--cc-color-background); }\n  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }\n  th, td { text-align: left; padding: var(--cc-space-s) var(--cc-space-m); border-bottom: 1px solid var(--cc-color-border); }\n  th { font-size: 0.75rem; font-weight: 600; }\n  .pill { display: inline-block; padding: 2px var(--cc-space-s); border-radius: var(--cc-radius-s); font-size: 0.75rem; font-weight: 600; background: #f6726a; color: #1d1e24; }\n  .pill.warn { background: #fcd883; }\n  .empty { font-size: 0.875rem; opacity: 0.7; padding: var(--cc-space-m) 0; }\n</style>\n{% if rows.size == 0 %}\n  <div class=\"empty\">No active problem conditions.</div>\n{% else %}\n  <table>\n    <thead><tr><th>Condition</th><th>Status</th><th>Since</th></tr></thead>\n    <tbody>\n    {% for row in rows %}\n      <tr>\n        <td>{{ row[\"attributes.condition\"].value }}</td>\n        <td>{% assign c = row[\"attributes.condition\"].value %}<span class=\"pill{% if c == \"MemoryPressure\" or c == \"DiskPressure\" or c == \"PIDPressure\" %} warn{% endif %}\">{{ row[\"status\"].value }}</span></td>\n        <td>{{ row[\"since\"].value | date: \"%b %-d, %Y @ %H:%M:%S\" }}</td>\n      </tr>\n    {% endfor %}\n    </tbody>\n  </table>\n{% endif %}\n",
                     "title": "List of active problem conditions"
                 },
                 "gridData": {
@@ -3853,7 +3658,7 @@
         "title": "[GCP OTel] GKE Node Detail"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-10-17T17:34:23.893Z",
+    "created_at": "2026-10-20T14:11:35.724Z",
     "id": "gcp_gke_otel-ff682663-564f-4b10-bd9a-8cba4d15d1dd",
     "references": [],
     "type": "dashboard",

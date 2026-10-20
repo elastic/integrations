@@ -195,7 +195,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Opens this namespace's metric documents in Discover in the same tab, with the current filters and time range.",
+                    "description": "Opens this namespace's metric documents in Discover (ES|QL) in the same tab, with the current time range, query and filters. Range and custom filters are not carried.",
                     "drilldowns": [
                         {
                             "encode_url": true,
@@ -203,7 +203,7 @@
                             "open_in_new_tab": false,
                             "trigger": "on_click_value",
                             "type": "url_drilldown",
-                            "url": "{{kibanaUrl}}/app/discover#/?_g=(filters:!(),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(dataViewId:'metrics-*',type:dataView),filters:{{rison context.panel.filters}},interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc)))"
+                            "url": "{{kibanaUrl}}/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(type:esql),query:(esql:'SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default{{#each context.panel.filters}}{{#unless (lookup meta \"disabled\")}}{{#if (lookup meta \"relation\")}}\n| WHERE {{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}({{#if (replace meta.relation \"AND\" \"\")}}{{#each meta.params}}{{#unless @first}} OR {{/unless}}{{#if (lookup (lookup this \"query\") \"match_phrase\")}}{{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}{{#each query.match_phrase}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup (lookup this \"query\") \"bool\") \"should\")}}{{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}({{#each query.bool.should}}{{#unless @first}} OR {{/unless}}{{#each (lookup this \"match_phrase\")}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{/each}}){{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup this \"query\") \"exists\")}}`{{query.exists.field}}` IS {{#if (lookup (lookup this \"meta\") \"negate\")}}NULL{{else}}NOT NULL{{/if}}{{else}}TRUE{{/if}}{{/if}}{{/if}}{{/each}}{{else}}{{#each meta.params}}{{#unless @first}} AND {{/unless}}{{#if (lookup (lookup this \"query\") \"match_phrase\")}}{{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}{{#each query.match_phrase}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup (lookup this \"query\") \"bool\") \"should\")}}{{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}({{#each query.bool.should}}{{#unless @first}} OR {{/unless}}{{#each (lookup this \"match_phrase\")}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{/each}}){{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup this \"query\") \"exists\")}}`{{query.exists.field}}` IS {{#if (lookup (lookup this \"meta\") \"negate\")}}NULL{{else}}NOT NULL{{/if}}{{else}}TRUE{{/if}}{{/if}}{{/if}}{{/each}}{{/if}}){{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup this \"query\") \"match_phrase\")}}\n| WHERE {{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}{{#each query.match_phrase}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup (lookup this \"query\") \"bool\") \"should\")}}\n| WHERE {{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}({{#each query.bool.should}}{{#unless @first}} OR {{/unless}}{{#each (lookup this \"match_phrase\")}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{/each}}){{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup this \"query\") \"exists\")}}\n| WHERE `{{query.exists.field}}` IS {{#if (lookup (lookup this \"meta\") \"negate\")}}NULL{{else}}NOT NULL{{/if}}{{else}}{{/if}}{{/if}}{{/if}}{{/if}}{{/unless}}{{/each}}{{#if (lookup (lookup context.panel \"query\") \"query\")}}\n| WHERE {{#if (replace context.panel.query.language \"kuery\" \"\")}}QSTR{{else}}KQL{{/if}}(\"\"\"{{replace (replace context.panel.query.query \"!\" \"!!\") \"'\" \"!'\"}}\"\"\"){{/if}}'))"
                         }
                     ],
                     "hide_border": true,
@@ -2142,7 +2142,7 @@
                                 "legend": {
                                     "isVisible": true,
                                     "maxLines": 1,
-                                    "position": "right",
+                                    "position": "bottom",
                                     "shouldTruncate": true
                                 },
                                 "pointVisibility": "auto",
@@ -2316,7 +2316,7 @@
                                 "legend": {
                                     "isVisible": true,
                                     "maxLines": 1,
-                                    "position": "right",
+                                    "position": "bottom",
                                     "shouldTruncate": true
                                 },
                                 "pointVisibility": "auto",
@@ -2489,7 +2489,7 @@
                                 "legend": {
                                     "isVisible": true,
                                     "maxLines": 1,
-                                    "position": "right",
+                                    "position": "bottom",
                                     "shouldTruncate": true
                                 },
                                 "pointVisibility": "auto",
@@ -3259,7 +3259,7 @@
                                         "hidden": false,
                                         "isMetric": false,
                                         "isTransposed": false,
-                                        "oneClickFilter": false
+                                        "oneClickFilter": true
                                     },
                                     {
                                         "alignment": "right",
@@ -3304,7 +3304,25 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Deployments, StatefulSets and DaemonSets in the namespace with their latest desired, ready or available, and updated replicas (kube-state-metrics). Misscheduled applies to DaemonSets only. Empty when kube-state-metrics is not enabled.",
+                    "description": "Deployments, StatefulSets and DaemonSets in the namespace with their latest desired, ready or available, and updated replicas (kube-state-metrics). Misscheduled applies to DaemonSets only. Empty when kube-state-metrics is not enabled. Click a name to filter this dashboard by it or to open its metrics in Discover.",
+                    "drilldowns": [
+                        {
+                            "encode_url": true,
+                            "label": "1. Filter in current view",
+                            "open_in_new_tab": false,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Name>\" \"\")}}{{else}}{{kibanaUrl}}/app/dashboards#/view/gcp_gke_otel-05487b8b-c21b-4898-a513-716e39b7c702?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(filters:!({{#each context.panel.filters}}{{#unless (lookup meta \"controlledBy\")}}{{rison this}},{{/unless}}{{/each}}(meta:(alias:'workload: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.deployment',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(attributes.deployment:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.statefulset',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(attributes.statefulset:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.daemonset',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(attributes.daemonset:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(attributes.deployment:'{{event.value}}')),(match_phrase:(attributes.statefulset:'{{event.value}}')),(match_phrase:(attributes.daemonset:'{{event.value}}'))))))){{#if (lookup context.panel \"query\")}},query:{{rison context.panel.query}}{{/if}}){{/if}}"
+                        },
+                        {
+                            "encode_url": true,
+                            "label": "2. View metrics in Discover",
+                            "open_in_new_tab": false,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Name>\" \"\")}}{{else}}{{kibanaUrl}}/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(type:esql),query:(esql:'SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE attributes.deployment == \"{{event.value}}\" OR attributes.statefulset == \"{{event.value}}\" OR attributes.daemonset == \"{{event.value}}\"{{#each context.panel.filters}}{{#unless (lookup meta \"disabled\")}}{{#if (lookup meta \"relation\")}}\n| WHERE {{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}({{#if (replace meta.relation \"AND\" \"\")}}{{#each meta.params}}{{#unless @first}} OR {{/unless}}{{#if (lookup (lookup this \"query\") \"match_phrase\")}}{{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}{{#each query.match_phrase}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup (lookup this \"query\") \"bool\") \"should\")}}{{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}({{#each query.bool.should}}{{#unless @first}} OR {{/unless}}{{#each (lookup this \"match_phrase\")}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{/each}}){{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup this \"query\") \"exists\")}}`{{query.exists.field}}` IS {{#if (lookup (lookup this \"meta\") \"negate\")}}NULL{{else}}NOT NULL{{/if}}{{else}}TRUE{{/if}}{{/if}}{{/if}}{{/each}}{{else}}{{#each meta.params}}{{#unless @first}} AND {{/unless}}{{#if (lookup (lookup this \"query\") \"match_phrase\")}}{{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}{{#each query.match_phrase}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup (lookup this \"query\") \"bool\") \"should\")}}{{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}({{#each query.bool.should}}{{#unless @first}} OR {{/unless}}{{#each (lookup this \"match_phrase\")}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{/each}}){{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup this \"query\") \"exists\")}}`{{query.exists.field}}` IS {{#if (lookup (lookup this \"meta\") \"negate\")}}NULL{{else}}NOT NULL{{/if}}{{else}}TRUE{{/if}}{{/if}}{{/if}}{{/each}}{{/if}}){{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup this \"query\") \"match_phrase\")}}\n| WHERE {{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}{{#each query.match_phrase}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup (lookup this \"query\") \"bool\") \"should\")}}\n| WHERE {{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}({{#each query.bool.should}}{{#unless @first}} OR {{/unless}}{{#each (lookup this \"match_phrase\")}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{/each}}){{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup this \"query\") \"exists\")}}\n| WHERE `{{query.exists.field}}` IS {{#if (lookup (lookup this \"meta\") \"negate\")}}NULL{{else}}NOT NULL{{/if}}{{else}}{{/if}}{{/if}}{{/if}}{{/if}}{{/unless}}{{/each}}')){{/if}}"
+                        }
+                    ],
                     "title": "List of workloads"
                 },
                 "gridData": {
@@ -3605,11 +3623,19 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Pods of the namespace, worst first by the highest container memory limit utilization (`container/memory/limit_utilization`). Phase comes from kube-state-metrics. Ephemeral storage limit sums the container limits that are set. Click a pod name to open its detail or Discover.",
+                    "description": "Pods of the namespace, worst first by the highest container memory limit utilization (`container/memory/limit_utilization`). Phase comes from kube-state-metrics. Ephemeral storage limit sums the container limits that are set. Click a pod name to filter this dashboard by it or to open its detail or Discover.",
                     "drilldowns": [
                         {
                             "encode_url": true,
-                            "label": "1. View pod detail",
+                            "label": "1. Filter in current view",
+                            "open_in_new_tab": false,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Pod>\" \"\")}}{{else}}{{kibanaUrl}}/app/dashboards#/view/gcp_gke_otel-05487b8b-c21b-4898-a513-716e39b7c702?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(filters:!({{#each context.panel.filters}}{{#unless (lookup meta \"controlledBy\")}}{{rison this}},{{/unless}}{{/each}}(meta:(alias:'pod: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.pod_name',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.pod_name:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.pod',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(attributes.pod:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.pod_name:'{{event.value}}')),(match_phrase:(attributes.pod:'{{event.value}}'))))))){{#if (lookup context.panel \"query\")}},query:{{rison context.panel.query}}{{/if}}){{/if}}"
+                        },
+                        {
+                            "encode_url": true,
+                            "label": "2. View pod detail",
                             "open_in_new_tab": false,
                             "trigger": "on_click_value",
                             "type": "url_drilldown",
@@ -3617,11 +3643,11 @@
                         },
                         {
                             "encode_url": true,
-                            "label": "2. View metrics in Discover",
+                            "label": "3. View metrics in Discover",
                             "open_in_new_tab": false,
                             "trigger": "on_click_value",
                             "type": "url_drilldown",
-                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Pod>\" \"\")}}{{else}}{{kibanaUrl}}/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(dataViewId:'metrics-*',type:dataView),filters:!({{#each context.panel.filters}}{{rison this}},{{/each}}(meta:(alias:'pod: {{event.value}}',disabled:!f,index:'metrics-gcp.gke.otel-default',negate:!f,params:!((meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'resource.attributes.pod_name',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.pod_name:'{{event.value}}'))),(meta:(disabled:!f,index:'metrics-gcp.gke.otel-default',key:'attributes.pod',negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(attributes.pod:'{{event.value}}')))),relation:OR,type:combined),query:(bool:(minimum_should_match:1,should:!((match_phrase:(resource.attributes.pod_name:'{{event.value}}')),(match_phrase:(attributes.pod:'{{event.value}}'))))))),interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc))){{/if}}"
+                            "url": "{{#if (replace (concat \"<\" event.key \">\") \"<Pod>\" \"\")}}{{else}}{{kibanaUrl}}/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(type:esql),query:(esql:'SET unmapped_fields = \"nullify\";\nFROM metrics-gcp.gke.otel-default\n| WHERE resource.attributes.pod_name == \"{{event.value}}\" OR attributes.pod == \"{{event.value}}\"{{#each context.panel.filters}}{{#unless (lookup meta \"disabled\")}}{{#if (lookup meta \"relation\")}}\n| WHERE {{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}({{#if (replace meta.relation \"AND\" \"\")}}{{#each meta.params}}{{#unless @first}} OR {{/unless}}{{#if (lookup (lookup this \"query\") \"match_phrase\")}}{{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}{{#each query.match_phrase}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup (lookup this \"query\") \"bool\") \"should\")}}{{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}({{#each query.bool.should}}{{#unless @first}} OR {{/unless}}{{#each (lookup this \"match_phrase\")}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{/each}}){{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup this \"query\") \"exists\")}}`{{query.exists.field}}` IS {{#if (lookup (lookup this \"meta\") \"negate\")}}NULL{{else}}NOT NULL{{/if}}{{else}}TRUE{{/if}}{{/if}}{{/if}}{{/each}}{{else}}{{#each meta.params}}{{#unless @first}} AND {{/unless}}{{#if (lookup (lookup this \"query\") \"match_phrase\")}}{{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}{{#each query.match_phrase}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup (lookup this \"query\") \"bool\") \"should\")}}{{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}({{#each query.bool.should}}{{#unless @first}} OR {{/unless}}{{#each (lookup this \"match_phrase\")}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{/each}}){{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup this \"query\") \"exists\")}}`{{query.exists.field}}` IS {{#if (lookup (lookup this \"meta\") \"negate\")}}NULL{{else}}NOT NULL{{/if}}{{else}}TRUE{{/if}}{{/if}}{{/if}}{{/each}}{{/if}}){{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup this \"query\") \"match_phrase\")}}\n| WHERE {{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}{{#each query.match_phrase}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup (lookup this \"query\") \"bool\") \"should\")}}\n| WHERE {{#if (lookup (lookup this \"meta\") \"negate\")}}NOT COALESCE({{/if}}({{#each query.bool.should}}{{#unless @first}} OR {{/unless}}{{#each (lookup this \"match_phrase\")}}`{{@key}}` == \"{{concat this}}\"{{/each}}{{/each}}){{#if (lookup (lookup this \"meta\") \"negate\")}}, FALSE){{/if}}{{else}}{{#if (lookup (lookup this \"query\") \"exists\")}}\n| WHERE `{{query.exists.field}}` IS {{#if (lookup (lookup this \"meta\") \"negate\")}}NULL{{else}}NOT NULL{{/if}}{{else}}{{/if}}{{/if}}{{/if}}{{/if}}{{/unless}}{{/each}}')){{/if}}"
                         }
                     ],
                     "title": "List of pods"
@@ -3720,7 +3746,7 @@
         "title": "[GCP OTel] GKE Namespace Detail"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-10-19T19:53:43.203Z",
+    "created_at": "2026-10-20T13:32:10.791Z",
     "id": "gcp_gke_otel-05487b8b-c21b-4898-a513-716e39b7c702",
     "references": [],
     "type": "dashboard",
