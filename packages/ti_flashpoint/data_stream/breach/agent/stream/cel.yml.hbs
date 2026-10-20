@@ -33,76 +33,74 @@ redact:
   fields:
     - api_token
 program: |-
-  state.?scroll_id.orValue("").as(scroll_id,
-    state.?cursor.last_indexed_at.orValue(string(int(now - duration(state.initial_interval)))).as(lower_bound,
-      (
-        (scroll_id != "") ?
+  state.?cursor.last_indexed_at.orValue(string(int(now - duration(state.initial_interval)))).as(lower_bound,
+    (
+      (has(state.scroll) && timestamp(state.scroll.expires) > now()) ?
+        {
+          "url": state.url.trim_right("/") + "/sources/v1/noncommunities/scroll?scroll=2m",
+          "body": {"scroll_id": state.scroll.id},
+        }
+      :
+        {
+          "url": state.url.trim_right("/") + "/sources/v1/noncommunities/search",
+          "body": {
+            "query": "+basetypes:(breach) AND header_.indexed_at:[" + lower_bound + " TO now]",
+            "sort": ["header_.indexed_at:asc"],
+            "size": int(state.page_size),
+            "scroll": "2m",
+          },
+        }
+    ).as(req,
+      state.drop("scroll").with(
+        request("POST", req.url).with(
           {
-            "url": state.url.trim_right("/") + "/sources/v1/noncommunities/scroll?scroll=2m",
-            "body": {"scroll_id": scroll_id},
-          }
-        :
-          {
-            "url": state.url.trim_right("/") + "/sources/v1/noncommunities/search",
-            "body": {
-              "query": "+basetypes:(breach) AND header_.indexed_at:[" + lower_bound + " TO now]",
-              "sort": ["header_.indexed_at:asc"],
-              "size": int(state.page_size),
-              "scroll": "2m",
+            "Header": {
+              "Accept": ["application/json"],
+              "Content-Type": ["application/json"],
+              "Authorization": ["Bearer " + state.api_token],
+              "X-FP-IntegrationPlatform": ["Elastic"],
+              "X-FP-IntegrationVersion": [state.integration_version],
+              "X-FP-IntegrationPlatformVersion": [state.integration_platform_version],
             },
+            "Body": req.body.encode_json(),
           }
-      ).as(req,
-        state.with(
-          request("POST", req.url).with(
-            {
-              "Header": {
-                "Accept": ["application/json"],
-                "Content-Type": ["application/json"],
-                "Authorization": ["Bearer " + state.api_token],
-                "X-FP-IntegrationPlatform": ["Elastic"],
-                "X-FP-IntegrationVersion": [state.integration_version],
-                "X-FP-IntegrationPlatformVersion": [state.integration_platform_version],
-              },
-              "Body": req.body.encode_json(),
-            }
-          ).do_request().as(resp,
-            (resp.StatusCode == 200) ?
-              resp.Body.decode_json().as(body,
-                body.?hits.hits.orValue([]).as(hits,
-                  {
-                    "events": hits.map(e, {"message": e._source.encode_json()}),
-                    "scroll_id": (size(hits) > 0) ?
-                      body.?_scroll_id.orValue("")
+        ).do_request().as(resp,
+          (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              body.?hits.hits.orValue([]).as(hits,
+                {
+                  "events": hits.map(e, {"message": e._source.encode_json()}),
+                  "cursor": {
+                    "last_indexed_at": (size(hits) > 0) ?
+                      string(hits.map(e, int(e._source.header_.indexed_at)).max())
                     :
-                      "",
-                    "cursor": {
-                      "last_indexed_at": (size(hits) > 0) ?
-                        string(hits.map(e, int(e._source.header_.indexed_at)).max())
-                      :
-                        lower_bound,
-                    },
-                    "want_more": size(hits) > 0,
-                  }
+                      lower_bound,
+                  },
+                  "want_more": size(hits) > 0,
+                }.with(
+                  (size(hits) > 0 && has(body._scroll_id)) ?
+                    {"scroll": {"id": body._scroll_id, "expires": string(now() + duration("2m"))}}
+                  :
+                    {}
                 )
               )
-            :
-              {
-                "events": {
-                  "error": {
-                    "code": string(resp.StatusCode),
-                    "id": string(resp.Status),
-                    "message": "POST " + req.url + ": " + (
-                      (size(resp.Body) != 0) ?
-                        string(resp.Body)
-                      :
-                        string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                    ),
-                  },
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": resp.Status,
+                  "message": "POST " + req.url + ": " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      resp.Status + " (" + string(resp.StatusCode) + ")"
+                  ),
                 },
-                "scroll_id": "",
-                "want_more": false,
-              }
-          )
+              },
+              "want_more": false,
+            }
         )
       )
     )

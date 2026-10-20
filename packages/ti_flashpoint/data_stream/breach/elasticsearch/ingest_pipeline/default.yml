@@ -46,6 +46,7 @@ processors:
       if: ctx.json?.fpid != null && ctx.json.fpid != ''
       fields:
         - json.fpid
+        - json.header_.indexed_at
       target_field: _id
       ignore_missing: true
 
@@ -87,6 +88,7 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_total_records_on_failure
             field: ti_flashpoint.breach.total_records
             ignore_missing: true
         - append:
@@ -100,6 +102,7 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_unique_records_on_failure
             field: ti_flashpoint.breach.unique_records
             ignore_missing: true
         - append:
@@ -113,6 +116,7 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_new_records_on_failure
             field: ti_flashpoint.breach.new_records
             ignore_missing: true
         - append:
@@ -126,6 +130,7 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_old_records_on_failure
             field: ti_flashpoint.breach.old_records
             ignore_missing: true
         - append:
@@ -157,6 +162,7 @@ processors:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove_created_at_timestamp_on_failure
             field: ti_flashpoint.breach.created_at.timestamp
             ignore_missing: true
         - append:
@@ -173,6 +179,7 @@ processors:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove_first_observed_at_timestamp_on_failure
             field: ti_flashpoint.breach.first_observed_at.timestamp
             ignore_missing: true
         - append:
@@ -189,6 +196,7 @@ processors:
         - UNIX
       on_failure:
         - remove:
+            tag: remove_created_at_date_time_on_failure
             field: ti_flashpoint.breach.created_at.date_time
             ignore_missing: true
         - append:
@@ -205,6 +213,7 @@ processors:
         - UNIX
       on_failure:
         - remove:
+            tag: remove_first_observed_at_date_time_on_failure
             field: ti_flashpoint.breach.first_observed_at.date_time
             ignore_missing: true
         - append:

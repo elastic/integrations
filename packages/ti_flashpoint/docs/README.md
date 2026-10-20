@@ -4,7 +4,7 @@
 
 [Flashpoint](https://flashpoint.io/) is a comprehensive threat intelligence platform that delivers actionable insights from dark web, deep web, and technical sources. It combines human-curated intelligence with automated collection to help organizations identify emerging threats, monitor adversary activity, and assess cyber risk with enriched context.
 
-The Flashpoint integration for Elastic collects alerts, indicators and vulnerabilities from the **Flashpoint Ignite API** and visualizes them in Kibana.
+The Flashpoint integration for Elastic collects alerts, indicators, vulnerabilities, compromised credential sightings and breaches from the **Flashpoint Ignite API** and visualizes them in Kibana.
 
 ### Compatibility
 
@@ -26,9 +26,11 @@ This integration collects log messages of the following type:
 
 **Note**: This integration uses Elastic transforms to deduplicate **incident** data and maintain the latest view of each incident for analysis and reporting.
 
+**Note**: The `Sighting` and `Breach` data streams are disabled by default and require a Flashpoint Compromised Credentials Monitoring - Enterprise (CCM-E) entitlement on the API token. Enable them explicitly when adding the integration.
+
 ### Supported use cases
 
-Integrating Flashpoint with Elastic SIEM provides centralized visibility into threat intelligence **Alerts**, **Indicators**, and **Vulnerabilities**, enabling efficient monitoring, investigation, and risk assessment within Kibana dashboards.
+Integrating Flashpoint with Elastic SIEM provides centralized visibility into threat intelligence **Alerts**, **Indicators**, **Vulnerabilities**, **Credential Sightings**, and **Breaches**, enabling efficient monitoring, investigation, and risk assessment within Kibana dashboards.
 
 For **Alerts**, the dashboard presents key metrics such as `Total Alerts` and `Alert Trends Over Time`, helping analysts quickly detect activity spikes and monitor evolving threat patterns.
 
@@ -36,7 +38,11 @@ For **Indicators**, the dashboard highlights `Total Indicators` and `Indicators 
 
 For **Vulnerabilities**, the dashboard presents `Total Vulnerabilities` and key breakdowns by `Severity` and `Status`, helping security teams assess exposure levels and prioritize remediation efforts.
 
-Interactive filtering controls allow analysts to drill down across alerts, indicators, and vulnerabilities, supporting streamlined investigation and prioritization workflows within a unified threat intelligence view.
+For **Credential Sightings**, the dashboard presents `Total Sightings`, `Exposed Users`, `Fresh Credentials`, and `Top Breaches`, helping teams spot newly leaked credentials and trace them back to their source breaches.
+
+For **Breaches**, the dashboard presents `Total Breaches`, `New Records`, and `Largest Breaches`, helping teams gauge breach volume and identify the domains most affected.
+
+Interactive filtering controls allow analysts to drill down across alerts, indicators, vulnerabilities, credential sightings, and breaches, supporting streamlined investigation and prioritization workflows within a unified threat intelligence view.
 
 ## What do I need to use this integration?
 
