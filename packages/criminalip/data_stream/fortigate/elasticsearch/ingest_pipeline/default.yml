@@ -1,0 +1,283 @@
+---
+description: Parse FortiGate key-value syslog messages and normalize common ECS fields.
+
+processors:
+  - set:
+      tag: set_event_original
+      field: event.original
+      copy_from: message
+      ignore_empty_value: true
+
+  - trim:
+      tag: trim_fortigate_message_for_parsing
+      field: message
+      ignore_missing: true
+
+  - kv:
+      tag: parse_fortigate_kv
+      field: message
+      field_split: ' (?=(?:[^"]*"[^"]*")*[^"]*$)'
+      value_split: "="
+      trim_key: '"'
+      trim_value: '"'
+      strip_brackets: true
+      ignore_missing: true
+      ignore_failure: true
+
+  - set:
+      tag: set_fortigate_event_ingested
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+      if: 'ctx.event?.ingested == null'
+
+  - set:
+      tag: combine_fortigate_date_time_timezone
+      field: _temp.fortigate_time
+      value: "{{date}} {{time}} {{tz}}"
+      if: 'ctx.date != null && ctx.time != null && ctx.tz != null && ctx.tz != ""'
+
+  - set:
+      tag: combine_fortigate_date_time
+      field: _temp.fortigate_time
+      value: "{{date}} {{time}}"
+      if: 'ctx.date != null && ctx.time != null && (ctx.tz == null || ctx.tz == "")'
+
+  - date:
+      tag: parse_fortigate_event_time
+      field: _temp.fortigate_time
+      target_field: "@timestamp"
+      formats:
+        - "yyyy-MM-dd HH:mm:ss Z"
+        - "yyyy-MM-dd HH:mm:ss"
+      ignore_failure: true
+
+  - append:
+      tag: tag_synthetic_fortigate_events
+      field: tags
+      value: synthetic
+      allow_duplicates: false
+      if: 'ctx.synthetic != null && ctx.synthetic.toString().trim() == "true"'
+
+  - rename:
+      tag: rename_source_ip
+      field: srcip
+      target_field: source.ip
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      tag: rename_destination_ip
+      field: dstip
+      target_field: destination.ip
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      tag: rename_source_port
+      field: srcport
+      target_field: source.port
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      tag: rename_destination_port
+      field: dstport
+      target_field: destination.port
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      tag: rename_event_action
+      field: action
+      target_field: event.action
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      tag: rename_network_iana_number
+      field: proto
+      target_field: network.iana_number
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      tag: convert_network_iana_number
+      field: network.iana_number
+      type: string
+      ignore_missing: true
+
+  - set:
+      tag: set_transport_tcp
+      field: network.transport
+      value: tcp
+      if: 'ctx.network?.iana_number == "6"'
+
+  - set:
+      tag: set_transport_udp
+      field: network.transport
+      value: udp
+      if: 'ctx.network?.iana_number == "17"'
+
+  - set:
+      tag: set_transport_icmp
+      field: network.transport
+      value: icmp
+      if: 'ctx.network?.iana_number == "1"'
+
+  - set:
+      tag: set_transport_ipv6_icmp
+      field: network.transport
+      value: ipv6-icmp
+      if: 'ctx.network?.iana_number == "58"'
+
+  - rename:
+      tag: rename_log_level
+      field: level
+      target_field: log.level
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      tag: rename_fortigate_log_id
+      field: logid
+      target_field: fortigate.logid
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      tag: rename_fortigate_policy_id
+      field: policyid
+      target_field: fortigate.policyid
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      tag: rename_fortigate_subtype
+      field: subtype
+      target_field: fortigate.subtype
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      tag: rename_fortigate_type
+      field: type
+      target_field: fortigate.type
+      ignore_missing: true
+      ignore_failure: true
+
+  - remove:
+      tag: remove_synthetic_marker
+      field: synthetic
+      ignore_missing: true
+
+  - rename:
+      tag: rename_fortigate_date
+      field: date
+      target_field: fortigate.date
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      tag: rename_fortigate_time
+      field: time
+      target_field: fortigate.time
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      tag: rename_fortigate_eventtime
+      field: eventtime
+      target_field: fortigate.eventtime
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      tag: rename_fortigate_timezone
+      field: tz
+      target_field: event.timezone
+      ignore_missing: true
+      ignore_failure: true
+
+  - remove:
+      tag: remove_temporary_fortigate_time
+      field: _temp.fortigate_time
+      ignore_missing: true
+
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - network
+
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: criminalip
+
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: criminalip.fortigate
+
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Fortinet
+
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: FortiGate
+
+  - set:
+      tag: set_observer_type
+      field: observer.type
+      value: firewall
+
+  - set:
+      tag: set_event_type
+      field: event.type
+      value:
+        - connection
+
+  - set:
+      tag: set_event_outcome_failure
+      field: event.outcome
+      value: failure
+      if: 'ctx.event?.action == "deny" || ctx.event?.action == "block"'
+
+  - set:
+      tag: set_event_outcome_success
+      field: event.outcome
+      value: success
+      if: 'ctx.event?.action == "accept" || ctx.event?.action == "allow"'
+
+  - convert:
+      tag: convert_source_port
+      field: source.port
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      tag: convert_destination_port
+      field: destination.port
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+
+on_failure:
+  - set:
+      tag: set_pipeline_error_kind
+      field: event.kind
+      value: pipeline_error
+
+  - set:
+      tag: set_pipeline_error_message
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.pipeline }} failed: {{ _ingest.on_failure_message }}"

@@ -1,0 +1,162 @@
+---
+description: Pipeline for processing Criminal IP API responses
+
+processors:
+  - rename:
+      tag: rename_message_to_event_original
+      if: 'ctx.event?.original == null'
+      field: message
+      target_field: event.original
+      ignore_missing: true
+
+  - remove:
+      tag: remove_message
+      if: 'ctx.event?.original != null'
+      field: message
+      ignore_missing: true
+
+  - json:
+      tag: parse_criminalip_response
+      field: event.original
+      add_to_root: true
+      add_to_root_conflict_strategy: merge
+      if: 'ctx.event?.outcome != "failure" && ctx.event?.original != null'
+
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: enrichment
+
+  - set:
+      tag: set_event_category
+      field: event.category
+      value: threat
+
+  - set:
+      tag: set_event_type
+      field: event.type
+      value: indicator
+
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: criminalip
+
+  - set:
+      tag: set_indicator_provider
+      field: threat.indicator.provider
+      value: "Criminal IP"
+
+  - set:
+      tag: set_indicator_type
+      field: threat.indicator.type
+      value: ipv4-addr
+
+  - rename:
+      tag: rename_ip
+      field: ip
+      target_field: threat.indicator.ip
+      ignore_missing: true
+
+  - rename:
+      tag: rename_score_inbound
+      field: score.inbound
+      target_field: criminalip.score.inbound
+      ignore_missing: true
+
+  - rename:
+      tag: rename_score_outbound
+      field: score.outbound
+      target_field: criminalip.score.outbound
+      ignore_missing: true
+
+  - rename:
+      tag: rename_is_vpn
+      field: issues.is_vpn
+      target_field: criminalip.issues.is_vpn
+      ignore_missing: true
+
+  - rename:
+      tag: rename_is_tor
+      field: issues.is_tor
+      target_field: criminalip.issues.is_tor
+      ignore_missing: true
+
+  - rename:
+      tag: rename_is_proxy
+      field: issues.is_proxy
+      target_field: criminalip.issues.is_proxy
+      ignore_missing: true
+
+  - rename:
+      tag: rename_is_scanner
+      field: issues.is_scanner
+      target_field: criminalip.issues.is_scanner
+      ignore_missing: true
+
+  - rename:
+      tag: rename_is_darkweb
+      field: issues.is_darkweb
+      target_field: criminalip.issues.is_darkweb
+      ignore_missing: true
+
+  - rename:
+      tag: rename_is_hosting
+      field: issues.is_hosting
+      target_field: criminalip.issues.is_hosting
+      ignore_missing: true
+
+  - rename:
+      tag: rename_is_cloud
+      field: issues.is_cloud
+      target_field: criminalip.issues.is_cloud
+      ignore_missing: true
+
+  - set:
+      tag: set_report_outcome
+      field: event.outcome
+      value: success
+      if: "ctx.threat?.indicator?.ip != null && ctx.error?.message == null && (ctx.http?.response?.status_code == null || ctx.http.response.status_code == 200) && (ctx.status == null || ctx.status == 200)"
+
+  - set:
+      tag: set_failed_report_outcome
+      field: event.outcome
+      value: failure
+      if: "ctx.event?.outcome != 'success'"
+
+  - set:
+      tag: set_invalid_report_message
+      field: error.message
+      value: "Criminal IP did not return a usable IP report. Check API access, quota, and the requested IP."
+      if: "ctx.event?.outcome == 'failure' && ctx.error?.message == null"
+
+  - remove:
+      tag: remove_unpreserved_original
+      field: event.original
+      ignore_missing: true
+      if: "ctx.tags == null || !ctx.tags.contains('preserve_original_event')"
+
+on_failure:
+  - set:
+      tag: set_pipeline_error_outcome
+      field: event.outcome
+      value: failure
+  - set:
+      tag: set_pipeline_error_kind
+      field: event.kind
+      value: pipeline_error
+
+  - set:
+      tag: set_pipeline_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+
+  - remove:
+      tag: remove_unpreserved_original_on_failure
+      field: event.original
+      ignore_missing: true
+      if: "ctx.tags == null || !ctx.tags.contains('preserve_original_event')"

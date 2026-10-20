@@ -1,0 +1,102 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: criminalip
+      name: test-default-criminalip
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: criminalip.ti_feed
+          interval: 5m
+          program: |
+            request(
+              "GET",
+              state.url + "?format=json&key=" + state.secret.api_key
+            ).with({
+              "Header": {
+                "Accept": ["application/json"]
+              }
+            }).do_request().as(resp,
+              resp.StatusCode == 200 ? resp.Body.decode_json().as(body,
+                has(body.body.data) ?
+                  {
+                    "events": body.body.data.map(e, {
+                      "@timestamp": now(),
+                      "event.kind": "enrichment",
+                      "event.category": ["threat"],
+                      "event.type": ["indicator"],
+                      "event.module": "criminalip",
+                      "event.dataset": "criminalip.ti_feed",
+                      "event.outcome": "success",
+                      "message": e.encode_json(),
+                      "http.response.status_code": resp.StatusCode,
+                      "ip": e.ip,
+                      "confidence": e.confidence,
+                      "score": e.score,
+                      "reason": e.reason,
+                      "first_seen": e.first_seen,
+                      "last_seen": e.last_seen,
+                      "threat.indicator.ip": e.ip,
+                      "threat.indicator.type": "ipv4-addr",
+                      "threat.indicator.provider": "Criminal IP",
+                      "threat.indicator.description": e.reason,
+                      "threat.indicator.confidence": e.confidence,
+                      "criminalip.ti_feed.score": e.score,
+                      "criminalip.ti_feed.first_seen": e.first_seen,
+                      "criminalip.ti_feed.last_seen": e.last_seen
+                    }),
+                    "status_code": resp.StatusCode,
+                    "url": state.url,
+                    "secret": state.secret
+                  }
+                :
+                  {
+                    "events": [{
+                      "event.outcome": "failure",
+                      "error.message": "Criminal IP TI Feed response did not contain body.data.",
+                      "http.response.status_code": resp.StatusCode
+                    }],
+                    "status_code": resp.StatusCode,
+                    "url": state.url,
+                    "secret": state.secret
+                  }
+              ) : {
+                "events": [{
+                  "event.outcome": "failure",
+                  "error.message": "Criminal IP TI Feed request failed with HTTP status " + string(resp.StatusCode),
+                  "http.response.status_code": resp.StatusCode
+                }],
+                "status_code": resp.StatusCode,
+                "url": state.url,
+                "secret": state.secret
+              }
+            )
+          resource:
+            url: https://dl.criminalip.io/ti/v1/feed/outbound
+          secret_state:
+            api_key: ${SECRET_0}
+          tags:
+            - criminalip
+            - threat_intelligence
+            - ti_feed
+            - preserve_original_event
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-criminalip.ti_feed-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

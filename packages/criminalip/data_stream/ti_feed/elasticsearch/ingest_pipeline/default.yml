@@ -1,0 +1,85 @@
+---
+description: Normalize TI Feed observation timestamps and honor original-event preservation.
+processors:
+  - dot_expander:
+      tag: expand_feed_original
+      field: event.original
+      if: "ctx.containsKey('event.original')"
+  - dot_expander:
+      tag: expand_feed_first_seen
+      field: criminalip.ti_feed.first_seen
+      if: "ctx.containsKey('criminalip.ti_feed.first_seen')"
+  - dot_expander:
+      tag: expand_feed_last_seen
+      field: criminalip.ti_feed.last_seen
+      if: "ctx.containsKey('criminalip.ti_feed.last_seen')"
+  - rename:
+      tag: preserve_feed_message
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: "ctx.event?.original == null"
+  - remove:
+      tag: remove_feed_message
+      field: message
+      ignore_missing: true
+      if: "ctx.event?.original != null"
+  - date:
+      tag: parse_feed_first_seen
+      field: criminalip.ti_feed.first_seen
+      target_field: criminalip.ti_feed.first_seen
+      formats:
+        - ISO8601
+        - yyyy-MM-dd HH:mm:ss
+      timezone: UTC
+      if: "ctx['criminalip.ti_feed.first_seen'] != null || ctx.criminalip?.ti_feed?.first_seen != null"
+      on_failure:
+        - remove:
+            tag: remove_invalid_feed_first_seen
+            field: criminalip.ti_feed.first_seen
+            ignore_missing: true
+        - append:
+            tag: flag_invalid_feed_first_seen
+            field: error.message
+            value: Could not parse TI Feed first_seen timestamp.
+  - date:
+      tag: parse_feed_last_seen
+      field: criminalip.ti_feed.last_seen
+      target_field: criminalip.ti_feed.last_seen
+      formats:
+        - ISO8601
+        - yyyy-MM-dd HH:mm:ss
+      timezone: UTC
+      if: "ctx['criminalip.ti_feed.last_seen'] != null || ctx.criminalip?.ti_feed?.last_seen != null"
+      on_failure:
+        - remove:
+            tag: remove_invalid_feed_last_seen
+            field: criminalip.ti_feed.last_seen
+            ignore_missing: true
+        - append:
+            tag: flag_invalid_feed_last_seen
+            field: error.message
+            value: Could not parse TI Feed last_seen timestamp.
+  - remove:
+      tag: remove_unpreserved_feed_original
+      field: event.original
+      ignore_missing: true
+      if: "ctx.tags == null || !ctx.tags.contains('preserve_original_event')"
+on_failure:
+  - set:
+      tag: set_feed_pipeline_error_outcome
+      field: event.outcome
+      value: failure
+  - set:
+      tag: set_feed_pipeline_error_kind
+      field: event.kind
+      value: pipeline_error
+  - set:
+      tag: set_feed_pipeline_error_message
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.pipeline }} failed: {{ _ingest.on_failure_message }}"
+  - remove:
+      tag: remove_unpreserved_feed_original_on_failure
+      field: event.original
+      ignore_missing: true
+      if: "ctx.tags == null || !ctx.tags.contains('preserve_original_event')"

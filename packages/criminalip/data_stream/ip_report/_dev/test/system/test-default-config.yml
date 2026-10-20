@@ -1,0 +1,17 @@
+deployer: docker
+service: api-mock
+input: cel
+data_stream:
+  vars:
+    api_key: unit-test-key
+    ip: 192.0.2.10
+    url: "http://{{{Hostname}}}:{{{Port}}}/v1/asset/ip/report"
+    interval: 10s
+    preserve_original_event: true
+    tags:
+      - synthetic
+assert:
+  fields_present:
+    - threat.indicator.ip
+    - http.response.status_code
+wait_for_data_timeout: 90s

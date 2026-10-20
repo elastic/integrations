@@ -1,0 +1,18 @@
+services:
+  api-mock:
+    build: .
+    command: ["api"]
+    ports:
+      - "8080"
+
+  fortigate-tcp:
+    build: .
+    command: ["syslog", "tcp", "host.docker.internal", "19514"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  fortigate-udp:
+    build: .
+    command: ["syslog", "udp", "host.docker.internal", "19514"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
