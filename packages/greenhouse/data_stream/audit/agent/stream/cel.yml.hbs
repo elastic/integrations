@@ -82,6 +82,18 @@ Rejection enrichment (optional, enrich_rejections):
 
   3. Apply: each rejection event is enriched from pre-built lookup maps.
      Events with 0 or >1 RejectionDetails matches get an error instead.
+     The enrichment is emitted beside the untouched audit event (as the
+     `rejection` field, which the ingest pipeline moves to
+     greenhouse.audit.event.rejection) rather than merged into it, so that
+     the message stays byte-for-byte what the API returned.
+
+  JSON numbers: all API bodies are decoded with decode_json_string_numbers()
+  so that ids keep their literal text (as CEL strings) and encode_json()
+  writes them back unchanged. decode_json() would turn them into float64,
+  which loses precision above 2^53 and renders in scientific notation when
+  converted with string(). Note that encode_json() only preserves the
+  literal text on the decoded object itself; a map rebuilt with with()
+  re-encodes those values as quoted strings, hence the emit shape above.
 
   Endpoints used:
     GET /v3/rejection_details?application_ids=<comma-separated>
@@ -205,7 +217,7 @@ program: |-
           }
         ).do_request().as(resp,
           (resp.StatusCode == 200) ?
-            resp.Body.decode_json().as(body,
+            resp.Body.decode_json_string_numbers().as(body,
               // 3. Collect: page metadata, the RejectionDetails seen on this page, and the
               //    rejection action events that need correlating.
               {
@@ -295,7 +307,7 @@ program: |-
                             state.harvest_url.trim_right("/") + "/v3/rejection_details?application_ids=" + chunk.join(",")
                           ).with(pg.harvest_hdr).do_request().as(rd_resp,
                             (rd_resp.StatusCode == 200) ?
-                              {"data": rd_resp.Body.decode_json(), "failed": []}
+                              {"data": rd_resp.Body.decode_json_string_numbers(), "failed": []}
                             :
                               {"data": [], "failed": chunk.map(a, {"a": a, "s": rd_resp.StatusCode})}
                           )
@@ -324,7 +336,7 @@ program: |-
                                   state.harvest_url.trim_right("/") + "/v3/rejection_reasons/" + id
                                 ).with(pg.harvest_hdr).do_request().as(rr_resp,
                                   (rr_resp.StatusCode == 200) ?
-                                    {"id": id, "val": rr_resp.Body.decode_json()}
+                                    {"id": id, "val": rr_resp.Body.decode_json_string_numbers()}
                                   :
                                     {"id": id, "error": "rejection_reason fetch failed: HTTP " + string(rr_resp.StatusCode)}
                                 )
@@ -341,7 +353,7 @@ program: |-
                                 state.harvest_url.trim_right("/") + "/v3/notes?ids=" + chunk.join(",")
                               ).with(pg.harvest_hdr).do_request().as(n_resp,
                                 (n_resp.StatusCode == 200) ?
-                                  {"notes": n_resp.Body.decode_json().filter(note, note.?id.orValue(null) != null), "failed": []}
+                                  {"notes": n_resp.Body.decode_json_string_numbers().filter(note, note.?id.orValue(null) != null), "failed": []}
                                 :
                                   {"notes": [], "failed": chunk.map(a, {"a": a, "s": n_resp.StatusCode})}
                               )
@@ -360,125 +372,87 @@ program: |-
                           // 6. Apply: emit passthrough events unchanged and resolved rejections enriched.
                           {
                             "auth_token": state.auth_token,
+                            // The audit event is emitted exactly as received; the enrichment is emitted beside it
+                            // as `rejection` and the ingest pipeline moves it to greenhouse.audit.event.rejection.
+                            // Rebuilding the event with with() would re-encode every number in it as a quoted string.
                             "events": pg.passthrough.map(e, {"message": e.encode_json()}) + cx.resolve.map(c,
                               {
-                                "message": c.e.as(e,
-                                  (c.n == 0) ?
-                                    e.with(
-                                      {
-                                        "event": e.event.with(
-                                          {
-                                            "rejection": {
-                                              "error": "no RejectionDetails audit event found sharing request.id " + e.?request.id.orValue(""),
-                                            },
-                                          }
-                                        ),
-                                      }
-                                    )
-                                  : (c.n > 1) ?
-                                    e.with(
-                                      {
-                                        "event": e.event.with(
-                                          {
-                                            "rejection": {
-                                              "error": "ambiguous: " + string(c.n) + " RejectionDetails events share request.id " + e.?request.id.orValue("") + " (likely a bulk rejection)",
-                                              "ambiguous_application_ids": c.ambiguous_ids,
-                                            },
-                                          }
-                                        ),
-                                      }
-                                    )
-                                  :
-                                    c.app_id.as(app_id,
-                                      rd_fetch.failed.filter(f, f.a == app_id).as(fl,
+                                "message": c.e.encode_json(),
+                                "rejection": (c.n == 0) ?
+                                  {
+                                    "error": "no RejectionDetails audit event found sharing request.id " + c.e.?request.id.orValue(""),
+                                  }
+                                : (c.n > 1) ?
+                                  {
+                                    "error": "ambiguous: " + string(c.n) + " RejectionDetails events share request.id " + c.e.?request.id.orValue("") + " (likely a bulk rejection)",
+                                    "ambiguous_application_ids": c.ambiguous_ids,
+                                  }
+                                :
+                                  c.app_id.as(app_id,
+                                    rd_fetch.failed.filter(f, f.a == app_id).as(fl,
                                       (fl.size() > 0) ?
-                                        e.with(
-                                          {
-                                            "event": e.event.with(
-                                              {
-                                                "rejection": {
-                                                  "application_id": app_id,
-                                                  "error": "rejection_details fetch failed: " + string(fl[0].s),
-                                                },
-                                              }
-                                            ),
-                                          }
-                                        )
+                                        {
+                                          "application_id": app_id,
+                                          "error": "rejection_details fetch failed: " + string(fl[0].s),
+                                        }
                                       : !(app_id in lookups.rd_map) ?
                                         // API returned 200 but no record for this application — flag as a diagnosable failure.
-                                        e.with(
-                                          {
-                                            "event": e.event.with(
-                                              {
-                                                "rejection": {
-                                                  "application_id": app_id,
-                                                  "error": "rejection_details returned 200 but contained no record for application_id " + app_id,
-                                                },
-                                              }
-                                            ),
-                                          }
-                                        )
+                                        {
+                                          "application_id": app_id,
+                                          "error": "rejection_details returned 200 but contained no record for application_id " + app_id,
+                                        }
                                       :
                                         lookups.rd_map[app_id].as(rd,
                                           {
-                                            "reason": rd.?rejection_reason_id.orValue(null).as(rr_id,
-                                              (rr_id != null) ? lookups.reason_map[?string(int(rr_id))].orValue(null) : null
-                                            ),
-                                            "notes_text": rd.?rejection_note_id.orValue(null).as(rn_id,
-                                              (rn_id != null) ? lookups.notes.map[?string(int(rn_id))].orValue("") : ""
-                                            ),
-                                            // Non-empty when the notes chunk holding this note returned non-200.
-                                            "note_error": rd.?rejection_note_id.orValue(null).as(rn_id,
-                                              (rn_id != null) ?
-                                                lookups.notes.failed.filter(f, f.a == string(int(rn_id))).as(fl,
-                                                  (fl.size() > 0) ? "notes fetch failed: HTTP " + string(fl[0].s) : ""
-                                                )
-                                              : ""
-                                            ),
+                                          "reason": rd.?rejection_reason_id.orValue(null).as(rr_id,
+                                            (rr_id != null) ? lookups.reason_map[?string(int(rr_id))].orValue(null) : null
+                                          ),
+                                          "notes_text": rd.?rejection_note_id.orValue(null).as(rn_id,
+                                            (rn_id != null) ? lookups.notes.map[?string(int(rn_id))].orValue("") : ""
+                                          ),
+                                          // Non-empty when the notes chunk holding this note returned non-200.
+                                          "note_error": rd.?rejection_note_id.orValue(null).as(rn_id,
+                                            (rn_id != null) ?
+                                              lookups.notes.failed.filter(f, f.a == string(int(rn_id))).as(fl,
+                                                (fl.size() > 0) ? "notes fetch failed: HTTP " + string(fl[0].s) : ""
+                                              )
+                                            : ""
+                                          ),
                                           }.as(enrich,
-                                            e.with(
-                                              {
-                                                "event": e.event.with(
+                                            {
+                                              "application_id": app_id,
+                                              ?"reason": (enrich.reason == null) ?
+                                                // No rejection_reason_id on the record; try the legacy notes fallback.
+                                                // Parenthesised: CEL only allows a nested ternary in the true branch when wrapped.
+                                                (
+                                                  enrich.notes_text.startsWith("Reason: ") ?
+                                                    optional.of(
+                                                      {
+                                                        "name": enrich.notes_text.split("\n")[0].trim_prefix("Reason: "),
+                                                        "type": "",
+                                                      }
+                                                    )
+                                                  : optional.none()
+                                                )
+                                              : ("_error" in enrich.reason) ?
+                                                // Reason lookup failed; surface the error so it's diagnosable.
+                                                optional.of({"error": enrich.reason["_error"]})
+                                              :
+                                                optional.of(
                                                   {
-                                                    "rejection": {
-                                                      "application_id": app_id,
-                                                      ?"reason": (enrich.reason == null) ?
-                                                        // No rejection_reason_id on the record; try the legacy notes fallback.
-                                                        // Parenthesised: CEL only allows a nested ternary in the true branch when wrapped.
-                                                        (
-                                                          enrich.notes_text.startsWith("Reason: ") ?
-                                                            optional.of(
-                                                              {
-                                                                "name": enrich.notes_text.split("\n")[0].trim_prefix("Reason: "),
-                                                                "type": "",
-                                                              }
-                                                            )
-                                                          : optional.none()
-                                                        )
-                                                      : ("_error" in enrich.reason) ?
-                                                        // Reason lookup failed; surface the error so it's diagnosable.
-                                                        optional.of({"error": enrich.reason["_error"]})
-                                                      :
-                                                        optional.of(
-                                                          {
-                                                            ?"id": enrich.reason.?id.optMap(v, string(int(v))),
-                                                            "name": enrich.reason.?name.orValue(""),
-                                                            "type": enrich.reason.?type.?name.orValue(""),
-                                                          }
-                                                        ),
-                                                      ?"notes": (enrich.notes_text == "") ? optional.none() : optional.of(enrich.notes_text),
-                                                      ?"notes_error": (enrich.note_error == "") ? optional.none() : optional.of(enrich.note_error),
-                                                      ?"rejected_at": rd.?rejected_at,
-                                                    },
+                                                    ?"id": enrich.reason.?id.optMap(v, string(int(v))),
+                                                    "name": enrich.reason.?name.orValue(""),
+                                                    "type": enrich.reason.?type.?name.orValue(""),
                                                   }
                                                 ),
-                                              }
-                                            )
+                                              ?"notes": (enrich.notes_text == "") ? optional.none() : optional.of(enrich.notes_text),
+                                              ?"notes_error": (enrich.note_error == "") ? optional.none() : optional.of(enrich.note_error),
+                                              ?"rejected_at": rd.?rejected_at,
+                                            }
                                           )
                                         )
-                                      )
                                     )
-                                ).encode_json(),
+                                  ),
                               }
                             ),
                             "cursor": {
