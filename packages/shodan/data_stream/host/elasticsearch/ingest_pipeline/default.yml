@@ -9,7 +9,13 @@ processors:
     field: message
     target_field: event.original
     ignore_missing: true
+    if: ctx.event?.original == null
     description: Fleet's final pipeline strips this unless preserve_original_event is set.
+- remove:
+    tag: remove_message_when_event_original_exists
+    field: message
+    ignore_missing: true
+    if: ctx.event?.original != null
 - json:
     tag: parse_event_original_to_shodan
     field: event.original
@@ -37,10 +43,15 @@ processors:
     copy_from: shodan.ip_str
     if: ctx.shodan?.ip_str != null
 - set:
-    tag: set_indicator_type
+    tag: set_indicator_type_ipv4
     field: threat.indicator.type
     value: ipv4-addr
-    if: ctx.shodan?.ip_str != null
+    if: ctx.shodan?.ip_str != null && !ctx.shodan.ip_str.contains(':')
+- set:
+    tag: set_indicator_type_ipv6
+    field: threat.indicator.type
+    value: ipv6-addr
+    if: ctx.shodan?.ip_str != null && ctx.shodan.ip_str.contains(':')
 - set:
     tag: set_indicator_provider
     field: threat.indicator.provider
