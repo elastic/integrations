@@ -1,0 +1,71 @@
+{
+    "attributes": {
+        "description": "One row per API key seen in range, busiest first (up to 1,000): Elastic Cloud API keys and Elasticsearch API keys. A Cloud API key has no name and is recorded by its id, so it is shown as “_4KEO… · Cloud API key” (the full id is in Key ID); its Owner is the Cloud organization, because the audit stream does not record who created it. An Elasticsearch API key is recorded by id and name, and its Owner is the principal that created it: a person's email, or the Cloud API key that minted it, in the same form. A re-issued key keeps its name under a new id, so a name can appear more than once. Kibana records a call made with an Elasticsearch API key without the key id, so those calls are counted under the creating identity elsewhere, not here. Busiest API keys by name on the dashboard adds a name's ids together. The range ends a minute ago, so nothing in it is still arriving; each panel reads the clock for itself, up to a second apart, so a key still sending requests can differ here and there by the events of that second.",
+        "tabs": [
+            {
+                "attributes": {
+                    "chartInterval": "auto",
+                    "columns": [
+                        "API key",
+                        "Key ID",
+                        "Owner",
+                        "First seen",
+                        "Last seen",
+                        "Events",
+                        "IPs",
+                        "Indices"
+                    ],
+                    "controlGroupJson": "{}",
+                    "grid": {
+                        "columns": {
+                            "Events": {
+                                "width": 95
+                            },
+                            "First seen": {
+                                "width": 225
+                            },
+                            "IPs": {
+                                "width": 60
+                            },
+                            "Indices": {
+                                "width": 75
+                            },
+                            "Key ID": {
+                                "width": 175
+                            },
+                            "Last seen": {
+                                "width": 225
+                            },
+                            "Owner": {
+                                "width": 185
+                            }
+                        }
+                    },
+                    "hideChart": true,
+                    "isTextBasedQuery": true,
+                    "kibanaSavedObjectMeta": {
+                        "searchSourceJSON": "{\"query\":{\"esql\":\"FROM logs-elastic_cloud.serverless_audit.otel-* | WHERE attributes.api_key.id IS NOT NULL OR attributes.user.domain == \\\"_cloud_api_key\\\" | STATS events = COUNT(*), first_seen = MIN(@timestamp), last_seen = MAX(@timestamp), ips = COUNT_DISTINCT(client.ip), indices = COUNT_DISTINCT(attributes.elasticsearch.audit.indices) BY attributes.api_key.name, attributes.api_key.id, attributes.user.email, attributes.user.name | EVAL key_id = COALESCE(attributes.api_key.id, attributes.user.name), api_key = COALESCE(attributes.api_key.name, CASE((LENGTH(attributes.user.name) == 20 AND attributes.user.name RLIKE \\\"[-_A-Za-z0-9]{20}\\\" AND NOT attributes.user.name RLIKE \\\"[0-9]{20}\\\"), CONCAT(LEFT(attributes.user.name, 5), \\\"… · Cloud API key\\\"), \\\"(no name)\\\")), owner = CASE(attributes.api_key.id IS NULL, \\\"Cloud organization\\\", COALESCE(attributes.user.email, CASE((LENGTH(attributes.user.name) == 20 AND attributes.user.name RLIKE \\\"[-_A-Za-z0-9]{20}\\\" AND NOT attributes.user.name RLIKE \\\"[0-9]{20}\\\"), CONCAT(LEFT(attributes.user.name, 5), \\\"… · Cloud API key\\\"), attributes.user.name), \\\"not recorded\\\")) | KEEP api_key, key_id, owner, first_seen, last_seen, events, ips, indices | SORT events DESC | LIMIT 1000 | RENAME api_key AS `API key`, key_id AS `Key ID`, owner AS Owner, first_seen AS `First seen`, last_seen AS `Last seen`, events AS Events, ips AS IPs, indices AS Indices\"},\"index\":{\"id\":\"cloud-audit-adhoc-dv\",\"title\":\"logs-elastic_cloud.serverless_audit.otel-*\",\"timeFieldName\":\"@timestamp\",\"sourceFilters\":[],\"type\":\"esql\",\"fieldFormats\":{},\"runtimeFieldMap\":{},\"allowNoIndex\":false,\"name\":\"logs-elastic_cloud.serverless_audit.otel-*\",\"allowHidden\":false},\"filter\":[],\"highlightAll\":true,\"version\":true}"
+                    },
+                    "rowHeight": 1,
+                    "sort": [
+                        [
+                            "Events",
+                            "desc"
+                        ]
+                    ],
+                    "timeRestore": false,
+                    "usesAdHocDataView": true
+                },
+                "id": "00c43d05-036c-56f6-a650-f3b6110a0fd8",
+                "label": "Results"
+            }
+        ],
+        "title": "[Audit] API key inventory"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-10-15T20:20:09.492Z",
+    "id": "elastic_cloud-cloud-audit-search-07-api-key-activity",
+    "references": [],
+    "type": "search",
+    "typeMigrationVersion": "10.18.0"
+}

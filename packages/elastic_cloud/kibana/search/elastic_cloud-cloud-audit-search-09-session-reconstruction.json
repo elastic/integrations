@@ -1,0 +1,67 @@
+{
+    "attributes": {
+        "description": "Replay a user’s Kibana session. Filter to one session to see exactly what that person did; newest first and capped at the newest 1,000 events in range, so sort Time ascending to read it forward. Kibana events only, because sessions are a Kibana concept. Operation uses the same words as the saved-object activity session (get, resolve, create …); an event that names no object keeps its own action, such as “http request” for a public API call or “user login”. Kibana’s internal UI requests, page assets, usage telemetry, the content-management calls that duplicate each object read, space lookups and point-in-time internals are left out; public /api/ requests are kept, because an export or import is one. Object is the title the object had at the time, so a renamed object shows its old title on older rows. Message is the sentence Kibana wrote for each event, which names the object’s type and id (“User has resolved dashboard [id=…]”), so the grid shows no separate Object type column and gives Message the room to print the id. The session column is the raw attributes.kibana.session.id field under its own name, the full id, because only a column that is a real field offers Filter for and Filter out on a dashboard panel: Discover in ES|QL mode takes a header only from RENAME, and a renamed column loses those actions. It is cut to fit; hover a cell to filter on that session, or expand a row (the ⤢ at its left) for the full id, Object type and every other field. An Identity shown as “_4KEO… · Cloud API key” is an organization-level Elastic Cloud API key: the audit stream records it only by its opaque 20-character id, shown here by its first five characters; it has no name and no owner email.",
+        "tabs": [
+            {
+                "attributes": {
+                    "chartInterval": "auto",
+                    "columns": [
+                        "Time",
+                        "Identity",
+                        "attributes.kibana.session.id",
+                        "Operation",
+                        "Object",
+                        "Space",
+                        "Message"
+                    ],
+                    "controlGroupJson": "{}",
+                    "grid": {
+                        "columns": {
+                            "Identity": {
+                                "width": 185
+                            },
+                            "Object": {
+                                "width": 260
+                            },
+                            "Operation": {
+                                "width": 100
+                            },
+                            "Space": {
+                                "width": 80
+                            },
+                            "Time": {
+                                "width": 208
+                            },
+                            "attributes.kibana.session.id": {
+                                "width": 135
+                            }
+                        }
+                    },
+                    "hideChart": false,
+                    "isTextBasedQuery": true,
+                    "kibanaSavedObjectMeta": {
+                        "searchSourceJSON": "{\"query\":{\"esql\":\"FROM logs-elastic_cloud.serverless_audit.otel-* | WHERE resource.attributes.service.name == \\\"serverless-kibana\\\" | WHERE attributes.kibana.session.id IS NOT NULL | WHERE attributes.event.action IS NULL OR NOT (attributes.event.action IN (\\\"saved_object_open_point_in_time\\\", \\\"saved_object_close_point_in_time\\\", \\\"space_get\\\", \\\"space_find\\\") OR (attributes.event.action == \\\"http_request\\\" AND (NOT body.text LIKE \\\"*/api/*\\\" OR body.text LIKE \\\"*/api/ui_counters/*\\\" OR body.text LIKE \\\"*/api/content_management/*\\\"))) | SORT @timestamp DESC | LIMIT 1000 | EVAL actor = COALESCE(attributes.user.email, attributes.api_key.name, attributes.user.name, \\\"\u003canonymous\u003e\\\") | EVAL verb = CASE(attributes.event.action LIKE \\\"*_execution_cancel\\\", \\\"cancel\\\", attributes.event.action LIKE \\\"*_run_soon\\\", \\\"run\\\", attributes.event.action LIKE \\\"*_run\\\", \\\"run\\\", attributes.event.action LIKE \\\"*_test\\\", \\\"test\\\", attributes.event.action LIKE \\\"*_enable\\\", \\\"enable\\\", attributes.event.action LIKE \\\"*_disable\\\", \\\"disable\\\", attributes.event.action LIKE \\\"ml_put_*\\\", \\\"create\\\", attributes.event.action LIKE \\\"ml_open_*\\\", \\\"open\\\", attributes.event.action LIKE \\\"ml_start_*\\\", \\\"start\\\", attributes.event.action LIKE \\\"*point_in_time\\\", \\\"pit\\\", attributes.event.action LIKE \\\"*_create*\\\", \\\"create\\\", attributes.event.action LIKE \\\"*_update*\\\", \\\"update\\\", attributes.event.action LIKE \\\"*_delete\\\", \\\"delete\\\", attributes.event.action LIKE \\\"*_find\\\", \\\"find\\\", attributes.event.action LIKE \\\"*_get\\\", \\\"get\\\", attributes.event.action LIKE \\\"*_resolve\\\", \\\"resolve\\\", \\\"other\\\") | EVAL op = CASE(verb != \\\"other\\\", verb, COALESCE(REPLACE(attributes.event.action, \\\"_\\\", \\\" \\\"), \\\"other\\\")) | KEEP @timestamp, actor, attributes.kibana.session.id, op, attributes.kibana.saved_object.type, attributes.kibana.saved_object.name, attributes.kibana.space.id, body.text | EVAL actor = CASE((LENGTH(actor) == 20 AND actor RLIKE \\\"[-_A-Za-z0-9]{20}\\\" AND NOT actor RLIKE \\\"[0-9]{20}\\\"), CONCAT(LEFT(actor, 5), \\\"… · Cloud API key\\\"), actor) | RENAME @timestamp AS Time, actor AS Identity, op AS Operation, attributes.kibana.saved_object.type AS `Object type`, attributes.kibana.saved_object.name AS Object, attributes.kibana.space.id AS Space, body.text AS Message\"},\"index\":{\"id\":\"cloud-audit-adhoc-dv\",\"title\":\"logs-elastic_cloud.serverless_audit.otel-*\",\"timeFieldName\":\"@timestamp\",\"sourceFilters\":[],\"type\":\"esql\",\"fieldFormats\":{},\"runtimeFieldMap\":{},\"allowNoIndex\":false,\"name\":\"logs-elastic_cloud.serverless_audit.otel-*\",\"allowHidden\":false},\"filter\":[],\"highlightAll\":true,\"version\":true}"
+                    },
+                    "rowHeight": 1,
+                    "sort": [
+                        [
+                            "Time",
+                            "desc"
+                        ]
+                    ],
+                    "timeRestore": false,
+                    "usesAdHocDataView": true
+                },
+                "id": "4264fa9c-ff1c-5366-a952-e51c36f91a34",
+                "label": "Results"
+            }
+        ],
+        "title": "[Audit] Kibana session reconstruction"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-10-15T20:20:09.492Z",
+    "id": "elastic_cloud-cloud-audit-search-09-session-reconstruction",
+    "references": [],
+    "type": "search",
+    "typeMigrationVersion": "10.18.0"
+}
