@@ -73,7 +73,7 @@ Elastic Agent is required to stream data from the SQL API and ship the data to E
 
 ### Set up steps in Kibana
 
-1. In Kibana go to **Management > Integrations**.
+1. In Kibana go to **Management → Integrations**.
 2. Search for **Snowflake** and add the integration.
 3. Set the account URL, role, and warehouse.
 4. Provide the programmatic access token.
@@ -84,12 +84,12 @@ Elastic Agent is required to stream data from the SQL API and ship the data to E
 In Discover, filter on `event.dataset: snowflake.login_history`,
 `event.dataset: snowflake.sessions`, or
 `event.dataset: snowflake.grants_to_users`. Login history should contain
-`event.category: authentication` events; grants should contain IAM change
+`event.category: authentication` events. Grants should contain IAM change
 events.
 
 ## Troubleshooting
 
-- No data is being collected: Confirm the warehouse can auto-resume, the role has `SECURITY_VIEWER` (or imported privileges), and the account URL is reachable on HTTPS 443. ACCOUNT_USAGE latency means new rows may take up to 2–3 hours to appear.
+- No data is being collected: Confirm the warehouse can auto-resume, the role has `SECURITY_VIEWER` (or imported privileges), and the account URL is reachable on HTTPS 443. ACCOUNT_USAGE latency means new rows can take up to 2–3 hours to appear.
 - Authentication failures: Service users cannot use passwords. Provide a programmatic access token. The integration sends `X-Snowflake-Authorization-Token-Type: PROGRAMMATIC_ACCESS_TOKEN`.
 - Network policy blocks the SQL API: Add the agent egress IP, or use a PrivateLink hostname from `SYSTEM$GET_PRIVATELINK_CONFIG()`.
 - HTTP 429 (`390505`): Reduce poll frequency. There is no documented `Retry-After` contract on the SQL API.
@@ -170,7 +170,6 @@ The `login_history` data stream provides login attempt events from
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
-| log.offset | Log offset. | long |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | snowflake.login_history.authorizing_integration_name | Security integration that authorized the login, when present. | keyword |
@@ -291,8 +290,8 @@ An example event for `login_history` looks as following:
 #### sessions
 
 The `sessions` data stream provides session lifecycle events from
-`SNOWFLAKE.ACCOUNT_USAGE.SESSIONS`. Rows update until the session closes;
-the collector watermarks on `ACCESS_TIME`.
+`SNOWFLAKE.ACCOUNT_USAGE.SESSIONS`. Rows update until the session closes.
+The collector watermarks on `ACCESS_TIME`.
 
 ##### sessions fields
 
@@ -307,7 +306,6 @@ the collector watermarks on `ACCESS_TIME`.
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
-| log.offset | Log offset. | long |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | snowflake.sessions.authentication_method | Authentication method used to create the session (for example PASSWORD or OAUTH_ACCESS_TOKEN). | keyword |
@@ -420,7 +418,6 @@ with separate statements so a revoke timestamp cannot skip unread grants.
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
-| log.offset | Log offset. | long |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | snowflake.grants_to_users.granted_by | Role that performed the grant. | keyword |

@@ -121,7 +121,7 @@ program: |-
             optional.none(),
         }
       ).do_request().as(resp,
-        (resp.StatusCode == 202 || (resp.StatusCode == 429 && req.http_method == "GET")) ?
+        (resp.StatusCode == 202 || resp.StatusCode == 429 && req.http_method == "GET") ?
           try(resp.Body.decode_json()).as(body,
             (is_error(body) || string(body.?statementHandle.orValue("")) == "") ?
               {
@@ -182,8 +182,7 @@ program: |-
                     // A continuation that returns no rows must still publish a placeholder.
                     // With zero events the input keeps the previous cursor, so continue would stick.
                     int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count ||
-                    result.num_rows >= int(state.batch_size) ||
-                    state.?cursor.continue.orValue(false)
+                    result.num_rows >= int(state.batch_size) || state.?cursor.continue.orValue(false)
                   ) ?
                     dyn([{"retry": true}])
                   :
@@ -217,7 +216,7 @@ program: |-
                     // so a full page that sits entirely inside the lag window is not skipped.
                     "page_timestamp": (size(result.rows) > 0 && int(state.?cursor.next_partition.orValue(0)) + 1 >= result.partition_count) ?
                       (
-                        result.names.zip(result.rows[int(size(result.rows)) - 1]).?ACCESS_TIME.orValue(null) == null ?
+                        (result.names.zip(result.rows[int(size(result.rows)) - 1]).?ACCESS_TIME.orValue(null) == null) ?
                           state.?cursor.page_timestamp.orValue("")
                         :
                           string(result.names.zip(result.rows[int(size(result.rows)) - 1]).ACCESS_TIME)

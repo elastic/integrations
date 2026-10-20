@@ -95,15 +95,13 @@ program: |-
                       "type": "TEXT",
                       "value": (state.?cursor.page_timestamp.orValue("") != "") ?
                         state.cursor.page_timestamp
-                      :
-                        ((req.query == "deleted") ? state.cursor.last_deleted_on : state.cursor.last_created_on),
+                      : (req.query == "deleted") ? state.cursor.last_deleted_on : state.cursor.last_created_on,
                     },
                     "2": {
                       "type": "TEXT",
                       "value": (state.?cursor.page_timestamp.orValue("") != "") ?
                         state.cursor.page_timestamp
-                      :
-                        ((req.query == "deleted") ? state.cursor.last_deleted_on : state.cursor.last_created_on),
+                      : (req.query == "deleted") ? state.cursor.last_deleted_on : state.cursor.last_created_on,
                     },
                     "3": {
                       "type": "TEXT",
@@ -145,7 +143,7 @@ program: |-
             optional.none(),
         }
       ).do_request().as(resp,
-        (resp.StatusCode == 202 || (resp.StatusCode == 429 && req.http_method == "GET")) ?
+        (resp.StatusCode == 202 || resp.StatusCode == 429 && req.http_method == "GET") ?
           try(resp.Body.decode_json()).as(body,
             (is_error(body) || string(body.?statementHandle.orValue("")) == "") ?
               {
@@ -256,18 +254,15 @@ program: |-
                         (
                           (req.query == "deleted") ?
                             (
-                              result.names.zip(result.rows[int(size(result.rows)) - 1]).?DELETED_ON.orValue(null) == null ?
+                              (result.names.zip(result.rows[int(size(result.rows)) - 1]).?DELETED_ON.orValue(null) == null) ?
                                 state.?cursor.page_timestamp.orValue("")
                               :
                                 string(result.names.zip(result.rows[int(size(result.rows)) - 1]).DELETED_ON)
                             )
+                          : (result.names.zip(result.rows[int(size(result.rows)) - 1]).?CREATED_ON.orValue(null) == null) ?
+                            state.?cursor.page_timestamp.orValue("")
                           :
-                            (
-                              result.names.zip(result.rows[int(size(result.rows)) - 1]).?CREATED_ON.orValue(null) == null ?
-                                state.?cursor.page_timestamp.orValue("")
-                              :
-                                string(result.names.zip(result.rows[int(size(result.rows)) - 1]).CREATED_ON)
-                            )
+                            string(result.names.zip(result.rows[int(size(result.rows)) - 1]).CREATED_ON)
                         )
                       :
                         state.?cursor.page_timestamp.orValue(""),

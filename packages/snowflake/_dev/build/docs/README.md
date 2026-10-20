@@ -72,7 +72,7 @@ Elastic Agent is required to stream data from the SQL API and ship the data to E
 
 ### Set up steps in Kibana
 
-1. In Kibana go to **Management > Integrations**.
+1. In Kibana go to **Management → Integrations**.
 2. Search for **Snowflake** and add the integration.
 3. Set the account URL, role, and warehouse.
 4. Provide the programmatic access token.
@@ -83,12 +83,12 @@ Elastic Agent is required to stream data from the SQL API and ship the data to E
 In Discover, filter on `event.dataset: snowflake.login_history`,
 `event.dataset: snowflake.sessions`, or
 `event.dataset: snowflake.grants_to_users`. Login history should contain
-`event.category: authentication` events; grants should contain IAM change
+`event.category: authentication` events. Grants should contain IAM change
 events.
 
 ## Troubleshooting
 
-- No data is being collected: Confirm the warehouse can auto-resume, the role has `SECURITY_VIEWER` (or imported privileges), and the account URL is reachable on HTTPS 443. ACCOUNT_USAGE latency means new rows may take up to 2–3 hours to appear.
+- No data is being collected: Confirm the warehouse can auto-resume, the role has `SECURITY_VIEWER` (or imported privileges), and the account URL is reachable on HTTPS 443. ACCOUNT_USAGE latency means new rows can take up to 2–3 hours to appear.
 - Authentication failures: Service users cannot use passwords. Provide a programmatic access token. The integration sends `X-Snowflake-Authorization-Token-Type: PROGRAMMATIC_ACCESS_TOKEN`.
 - Network policy blocks the SQL API: Add the agent egress IP, or use a PrivateLink hostname from `SYSTEM$GET_PRIVATELINK_CONFIG()`.
 - HTTP 429 (`390505`): Reduce poll frequency. There is no documented `Retry-After` contract on the SQL API.
@@ -142,8 +142,8 @@ The `login_history` data stream provides login attempt events from
 #### sessions
 
 The `sessions` data stream provides session lifecycle events from
-`SNOWFLAKE.ACCOUNT_USAGE.SESSIONS`. Rows update until the session closes;
-the collector watermarks on `ACCESS_TIME`.
+`SNOWFLAKE.ACCOUNT_USAGE.SESSIONS`. Rows update until the session closes.
+The collector watermarks on `ACCESS_TIME`.
 
 ##### sessions fields
 
