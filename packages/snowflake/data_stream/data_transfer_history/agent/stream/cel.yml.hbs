@@ -52,17 +52,15 @@ program: |-
       state.url.trim_right("/") + "/api/v2/statements?" + {
         "requestId": [uuid()],
       }.format_query(),
-    "since": (
-      (state.?cursor.last_timestamp.orValue("") != "") ?
-        (
-          state.?cursor.catching_up.orValue(false) ?
-            string(state.cursor.last_timestamp)
-          :
-            (string(state.cursor.last_timestamp).parse_time("2006-01-02 15:04:05.000 Z0700") - duration(state.lag_time)).format("2006-01-02 15:04:05.000 -0700")
-        )
-      :
-        (now - duration(state.initial_interval)).format("2006-01-02 15:04:05.000 -0700")
-    ),
+    "since": (state.?cursor.last_timestamp.orValue("") != "") ?
+      (
+        state.?cursor.catching_up.orValue(false) ?
+          string(state.cursor.last_timestamp)
+        :
+          (string(state.cursor.last_timestamp).parse_time("2006-01-02 15:04:05.000 Z0700") - duration(state.lag_time)).format("2006-01-02 15:04:05.000 -0700")
+      )
+    :
+      (now - duration(state.initial_interval)).format("2006-01-02 15:04:05.000 -0700"),
     "catching_up": state.?cursor.catching_up.orValue(false) && state.?cursor.after_ts.orValue("") != "",
   }.as(req,
     state.with(
@@ -187,7 +185,7 @@ program: |-
                   int(state.?cursor.partition_count.orValue(0)),
                 "handle": string(body.?statementHandle.orValue(state.?cursor.handle.orValue(""))),
                 "filled_batch": (size(body.?resultSetMetaData.rowType.orValue([])) > 0) ?
-                  int(body.resultSetMetaData.?numRows.orValue(0)) >= int(state.batch_size)
+                  (int(body.resultSetMetaData.?numRows.orValue(0)) >= int(state.batch_size))
                 :
                   state.?cursor.filled_batch.orValue(false),
               }.as(result,
@@ -195,87 +193,86 @@ program: |-
                   records.map(record, record.?START_TIME.orValue(null) != null,
                     string(record.START_TIME)
                   ).as(row_timestamps,
-                  {
-                    "events": (size(result.rows) > 0) ?
-                      dyn(result.rows.map(row, {"message": result.names.zip(row).encode_json()}))
-                    : (int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count) ?
-                      dyn([{"retry": true}])
-                    :
-                      dyn([]),
-                    "cursor": {
-                      "last_timestamp": (size(row_timestamps) > 0) ?
-                        (
-                          (state.?cursor.last_timestamp.orValue("") != "") ?
-                            (row_timestamps.map(timestamp,
-                              timestamp.parse_time("2006-01-02 15:04:05.000 Z0700").format("2006-01-02 15:04:05.000 -0700")
-                            ) + [state.cursor.last_timestamp]).max()
-                          :
-                            row_timestamps.map(timestamp,
-                              timestamp.parse_time("2006-01-02 15:04:05.000 Z0700").format("2006-01-02 15:04:05.000 -0700")
-                            ).max()
-                        )
+                    {
+                      "events": (size(result.rows) > 0) ?
+                        dyn(result.rows.map(row, {"message": result.names.zip(row).encode_json()}))
+                      : (int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count) ?
+                        dyn([{"retry": true}])
                       :
-                        state.?cursor.last_timestamp.orValue(""),
-                    }.with(
-                      (size(records) > 0 && records[int(size(records)) - 1].?START_TIME.orValue(null) != null) ?
-                        records[int(size(records)) - 1].as(last,
+                        dyn([]),
+                      "cursor": {
+                        "last_timestamp": (size(row_timestamps) > 0) ?
+                          (
+                            (state.?cursor.last_timestamp.orValue("") != "") ?
+                              (row_timestamps.map(timestamp,
+                                timestamp.parse_time("2006-01-02 15:04:05.000 Z0700").format("2006-01-02 15:04:05.000 -0700")
+                              ) + [state.cursor.last_timestamp]).max()
+                            :
+                              row_timestamps.map(timestamp,
+                                timestamp.parse_time("2006-01-02 15:04:05.000 Z0700").format("2006-01-02 15:04:05.000 -0700")
+                              ).max()
+                          )
+                        :
+                          state.?cursor.last_timestamp.orValue(""),
+                      }.with(
+                        (size(records) > 0 && records[int(size(records)) - 1].?START_TIME.orValue(null) != null) ?
+                          records[int(size(records)) - 1].as(last,
+                            {
+                              "after_ts": string(last.START_TIME).parse_time("2006-01-02 15:04:05.000 Z0700").format("2006-01-02 15:04:05.000 -0700"),
+                              "after_source_cloud": (last.?SOURCE_CLOUD.orValue(null) != null) ? string(last.SOURCE_CLOUD) : "",
+                              "after_source_region": (last.?SOURCE_REGION.orValue(null) != null) ? string(last.SOURCE_REGION) : "",
+                              "after_target_cloud": (last.?TARGET_CLOUD.orValue(null) != null) ? string(last.TARGET_CLOUD) : "",
+                              "after_target_region": (last.?TARGET_REGION.orValue(null) != null) ? string(last.TARGET_REGION) : "",
+                              "after_transfer_type": (last.?TRANSFER_TYPE.orValue(null) != null) ? string(last.TRANSFER_TYPE) : "",
+                            }
+                          )
+                        :
                           {
-                            "after_ts": string(last.START_TIME).parse_time("2006-01-02 15:04:05.000 Z0700").format("2006-01-02 15:04:05.000 -0700"),
-                            "after_source_cloud": (last.?SOURCE_CLOUD.orValue(null) != null) ? string(last.SOURCE_CLOUD) : "",
-                            "after_source_region": (last.?SOURCE_REGION.orValue(null) != null) ? string(last.SOURCE_REGION) : "",
-                            "after_target_cloud": (last.?TARGET_CLOUD.orValue(null) != null) ? string(last.TARGET_CLOUD) : "",
-                            "after_target_region": (last.?TARGET_REGION.orValue(null) != null) ? string(last.TARGET_REGION) : "",
-                            "after_transfer_type": (last.?TRANSFER_TYPE.orValue(null) != null) ? string(last.TRANSFER_TYPE) : "",
+                            ?"after_ts": (state.?cursor.after_ts.orValue("") != "") ? optional.of(string(state.cursor.after_ts)) : optional.none(),
+                            ?"after_source_cloud": (state.?cursor.after_source_cloud.orValue("") != "") ? optional.of(string(state.cursor.after_source_cloud)) : optional.none(),
+                            ?"after_source_region": (state.?cursor.after_source_region.orValue("") != "") ? optional.of(string(state.cursor.after_source_region)) : optional.none(),
+                            ?"after_target_cloud": (state.?cursor.after_target_cloud.orValue("") != "") ? optional.of(string(state.cursor.after_target_cloud)) : optional.none(),
+                            ?"after_target_region": (state.?cursor.after_target_region.orValue("") != "") ? optional.of(string(state.cursor.after_target_region)) : optional.none(),
+                            ?"after_transfer_type": (state.?cursor.after_transfer_type.orValue("") != "") ? optional.of(string(state.cursor.after_transfer_type)) : optional.none(),
                           }
-                        )
-                      :
-                        {
-                          ?"after_ts": (state.?cursor.after_ts.orValue("") != "") ? optional.of(string(state.cursor.after_ts)) : optional.none(),
-                          ?"after_source_cloud": (state.?cursor.after_source_cloud.orValue("") != "") ? optional.of(string(state.cursor.after_source_cloud)) : optional.none(),
-                          ?"after_source_region": (state.?cursor.after_source_region.orValue("") != "") ? optional.of(string(state.cursor.after_source_region)) : optional.none(),
-                          ?"after_target_cloud": (state.?cursor.after_target_cloud.orValue("") != "") ? optional.of(string(state.cursor.after_target_cloud)) : optional.none(),
-                          ?"after_target_region": (state.?cursor.after_target_region.orValue("") != "") ? optional.of(string(state.cursor.after_target_region)) : optional.none(),
-                          ?"after_transfer_type": (state.?cursor.after_transfer_type.orValue("") != "") ? optional.of(string(state.cursor.after_transfer_type)) : optional.none(),
-                        }
-                    ).with(
-                      (int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count) ?
-                        {
-                          "handle": result.handle,
-                          "next_partition": int(state.?cursor.next_partition.orValue(0)) + 1,
-                          "row_type": result.names,
-                          "partition_count": result.partition_count,
-                          "filled_batch": result.filled_batch,
-                        }
-                      :
-                        {
-                          "catching_up": result.filled_batch,
-                        }
-                    ),
-                    "want_more": int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count || result.filled_batch,
-                  }
-                )
+                      ).with(
+                        (int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count) ?
+                          {
+                            "handle": result.handle,
+                            "next_partition": int(state.?cursor.next_partition.orValue(0)) + 1,
+                            "row_type": result.names,
+                            "partition_count": result.partition_count,
+                            "filled_batch": result.filled_batch,
+                          }
+                        :
+                          {
+                            "catching_up": result.filled_batch,
+                          }
+                      ),
+                      "want_more": int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count ||
+                      result.filled_batch,
+                    }
+                  )
                 )
               )
           )
         :
           {
-            "events": (
-              {
-                "error": {
-                  "code": string(resp.StatusCode),
-                  "id": resp.Status,
-                  "message": req.http_method + " " + req.request_url + ": " + (
-                    (size(resp.Body) != 0) ?
-                      string(resp.Body)
-                    :
-                      resp.Status + " (" + string(resp.StatusCode) + ")"
-                  ),
-                },
-              }.as(err, (resp.StatusCode == 429 || resp.StatusCode >= 500) ?
-                dyn(err)
-              :
-                dyn([err])
-              )
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": resp.Status,
+                "message": req.http_method + " " + req.request_url + ": " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            }.as(err, (resp.StatusCode == 429 || resp.StatusCode >= 500) ?
+              dyn(err)
+            :
+              dyn([err])
             ),
             "want_more": false,
           }
