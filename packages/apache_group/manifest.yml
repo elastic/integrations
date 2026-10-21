@@ -1,0 +1,29 @@
+format_version: 3.6.0
+name: apache_group
+type: integration
+title: Apache HTTP Server
+version: 0.1.0
+description: Collect logs and metrics from Apache HTTP Server.
+icons:
+  - src: /img/logo_apache.svg
+    title: logo apache
+    size: 32x32
+    type: image/svg+xml
+# PROTOTYPE: second integration group, stress test for the Nginx contract. Upstream has no
+# composable Apache OTel integration package, so the otel child is the input package
+# apache_input_otel (metrics only, no logs; does not pull in the apache_otel content pack).
+requires:
+  integration:
+    - package: apache
+      version: "^3.0.0"
+    - package: apache_input_otel
+      version: "^0.1.0"
+schemas:
+  otel:
+    integration: apache_input_otel
+    default: true
+  ecs:
+    integration: apache
+owner:
+  type: elastic
+  github: elastic/obs-infraobs-integrations
