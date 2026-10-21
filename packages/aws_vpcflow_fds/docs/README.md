@@ -165,9 +165,7 @@ To reduce query cost:
 * Narrow the dashboard time range rather than querying "Last 30 days".
 * Avoid high-frequency auto-refresh intervals on broad time ranges.
 
-## Reference
-
-### Limitations
+## Limitations
 
 * The dataset must be named `vpc_flow`, unless you edit every panel.
 * Charts use version 2 fields only. `tcp-flags`, `vpc-id`, `subnet-id`, `instance-id`, and `flow-direction` are not visualized.
