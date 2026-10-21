@@ -1146,24 +1146,24 @@ An example event for `drive` looks as following:
 {
     "@timestamp": "2022-05-04T15:04:05.000Z",
     "agent": {
-        "ephemeral_id": "fd06ff7f-60f1-4c18-8eeb-42c0f2e9b8a2",
-        "id": "f0fc5f19-560d-4c55-881a-7e75ff565a25",
-        "name": "elastic-agent-93835",
+        "ephemeral_id": "2088e044-a920-48a7-af7b-e296338c9fb3",
+        "id": "e49092e7-665a-40db-abbe-666faeca0705",
+        "name": "elastic-agent-23125",
         "type": "filebeat",
-        "version": "8.19.4"
+        "version": "8.19.21"
     },
     "data_stream": {
         "dataset": "google_workspace.drive",
-        "namespace": "86558",
+        "namespace": "57960",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "f0fc5f19-560d-4c55-881a-7e75ff565a25",
+        "id": "e49092e7-665a-40db-abbe-666faeca0705",
         "snapshot": false,
-        "version": "8.19.4"
+        "version": "8.19.21"
     },
     "event": {
         "action": "add_to_folder",
@@ -1171,10 +1171,10 @@ An example event for `drive` looks as following:
         "category": [
             "file"
         ],
-        "created": "2026-08-21T07:35:44.905Z",
+        "created": "2026-10-19T21:28:00.783754238Z",
         "dataset": "google_workspace.drive",
         "id": "1",
-        "ingested": "2026-08-21T07:35:47Z",
+        "ingested": "2026-10-19T21:28:03Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"add_to_folder\",\"parameters\":[{\"boolValue\":false,\"name\":\"billable\"},{\"name\":\"destination_folder_id\",\"value\":\"1234\"},{\"name\":\"destination_folder_title\",\"value\":\"folder title\"},{\"name\":\"doc_id\",\"value\":\"1234\"},{\"name\":\"doc_title\",\"value\":\"document title\"},{\"name\":\"doc_type\",\"value\":\"document\"},{\"name\":\"originating_app_id\",\"value\":\"1234\"},{\"name\":\"owner\",\"value\":\"owner@example.com\"},{\"boolValue\":false,\"name\":\"owner_is_shared_drive\"},{\"boolValue\":true,\"name\":\"primary_event\"},{\"name\":\"visibility\",\"value\":\"people_with_link\"}],\"type\":\"access\"},\"id\":{\"applicationName\":\"drive\",\"customerId\":\"1\",\"time\":\"2022-05-04T15:04:05Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "drive",
@@ -1246,6 +1246,7 @@ An example event for `drive` looks as following:
         }
     },
     "tags": [
+        "run_as_cel",
         "preserve_original_event",
         "forwarded",
         "google_workspace-drive"
@@ -2270,24 +2271,24 @@ An example event for `token` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "7db82d61-a990-4d52-8835-8cf01ac88554",
-        "id": "fc27da61-5075-45fe-9430-12bedac7e312",
-        "name": "elastic-agent-46781",
+        "ephemeral_id": "71472e38-53d7-4d48-bd58-0102b220ee2a",
+        "id": "ed62125c-5e8e-4a5e-8597-a9cd7842e213",
+        "name": "elastic-agent-91336",
         "type": "filebeat",
-        "version": "8.19.4"
+        "version": "8.19.21"
     },
     "data_stream": {
         "dataset": "google_workspace.token",
-        "namespace": "14396",
+        "namespace": "75267",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "fc27da61-5075-45fe-9430-12bedac7e312",
+        "id": "ed62125c-5e8e-4a5e-8597-a9cd7842e213",
         "snapshot": false,
-        "version": "8.19.4"
+        "version": "8.19.21"
     },
     "event": {
         "action": "authorize",
@@ -2295,10 +2296,10 @@ An example event for `token` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2026-08-21T07:48:26.324Z",
+        "created": "2026-10-19T21:31:35.88935813Z",
         "dataset": "google_workspace.token",
         "id": "1",
-        "ingested": "2026-08-21T07:48:29Z",
+        "ingested": "2026-10-19T21:31:38Z",
         "kind": [
             "event"
         ],
@@ -2428,6 +2429,7 @@ An example event for `token` looks as following:
         }
     },
     "tags": [
+        "run_as_cel",
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
@@ -3211,7 +3213,7 @@ An example event for `chrome` looks as following:
 | google_workspace.chrome.user_agent | User agent event parameter. | keyword |
 | google_workspace.chrome.user_justification | A parameter that contains a justification message provided by users. | keyword |
 | google_workspace.chrome.virtual_device_id | Virtual device ID of the browser on which the event happened. | keyword |
-| input.type | Type of filebeat input. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | url.query | The field contains the entire query string, excluding the leading `?` character, such as "q=elasticsearch". If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 
@@ -3377,7 +3379,7 @@ An example event for `data_studio` looks as following:
 | google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
 | google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
-| input.type | Type of filebeat input. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 
 
@@ -3554,7 +3556,7 @@ An example event for `calendar` looks as following:
 | google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
 | google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
-| input.type | Type of filebeat input. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 
 
@@ -3703,7 +3705,7 @@ An example event for `chat` looks as following:
 | google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
 | google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
-| input.type | Type of filebeat input. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 
 
@@ -3852,7 +3854,7 @@ An example event for `vault` looks as following:
 | google_workspace.vault.resource_url | The document URL of the document view. | keyword |
 | google_workspace.vault.target_user | The targeted user (such as user put on hold). | keyword |
 | google_workspace.vault.type |  | keyword |
-| input.type | Type of filebeat input. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 
 
@@ -4052,7 +4054,7 @@ An example event for `meet` looks as following:
 | google_workspace.meet.target.user_count | Target user count. | long |
 | google_workspace.meet.type |  | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
-| input.type | Type of filebeat input. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 
 
