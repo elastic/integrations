@@ -39,7 +39,7 @@
                 - name: code
                   type: long
                   description: >
-                    Strict signed-ASCII-decimal disposition code derived from `winlog.event_data.Disposition`.
+                    Unsigned 32-bit disposition or HRESULT derived from decimal `winlog.event_data.Disposition`. Signed and unsigned representations normalize to the same code, including unknown codes. Values outside -2147483648 through 4294967295 have no normalized code. The original representation remains in the native field.
 
                 - name: name
                   type: keyword
@@ -49,7 +49,7 @@
             - name: requester
               type: group
               description: >
-                Certificate requester identity. Also populates ECS `user.name` and `user.domain` for events 4886–4889 when no ECS user identity is already present.
+                Certificate requester identity. For receipt event 4886 only, also populates ECS `user.name` and `user.domain` with the request initiator when no root ECS user identity is present. Issuance, denial, and pending events retain the requester here without that fallback.
 
               fields:
                 - name: domain
@@ -79,14 +79,14 @@
             - name: attributes
               type: group
               description: >
-                Bounded allowlisted values parsed from `winlog.event_data.Attributes` without changing the raw field.
+                Bounded allowlisted values parsed from `winlog.event_data.Attributes` for events 4874 and 4886-4889 without changing the raw field. Event 4874 describes administratively changed request attributes, not necessarily the original submission or a complete current attribute set. Attribute names ignore ASCII case, spaces, and hyphens; internal tabs are not removed.
 
               fields:
                 - name: certificate_template
                   type: keyword
                   ignore_above: 4096
                   description: >
-                    Ordered CertificateTemplate request values, kept separate from the native `winlog.event_data.CertificateTemplate` field.
+                    Ordered CertificateTemplate request-attribute values. These remain separate from the native `winlog.event_data.CertificateTemplate` field and do not establish which template was used for issuance.
 
                 - name: request_client_info
                   type: keyword
@@ -250,6 +250,8 @@
           type: keyword
         - name: CertificateTemplate
           type: keyword
+          description: >
+            Native template reported by Windows: the requested template on event 4886 version 1, and the template reported by the CA issuance event on 4887 version 1. Availability depends on the event version and source. When absent, parsed request attributes are not substituted as confirmed issuance metadata.
         - name: CertIssuerName
           type: keyword
           description: >

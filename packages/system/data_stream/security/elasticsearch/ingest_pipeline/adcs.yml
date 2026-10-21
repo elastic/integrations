@@ -3,6 +3,7 @@
 description: Pipeline for normalizing Active Directory Certificate Services audit events.
 processors:
   - remove:
+      tag: remove_stale_adcs_overlay
       field: winlog.adcs
       ignore_missing: true
   - set:
@@ -10,14 +11,8 @@ processors:
       field: _temp_adcs
       value:
         request: {}
-        limits:
-          attributes_chars: 16384
-          physical_lines: 128
-          line_chars: 4096
-          key_chars: 128
-          values_per_key: 64
-          san_components: 64
   - fail:
+      tag: validate_adcs_event_data
       message: winlog.event_data must be an object
       if: ctx.winlog?.event_data != null && !(ctx.winlog.event_data instanceof Map)
   - grok:
@@ -42,7 +37,7 @@ processors:
       ignore_failure: true
   - script:
       tag: decode_adcs_disposition_name
-      description: Resolve recognized Certificate Services dispositions and HRESULTs without changing the source code.
+      description: Canonicalize 32-bit dispositions and HRESULTs to unsigned codes and resolve recognized names while preserving the native field.
       if: ctx._temp_adcs?.request?.disposition?.code != null
       lang: painless
       params:
@@ -120,11 +115,13 @@ processors:
         long code = ctx._temp_adcs.request.disposition.code;
         // Accept signed and unsigned 32-bit representations, without wrapping larger values.
         if (code < -2147483648L || code > 4294967295L) {
+          ctx._temp_adcs.request.remove('disposition');
           return;
         }
         if (code < 0) {
           code += 4294967296L;
         }
+        ctx._temp_adcs.request.disposition.code = code;
         def name = params.names.get(Long.toString(code));
         if (name != null) {
           ctx._temp_adcs.request.disposition.name = name;
@@ -156,14 +153,21 @@ processors:
       target_field: _temp_adcs.attribute_lines
       separator: '\n'
       preserve_trailing: true
-      if: ctx.event?.code != null && ['4886', '4887', '4888', '4889'].contains(ctx.event.code) && ctx.winlog?.event_data?.Attributes instanceof String && ctx.winlog.event_data.Attributes.length() <= ctx._temp_adcs.limits.attributes_chars
+      if: ctx.event?.code != null && ['4874', '4886', '4887', '4888', '4889'].contains(ctx.event.code) && ctx.winlog?.event_data?.Attributes instanceof String && ctx.winlog.event_data.Attributes.length() <= 16384
   # Parse bounded, allowlisted request attributes and SAN claims.
   - script:
       tag: parse_adcs_request_attributes
-      if: ctx.event?.code != null && ['4886', '4887', '4888', '4889'].contains(ctx.event.code) && ctx.winlog?.event_data?.Attributes != null
+      if: ctx.event?.code != null && ['4874', '4886', '4887', '4888', '4889'].contains(ctx.event.code) && ctx.winlog?.event_data?.Attributes != null
       description: Parse only allowlisted AD CS request attributes within explicit resource limits.
       lang: painless
       params:
+        limits:
+          attributes_chars: 16384
+          physical_lines: 128
+          line_chars: 4096
+          key_chars: 128
+          values_per_key: 64
+          san_components: 64
         outer_keys:
           certificatetemplate: certificate_template
           requestclientinfo: request_client_info
@@ -206,7 +210,9 @@ processors:
           StringBuilder builder = new StringBuilder();
           for (int index = start; index < end; index++) {
             int character = text.charAt(index);
-            if (removeSeparators && (character == 32 || character == 9 || character == 45)) {
+            // Certificate Services ignores spaces and hyphens in outer attribute names.
+            // https://learn.microsoft.com/en-us/windows/win32/api/certadm/nf-certadm-icertadmin-setrequestattributes
+            if (removeSeparators && (character == 32 || character == 45)) {
               continue;
             }
             if ((char)'A' <= character && character <= (char)'Z') {
@@ -351,12 +357,12 @@ processors:
         HashMap parsed;
         if (!(rawAttributes instanceof String)) {
           parsed = parserResult('error');
-        } else if (rawAttributes.length() > ctx._temp_adcs.limits.attributes_chars) {
+        } else if (rawAttributes.length() > params.limits.attributes_chars) {
           parsed = parserResult('skipped_limit');
         } else {
           try {
             parsed = parseAttributes(ctx._temp_adcs.attribute_lines, params.outer_keys,
-              ctx._temp_adcs.limits, params.microsoft_sid_uri_prefix);
+              params.limits, params.microsoft_sid_uri_prefix);
           } catch (Exception internalException) {
             parsed = parserResult('error');
           }
@@ -369,12 +375,14 @@ processors:
         }
         ctx._temp_adcs.put('status', parsed.get('status'));
   - append:
+      tag: tag_adcs_attributes_skipped_limit
       description: Mark events when resource limits prevent AD CS request attribute parsing.
       field: tags
       value: adcs_attributes_skipped_limit
       allow_duplicates: false
       if: ctx._temp_adcs?.status == 'skipped_limit'
   - append:
+      tag: tag_adcs_attribute_parse_error
       description: Mark errors caught within AD CS request attribute parsing.
       field: tags
       value: adcs_normalization_failed
@@ -410,11 +418,11 @@ processors:
       if: ctx._temp_adcs?.request instanceof Map && !ctx._temp_adcs.request.isEmpty()
   - set:
       tag: identify_adcs_requester_user_fallback
-      description: Use the requester only when the request event has no root user identity.
+      description: Use the request initiator for receipt event 4886 only when no root user identity is present.
       field: _temp_adcs.requester_user_fallback
       value: true
       if: >-
-        ['4886', '4887', '4888', '4889'].contains(ctx.event?.code) &&
+        ctx.event?.code == '4886' &&
         ctx.winlog?.adcs?.request?.requester?.name != null &&
         ctx.winlog.adcs.request.requester.domain != null &&
         ctx.user?.id == null && ctx.user?.name == null && ctx.user?.domain == null &&
@@ -436,18 +444,29 @@ processors:
       allow_duplicates: false
       if: ctx.winlog?.adcs?.request?.requester?.name instanceof String
   - remove:
+      tag: remove_adcs_temporary_fields
       field: _temp_adcs
       ignore_missing: true
 on_failure:
   - remove:
+      tag: remove_failed_adcs_overlay
       field:
         - winlog.adcs
         - _temp_adcs
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: tag_adcs_pipeline_failure
       description: Mark events when AD CS normalization fails unexpectedly.
       field: tags
       value: adcs_normalization_failed
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      tag: append_adcs_pipeline_error
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}' with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
       allow_duplicates: false
       ignore_failure: true

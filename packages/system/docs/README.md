@@ -616,11 +616,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
 | winlog.adcs.request.attributes.ccm | Values extracted from the ccm enrollment attribute in `winlog.event_data.Attributes`, preserved in request order. | keyword |
 | winlog.adcs.request.attributes.cdc | Active Directory server names supplied in the cdc enrollment attribute for the CA to use when requester information cannot be obtained from its working directory. Values are preserved in request order without hostname validation. | keyword |
-| winlog.adcs.request.attributes.certificate_template | Ordered CertificateTemplate request values, kept separate from the native `winlog.event_data.CertificateTemplate` field. | keyword |
+| winlog.adcs.request.attributes.certificate_template | Ordered CertificateTemplate request-attribute values. These remain separate from the native `winlog.event_data.CertificateTemplate` field and do not establish which template was used for issuance. | keyword |
 | winlog.adcs.request.attributes.request_client_info | Ordered RequestClientInfo request values. | keyword |
 | winlog.adcs.request.attributes.rmd | Machine object FQDNs supplied in the rmd enrollment attribute for the certificate request. Values are preserved in request order without hostname validation. | keyword |
 | winlog.adcs.request.attributes.san | Ordered, outer-trimmed SAN request values parsed from `winlog.event_data.Attributes`. | keyword |
-| winlog.adcs.request.disposition.code | Strict signed-ASCII-decimal disposition code derived from `winlog.event_data.Disposition`. | long |
+| winlog.adcs.request.disposition.code | Unsigned 32-bit disposition or HRESULT derived from decimal `winlog.event_data.Disposition`. Signed and unsigned representations normalize to the same code, including unknown codes. Values outside -2147483648 through 4294967295 have no normalized code. The original representation remains in the native field. | long |
 | winlog.adcs.request.disposition.name | Canonical CR_DISP_\* or CERTSRV_E_\* name for a recognized Certificate Services disposition or HRESULT in `winlog.adcs.request.disposition.code`. Signed and unsigned decimal representations of an HRESULT resolve to the same name. Unknown codes have no derived name. | keyword |
 | winlog.adcs.request.extension.name | Exact nonblank event 4873 ExtensionName without value decoding. | keyword |
 | winlog.adcs.request.extension.oid | Conservative dotted-ASCII-decimal identifier derived from event 4873 ExtensionName. | keyword |
@@ -689,7 +689,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.CertThumbprint | Thumbprint of the certificate presented for certificate-based Kerberos authentication. | keyword |
 | winlog.event_data.CertificateDatabaseHash |  | keyword |
 | winlog.event_data.CertificateSerialNumber |  | keyword |
-| winlog.event_data.CertificateTemplate |  | keyword |
+| winlog.event_data.CertificateTemplate | Native template reported by Windows: the requested template on event 4886 version 1, and the template reported by the CA issuance event on 4887 version 1. Availability depends on the event version and source. When absent, parsed request attributes are not substituted as confirmed issuance metadata. | keyword |
 | winlog.event_data.ChangeType |  | keyword |
 | winlog.event_data.ClassId |  | keyword |
 | winlog.event_data.ClassName |  | keyword |
