@@ -76,7 +76,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "vpc_flow-@timestamp",
                                             "query": {
-                                                "esql": "FROM vpc_flow | KEEP @timestamp | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend | STATS `Total Flows` = COUNT(*)"
+                                                "esql": "FROM vpc_flow | KEEP @timestamp, action | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND action != \"-\" | STATS `Total Flows` = COUNT(*)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -92,7 +92,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM vpc_flow | KEEP @timestamp | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend | STATS `Total Flows` = COUNT(*)"
+                                "esql": "FROM vpc_flow | KEEP @timestamp, action | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND action != \"-\" | STATS `Total Flows` = COUNT(*)"
                             },
                             "visualization": {
                                 "density": "default",
@@ -526,7 +526,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "vpc_flow-@timestamp",
                                             "query": {
-                                                "esql": "FROM vpc_flow | KEEP @timestamp, srcaddr | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend | STATS `Source IPs` = COUNT_DISTINCT(srcaddr)"
+                                                "esql": "FROM vpc_flow | KEEP @timestamp, srcaddr | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND srcaddr != \"-\" | STATS `Source IPs` = COUNT_DISTINCT(srcaddr)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -542,7 +542,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM vpc_flow | KEEP @timestamp, srcaddr | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend | STATS `Source IPs` = COUNT_DISTINCT(srcaddr)"
+                                "esql": "FROM vpc_flow | KEEP @timestamp, srcaddr | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND srcaddr != \"-\" | STATS `Source IPs` = COUNT_DISTINCT(srcaddr)"
                             },
                             "visualization": {
                                 "density": "default",
@@ -621,7 +621,7 @@
                                             ],
                                             "index": "vpc_flow-@timestamp",
                                             "query": {
-                                                "esql": "FROM vpc_flow | KEEP @timestamp, dstaddr | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend | STATS `Dest IPs` = COUNT_DISTINCT(dstaddr)"
+                                                "esql": "FROM vpc_flow | KEEP @timestamp, dstaddr | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND dstaddr != \"-\" | STATS `Dest IPs` = COUNT_DISTINCT(dstaddr)"
                                             },
                                             "timeField": "@timestamp",
                                             "ignoreGlobalFilters": false
@@ -632,7 +632,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM vpc_flow | KEEP @timestamp, dstaddr | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend | STATS `Dest IPs` = COUNT_DISTINCT(dstaddr)"
+                                "esql": "FROM vpc_flow | KEEP @timestamp, dstaddr | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND dstaddr != \"-\" | STATS `Dest IPs` = COUNT_DISTINCT(dstaddr)"
                             },
                             "visualization": {
                                 "density": "default",
@@ -1048,7 +1048,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "vpc_flow-@timestamp",
                                             "query": {
-                                                "esql": "FROM vpc_flow | KEEP @timestamp, protocol | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND protocol IS NOT NULL | EVAL proto = CASE(protocol == 6, \"TCP\", protocol == 17, \"UDP\", protocol == 1, \"ICMP\", TO_STRING(protocol)) | STATS count = COUNT(*) BY proto | SORT count DESC"
+                                                "esql": "FROM vpc_flow | KEEP @timestamp, protocol, action | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND protocol IS NOT NULL AND action != \"-\" | EVAL proto = CASE(protocol == 6, \"TCP\", protocol == 17, \"UDP\", protocol == 1, \"ICMP\", TO_STRING(protocol)) | STATS count = COUNT(*) BY proto | SORT count DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1064,7 +1064,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM vpc_flow | KEEP @timestamp, protocol | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND protocol IS NOT NULL | EVAL proto = CASE(protocol == 6, \"TCP\", protocol == 17, \"UDP\", protocol == 1, \"ICMP\", TO_STRING(protocol)) | STATS count = COUNT(*) BY proto | SORT count DESC"
+                                "esql": "FROM vpc_flow | KEEP @timestamp, protocol, action | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND protocol IS NOT NULL AND action != \"-\" | EVAL proto = CASE(protocol == 6, \"TCP\", protocol == 17, \"UDP\", protocol == 1, \"ICMP\", TO_STRING(protocol)) | STATS count = COUNT(*) BY proto | SORT count DESC"
                             },
                             "visualization": {
                                 "layers": [
@@ -1336,7 +1336,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "vpc_flow-@timestamp",
                                             "query": {
-                                                "esql": "FROM vpc_flow | KEEP @timestamp, srcaddr | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend | EVAL src = srcaddr | STATS count = COUNT(*) BY src | SORT count DESC | LIMIT 10"
+                                                "esql": "FROM vpc_flow | KEEP @timestamp, srcaddr | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND srcaddr != \"-\" | EVAL src = srcaddr | STATS count = COUNT(*) BY src | SORT count DESC | LIMIT 10"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1352,7 +1352,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM vpc_flow | KEEP @timestamp, srcaddr | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend | EVAL src = srcaddr | STATS count = COUNT(*) BY src | SORT count DESC | LIMIT 10"
+                                "esql": "FROM vpc_flow | KEEP @timestamp, srcaddr | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND srcaddr != \"-\" | EVAL src = srcaddr | STATS count = COUNT(*) BY src | SORT count DESC | LIMIT 10"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
