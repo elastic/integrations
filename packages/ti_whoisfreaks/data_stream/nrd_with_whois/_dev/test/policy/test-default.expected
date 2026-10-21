@@ -70,7 +70,7 @@ inputs:
                           }
                         :
                           (
-                            (!s.paging || resp.StatusCode != 200 || string(resp.Body).trim_space().startsWith("{")) ?
+                            (!s.paging || resp.StatusCode != 200 || resp.Body.to_valid_utf8("�").trim_space().startsWith("{")) ?
                               try(resp.Body.decode_json())
                             :
                               ""
@@ -78,7 +78,7 @@ inputs:
                             {
                               "ok": resp.StatusCode == 200 && (
                                 s.paging ?
-                                  !string(resp.Body).trim_space().startsWith("{")
+                                  !resp.Body.to_valid_utf8("�").trim_space().startsWith("{")
                                 :
                                   !(
                                     type(j) == map && type(j.?status.orValue(false)) == double &&
@@ -100,10 +100,12 @@ inputs:
                               ).as(d,
                                 (d != "") ?
                                   d
-                                : (size(string(resp.Body)) > 512) ?
-                                  (string(resp.Body).substring(0, 512) + "...")
+                                : (size(resp.Body.to_valid_utf8("�")) > 512) ?
+                                  (resp.Body.to_valid_utf8("�").substring(0, 512) + "...")
                                 : (size(resp.Body) != 0) ?
-                                  string(resp.Body)
+                                  resp.Body.to_valid_utf8(
+                                    "�"
+                                  )
                                 :
                                   string(resp.Status)
                               ),
@@ -152,8 +154,7 @@ inputs:
                               x.done < x.last
                             ) ?
                               (timestamp(x.done + "T00:00:00Z") + duration("24h")).format("2006-01-02").as(n, (n < x.from) ? x.from : n)
-                            :
-                              string(x.last),
+                            : (type(x.last) == string) ? x.last : "",
                           }
                         )
                       ).map(x,
@@ -187,6 +188,24 @@ inputs:
                       )
                     :
                       [],
+                  }
+                )
+              ).as(s,
+                s.with(
+                  {
+                    // Page text (invalid UTF-8 replaced, so one bad byte cannot fail the poll)
+                    // and header: the header of the first page is kept in the cursor and
+                    // prepended to a later page that does not repeat it.
+                    "page": (s.paging && s.r.ok) ?
+                      s.r.body.to_valid_utf8("�").as(text,
+                        text.split("\n")[0].trim_space().as(first,
+                          ((s.offset == 0) ? first : s.c.?header.orValue("")).as(hdr,
+                            {"hdr": hdr, "csv": (s.offset == 0 || hdr == "" || first == hdr) ? text : (hdr + "\n" + text)}
+                          )
+                        )
+                      )
+                    :
+                      {},
                   }
                 )
               ).as(s,
@@ -262,42 +281,61 @@ inputs:
                 : s.paging ?
                   // Stream page: CSV with a header row, one event per domain. The header of the
                   // first page is kept in the cursor and prepended to a later page that does not
-                  // repeat it, so every column of every row is mapped by name.
-                  string(s.r.body).as(text,
-                    text.split("\n")[0].trim_space().as(first,
-                      ((s.offset == 0) ? first : s.c.?header.orValue("")).as(hdr,
-                        bytes((s.offset == 0 || hdr == "" || first == hdr) ? text : (hdr + "\n" + text)).mime("text/csv; header=present").as(rows,
+                  // repeat it, so every column of every row is mapped by name. If the page does
+                  // not parse as a whole (for example a stray quote in a free-text field), each
+                  // row is parsed on its own: valid rows are kept and every row that still fails
+                  // is indexed as an error event carrying the raw row, so one bad row neither
+                  // stalls the feed nor drops the rest of the page.
+                  try(bytes(s.page.csv).mime("text/csv; header=present")).as(parsed,
+                    (type(parsed) != string) ?
+                      {"rows": parsed, "bad": []}
+                    :
+                      s.page.csv.split("\n").map(l, l.trim_space()).filter(l, l != "" && l != s.page.hdr).map(l,
+                        {"line": l, "p": try(bytes(s.page.hdr + "\n" + l).mime("text/csv; header=present"))}
+                      ).as(per,
+                        {
+                          "rows": per.filter(x, type(x.p) != string && size(x.p) > 0).map(x, x.p[0]),
+                          "bad": per.filter(x, type(x.p) == string),
+                        }
+                      )
+                  ).as(res,
+                    (
+                      (int(state.page_limit) > 0 && size(res.rows) + size(res.bad) >= int(state.page_limit)) ?
+                        s.c.with({"cur_offset": s.offset + int(state.page_limit), "header": s.page.hdr})
+                      :
+                        s.c.with(
+                          {
+                            "phase": (s.phase == "gtld" && s.c.?cctld_date.orValue("") != "") ? "cctld" : "idle",
+                            "cur_offset": 0,
+                            "header": "",
+                            s.phase + "_date": "",
+                            (s.c[?s.phase + "_pinned"].orValue(false) ? "pinned_" : "last_") + s.phase + "_date": s.date,
+                          }
+                        )
+                    ).as(nc,
+                      {
+                        "events": (size(res.rows) + size(res.bad) > 0) ?
                           (
-                            (int(state.page_limit) > 0 && size(rows) >= int(state.page_limit)) ?
-                              s.c.with({"cur_offset": s.offset + int(state.page_limit), "header": hdr})
-                            :
-                              s.c.with(
+                            dyn(res.rows.map(row, {"message": row.with({"tld_type": s.phase, "file_date": s.date}).encode_json()})) + dyn(
+                              res.bad.map(x,
                                 {
-                                  "phase": (s.phase == "gtld" && s.c.?cctld_date.orValue("") != "") ? "cctld" : "idle",
-                                  "cur_offset": 0,
-                                  "header": "",
-                                  s.phase + "_date": "",
-                                  (s.c[?s.phase + "_pinned"].orValue(false) ? "pinned_" : "last_") + s.phase + "_date": s.date,
+                                  "error": {
+                                    "message": "GET " + s.target + " returned a CSV row that could not be parsed (" + x.p + "); the row was skipped: " + ((size(x.line) > 1024) ? (x.line.substring(0, 1024) + "...") : x.line),
+                                  },
                                 }
                               )
-                          ).as(nc,
-                            {
-                              "events": (size(rows) > 0) ?
-                                dyn(rows.map(row, {"message": row.with({"tld_type": s.phase, "file_date": s.date}).encode_json()}))
-                              :
-                                // The input ends the cycle on an empty events list even when want_more
-                                // is true; the placeholder is dropped by the drop_event processor.
-                                dyn([{"retry": true}]),
-                              "cursor": nc,
-                              // More pages, the pending ccTLD file, or (when a feed is behind the
-                              // status last_update) another status check to catch up the next day.
-                              "want_more": nc.phase != "idle" || s.c[?s.phase + "_pinned"].orValue(false) ||
-                              nc.?last_gtld_date.orValue("") < nc.?gtld_last.orValue("") ||
-                              nc.?last_cctld_date.orValue("") < nc.?cctld_last.orValue(""),
-                            }
+                            )
                           )
-                        )
-                      )
+                        :
+                          // The input ends the cycle on an empty events list even when want_more
+                          // is true; the placeholder is dropped by the drop_event processor.
+                          dyn([{"retry": true}]),
+                        "cursor": nc,
+                        // More pages, the pending ccTLD file, or (when a feed is behind the
+                        // status last_update) another status check to catch up the next day.
+                        "want_more": nc.phase != "idle" || s.c[?s.phase + "_pinned"].orValue(false) ||
+                        nc.?last_gtld_date.orValue("") < nc.?gtld_last.orValue("") || nc.?last_cctld_date.orValue("") < nc.?cctld_last.orValue(""),
+                      }
                     )
                   )
                 : (type(s.r.json) != map) ?

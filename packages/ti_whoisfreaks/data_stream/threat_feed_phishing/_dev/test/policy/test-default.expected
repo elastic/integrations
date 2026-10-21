@@ -72,7 +72,7 @@ inputs:
                           }
                         :
                           (
-                            (!s.paging || resp.StatusCode != 200 || string(resp.Body).trim_space().startsWith("{")) ?
+                            (!s.paging || resp.StatusCode != 200 || resp.Body.to_valid_utf8("�").trim_space().startsWith("{")) ?
                               try(resp.Body.decode_json())
                             :
                               ""
@@ -80,7 +80,7 @@ inputs:
                             {
                               "ok": resp.StatusCode == 200 && (
                                 s.paging ?
-                                  !string(resp.Body).trim_space().startsWith("{")
+                                  !resp.Body.to_valid_utf8("�").trim_space().startsWith("{")
                                 :
                                   !(
                                     type(j) == map && type(j.?status.orValue(false)) == double &&
@@ -102,10 +102,12 @@ inputs:
                               ).as(d,
                                 (d != "") ?
                                   d
-                                : (size(string(resp.Body)) > 512) ?
-                                  (string(resp.Body).substring(0, 512) + "...")
+                                : (size(resp.Body.to_valid_utf8("�")) > 512) ?
+                                  (resp.Body.to_valid_utf8("�").substring(0, 512) + "...")
                                 : (size(resp.Body) != 0) ?
-                                  string(resp.Body)
+                                  resp.Body.to_valid_utf8(
+                                    "�"
+                                  )
                                 :
                                   string(resp.Status)
                               ),
@@ -134,7 +136,7 @@ inputs:
                             f.from.matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$"),
                             // The pinned date is used until it has been fetched once.
                             "usepin": s.pin != "" && !s.pin_done,
-                            "want": (s.pin != "" && !s.pin_done) ? s.pin : string(f.last),
+                            "want": (s.pin != "" && !s.pin_done) ? s.pin : ((type(f.last) == string) ? f.last : ""),
                           }
                         )
                       )
@@ -208,7 +210,7 @@ inputs:
                   // is kept in the cursor and sent with every row, so the ingest pipeline maps
                   // every column by name and never drops one, whether or not later pages
                   // repeat the header.
-                  string(s.r.body).split("\n").map(row, row.trim_space()).filter(row, row != "").as(lines,
+                  s.r.body.to_valid_utf8("�").split("\n").map(row, row.trim_space()).filter(row, row != "").as(lines,
                     ((s.offset == 0 && size(lines) > 0) ? (lines[0]) : s.c.?header.orValue("")).as(hdr,
                       lines.filter(row, row != hdr).as(rows,
                         {
@@ -217,7 +219,12 @@ inputs:
                               rows.map(row,
                                 {
                                   "message": row,
-                                  "whoisfreaks": {"file_date": s.date},
+                                  // Rows of a file fetched through File Date are flagged, so the
+                                  // latest transform keeps them out of the active indicator index.
+                                  "whoisfreaks": {
+                                    "file_date": s.date,
+                                    ?"pinned_file": s.c.?pinned.orValue(false) ? optional.of(true) : optional.none(),
+                                  },
                                   ?"_csv_header": (hdr != "") ? optional.of(hdr) : optional.none(),
                                 }
                               )

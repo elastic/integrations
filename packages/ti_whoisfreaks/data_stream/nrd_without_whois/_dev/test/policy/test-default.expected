@@ -70,7 +70,7 @@ inputs:
                           }
                         :
                           (
-                            (!s.paging || resp.StatusCode != 200 || string(resp.Body).trim_space().startsWith("{")) ?
+                            (!s.paging || resp.StatusCode != 200 || resp.Body.to_valid_utf8("�").trim_space().startsWith("{")) ?
                               try(resp.Body.decode_json())
                             :
                               ""
@@ -78,7 +78,7 @@ inputs:
                             {
                               "ok": resp.StatusCode == 200 && (
                                 s.paging ?
-                                  !string(resp.Body).trim_space().startsWith("{")
+                                  !resp.Body.to_valid_utf8("�").trim_space().startsWith("{")
                                 :
                                   !(
                                     type(j) == map && type(j.?status.orValue(false)) == double &&
@@ -100,10 +100,12 @@ inputs:
                               ).as(d,
                                 (d != "") ?
                                   d
-                                : (size(string(resp.Body)) > 512) ?
-                                  (string(resp.Body).substring(0, 512) + "...")
+                                : (size(resp.Body.to_valid_utf8("�")) > 512) ?
+                                  (resp.Body.to_valid_utf8("�").substring(0, 512) + "...")
                                 : (size(resp.Body) != 0) ?
-                                  string(resp.Body)
+                                  resp.Body.to_valid_utf8(
+                                    "�"
+                                  )
                                 :
                                   string(resp.Status)
                               ),
@@ -152,8 +154,7 @@ inputs:
                               x.done < x.last
                             ) ?
                               (timestamp(x.done + "T00:00:00Z") + duration("24h")).format("2006-01-02").as(n, (n < x.from) ? x.from : n)
-                            :
-                              string(x.last),
+                            : (type(x.last) == string) ? x.last : "",
                           }
                         )
                       ).map(x,
@@ -260,7 +261,7 @@ inputs:
                   )
                 : s.paging ?
                   // Stream page: one domain name per line, one event per domain.
-                  string(s.r.body).split("\n").map(row, row.trim_space()).filter(row, row != "").as(rows,
+                  s.r.body.to_valid_utf8("�").split("\n").map(row, row.trim_space()).filter(row, row != "").as(rows,
                     (
                       (int(state.page_limit) > 0 && size(rows) >= int(state.page_limit)) ?
                         s.c.with({"cur_offset": s.offset + int(state.page_limit)})
