@@ -1,0 +1,311 @@
+---
+# Intent documentation for the shipped dashboard.
+# kibana/dashboard/aws_vpcflow_fds-overview.json is the asset Kibana installs.
+# The YAML builder does not yet set FDS time-picker fields (ROW anchor
+# ignoreGlobalFilters, ad-hoc data view timeFieldName). Do not replace the
+# saved object with a builder compile until that support exists.
+dashboards:
+  - id: aws_vpcflow_fds-overview
+    name: '[FDS] VPC Flow Logs Overview'
+    description: Traffic, bandwidth, and rejected flows for AWS VPC Flow Logs queried from the vpc_flow FDS dataset.
+    panels:
+      # ROW anchor. Not an FDS query. Keeps the Kibana date picker enabled.
+      # Saved object sets timeFieldName @timestamp and ignoreGlobalFilters true.
+      - title: Showing day
+        hide_title: true
+        size: {w: 6, h: 5}
+        esql:
+          type: metric
+          query:
+            - ROW x = 1
+            - EVAL `Showing day` = DATE_TRUNC(1 day, ?_tstart)
+            - WHERE ?_tstart <= ?_tend
+          primary:
+            field: Showing day
+            label: Showing day
+      - title: Total Flows
+        hide_title: true
+        size: {w: 7, h: 5}
+        esql:
+          type: metric
+          query:
+            - FROM vpc_flow
+            - KEEP @timestamp
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+            - STATS `Total Flows` = COUNT(*)
+          primary:
+            field: Total Flows
+            label: Total Flows
+            format:
+              type: number
+              decimals: 0
+      - title: Accepted
+        hide_title: true
+        size: {w: 7, h: 5}
+        esql:
+          type: metric
+          query:
+            - FROM vpc_flow
+            - KEEP @timestamp, action
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND action == "ACCEPT"
+            - STATS `Accepted` = COUNT(*)
+          primary:
+            field: Accepted
+            label: Accepted
+            format:
+              type: number
+              decimals: 0
+      - title: Rejected
+        hide_title: true
+        size: {w: 7, h: 5}
+        esql:
+          type: metric
+          query:
+            - FROM vpc_flow
+            - KEEP @timestamp, action
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND action == "REJECT"
+            - STATS `Rejected` = COUNT(*)
+          primary:
+            field: Rejected
+            label: Rejected
+            format:
+              type: number
+              decimals: 0
+      - title: Total Bytes
+        hide_title: true
+        size: {w: 7, h: 5}
+        esql:
+          type: metric
+          query:
+            - FROM vpc_flow
+            - KEEP @timestamp, bytes
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+            - STATS `Total Bytes` = SUM(bytes)
+          primary:
+            field: Total Bytes
+            label: Total Bytes
+            format:
+              type: bytes
+              decimals: 1
+      - title: Source IPs
+        hide_title: true
+        size: {w: 7, h: 5}
+        esql:
+          type: metric
+          query:
+            - FROM vpc_flow
+            - KEEP @timestamp, srcaddr
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+            - STATS `Source IPs` = COUNT_DISTINCT(srcaddr)
+          primary:
+            field: Source IPs
+            label: Source IPs
+            format:
+              type: number
+              decimals: 0
+      - title: Interfaces
+        hide_title: true
+        size: {w: 7, h: 5}
+        esql:
+          type: metric
+          query:
+            - FROM vpc_flow
+            - KEEP @timestamp, interface_id
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+            - STATS `Interfaces` = COUNT_DISTINCT(interface_id)
+          primary:
+            field: Interfaces
+            label: Interfaces
+            format:
+              type: number
+              decimals: 0
+      - title: Traffic by Action
+        size: {w: 12, h: 10}
+        esql:
+          type: pie
+          query:
+            - FROM vpc_flow
+            - KEEP @timestamp, action
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND action != "-"
+            - EVAL act = action
+            - STATS count = COUNT(*) BY act
+          metrics:
+            - field: count
+              label: Flows
+          dimensions:
+            - field: act
+              label: Action
+      - title: Top 10 Destination Ports
+        size: {w: 24, h: 10}
+        esql:
+          type: bar
+          query:
+            - FROM vpc_flow
+            - KEEP @timestamp, dstport
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND dstport > 0
+            - EVAL port = TO_STRING(dstport)
+            - STATS count = COUNT(*) BY port
+            - SORT count DESC
+            - LIMIT 10
+          dimension:
+            field: port
+            label: Destination port
+          metrics:
+            - field: count
+              label: Flows
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: hide
+      - title: Protocol Distribution
+        size: {w: 12, h: 10}
+        esql:
+          type: pie
+          query:
+            - FROM vpc_flow
+            - KEEP @timestamp, protocol
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND protocol IS NOT NULL
+            - EVAL proto = CASE(protocol == 6, "TCP", protocol == 17, "UDP", protocol == 1, "ICMP", TO_STRING(protocol))
+            - STATS count = COUNT(*) BY proto
+            - SORT count DESC
+          metrics:
+            - field: count
+              label: Flows
+          dimensions:
+            - field: proto
+              label: Protocol
+      - title: Traffic Over Time by Action
+        size: {w: 32, h: 10}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - FROM vpc_flow
+            - KEEP @timestamp, action
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND action != "-"
+            - EVAL act = action
+            - EVAL time_bucket = DATE_TRUNC(5 minutes, @timestamp)
+            - STATS count = COUNT(*) BY time_bucket, act
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: count
+              label: Flows
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: act
+      - title: Top 10 Source IPs
+        size: {w: 16, h: 10}
+        esql:
+          type: bar
+          query:
+            - FROM vpc_flow
+            - KEEP @timestamp, srcaddr
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+            - EVAL src = srcaddr
+            - STATS count = COUNT(*) BY src
+            - SORT count DESC
+            - LIMIT 10
+          dimension:
+            field: src
+            label: Source IP
+          metrics:
+            - field: count
+              label: Flows
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: hide
+      - title: Bandwidth Over Time
+        size: {w: 32, h: 10}
+        esql:
+          type: line
+          query:
+            - FROM vpc_flow
+            - KEEP @timestamp, bytes
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+            - EVAL time_bucket = DATE_TRUNC(5 minutes, @timestamp)
+            - STATS total_bytes = SUM(bytes) BY time_bucket
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: total_bytes
+              label: Bytes
+              format:
+                type: bytes
+                decimals: 1
+          legend:
+            visible: hide
+      - title: Top Rejected Destination Ports
+        size: {w: 16, h: 10}
+        esql:
+          type: bar
+          query:
+            - FROM vpc_flow
+            - KEEP @timestamp, dstport, action
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND action == "REJECT" AND dstport > 0
+            - EVAL port = TO_STRING(dstport)
+            - STATS count = COUNT(*) BY port
+            - SORT count DESC
+            - LIMIT 10
+          dimension:
+            field: port
+            label: Destination port
+          metrics:
+            - field: count
+              label: Rejected flows
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: hide
+      - title: Flow Records
+        size: {w: 48, h: 14}
+        esql:
+          type: datatable
+          query:
+            - FROM vpc_flow
+            - KEEP @timestamp, srcaddr, dstaddr, srcport, dstport, protocol, packets, bytes, action, interface_id
+            - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+            - EVAL proto = CASE(protocol == 6, "TCP", protocol == 17, "UDP", protocol == 1, "ICMP", TO_STRING(protocol))
+            - KEEP @timestamp, action, srcaddr, srcport, dstaddr, dstport, proto, packets, bytes, interface_id
+            - SORT @timestamp DESC
+            - LIMIT 100
+          dimensions:
+            - field: "@timestamp"
+              label: "@timestamp"
+            - field: action
+              label: Action
+            - field: srcaddr
+              label: Source address
+            - field: srcport
+              label: Source port
+            - field: dstaddr
+              label: Destination address
+            - field: dstport
+              label: Destination port
+            - field: proto
+              label: Protocol
+            - field: interface_id
+              label: Interface ID
+          metrics:
+            - field: packets
+              label: Packets
+              format:
+                type: number
+                decimals: 0
+            - field: bytes
+              label: Bytes
+              format:
+                type: bytes
+                decimals: 0
