@@ -2639,9 +2639,9 @@ An example event for `web` looks as following:
 {
     "@timestamp": "2023-10-16T22:55:48.000Z",
     "agent": {
-        "ephemeral_id": "1db93749-e984-425d-9bab-d233e587592d",
-        "id": "2de03ad9-4728-4357-849f-1fa3926c635a",
-        "name": "elastic-agent-47149",
+        "ephemeral_id": "d4f0fcd9-3b74-4e1f-83b9-fd0c8d451d61",
+        "id": "6a071209-1c3e-4c0e-8b84-0c1066ac57fe",
+        "name": "elastic-agent-58206",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -2650,7 +2650,7 @@ An example event for `web` looks as following:
     },
     "data_stream": {
         "dataset": "zscaler_zia.web",
-        "namespace": "25152",
+        "namespace": "36135",
         "type": "logs"
     },
     "destination": {
@@ -2667,7 +2667,7 @@ An example event for `web` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2de03ad9-4728-4357-849f-1fa3926c635a",
+        "id": "6a071209-1c3e-4c0e-8b84-0c1066ac57fe",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -2679,7 +2679,7 @@ An example event for `web` looks as following:
         ],
         "dataset": "zscaler_zia.web",
         "id": "123456789",
-        "ingested": "2026-10-16T09:16:11Z",
+        "ingested": "2025-12-09T09:09:09Z",
         "kind": "event",
         "outcome": "success",
         "reason": "File Attachment Cautioned",
@@ -2730,7 +2730,7 @@ An example event for `web` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.245.3:34066"
+            "address": "192.168.246.3:42412"
         }
     },
     "network": {
