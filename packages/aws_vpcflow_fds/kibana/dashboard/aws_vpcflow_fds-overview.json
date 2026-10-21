@@ -1177,7 +1177,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "vpc_flow-@timestamp",
                                             "query": {
-                                                "esql": "FROM vpc_flow | KEEP @timestamp, action | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND action != \"-\" | EVAL act = action | EVAL time_bucket = DATE_TRUNC(5 minutes, @timestamp) | STATS count = COUNT(*) BY time_bucket, act | SORT time_bucket ASC"
+                                                "esql": "FROM vpc_flow | KEEP @timestamp, action | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND action != \"-\" | EVAL act = action | STATS count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 100, ?_tstart, ?_tend), act | SORT time_bucket ASC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1193,7 +1193,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM vpc_flow | KEEP @timestamp, action | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND action != \"-\" | EVAL act = action | EVAL time_bucket = DATE_TRUNC(5 minutes, @timestamp) | STATS count = COUNT(*) BY time_bucket, act | SORT time_bucket ASC"
+                                "esql": "FROM vpc_flow | KEEP @timestamp, action | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND action != \"-\" | EVAL act = action | STATS count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 100, ?_tstart, ?_tend), act | SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "areaFill": "solid",
@@ -1481,7 +1481,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "vpc_flow-@timestamp",
                                             "query": {
-                                                "esql": "FROM vpc_flow | KEEP @timestamp, bytes | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend | EVAL time_bucket = DATE_TRUNC(5 minutes, @timestamp) | STATS total_bytes = SUM(bytes) BY time_bucket | SORT time_bucket ASC"
+                                                "esql": "FROM vpc_flow | KEEP @timestamp, bytes | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend | STATS total_bytes = SUM(bytes) BY time_bucket = BUCKET(@timestamp, 100, ?_tstart, ?_tend) | SORT time_bucket ASC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1497,7 +1497,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM vpc_flow | KEEP @timestamp, bytes | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend | EVAL time_bucket = DATE_TRUNC(5 minutes, @timestamp) | STATS total_bytes = SUM(bytes) BY time_bucket | SORT time_bucket ASC"
+                                "esql": "FROM vpc_flow | KEEP @timestamp, bytes | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend | STATS total_bytes = SUM(bytes) BY time_bucket = BUCKET(@timestamp, 100, ?_tstart, ?_tend) | SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
