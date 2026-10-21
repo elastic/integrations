@@ -12,6 +12,7 @@ This integration queries Snowflake `ACCOUNT_USAGE` historical views through SQL 
 ### How it works
 
 Elastic Agent submits SQL statements to `POST /api/v2/statements` and pages result partitions. If Snowflake returns HTTP 202, the agent polls the statement handle until results are ready. Each data stream queries one `ACCOUNT_USAGE` view and advances a timestamp watermark with lookback to cover view latency. When a statement returns a full `batch_size` page, the next request continues from the last returned `ORDER BY` key without the lag overlap until the backlog is drained.
+Grants keep separate watermarks for `CREATED_ON` and `DELETED_ON`.
 
 ## What data does this integration collect?
 
@@ -20,10 +21,13 @@ The Snowflake integration collects the following logs:
 * **access_history**: Objects and columns read or written by each query from `SNOWFLAKE.ACCOUNT_USAGE.ACCESS_HISTORY` (direct and base objects accessed, objects modified, DDL operations, policies referenced). Enterprise Edition or later.
 * **data_transfer_history**: Hourly byte-count windows of data moved between clouds and regions from `SNOWFLAKE.ACCOUNT_USAGE.DATA_TRANSFER_HISTORY`, by transfer type.
 * **stages**: Stage create, alter, and drop activity from `SNOWFLAKE.ACCOUNT_USAGE.STAGES`, including external stage locations (`s3://`, `azure://`, `gcs://`) and storage integrations. Watermarks are `LAST_ALTERED` and `DELETED` because rows update in place.
+* **login_history**: Login attempts from `SNOWFLAKE.ACCOUNT_USAGE.LOGIN_HISTORY` (user, client IP, authentication factors, success or failure, malicious-IP protection details).
+* **sessions**: Session lifecycle from `SNOWFLAKE.ACCOUNT_USAGE.SESSIONS` (open or closed sessions, last access time, closed reason). Watermark is `ACCESS_TIME` because session rows update until they close.
+* **grants_to_users**: Role grants and revokes from `SNOWFLAKE.ACCOUNT_USAGE.GRANTS_TO_USERS`. Creates and revokes are queried separately so each watermark advances only along `CREATED_ON` or `DELETED_ON`.
 
 ### Supported use cases
 
-Use this integration to audit which users touch sensitive tables and columns, detect unusual outbound data transfer volumes, and track the creation or alteration of external stages that could be used to move data out of Snowflake.
+Use this integration to detect failed or suspicious logins, track session activity, audit privilege grants and revokes, monitor access to sensitive tables and columns, detect unusual outbound data transfers, and track the creation or alteration of external stages that could facilitate data exfiltration from Snowflake.
 
 ## What do I need to use this integration?
 
@@ -44,10 +48,12 @@ Elastic Agent is required to stream data from the SQL API and ship the data to E
 
 1. Create a role and a `TYPE=SERVICE` user, and grant the role to the user.
 2. Grant `USAGE` on a warehouse that can auto-resume.
+3. Grant the `SNOWFLAKE.SECURITY_VIEWER` database role (or `IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE`) so the user can read login history, sessions, and grants to users.
 3. Grant the SNOWFLAKE database roles the data streams need (or `IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE`):
    * `SNOWFLAKE.GOVERNANCE_VIEWER` for `access_history`
    * `SNOWFLAKE.USAGE_VIEWER` for `data_transfer_history`
    * `SNOWFLAKE.OBJECT_VIEWER` for `stages`
+   * `SNOWFLAKE.SECURITY_VIEWER` database role or `IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE` for `login history`, `sessions`, and `grants_to_users`
 4. Create a programmatic access token for the service user.
 5. If a network policy is enabled, allow the Elastic Agent egress IP (or PrivateLink endpoint).
 
@@ -69,7 +75,9 @@ Elastic Agent is required to stream data from the SQL API and ship the data to E
 
 ### Validation
 
-In Discover, filter on `event.dataset: snowflake.access_history`, `event.dataset: snowflake.data_transfer_history`, or `event.dataset: snowflake.stages`. Access history should contain `event.category: database` events. Data transfer should contain `event.category: network` events with `network.bytes`. Stages should contain `event.category: configuration` events with `event.action` of `create`, `alter`, or `drop`.
+In Discover, filter on `event.dataset: snowflake.access_history`, `event.dataset: snowflake.data_transfer_history`, `event.dataset: snowflake.stages`, `event.dataset: snowflake.login_history`, `event.dataset: snowflake.sessions`, or
+`event.dataset: snowflake.grants_to_users`. Access history should contain `event.category: database` events. Data transfer should contain `event.category: network` events with `network.bytes`. Stages should contain `event.category: configuration` events with `event.action` of `create`, `alter`, or `drop`. Login history should contain
+`event.category: authentication` events. Grants should contain IAM change events.
 
 ## Troubleshooting
 
@@ -82,7 +90,7 @@ In Discover, filter on `event.dataset: snowflake.access_history`, `event.dataset
 
 ## Performance and scaling
 
-Each poll runs SQL on the configured warehouse and consumes Snowflake credits. `ACCOUNT_USAGE` latency is 45 minutes to 3 hours, so polling faster than the view latency does not make data fresher. Suggested starting intervals are `3h` for access history and `2h` for data transfer history and stages. Overlap the watermark by at least the view latency so late-arriving rows are included. `ACCESS_HISTORY` can be high volume on busy accounts. Keep `batch_size` at the default unless statements time out.
+Each poll runs SQL on the configured warehouse and consumes Snowflake credits. `ACCOUNT_USAGE` latency is 45 minutes to 3 hours, so polling faster than the view latency does not make data fresher. Suggested starting intervals are `2h` for login history, grants, data transfer history, and stages, and `3h` for sessions and access history. Overlap the watermark by at least the view latency so late-arriving rows are included. `ACCESS_HISTORY` can be high volume on busy accounts. Keep `batch_size` at the default unless statements time out.
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
@@ -105,6 +113,10 @@ These APIs are used with this integration:
 - [ACCESS_HISTORY view](https://docs.snowflake.com/en/sql-reference/account-usage/access_history)
 - [DATA_TRANSFER_HISTORY view](https://docs.snowflake.com/en/sql-reference/account-usage/data_transfer_history)
 - [STAGES view](https://docs.snowflake.com/en/sql-reference/account-usage/stages)
+- [LOGIN_HISTORY view](https://docs.snowflake.com/en/sql-reference/account-usage/login_history)
+- [SESSIONS view](https://docs.snowflake.com/en/sql-reference/account-usage/sessions)
+- [GRANTS_TO_USERS view](https://docs.snowflake.com/en/sql-reference/account-usage/grants_to_users)
+
 
 ### Data streams
 
@@ -143,3 +155,45 @@ The `stages` data stream provides stage lifecycle events from `SNOWFLAKE.ACCOUNT
 ##### stages sample event
 
 {{ event "stages" }}
+
+
+#### login_history
+
+The `login_history` data stream provides login attempt events from
+`SNOWFLAKE.ACCOUNT_USAGE.LOGIN_HISTORY`.
+
+##### login_history fields
+
+{{ fields "login_history" }}
+
+##### login_history sample event
+
+{{ event "login_history" }}
+
+#### sessions
+
+The `sessions` data stream provides session lifecycle events from
+`SNOWFLAKE.ACCOUNT_USAGE.SESSIONS`. Rows update until the session closes.
+The collector watermarks on `ACCESS_TIME`.
+
+##### sessions fields
+
+{{ fields "sessions" }}
+
+##### sessions sample event
+
+{{ event "sessions" }}
+
+#### grants_to_users
+
+The `grants_to_users` data stream provides role grant and revoke events from
+`SNOWFLAKE.ACCOUNT_USAGE.GRANTS_TO_USERS`. Creates and revokes are collected
+with separate statements so a revoke timestamp cannot skip unread grants.
+
+##### grants_to_users fields
+
+{{ fields "grants_to_users" }}
+
+##### grants_to_users sample event
+
+{{ event "grants_to_users" }}
