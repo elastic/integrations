@@ -113,8 +113,21 @@ streams:
         show_user: false
         default: https://login.microsoftonline.com
         description: >-
-          (Optional when **Authentication Type** is **Client Secret**) Microsoft Entra ID authority endpoint. Defaults to https://login.microsoftonline.com (Azure Public Cloud).
+          Microsoft Entra ID authority endpoint. Defaults to https://login.microsoftonline.com (Azure Public Cloud).
           Change for other Azure environments: Azure Government (https://login.microsoftonline.us), Azure China (https://login.chinacloudapi.cn), or Azure Germany (https://login.microsoftonline.de).
+          Used by client secret authentication for token requests, and by processor v2 to derive the storage endpoint suffix for all authentication types.
+      - name: storage_account_connection_string
+        type: password
+        title: Storage Account Connection String
+        secret: true
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          An explicit connection string for the storage account used to store checkpoints. When set, it is
+          used as-is; when unset, a connection string is built from **Storage Account** and **Storage Account
+          Key**. This setting is useful for processor v2 when the built-in connection string construction is
+          not suitable (e.g. sovereign clouds or custom storage endpoints).
       - name: storage_account_container
         type: text
         title: Storage Account Container
@@ -130,7 +143,63 @@ streams:
         required: false
         show_user: false
         description: >-
-          By default, we are using the Azure public environment. To override this, users can provide a specific resource manager endpoint in order to use a different Azure environment.
+          (Processor v1 only) By default the azure public environment is used. To use a different azure environment, provide the specific resource manager endpoint. This setting is ignored by processor v2, which derives the environment from the Authority Host setting.
+      # Processor v2 and transport settings
+      #
+      - name: processor_version
+        type: select
+        title: Processor version
+        multi: false
+        required: false
+        show_user: false
+        options:
+          - text: v1 (legacy)
+            value: v1
+          - text: v2
+            value: v2
+        description: >
+          The processor version that the input should use. When unset, the agent's built-in default
+          applies (v1 before 9.3, v2 from 9.3). Overridden to v2 when the transport is
+          AMQP-over-WebSockets.
+
+          Switching from v1 to v2 changes the checkpoint storage path. Existing v1 checkpoints are
+          migrated automatically on first v2 start, but going back to v1 afterwards resumes from
+          stale v1 checkpoints and may cause duplicate events. Users on sovereign clouds (GovCloud,
+          China) must also set **Authority Host** to the correct login endpoint, because v2 derives
+          the storage endpoint suffix from it rather than from **Resource Manager Endpoint**.
+      - name: transport
+        type: select
+        title: Event Hubs transport protocol
+        multi: false
+        required: false
+        show_user: false
+        default: amqp
+        options:
+          - text: AMQP
+            value: amqp
+          - text: AMQP-over-WebSockets
+            value: websocket
+        description: >
+          The transport protocol used to connect to Event Hubs. AMQP uses port 5671. AMQP-over-WebSockets
+          uses port 443, which enables proxy support via the HTTPS_PROXY environment variable.
+
+          Selecting AMQP-over-WebSockets forces the processor version to v2 regardless of the Processor
+          version setting, because the WebSocket transport is only supported by the v2 processor. Requires
+          Elastic Agent 8.19.10, 9.1.10, 9.2.4, or later.
+      - name: processor_start_position
+        type: select
+        title: Processor start position
+        multi: false
+        required: false
+        show_user: false
+        options:
+          - text: earliest
+            value: earliest
+          - text: latest
+            value: latest
+        description: >-
+          The initial position to start reading events from when no checkpoint exists. Defaults
+          to "earliest" in the agent. Only applies to processor v2.
       - name: tags
         type: text
         title: Tags

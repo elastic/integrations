@@ -3,11 +3,11 @@
 
 ## Overview
 
-The Anthropic integration collects compliance activity logs from [Claude's Compliance API](https://platform.claude.com/docs/en/manage-claude/compliance-api). Claude Enterprise, Team, and Claude Platform organizations generate audit events for security-relevant activities such as user authentication, organization administration, role and permission changes, API key lifecycle, Claude.ai and Claude Code usage, MCP server configuration, billing updates, and Compliance API access. This integration enables security and compliance teams to monitor administrative activity, detect unauthorized changes, and maintain an audit trail of organization operations in Elasticsearch and Kibana.
+The Anthropic integration collects compliance activity logs from [Claude's Compliance API](https://platform.claude.com/docs/en/manage-claude/compliance-api). Claude Enterprise and Claude Platform organizations generate audit events for security-relevant activities such as user authentication, organization administration, role and permission changes, API key lifecycle, Claude.ai and Claude Code usage, MCP server configuration, billing updates, and Compliance API access. This integration enables security and compliance teams to monitor administrative activity, detect unauthorized changes, and maintain an audit trail of organization operations in Elasticsearch and Kibana.
 
 ### Compatibility
 
-This integration requires a **Claude Enterprise**, **Team**, or **Claude Platform** organization with the [Compliance API](https://platform.claude.com/docs/en/manage-claude/compliance-api) enabled. Individual and consumer accounts cannot create the required API keys.
+This integration requires a **Claude Enterprise** or **Claude Platform** organization with the [Compliance API](https://platform.claude.com/docs/en/manage-claude/compliance-api) enabled. Individual and consumer accounts cannot create the required API keys.
 
 The integration polls the Anthropic [Activity Feed](https://platform.claude.com/docs/en/manage-claude/compliance-activity-feed) at `https://api.anthropic.com/v1/compliance/activities` on a configurable schedule. Authentication requires the `read:compliance_activities` scope, which can be carried by either a **Compliance Access Key** (`sk-ant-api01-...`) or an **Admin API Key** (`sk-ant-admin01-...`).
 
@@ -34,7 +34,7 @@ The Anthropic integration collects compliance activity events covering 300+ acti
 
 ## What do I need to use this integration?
 
-* A **Claude Enterprise**, **Team**, or **Claude Platform** organization with the Compliance API enabled.
+* A **Claude Enterprise** or **Claude Platform** organization with the Compliance API enabled.
 * An **Admin API Key** or **Compliance Access Key** with the `read:compliance_activities` scope.
 * **Elastic Agent** installed on a host with outbound HTTPS access to `api.anthropic.com`.
 

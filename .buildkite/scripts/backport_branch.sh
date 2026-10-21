@@ -283,20 +283,17 @@ updateBackportBranchContents() {
   if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
     echo "--- Removing all packages from $PACKAGES_FOLDER_PATH folder"
 
-    # Build the list of packages to keep: the target package plus any packages
-    # it requires (composable packages declare dependencies under requires.input
-    # and requires.content in their manifest.yml).
-    local -a packages_to_keep=("${PACKAGE_PATH}")
-    while IFS= read -r req_name; do
-      local req_path
-      req_path=$(get_package_path "${req_name}" || true)
-      if [[ -n "${req_path}" ]]; then
-        echo "Keeping required package: ${req_path} (required by ${PACKAGE_NAME})"
-        packages_to_keep+=("${req_path}")
-      else
-        echo "Warning: required package '${req_name}' not found in packages folder"
-      fi
-    done < <(get_required_package_names "${PACKAGE_PATH}")
+    # Build the list of packages to keep: target + requires.* deps + .link
+    # source packages, expanded transitively until stable.
+    # Note: .link files may reference paths outside packages/ (e.g. _dev/shared/
+    # at the repo root). Those sources are not tracked here but are also not
+    # removed by remove_other_packages, which only operates on paths returned by
+    # list_all_directories (i.e. packages under packages/).
+    # See https://github.com/elastic/integrations/issues/21594.
+    local -a packages_to_keep=()
+    while IFS= read -r pkg; do
+      packages_to_keep+=("${pkg}")
+    done < <(collect_packages_to_keep "${PACKAGE_PATH}")
 
     remove_other_packages "${packages_to_keep[@]}"
     ls -la "${PACKAGES_FOLDER_PATH}"

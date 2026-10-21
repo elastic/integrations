@@ -212,11 +212,73 @@
           type: keyword
           description: Parent Incident ID associated with main container (or non-container) file that was scanned.
         - name: dlp_match_info
-          type: keyword
+          type: group
           description: DLP match info carries the details about DLP profile and rule info along with the violation count information.
-        - name: dlp_match_info_object
-          type: flattened
-          description: DLP match info as a structured object. Populated when the Netskope API sends dlp_match_info as a JSON object or array of objects instead of a plain string.
+          fields:
+            - name: action_threshold_met
+              type: boolean
+              description: Whether the DLP action threshold was met.
+            - name: dlp_action
+              type: keyword
+              description: Action taken by the DLP policy.
+            - name: dlp_forensic_id
+              type: long
+              description: Forensic ID associated with the DLP incident.
+            - name: dlp_policy
+              type: keyword
+              description: DLP policy name.
+            - name: dlp_profile_name
+              type: keyword
+              description: DLP profile name.
+            - name: dlp_scan_type
+              type: keyword
+              description: DLP scan type.
+            - name: dlp_rules
+              type: group
+              description: DLP rules that matched.
+              fields:
+                - name: dlp_data_identifiers
+                  type: flattened
+                  description: DLP data identifiers that matched, including per-identifier match counts keyed by identifier name.
+                - name: dlp_incident_rule_count
+                  type: long
+                  description: Number of rule matches counted toward the incident.
+                - name: dlp_match_type
+                  type: keyword
+                  description: DLP rule match type.
+                - name: dlp_matches_skipped
+                  type: boolean
+                  description: Whether some DLP matches were skipped.
+                - name: dlp_rule_name
+                  type: keyword
+                  description: DLP rule name.
+                - name: dlp_rule_score
+                  type: float
+                  description: DLP rule score.
+                - name: dlp_rule_severity
+                  type: keyword
+                  description: DLP rule severity.
+                - name: dlp_unique_count
+                  type: long
+                  description: Number of unique matches for the DLP rule.
+                - name: entity_categories
+                  type: flattened
+                  description: Entity categories that matched, keyed by entity.
+                - name: entity_data_types
+                  type: flattened
+                  description: Entity data types that matched, keyed by entity.
+                - name: entity_sensitivity_levels
+                  type: flattened
+                  description: Sensitivity levels of the matched entities, keyed by entity.
+                - name: is_unique_count
+                  type: boolean
+                  description: Whether the rule is unique counted.
+                - name: sensitivity_level
+                  type: keyword
+                  description: DLP rule sensitivity level.
+        - name: dlp_match_info_text
+          type: keyword
+          description: DLP match info received as plain text instead of a structured object.
         - name: dlp_parent_id
           type: keyword
           description: Incident ID associated with main container (or non-container) file that was scanned.

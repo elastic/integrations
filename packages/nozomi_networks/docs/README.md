@@ -94,17 +94,17 @@ An example event for `alert` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-21T22:13:30.343Z",
+    "@timestamp": "2025-05-16T12:35:06.110Z",
     "agent": {
-        "ephemeral_id": "64ad927e-8705-44ce-aaf5-5a0d9501df90",
-        "id": "06f85d75-2919-4003-983b-8bff8fe5eb44",
-        "name": "elastic-agent-50013",
+        "ephemeral_id": "b46569a8-db94-4d2b-9857-5a4ae2c586ce",
+        "id": "c8f07d88-2f3e-453b-9445-478c7614c017",
+        "name": "elastic-agent-74671",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "nozomi_networks.alert",
-        "namespace": "52588",
+        "namespace": "34658",
         "type": "logs"
     },
     "destination": {
@@ -139,7 +139,7 @@ An example event for `alert` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "06f85d75-2919-4003-983b-8bff8fe5eb44",
+        "id": "c8f07d88-2f3e-453b-9445-478c7614c017",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -148,7 +148,7 @@ An example event for `alert` looks as following:
         "created": "2025-05-16T12:35:06.110Z",
         "dataset": "nozomi_networks.alert",
         "id": "6dbf93f8-d8da-4ae3-bf1a-e91a82fc3041",
-        "ingested": "2025-06-24T06:58:13Z",
+        "ingested": "2026-09-22T12:22:14Z",
         "kind": "alert",
         "original": "{\"ack\":false,\"appliance_host\":\"Sandbox-TAE-Guardian3\",\"appliance_id\":\"d5ab7eaa-9a4b-4b4b-9a4b-4b4b9a4b4b4b\",\"appliance_ip\":\"1.128.0.0\",\"appliance_site\":\"Sandbox\",\"bpf_filter\":\"(ip host 1.128.0.11 and ip host 1.128.0.0 and tcp port 58679 and tcp port 44818) or (vlan and ip host 1.128.0.11 and ip host 1.128.0.0 and tcp port 58679 and tcp port 44818)\",\"capture_device\":\"base.pcap\",\"close_option\":null,\"closed_time\":0,\"created_time\":1747398906110,\"custom_fields_dst\":{},\"custom_fields_src\":{},\"description\":\"Online edits have been made on the PLC with IP 1.128.0.0. The following steps were executed:\\n[1]- Downloaded project [ C:\\\\USERS\\\\NOZOMI\\\\DESKTOP\\\\LADDERBOMB\\\\PLC_LOGIC_CHALLENGE2\\\\challenge2changed.ACD ] to [ \\\\AB_ETHIP-1\\\\1.128.0.0\\\\C1_1756 ]\\n[2]- Changed Controller [ C1_1756 ] to Run Mode\\n[3]- Changed Controller [ C1_1756 ] to Program Mode\\n[4]- Downloaded project [ C:\\\\USERS\\\\NOZOMI\\\\DESKTOP\\\\LADDERBOMB\\\\PLC_LOGIC_CHALLENGE2\\\\challenge2changed.ACD ] to [ \\\\AB_ETHIP-1\\\\1.128.0.0\\\\C1_1756 ]\\n[5]- Changed Controller [ C1_1756 ] to Run Mode\\n[6]- Changed Controller [ C1_1756 ] to Program Mode\\n[7]- Downloaded project [ C:\\\\USERS\\\\NOZOMI\\\\DESKTOP\\\\LADDERBOMB\\\\PLC_LOGIC_CHALLENGE2\\\\challenge2changed.ACD ] to [ \\\\AB_ETHIP-1\\\\1.128.0.0\\\\C1_1756 ]\\n[8]- Changed Controller [ C1_1756 ] to Run Mode\\n[9]- Changed Controller [ C1_1756 ] to Program Mode\\n[10]- Downloaded project [ C:\\\\USERS\\\\NOZOMI\\\\DESKTOP\\\\LADDERBOMB\\\\PLC_LOGIC_CHALLENGE2\\\\challenge2changed.ACD ] to [ \\\\AB_ETHIP-1\\\\1.128.0.0\\\\C1_1756 ]\\n\",\"dst_roles\":\"producer\",\"grouped_visible\":true,\"id\":\"6dbf93f8-d8da-4ae3-bf1a-e91a82fc3041\",\"id_dst\":\"89.160.20.112\",\"id_src\":\"81.2.69.192\",\"incident_keys\":[],\"ip_dst\":\"89.160.20.112\",\"ip_src\":\"81.2.69.192\",\"is_incident\":false,\"is_security\":true,\"label_dst\":\"private.directinvesting.com1\",\"label_src\":\"private.directinvesting.com2\",\"mac_dst\":\"f4:54:33:9f:22:3d\",\"mac_src\":\"00:0c:29:01:98:be\",\"name\":\"Program change\",\"note\":\"User Defined Note\",\"parents\":[\"id1\"],\"playbook_contents\":null,\"port_dst\":44818,\"port_src\":58679,\"properties\":{\"base_risk\":6,\"from_id\":\"1.128.0.11\",\"is_dst_node_learned\":true,\"is_dst_public\":false,\"is_dst_reputation_bad\":false,\"is_src_node_learned\":true,\"is_src_public\":false,\"is_src_reputation_bad\":false,\"mitre_attack_for_ics\":{\"destination\":{\"levels\":[\"2\"],\"types\":[\"Field Controller/RTU/PLC/IED\"]},\"source\":{\"levels\":[\"2\"],\"types\":[\"Engineering Workstation\"]}},\"n2os_version\":\"25.0.0-03042016_D5AB7\",\"raised_by\":\"n2os_ids\",\"to_id\":\"1.128.0.0\"},\"protocol\":\"ethernetip\",\"record_created_at\":1747865610343,\"replicated\":true,\"risk\":6,\"sec_profile_visible\":true,\"session_id\":\"12eszcd-223cds34\",\"severity\":10,\"src_roles\":\"consumer, engineering_station\",\"status\":\"open\",\"synchronized\":true,\"threat_name\":\"Grizzly Steppe Threat Actor\",\"ti_source\":\"\",\"time\":1747398906110,\"trace_sha1\":null,\"trace_status\":\"state_unavailable_for_alert_type\",\"transport_protocol\":\"tcp\",\"trigger_id\":\"indicator--fb15c96c-eb73-48ac-a48a-15bcab2f0fe3\",\"trigger_type\":\"stix_indicators\",\"type_id\":\"SIGN:PROGRAM:CHANGE\",\"type_name\":\"Program change\",\"zone_dst\":\"Production_B\",\"zone_src\":\"Production_B\"}",
         "risk_score": 6,
@@ -253,6 +253,9 @@ An example event for `alert` looks as following:
             "zone_dst": "Production_B",
             "zone_src": "Production_B"
         }
+    },
+    "observer": {
+        "product": "CMC"
     },
     "related": {
         "hosts": [
@@ -403,7 +406,7 @@ An example event for `alert` looks as following:
 | nozomi_networks.alert.uid_src | The uid of the source node | keyword |
 | nozomi_networks.alert.zone_dst | Destination zone. | keyword |
 | nozomi_networks.alert.zone_src | Source zone. | keyword |
-| observer.product |  | constant_keyword |
+| observer.product | The product name of the observer. | keyword |
 | observer.vendor |  | constant_keyword |
 | threat.tactic.id | The id of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ ) | keyword |
 | threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
@@ -419,27 +422,27 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-04-19T23:50:01.431Z",
+    "@timestamp": "2025-05-07T17:28:35.000Z",
     "agent": {
-        "ephemeral_id": "a5f183d1-10d5-4e76-8dcc-e38e2297b982",
-        "id": "9e1e4c2e-4ae3-4a38-9a9d-9742b69290bb",
-        "name": "elastic-agent-60914",
+        "ephemeral_id": "63caa205-79a4-4799-b723-3612fcd90ed5",
+        "id": "0ce2d8cc-8fe1-46a9-ae0d-f22e05acc92e",
+        "name": "elastic-agent-29658",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "nozomi_networks.asset",
-        "namespace": "23422",
+        "namespace": "16800",
         "type": "logs"
     },
     "device": {
-        "id": "00000000-54b3-e7c7-0000-0000bffd97"
+        "id": "00000000-54b3-e7c7-0000-000046bffd97"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "9e1e4c2e-4ae3-4a38-9a9d-9742b69290bb",
+        "id": "0ce2d8cc-8fe1-46a9-ae0d-f22e05acc92e",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -449,10 +452,10 @@ An example event for `asset` looks as following:
             "host"
         ],
         "dataset": "nozomi_networks.asset",
-        "id": "ca08-ec50-4953-ba47-464013e",
-        "ingested": "2026-08-21T06:54:58Z",
+        "id": "f855ca08-ec50-4953-ba47-abb18464013e",
+        "ingested": "2026-09-22T12:23:03Z",
         "kind": "event",
-        "original": "{\"_asset_kb_id\":\"id123\",\"activity_times\":{\"1746639000000\":1},\"appliance_hosts\":[\"Demo Sensor iq e6ef8db9\"],\"capture_device\":\"demo\",\"created_at\":1681948201431,\"custom_fields\":{},\"device_id\":\"00000000-54b3-e7c7-0000-0000bffd97\",\"end_of_sale_date\":1747994353,\"end_of_sale_date:info\":{\"source\":\"passive\"},\"end_of_support_date\":1747994353,\"end_of_support_date:info\":{\"source\":\"passive\"},\"firmware_version\":\"fv2\",\"firmware_version:info\":{\"source\":\"passive\"},\"has_remediations\":false,\"id\":\"ca08-ec50-4953-ba47-464013e\",\"ip\":[\"0.0.0.0\"],\"is_ai_enriched\":false,\"is_arc_enriched\":true,\"is_sp_enriched\":true,\"is_ti_enriched\":false,\"last_activity_time\":1746638915000,\"latitude\":\"45.505918\",\"level\":\"level1\",\"lifecycle\":\"life-cycle\",\"lifecycle:info\":{\"source\":\"passive\"},\"location:info\":{\"lat\":\"-73.614830\",\"lon\":\"45.505918\"},\"longitude\":\"-73.614830\",\"mac_address\":[\"d9:a8:80:ef:9d:d2\"],\"mac_address_level\":{\"d9:a8:80:ef:9d:d2\":\"unconfirmed\"},\"mac_vendor\":[\"Cisco Systems, Inc\"],\"mobility\":\"static\",\"mobility:info\":{\"confidence\":\"medium\",\"source\":\"asset-kb\"},\"mobility_votes\":{\"asset-kb\":\"unknown\"},\"name\":\"0.0.0.0\",\"nodes\":[\"production_b\"],\"nozomi_risk\":2,\"os\":\"Mac OS X\",\"os:info\":{\"source\":\"passive\"},\"os_or_firmware\":\"fware\",\"os_or_firmware:info\":{\"source\":\"none\"},\"product_name\":\"pname\",\"product_name:info\":{\"source\":\"passive\"},\"properties\":{\"81.2.69.144\":{\"_product_name.enrichment\":\"Desktop/Laptop Computer\",\"_type.enrichment\":\"computer\",\"_type.passive\":\"computer\",\"_vendor.enrichment\":\"Dell\",\"http.last_client_version\":\"Chrome 91.0.4472.124\"}},\"protocols\":[\"smb\",\"http\"],\"record_created_at\":1746643849546,\"remediations_signatures\":[\"sign1\",\"sign2\"],\"risk\":2,\"risk_configuration\":{\"ai_risk_weight\":1,\"alerts_risk_weight\":0.5,\"asset_criticality\":25,\"asset_criticality_factor\":0,\"asset_criticality_weight\":0.5,\"communication_risk_weight\":0.5,\"compensating_control\":0,\"compensating_control_weight\":0.2,\"connection_type_weight\":0.5,\"critical_vulnerabilities_weight\":0.5,\"device_risk_weight\":0.5,\"exploitable_vulnerabilities_epss_score\":0.2,\"exploitable_vulnerabilities_weight\":0.5,\"high_risk_alert_level\":7,\"high_risk_alerts_weight\":0.5,\"high_risk_vulnerabilities_level\":7,\"internet_exposure_weight\":0.5,\"lifecycle_weight\":0.5,\"network_activity_weight\":0.5,\"open_alerts_weight\":0.5,\"open_vulnerabilities_likelihood\":0.7,\"open_vulnerabilities_weight\":0.5,\"risk_mitigation_factor\":0,\"suboptimal_management_weight\":0.5,\"technology_category_weight\":0.5,\"type_weight\":0.5,\"unsafe_countries_list\":[\"china\",\"russia\",\"north korea\",\"ukraine\",\"vietnam\",\"indonesia\"],\"unsafe_countries_weight\":0.5,\"unsafe_protocols_list\":[\"ftp\",\"http\",\"imap\",\"llmnr\",\"ntlm\",\"nfs\",\"pop3\",\"rdp\",\"smb\",\"snmp\",\"smtp\",\"sip\",\"telnet\"],\"unsafe_protocols_weight\":0.5,\"vulnerabilities_risk_weight\":0.5},\"roles\":[\"other\"],\"serial_number\":\"123456789\",\"serial_number:info\":{\"source\":\"passive\"},\"tags\":[\"asset1tag\"],\"technology_category\":\"IT\",\"time\":1746643849541,\"type\":\"typehost\",\"type:info\":{\"source\":\"passive\"},\"vendor\":\"unknown\",\"vendor:info\":{\"source\":\"passive\"},\"vlan_id\":[\"10\"],\"zones\":[\"Undefined\"]}",
+        "original": "{\"_asset_kb_id\":\"id123\",\"activity_times\":{\"1746639000000\":1},\"appliance_hosts\":[\"Demo Sensor iq e6ef8db9\"],\"capture_device\":\"demo\",\"created_at\":1718016000000,\"custom_fields\":{},\"device_id\":\"00000000-54b3-e7c7-0000-000046bffd97\",\"end_of_sale_date\":1747994353,\"end_of_sale_date:info\":{\"source\":\"passive\"},\"end_of_support_date\":1747994353,\"end_of_support_date:info\":{\"source\":\"passive\"},\"firmware_version\":\"fv2\",\"firmware_version:info\":{\"source\":\"passive\"},\"has_remediations\":false,\"id\":\"f855ca08-ec50-4953-ba47-abb18464013e\",\"ip\":[\"0.0.0.0\"],\"is_ai_enriched\":false,\"is_arc_enriched\":true,\"is_sp_enriched\":true,\"is_ti_enriched\":false,\"last_activity_time\":1746638915000,\"latitude\":\"45.505918\",\"level\":\"level1\",\"lifecycle\":\"life-cycle\",\"lifecycle:info\":{\"source\":\"passive\"},\"location:info\":{\"lat\":\"-73.614830\",\"lon\":\"45.505918\"},\"longitude\":\"-73.614830\",\"mac_address\":[\"d9:a8:80:ef:9d:d2\"],\"mac_address_level\":{\"d9:a8:80:ef:9d:d2\":\"unconfirmed\"},\"mac_vendor\":[\"Cisco Systems, Inc\"],\"mobility\":\"static\",\"mobility:info\":{\"confidence\":\"medium\",\"source\":\"asset-kb\"},\"mobility_votes\":{\"asset-kb\":\"unknown\"},\"name\":\"0.0.0.0\",\"nodes\":[\"production_b\"],\"nozomi_risk\":2,\"os\":\"Mac OS X\",\"os:info\":{\"source\":\"passive\"},\"os_or_firmware\":\"fware\",\"os_or_firmware:info\":{\"source\":\"none\"},\"product_name\":\"pname\",\"product_name:info\":{\"source\":\"passive\"},\"properties\":{\"81.2.69.144\":{\"_product_name.enrichment\":\"Desktop/Laptop Computer\",\"_type.enrichment\":\"computer\",\"_type.passive\":\"computer\",\"_vendor.enrichment\":\"Dell\",\"http.last_client_version\":\"Chrome 91.0.4472.124\"}},\"protocols\":[\"smb\",\"http\"],\"record_created_at\":1746643849546,\"remediations_signatures\":[\"sign1\",\"sign2\"],\"risk\":2,\"risk_configuration\":{\"ai_risk_weight\":1,\"alerts_risk_weight\":0.5,\"asset_criticality\":25,\"asset_criticality_factor\":0,\"asset_criticality_weight\":0.5,\"communication_risk_weight\":0.5,\"compensating_control\":0,\"compensating_control_weight\":0.2,\"connection_type_weight\":0.5,\"critical_vulnerabilities_weight\":0.5,\"device_risk_weight\":0.5,\"exploitable_vulnerabilities_epss_score\":0.2,\"exploitable_vulnerabilities_weight\":0.5,\"high_risk_alert_level\":7,\"high_risk_alerts_weight\":0.5,\"high_risk_vulnerabilities_level\":7,\"internet_exposure_weight\":0.5,\"lifecycle_weight\":0.5,\"network_activity_weight\":0.5,\"open_alerts_weight\":0.5,\"open_vulnerabilities_likelihood\":0.7,\"open_vulnerabilities_weight\":0.5,\"risk_mitigation_factor\":0,\"suboptimal_management_weight\":0.5,\"technology_category_weight\":0.5,\"type_weight\":0.5,\"unsafe_countries_list\":[\"china\",\"russia\",\"north korea\",\"ukraine\",\"vietnam\",\"indonesia\"],\"unsafe_countries_weight\":0.5,\"unsafe_protocols_list\":[\"ftp\",\"http\",\"imap\",\"llmnr\",\"ntlm\",\"nfs\",\"pop3\",\"rdp\",\"smb\",\"snmp\",\"smtp\",\"sip\",\"telnet\"],\"unsafe_protocols_weight\":0.5,\"vulnerabilities_risk_weight\":0.5},\"roles\":[\"other\"],\"serial_number\":\"123456789\",\"serial_number:info\":{\"source\":\"passive\"},\"tags\":[\"asset1tag\"],\"technology_category\":\"IT\",\"time\":1746643849541,\"type\":\"typehost\",\"type:info\":{\"source\":\"passive\"},\"vendor\":\"unknown\",\"vendor:info\":{\"source\":\"passive\"},\"vlan_id\":[\"10\"],\"zones\":[\"Undefined\"]}",
         "risk_score": 2,
         "type": [
             "info"
@@ -477,7 +480,7 @@ An example event for `asset` looks as following:
         "os": {
             "name": "Mac OS X"
         },
-        "uptime": 64690713
+        "uptime": 28622915
     },
     "input": {
         "type": "cel"
@@ -503,8 +506,8 @@ An example event for `asset` looks as following:
             ],
             "asset_kb_id": "id123",
             "capture_device": "demo",
-            "created_at": "2023-04-19T23:50:01.431Z",
-            "device_id": "00000000-54b3-e7c7-0000-0000bffd97",
+            "created_at": "2024-06-10T10:40:00.000Z",
+            "device_id": "00000000-54b3-e7c7-0000-000046bffd97",
             "end_of_sale_date": "1970-01-21T05:33:14.353Z",
             "end_of_sale_date_info": {
                 "source": "passive"
@@ -518,7 +521,7 @@ An example event for `asset` looks as following:
                 "source": "passive"
             },
             "has_remediations": false,
-            "id": "ca08-ec50-4953-ba47-464013e",
+            "id": "f855ca08-ec50-4953-ba47-abb18464013e",
             "ip": [
                 "0.0.0.0"
             ],
@@ -673,6 +676,9 @@ An example event for `asset` looks as following:
             ]
         }
     },
+    "observer": {
+        "product": "CMC"
+    },
     "related": {
         "hosts": [
             "Demo Sensor iq e6ef8db9"
@@ -803,7 +809,7 @@ An example event for `asset` looks as following:
 | nozomi_networks.asset.vendor_info | This is a metadata field about the vendor field. | flattened |
 | nozomi_networks.asset.vlan_id | The virtual local area network (VLAN) identifier (ID)(s) of the asset. It can be absent if the traffic to/from the node is not VLAN-tagged. | keyword |
 | nozomi_networks.asset.zones |  | keyword |
-| observer.product |  | constant_keyword |
+| observer.product | The product name of the observer. | keyword |
 | observer.vendor |  | constant_keyword |
 
 
@@ -817,24 +823,24 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-12T05:38:53.580Z",
+    "@timestamp": "2025-05-12T05:38:53.579Z",
     "agent": {
-        "ephemeral_id": "c9eb33f8-9609-4002-a2b7-cdfa9719135b",
-        "id": "1b790580-dafb-47bf-b1d9-ece4af1ce248",
-        "name": "elastic-agent-98772",
+        "ephemeral_id": "74a98217-7f23-473c-9500-9b8389e18892",
+        "id": "f24479eb-fe1d-4b5f-8f70-bf6dcd87d584",
+        "name": "elastic-agent-67139",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "nozomi_networks.audit",
-        "namespace": "12566",
+        "namespace": "91495",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "1b790580-dafb-47bf-b1d9-ece4af1ce248",
+        "id": "f24479eb-fe1d-4b5f-8f70-bf6dcd87d584",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -843,7 +849,7 @@ An example event for `audit` looks as following:
         "agent_id_status": "verified",
         "dataset": "nozomi_networks.audit",
         "id": "e68f6c04-fe98-4549-abcf-6a2213249c3c",
-        "ingested": "2026-08-21T06:56:27Z",
+        "ingested": "2026-09-22T12:23:51Z",
         "kind": "event",
         "original": "{\"action\":\"create\",\"browser\":\"python-requests/2.32.3\",\"controller\":\"api/api_key_sessions\",\"details\":null,\"event\":\"API key signed in with id 7a6534a6-ee49-4cb3-a0ae-1f3a6cac9b26\",\"id\":\"e68f6c04-fe98-4549-abcf-6a2213249c3c\",\"ip_address\":\"81.2.69.192\",\"name\":\"API key signed in\",\"record_created_at\":1747028333580,\"time\":1747028333579,\"username\":\"edward@gmail.com via APIkey AK6eef5d\"}"
     },
@@ -866,6 +872,9 @@ An example event for `audit` looks as following:
             "time": "2025-05-12T05:38:53.579Z",
             "username": "edward@gmail.com via APIkey AK6eef5d"
         }
+    },
+    "observer": {
+        "product": "CMC"
     },
     "related": {
         "ip": [
@@ -941,7 +950,7 @@ An example event for `audit` looks as following:
 | nozomi_networks.audit.synchronized | True if this entity has been synchronized with the upper CMC or Vantage | boolean |
 | nozomi_networks.audit.time |  | date |
 | nozomi_networks.audit.username |  | keyword |
-| observer.product |  | constant_keyword |
+| observer.product | The product name of the observer. | keyword |
 | observer.vendor |  | constant_keyword |
 
 
@@ -955,24 +964,24 @@ An example event for `health` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-03-13T12:36:17.517Z",
+    "@timestamp": "2025-03-13T12:27:21.845Z",
     "agent": {
-        "ephemeral_id": "33fdbb95-78cf-412c-bb24-44f45aeb048c",
-        "id": "61d952ea-7718-4c4c-9a32-2476eb5aaf5a",
-        "name": "elastic-agent-91000",
+        "ephemeral_id": "9f52eb7e-8bc0-4a26-94cc-ee479d82e6af",
+        "id": "30d9d243-efd3-46e7-bbcf-41f3c267c478",
+        "name": "elastic-agent-82134",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "nozomi_networks.health",
-        "namespace": "34884",
+        "namespace": "69843",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "61d952ea-7718-4c4c-9a32-2476eb5aaf5a",
+        "id": "30d9d243-efd3-46e7-bbcf-41f3c267c478",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -984,7 +993,7 @@ An example event for `health` looks as following:
         "created": "2025-03-13T12:36:17.517Z",
         "dataset": "nozomi_networks.health",
         "id": "f8c3fe6d-6926-4cbe-b51d-08f38a72c593",
-        "ingested": "2025-06-18T12:16:25Z",
+        "ingested": "2026-09-22T12:24:41Z",
         "kind": "event",
         "original": "{\"appliance_host\":\"Sandbox-TAE-Guardian3\",\"appliance_id\":\"1c08da2c-e7e9-4030-b956-cada6e0a9a96\",\"id\":\"f8c3fe6d-6926-4cbe-b51d-08f38a72c593\",\"info\":{\"description\":\"Recommended changes. The following items should be changed to support the updates included in version 22.5.0.\\n\\nAlert rules:\\nNothing to change here\\n\\nAssertions:\\nNothing to change here\\n\\nQueries:\\nNothing to change here\\n\\nAlert rules:\\nNothing to change here\\n\\nReports:\\nNothing to change here\\n\\nSee the N2OS release notes for further explanations.\"},\"record_created_at\":1741869377517,\"sensor_appliance_type\":\"guardian\",\"time\":1741868841845}",
         "type": [
@@ -1011,6 +1020,9 @@ An example event for `health` looks as following:
             "sensor_appliance_type": "guardian",
             "time": "2025-03-13T12:27:21.845Z"
         }
+    },
+    "observer": {
+        "product": "CMC"
     },
     "related": {
         "hosts": [
@@ -1051,7 +1063,7 @@ An example event for `health` looks as following:
 | nozomi_networks.health.sensor_id |  | keyword |
 | nozomi_networks.health.synchronized | True if this entity has been synchronized with the upper Central Management Console (CMC) or Vantage. | boolean |
 | nozomi_networks.health.time | Timestamp in epoch milliseconds when this entity was created or updated. | date |
-| observer.product |  | constant_keyword |
+| observer.product | The product name of the observer. | keyword |
 | observer.vendor |  | constant_keyword |
 
 
@@ -1065,17 +1077,17 @@ An example event for `node` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-14T08:15:53.228Z",
+    "@timestamp": "2025-05-14T07:00:00.000Z",
     "agent": {
-        "ephemeral_id": "c3d206ed-a1a6-45f0-9717-559b20655666",
-        "id": "9e7de977-3f14-4813-9996-40cd5fff27a7",
-        "name": "elastic-agent-31803",
+        "ephemeral_id": "1ce0bbb7-7e53-4ea6-9078-21080044ad86",
+        "id": "52f156d2-c7cf-4000-b9d8-c6275e03690e",
+        "name": "elastic-agent-47748",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "nozomi_networks.node",
-        "namespace": "30444",
+        "namespace": "43242",
         "type": "logs"
     },
     "destination": {
@@ -1086,7 +1098,7 @@ An example event for `node` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "9e7de977-3f14-4813-9996-40cd5fff27a7",
+        "id": "52f156d2-c7cf-4000-b9d8-c6275e03690e",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -1099,7 +1111,7 @@ An example event for `node` looks as following:
         "dataset": "nozomi_networks.node",
         "end": "2025-05-14T07:00:00.000Z",
         "id": "9b492faf-5cf2-4b91-b745-f1e903bba5d1",
-        "ingested": "2026-08-21T06:57:45Z",
+        "ingested": "2026-09-22T12:25:30Z",
         "kind": "event",
         "original": "{\"_asset_kb_id\":\"123id\",\"_is_licensed\":true,\"_private_status\":\"no\",\"appliance_host\":\"hname\",\"asset_id\":\"54trg\",\"bpf_filter\":\"ip host 81.2.69.144\",\"capture_device\":\"demo\",\"created_at\":1725960106182,\"custom_fields\":{\"field1\":\"value1\"},\"device_id\":\"00000000-54b3-e7c7-0000-000046bffd97\",\"device_modules\":{\"children\":{\"cip\":[{\"attributes\":{\"name\":\"Backplane\",\"type\":\"1\"},\"children\":[{\"attributes\":{\"device_type\":\"Programmable Logic Controller\",\"device_type_id\":\"14\",\"firmware_version\":\"20.055\",\"product_code\":\"54\",\"product_name\":\"1756-L61/B LOGIX5561\",\"serial_number\":\"00112237\",\"vendor\":\"Rockwell Automation/Allen-Bradley\",\"vendor_id\":\"1\"},\"children\":[{\"attributes\":{\"name\":\"Backplane\",\"type\":\"1\"},\"type\":\"port\",\"value\":\"1\"},{\"attributes\":{\"name\":\"Channel 0\",\"type\":\"9\"},\"type\":\"port\",\"value\":\"2\"}],\"type\":\"address\",\"value\":\"0\"},{\"attributes\":{\"device_type\":\"\",\"device_type_id\":\"112\",\"firmware_version\":\"20.004\",\"product_code\":\"3\",\"product_name\":\"1756-RM2/A REDUNDANCY MODULE\",\"serial_number\":\"00010207\",\"vendor\":\"Rockwell Automation/Allen-Bradley\",\"vendor_id\":\"1\"},\"type\":\"address\",\"value\":\"1\"},{\"attributes\":{\"device_type\":\"Communications Adapter\",\"device_type_id\":\"12\",\"firmware_version\":\"18.002\",\"product_code\":\"166\",\"product_name\":\"1756-ENBT/A\",\"serial_number\":\"00112237\",\"vendor\":\"Rockwell Automation/Allen-Bradley\",\"vendor_id\":\"1\"},\"type\":\"address\",\"value\":\"3\"},{\"attributes\":{\"device_type\":\"Communications Adapter\",\"device_type_id\":\"12\",\"firmware_version\":\"10.006\",\"product_code\":\"166\",\"product_name\":\"1756-ENBT/A\",\"serial_number\":\"00445567\",\"vendor\":\"Rockwell Automation/Allen-Bradley\",\"vendor_id\":\"1\"},\"children\":[{\"attributes\":{\"name\":\"Backplane\"},\"type\":\"port\",\"value\":\"1\"}],\"type\":\"address\",\"value\":\"4\"},{\"attributes\":{\"device_type\":\"Communications Adapter\",\"device_type_id\":\"12\",\"firmware_version\":\"5.008\",\"product_code\":\"200\",\"product_name\":\"1756-EN2TR/B\",\"serial_number\":\"00070807\",\"vendor\":\"Rockwell Automation/Allen-Bradley\",\"vendor_id\":\"1\"},\"children\":[{\"attributes\":{\"name\":\"Backplane\",\"type\":\"1\"},\"type\":\"port\",\"value\":\"1\"},{\"attributes\":{\"name\":\"A\",\"type\":\"EtherNet/IP\"},\"type\":\"port\",\"value\":\"2\"},{\"attributes\":{\"name\":\"PCviaUSB\",\"type\":\"107\"},\"type\":\"port\",\"value\":\"3\"}],\"type\":\"address\",\"value\":\"6\"}],\"type\":\"port\",\"value\":\"1\"},{\"attributes\":{\"name\":\"A\",\"type\":\"EtherNet/IP\"},\"type\":\"port\",\"value\":\"2\"},{\"attributes\":{\"name\":\"PCviaUSB\",\"type\":\"107\"},\"type\":\"port\",\"value\":\"3\"}]},\"firmware_version\":\"20.055\",\"product_name\":\"ControlLogix 1756-L61/B LOGIX5561\",\"serial_number\":\"00112237\",\"vendor\":\"Rockwell Automation\"},\"end_of_sale_date\":\"1727740800000\",\"end_of_sale_date:info\":{\"source\":\"none\"},\"end_of_support_date\":\"1727740800000\",\"end_of_support_date:info\":{\"source\":\"none\"},\"firmware_version\":\"18.002\",\"firmware_version:info\":{\"confidence\":\"high\",\"granularity\":\"complete\",\"protocol\":\"ethernetip\",\"source\":\"passive\"},\"first_activity_time\":0,\"id\":\"9b492faf-5cf2-4b91-b745-f1e903bba5d1\",\"ip\":\"ff02::1:ff35:a124\",\"is_ai_enriched\":false,\"is_arc_enriched\":false,\"is_broadcast\":false,\"is_compromised\":false,\"is_confirmed\":true,\"is_disabled\":false,\"is_fully_learned\":true,\"is_learned\":true,\"is_public\":false,\"is_sp_enriched\":false,\"is_ti_enriched\":true,\"label\":\"ACMEincHQ_SW2\",\"label:info\":{\"source\":\"none\"},\"last_activity_time\":1747206000000,\"level\":\"1.5\",\"lifecycle\":\"end_of_sale\",\"lifecycle:info\":{\"source\":\"none\"},\"links\":\"link1\",\"links_count\":\"1\",\"mac_address\":\"00:30:a7:a8:01:65\",\"mac_address:info\":{\"likelihood\":\"0\",\"likelihood_level\":\"unconfirmed\",\"protocol_source\":\"\",\"source\":\"none\"},\"mac_vendor\":\"Schweitzer Engineering Laboratories\",\"name\":\"00112231@81.2.69.144\",\"os\":\"Windows XP SP3\",\"os:info\":{\"source\":\"none\"},\"product_name\":\"ControlLogix 1756-ENBT/A\",\"product_name:info\":{\"confidence\":\"high\",\"granularity\":\"complete\",\"protocol\":\"ethernetip\",\"source\":\"passive\"},\"properties\":{\"_product_name.passive\":\"ControlLogix 1756-ENBT/A\",\"_type.passive\":\"controller\",\"_vendor.passive\":\"Rockwell Automation/Allen-Bradley\",\"ethernetip/device_type\":\"Communications Adapter\",\"ethernetip/device_type_id\":\"12\",\"ethernetip/firmware_version\":\"18.002\",\"ethernetip/product_code\":\"166\",\"ethernetip/product_name\":\"1756-ENBT/A\",\"ethernetip/serial_number\":\"00112231\",\"ethernetip/vendor\":\"Rockwell Automation/Allen-Bradley\",\"ethernetip/vendor_id\":\"1\"},\"protocols\":[\"ethernetip\"],\"received.bytes\":\"0\",\"received.last_15m_bytes\":\"0\",\"received.last_1d_bytes\":\"0\",\"received.last_1h_bytes\":\"0\",\"received.last_1w_bytes\":\"0\",\"received.last_30m_bytes\":\"0\",\"received.last_5m_bytes\":\"0\",\"received.packets\":\"0\",\"record_created_at\":1747210553228,\"reputation\":\"test reputation\",\"roles\":[\"other\"],\"sent.bytes\":\"0\",\"sent.last_15m_bytes\":\"0\",\"sent.last_1d_bytes\":\"0\",\"sent.last_1h_bytes\":\"0\",\"sent.last_1w_bytes\":\"0\",\"sent.last_30m_bytes\":\"0\",\"sent.last_5m_bytes\":\"0\",\"sent.packets\":\"0\",\"serial_number\":\"00112231\",\"serial_number:info\":{\"confidence\":\"high\",\"granularity\":\"complete\",\"protocol\":\"ethernetip\",\"source\":\"passive\"},\"subnet\":\"10.1.1.0/24\",\"tcp_retransmission.bytes\":\"0\",\"tcp_retransmission.last_15m_bytes\":\"0\",\"tcp_retransmission.last_30m_bytes\":\"0\",\"tcp_retransmission.last_5m_bytes\":\"0\",\"tcp_retransmission.packets\":\"0\",\"tcp_retransmission.percent\":0,\"type\":\"controller\",\"type:info\":{\"protocol\":\"ethernetip\",\"source\":\"passive\"},\"variables_count\":\"8\",\"vendor\":\"Rockwell Automation\",\"vendor:info\":{\"confidence\":\"high\",\"granularity\":\"complete\",\"protocol\":\"ethernetip\",\"source\":\"passive\"},\"vlan_id\":\"100\",\"vlan_id:info\":{\"source\":\"none\"},\"zone\":\"Layer2\"}",
         "start": "1970-01-01T00:00:00.000Z",
@@ -1128,6 +1140,7 @@ An example event for `node` looks as following:
     "nozomi_networks": {
         "node": {
             "appliance_host": "hname",
+            "asset_id": "54trg",
             "asset_kb_id": "123id",
             "bpf_filter": "ip host 81.2.69.144",
             "capture_device": "demo",
@@ -1432,6 +1445,9 @@ An example event for `node` looks as following:
             "zone": "Layer2"
         }
     },
+    "observer": {
+        "product": "CMC"
+    },
     "related": {
         "hosts": [
             "hname",
@@ -1600,7 +1616,7 @@ An example event for `node` looks as following:
 | nozomi_networks.node.vlan_id | The virtual local area network (VLAN) identifier (ID) of the node. It can be absent if the traffic to/from the node is not VLAN-tagged. | keyword |
 | nozomi_networks.node.vlan_id_info | This is a metadata field about the vlan_id field. | flattened |
 | nozomi_networks.node.zone | The zone name to which this node belongs to. | keyword |
-| observer.product |  | constant_keyword |
+| observer.product | The product name of the observer. | keyword |
 | observer.vendor |  | constant_keyword |
 
 
@@ -1614,17 +1630,17 @@ An example event for `node_cve` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-03-13T13:53:37.431Z",
+    "@timestamp": "2025-03-13T13:53:37.429Z",
     "agent": {
-        "ephemeral_id": "c3a699b3-2a2e-42d8-b179-9eee0e4cbf8d",
-        "id": "6e25f3fc-0680-49f1-addb-1416ed6895d8",
-        "name": "elastic-agent-28676",
+        "ephemeral_id": "fe015023-19ab-4c0d-a911-9ec90298c78f",
+        "id": "1bbde374-96ba-43c9-97dd-37ba52e0499e",
+        "name": "elastic-agent-56652",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "nozomi_networks.node_cve",
-        "namespace": "31345",
+        "namespace": "12667",
         "type": "logs"
     },
     "device": {
@@ -1634,7 +1650,7 @@ An example event for `node_cve` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "6e25f3fc-0680-49f1-addb-1416ed6895d8",
+        "id": "1bbde374-96ba-43c9-97dd-37ba52e0499e",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -1646,7 +1662,7 @@ An example event for `node_cve` looks as following:
         "dataset": "nozomi_networks.node_cve",
         "end": "1970-01-01T00:00:00.000Z",
         "id": "4c26-b605-be03f2b5b629",
-        "ingested": "2025-06-18T06:59:15Z",
+        "ingested": "2026-09-22T12:26:21Z",
         "kind": "alert",
         "original": "{\"asset_id\":\"7d2fd56b-f3e2-4afd-8d3e-9b7480ab6f7d\",\"cve\":\"CVE-EOL\",\"cve_creation_time\":0,\"cve_epss_score\":null,\"cve_score\":10,\"cve_source\":null,\"cve_summary\":\"The product cannot be updated or patched in order to remove vulnerabilities or significant bugs.\",\"cve_update_time\":0,\"cwe_id\":\"CWE-1329\",\"cwe_name\":\"Reliance on Component That is Not Updatable\",\"firmware_version\":\"5.1.100.13                                 :)\",\"id\":\"4c26-b605-be03f2b5b629\",\"is_kev\":false,\"latest_hotfix\":null,\"likelihood\":1,\"matching_cpes\":[\"cpe:/o:microsoft:windows_xp:-:-:-\"],\"minimum_hotfix\":null,\"name\":\"HMI-A101\",\"nodes\":[\"1.128.0.0\"],\"os\":\"Firmware: 5.1.100.13                                 :)\",\"probability\":\"Confirmed\",\"product_name\":\"AC 800M PM851\",\"record_created_at\":1741874017431,\"references\":[{\"reference_type\":\"Vendor Advisory\",\"source\":\"product-security@xyz.com\",\"url\":\"https://support.xyz.com/en-us\"}],\"resolved\":false,\"time\":1741874017429,\"type\":\"controller\",\"vendor\":\"ABB\",\"zones\":[\"Production_B\"]}",
         "start": "1970-01-01T00:00:00.000Z",
@@ -1698,6 +1714,9 @@ An example event for `node_cve` looks as following:
                 "Production_B"
             ]
         }
+    },
+    "observer": {
+        "product": "CMC"
     },
     "related": {
         "ip": [
@@ -1796,7 +1815,7 @@ An example event for `node_cve` looks as following:
 | nozomi_networks.node_cve.vendor |  | keyword |
 | nozomi_networks.node_cve.zone | Network zone to which the vulnerable node belongs. | keyword |
 | nozomi_networks.node_cve.zones |  | keyword |
-| observer.product |  | constant_keyword |
+| observer.product | The product name of the observer. | keyword |
 | observer.vendor |  | constant_keyword |
 | vulnerability.published_date |  | date |
 
@@ -1811,17 +1830,17 @@ An example event for `session` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-29T20:04:04.875Z",
+    "@timestamp": "2025-04-29T20:04:04.874Z",
     "agent": {
-        "ephemeral_id": "227f705f-7a3c-4a8e-9f71-dd5a4549d644",
-        "id": "8deb54fa-cc50-4df1-b80e-e058e6bf4674",
-        "name": "elastic-agent-73169",
+        "ephemeral_id": "f7625443-3ac3-4003-9920-7daa4658b440",
+        "id": "a646381f-9d61-4453-bb6f-b722f35611db",
+        "name": "elastic-agent-74681",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "nozomi_networks.session",
-        "namespace": "85617",
+        "namespace": "89550",
         "type": "logs"
     },
     "destination": {
@@ -1841,7 +1860,7 @@ An example event for `session` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "8deb54fa-cc50-4df1-b80e-e058e6bf4674",
+        "id": "a646381f-9d61-4453-bb6f-b722f35611db",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -1853,7 +1872,7 @@ An example event for `session` looks as following:
         "dataset": "nozomi_networks.session",
         "end": "2025-04-29T20:04:04.875Z",
         "id": "5514f626-10d8-476e-a9ad-d06eef56e5eb",
-        "ingested": "2025-06-11T12:12:11Z",
+        "ingested": "2026-09-22T12:27:09Z",
         "kind": "event",
         "original": "{\"bpf_filter\":\"ip6 host 2a02:cf40:: and ip6 host 2a02:cf41:abcd::1234 and udp port 49740 and udp port 5355\",\"direction_is_known\":true,\"first_activity_time\":\"1745957044874\",\"from\":\"2a02:cf40::\",\"from_port\":\"49740\",\"from_zone\":\"Undefined\",\"id\":\"5514f626-10d8-476e-a9ad-d06eef56e5eb\",\"is_broadcast\":false,\"is_from_public\":false,\"is_to_public\":false,\"key\":\"2a02:cf41:abcd::1234;5355;2a02:cf40::;49740;udp;56710\",\"last_activity_time\":1745957044875,\"protocol\":\"llmnr\",\"status\":\"ACTIVE\",\"throughput_speed\":0,\"to\":\"2a02:cf41:abcd::1234\",\"to_port\":\"5355\",\"to_zone\":\"Undefined\",\"transferred.avg_packet_bytes\":90,\"transferred.biggest_packet_bytes\":\"90\",\"transferred.bytes\":\"90\",\"transferred.last_15m_bytes\":\"90\",\"transferred.last_30m_bytes\":\"90\",\"transferred.last_5m_bytes\":\"90\",\"transferred.packets\":\"1\",\"transferred.smallest_packet_bytes\":\"90\",\"transport_protocol\":\"udp\",\"vlan_id\":\"100\"}",
         "start": "2025-04-29T20:04:04.874Z",
@@ -1905,6 +1924,9 @@ An example event for `session` looks as following:
             "transport_protocol": "udp",
             "vlan_id": "100"
         }
+    },
+    "observer": {
+        "product": "CMC"
     },
     "related": {
         "ip": [
@@ -1978,7 +2000,7 @@ An example event for `session` looks as following:
 | nozomi_networks.session.transferred.smallest_packet_bytes | Smallest packet size in bytes observed. | long |
 | nozomi_networks.session.transport_protocol | Transport protocol of the session. | keyword |
 | nozomi_networks.session.vlan_id | The virtual local area network (VLAN) identifier (ID) of the session. It can be absent if the traffic of the session is not VLAN-tagged. | keyword |
-| observer.product |  | constant_keyword |
+| observer.product | The product name of the observer. | keyword |
 | observer.vendor |  | constant_keyword |
 
 
@@ -1992,24 +2014,24 @@ An example event for `variable` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-06-05T12:45:38.000Z",
+    "@timestamp": "2025-03-13T12:49:30.944Z",
     "agent": {
-        "ephemeral_id": "5525224a-b43b-487f-9d9c-55f325020b65",
-        "id": "771d42a9-768a-4f54-8ecc-bc9e0b26bbd8",
-        "name": "elastic-agent-74236",
+        "ephemeral_id": "e7368cf0-04f9-4541-8b83-c6ff66c920f3",
+        "id": "ec73acf6-935c-46d8-a279-ab8f427937c0",
+        "name": "elastic-agent-55029",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "nozomi_networks.variable",
-        "namespace": "35949",
+        "namespace": "67829",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "771d42a9-768a-4f54-8ecc-bc9e0b26bbd8",
+        "id": "ec73acf6-935c-46d8-a279-ab8f427937c0",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -2021,7 +2043,7 @@ An example event for `variable` looks as following:
         "dataset": "nozomi_networks.variable",
         "end": "2025-04-13T23:10:07.741Z",
         "id": "e77d717d-4306-49af-9bfe-d49f81aebcef",
-        "ingested": "2026-08-21T06:59:04Z",
+        "ingested": "2026-09-22T12:29:29Z",
         "kind": "event",
         "original": "{\"active_checks\":[],\"bit_value\":\"00111011011111000000000000000000\",\"changes_count\":\"4\",\"first_activity_time\":\"1741870170944\",\"flow_anomalies\":\"0\",\"flow_anomaly_in_progress\":false,\"flow_hiccups_percent\":\"0\",\"flow_stats.avg\":300005.2765957447,\"flow_stats.var\":224189.0462307355,\"flow_status\":\"CYCLIC\",\"history_status\":false,\"host\":\"1.128.0.0\",\"host_label\":\"plc095.ACME0.corporationnet.com\",\"id\":\"e77d717d-4306-49af-9bfe-d49f81aebcef\",\"is_numeric\":true,\"label\":\"ioa-2-206 at 6913\",\"last_activity_time\":\"1744585807741\",\"last_cause\":\"read:event\",\"last_client\":\"89.160.20.112\",\"last_function_code\":\"9\",\"last_function_code_info\":\"M_ME_NA_1: Measured value, normalized value\",\"last_range_change_time\":\"1741870170944\",\"last_update_time\":\"1741982102719\",\"last_valid_quality_time\":\"1744585807741\",\"last_value\":0.01318359375,\"last_value_is_valid\":true,\"last_value_quality\":[\"invalid\"],\"latest_bit_change\":\"Bit 5 changed from 0 to 1\",\"max_value\":\"0.013184\",\"min_value\":\"0.013184\",\"name\":\"ioa-2-206\",\"namespace\":\"6913\",\"offset\":\"0.000000\",\"protocol\":\"iec104\",\"record_created_at\":1749127538000,\"request_count\":\"9032\",\"scale\":\"1.000000\",\"type\":\"analog\",\"unit\":\"n/a\",\"value\":0.003814697265625,\"var_key\":\"1.128.0.0/6913/ioa-2-206\"}",
         "start": "2025-03-13T12:49:30.944Z",
@@ -2085,6 +2107,9 @@ An example event for `variable` looks as following:
             "value": 0.003814697265625,
             "var_key": "1.128.0.0/6913/ioa-2-206"
         }
+    },
+    "observer": {
+        "product": "CMC"
     },
     "related": {
         "hosts": [
@@ -2183,5 +2208,5 @@ An example event for `variable` looks as following:
 | nozomi_networks.variable.value | The live, last observed value of the variable. Upon restart, this value is unknown because it needs to reflect the real time status. | double |
 | nozomi_networks.variable.value_text | Live non-numeric (string) value of the variable when is_numeric is false. | keyword |
 | nozomi_networks.variable.var_key | The primary key of this data source. | keyword |
-| observer.product |  | constant_keyword |
+| observer.product | The product name of the observer. | keyword |
 | observer.vendor |  | constant_keyword |
