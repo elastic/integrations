@@ -921,11 +921,14 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.custom_attr.usr_display_name | User display name from custom attributes. | keyword |
 | netskope.alert_v2.custom_attr.usr_status | User status from custom attributes. | keyword |
 | netskope.alert_v2.custom_attr.usr_title | User title from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_udf_businesssegmentlevel1 | Business segment level 1 from custom attributes. | keyword |
 | netskope.alert_v2.custom_attr.usr_udf_businesssegmentlevel2 | Business segment level 2 from custom attributes. | keyword |
 | netskope.alert_v2.custom_attr.usr_udf_businesssegmentlevel3 | Business segment level 3 from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_udf_businesssegmentlevel4 | Business segment level 4 from custom attributes. | keyword |
 | netskope.alert_v2.custom_attr.usr_udf_companyname | Company name from custom attributes. | keyword |
 | netskope.alert_v2.custom_attr.usr_udf_employeeid | Employee ID from custom attributes. | keyword |
 | netskope.alert_v2.custom_attr.usr_udf_primarydomain | Primary domain from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_udf_supervisorid | Supervisor ID from custom attributes. | keyword |
 | netskope.alert_v2.custom_attr.usr_udf_supervisorname | Supervisor name from custom attributes. | keyword |
 | netskope.alert_v2.custom_connector | Indicates whether a custom connector was used. | keyword |
 | netskope.alert_v2.data_type | The content type of a file or documents scanned. | keyword |
@@ -1323,18 +1326,6 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.usergroup | Custom attributes added by customer using ADImporter. | keyword |
 | netskope.alert_v2.userip | IP address of User. | ip |
 | netskope.alert_v2.userkey | User ID or email. | keyword |
-| netskope.alert_v2.usr_display_name | Custom attributes added by customer using ADImporter. | keyword |
-| netskope.alert_v2.usr_status | Custom attributes added by customer using ADImporter. | keyword |
-| netskope.alert_v2.usr_title | Custom attributes added by customer using ADImporter. | keyword |
-| netskope.alert_v2.usr_udf_businesssegmentlevel1 | Custom attributes added by customer using ADImporter. | keyword |
-| netskope.alert_v2.usr_udf_businesssegmentlevel2 | Custom attributes added by customer using ADImporter. | keyword |
-| netskope.alert_v2.usr_udf_businesssegmentlevel3 | Custom attributes added by customer using ADImporter. | keyword |
-| netskope.alert_v2.usr_udf_businesssegmentlevel4 | Custom attributes added by customer using ADImporter. | keyword |
-| netskope.alert_v2.usr_udf_companyname | Custom attributes added by customer using ADImporter. | keyword |
-| netskope.alert_v2.usr_udf_employeeid | Custom attributes added by customer using ADImporter. | keyword |
-| netskope.alert_v2.usr_udf_primarydomain | Custom attributes added by customer using ADImporter. | keyword |
-| netskope.alert_v2.usr_udf_supervisorid | Custom attributes added by customer using ADImporter. | keyword |
-| netskope.alert_v2.usr_udf_supervisorname | Custom attributes added by customer using ADImporter. | keyword |
 | netskope.alert_v2.vendor_id | Netskope's Vendor id. | keyword |
 | netskope.alert_v2.violating_user | Violating user detected by DLP policies. | keyword |
 | netskope.alert_v2.violating_user_type | Type of Violating user. | keyword |

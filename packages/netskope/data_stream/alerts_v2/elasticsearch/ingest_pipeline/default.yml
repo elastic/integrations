@@ -21,11 +21,39 @@ processors:
       tag: json_event_original_alerts_v2
       target_field: netskope.alert_v2
       if: ctx.event?.original != null && ctx.netskope?.alert_v2 == null
-      on_failure:
-        - append:
-            tag: append_error_message_alerts_v2_json
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_alert_ab1166ce
+      value: alert
+  - append:
+      field: event.category
+      tag: append_event_category_intrusion_detection
+      value: intrusion_detection
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.alert_type != null && ['ctep', 'malsite'].contains(ctx.netskope.alert_v2.alert_type)
+  - append:
+      field: event.category
+      tag: append_event_category_malware
+      value: malware
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.alert_type != null && ['malware', 'malsite'].contains(ctx.netskope.alert_v2.alert_type)
+  - append:
+      field: event.category
+      tag: append_event_category_file
+      value: file
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.alert_type != null && ['dlp', 'quarantine'].contains(ctx.netskope.alert_v2.alert_type)
+  - append:
+      field: event.category
+      tag: append_event_category_vulnerability
+      value: vulnerability
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.alert_type == 'securityassessment'
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+      allow_duplicates: false
   - set:
       field: ecs.version
       tag: set_ecs_version_dbf680ba
@@ -62,6 +90,21 @@ processors:
           });
         }
         handleMap(ctx);
+  - convert:
+      field: netskope.alert_v2.category
+      tag: convert_alert_v2_category_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: netskope.alert_v2.dst_zipcode
+      tag: convert_alert_v2_dst_zipcode_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: netskope.alert_v2.src_zipcode
+      tag: convert_alert_v2_src_zipcode_to_string
+      type: string
+      ignore_missing: true
   - json:
       tag: json_netskope_alert_v2_custom_attr_to_netskope_alert_v2_custom_attr_a3dbba24
       field: netskope.alert_v2.custom_attr
@@ -1081,20 +1124,20 @@ processors:
       tag: set_user_email_from_alert_v2_user_c971c106
       copy_from: netskope.alert_v2.user
       ignore_empty_value: true
-      if: ctx.netskope?.alert_v2?.user != null && ctx.netskope.alert_v2.user.indexOf('@') > -1
+      if: ctx.netskope?.alert_v2?.user instanceof String && ctx.netskope.alert_v2.user.indexOf('@') > -1
   - set:
       field: user.name
       tag: set_user_name_from_alert_v2_user
       copy_from: netskope.alert_v2.user
       ignore_empty_value: true
-      if: ctx.netskope?.alert_v2?.user != null && ctx.netskope.alert_v2.user.indexOf('@') == -1
+      if: ctx.netskope?.alert_v2?.user instanceof String && ctx.netskope.alert_v2.user.indexOf('@') == -1
   - dissect:
       field: user.email
       tag: create_user_name_and_user_domain_alerts_v2
       pattern: "%{user.name}@%{user.domain}"
       ignore_missing: true
       ignore_failure: true
-      if: ctx.user?.email != null && ctx.user.email.indexOf('@') > -1
+      if: ctx.user?.email instanceof String && ctx.user.email.indexOf('@') > -1
   - append:
       field: related.user
       tag: append_alert_v2_user_into_related_user_ddb6c359
@@ -1827,39 +1870,6 @@ processors:
           });
         }
         handleMap(ctx);
-  - set:
-      field: event.kind
-      tag: set_event_kind_to_alert_ab1166ce
-      value: alert
-  - append:
-      field: event.category
-      tag: append_event_category_intrusion_detection
-      value: intrusion_detection
-      allow_duplicates: false
-      if: ctx.netskope?.alert_v2?.alert_type != null && ['ctep', 'malsite'].contains(ctx.netskope.alert_v2.alert_type)
-  - append:
-      field: event.category
-      tag: append_event_category_malware
-      value: malware
-      allow_duplicates: false
-      if: ctx.netskope?.alert_v2?.alert_type != null && ['malware', 'malsite'].contains(ctx.netskope.alert_v2.alert_type)
-  - append:
-      field: event.category
-      tag: append_event_category_file
-      value: file
-      allow_duplicates: false
-      if: ctx.netskope?.alert_v2?.alert_type != null && ['dlp', 'quarantine'].contains(ctx.netskope.alert_v2.alert_type)
-  - append:
-      field: event.category
-      tag: append_event_category_vulnerability
-      value: vulnerability
-      allow_duplicates: false
-      if: ctx.netskope?.alert_v2?.alert_type == 'securityassessment'
-  - append:
-      field: event.type
-      tag: append_event_type_info
-      value: info
-      allow_duplicates: false
   - append:
       tag: append_tags_9fe66b2c
       field: tags

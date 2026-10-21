@@ -21,11 +21,6 @@ processors:
       tag: json_event_original_events_v2
       target_field: netskope.events_v2
       if: ctx.event?.original != null && ctx.netskope?.events_v2 == null
-      on_failure:
-        - append:
-            tag: append_error_message_events_v2_json
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: ecs.version
       tag: set_ecs_version_dbf680ba
@@ -62,6 +57,26 @@ processors:
           });
         }
         handleMap(ctx);
+  - convert:
+      field: netskope.events_v2.category
+      tag: convert_events_v2_category_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: netskope.events_v2.port
+      tag: convert_events_v2_port_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: netskope.events_v2.dst_zipcode
+      tag: convert_events_v2_dst_zipcode_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: netskope.events_v2.src_zipcode
+      tag: convert_events_v2_src_zipcode_to_string
+      type: string
+      ignore_missing: true
   - convert:
       field: netskope.events_v2.acked
       tag: convert_acked_to_boolean_295143be
@@ -422,12 +437,12 @@ processors:
       field: event.outcome
       tag: set_event_outcome_to_success_730f43e4
       value: success
-      if: ctx.netskope?.events_v2?.activity != null && ['success', 'pass'].contains(ctx.netskope.events_v2.activity.toLowerCase())
+      if: ctx.netskope?.events_v2?.activity instanceof String && ['success', 'pass'].contains(ctx.netskope.events_v2.activity.toLowerCase())
   - set:
       field: event.outcome
       tag: set_event_outcome_to_failure_733dbc65
       value: failure
-      if: ctx.netskope?.events_v2?.activity != null && ctx.netskope.events_v2.activity.toLowerCase().contains('fail')
+      if: ctx.netskope?.events_v2?.activity instanceof String && ctx.netskope.events_v2.activity.toLowerCase().contains('fail')
   - set:
       field: event.outcome
       tag: set_event_outcome_to_failure_4ab8830e

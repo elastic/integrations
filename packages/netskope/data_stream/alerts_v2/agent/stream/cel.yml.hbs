@@ -73,31 +73,35 @@ program: |-
               },
             }
           ).do_request().as(resp, (resp.StatusCode == 200) ?
-            resp.Body.decode_json().?result.orValue([]).as(result,
-              (size(result) > 0) ?
-                {
-                  "events": result.map(e, {"message": e.encode_json()}),
-                  "want_more": true,
-                  "worklist": state.worklist,
-                  "cursor": {
-                    "started_types": (current_type in state.?cursor.started_types.orValue([])) ?
-                      state.?cursor.started_types.orValue([])
-                    :
-                      state.?cursor.started_types.orValue([]) + [current_type],
-                  },
-                }
-              :
-                {
-                  "events": [{"retry": true}],
-                  "want_more": size(state.worklist) > 1,
-                  "worklist": tail(state.worklist),
-                  "cursor": {
-                    "started_types": (current_type in state.?cursor.started_types.orValue([])) ?
-                      state.?cursor.started_types.orValue([])
-                    :
-                      state.?cursor.started_types.orValue([]) + [current_type],
-                  },
-                }
+            resp.Body.decode_json().as(body,
+              body.?result.orValue([]).as(result,
+                (size(result) > 0) ?
+                  (body.?wait_time.orValue(0) == 0 || size(result) >= 10000).as(more,
+                    {
+                      "events": result.map(e, {"message": e.encode_json()}),
+                      "want_more": more || size(state.worklist) > 1,
+                      "worklist": more ? state.worklist : tail(state.worklist),
+                      "cursor": {
+                        "started_types": (current_type in state.?cursor.started_types.orValue([])) ?
+                          state.?cursor.started_types.orValue([])
+                        :
+                          state.?cursor.started_types.orValue([]) + [current_type],
+                      },
+                    }
+                  )
+                :
+                  {
+                    "events": [{"retry": true}],
+                    "want_more": size(state.worklist) > 1,
+                    "worklist": tail(state.worklist),
+                    "cursor": {
+                      "started_types": (current_type in state.?cursor.started_types.orValue([])) ?
+                        state.?cursor.started_types.orValue([])
+                      :
+                        state.?cursor.started_types.orValue([]) + [current_type],
+                    },
+                  }
+              )
             )
           : (resp.StatusCode == 409 || resp.StatusCode == 429 || resp.StatusCode >= 500) ?
             {
