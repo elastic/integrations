@@ -1930,8 +1930,26 @@ An example event for `events` looks as following:
 | netskope.events_v2.dlp_incident_id | Incident ID associated with sub-file in DLP scans. In the case of main file, this is same as the parent incident ID. | keyword |
 | netskope.events_v2.dlp_is_unique_count | True or false depending upon if rule is unique counted per rule data. | boolean |
 | netskope.events_v2.dlp_mail_parent_id | Parent Incident ID associated with main container (or non-container) file that was scanned. | keyword |
-| netskope.events_v2.dlp_match_info | DLP match info carries the details about DLP profile and rule info along with the violation count information. | keyword |
-| netskope.events_v2.dlp_match_info_object | DLP match info as a structured object. Populated when the Netskope API sends dlp_match_info as a JSON object or array of objects instead of a plain string. | flattened |
+| netskope.events_v2.dlp_match_info.action_threshold_met | Whether the DLP action threshold was met. | boolean |
+| netskope.events_v2.dlp_match_info.dlp_action | Action taken by the DLP policy. | keyword |
+| netskope.events_v2.dlp_match_info.dlp_forensic_id | Forensic ID associated with the DLP incident. | long |
+| netskope.events_v2.dlp_match_info.dlp_policy | DLP policy name. | keyword |
+| netskope.events_v2.dlp_match_info.dlp_profile_name | DLP profile name. | keyword |
+| netskope.events_v2.dlp_match_info.dlp_rules.dlp_data_identifiers | DLP data identifiers that matched, including per-identifier match counts keyed by identifier name. | flattened |
+| netskope.events_v2.dlp_match_info.dlp_rules.dlp_incident_rule_count | Number of rule matches counted toward the incident. | long |
+| netskope.events_v2.dlp_match_info.dlp_rules.dlp_match_type | DLP rule match type. | keyword |
+| netskope.events_v2.dlp_match_info.dlp_rules.dlp_matches_skipped | Whether some DLP matches were skipped. | boolean |
+| netskope.events_v2.dlp_match_info.dlp_rules.dlp_rule_name | DLP rule name. | keyword |
+| netskope.events_v2.dlp_match_info.dlp_rules.dlp_rule_score | DLP rule score. | float |
+| netskope.events_v2.dlp_match_info.dlp_rules.dlp_rule_severity | DLP rule severity. | keyword |
+| netskope.events_v2.dlp_match_info.dlp_rules.dlp_unique_count | Number of unique matches for the DLP rule. | long |
+| netskope.events_v2.dlp_match_info.dlp_rules.entity_categories | Entity categories that matched, keyed by entity. | flattened |
+| netskope.events_v2.dlp_match_info.dlp_rules.entity_data_types | Entity data types that matched, keyed by entity. | flattened |
+| netskope.events_v2.dlp_match_info.dlp_rules.entity_sensitivity_levels | Sensitivity levels of the matched entities, keyed by entity. | flattened |
+| netskope.events_v2.dlp_match_info.dlp_rules.is_unique_count | Whether the rule is unique counted. | boolean |
+| netskope.events_v2.dlp_match_info.dlp_rules.sensitivity_level | DLP rule sensitivity level. | keyword |
+| netskope.events_v2.dlp_match_info.dlp_scan_type | DLP scan type. | keyword |
+| netskope.events_v2.dlp_match_info_text | DLP match info received as plain text instead of a structured object. | keyword |
 | netskope.events_v2.dlp_parent_id | Incident ID associated with main container (or non-container) file that was scanned. | keyword |
 | netskope.events_v2.dlp_profile | DLP profile name. | keyword |
 | netskope.events_v2.dlp_profile_name | DLP profile name. | keyword |
