@@ -13,6 +13,7 @@ This integration queries Snowflake `ACCOUNT_USAGE` historical views through SQL 
 ### How it works
 
 Elastic Agent submits SQL statements to `POST /api/v2/statements` and pages result partitions. If Snowflake returns HTTP 202, the agent polls the statement handle until results are ready. Each data stream queries one `ACCOUNT_USAGE` view and advances a timestamp watermark with lookback to cover view latency. When a statement returns a full `batch_size` page, the next request continues from the last returned `ORDER BY` key without the lag overlap until the backlog is drained.
+Grants keep separate watermarks for `CREATED_ON` and `DELETED_ON`.
 
 ## What data does this integration collect?
 
@@ -21,10 +22,13 @@ The Snowflake integration collects the following logs:
 * **access_history**: Objects and columns read or written by each query from `SNOWFLAKE.ACCOUNT_USAGE.ACCESS_HISTORY` (direct and base objects accessed, objects modified, DDL operations, policies referenced). Enterprise Edition or later.
 * **data_transfer_history**: Hourly byte-count windows of data moved between clouds and regions from `SNOWFLAKE.ACCOUNT_USAGE.DATA_TRANSFER_HISTORY`, by transfer type.
 * **stages**: Stage create, alter, and drop activity from `SNOWFLAKE.ACCOUNT_USAGE.STAGES`, including external stage locations (`s3://`, `azure://`, `gcs://`) and storage integrations. Watermarks are `LAST_ALTERED` and `DELETED` because rows update in place.
+* **login_history**: Login attempts from `SNOWFLAKE.ACCOUNT_USAGE.LOGIN_HISTORY` (user, client IP, authentication factors, success or failure, malicious-IP protection details).
+* **sessions**: Session lifecycle from `SNOWFLAKE.ACCOUNT_USAGE.SESSIONS` (open or closed sessions, last access time, closed reason). Watermark is `ACCESS_TIME` because session rows update until they close.
+* **grants_to_users**: Role grants and revokes from `SNOWFLAKE.ACCOUNT_USAGE.GRANTS_TO_USERS`. Creates and revokes are queried separately so each watermark advances only along `CREATED_ON` or `DELETED_ON`.
 
 ### Supported use cases
 
-Use this integration to audit which users touch sensitive tables and columns, detect unusual outbound data transfer volumes, and track the creation or alteration of external stages that could be used to move data out of Snowflake.
+Use this integration to detect failed or suspicious logins, track session activity, audit privilege grants and revokes, monitor access to sensitive tables and columns, detect unusual outbound data transfers, and track the creation or alteration of external stages that could facilitate data exfiltration from Snowflake.
 
 ## What do I need to use this integration?
 
@@ -45,10 +49,12 @@ Elastic Agent is required to stream data from the SQL API and ship the data to E
 
 1. Create a role and a `TYPE=SERVICE` user, and grant the role to the user.
 2. Grant `USAGE` on a warehouse that can auto-resume.
+3. Grant the `SNOWFLAKE.SECURITY_VIEWER` database role (or `IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE`) so the user can read login history, sessions, and grants to users.
 3. Grant the SNOWFLAKE database roles the data streams need (or `IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE`):
    * `SNOWFLAKE.GOVERNANCE_VIEWER` for `access_history`
    * `SNOWFLAKE.USAGE_VIEWER` for `data_transfer_history`
    * `SNOWFLAKE.OBJECT_VIEWER` for `stages`
+   * `SNOWFLAKE.SECURITY_VIEWER` database role or `IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE` for `login history`, `sessions`, and `grants_to_users`
 4. Create a programmatic access token for the service user.
 5. If a network policy is enabled, allow the Elastic Agent egress IP (or PrivateLink endpoint).
 
@@ -70,7 +76,9 @@ Elastic Agent is required to stream data from the SQL API and ship the data to E
 
 ### Validation
 
-In Discover, filter on `event.dataset: snowflake.access_history`, `event.dataset: snowflake.data_transfer_history`, or `event.dataset: snowflake.stages`. Access history should contain `event.category: database` events. Data transfer should contain `event.category: network` events with `network.bytes`. Stages should contain `event.category: configuration` events with `event.action` of `create`, `alter`, or `drop`.
+In Discover, filter on `event.dataset: snowflake.access_history`, `event.dataset: snowflake.data_transfer_history`, `event.dataset: snowflake.stages`, `event.dataset: snowflake.login_history`, `event.dataset: snowflake.sessions`, or
+`event.dataset: snowflake.grants_to_users`. Access history should contain `event.category: database` events. Data transfer should contain `event.category: network` events with `network.bytes`. Stages should contain `event.category: configuration` events with `event.action` of `create`, `alter`, or `drop`. Login history should contain
+`event.category: authentication` events. Grants should contain IAM change events.
 
 ## Troubleshooting
 
@@ -83,7 +91,7 @@ In Discover, filter on `event.dataset: snowflake.access_history`, `event.dataset
 
 ## Performance and scaling
 
-Each poll runs SQL on the configured warehouse and consumes Snowflake credits. `ACCOUNT_USAGE` latency is 45 minutes to 3 hours, so polling faster than the view latency does not make data fresher. Suggested starting intervals are `3h` for access history and `2h` for data transfer history and stages. Overlap the watermark by at least the view latency so late-arriving rows are included. `ACCESS_HISTORY` can be high volume on busy accounts. Keep `batch_size` at the default unless statements time out.
+Each poll runs SQL on the configured warehouse and consumes Snowflake credits. `ACCOUNT_USAGE` latency is 45 minutes to 3 hours, so polling faster than the view latency does not make data fresher. Suggested starting intervals are `2h` for login history, grants, data transfer history, and stages, and `3h` for sessions and access history. Overlap the watermark by at least the view latency so late-arriving rows are included. `ACCESS_HISTORY` can be high volume on busy accounts. Keep `batch_size` at the default unless statements time out.
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
@@ -131,6 +139,10 @@ These APIs are used with this integration:
 - [ACCESS_HISTORY view](https://docs.snowflake.com/en/sql-reference/account-usage/access_history)
 - [DATA_TRANSFER_HISTORY view](https://docs.snowflake.com/en/sql-reference/account-usage/data_transfer_history)
 - [STAGES view](https://docs.snowflake.com/en/sql-reference/account-usage/stages)
+- [LOGIN_HISTORY view](https://docs.snowflake.com/en/sql-reference/account-usage/login_history)
+- [SESSIONS view](https://docs.snowflake.com/en/sql-reference/account-usage/sessions)
+- [GRANTS_TO_USERS view](https://docs.snowflake.com/en/sql-reference/account-usage/grants_to_users)
+
 
 ### Data streams
 
@@ -532,6 +544,357 @@ An example event for `stages` looks as following:
         "original": "s3://example-bucket/exports/",
         "path": "/exports/",
         "scheme": "s3"
+    }
+}
+```
+
+
+#### login_history
+
+The `login_history` data stream provides login attempt events from
+`SNOWFLAKE.ACCOUNT_USAGE.LOGIN_HISTORY`.
+
+##### login_history fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| snowflake.login_history.authorizing_integration_name | Security integration that authorized the login, when present. | keyword |
+| snowflake.login_history.client_ip | Client IP address reported for the login attempt when the value is not a valid IP (for example INTERNAL_SNOWFLAKE_IP/0.0.0.0). | keyword |
+| snowflake.login_history.client_private_link_id | Private connectivity endpoint identifier. | keyword |
+| snowflake.login_history.connection | Client Redirect connection name, when present. | keyword |
+| snowflake.login_history.first_authentication_factor | First authentication factor (for example PASSWORD or OAUTH_ACCESS_TOKEN). | keyword |
+| snowflake.login_history.first_authentication_factor_id | Identifier of the first authentication factor credential. | keyword |
+| snowflake.login_history.login_details.authn_validation_error | Validation errors from authn_validation_error when present (array of strings in Snowflake). | keyword |
+| snowflake.login_history.login_details.malicious_ip_protection_info.categories | Threat categories (for example ANONYMOUS_VPN, TOR_EXITS). | keyword |
+| snowflake.login_history.login_details.malicious_ip_protection_info.result | Malicious IP protection action, for example BLOCKED or OPTED_OUT. | keyword |
+| snowflake.login_history.login_details.malicious_ip_protection_info.risk_classification | Risk level from riskClassification, for example HIGH or LOW. | keyword |
+| snowflake.login_history.related_event_id | Reserved related event identifier from LOGIN_HISTORY.RELATED_EVENT_ID. | keyword |
+| snowflake.login_history.reported_client_type | Client family reported by the caller (not authenticated). | keyword |
+| snowflake.login_history.reported_client_version | Client version reported by the caller. | keyword |
+| snowflake.login_history.second_authentication_factor | Second authentication factor when MFA was used (for example MFA_TOKEN). | keyword |
+| snowflake.login_history.second_authentication_factor_id | Identifier of the second authentication factor credential. | keyword |
+
+
+##### login_history sample event
+
+An example event for `login_history` looks as following:
+
+```json
+{
+    "@timestamp": "2020-06-15T08:00:00.123Z",
+    "agent": {
+        "ephemeral_id": "5516fff1-8ecf-4e14-b756-516f327c5883",
+        "id": "2d0e0768-6742-4799-9f4d-ed051ff65975",
+        "name": "elastic-agent-56427",
+        "type": "filebeat",
+        "version": "8.19.3"
+    },
+    "data_stream": {
+        "dataset": "snowflake.login_history",
+        "namespace": "44418",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "2d0e0768-6742-4799-9f4d-ed051ff65975",
+        "snapshot": false,
+        "version": "8.19.3"
+    },
+    "event": {
+        "action": "LOGIN",
+        "agent_id_status": "verified",
+        "category": [
+            "authentication"
+        ],
+        "dataset": "snowflake.login_history",
+        "id": "1001",
+        "ingested": "2026-09-29T09:48:15Z",
+        "kind": "event",
+        "original": "{\"AUTHORIZING_INTEGRATION_NAME\":null,\"CLIENT_IP\":\"198.51.100.10\",\"CLIENT_PRIVATE_LINK_ID\":null,\"CONNECTION\":null,\"ERROR_CODE\":null,\"ERROR_MESSAGE\":null,\"EVENT_ID\":\"1001\",\"EVENT_TIMESTAMP\":\"2020-06-15 08:00:00.123 +0000\",\"EVENT_TYPE\":\"LOGIN\",\"FIRST_AUTHENTICATION_FACTOR\":\"PASSWORD\",\"IS_SUCCESS\":\"YES\",\"LOGIN_DETAILS\":null,\"REPORTED_CLIENT_TYPE\":\"JDBC_DRIVER\",\"REPORTED_CLIENT_VERSION\":\"3.14.4\",\"SECOND_AUTHENTICATION_FACTOR\":\"MFA_TOKEN\",\"USER_NAME\":\"alice.johnson\"}",
+        "outcome": "success",
+        "type": [
+            "start"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Snowflake",
+        "vendor": "Snowflake"
+    },
+    "related": {
+        "ip": [
+            "198.51.100.10"
+        ],
+        "user": [
+            "alice.johnson"
+        ]
+    },
+    "snowflake": {
+        "login_history": {
+            "first_authentication_factor": "PASSWORD",
+            "reported_client_type": "JDBC_DRIVER",
+            "reported_client_version": "3.14.4",
+            "second_authentication_factor": "MFA_TOKEN"
+        }
+    },
+    "source": {
+        "as": {
+            "number": 64501,
+            "organization": {
+                "name": "Documentation ASN"
+            }
+        },
+        "geo": {
+            "city_name": "Amsterdam",
+            "continent_name": "Europe",
+            "country_iso_code": "NL",
+            "country_name": "Netherlands",
+            "location": {
+                "lat": 52.37404,
+                "lon": 4.88969
+            },
+            "region_iso_code": "NL-NH",
+            "region_name": "North Holland"
+        },
+        "ip": "198.51.100.10"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "snowflake-login_history"
+    ],
+    "user": {
+        "name": "alice.johnson"
+    }
+}
+```
+
+#### sessions
+
+The `sessions` data stream provides session lifecycle events from
+`SNOWFLAKE.ACCOUNT_USAGE.SESSIONS`. Rows update until the session closes.
+The collector watermarks on `ACCESS_TIME`.
+
+##### sessions fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| snowflake.sessions.authentication_method | Authentication method used to create the session (for example PASSWORD or OAUTH_ACCESS_TOKEN). | keyword |
+| snowflake.sessions.client_application_id | Client application identifier (for example JDBC 3.8.7). | keyword |
+| snowflake.sessions.client_application_version | Client application version. | keyword |
+| snowflake.sessions.client_build_id | Client build identifier from SESSIONS.CLIENT_BUILD_ID when present. | keyword |
+| snowflake.sessions.client_environment | Parsed JSON from SESSIONS.CLIENT_ENVIRONMENT (operating system, OCSP mode, and similar client details). | flattened |
+| snowflake.sessions.client_version | Client version from SESSIONS.CLIENT_VERSION when present. | keyword |
+| snowflake.sessions.is_open | Whether the session is still open. | boolean |
+| snowflake.sessions.login_event_id | LOGIN_HISTORY.EVENT_ID that opened this session. | keyword |
+| snowflake.sessions.session_id | Snowflake session identifier from SESSIONS.SESSION_ID. | keyword |
+
+
+##### sessions sample event
+
+An example event for `sessions` looks as following:
+
+```json
+{
+    "@timestamp": "2020-06-15T08:00:00.123Z",
+    "agent": {
+        "ephemeral_id": "be7fda63-20db-4c59-a13d-ccdb5d4b5087",
+        "id": "9cfb7833-58bc-4efe-b8d2-c0d48761f01d",
+        "name": "elastic-agent-94334",
+        "type": "filebeat",
+        "version": "8.19.3"
+    },
+    "data_stream": {
+        "dataset": "snowflake.sessions",
+        "namespace": "53326",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "9cfb7833-58bc-4efe-b8d2-c0d48761f01d",
+        "snapshot": false,
+        "version": "8.19.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "session",
+            "authentication"
+        ],
+        "dataset": "snowflake.sessions",
+        "ingested": "2026-09-30T05:44:24Z",
+        "kind": "event",
+        "original": "{\"ACCESS_TIME\":\"2020-06-15 08:00:00.123 +0000\",\"AUTHENTICATION_METHOD\":\"PASSWORD\",\"CLIENT_APPLICATION_ID\":\"JDBC 3.14.4\",\"CLIENT_APPLICATION_VERSION\":\"3.14.4\",\"CLIENT_ENVIRONMENT\":\"{\\\"OS\\\":\\\"Linux\\\",\\\"OCSP_MODE\\\":\\\"FAIL_OPEN\\\"}\",\"CLOSED_REASON\":\"LOGOUT\",\"CREATED_ON\":\"2020-06-15 07:50:00.000 +0000\",\"IS_OPEN\":\"false\",\"LOGIN_EVENT_ID\":\"1001\",\"SESSION_ID\":\"3001\",\"USER_NAME\":\"alice.johnson\"}",
+        "reason": "LOGOUT",
+        "start": "2020-06-15T07:50:00.000Z",
+        "type": [
+            "end"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Snowflake",
+        "vendor": "Snowflake"
+    },
+    "related": {
+        "user": [
+            "alice.johnson"
+        ]
+    },
+    "snowflake": {
+        "sessions": {
+            "authentication_method": "PASSWORD",
+            "client_application_id": "JDBC 3.14.4",
+            "client_application_version": "3.14.4",
+            "client_environment": {
+                "OCSP_MODE": "FAIL_OPEN",
+                "OS": "Linux"
+            },
+            "is_open": false,
+            "login_event_id": "1001",
+            "session_id": "3001"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "snowflake-sessions"
+    ],
+    "user": {
+        "name": "alice.johnson"
+    }
+}
+```
+
+#### grants_to_users
+
+The `grants_to_users` data stream provides role grant and revoke events from
+`SNOWFLAKE.ACCOUNT_USAGE.GRANTS_TO_USERS`. Creates and revokes are collected
+with separate statements so a revoke timestamp cannot skip unread grants.
+
+##### grants_to_users fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| snowflake.grants_to_users.granted_by | Role that performed the grant. | keyword |
+| snowflake.grants_to_users.granted_to | Object type that received the grant. Always USER for this view. | keyword |
+
+
+##### grants_to_users sample event
+
+An example event for `grants_to_users` looks as following:
+
+```json
+{
+    "@timestamp": "2020-06-15T08:00:00.123Z",
+    "agent": {
+        "ephemeral_id": "65f483fb-e78a-4d8e-8dc7-35c6479b7ad6",
+        "id": "823fb7a6-0e9e-472a-af29-6457a68454a4",
+        "name": "elastic-agent-67476",
+        "type": "filebeat",
+        "version": "8.19.3"
+    },
+    "data_stream": {
+        "dataset": "snowflake.grants_to_users",
+        "namespace": "66625",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "823fb7a6-0e9e-472a-af29-6457a68454a4",
+        "snapshot": false,
+        "version": "8.19.3"
+    },
+    "event": {
+        "action": "role_granted",
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "dataset": "snowflake.grants_to_users",
+        "id": "yEvZ1XzOTI5L8fEHIqJnGZ7jaRI=",
+        "ingested": "2026-09-30T08:50:12Z",
+        "kind": "event",
+        "original": "{\"CREATED_ON\":\"2020-06-15 08:00:00.123 +0000\",\"DELETED_ON\":null,\"GRANTED_BY\":\"ACCOUNTADMIN\",\"GRANTED_TO\":\"USER\",\"GRANTEE_NAME\":\"alice.johnson\",\"ROLE\":\"SYSADMIN\"}",
+        "start": "2020-06-15T08:00:00.123Z",
+        "type": [
+            "change",
+            "user"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Snowflake",
+        "vendor": "Snowflake"
+    },
+    "related": {
+        "user": [
+            "alice.johnson"
+        ]
+    },
+    "snowflake": {
+        "grants_to_users": {
+            "granted_by": "ACCOUNTADMIN",
+            "granted_to": "USER"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "snowflake-grants_to_users"
+    ],
+    "user": {
+        "target": {
+            "name": "alice.johnson",
+            "roles": [
+                "SYSADMIN"
+            ]
+        }
     }
 }
 ```
