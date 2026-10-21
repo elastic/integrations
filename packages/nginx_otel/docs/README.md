@@ -1,4 +1,4 @@
-# NGINX metrics and logs from OpenTelemetry Collector
+# NGINX OpenTelemetry Assets
 
 The NGINX OpenTelemetry Assets package allows you to monitor [Nginx](https://nginx.org/), a high-performance web server, reverse proxy, and load balancer. NGINX is widely used for serving web content, proxying traffic, and load balancing across multiple servers.
 
