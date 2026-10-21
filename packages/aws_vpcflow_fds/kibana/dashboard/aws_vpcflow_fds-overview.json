@@ -347,7 +347,7 @@
                                             ],
                                             "index": "vpc_flow-@timestamp",
                                             "query": {
-                                                "esql": "FROM vpc_flow | KEEP @timestamp, action | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend | STATS total = COUNT(*), rejected = COUNT(action == \"REJECT\" OR NULL) | EVAL `Reject Rate %` = ROUND(rejected * 100.0 / total, 1) | KEEP `Reject Rate %`"
+                                                "esql": "FROM vpc_flow | KEEP @timestamp, action | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND action IN (\"ACCEPT\", \"REJECT\") | STATS total = COUNT(*), rejected = COUNT(action == \"REJECT\" OR NULL) | EVAL `Reject Rate %` = ROUND(rejected * 100.0 / total, 1) | KEEP `Reject Rate %`"
                                             },
                                             "timeField": "@timestamp",
                                             "ignoreGlobalFilters": false
@@ -358,7 +358,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM vpc_flow | KEEP @timestamp, action | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend | STATS total = COUNT(*), rejected = COUNT(action == \"REJECT\" OR NULL) | EVAL `Reject Rate %` = ROUND(rejected * 100.0 / total, 1) | KEEP `Reject Rate %`"
+                                "esql": "FROM vpc_flow | KEEP @timestamp, action | WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND action IN (\"ACCEPT\", \"REJECT\") | STATS total = COUNT(*), rejected = COUNT(action == \"REJECT\" OR NULL) | EVAL `Reject Rate %` = ROUND(rejected * 100.0 / total, 1) | KEEP `Reject Rate %`"
                             },
                             "visualization": {
                                 "density": "default",
