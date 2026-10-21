@@ -1,4 +1,12 @@
 # newer versions go on top
+- version: "4.0.0"
+  changes:
+    - description: Map `dlp_match_info` as an object in the `events_v2` data stream, with typed fields for the DLP policy and rule details and `flattened` fields for the per-identifier and per-entity details, instead of redirecting it to `dlp_match_info_object`. Plain text values are stored in `dlp_match_info_text`.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21978
+    - description: The `netskope.events_v2.dlp_match_info` field changes type from `keyword` to `object`, and the `netskope.events_v2.dlp_match_info_object` field added in 3.3.1 is removed. Queries, rules or dashboards that use `dlp_match_info_object` need to be updated to use `dlp_match_info.*`.
+      type: breaking-change
+      link: https://github.com/elastic/integrations/pull/21978
 - version: "3.3.1"
   changes:
     - description: Fix indexing failures for `record_type:incident` events by adding `dlp_match_info_object` and `inline_dlp_match_info_object` fields (`flattened` type) and pipeline processors that redirect structured values to these fields when the Netskope API sends them as JSON objects or arrays instead of plain strings.
