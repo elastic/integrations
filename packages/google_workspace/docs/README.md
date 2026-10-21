@@ -46,6 +46,7 @@ In order to ingest data from the Google Reports API you must:
   - OUs: Read
   - Users: Read
   - Chrome Management > Managed browsers: Read
+  - Chrome Management > Manage ChromeOS Devices: Read (only needed for the `chromeos_devices` data stream; *Managed browsers: Read* does not grant it)
   - View Reports
   - Alert Center: Full access
 
@@ -62,9 +63,11 @@ In order to ingest data from the Google Reports API you must:
 - [Set up access to the Admin SDK API](https://support.google.com/workspacemigrate/answer/9222865?hl=en) for the ServiceAccount.
 - [Enable Domain-Wide Delegation](https://developers.google.com/admin-sdk/reports/v1/guides/delegation) for your ServiceAccount.
 
-This integration will use the following *oauth2 scope*:
+The Reports API data streams use the following *oauth2 scope*:
 
 - `https://www.googleapis.com/auth/admin.reports.audit.readonly`
+
+The `chromeos_devices` data stream needs a different scope. See [Google Workspace ChromeOS Devices](#google-workspace-chromeos-devices).
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
@@ -258,6 +261,70 @@ Once Service Account credentials are downloaded as a JSON file, then the integra
 >  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
 >  NOTE: The default value of the "Page Size" is set to 1000. This option is available under 'Alert' Advance options. Set the parameter "Page Size" according to the requirement. For Alert Data Stream, The default value of "Alert Center API Host" is `https://alertcenter.googleapis.com`. The Alert Center API Host will be used for collecting alert logs only.
+
+# Google Workspace ChromeOS Devices
+
+The `chromeos_devices` data stream collects an **inventory** of the ChromeOS and ChromeOS Flex devices enrolled in your Google Workspace or Chrome Enterprise account, from the [Admin SDK Directory API](https://developers.google.com/workspace/admin/directory/reference/rest/v1/chromeosdevices/list). Each collection cycle produces one document per device, describing what exists: identity, status, organizational unit, assigned user, OS version and update state, boot mode, TPM, end of auto-updates, last known IP addresses and recent users. Documents have `event.kind: asset`.
+
+This is different from the `chrome` data stream, which contains Chrome and ChromeOS activity **events** (what happened). Changes made to devices by administrators are in the `admin` data stream.
+
+The data stream is turned off by default.
+
+## Collection
+
+The Directory API has no filter for changed devices, so each cycle reads the whole device inventory again. The default interval is `24h`. Each request returns up to 100 devices (the **Page Size** setting, which Google allows up to 300).
+
+To collect only part of the inventory, set **Organizational Unit** under the data stream's advanced options. The data stream then collects the devices in that organizational unit and all its children. Use the full path, for example `/Sales`, or `id:` followed by the organizational unit ID.
+
+## Requirements
+
+The `chromeos_devices` data stream uses the same service account and `Delegated Account` as the Reports API data streams. It needs this extra scope and privilege:
+
+| OAuth scope to add | Privilege the delegated account needs |
+|---|---|
+| `https://www.googleapis.com/auth/admin.directory.device.chromeos.readonly` | Services → Chrome Management → Manage ChromeOS Devices → **Manage ChromeOS Devices (read only)**, on **all** organizational units, and Organizational Units → Read |
+
+*Chrome Management → Managed browsers: Read* is a different privilege for Chrome browsers. It does not give access to ChromeOS devices. Google has merged the former "Admin console privileges" and "Admin API privileges" into one **Admin privileges** section, so one grant covers both. See [Delegate admin roles in Chrome](https://support.google.com/chrome/a/answer/2984343).
+
+To add the scope to the service account's domain-wide delegation (a super administrator must do this):
+
+1. In the Admin console go to **Security → Access and data control → API controls → Manage Domain Wide Delegation**.
+2. Find the service account's client ID and click **Edit**. Do not use **Add new** for a client ID that is already listed, and do not delete and re-add it: deleting it stops every application that uses it straight away.
+3. Add the scope. **Keep** `https://www.googleapis.com/auth/admin.reports.audit.readonly` and any other scopes already listed.
+4. Click **Authorize**, then open **View details** and check that the scope is listed.
+
+Use the exact scope string in the table. Google does not accept a broader scope in place of the one the integration requests. Scope changes can take up to 24 hours to take effect. If your organization uses multi-party approval, another super administrator must approve the change first.
+
+> NOTE: If the scope is not delegated yet, Google issues no token and the `chromeos_devices` data stream collects nothing. The other data streams of the integration are not affected.
+
+Devices only appear after they are enrolled, and enrolment needs a ChromeOS Enterprise, Education or Kiosk & Signage upgrade for each device, including ChromeOS Flex devices. An account without enrolled devices collects no documents, and this is not an error.
+
+Hardware, network and recent-user information is only reported while the *User and device reporting* policies are on. They are on by default. See [View ChromeOS device details](https://support.google.com/chrome/a/answer/1698333).
+
+The data stream calls `https://admin.googleapis.com`. You can change this with the **Directory API Host** setting under the data stream's advanced options. If your network uses an egress allowlist, add `admin.googleapis.com`.
+
+## Notes on the data
+
+- Devices in every status are included, among them deprovisioned and disabled devices. `host.entity.attributes.managed` is set from `status`:
+
+  | `status` | `host.entity.attributes.managed` |
+  |---|---|
+  | `ACTIVE`, `DISABLED` | `true` |
+  | `DEPROVISIONED`, `INACTIVE`, `DELINQUENT`, `PRE_PROVISIONED` | `false` |
+  | `RETURN_REQUESTED`, `RETURN_ARRIVED`, `SHIPPED`, `UNKNOWN`, absent or any other value | not set |
+
+- ChromeOS devices have no hostname. `host.name` is the asset ID set by an administrator, or else the serial number, or else the device ID.
+- The assigned user (`google_workspace.chromeos_devices.annotated_user`) is free text that administrators can edit. It is copied to `user.email`, `user.name` and `user.domain` only when it is an email address.
+- `host.ip` holds the devices' local IP addresses. The public (WAN) addresses are shared by many devices behind the same NAT, so they are only in `related.ip` and `google_workspace.chromeos_devices.last_known_network.wan_ip_address`.
+- Google returns some values in either camelCase or upper case, for example `chromeOs` or `CHROME_OS`. They are kept as received.
+- Telemetry reports, such as CPU, memory, disk volume and active time reports, are not indexed. They are only in `event.original` when **Preserve original event** is on.
+
+## Troubleshooting
+
+- **The data stream stops with `oauth2: cannot fetch token` and the input health is Degraded.** Google rejected the token request. The error usually contains `unauthorized_client`, `access_denied`, `invalid_grant`, `invalid_scope` or `admin_policy_enforced`. Check that the scope is delegated exactly as in the table above, and that enough time has passed for the change to take effect.
+- **An error document reports HTTP 403 `Not Authorized to access this resource/api`.** The delegated account lacks the *Manage ChromeOS Devices (read only)* privilege.
+- **Fewer devices than expected.** The delegated account's Chrome privilege is probably limited to some organizational units. Grant it on all organizational units. Also check the **Organizational Unit** setting.
+- **No devices at all.** The account has no enrolled ChromeOS devices, or no ChromeOS upgrades.
 
 ## Agentless Enabled Integration
 
@@ -3214,6 +3281,247 @@ An example event for `chrome` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | url.query | The field contains the entire query string, excluding the leading `?` character, such as "q=elasticsearch". If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
+
+
+### ChromeOS Devices
+
+This is the `chromeos_devices` dataset. It contains an inventory of ChromeOS devices, not events. See [Google Workspace ChromeOS Devices](#google-workspace-chromeos-devices).
+
+An example event for `chromeos_devices` looks as following:
+
+```json
+{
+    "@timestamp": "2026-10-13T15:46:28.988Z",
+    "agent": {
+        "ephemeral_id": "ce4552fe-8c12-42c4-8258-b284feb6fd19",
+        "id": "be0aa37d-1af5-4a5a-8e87-63c2074be9c0",
+        "name": "elastic-agent-67407",
+        "type": "filebeat",
+        "version": "9.5.3"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.chromeos_devices",
+        "namespace": "45763",
+        "type": "logs"
+    },
+    "device": {
+        "id": "def45600-0000-4000-8000-000000000003",
+        "serial_number": "234567"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "be0aa37d-1af5-4a5a-8e87-63c2074be9c0",
+        "snapshot": false,
+        "version": "9.5.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "host"
+        ],
+        "dataset": "google_workspace.chromeos_devices",
+        "ingested": "2026-10-13T15:46:32Z",
+        "kind": "asset",
+        "module": "google_workspace",
+        "original": "{\"activeTimeRanges\":[{\"activeTime\":\"3600000\",\"date\":\"2012-04-05\"}],\"annotatedAssetId\":\"1234567890\",\"annotatedLocation\":\"Example Corp help desk Chromebook\",\"annotatedUser\":\"help desk\",\"bootMode\":\"validated\",\"deviceId\":\"def45600-0000-4000-8000-000000000003\",\"etag\":\"1234567890\",\"firmwareVersion\":\"Firmware Version 1.2.3.4\",\"kind\":\"directory#chromeosdevice\",\"lastEnrollmentTime\":\"2012-04-05T17:30:04.325Z\",\"lastSync\":\"2013-03-05T17:30:04.325Z\",\"notes\":\"Loaned from support\",\"orderNumber\":\"1234\",\"orgUnitPath\":\"corp/engineering\",\"osVersion\":\"Browser Version 18.0\",\"platformVersion\":\"Platform Version 1415.2.0\",\"recentUsers\":[{\"email\":\"user@example.com\",\"type\":\"USER_TYPE_MANAGED\"}],\"serialNumber\":\"234567\",\"status\":\"ACTIVE\",\"supportEndDate\":\"2014-04-05T17:30:04.325Z\",\"willAutoRenew\":true}",
+        "type": [
+            "info"
+        ]
+    },
+    "google_workspace": {
+        "chromeos_devices": {
+            "annotated_asset_id": "1234567890",
+            "annotated_location": "Example Corp help desk Chromebook",
+            "annotated_user": "help desk",
+            "boot_mode": "validated",
+            "device_id": "def45600-0000-4000-8000-000000000003",
+            "etag": "1234567890",
+            "firmware_version": "Firmware Version 1.2.3.4",
+            "kind": "directory#chromeosdevice",
+            "last_enrollment_time": "2012-04-05T17:30:04.325Z",
+            "last_sync": "2013-03-05T17:30:04.325Z",
+            "notes": "Loaned from support",
+            "order_number": "1234",
+            "org_unit_path": "corp/engineering",
+            "os_version": "Browser Version 18.0",
+            "platform_version": "Platform Version 1415.2.0",
+            "recent_users": {
+                "email": "user@example.com",
+                "type": "USER_TYPE_MANAGED"
+            },
+            "serial_number": "234567",
+            "status": "ACTIVE",
+            "support_end_date": "2014-04-05T17:30:04.325Z",
+            "will_auto_renew": true
+        }
+    },
+    "host": {
+        "entity": {
+            "attributes": {
+                "managed": true
+            },
+            "display_name": "1234567890",
+            "id": "def45600-0000-4000-8000-000000000003",
+            "last_seen_timestamp": "2026-10-13T15:46:28.988Z",
+            "lifecycle": {
+                "last_activity": "2013-03-05T17:30:04.325Z"
+            },
+            "name": "1234567890",
+            "source": "google_workspace",
+            "sub_type": "chrome_os_device",
+            "type": [
+                "host"
+            ]
+        },
+        "geo": {
+            "name": "Example Corp help desk Chromebook"
+        },
+        "id": "def45600-0000-4000-8000-000000000003",
+        "name": "1234567890",
+        "os": {
+            "family": "chromeos",
+            "full": "ChromeOS Browser Version 18.0",
+            "name": "ChromeOS",
+            "platform": "chromeos",
+            "version": "Browser Version 18.0"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "hosts": [
+            "def45600-0000-4000-8000-000000000003",
+            "234567",
+            "1234567890"
+        ],
+        "user": [
+            "user@example.com"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_workspace-chromeos_devices"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
+| device.id | The unique identifier of a device. The identifier must not change across application sessions but stay fixed for an instance of a (mobile) device. On iOS, this value must be equal to the vendor identifier (https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor). On Android, this value must be equal to the Firebase Installation ID or a globally unique UUID which is persisted across sessions in your application. For GDPR and data protection law reasons this identifier should not carry information that would allow to identify a user. | keyword |  |
+| device.model.name | The human readable marketing name of the device model. | keyword |  |
+| device.serial_number | The unique serial number serves as a distinct identifier for each device, aiding in inventory management and device authentication. | keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error.code | Error code describing the error. | keyword |  |
+| error.id | Unique identifier for the error. | keyword |  |
+| error.message | Error message. | match_only_text |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
+| google_workspace.chromeos_devices.annotated_asset_id | The asset identifier noted by an administrator or entered during enrollment. Used for `host.name` and `host.entity.display_name` when present. | keyword |  |
+| google_workspace.chromeos_devices.annotated_location | The address or location of the device as noted by an administrator. Copied to `host.geo.name`. | keyword |  |
+| google_workspace.chromeos_devices.annotated_user | The user of the device as noted by an administrator. This is admin free text (up to 100 characters), pre-filled with the account that enrolled the device, and is not necessarily an email address. It is copied to `user.email`, `user.name` (local part) and `user.domain` only when it is an email address. | keyword |  |
+| google_workspace.chromeos_devices.auto_update_expiration | The time after which the device stops receiving Chrome updates or support. Deprecated by Google in favour of `auto_update_through`. | date |  |
+| google_workspace.chromeos_devices.auto_update_through | The time after which the device stops receiving Chrome updates or support. | date |  |
+| google_workspace.chromeos_devices.boot_mode | The boot mode of the device, for example `Verified` or `Dev`. `Dev` means the developer hardware switch is enabled. | keyword |  |
+| google_workspace.chromeos_devices.chrome_os_type | The ChromeOS type of the device, for example `chromeOs` or `chromeOsFlex` (`CHROME_OS` or `CHROME_OS_FLEX`). Sets `host.os.name` to `ChromeOS Flex` for ChromeOS Flex devices and `ChromeOS` otherwise. | keyword |  |
+| google_workspace.chromeos_devices.cpu_info.architecture | The CPU architecture. Not mapped to `host.architecture`, which describes the OS architecture. | keyword |  |
+| google_workspace.chromeos_devices.cpu_info.max_clock_speed_khz | The maximum CPU clock speed, in kHz. | long |  |
+| google_workspace.chromeos_devices.cpu_info.model | The CPU model name. | keyword |  |
+| google_workspace.chromeos_devices.deprovision_reason | The reason the device was deprovisioned, for example `DEPROVISION_REASON_RETIRING_DEVICE`. | keyword |  |
+| google_workspace.chromeos_devices.device_id | The unique ID of the Chrome device. Copied to `host.id`, `host.entity.id` and `device.id`. | keyword |  |
+| google_workspace.chromeos_devices.device_license_type | The device license type, for example `enterpriseUpgradePerpetual` or `kioskUpgrade`. | keyword |  |
+| google_workspace.chromeos_devices.disk_space_usage.capacity_bytes | The total disk capacity of the device, in bytes. | long | byte |
+| google_workspace.chromeos_devices.disk_space_usage.used_bytes | The disk space currently used on the device, in bytes. | long | byte |
+| google_workspace.chromeos_devices.dock_mac_address | The built-in MAC address for the docking station the device connected to, as sent by Google (12 hexadecimal digits). Added to `host.mac` in RFC 7042 form. | keyword |  |
+| google_workspace.chromeos_devices.etag | The ETag of the resource. | keyword |  |
+| google_workspace.chromeos_devices.ethernet_mac_address | The device's ethernet MAC address as sent by Google (12 hexadecimal digits). Added to `host.mac` in RFC 7042 form. | keyword |  |
+| google_workspace.chromeos_devices.ethernet_mac_address0 | The MAC address of the device's internal ethernet port as sent by Google (12 hexadecimal digits). Added to `host.mac` in RFC 7042 form. | keyword |  |
+| google_workspace.chromeos_devices.extended_support_eligible | Whether the device requires the extended support opt in. | boolean |  |
+| google_workspace.chromeos_devices.extended_support_enabled | Whether the extended support policy is enabled on the device. | boolean |  |
+| google_workspace.chromeos_devices.extended_support_start | The date the extended support policy for automatic updates starts on the device. | date |  |
+| google_workspace.chromeos_devices.firmware_version | The Chrome device's firmware version. | keyword |  |
+| google_workspace.chromeos_devices.first_enrollment_time | The time the device was first enrolled. | date |  |
+| google_workspace.chromeos_devices.kind | The type of the resource, `admin#directory#chromeosdevice`. Older records may show `directory#chromeosdevice`. | keyword |  |
+| google_workspace.chromeos_devices.last_deprovision_timestamp | The time the device was last deprovisioned. | date |  |
+| google_workspace.chromeos_devices.last_enrollment_time | The time the device was last enrolled. | date |  |
+| google_workspace.chromeos_devices.last_known_network.ip_address | The IP address of the device's network interface. Added to `host.ip` and `related.ip`. | ip |  |
+| google_workspace.chromeos_devices.last_known_network.wan_ip_address | The WAN IP address seen for the device, normally a shared egress address. Added to `related.ip` only. | ip |  |
+| google_workspace.chromeos_devices.last_sync | The time the device last synchronized its policy settings with Google. Copied to `host.entity.lifecycle.last_activity`. | date |  |
+| google_workspace.chromeos_devices.mac_address | The device's wireless MAC address as sent by Google (12 hexadecimal digits). Added to `host.mac` in RFC 7042 form. | keyword |  |
+| google_workspace.chromeos_devices.manufacture_date | The date the device was manufactured. | date |  |
+| google_workspace.chromeos_devices.meid | The Mobile Equipment Identifier (MEID) or International Mobile Equipment Identity (IMEI) of the device's mobile card. | keyword |  |
+| google_workspace.chromeos_devices.model | The device's model. Copied to `device.model.name`. | keyword |  |
+| google_workspace.chromeos_devices.notes | Notes about the device added by an administrator. | keyword |  |
+| google_workspace.chromeos_devices.order_number | The device's order number. Only devices bought directly from Google have one. | keyword |  |
+| google_workspace.chromeos_devices.org_unit_id | The unique ID of the organizational unit the device belongs to. Unlike the path, it does not change when an organizational unit is renamed. | keyword |  |
+| google_workspace.chromeos_devices.org_unit_path | The full path of the organizational unit the device belongs to. `/` is the top-level organizational unit. | keyword |  |
+| google_workspace.chromeos_devices.os_update_status.reboot_time | The time of the last reboot. | date |  |
+| google_workspace.chromeos_devices.os_update_status.state | The update state, for example `updateStateNotStarted` or `UPDATE_STATE_NEED_REBOOT`. | keyword |  |
+| google_workspace.chromeos_devices.os_update_status.target_kiosk_app_version | The platform version required by the pending kiosk app update. | keyword |  |
+| google_workspace.chromeos_devices.os_update_status.target_os_version | The platform version of the OS image being downloaded and applied. | keyword |  |
+| google_workspace.chromeos_devices.os_update_status.update_check_time | The time of the last update check. | date |  |
+| google_workspace.chromeos_devices.os_update_status.update_time | The time of the last successful OS update. | date |  |
+| google_workspace.chromeos_devices.os_version | The Chrome device's operating system version. Copied to `host.os.version`. | keyword |  |
+| google_workspace.chromeos_devices.os_version_compliance | Whether the OS version complies with the device policy, for example `compliant`, `pending` or `notCompliant`. | keyword |  |
+| google_workspace.chromeos_devices.platform_version | The Chrome device's platform version (the ChromeOS build). | keyword |  |
+| google_workspace.chromeos_devices.recent_users.email | The user's email address. Only present for `USER_TYPE_MANAGED` users. Added to `related.user`. | keyword |  |
+| google_workspace.chromeos_devices.recent_users.type | The type of the user, `USER_TYPE_MANAGED` or `USER_TYPE_UNMANAGED`. | keyword |  |
+| google_workspace.chromeos_devices.serial_number | The Chrome device serial number entered when the device was enabled. Copied to `device.serial_number`. | keyword |  |
+| google_workspace.chromeos_devices.status | The status of the device, for example `ACTIVE`, `DEPROVISIONED` or `DISABLED`. It sets `host.entity.attributes.managed`, compared case-insensitively: `true` for `ACTIVE` and `DISABLED`; `false` for `DEPROVISIONED`, `INACTIVE`, `DELINQUENT` and `PRE_PROVISIONED`; not set for `RETURN_REQUESTED`, `RETURN_ARRIVED`, `SHIPPED`, `UNKNOWN`, any other value or when the status is absent. | keyword |  |
+| google_workspace.chromeos_devices.support_end_date | The final date the device will be supported. | date |  |
+| google_workspace.chromeos_devices.system_ram_total | Total RAM on the device, in bytes. | long | byte |
+| google_workspace.chromeos_devices.tpm_version_info.family | The TPM family, hex-encoded as sent by Google, for example `322e3000` for TPM 2.0. | keyword |  |
+| google_workspace.chromeos_devices.tpm_version_info.firmware_version | The TPM firmware version. | keyword |  |
+| google_workspace.chromeos_devices.tpm_version_info.manufacturer | The TPM manufacturer code. | keyword |  |
+| google_workspace.chromeos_devices.tpm_version_info.spec_level | The TPM specification level. | keyword |  |
+| google_workspace.chromeos_devices.tpm_version_info.tpm_model | The TPM model number. | keyword |  |
+| google_workspace.chromeos_devices.tpm_version_info.vendor_specific | Vendor-specific information, such as the vendor ID. | keyword |  |
+| google_workspace.chromeos_devices.will_auto_renew | Whether the device will auto renew its support after the support end date. | boolean |  |
+| host.entity.attributes.managed | Indicates whether the entity is managed by an external administration or control system. Typically applicable to Host and Service entities. | boolean |  |
+| host.entity.display_name | An optional field used when a pretty name is desired for entity-centric operations. This field should not be used for correlation with `\*.name` fields for entities with dedicated field sets (for example, `host`). | keyword |  |
+| host.entity.display_name.text | Multi-field of `host.entity.display_name`. | match_only_text |  |
+| host.entity.id | A unique identifier for the entity. When multiple identifiers exist, this should be the most stable and commonly used identifier that: 1) persists across the entity's lifecycle, 2) ensures uniqueness within its scope, 3) is commonly used for queries and correlation, and 4) is readily available in most observations (logs/events). For entities with dedicated field sets (for example, host, user), this value should match the corresponding \*.id field. Alternative identifiers (for example, ARNs values in AWS, URLs) can be preserved in the raw field. | keyword |  |
+| host.entity.last_seen_timestamp | Indicates the date/time when this entity was last "seen," usually based upon the last event/log that is initiated by this entity. | date |  |
+| host.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |  |
+| host.entity.name | The name of the entity. The keyword field enables exact matches for filtering and aggregations, while the text field enables full-text search. For entities with dedicated field sets (for example, `host`), this field should mirrors the corresponding \*.name value. | keyword |  |
+| host.entity.name.text | Multi-field of `host.entity.name`. | match_only_text |  |
+| host.entity.source | The module or integration that provided this entity data (similar to event.module). | keyword |  |
+| host.entity.sub_type | The specific type designation for the entity as defined by its provider or system. This field provides more granular classification than the type field. Examples: `aws_s3_bucket`, `gcp_cloud_storage_bucket`, `azure_blob_container` would all map to entity type `bucket`.  `hardware` , `virtual` , `container` , `node` , `cloud_instance` would all map to entity type `host`. | keyword |  |
+| host.entity.type | A standardized high-level classification of the entity. This provides a normalized way to group similar entities across different providers or systems. Example values: `bucket`, `database`, `container`, `function`, `queue`, `host`, `user`, `application`, `session`, `cloud`, `orchestrator`, etc. If an entity is nested under a top-level namespace like `host` or `cloud`, or similar, its type array should include the matching value — for example, `host` or `cloud`. | keyword |  |
+| host.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
+| host.os.full | Operating system name, including the version or code name. | keyword |  |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |
+| host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |
+| input.type | Type of filebeat input. | keyword |  |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |  |
+| related.ip | All of the IPs seen on your event. | ip |  |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |  |
+| tags | List of keywords used to tag each event. | keyword |  |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |  |
+| user.email | User email address. | keyword |  |
+| user.name | Short name or login of the user. | keyword |  |
+| user.name.text | Multi-field of `user.name`. | match_only_text |  |
 
 
 ### Data Studio

@@ -1,0 +1,216 @@
+- name: google_workspace
+  type: group
+  fields:
+    - name: chromeos_devices
+      type: group
+      description: >-
+        ChromeOS or ChromeOS Flex device enrolled in the Google Workspace account, from the Admin SDK Directory API `chromeosdevices.list` method (`projection=FULL`). Enum values are kept as Google sends them (camelCase or UPPER_SNAKE). The telemetry arrays (`activeTimeRanges`, `cpuStatusReports`, `systemRamFreeReports`, `diskVolumeReports`, `cpuInfo[].logicalCpus`, `backlightInfo`, `fanInfo`, `bluetoothAdapterInfo`, `deviceFiles` and `screenshotFiles`) are not mapped; they are kept only in `event.original` when `preserve_original_event` is set.
+      fields:
+        - name: kind
+          type: keyword
+          description: The type of the resource, `admin#directory#chromeosdevice`. Older records may show `directory#chromeosdevice`.
+        - name: etag
+          type: keyword
+          description: The ETag of the resource.
+        - name: device_id
+          type: keyword
+          description: The unique ID of the Chrome device. Copied to `host.id`, `host.entity.id` and `device.id`.
+        - name: serial_number
+          type: keyword
+          description: The Chrome device serial number entered when the device was enabled. Copied to `device.serial_number`.
+        - name: status
+          type: keyword
+          description: >-
+            The status of the device, for example `ACTIVE`, `DEPROVISIONED` or `DISABLED`. It sets `host.entity.attributes.managed`, compared case-insensitively: `true` for `ACTIVE` and `DISABLED`; `false` for `DEPROVISIONED`, `INACTIVE`, `DELINQUENT` and `PRE_PROVISIONED`; not set for `RETURN_REQUESTED`, `RETURN_ARRIVED`, `SHIPPED`, `UNKNOWN`, any other value or when the status is absent.
+        - name: deprovision_reason
+          type: keyword
+          description: The reason the device was deprovisioned, for example `DEPROVISION_REASON_RETIRING_DEVICE`.
+        - name: last_deprovision_timestamp
+          type: date
+          description: The time the device was last deprovisioned.
+        - name: first_enrollment_time
+          type: date
+          description: The time the device was first enrolled.
+        - name: last_enrollment_time
+          type: date
+          description: The time the device was last enrolled.
+        - name: last_sync
+          type: date
+          description: The time the device last synchronized its policy settings with Google. Copied to `host.entity.lifecycle.last_activity`.
+        - name: annotated_user
+          type: keyword
+          description: >-
+            The user of the device as noted by an administrator. This is admin free text (up to 100 characters), pre-filled with the account that enrolled the device, and is not necessarily an email address. It is copied to `user.email`, `user.name` (local part) and `user.domain` only when it is an email address.
+        - name: annotated_asset_id
+          type: keyword
+          description: The asset identifier noted by an administrator or entered during enrollment. Used for `host.name` and `host.entity.display_name` when present.
+        - name: annotated_location
+          type: keyword
+          description: The address or location of the device as noted by an administrator. Copied to `host.geo.name`.
+        - name: notes
+          type: keyword
+          description: Notes about the device added by an administrator.
+        - name: org_unit_path
+          type: keyword
+          description: The full path of the organizational unit the device belongs to. `/` is the top-level organizational unit.
+        - name: org_unit_id
+          type: keyword
+          description: The unique ID of the organizational unit the device belongs to. Unlike the path, it does not change when an organizational unit is renamed.
+        - name: model
+          type: keyword
+          description: The device's model. Copied to `device.model.name`.
+        - name: manufacture_date
+          type: date
+          description: The date the device was manufactured.
+        - name: meid
+          type: keyword
+          description: The Mobile Equipment Identifier (MEID) or International Mobile Equipment Identity (IMEI) of the device's mobile card.
+        - name: order_number
+          type: keyword
+          description: The device's order number. Only devices bought directly from Google have one.
+        - name: mac_address
+          type: keyword
+          description: The device's wireless MAC address as sent by Google (12 hexadecimal digits). Added to `host.mac` in RFC 7042 form.
+        - name: ethernet_mac_address
+          type: keyword
+          description: The device's ethernet MAC address as sent by Google (12 hexadecimal digits). Added to `host.mac` in RFC 7042 form.
+        - name: ethernet_mac_address0
+          type: keyword
+          description: The MAC address of the device's internal ethernet port as sent by Google (12 hexadecimal digits). Added to `host.mac` in RFC 7042 form.
+        - name: dock_mac_address
+          type: keyword
+          description: The built-in MAC address for the docking station the device connected to, as sent by Google (12 hexadecimal digits). Added to `host.mac` in RFC 7042 form.
+        - name: os_version
+          type: keyword
+          description: The Chrome device's operating system version. Copied to `host.os.version`.
+        - name: platform_version
+          type: keyword
+          description: The Chrome device's platform version (the ChromeOS build).
+        - name: firmware_version
+          type: keyword
+          description: The Chrome device's firmware version.
+        - name: chrome_os_type
+          type: keyword
+          description: The ChromeOS type of the device, for example `chromeOs` or `chromeOsFlex` (`CHROME_OS` or `CHROME_OS_FLEX`). Sets `host.os.name` to `ChromeOS Flex` for ChromeOS Flex devices and `ChromeOS` otherwise.
+        - name: boot_mode
+          type: keyword
+          description: The boot mode of the device, for example `Verified` or `Dev`. `Dev` means the developer hardware switch is enabled.
+        - name: os_version_compliance
+          type: keyword
+          description: Whether the OS version complies with the device policy, for example `compliant`, `pending` or `notCompliant`.
+        - name: device_license_type
+          type: keyword
+          description: The device license type, for example `enterpriseUpgradePerpetual` or `kioskUpgrade`.
+        - name: support_end_date
+          type: date
+          description: The final date the device will be supported.
+        - name: will_auto_renew
+          type: boolean
+          description: Whether the device will auto renew its support after the support end date.
+        - name: auto_update_through
+          type: date
+          description: The time after which the device stops receiving Chrome updates or support.
+        - name: auto_update_expiration
+          type: date
+          description: The time after which the device stops receiving Chrome updates or support. Deprecated by Google in favour of `auto_update_through`.
+        - name: extended_support_eligible
+          type: boolean
+          description: Whether the device requires the extended support opt in.
+        - name: extended_support_enabled
+          type: boolean
+          description: Whether the extended support policy is enabled on the device.
+        - name: extended_support_start
+          type: date
+          description: The date the extended support policy for automatic updates starts on the device.
+        - name: system_ram_total
+          type: long
+          unit: byte
+          description: Total RAM on the device, in bytes.
+        - name: disk_space_usage
+          type: group
+          fields:
+            - name: capacity_bytes
+              type: long
+              unit: byte
+              description: The total disk capacity of the device, in bytes.
+            - name: used_bytes
+              type: long
+              unit: byte
+              description: The disk space currently used on the device, in bytes.
+        - name: recent_users
+          type: group
+          description: Recent users of the device, most recent first.
+          fields:
+            - name: type
+              type: keyword
+              description: The type of the user, `USER_TYPE_MANAGED` or `USER_TYPE_UNMANAGED`.
+            - name: email
+              type: keyword
+              description: The user's email address. Only present for `USER_TYPE_MANAGED` users. Added to `related.user`.
+        - name: last_known_network
+          type: group
+          description: The last known network addresses of the device.
+          fields:
+            - name: ip_address
+              type: ip
+              description: The IP address of the device's network interface. Added to `host.ip` and `related.ip`.
+            - name: wan_ip_address
+              type: ip
+              description: The WAN IP address seen for the device, normally a shared egress address. Added to `related.ip` only.
+        - name: tpm_version_info
+          type: group
+          description: Trusted Platform Module (TPM) information.
+          fields:
+            - name: family
+              type: keyword
+              description: The TPM family, hex-encoded as sent by Google, for example `322e3000` for TPM 2.0.
+            - name: spec_level
+              type: keyword
+              description: The TPM specification level.
+            - name: manufacturer
+              type: keyword
+              description: The TPM manufacturer code.
+            - name: tpm_model
+              type: keyword
+              description: The TPM model number.
+            - name: firmware_version
+              type: keyword
+              description: The TPM firmware version.
+            - name: vendor_specific
+              type: keyword
+              description: Vendor-specific information, such as the vendor ID.
+        - name: os_update_status
+          type: group
+          description: The status of OS updates on the device.
+          fields:
+            - name: state
+              type: keyword
+              description: The update state, for example `updateStateNotStarted` or `UPDATE_STATE_NEED_REBOOT`.
+            - name: target_os_version
+              type: keyword
+              description: The platform version of the OS image being downloaded and applied.
+            - name: target_kiosk_app_version
+              type: keyword
+              description: The platform version required by the pending kiosk app update.
+            - name: update_time
+              type: date
+              description: The time of the last successful OS update.
+            - name: update_check_time
+              type: date
+              description: The time of the last update check.
+            - name: reboot_time
+              type: date
+              description: The time of the last reboot.
+        - name: cpu_info
+          type: group
+          description: CPU specifications of the device.
+          fields:
+            - name: model
+              type: keyword
+              description: The CPU model name.
+            - name: architecture
+              type: keyword
+              description: The CPU architecture. Not mapped to `host.architecture`, which describes the OS architecture.
+            - name: max_clock_speed_khz
+              type: long
+              description: The maximum CPU clock speed, in kHz.

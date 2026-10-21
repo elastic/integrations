@@ -1,0 +1,890 @@
+---
+description: Pipeline for processing the Google Workspace ChromeOS device inventory from the Admin SDK Directory API.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.5.0
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      if: ctx.event?.original != null
+
+  # Records carry no event time: @timestamp is the collection time. The CEL
+  # input already sets it when the device is published; fall back to the
+  # ingest time otherwise.
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_ingest_timestamp
+      value: '{{{_ingest.timestamp}}}'
+      override: false
+
+  # Every host.* field in this stream describes the ChromeOS device. Drop any
+  # host fields added by the agent (when the `forwarded` tag is removed).
+  - remove:
+      field: host
+      tag: remove_agent_host
+      ignore_missing: true
+
+  # Categorization: one entity snapshot per device per collection cycle.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: host
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+      allow_duplicates: false
+
+  # Vendor fields, renamed to snake_case under google_workspace.chromeos_devices.
+  # Enum values are kept as received. Fields that are not renamed here (the
+  # telemetry arrays) are dropped with `json` at the end; they remain only in
+  # `event.original` when `preserve_original_event` is set.
+  - rename:
+      field: json.kind
+      tag: rename_kind
+      target_field: google_workspace.chromeos_devices.kind
+      ignore_missing: true
+  - rename:
+      field: json.etag
+      tag: rename_etag
+      target_field: google_workspace.chromeos_devices.etag
+      ignore_missing: true
+  - rename:
+      field: json.deviceId
+      tag: rename_device_id
+      target_field: google_workspace.chromeos_devices.device_id
+      ignore_missing: true
+  - rename:
+      field: json.serialNumber
+      tag: rename_serial_number
+      target_field: google_workspace.chromeos_devices.serial_number
+      ignore_missing: true
+  - rename:
+      field: json.status
+      tag: rename_status
+      target_field: google_workspace.chromeos_devices.status
+      ignore_missing: true
+  - rename:
+      field: json.deprovisionReason
+      tag: rename_deprovision_reason
+      target_field: google_workspace.chromeos_devices.deprovision_reason
+      ignore_missing: true
+  - rename:
+      field: json.annotatedUser
+      tag: rename_annotated_user
+      target_field: google_workspace.chromeos_devices.annotated_user
+      ignore_missing: true
+  - rename:
+      field: json.annotatedAssetId
+      tag: rename_annotated_asset_id
+      target_field: google_workspace.chromeos_devices.annotated_asset_id
+      ignore_missing: true
+  - rename:
+      field: json.annotatedLocation
+      tag: rename_annotated_location
+      target_field: google_workspace.chromeos_devices.annotated_location
+      ignore_missing: true
+  - rename:
+      field: json.notes
+      tag: rename_notes
+      target_field: google_workspace.chromeos_devices.notes
+      ignore_missing: true
+  - rename:
+      field: json.orgUnitPath
+      tag: rename_org_unit_path
+      target_field: google_workspace.chromeos_devices.org_unit_path
+      ignore_missing: true
+  - rename:
+      field: json.orgUnitId
+      tag: rename_org_unit_id
+      target_field: google_workspace.chromeos_devices.org_unit_id
+      ignore_missing: true
+  - rename:
+      field: json.model
+      tag: rename_model
+      target_field: google_workspace.chromeos_devices.model
+      ignore_missing: true
+  - rename:
+      field: json.meid
+      tag: rename_meid
+      target_field: google_workspace.chromeos_devices.meid
+      ignore_missing: true
+  - rename:
+      field: json.orderNumber
+      tag: rename_order_number
+      target_field: google_workspace.chromeos_devices.order_number
+      ignore_missing: true
+  - rename:
+      field: json.macAddress
+      tag: rename_mac_address
+      target_field: google_workspace.chromeos_devices.mac_address
+      ignore_missing: true
+  - rename:
+      field: json.ethernetMacAddress
+      tag: rename_ethernet_mac_address
+      target_field: google_workspace.chromeos_devices.ethernet_mac_address
+      ignore_missing: true
+  - rename:
+      field: json.ethernetMacAddress0
+      tag: rename_ethernet_mac_address0
+      target_field: google_workspace.chromeos_devices.ethernet_mac_address0
+      ignore_missing: true
+  - rename:
+      field: json.dockMacAddress
+      tag: rename_dock_mac_address
+      target_field: google_workspace.chromeos_devices.dock_mac_address
+      ignore_missing: true
+  - rename:
+      field: json.osVersion
+      tag: rename_os_version
+      target_field: google_workspace.chromeos_devices.os_version
+      ignore_missing: true
+  - rename:
+      field: json.platformVersion
+      tag: rename_platform_version
+      target_field: google_workspace.chromeos_devices.platform_version
+      ignore_missing: true
+  - rename:
+      field: json.firmwareVersion
+      tag: rename_firmware_version
+      target_field: google_workspace.chromeos_devices.firmware_version
+      ignore_missing: true
+  - rename:
+      field: json.chromeOsType
+      tag: rename_chrome_os_type
+      target_field: google_workspace.chromeos_devices.chrome_os_type
+      ignore_missing: true
+  - rename:
+      field: json.bootMode
+      tag: rename_boot_mode
+      target_field: google_workspace.chromeos_devices.boot_mode
+      ignore_missing: true
+  - rename:
+      field: json.osVersionCompliance
+      tag: rename_os_version_compliance
+      target_field: google_workspace.chromeos_devices.os_version_compliance
+      ignore_missing: true
+  - rename:
+      field: json.deviceLicenseType
+      tag: rename_device_license_type
+      target_field: google_workspace.chromeos_devices.device_license_type
+      ignore_missing: true
+  - rename:
+      field: json.willAutoRenew
+      tag: rename_will_auto_renew
+      target_field: google_workspace.chromeos_devices.will_auto_renew
+      ignore_missing: true
+  - rename:
+      field: json.extendedSupportEligible
+      tag: rename_extended_support_eligible
+      target_field: google_workspace.chromeos_devices.extended_support_eligible
+      ignore_missing: true
+  - rename:
+      field: json.extendedSupportEnabled
+      tag: rename_extended_support_enabled
+      target_field: google_workspace.chromeos_devices.extended_support_enabled
+      ignore_missing: true
+  - rename:
+      field: json.tpmVersionInfo.family
+      tag: rename_tpm_version_info_family
+      target_field: google_workspace.chromeos_devices.tpm_version_info.family
+      ignore_missing: true
+  - rename:
+      field: json.tpmVersionInfo.specLevel
+      tag: rename_tpm_version_info_spec_level
+      target_field: google_workspace.chromeos_devices.tpm_version_info.spec_level
+      ignore_missing: true
+  - rename:
+      field: json.tpmVersionInfo.manufacturer
+      tag: rename_tpm_version_info_manufacturer
+      target_field: google_workspace.chromeos_devices.tpm_version_info.manufacturer
+      ignore_missing: true
+  - rename:
+      field: json.tpmVersionInfo.tpmModel
+      tag: rename_tpm_version_info_tpm_model
+      target_field: google_workspace.chromeos_devices.tpm_version_info.tpm_model
+      ignore_missing: true
+  - rename:
+      field: json.tpmVersionInfo.firmwareVersion
+      tag: rename_tpm_version_info_firmware_version
+      target_field: google_workspace.chromeos_devices.tpm_version_info.firmware_version
+      ignore_missing: true
+  - rename:
+      field: json.tpmVersionInfo.vendorSpecific
+      tag: rename_tpm_version_info_vendor_specific
+      target_field: google_workspace.chromeos_devices.tpm_version_info.vendor_specific
+      ignore_missing: true
+  - rename:
+      field: json.osUpdateStatus.state
+      tag: rename_os_update_status_state
+      target_field: google_workspace.chromeos_devices.os_update_status.state
+      ignore_missing: true
+  - rename:
+      field: json.osUpdateStatus.targetOsVersion
+      tag: rename_os_update_status_target_os_version
+      target_field: google_workspace.chromeos_devices.os_update_status.target_os_version
+      ignore_missing: true
+  - rename:
+      field: json.osUpdateStatus.targetKioskAppVersion
+      tag: rename_os_update_status_target_kiosk_app_version
+      target_field: google_workspace.chromeos_devices.os_update_status.target_kiosk_app_version
+      ignore_missing: true
+  - rename:
+      field: json.recentUsers
+      tag: rename_recent_users
+      target_field: google_workspace.chromeos_devices.recent_users
+      ignore_missing: true
+  - rename:
+      field: json.lastKnownNetwork
+      tag: rename_last_known_network
+      target_field: google_workspace.chromeos_devices.last_known_network
+      ignore_missing: true
+  - foreach:
+      field: google_workspace.chromeos_devices.last_known_network
+      tag: foreach_last_known_network_ip_address
+      ignore_missing: true
+      processor:
+        rename:
+          field: _ingest._value.ipAddress
+          tag: rename_last_known_network_ip_address
+          target_field: _ingest._value.ip_address
+          ignore_missing: true
+  - foreach:
+      field: google_workspace.chromeos_devices.last_known_network
+      tag: foreach_last_known_network_wan_ip_address
+      ignore_missing: true
+      processor:
+        rename:
+          field: _ingest._value.wanIpAddress
+          tag: rename_last_known_network_wan_ip_address
+          target_field: _ingest._value.wan_ip_address
+          ignore_missing: true
+  - script:
+      tag: script_remove_empty_last_known_network_ips
+      lang: painless
+      description: Drops empty addresses, which the ip-typed fields would reject.
+      if: ctx.google_workspace?.chromeos_devices?.last_known_network instanceof List
+      source: |
+        for (def n : ctx.google_workspace.chromeos_devices.last_known_network) {
+          if (!(n instanceof Map)) {
+            continue;
+          }
+          for (def k : ['ip_address', 'wan_ip_address']) {
+            def v = n.get(k);
+            if (v == null || (v instanceof String && v.trim().isEmpty())) {
+              n.remove(k);
+            }
+          }
+        }
+  - rename:
+      field: json.cpuInfo
+      tag: rename_cpu_info
+      target_field: google_workspace.chromeos_devices.cpu_info
+      ignore_missing: true
+  - foreach:
+      field: google_workspace.chromeos_devices.cpu_info
+      tag: foreach_cpu_info_remove_logical_cpus
+      ignore_missing: true
+      description: Drops the per-logical-CPU telemetry; the CPU model, architecture and clock speed are kept.
+      processor:
+        remove:
+          field: _ingest._value.logicalCpus
+          tag: remove_cpu_info_logical_cpus
+          ignore_missing: true
+  - foreach:
+      field: google_workspace.chromeos_devices.cpu_info
+      tag: foreach_cpu_info_max_clock_speed_khz
+      ignore_missing: true
+      processor:
+        rename:
+          field: _ingest._value.maxClockSpeedKhz
+          tag: rename_cpu_info_max_clock_speed_khz
+          target_field: _ingest._value.max_clock_speed_khz
+          ignore_missing: true
+
+  # int64 values arrive as JSON strings.
+  - convert:
+      field: json.systemRamTotal
+      tag: convert_system_ram_total_to_long
+      target_field: google_workspace.chromeos_devices.system_ram_total
+      type: long
+      if: ctx.json?.systemRamTotal != null && ctx.json.systemRamTotal != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_system_ram_total
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.diskSpaceUsage.capacityBytes
+      tag: convert_disk_space_usage_capacity_bytes_to_long
+      target_field: google_workspace.chromeos_devices.disk_space_usage.capacity_bytes
+      type: long
+      if: ctx.json?.diskSpaceUsage?.capacityBytes != null && ctx.json.diskSpaceUsage.capacityBytes != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_disk_space_usage_capacity_bytes
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.diskSpaceUsage.usedBytes
+      tag: convert_disk_space_usage_used_bytes_to_long
+      target_field: google_workspace.chromeos_devices.disk_space_usage.used_bytes
+      type: long
+      if: ctx.json?.diskSpaceUsage?.usedBytes != null && ctx.json.diskSpaceUsage.usedBytes != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_disk_space_usage_used_bytes
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Timestamps. Google documents ISO 8601 with or without milliseconds and
+  # with an offset, and epoch-milliseconds strings in legacy examples
+  # (`supportEndDate`) and for the deprecated `autoUpdateExpiration`. Fields
+  # with no declared format are parsed with the same tolerance.
+  - date:
+      field: json.lastSync
+      tag: date_last_sync
+      target_field: google_workspace.chromeos_devices.last_sync
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.lastSync != null && ctx.json.lastSync != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_last_sync
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.firstEnrollmentTime
+      tag: date_first_enrollment_time
+      target_field: google_workspace.chromeos_devices.first_enrollment_time
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.firstEnrollmentTime != null && ctx.json.firstEnrollmentTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_first_enrollment_time
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.lastEnrollmentTime
+      tag: date_last_enrollment_time
+      target_field: google_workspace.chromeos_devices.last_enrollment_time
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.lastEnrollmentTime != null && ctx.json.lastEnrollmentTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_last_enrollment_time
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.lastDeprovisionTimestamp
+      tag: date_last_deprovision_timestamp
+      target_field: google_workspace.chromeos_devices.last_deprovision_timestamp
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.lastDeprovisionTimestamp != null && ctx.json.lastDeprovisionTimestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_last_deprovision_timestamp
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.supportEndDate
+      tag: date_support_end_date
+      target_field: google_workspace.chromeos_devices.support_end_date
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.supportEndDate != null && ctx.json.supportEndDate != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_support_end_date
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.autoUpdateThrough
+      tag: date_auto_update_through
+      target_field: google_workspace.chromeos_devices.auto_update_through
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.autoUpdateThrough != null && ctx.json.autoUpdateThrough != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_auto_update_through
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.autoUpdateExpiration
+      tag: date_auto_update_expiration
+      target_field: google_workspace.chromeos_devices.auto_update_expiration
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.json?.autoUpdateExpiration != null && ctx.json.autoUpdateExpiration != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_auto_update_expiration
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.extendedSupportStart
+      tag: date_extended_support_start
+      target_field: google_workspace.chromeos_devices.extended_support_start
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.extendedSupportStart != null && ctx.json.extendedSupportStart != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_extended_support_start
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.manufactureDate
+      tag: date_manufacture_date
+      target_field: google_workspace.chromeos_devices.manufacture_date
+      formats:
+        - yyyy-MM-dd
+        - ISO8601
+      if: ctx.json?.manufactureDate != null && ctx.json.manufactureDate != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_manufacture_date
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.osUpdateStatus.updateTime
+      tag: date_os_update_status_update_time
+      target_field: google_workspace.chromeos_devices.os_update_status.update_time
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.osUpdateStatus?.updateTime != null && ctx.json.osUpdateStatus.updateTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_os_update_status_update_time
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.osUpdateStatus.updateCheckTime
+      tag: date_os_update_status_update_check_time
+      target_field: google_workspace.chromeos_devices.os_update_status.update_check_time
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.osUpdateStatus?.updateCheckTime != null && ctx.json.osUpdateStatus.updateCheckTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_os_update_status_update_check_time
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.osUpdateStatus.rebootTime
+      tag: date_os_update_status_reboot_time
+      target_field: google_workspace.chromeos_devices.os_update_status.reboot_time
+      formats:
+        - ISO8601
+        - UNIX_MS
+      if: ctx.json?.osUpdateStatus?.rebootTime != null && ctx.json.osUpdateStatus.rebootTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_os_update_status_reboot_time
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Host and device identity. The record has no hostname, so host.name uses
+  # the first non-empty of the asset ID, the serial number and the device ID.
+  - set:
+      field: host.id
+      tag: set_host_id_from_device_id
+      copy_from: google_workspace.chromeos_devices.device_id
+      ignore_empty_value: true
+  - set:
+      field: host.entity.id
+      tag: set_host_entity_id_from_device_id
+      copy_from: google_workspace.chromeos_devices.device_id
+      ignore_empty_value: true
+  - set:
+      field: device.id
+      tag: set_device_id_from_device_id
+      copy_from: google_workspace.chromeos_devices.device_id
+      ignore_empty_value: true
+  - set:
+      field: host.name
+      tag: set_host_name_from_annotated_asset_id
+      copy_from: google_workspace.chromeos_devices.annotated_asset_id
+      ignore_empty_value: true
+  - set:
+      field: host.name
+      tag: set_host_name_from_serial_number
+      copy_from: google_workspace.chromeos_devices.serial_number
+      ignore_empty_value: true
+      override: false
+  - set:
+      field: host.name
+      tag: set_host_name_from_device_id
+      copy_from: google_workspace.chromeos_devices.device_id
+      ignore_empty_value: true
+      override: false
+  - set:
+      field: host.entity.name
+      tag: set_host_entity_name_from_host_name
+      copy_from: host.name
+      ignore_empty_value: true
+  - set:
+      field: host.entity.display_name
+      tag: set_host_entity_display_name_from_annotated_asset_id
+      copy_from: google_workspace.chromeos_devices.annotated_asset_id
+      ignore_empty_value: true
+  - set:
+      field: host.entity.display_name
+      tag: set_host_entity_display_name_from_serial_number
+      copy_from: google_workspace.chromeos_devices.serial_number
+      ignore_empty_value: true
+      override: false
+  - set:
+      field: device.serial_number
+      tag: set_device_serial_number_from_serial_number
+      copy_from: google_workspace.chromeos_devices.serial_number
+      ignore_empty_value: true
+  - set:
+      field: device.model.name
+      tag: set_device_model_name_from_model
+      copy_from: google_workspace.chromeos_devices.model
+      ignore_empty_value: true
+  - set:
+      field: host.geo.name
+      tag: set_host_geo_name_from_annotated_location
+      copy_from: google_workspace.chromeos_devices.annotated_location
+      ignore_empty_value: true
+
+  # Operating system. host.os.type is left unset: ECS has no value for ChromeOS.
+  - set:
+      field: host.os.name
+      tag: set_host_os_name_chromeos_flex
+      value: ChromeOS Flex
+      if: >-
+        ctx.google_workspace?.chromeos_devices?.chrome_os_type instanceof String &&
+        ctx.google_workspace.chromeos_devices.chrome_os_type.replace('_', '').equalsIgnoreCase('chromeOsFlex')
+  - set:
+      field: host.os.name
+      tag: set_host_os_name_chromeos
+      value: ChromeOS
+      override: false
+  - set:
+      field: host.os.platform
+      tag: set_host_os_platform
+      value: chromeos
+  - set:
+      field: host.os.family
+      tag: set_host_os_family
+      value: chromeos
+  - set:
+      field: host.os.version
+      tag: set_host_os_version_from_os_version
+      copy_from: google_workspace.chromeos_devices.os_version
+      ignore_empty_value: true
+  - set:
+      field: host.os.full
+      tag: set_host_os_full
+      value: '{{{host.os.name}}} {{{host.os.version}}}'
+      if: ctx.host?.os?.version != null
+
+  # Network.
+  - script:
+      lang: painless
+      tag: script_host_mac
+      description: >-
+        Adds the device's wireless, ethernet, internal ethernet and dock MAC
+        addresses to host.mac in RFC 7042 form (uppercase, hyphen-separated),
+        without duplicates. A value that is not 12 hexadecimal digits once
+        `:`, `-` and `.` separators are removed is skipped; the raw value
+        stays in its custom field.
+      if: ctx.google_workspace?.chromeos_devices instanceof Map
+      params:
+        fields:
+          - mac_address
+          - ethernet_mac_address
+          - ethernet_mac_address0
+          - dock_mac_address
+      source: |-
+        Set macs = new LinkedHashSet();
+        for (def f : params.fields) {
+          def v = ctx.google_workspace.chromeos_devices[f];
+          if (!(v instanceof String)) {
+            continue;
+          }
+          String hex = v.replace(':', '').replace('-', '').replace('.', '').trim().toUpperCase();
+          if (hex.length() != 12) {
+            continue;
+          }
+          boolean valid = true;
+          for (int i = 0; i < hex.length(); i++) {
+            if (Character.digit(hex.charAt(i), 16) == -1) {
+              valid = false;
+              break;
+            }
+          }
+          if (!valid) {
+            continue;
+          }
+          StringBuilder sb = new StringBuilder();
+          for (int i = 0; i < 12; i += 2) {
+            if (i > 0) {
+              sb.append('-');
+            }
+            sb.append(hex.substring(i, i + 2));
+          }
+          macs.add(sb.toString());
+        }
+        if (macs.isEmpty()) {
+          return;
+        }
+        if (ctx.host == null) {
+          ctx.host = new HashMap();
+        }
+        ctx.host.mac = new ArrayList(macs);
+  - script:
+      lang: painless
+      tag: script_last_known_network_to_host_ip_and_related_ip
+      description: >-
+        Adds each last known LAN address (`ip_address`) to host.ip and
+        related.ip, and each WAN address (`wan_ip_address`) to related.ip
+        only, without duplicates and skipping empty values. The WAN address is
+        a shared egress address, so it would link unrelated hosts in host.ip.
+      if: ctx.google_workspace?.chromeos_devices?.last_known_network instanceof List
+      source: |-
+        Set hostIps = new LinkedHashSet();
+        Set relatedIps = new LinkedHashSet();
+        for (def n : ctx.google_workspace.chromeos_devices.last_known_network) {
+          if (!(n instanceof Map)) {
+            continue;
+          }
+          def lan = n.ip_address;
+          if (lan instanceof String && !lan.isEmpty()) {
+            hostIps.add(lan);
+            relatedIps.add(lan);
+          }
+          def wan = n.wan_ip_address;
+          if (wan instanceof String && !wan.isEmpty()) {
+            relatedIps.add(wan);
+          }
+        }
+        if (!hostIps.isEmpty()) {
+          if (ctx.host == null) {
+            ctx.host = new HashMap();
+          }
+          ctx.host.ip = new ArrayList(hostIps);
+        }
+        if (!relatedIps.isEmpty()) {
+          if (ctx.related == null) {
+            ctx.related = new HashMap();
+          }
+          ctx.related.ip = new ArrayList(relatedIps);
+        }
+
+  # Entity constants, observation time, lifecycle and attributes.
+  - append:
+      field: host.entity.type
+      tag: append_host_entity_type
+      value: host
+      allow_duplicates: false
+  - set:
+      field: host.entity.sub_type
+      tag: set_host_entity_sub_type
+      value: chrome_os_device
+  - set:
+      field: host.entity.source
+      tag: set_host_entity_source
+      value: google_workspace
+  - set:
+      field: host.entity.last_seen_timestamp
+      tag: set_host_entity_last_seen_timestamp
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+  - set:
+      field: host.entity.lifecycle.last_activity
+      tag: set_host_entity_lifecycle_last_activity_from_last_sync
+      copy_from: google_workspace.chromeos_devices.last_sync
+      ignore_empty_value: true
+      description: The last time the device synchronized its policies with Google, set only when `lastSync` is present.
+  - script:
+      lang: painless
+      tag: script_status_to_host_entity_attributes_managed
+      description: >-
+        Derives host.entity.attributes.managed from the device status,
+        compared case-insensitively. Enrolled devices under admin control
+        (ACTIVE, DISABLED) are managed; devices that are not enrolled or no
+        longer receive policies (DEPROVISIONED, INACTIVE, DELINQUENT,
+        PRE_PROVISIONED) are not. Any other status (RETURN_REQUESTED,
+        RETURN_ARRIVED, SHIPPED, UNKNOWN or an undocumented value) leaves the
+        field unset.
+      if: ctx.google_workspace?.chromeos_devices?.status instanceof String
+      params:
+        managed:
+          ACTIVE: true
+          DISABLED: true
+          DEPROVISIONED: false
+          INACTIVE: false
+          DELINQUENT: false
+          PRE_PROVISIONED: false
+      source: |-
+        def managed = params.managed.get(ctx.google_workspace.chromeos_devices.status.trim().toUpperCase());
+        if (managed == null) {
+          return;
+        }
+        if (ctx.host == null) {
+          ctx.host = new HashMap();
+        }
+        if (ctx.host.entity == null) {
+          ctx.host.entity = new HashMap();
+        }
+        if (ctx.host.entity.attributes == null) {
+          ctx.host.entity.attributes = new HashMap();
+        }
+        ctx.host.entity.attributes.managed = managed;
+
+  # Assigned user. annotatedUser is admin free text; map it to user.* only
+  # when it is an email address.
+  - set:
+      field: user.email
+      tag: set_user_email_from_annotated_user
+      copy_from: google_workspace.chromeos_devices.annotated_user
+      if: |-
+        def u = ctx.google_workspace?.chromeos_devices?.annotated_user;
+        if (!(u instanceof String)) {
+          return false;
+        }
+        int at = u.indexOf('@');
+        return at > 0 && at == u.lastIndexOf('@') && at < u.length() - 1 && !u.contains(' ');
+  - dissect:
+      field: user.email
+      tag: dissect_user_name_and_domain_from_user_email
+      pattern: '%{user.name}@%{user.domain}'
+      if: ctx.user?.email instanceof String
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_user_name_and_domain
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # related.*
+  - append:
+      field: related.hosts
+      tag: append_device_id_to_related_hosts
+      value: '{{{google_workspace.chromeos_devices.device_id}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.chromeos_devices?.device_id instanceof String && ctx.google_workspace.chromeos_devices.device_id != ''
+  - append:
+      field: related.hosts
+      tag: append_serial_number_to_related_hosts
+      value: '{{{google_workspace.chromeos_devices.serial_number}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.chromeos_devices?.serial_number instanceof String && ctx.google_workspace.chromeos_devices.serial_number != ''
+  - append:
+      field: related.hosts
+      tag: append_annotated_asset_id_to_related_hosts
+      value: '{{{google_workspace.chromeos_devices.annotated_asset_id}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.chromeos_devices?.annotated_asset_id instanceof String && ctx.google_workspace.chromeos_devices.annotated_asset_id != ''
+  - append:
+      field: related.user
+      tag: append_user_email_to_related_user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - script:
+      lang: painless
+      tag: script_recent_users_email_to_related_user
+      description: >-
+        Adds the email of each recent user to related.user, without
+        duplicates. Unmanaged users (`USER_TYPE_UNMANAGED`) have no email and
+        are skipped.
+      if: ctx.google_workspace?.chromeos_devices?.recent_users instanceof List
+      source: |-
+        Set users = new LinkedHashSet();
+        if (ctx.related != null && ctx.related.user instanceof List) {
+          users.addAll(ctx.related.user);
+        }
+        for (def u : ctx.google_workspace.chromeos_devices.recent_users) {
+          if (u instanceof Map && u.email instanceof String && !u.email.isEmpty()) {
+            users.add(u.email);
+          }
+        }
+        if (users.isEmpty()) {
+          return;
+        }
+        if (ctx.related == null) {
+          ctx.related = new HashMap();
+        }
+        ctx.related.user = new ArrayList(users);
+
+  # Cleanup.
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      tag: append_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false
