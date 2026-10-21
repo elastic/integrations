@@ -1,24 +1,59 @@
-# Live nginx data for the integration group prototype.
+# PROTOTYPE: live nginx data for the integration group demo.
 #
-#   docker compose -f packages/nginx/_dev/demo/docker-compose.yml up -d
+#   packages/nginx_group/_dev/shared/demo/demo.sh          # up (agent policy + enroll)
+#   packages/nginx_group/_dev/shared/demo/demo.sh down
 #
-# - stub_status: http://localhost:8080/nginx_status (host)
-#                http://nginx-demo/nginx_status (from containers on the same network)
-# - logs: named volume "nginx-demo-logs" -> access.log, error.log
-#   tail: docker run --rm -v nginx-demo-logs:/logs alpine tail -f /logs/access.log
-#   mount it into an agent container at /var/log/nginx-demo (read-only).
-# - loadgen hits /, a 404 path, and stub_status every second.
+# Use demo.sh, not plain `docker compose up`: it creates the "Nginx demo" agent policy
+# in Fleet and passes its enrollment token in FLEET_ENROLLMENT_TOKEN.
+#
+# - nginx: stub_status on /nginx_status, access/error logs on the named volume
+#   "nginx-demo-logs". Joins the elastic-package stack network (STACK_NETWORK).
+#   Host check: http://localhost:8090/nginx_status (8080 is the stack's own registry).
+# - agent: shares nginx's network namespace, so localhost:80 is nginx and fleet-server /
+#   elasticsearch resolve over the stack network. The logs volume is mounted at
+#   /var/log/nginx, so the package defaults work as is:
+#     ECS:  paths /var/log/nginx/{access,error}.log*, hosts http://127.0.0.1:80, /nginx_status
+#     OTel: include /var/log/nginx/{access,error}.log, endpoint http://localhost:80/nginx_status
+# - loadgen hits /, a 404 path (-> error.log), and index.html every second.
+#
+# nginx logs to /var/log/nginx-demo, not /var/log/nginx: the nginx image symlinks
+# /var/log/nginx/*.log to stdout/stderr, and a fresh named volume would copy the symlinks.
 name: nginx-demo
 
 services:
   nginx:
     image: nginx:1.27-alpine
     container_name: nginx-demo
+    # The agent shares this network namespace (and hostname), so it enrolls as "nginx-demo".
+    hostname: nginx-demo
     ports:
-      - "8080:80"
+      - "127.0.0.1:8090:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - nginx-logs:/var/log/nginx-demo
+    networks:
+      - default
+      - stack
+
+  agent:
+    # demo.sh sets AGENT_IMAGE to the stack's fleet-server image (same version, already pulled).
+    # The standard image runs otelcol inputs (EDOT collector is built in); "complete" only adds
+    # synthetics deps.
+    image: ${AGENT_IMAGE:-docker.elastic.co/elastic-agent/elastic-agent-wolfi:9.6.0-SNAPSHOT}
+    container_name: nginx-demo-agent
+    depends_on:
+      - nginx
+    network_mode: service:nginx
+    environment:
+      FLEET_ENROLL: "1"
+      FLEET_URL: https://fleet-server:8220
+      FLEET_ENROLLMENT_TOKEN: ${FLEET_ENROLLMENT_TOKEN:-}
+      FLEET_CA: /etc/ssl/certs/elastic-package.pem
+    volumes:
+      # Same trick as elastic-package's own agent: a CA file in /etc/ssl/certs is trusted by Go's
+      # system pool, so Beats and the OTel exporter both trust the stack's Elasticsearch.
+      - ${STACK_CA:-${HOME}/.elastic-package/profiles/nginx-proto/certs/ca-cert.pem}:/etc/ssl/certs/elastic-package.pem:ro
+      - nginx-logs:/var/log/nginx:ro
 
   loadgen:
     image: curlimages/curl:8.10.1
@@ -33,6 +68,12 @@ services:
           curl -s -o /dev/null -A "demo-loadgen" http://nginx/index.html
           sleep 1
         done
+
+networks:
+  stack:
+    # elastic-package: <compose project>_default, project = elastic-package-stack-<profile>
+    name: ${STACK_NETWORK:-elastic-package-stack-nginx-proto_default}
+    external: true
 
 volumes:
   nginx-logs:
