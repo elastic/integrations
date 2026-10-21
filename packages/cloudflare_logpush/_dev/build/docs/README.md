@@ -38,7 +38,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 ### Zero Trust events
 
 - `access_request`: HTTP requests to sites protected by Cloudflare Access. See [Access Requests schema](https://developers.cloudflare.com/logs/reference/log-fields/account/access_requests/).
-- `audit`: Authentication events through Cloudflare Access, plus account-level configuration and administrative actions. See [Audit Logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/audit_logs/).
+- `audit`: Authentication events through Cloudflare Access, plus account-level configuration and administrative actions. The data stream supports both the `audit_logs` (v1) and `audit_logs_v2` Logpush datasets; the schema is detected automatically from the fields in each event, so no setting is needed. See [Audit Logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/audit_logs/) and [Audit Logs V2 schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/audit_logs_v2/).
 - `casb`: Security issues detected by Cloudflare CASB in connected SaaS applications. See [CASB Findings schema](https://developers.cloudflare.com/logs/reference/log-fields/account/casb_findings/).
 - `device_posture`: Device posture status from the Cloudflare One Client (WARP). See [Device Posture Results schema](https://developers.cloudflare.com/logs/reference/log-fields/account/device_posture_results/).
 - `gateway_dns`: DNS queries inspected by Cloudflare Gateway. See [Gateway DNS schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_dns/).
@@ -87,7 +87,7 @@ To use this integration, you must be able to create and manage [Cloudflare Logpu
 Creating and managing Logpush jobs requires an API token or user role with the `Logs Write` permission (or a role that includes it, such as **Super Administrator**, **Administrator**, or **Log Share** with edit permissions). Refer to [Cloudflare Logpush permissions](https://developers.cloudflare.com/logs/logpush/permissions/) for details.
 
 - **Zone-scoped datasets** (for example, `http_requests`, `firewall_events`, `dns_logs`, `spectrum_events`, `nel_reports`, `page_shield_events`) require a **zone-scoped token**.
-- **Account-scoped datasets** (for example, `audit_logs`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
+- **Account-scoped datasets** (for example, `audit_logs`, `audit_logs_v2`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
 - Zero Trust datasets (Access, Gateway, DEX) additionally require `Zero Trust: PII Read`.
 
 **Destination-specific credentials**
@@ -159,6 +159,7 @@ Configure one of the following delivery pipelines before enabling the integratio
 - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
 - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
 - It is recommended to use AWS SQS for Cloudflare Logpush.
+- To collect the `audit_logs_v2` dataset through SQS, add `audit_logs_v2/` to the **[SQS] File Selectors** of the Audit data stream, because the default selector only matches the `audit_logs/` prefix.
 
 #### Collect data from S3-Compatible Cloudflare R2 Buckets
 
