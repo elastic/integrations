@@ -29,6 +29,18 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: island_browser.siem_event.timestamp
+      tag: date_island_browser_siem_event_timestamp
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      if: ctx.island_browser?.siem_event?.timestamp != null && ctx.island_browser.siem_event.timestamp != ''
+      description: Use the event time rather than the collection time. Events routed to other data streams have their timestamp set again by the target pipeline.
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: island_browser.siem_event.source
       tag: rename_island_browser_siem_event_source_to_routing_source
