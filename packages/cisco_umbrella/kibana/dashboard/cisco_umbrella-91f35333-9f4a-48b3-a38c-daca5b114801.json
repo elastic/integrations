@@ -3,8 +3,33 @@
         "controlGroupInput": {
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
-            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-            "panelsJSON": "{\"8ea33d12-8584-43a6-be7c-83a7160bc328\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"event.action\",\"title\":\"Action\",\"id\":\"8ea33d12-8584-43a6-be7c-83a7160bc328\",\"enhancements\":{}}}}"
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "8ea33d12-8584-43a6-be7c-83a7160bc328": {
+                    "explicitInput": {
+                        "dataViewId": "logs-*",
+                        "fieldName": "event.action",
+                        "id": "8ea33d12-8584-43a6-be7c-83a7160bc328",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Action"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                }
+            },
+            "showApplySelections": false
         },
         "description": "",
         "kibanaSavedObjectMeta": {
@@ -26,7 +51,11 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "enhancements": {},
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
                     "savedVis": {
                         "data": {
                             "aggs": [],
@@ -1932,16 +1961,292 @@
                 "panelIndex": "944a7c35-3339-4490-be81-80b9366c2161",
                 "title": "Firewall Protocol",
                 "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-cee3f0cb-26ae-4f4d-aff1-b73ba8fef617",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "cee3f0cb-26ae-4f4d-aff1-b73ba8fef617": {
+                                            "columnOrder": [
+                                                "45571de8-e087-47d3-b35e-39a89c701581",
+                                                "a0e91070-35be-4846-a51f-3f6edbb064b7"
+                                            ],
+                                            "columns": {
+                                                "45571de8-e087-47d3-b35e-39a89c701581": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Firewall Block Reason",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a0e91070-35be-4846-a51f-3f6edbb064b7",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cisco.umbrella.fw_block_reason"
+                                                },
+                                                "a0e91070-35be-4846-a51f-3f6edbb064b7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "data_stream.dataset : \"cisco_umbrella.log\" and observer.type : \"firewall\" and event.type : \"denied\" "
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "a0e91070-35be-4846-a51f-3f6edbb064b7"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "cee3f0cb-26ae-4f4d-aff1-b73ba8fef617",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "45571de8-e087-47d3-b35e-39a89c701581"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "shouldTruncate": false
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "daf26009-2e85-450d-9654-88f65cd52b05",
+                    "w": 24,
+                    "x": 0,
+                    "y": 54
+                },
+                "panelIndex": "daf26009-2e85-450d-9654-88f65cd52b05",
+                "title": "Firewall Block Reasons",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-cee3f0cb-26ae-4f4d-aff1-b73ba8fef617",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "cee3f0cb-26ae-4f4d-aff1-b73ba8fef617": {
+                                            "columnOrder": [
+                                                "45571de8-e087-47d3-b35e-39a89c701581",
+                                                "a0e91070-35be-4846-a51f-3f6edbb064b7"
+                                            ],
+                                            "columns": {
+                                                "45571de8-e087-47d3-b35e-39a89c701581": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "AI Model",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a0e91070-35be-4846-a51f-3f6edbb064b7",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cisco.umbrella.ai_model_name"
+                                                },
+                                                "a0e91070-35be-4846-a51f-3f6edbb064b7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "data_stream.dataset: \"cisco_umbrella.log\" and observer.type: \"proxy\""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "a0e91070-35be-4846-a51f-3f6edbb064b7"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "cee3f0cb-26ae-4f4d-aff1-b73ba8fef617",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "45571de8-e087-47d3-b35e-39a89c701581"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "shouldTruncate": false
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "b1f6ac7c-f352-4aa1-8723-71aa55add32e",
+                    "w": 24,
+                    "x": 24,
+                    "y": 54
+                },
+                "panelIndex": "b1f6ac7c-f352-4aa1-8723-71aa55add32e",
+                "title": "Top AI Models",
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Cisco Umbrella] Overview",
-        "version": 1
+        "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-04-12T05:30:13.660Z",
+    "created_at": "2026-10-21T07:45:53.485Z",
     "id": "cisco_umbrella-91f35333-9f4a-48b3-a38c-daca5b114801",
-    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -2090,15 +2395,25 @@
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_8ea33d12-8584-43a6-be7c-83a7160bc328:optionsListDataView",
+            "name": "daf26009-2e85-450d-9654-88f65cd52b05:indexpattern-datasource-layer-cee3f0cb-26ae-4f4d-aff1-b73ba8fef617",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "b1f6ac7c-f352-4aa1-8723-71aa55add32e:indexpattern-datasource-layer-cee3f0cb-26ae-4f4d-aff1-b73ba8fef617",
             "type": "index-pattern"
         },
         {
             "id": "cisco_umbrella-c7d1eb28-8a20-4d2b-9fa5-46b7a39d69a3",
             "name": "tag-ref-cisco_umbrella-c7d1eb28-8a20-4d2b-9fa5-46b7a39d69a3",
             "type": "tag"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_8ea33d12-8584-43a6-be7c-83a7160bc328:optionsListDataView",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "8.9.0"
+    "typeMigrationVersion": "10.2.0"
 }
