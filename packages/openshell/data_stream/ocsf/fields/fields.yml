@@ -1,0 +1,154 @@
+- name: openshell.ocsf
+  type: group
+  description: OCSF record fields emitted by OpenShell that have no direct ECS equivalent. Fields copied to ECS are removed from this object.
+  fields:
+    - name: action_id
+      type: long
+      description: Normalized identifier of the action.
+    - name: activity_id
+      type: long
+      description: Normalized identifier of the activity.
+    - name: activity_name
+      type: keyword
+      description: Activity name (Open, Refuse, Fail, Other, Log, Relay open, Relay closed, Launch, Terminate, Create, Start, Stop).
+    - name: actor.process.cmd_line
+      type: keyword
+      description: Command line of the initiating process, retained only when it was not mapped to `process.*`.
+    - name: actor.process.name
+      type: keyword
+      description: Executable path of the initiating process, retained only when it was not mapped to `process.*`.
+    - name: actor.process.pid
+      type: long
+      description: PID of the initiating process, retained only when it was not mapped to `process.*`.
+    - name: actor.process.parent_process.cmd_line
+      type: keyword
+      description: Command line of the initiating process's parent, retained only when it was not mapped to `process.parent.*`.
+    - name: actor.process.parent_process.name
+      type: keyword
+      description: Executable path of the initiating process's parent, retained only when it was not mapped to `process.parent.*`.
+    - name: actor.process.parent_process.pid
+      type: long
+      description: PID of the initiating process's parent, retained only when it was not mapped to `process.parent.*`.
+    - name: actor.process.parent_process.parent_process.cmd_line
+      type: keyword
+      description: Command line of the grandparent of the initiating process (ECS has no `process.parent.parent`).
+    - name: actor.process.parent_process.parent_process.name
+      type: keyword
+      description: Executable path of the grandparent of the initiating process.
+    - name: actor.process.parent_process.parent_process.pid
+      type: long
+      description: PID of the grandparent of the initiating process.
+    - name: process.parent_process.parent_process.cmd_line
+      type: keyword
+      description: Command line of the grandparent of the subject process (Process Activity events).
+    - name: process.parent_process.parent_process.name
+      type: keyword
+      description: Executable path of the grandparent of the subject process (Process Activity events).
+    - name: process.parent_process.parent_process.pid
+      type: long
+      description: PID of the grandparent of the subject process (Process Activity events).
+    - name: app.name
+      type: keyword
+      description: Name of the application that changed lifecycle state (Application Lifecycle events).
+    - name: app.vendor_name
+      type: keyword
+      description: Vendor of the application that changed lifecycle state.
+    - name: app.version
+      type: keyword
+      description: Version of the application that changed lifecycle state.
+    - name: attacks
+      type: flattened
+      description: MITRE ATT&CK technique and tactic pairs attached to a Detection Finding, retained when they could not be mapped to `threat.*`.
+    - name: category_name
+      type: keyword
+      description: OCSF category name.
+    - name: category_uid
+      type: long
+      description: OCSF category identifier.
+    - name: class_name
+      type: keyword
+      description: OCSF event class name.
+    - name: class_uid
+      type: long
+      description: OCSF event class identifier (0, 1007, 2004, 4001, 4002, 4007, 5019, 6002).
+    - name: confidence
+      type: keyword
+      description: Confidence label of a Detection Finding (Low, Medium, High).
+    - name: confidence_id
+      type: long
+      description: Normalized identifier of the finding confidence.
+    - name: device.type
+      type: keyword
+      description: Device type reported by OpenShell (Sandbox).
+    - name: device.type_id
+      type: long
+      description: Normalized identifier of the device type.
+    - name: disposition
+      type: keyword
+      description: Disposition of the security control (Allowed, Blocked).
+    - name: disposition_id
+      type: long
+      description: Normalized identifier of the disposition.
+    - name: evidences
+      type: flattened
+      description: Evidence artifacts attached to a Detection Finding, such as the policy name, host, protocol or decision.
+    - name: is_alert
+      type: boolean
+      description: Whether a Detection Finding is raised as an alert.
+    - name: is_src_dst_assignment_known
+      type: boolean
+      description: Whether the source and destination roles are known.
+    - name: launch_type
+      type: keyword
+      description: How a process was launched (Spawn, Fork, Exec).
+    - name: launch_type_id
+      type: long
+      description: Normalized identifier of the launch type.
+    - name: metadata.profiles
+      type: keyword
+      description: OCSF profiles applied to the record.
+    - name: metadata.version
+      type: keyword
+      description: OCSF schema version of the record.
+    - name: observation_point_id
+      type: long
+      description: Normalized identifier of the observation point.
+    - name: proxy_endpoint.ip
+      type: ip
+      description: IP address of the supervisor proxy listener that observed the activity.
+    - name: proxy_endpoint.port
+      type: long
+      description: Port of the supervisor proxy listener that observed the activity.
+    - name: remediation.desc
+      type: keyword
+      description: Remediation guidance attached to a Detection Finding.
+    - name: risk_level
+      type: keyword
+      description: Risk level label of a Detection Finding (Info, Low, Medium, High, Critical).
+    - name: risk_level_id
+      type: long
+      description: Normalized identifier of the finding risk level.
+    - name: severity
+      type: keyword
+      description: Severity label.
+    - name: state
+      type: keyword
+      description: Configuration state for Device Config State Change events.
+    - name: state_id
+      type: long
+      description: Normalized identifier of the configuration state.
+    - name: status
+      type: keyword
+      description: Outcome status (Success, Failure).
+    - name: status_id
+      type: long
+      description: Normalized identifier of the status.
+    - name: type_name
+      type: keyword
+      description: OCSF event type name.
+    - name: type_uid
+      type: long
+      description: OCSF event type identifier.
+    - name: unmapped
+      type: flattened
+      description: OpenShell-specific attributes that are not part of the OCSF schema, such as policy generation, mapping identifiers and allowed ports.
