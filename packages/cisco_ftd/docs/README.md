@@ -63,7 +63,7 @@ Refer to the Cisco instructions on how to [configure Logging on FTD via FMC](htt
 3.  Click the integration to see more details and then click **Add integration**.
 4.  Configure the integration settings. You must select the input method that matches your Cisco FTD configuration (TCP, UDP, or log file).
     *   **For TCP/UDP**: Specify the `host` and `port` where the Elastic Agent should listen for syslog messages. This must match the destination you configured on your FTD device.
-    *   **For Log File**: Provide the file `paths` that the agent should monitor.
+    *   **For Log File**: Provide the file `paths` that the agent should monitor. Use **Exclude files** to skip files that match a regular expression. The default pattern, `\.gz$`, skips compressed files. **Ignore older** and **Custom configurations** are available in the advanced options.
 5.  Click **Save and continue** to add the integration policy to an Elastic Agent.
 
 #### 3. Validate that the integration is working
@@ -202,13 +202,13 @@ The `log` data stream collects logs from Cisco Firepower Threat Defense (FTD) de
 | cisco.ftd.security_event.ingress_interface |  | keyword |
 | cisco.ftd.security_event.ingress_zone |  | keyword |
 | cisco.ftd.security_event.initiator_bytes |  | long |
-| cisco.ftd.security_event.initiator_packets |  | integer |
+| cisco.ftd.security_event.initiator_packets |  | long |
 | cisco.ftd.security_event.nap_policy |  | keyword |
 | cisco.ftd.security_event.prefilter_policy |  | keyword |
 | cisco.ftd.security_event.protocol |  | keyword |
 | cisco.ftd.security_event.referenced_host |  | keyword |
 | cisco.ftd.security_event.responder_bytes |  | long |
-| cisco.ftd.security_event.responder_packets |  | integer |
+| cisco.ftd.security_event.responder_packets |  | long |
 | cisco.ftd.security_event.sha_disposition |  | keyword |
 | cisco.ftd.security_event.source_security_group | Source Security Group Tag (SGT) | keyword |
 | cisco.ftd.security_event.source_security_group_tag | Source Security Group Tag number | keyword |

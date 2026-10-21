@@ -1,7 +1,7 @@
 format_version: 3.3.2
 name: jamf_pro
 title: "Jamf Pro"
-version: "2.1.1"
+version: "2.2.0"
 source:
   license: "Elastic-2.0"
 description: "Collect logs and inventory data from Jamf Pro with Elastic Agent"
@@ -34,6 +34,10 @@ screenshots:
   - src: /img/jamf_pro_real_time_dashboard.png
     title: Real time dashboard
     size: 600x600
+    type: image/png
+  - src: /img/kibana-jamf-pro-log-stream-overview.png
+    title: Log Stream Overview
+    size: 1600x1200
     type: image/png
 icons:
   - src: /img/logo.png
@@ -74,6 +78,116 @@ policy_templates:
             description: A secret code taken from Jamf Pro in the format `2BftX05NhhS21NXCvZlCvzCJTNM54xEgi8ixaaxC_GkND-8udzaz27kr1TuWeKzX`
             secret: true
             required: true
+      - type: aws-s3
+        title: Collect Jamf Pro Log Stream logs via AWS S3 or SQS
+        description: Collecting Jamf Pro Log Stream logs via AWS S3 or SQS.
+        vars:
+          - name: collect_s3_logs
+            required: true
+            show_user: true
+            title: Collect logs via S3 Bucket
+            description: To collect logs via S3 bucket enable the toggle switch. By default, it will collect logs via SQS Queue.
+            type: bool
+            multi: false
+            default: false
+          - name: bucket_arn
+            type: text
+            title: "[S3] Bucket ARN"
+            multi: false
+            required: false
+            show_user: true
+            description: ARN of the AWS S3 bucket that will be polled for list operation. It is a required parameter for collecting logs via the AWS S3 Bucket unless you set an Access Point ARN.
+          - name: access_point_arn
+            type: text
+            title: "[S3] Access Point ARN"
+            multi: false
+            required: false
+            show_user: true
+            description: ARN of the AWS S3 Access Point that will be polled for list operation.
+          - name: access_key_id
+            type: password
+            secret: true
+            title: Access Key ID
+            multi: false
+            required: false
+            show_user: true
+            description: First part of access key.
+          - name: secret_access_key
+            type: password
+            secret: true
+            title: Secret Access Key
+            multi: false
+            required: false
+            show_user: true
+            description: Second part of access key.
+          - name: session_token
+            type: password
+            secret: true
+            title: Session Token
+            multi: false
+            required: false
+            show_user: true
+            description: Required when using temporary security credentials.
+          - name: shared_credential_file
+            type: text
+            title: Shared Credential File
+            multi: false
+            required: false
+            show_user: false
+            description: Directory of the shared credentials file.
+          - name: credential_profile_name
+            type: text
+            title: Credential Profile Name
+            multi: false
+            required: false
+            show_user: false
+            description: Profile name in shared credentials file.
+          - name: role_arn
+            type: text
+            title: Role ARN
+            multi: false
+            required: false
+            show_user: false
+            description: AWS IAM Role to assume.
+          - name: endpoint
+            type: text
+            title: Endpoint
+            multi: false
+            required: false
+            show_user: false
+            default: ""
+            description: URL of the entry point for an AWS web service.
+          - name: region
+            type: text
+            title: Region
+            multi: false
+            required: false
+            show_user: false
+            default: ""
+            description: The name of the AWS region of the endpoint.
+          - name: default_region
+            type: text
+            title: Default AWS Region
+            multi: false
+            required: false
+            show_user: false
+            default: ""
+            description: Default region to use prior to connecting to region specific services/endpoints if no AWS region is set from environment variable, credentials or instance profile.
+          - name: fips_enabled
+            type: bool
+            title: Enable S3 FIPS
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option changes the service name from `s3` to `s3-fips` for connecting to the correct service endpoint.
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>.
       - type: http_endpoint
         title: Events
         description: Receiving Jamf Pro events.
