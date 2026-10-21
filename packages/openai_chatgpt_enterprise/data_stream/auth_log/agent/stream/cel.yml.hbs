@@ -53,7 +53,9 @@ program: |-
             resp.Body.decode_json().as(body,
               {
                 "cursor": {
-                  "worklist": body.?data.orValue([]),
+                  // Drop the previously downloaded boundary file: the list API
+                  // re-returns it when re-queried with the same `after`.
+                  "worklist": body.?data.orValue([]).filter(f, f.id != state.?cursor.last_file_id.orValue("")),
                   // Empty pages return last_end_time: null; keep the current
                   // `after` in that case so the cursor never becomes null.
                   "last_end_time": (has(body.last_end_time) && body.last_end_time != null) ?
@@ -64,8 +66,9 @@ program: |-
                   // API re-returns the boundary record when re-queried with the same
                   // `after`, so an empty response is never observed on has_more=false.
                   "list_has_more": body.?has_more.orValue(false),
+                  ?"last_file_id": state.?cursor.last_file_id,
                 },
-                "want_more": body.?data[0].hasValue(),
+                "want_more": size(body.?data.orValue([]).filter(f, f.id != state.?cursor.last_file_id.orValue(""))) > 0,
               }
             )
           :
@@ -118,6 +121,7 @@ program: |-
               "worklist": tail(state.cursor.worklist),
               "last_end_time": state.cursor.last_end_time,
               "list_has_more": state.?cursor.list_has_more.orValue(false),
+              "last_file_id": state.cursor.worklist[0].id,
             },
             // Keep going while files remain in this page, or the list reported
             // more pages. Stops right after the last file of the last page.
