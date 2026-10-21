@@ -55,7 +55,7 @@ func createDefaultPackagesTree(t *testing.T) (string, string) {
 		[]string{
 			"/packages/fortinet_fortigate @elastic/integration-experience",
 			"/packages/elastic_package_registry @elastic/ecosystem",
-			"/packages/sql_input @elastic/obs-infraobs-integrations",
+			"/packages/sql_input @elastic/obs-signals-integrations-team",
 			"/packages/cisco_umbrella @elastic/security-service-integrations",
 		},
 	)

@@ -24,7 +24,7 @@ func mustParseOwners(t *testing.T, content string) *Owners {
 
 func TestResolve(t *testing.T) {
 	const content = `
-/packages/aws @elastic/obs-infraobs-integrations
+/packages/aws @elastic/obs-signals-integrations-team
 /packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
 /packages/nested/foo @elastic/ecosystem
 `
@@ -39,7 +39,7 @@ func TestResolve(t *testing.T) {
 		{
 			name:     "explicit package root",
 			path:     "/packages/aws",
-			expected: []string{"@elastic/obs-infraobs-integrations"},
+			expected: []string{"@elastic/obs-signals-integrations-team"},
 			found:    true,
 		},
 		{
@@ -51,7 +51,7 @@ func TestResolve(t *testing.T) {
 		{
 			name:     "data stream without override falls back to package owner",
 			path:     "/packages/aws/data_stream/vpcflow",
-			expected: []string{"@elastic/obs-infraobs-integrations"},
+			expected: []string{"@elastic/obs-signals-integrations-team"},
 			found:    true,
 		},
 		{
@@ -80,9 +80,9 @@ func TestResolve(t *testing.T) {
 
 func TestEntriesUnder(t *testing.T) {
 	const content = `
-/packages/aws @elastic/obs-infraobs-integrations
+/packages/aws @elastic/obs-signals-integrations-team
 /packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
-/packages/aws/kibana @elastic/obs-infraobs-integrations
+/packages/aws/kibana @elastic/obs-signals-integrations-team
 /packages/awsome @elastic/unrelated-team
 `
 	o := mustParseOwners(t, content)
@@ -96,7 +96,7 @@ func TestEntriesUnder(t *testing.T) {
 
 func TestExplicitEntry(t *testing.T) {
 	const content = `
-/packages/aws @elastic/obs-infraobs-integrations
+/packages/aws @elastic/obs-signals-integrations-team
 /packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
 `
 	o := mustParseOwners(t, content)
