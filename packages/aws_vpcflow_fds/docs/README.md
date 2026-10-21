@@ -23,7 +23,7 @@ Extra version 3 through version 5 fields are safe to include in the flow log, bu
 
 * [Cluster state encryption](https://www.elastic.co/docs/reference/elasticsearch/cluster-state-encryption-key) must be enabled. Elastic Cloud Hosted, Elastic Cloud Enterprise, ECK, Serverless, and fresh self-managed installs configure the encryption key automatically. Upgraded self-managed clusters require manual setup — follow the steps in the [cluster state encryption](https://www.elastic.co/docs/reference/elasticsearch/cluster-state-encryption-key) documentation.
 * VPC Flow Logs published to S3 with both of the following settings:
-  * Log file format **Parquet**. `.log.gz` has no FDS handler and returns 0 rows.
+  * Log file format **Parquet**.
   * **Hive-compatible S3 prefixes** enabled. This creates `year=`, `month=`, and `day=` folders.
 * An IAM identity with `s3:GetObject` and `s3:ListBucket` on the flow log bucket. For the full permissions reference, authentication models, and SSE-KMS setup, see [Amazon S3 data sources for ES|QL Data Federation](https://www.elastic.co/docs/reference/query-languages/esql/esql-data-federation-s3).
 
