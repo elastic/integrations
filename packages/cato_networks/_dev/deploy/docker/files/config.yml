@@ -1,4 +1,140 @@
 rules:
+  # Once all three partitions have caught up, keep returning their current
+  # markers without replaying any records.
+  - path: /api/v1/graphql2
+    methods: ["POST"]
+    request_body: /.*"internetFirewallMarker":"internet-3".*/
+    request_headers:
+      X-Api-Key:
+        - "xxxx"
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+            {
+              "data": {
+                "internetFirewall": {"fetchedCount": 0, "marker": "internet-3", "accounts": []},
+                "wanFirewall": {"fetchedCount": 0, "marker": "wan-3", "accounts": []},
+                "other": {"fetchedCount": 0, "marker": "other-3", "accounts": []}
+              }
+            }
+          `}}
+  # The Internet Firewall partition had a full page in the prior response, so
+  # all aliases are queried again with their independently advanced markers.
+  - path: /api/v1/graphql2
+    methods: ["POST"]
+    request_body: /.*"internetFirewallMarker":"internet-2".*/
+    request_headers:
+      X-Api-Key:
+        - "xxxx"
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+            {
+              "data": {
+                "internetFirewall": {
+                  "fetchedCount": 1,
+                  "marker": "internet-3",
+                  "accounts": [{
+                    "errorString": "",
+                    "records": [{"fieldsMap": {
+                      "account_id": "12345",
+                      "event_id": "internet-firewall-2",
+                      "event_sub_type": "Internet Firewall",
+                      "event_type": "Security",
+                      "time": "1772448191574",
+                      "time_str": "2026-03-02T10:43:11Z"
+                    }}]
+                  }]
+                },
+                "wanFirewall": {"fetchedCount": 0, "marker": "wan-3", "accounts": []},
+                "other": {"fetchedCount": 0, "marker": "other-3", "accounts": []}
+              }
+            }
+          `}}
+  # Each alias returns its own marker and records. A full Internet Firewall
+  # page makes the CEL program request another page for all three aliases.
+  - path: /api/v1/graphql2
+    methods: ["POST"]
+    request_body: /.*"internetFirewallMarker":"internet-1".*/
+    request_headers:
+      X-Api-Key:
+        - "xxxx"
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+            {
+              "data": {
+                "internetFirewall": {
+                  "fetchedCount": 3000,
+                  "marker": "internet-2",
+                  "accounts": [{
+                    "errorString": "",
+                    "records": [{"fieldsMap": {
+                      "account_id": "12345",
+                      "event_id": "internet-firewall-1",
+                      "event_sub_type": "Internet Firewall",
+                      "event_type": "Security",
+                      "time": "1772448191573",
+                      "time_str": "2026-03-02T10:43:11Z"
+                    }}]
+                  }]
+                },
+                "wanFirewall": {
+                  "fetchedCount": 1,
+                  "marker": "wan-2",
+                  "accounts": [{
+                    "errorString": "",
+                    "records": [{"fieldsMap": {
+                      "account_id": "12345",
+                      "event_id": "wan-firewall-1",
+                      "event_sub_type": "WAN Firewall",
+                      "event_type": "Security",
+                      "time": "1772448191575",
+                      "time_str": "2026-03-02T10:43:11Z"
+                    }}]
+                  }]
+                },
+                "other": {
+                  "fetchedCount": 1,
+                  "marker": "other-2",
+                  "accounts": [{
+                    "errorString": "",
+                    "records": [{"fieldsMap": {
+                      "account_id": "67890",
+                      "event_id": "other-1",
+                      "event_sub_type": "DNS Protection",
+                      "event_type": "Security",
+                      "time": "1772448191576",
+                      "time_str": "2026-03-02T10:43:11Z"
+                    }}]
+                  }]
+                }
+              }
+            }
+          `}}
+  # A marker-less request initializes all three feeds. Matching all filter
+  # terms also verifies the GraphQL aliases use event_sub_type terminology.
+  - path: /api/v1/graphql2
+    methods: ["POST"]
+    request_body: /.*Internet Firewall.*WAN Firewall.*not_in.*/
+    request_headers:
+      X-Api-Key:
+        - "xxxx"
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+            {
+              "data": {
+                "internetFirewall": {"fetchedCount": 0, "marker": "internet-1", "accounts": []},
+                "wanFirewall": {"fetchedCount": 0, "marker": "wan-1", "accounts": []},
+                "other": {"fetchedCount": 0, "marker": "other-1", "accounts": []}
+              }
+            }
+          `}}
   # Event Datastream
   # Fourth Matching Rule
   - path: /api/v1/graphql2
