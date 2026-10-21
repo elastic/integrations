@@ -85,9 +85,10 @@ processors:
   - script:
       tag: set_asset_ingest_day_a91c4e72
       description: >-
-        Collection day used only in the document id so an unchanged asset is
-        indexed again at least once per day. The latest transform can then
-        refresh @timestamp without waiting for the backing index to roll over.
+        Collection day used only in the document id so that when Tenable
+        reports an asset again on a later day, a new document is indexed even
+        if scan state is unchanged. The latest transform can then refresh
+        @timestamp without waiting for the backing index to roll over.
       if: ctx['@timestamp'] != null && ctx.tenable_sc?.asset?.custom_hash != null
       lang: painless
       source: >-
@@ -101,8 +102,9 @@ processors:
       description: >-
         Document id from stable asset identity, mutable scan state, and the
         collection day. Severity or score changes index as new documents.
-        Unchanged assets deduplicate within a day and are indexed again on
-        the next collection day.
+        Unchanged assets from the same Tenable report on the same day
+        deduplicate. A later Tenable report on a new day indexes a new
+        document even if scan state is unchanged.
       if: ctx.tenable_sc?.asset?.custom_hash != null
       fields:
         - tenable_sc.asset.custom_hash
