@@ -83,7 +83,7 @@ After the integration is saved, confirm that data is arriving:
 1. In **Fleet**, confirm the Armis integration is healthy.
 2. In **Discover**, open `logs-armis.device-*`, `logs-armis.alert-*`, and `logs-armis.vulnerability-*`. Documents appear after the first interval. The first collection looks back the Initial Interval.
 3. Open the Armis **Devices**, **Alerts**, and **Vulnerabilities** dashboards. The Devices and Alerts dashboards read the latest-transform destination.
-4. Record the Elasticsearch, Kibana, and Elastic Agent versions from **Stack Management > About** and the agent, and note whether each data stream returned documents.
+4. If a data stream returns no documents, check the Elastic Agent logs for errors from the CEL input and refer to [Troubleshooting](#troubleshooting).
 
 ## Data retention
 
