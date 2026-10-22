@@ -67,9 +67,9 @@ The Reports API data streams use the following *oauth2 scope*:
 
 - `https://www.googleapis.com/auth/admin.reports.audit.readonly`
 
-The `chromeos_devices` data stream needs a different scope. See [Google Workspace ChromeOS Devices](#google-workspace-chromeos-devices).
+The `chromeos_devices` data stream needs a different scope. See the Google Workspace ChromeOS Devices section.
 
-The `users` data stream needs different scopes. See [Google Workspace Users](#google-workspace-users).
+The `users` data stream needs different scopes. See the Google Workspace Users section.
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
@@ -418,7 +418,7 @@ This is the `saml` dataset.
 
 ### Users
 
-This is the `users` dataset. It contains an inventory of user accounts, not events. See [Google Workspace Users](#google-workspace-users).
+This is the `users` dataset. It contains an inventory of user accounts, not events. See the Google Workspace Users section.
 
 {{event "users"}}
 
@@ -538,7 +538,7 @@ This is the `chrome` dataset.
 
 ### ChromeOS Devices
 
-This is the `chromeos_devices` dataset. It contains an inventory of ChromeOS devices, not events. See [Google Workspace ChromeOS Devices](#google-workspace-chromeos-devices).
+This is the `chromeos_devices` dataset. It contains an inventory of ChromeOS devices, not events. See the Google Workspace ChromeOS Devices section.
 
 {{event "chromeos_devices"}}
 
