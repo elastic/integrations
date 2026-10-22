@@ -79,16 +79,7 @@ http {
 
 `log_format` is only allowed in the `http` section. If a `server` or `location` block has its own `access_log` directive, add `combined_timing` to it as well, because it overrides the one in `http`.
 
-The values are stored as doubles in seconds:
-
-| Nginx variable | Log key | Attribute |
-|---|---|---|
-| `$request_time` | `rt` | `http.server.request.duration` |
-| `$upstream_response_time` | `urt` | `http.client.request.duration` |
-| `$upstream_connect_time` | `uct` | `nginx.upstream.connect.duration` |
-| `$upstream_header_time` | `uht` | `nginx.upstream.header.duration` |
-
-Upstream attributes are left unset when the value is `-` (no upstream contacted, for example static files or cache hits). When nginx tried several upstreams, only the last value is kept. `$upstream_connect_time` requires nginx 1.9.1 or later.
+Timing values are stored as doubles in seconds. Upstream values are left unset when the log value is `-` (no upstream contacted, for example static files or cache hits). When nginx tried several upstreams, only the last value is kept. `$upstream_connect_time` requires nginx 1.9.1 or later.
 
 ### Verify data
 
