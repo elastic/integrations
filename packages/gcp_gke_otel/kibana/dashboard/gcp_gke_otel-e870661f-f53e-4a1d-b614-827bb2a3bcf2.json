@@ -1637,12 +1637,19 @@
                                                     "meta": {
                                                         "type": "string"
                                                     }
+                                                },
+                                                {
+                                                    "columnId": "line_0_breakdown_1",
+                                                    "fieldName": "cluster",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS cpu_util = AVG(RATE(`metrics.kubernetes.io/node/cpu/core_usage_time`)) / AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_cores`)) BY node = resource.attributes.node_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | SORT bucket ASC, cpu_util DESC, node ASC | LIMIT 10 BY bucket"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS cpu_util = AVG(RATE(`metrics.kubernetes.io/node/cpu/core_usage_time`)) / AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_cores`)) BY node = resource.attributes.node_name, cluster = resource.attributes.cluster_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | SORT bucket ASC, cpu_util DESC, node ASC | LIMIT 10 BY bucket"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1658,7 +1665,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS cpu_util = AVG(RATE(`metrics.kubernetes.io/node/cpu/core_usage_time`)) / AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_cores`)) BY node = resource.attributes.node_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | SORT bucket ASC, cpu_util DESC, node ASC | LIMIT 10 BY bucket"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS cpu_util = AVG(RATE(`metrics.kubernetes.io/node/cpu/core_usage_time`)) / AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/cpu/allocatable_cores`)) BY node = resource.attributes.node_name, cluster = resource.attributes.cluster_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | SORT bucket ASC, cpu_util DESC, node ASC | LIMIT 10 BY bucket"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1706,7 +1713,8 @@
                                         "layerType": "data",
                                         "seriesType": "line",
                                         "splitAccessors": [
-                                            "line_0_breakdown"
+                                            "line_0_breakdown",
+                                            "line_0_breakdown_1"
                                         ],
                                         "xAccessor": "line_0_x",
                                         "yConfig": [
@@ -1719,7 +1727,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "maxLines": 1,
+                                    "maxLines": 2,
                                     "position": "bottom"
                                 },
                                 "pointVisibility": "auto",
@@ -1745,7 +1753,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "The 10 nodes using the largest share of their allocatable CPU in each time bucket: average CPU used (`node/cpu/core_usage_time` rate) divided by allocatable cores. Sustained values near 100% slow down the pods on that node and leave no room for new ones.",
+                    "description": "The 10 nodes using the largest share of their allocatable CPU in each time bucket: average CPU used (`node/cpu/core_usage_time` rate) divided by allocatable cores. Sustained values near 100% slow down the pods on that node and leave no room for new ones. The legend names each node with its cluster.",
                     "title": "Top 10 nodes by CPU utilization"
                 },
                 "gridData": {
@@ -1809,12 +1817,19 @@
                                                     "meta": {
                                                         "type": "string"
                                                     }
+                                                },
+                                                {
+                                                    "columnId": "line_0_breakdown_1",
+                                                    "fieldName": "cluster",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL) | STATS mem_util = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_utilization`)) BY node = resource.attributes.node_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | SORT bucket ASC, mem_util DESC, node ASC | LIMIT 10 BY bucket"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL) | STATS mem_util = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_utilization`)) BY node = resource.attributes.node_name, cluster = resource.attributes.cluster_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | SORT bucket ASC, mem_util DESC, node ASC | LIMIT 10 BY bucket"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1830,7 +1845,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL) | STATS mem_util = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_utilization`)) BY node = resource.attributes.node_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | SORT bucket ASC, mem_util DESC, node ASC | LIMIT 10 BY bucket"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL) | STATS mem_util = AVG(LAST_OVER_TIME(`metrics.kubernetes.io/node/memory/allocatable_utilization`)) BY node = resource.attributes.node_name, cluster = resource.attributes.cluster_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | SORT bucket ASC, mem_util DESC, node ASC | LIMIT 10 BY bucket"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1878,7 +1893,8 @@
                                         "layerType": "data",
                                         "seriesType": "line",
                                         "splitAccessors": [
-                                            "line_0_breakdown"
+                                            "line_0_breakdown",
+                                            "line_0_breakdown_1"
                                         ],
                                         "xAccessor": "line_0_x",
                                         "yConfig": [
@@ -1891,7 +1907,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "maxLines": 1,
+                                    "maxLines": 2,
                                     "position": "bottom"
                                 },
                                 "pointVisibility": "auto",
@@ -1917,7 +1933,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "The 10 nodes using the largest share of their allocatable memory in each time bucket, averaged (`node/memory/allocatable_utilization`, non-evictable memory). Sustained values near 100% lead to evictions and out-of-memory kills on that node.",
+                    "description": "The 10 nodes using the largest share of their allocatable memory in each time bucket, averaged (`node/memory/allocatable_utilization`, non-evictable memory). Sustained values near 100% lead to evictions and out-of-memory kills on that node. The legend names each node with its cluster.",
                     "title": "Top 10 nodes by memory utilization"
                 },
                 "gridData": {
@@ -1981,12 +1997,19 @@
                                                     "meta": {
                                                         "type": "string"
                                                     }
+                                                },
+                                                {
+                                                    "columnId": "line_0_breakdown_1",
+                                                    "fieldName": "cluster",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/used_bytes`)), total = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`)) BY node = resource.attributes.node_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | EVAL eph_pct = CASE(total > 0, TO_DOUBLE(used)/total, NULL) | SORT bucket ASC, eph_pct DESC, node ASC | LIMIT 10 BY bucket"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/used_bytes`)), total = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`)) BY node = resource.attributes.node_name, cluster = resource.attributes.cluster_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | EVAL eph_pct = CASE(total > 0, TO_DOUBLE(used)/total, NULL) | SORT bucket ASC, eph_pct DESC, node ASC | LIMIT 10 BY bucket"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2002,7 +2025,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/used_bytes`)), total = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`)) BY node = resource.attributes.node_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | EVAL eph_pct = CASE(total > 0, TO_DOUBLE(used)/total, NULL) | SORT bucket ASC, eph_pct DESC, node ASC | LIMIT 10 BY bucket"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_node\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/used_bytes`)), total = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`)) BY node = resource.attributes.node_name, cluster = resource.attributes.cluster_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | EVAL eph_pct = CASE(total > 0, TO_DOUBLE(used)/total, NULL) | SORT bucket ASC, eph_pct DESC, node ASC | LIMIT 10 BY bucket"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2050,7 +2073,8 @@
                                         "layerType": "data",
                                         "seriesType": "line",
                                         "splitAccessors": [
-                                            "line_0_breakdown"
+                                            "line_0_breakdown",
+                                            "line_0_breakdown_1"
                                         ],
                                         "xAccessor": "line_0_x",
                                         "yConfig": [
@@ -2063,7 +2087,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "maxLines": 1,
+                                    "maxLines": 2,
                                     "position": "bottom"
                                 },
                                 "pointVisibility": "auto",
@@ -2089,7 +2113,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "The 10 nodes with the fullest boot disk in each time bucket: ephemeral storage used divided by total (`node/ephemeral_storage/used_bytes` and `total_bytes`). A nearly full disk triggers DiskPressure, which evicts pods and blocks new ones.",
+                    "description": "The 10 nodes with the fullest boot disk in each time bucket: ephemeral storage used divided by total (`node/ephemeral_storage/used_bytes` and `total_bytes`). A nearly full disk triggers DiskPressure, which evicts pods and blocks new ones. The legend names each node with its cluster.",
                     "title": "Top 10 nodes by ephemeral storage use"
                 },
                 "gridData": {
@@ -2233,12 +2257,19 @@
                                                     "meta": {
                                                         "type": "string"
                                                     }
+                                                },
+                                                {
+                                                    "columnId": "line_0_breakdown_1",
+                                                    "fieldName": "cluster",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS cpu_used = MAX(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`)) BY namespace = COALESCE(resource.attributes.namespace_name, resource.attributes.namespace), resource.attributes.project_id, resource.attributes.cluster_name, resource.attributes.pod_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | STATS cpu_used = SUM(cpu_used) BY namespace, bucket | SORT bucket ASC, cpu_used DESC, namespace ASC | LIMIT 10 BY bucket"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS cpu_used = MAX(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`)) BY namespace = COALESCE(resource.attributes.namespace_name, resource.attributes.namespace), resource.attributes.project_id, cluster = resource.attributes.cluster_name, resource.attributes.pod_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | STATS cpu_used = SUM(cpu_used) BY namespace, cluster, bucket | SORT bucket ASC, cpu_used DESC, namespace ASC, cluster ASC | LIMIT 10 BY bucket"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2254,7 +2285,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS cpu_used = MAX(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`)) BY namespace = COALESCE(resource.attributes.namespace_name, resource.attributes.namespace), resource.attributes.project_id, resource.attributes.cluster_name, resource.attributes.pod_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | STATS cpu_used = SUM(cpu_used) BY namespace, bucket | SORT bucket ASC, cpu_used DESC, namespace ASC | LIMIT 10 BY bucket"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend | STATS cpu_used = MAX(RATE(`metrics.kubernetes.io/container/cpu/core_usage_time`)) BY namespace = COALESCE(resource.attributes.namespace_name, resource.attributes.namespace), resource.attributes.project_id, cluster = resource.attributes.cluster_name, resource.attributes.pod_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | STATS cpu_used = SUM(cpu_used) BY namespace, cluster, bucket | SORT bucket ASC, cpu_used DESC, namespace ASC, cluster ASC | LIMIT 10 BY bucket"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2302,7 +2333,8 @@
                                         "layerType": "data",
                                         "seriesType": "line",
                                         "splitAccessors": [
-                                            "line_0_breakdown"
+                                            "line_0_breakdown",
+                                            "line_0_breakdown_1"
                                         ],
                                         "xAccessor": "line_0_x",
                                         "yConfig": [
@@ -2315,7 +2347,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "maxLines": 1,
+                                    "maxLines": 2,
                                     "position": "bottom"
                                 },
                                 "pointVisibility": "auto",
@@ -2341,7 +2373,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "The 10 namespaces using the most CPU in each time bucket, in cores: their containers' CPU use (`container/cpu/core_usage_time` rate), summed across clusters. Steady growth may call for higher limits or more nodes.",
+                    "description": "The 10 namespaces using the most CPU in each time bucket, in cores: their containers' CPU use (`container/cpu/core_usage_time` rate), per cluster. Steady growth may call for higher limits or more nodes. The legend names each namespace with its cluster.",
                     "title": "Top 10 namespaces by CPU in use"
                 },
                 "gridData": {
@@ -2404,12 +2436,19 @@
                                                     "meta": {
                                                         "type": "string"
                                                     }
+                                                },
+                                                {
+                                                    "columnId": "line_0_breakdown_1",
+                                                    "fieldName": "cluster",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.gke.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL) | STATS mem_used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`)) BY namespace = COALESCE(resource.attributes.namespace_name, resource.attributes.namespace), resource.attributes.project_id, resource.attributes.cluster_name, resource.attributes.pod_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | STATS mem_used = SUM(mem_used) BY namespace, bucket | SORT bucket ASC, mem_used DESC, namespace ASC | LIMIT 10 BY bucket"
+                                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL) | STATS mem_used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`)) BY namespace = COALESCE(resource.attributes.namespace_name, resource.attributes.namespace), resource.attributes.project_id, cluster = resource.attributes.cluster_name, resource.attributes.pod_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | STATS mem_used = SUM(mem_used) BY namespace, cluster, bucket | SORT bucket ASC, mem_used DESC, namespace ASC, cluster ASC | LIMIT 10 BY bucket"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2425,7 +2464,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL) | STATS mem_used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`)) BY namespace = COALESCE(resource.attributes.namespace_name, resource.attributes.namespace), resource.attributes.project_id, resource.attributes.cluster_name, resource.attributes.pod_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | STATS mem_used = SUM(mem_used) BY namespace, bucket | SORT bucket ASC, mem_used DESC, namespace ASC | LIMIT 10 BY bucket"
+                                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-gcp.gke.otel-default | WHERE resource.attributes.gcp.resource_type == \"k8s_container\" AND @timestamp >= ?_tstart AND @timestamp <= ?_tend AND (attributes.memory_type == \"non-evictable\" OR attributes.memory_type IS NULL) | STATS mem_used = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/container/memory/used_bytes`)) BY namespace = COALESCE(resource.attributes.namespace_name, resource.attributes.namespace), resource.attributes.project_id, cluster = resource.attributes.cluster_name, resource.attributes.pod_name, resource.attributes.container_name, bucket = TBUCKET(75, ?_tstart, ?_tend) | STATS mem_used = SUM(mem_used) BY namespace, cluster, bucket | SORT bucket ASC, mem_used DESC, namespace ASC, cluster ASC | LIMIT 10 BY bucket"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2473,7 +2512,8 @@
                                         "layerType": "data",
                                         "seriesType": "line",
                                         "splitAccessors": [
-                                            "line_0_breakdown"
+                                            "line_0_breakdown",
+                                            "line_0_breakdown_1"
                                         ],
                                         "xAccessor": "line_0_x",
                                         "yConfig": [
@@ -2486,7 +2526,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "maxLines": 1,
+                                    "maxLines": 2,
                                     "position": "bottom"
                                 },
                                 "pointVisibility": "auto",
@@ -2512,7 +2552,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "The 10 namespaces using the most memory in each time bucket, in bytes: their containers' non-evictable memory (`container/memory/used_bytes`), summed across clusters. Steady growth can mean a memory leak and ends in out-of-memory kills once containers reach their limits.",
+                    "description": "The 10 namespaces using the most memory in each time bucket, in bytes: their containers' non-evictable memory (`container/memory/used_bytes`), per cluster. Steady growth can mean a memory leak and ends in out-of-memory kills once containers reach their limits. The legend names each namespace with its cluster.",
                     "title": "Top 10 namespaces by memory in use"
                 },
                 "gridData": {
@@ -4564,7 +4604,7 @@
         "title": "[GCP OTel] GKE At a glance"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-10-20T12:10:44.823Z",
+    "created_at": "2026-10-22T11:51:24.049Z",
     "id": "gcp_gke_otel-e870661f-f53e-4a1d-b614-827bb2a3bcf2",
     "references": [
         {
