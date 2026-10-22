@@ -27,7 +27,7 @@ The minimum **kibana.version** required is **9.5.0**, and the minimum Elastic Ag
 
 ## Setup
 
-### Elastic Managed deployment
+### Elastic Managed enabled integration
 
 Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
