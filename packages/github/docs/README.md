@@ -878,6 +878,7 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.assignee.site_admin |  | boolean |  |  |
 | github.issues.assignee.type |  | keyword |  |  |
 | github.issues.assignee.url |  | keyword |  |  |
+| github.issues.assignee.user_view_type |  | keyword |  |  |
 | github.issues.assignees | Information of users who were assigned the issue. | flattened |  |  |
 | github.issues.author_association |  | keyword |  |  |
 | github.issues.body |  | text |  |  |
@@ -890,6 +891,7 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.closed_by.site_admin |  | boolean |  |  |
 | github.issues.closed_by.type |  | keyword |  |  |
 | github.issues.closed_by.url |  | keyword |  |  |
+| github.issues.closed_by.user_view_type |  | keyword |  |  |
 | github.issues.comments |  | integer |  |  |
 | github.issues.comments_url |  | keyword |  |  |
 | github.issues.created_at | The time that the issue was created in ISO 8601 format - `YYYY-MM-DDTHH:MM:SSZ`. | date |  |  |
@@ -898,6 +900,11 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.html_url |  | keyword |  |  |
 | github.issues.id | The id of GitHub issue. | integer |  |  |
 | github.issues.is_pr |  | boolean |  |  |
+| github.issues.issue_dependencies_summary.blocked_by |  | integer |  |  |
+| github.issues.issue_dependencies_summary.blocking |  | integer |  |  |
+| github.issues.issue_dependencies_summary.total_blocked_by |  | integer |  |  |
+| github.issues.issue_dependencies_summary.total_blocking |  | integer |  |  |
+| github.issues.issue_field_values.value |  | keyword |  |  |
 | github.issues.labels.description |  | keyword |  |  |
 | github.issues.labels.integration |  | keyword |  |  |
 | github.issues.labels.name |  | keyword |  |  |
@@ -906,6 +913,7 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.locked |  | boolean |  |  |
 | github.issues.node_id | The node_id of GitHub issue. | keyword |  |  |
 | github.issues.number |  | integer |  |  |
+| github.issues.pinned_comment.body |  | text |  |  |
 | github.issues.pull_request.diff_url |  | keyword |  |  |
 | github.issues.pull_request.html_url |  | keyword |  |  |
 | github.issues.pull_request.patch_url |  | keyword |  |  |
@@ -913,6 +921,9 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.repository_url | The repository containing the GitHub issue. | keyword |  |  |
 | github.issues.state |  | keyword |  |  |
 | github.issues.state_reason |  | keyword |  |  |
+| github.issues.sub_issues_summary.completed |  | integer |  |  |
+| github.issues.sub_issues_summary.percent_completed |  | integer |  |  |
+| github.issues.sub_issues_summary.total |  | integer |  |  |
 | github.issues.time_to_close.sec | The time taken to close an issue in seconds. | long | s | gauge |
 | github.issues.timeline_url |  | keyword |  |  |
 | github.issues.title |  | keyword |  |  |
@@ -926,6 +937,7 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.user.site_admin |  | boolean |  |  |
 | github.issues.user.type |  | keyword |  |  |
 | github.issues.user.url |  | keyword |  |  |
+| github.issues.user.user_view_type |  | keyword |  |  |
 | github.repository.description | The repository description. | text |  |  |
 | github.repository.fork | Whether the repository is a fork. | boolean |  |  |
 | github.repository.full_name | The full, globally unique, name of the repository. | keyword |  |  |
