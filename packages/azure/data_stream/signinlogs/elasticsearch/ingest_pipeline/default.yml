@@ -467,17 +467,6 @@ processors:
       field: azure.correlation_id
       copy_from: azure.correlation.id
       ignore_empty_value: true
-  - set:
-      tag: set-cloud_account_id_7a2f5d1c
-      field: cloud.account.id
-      copy_from: azure.tenant.id
-      ignore_empty_value: true
-      description: >-
-        Added for consistency with aadgraphactivitylogs and graphactivitylogs, which
-        already populate `cloud.account.id` from the tenant ID. Per OTel semconv
-        `cloud.account.id` means the Azure subscription, which these tenant-scoped
-        Entra ID logs do not carry; aligning that is deferred to the next major
-        version. Use `azure.tenant.id` for the tenant.
   - script:
       tag: script_drops_null_empty_values_recursively_a3eb5add
       description: Drops null/empty values recursively.

@@ -575,14 +575,14 @@ Every data stream in this integration emits a consistent set of Azure metadata f
 | Field | Type | Description | Available in |
 |---|---|---|---|
 | `cloud.provider` | keyword | Always `azure`. | All streams |
-| `cloud.account.id` | keyword | Azure subscription ID for ARM-scoped streams (activitylogs, platformlogs, springcloudlogs, application_gateway, firewall_logs, eventhub). Entra ID tenant ID for tenant-scoped streams (auditlogs, signinlogs, identity_protection, provisioning, graphactivitylogs, aadgraphactivitylogs). | All streams |
+| `cloud.account.id` | keyword | Azure subscription ID, parsed from the ARM resource ID. Not set by the tenant-scoped Entra ID streams (auditlogs, signinlogs, identity_protection, provisioning), which carry no subscription. graphactivitylogs and aadgraphactivitylogs set it to the tenant ID, as they did before 1.41.0; this will be corrected in a future major version. | ARM-scoped streams (activitylogs, platformlogs, springcloudlogs, application_gateway, firewall_logs, eventhub), graphactivitylogs, aadgraphactivitylogs |
 | `cloud.resource_id` | keyword | Fully-qualified Azure Resource Manager (ARM) resource ID, for example `/subscriptions/{id}/resourceGroups/{rg}/providers/...`. | All streams that receive an ARM resource path |
 | `cloud.region` | keyword | Azure region, taken from the envelope `location` field (`Region` for platformlogs, springcloudlogs and some eventhub payloads). | activitylogs and eventhub (newly populated), plus graphactivitylogs, aadgraphactivitylogs, platformlogs and springcloudlogs (unchanged) |
 | `azure.subscription.id` | keyword | Azure subscription ID parsed from the ARM resource ID. | ARM-scoped streams only |
 | `azure.tenant.id` | keyword | Azure tenant (directory) ID. | Entra ID streams (auditlogs, signinlogs, identity_protection, provisioning, graphactivitylogs, aadgraphactivitylogs), activitylogs, platformlogs, springcloudlogs, application_gateway, firewall_logs, eventhub |
 | `azure.correlation.id` | keyword | Correlation ID for grouping related operations. | All streams |
 | `azure.resource_group.name` | keyword | Azure resource group name parsed from the ARM resource ID. | Full ARM streams |
-| `azure.resource_provider.namespace` | keyword | Azure resource provider namespace, for example `Microsoft.EventHub/namespaces`. | All streams |
+| `azure.resource_provider.namespace` | keyword | Azure resource provider namespace without the resource type, for example `Microsoft.EventHub`. The legacy `azure.resource.provider` keeps its previous value, which includes the resource type (for example `Microsoft.EventHub/namespaces`). | All streams |
 
 ### Legacy field names
 
@@ -610,6 +610,7 @@ A legacy name is only populated in the data streams that populated it before thi
 After the switch:
 
 - Queries, aggregations, ES|QL, Lens visualizations, dashboards, and detection rules that use a legacy name keep working, because Elasticsearch resolves the alias.
+- `azure.resource.provider` returns the namespace only (for example `Microsoft.KeyVault` instead of `Microsoft.KeyVault/vaults`). Queries that match the full provider/type value must change.
 - The legacy names are no longer in `_source`. Custom ingest pipelines (for example a Painless script or processor that reads `ctx.azure.correlation_id`), and anything else that reads the raw document, must use the semconv name.
 
 Move any custom ingest pipelines, `_source` consumers, and new queries to the semconv names during the transition period.

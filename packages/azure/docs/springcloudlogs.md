@@ -106,7 +106,7 @@ An example event for `springcloudlogs` looks as following:
             "name": "TESTM"
         },
         "resource_provider": {
-            "namespace": "MICROSOFT.APPPLATFORM/SPRING"
+            "namespace": "MICROSOFT.APPPLATFORM"
         }
     },
     "cloud": {
@@ -165,7 +165,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.resource.id | [Deprecated] Legacy name for the ARM resource ID. Still populated. Planned to become an alias of `cloud.resource_id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `cloud.resource_id` instead. | keyword |
 | azure.resource.name | Resource name. | keyword |
 | azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
-| azure.resource.provider | [Deprecated] Legacy name for the resource provider namespace. Still populated. Planned to become an alias of `azure.resource_provider.namespace` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.resource_provider.namespace` instead. | keyword |
+| azure.resource.provider | [Deprecated] Legacy name for the resource provider namespace. Still populated. Unlike `azure.resource_provider.namespace`, it includes the resource type (for example `Microsoft.KeyVault/vaults`). Planned to become an alias of `azure.resource_provider.namespace` about six months after 1.41.0, after which it is no longer stored in `_source` and returns the namespace only. Use `azure.resource_provider.namespace` instead. | keyword |
 | azure.resource_group.name | Azure resource group name. | keyword |
 | azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
 | azure.springcloudlogs.TenantId | Tenant ID from the log envelope (capitalised variant), as sent by Azure. Also copied to `azure.tenant.id`. | keyword |

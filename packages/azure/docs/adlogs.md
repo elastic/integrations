@@ -147,9 +147,6 @@ An example event for `signinlogs` looks as following:
         "ip": "81.2.69.144"
     },
     "cloud": {
-        "account": {
-            "id": "8a4de8b5-095c-47d0-a96f-a75130c61d53"
-        },
         "provider": "azure",
         "resource_id": "/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam"
     },
@@ -240,7 +237,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.resource.id | [Deprecated] Legacy name for the ARM resource ID. Still populated. Planned to become an alias of `cloud.resource_id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `cloud.resource_id` instead. | keyword |
 | azure.resource.name | Resource name. | keyword |
 | azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
-| azure.resource.provider | [Deprecated] Legacy name for the resource provider namespace. Still populated. Planned to become an alias of `azure.resource_provider.namespace` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.resource_provider.namespace` instead. | keyword |
+| azure.resource.provider | [Deprecated] Legacy name for the resource provider namespace. Still populated. Unlike `azure.resource_provider.namespace`, it includes the resource type (for example `Microsoft.KeyVault/vaults`). Planned to become an alias of `azure.resource_provider.namespace` about six months after 1.41.0, after which it is no longer stored in `_source` and returns the namespace only. Use `azure.resource_provider.namespace` instead. | keyword |
 | azure.resource_group.name | Azure resource group name. | keyword |
 | azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
 | azure.signinlogs.caller_ip_address | The IP address of the client that made the request. | ip |
@@ -397,9 +394,6 @@ An example event for `identity_protection` looks as following:
         "correlation_id": "ce0ed07f9ccf5be15e4b97d2979af6569b1f67db87ddc9b88b5bb743ea091e47"
     },
     "cloud": {
-        "account": {
-            "id": "5611623b-9128-461e-9d7f-a0d9c270ead2"
-        },
         "provider": "azure",
         "resource_id": "/tenants/5611623b-9128-461e-9d7f-a0d9c270ead2/providers/microsoft.aadiam"
     },
@@ -492,7 +486,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.resource.id | [Deprecated] Legacy name for the ARM resource ID. Still populated. Planned to become an alias of `cloud.resource_id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `cloud.resource_id` instead. | keyword |
 | azure.resource.name | Resource name. | keyword |
 | azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
-| azure.resource.provider | [Deprecated] Legacy name for the resource provider namespace. Still populated. Planned to become an alias of `azure.resource_provider.namespace` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.resource_provider.namespace` instead. | keyword |
+| azure.resource.provider | [Deprecated] Legacy name for the resource provider namespace. Still populated. Unlike `azure.resource_provider.namespace`, it includes the resource type (for example `Microsoft.KeyVault/vaults`). Planned to become an alias of `azure.resource_provider.namespace` about six months after 1.41.0, after which it is no longer stored in `_source` and returns the namespace only. Use `azure.resource_provider.namespace` instead. | keyword |
 | azure.resource_group.name | Azure resource group name. | keyword |
 | azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
 | azure.subscription.id | Azure subscription ID. | keyword |
@@ -665,9 +659,6 @@ An example event for `provisioning` looks as following:
         "correlation_id": "54416401-eef2-461c-8de7-385dde2b3cba"
     },
     "cloud": {
-        "account": {
-            "id": "5611623b-9128-461e-9d7f-a0d9c270ead2"
-        },
         "provider": "azure",
         "resource_id": "/tenants/5611623b-9128-461e-9d7f-a0d9c270ead2/providers/Microsoft.aadiam"
     },
@@ -750,7 +741,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.resource.id | [Deprecated] Legacy name for the ARM resource ID. Still populated. Planned to become an alias of `cloud.resource_id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `cloud.resource_id` instead. | keyword |
 | azure.resource.name | Resource name. | keyword |
 | azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
-| azure.resource.provider | [Deprecated] Legacy name for the resource provider namespace. Still populated. Planned to become an alias of `azure.resource_provider.namespace` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.resource_provider.namespace` instead. | keyword |
+| azure.resource.provider | [Deprecated] Legacy name for the resource provider namespace. Still populated. Unlike `azure.resource_provider.namespace`, it includes the resource type (for example `Microsoft.KeyVault/vaults`). Planned to become an alias of `azure.resource_provider.namespace` about six months after 1.41.0, after which it is no longer stored in `_source` and returns the namespace only. Use `azure.resource_provider.namespace` instead. | keyword |
 | azure.resource_group.name | Azure resource group name. | keyword |
 | azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
 | azure.subscription.id | Azure subscription ID. | keyword |
@@ -813,9 +804,6 @@ An example event for `auditlogs` looks as following:
     "azure.tenant.id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
     "azure.tenant_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
     "cloud": {
-        "account": {
-            "id": "8a4de8b5-095c-47d0-a96f-a75130c61d53"
-        },
         "provider": "azure",
         "resource_id": "/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam"
     },
@@ -894,7 +882,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.resource.id | [Deprecated] Legacy name for the ARM resource ID. Still populated. Planned to become an alias of `cloud.resource_id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `cloud.resource_id` instead. | keyword |
 | azure.resource.name | Resource name. | keyword |
 | azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
-| azure.resource.provider | [Deprecated] Legacy name for the resource provider namespace. Still populated. Planned to become an alias of `azure.resource_provider.namespace` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.resource_provider.namespace` instead. | keyword |
+| azure.resource.provider | [Deprecated] Legacy name for the resource provider namespace. Still populated. Unlike `azure.resource_provider.namespace`, it includes the resource type (for example `Microsoft.KeyVault/vaults`). Planned to become an alias of `azure.resource_provider.namespace` about six months after 1.41.0, after which it is no longer stored in `_source` and returns the namespace only. Use `azure.resource_provider.namespace` instead. | keyword |
 | azure.resource_group.name | Azure resource group name. | keyword |
 | azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
 | azure.subscription.id | Azure subscription ID. | keyword |
