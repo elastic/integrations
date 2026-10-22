@@ -118,11 +118,6 @@ processors:
         - ISO8601
       ignore_failure: true
       if: ctx.polyswarm?.scan?.first_seen != null
-  - set:
-      tag: set_first_seen_fallback
-      field: threat.indicator.first_seen
-      copy_from: '@timestamp'
-      if: ctx.threat?.indicator?.type != null && ctx.threat.indicator.first_seen == null
   - date:
       tag: date_last_seen
       field: polyswarm.scan.last_seen
@@ -131,6 +126,22 @@ processors:
         - ISO8601
       ignore_failure: true
       if: ctx.polyswarm?.scan?.last_seen != null
+  - set:
+      description: >-
+        When the scan has no first_seen, fall back to last_seen so the sighting
+        interval never starts after it ends.
+      tag: set_first_seen_fallback_from_last_seen
+      field: threat.indicator.first_seen
+      copy_from: threat.indicator.last_seen
+      if: ctx.threat?.indicator?.type != null && ctx.threat.indicator.first_seen == null && ctx.threat.indicator.last_seen != null
+  - set:
+      description: >-
+        Fall back to the artifact timestamp only when neither sighting timestamp
+        is available.
+      tag: set_first_seen_fallback
+      field: threat.indicator.first_seen
+      copy_from: '@timestamp'
+      if: ctx.threat?.indicator?.type != null && ctx.threat.indicator.first_seen == null
   - date:
       tag: date_modified_at
       field: polyswarm.modified

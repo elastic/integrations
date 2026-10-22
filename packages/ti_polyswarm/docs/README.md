@@ -46,7 +46,7 @@ This integration is deployed using Elastic Agent. For an end-to-end overview of 
 2. Select **PolySwarm Threat Intelligence**, then click **Add PolySwarm Threat Intelligence**.
 3. Configure the following settings:
    - **URL**: PolySwarm API base URL, without a trailing slash. Default `https://api.polyswarm.network`. Change only if PolySwarm provides a different host.
-   - **API Key**: Your PolySwarm API key. Stored as a policy secret, masked in the UI, and redacted from agent debug output.
+   - **API Key**: Your PolySwarm API key. Stored as a policy secret, masked in the UI, and redacted from the CEL input's logged state.
    - **Interval**: How often to poll the API. Default `5m`. Supported units are `h`, `m`, and `s`.
    - **Query**: The server-side metadata query. Default `artifact.created:>now-1d AND scan.detections.malicious:>0`. Keep the `scan.detections.malicious:>0` clause so only artifacts with at least one malicious detection are ingested as indicators — removing it ingests benign artifacts as threat indicators. See [Tuning the query](#tuning-the-query).
    - **Community**: The PolySwarm community to search. Default `default`.
@@ -82,10 +82,20 @@ Useful refinements:
 
 Indicators are held in two tiers, following the same pattern as Elastic's other threat intelligence integrations:
 
-- **Source data stream** `logs-ti_polyswarm.scans-*`: every poll re-ingests the artifacts still inside the rolling query window, duplicates included. This re-assertion acts as a heartbeat proving an indicator is still current. The ILM policy `logs-ti_polyswarm.scans-default_policy` rolls the stream over daily (or at 50 GB primary shard size) and deletes backing indices after 5 days, so the raw stream cannot grow unbounded.
+- **Source data stream** `logs-ti_polyswarm.scans-*`: every poll re-ingests the artifacts still inside the rolling query window, duplicates included. This re-assertion acts as a heartbeat proving an indicator is still current. Retention bounds its growth — see [Source data stream retention](#source-data-stream-retention) below.
 - **Latest transform** `logs-ti_polyswarm_latest.scans`: keeps exactly one document per `threat.indicator.file.hash.sha256`, the most recent by `event.ingested`. Its retention policy deletes indicators whose last re-assertion is older than 48 hours — so once an artifact ages out of the query window, its IOC expires automatically.
 
 For indicator-match rules and dashboards, always query the deduplicated index `logs-ti_polyswarm_latest.scans` rather than the raw source stream.
+
+### Source data stream retention
+
+The package bounds the growth of the source data stream with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-ti_polyswarm.scans-*` | `logs-ti_polyswarm.scans-default_policy`: roll over after 1d or 50 GB primary shard size, delete 5d after rollover | delete 5d after rollover |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies, and the data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. Neither mechanism affects the transform's destination index, whose expiration is governed by the transform retention policy described above.
 
 Each document records the configured polling interval in `labels.interval` for expiration diagnostics.
 
@@ -95,7 +105,18 @@ Elastic's prebuilt threat intelligence rules already use this label — their in
 
 ### Keep the interval well below the expiration window
 
-Because expiration is driven by recency of re-assertion, a polling interval that approaches 48 hours can let still-current indicators drop out of the latest index between polls. The same window bounds your outage tolerance: if polling stops — agent down, network outage, revoked API key — the latest index drains and is empty within roughly 48 hours of the last successful poll, and indicator-match rules built on it silently stop matching. Alert on ingest freshness (for example, no new `event.ingested` on `logs-ti_polyswarm.scans-*` within a few hours) rather than relying on the active view to show the failure.
+Because expiration is driven by recency of re-assertion, a polling interval that approaches 48 hours can let still-current indicators drop out of the latest index between polls.
+
+### Expiration depends on continued ingestion
+
+The transform's retention policy is applied as part of a completed checkpoint, not on an independent timer. A checkpoint only completes when new source documents arrive. If polling stops — agent down, network outage, revoked or expired API key — no further checkpoints complete and **the indicators already in `logs-ti_polyswarm_latest.scans` are not expired. They stay in the index, and in any indicator-match rule reading it, until ingestion resumes.**
+
+This is the opposite of a quiet drain: the active view looks healthy while the intelligence behind it goes stale. Plan for it:
+
+- **Alert on ingest freshness.** Watch for an absence of new `event.ingested` values on `logs-ti_polyswarm.scans-*` over a few hours, or monitor the agent and the `logs-ti_polyswarm.latest_scans-default-<version>` transform directly. This is your only reliable outage signal — the deduplicated index will not show one.
+- **Add a freshness bound at query time** where staleness matters. Rules and dashboards reading the latest index can constrain `event.ingested` (for example, `event.ingested >= now-48h`) so an outage removes indicators from their scope regardless of whether the transform has run.
+
+Once ingestion resumes, the next completed checkpoint applies the retention policy and the backlog of expired indicators is removed in one pass.
 
 ## Applying the intel with an indicator-match rule
 
@@ -317,7 +338,7 @@ An example event for `scans` looks as following:
 
 ### Inputs used in this integration
 
-- [CEL input](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel): Polls the PolySwarm metadata search API, paging with the cursor returned in `offset` while `has_more` is `true`, and redacts the API key from agent debug output.
+- [CEL input](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel): Polls the PolySwarm metadata search API, paging with the cursor returned in `offset` while `has_more` is `true`, and redacts the API key from the CEL input's logged state. Note that redaction applies to the input's state, not to HTTP request traces: if request tracing is enabled for debugging, the trace files contain the API key in the `Authorization` header and must be handled as credentials.
 
 ### APIs used to collect data
 
