@@ -137,22 +137,20 @@ processors:
       value: false
       if: ctx.json?.hasTwoFactorEnabled == false
 
-  # user.entity.relationships.administers.service.* — teams where user is MAINTAINER,
-  # modelled as services (closest available relationship type in the ECS entity schema).
+  # user.entity.relationships.administers.entity.id — GitHub node ids of teams
+  # where the user is a MAINTAINER. The same id is entity.id on github.teams.
   - script:
-      tag: build_administers_service_ids
+      tag: build_administers_entity_ids
       description: >-
-        Collects GraphQL node IDs and display names of teams where the member is a
-        MAINTAINER into user.entity.relationships.administers.service.id and .service.name.
+        Collects GraphQL node IDs of teams where the member is a MAINTAINER into
+        user.entity.relationships.administers.entity.id.
       lang: painless
       if: ctx.json?.teams instanceof List && ctx.json.teams.size() != 0
       source: |-
         def adminIds = [];
-        def adminNames = [];
         for (def team : ctx.json.teams) {
-          if (team?.role == "MAINTAINER") {
+          if (team?.role == "MAINTAINER" && team?.id != null) {
             adminIds.add(team.id);
-            adminNames.add(team.name);
           }
         }
         if (!adminIds.isEmpty()) {
@@ -160,9 +158,8 @@ processors:
           ctx.user.entity = ctx.user.entity ?: [:];
           ctx.user.entity.relationships = ctx.user.entity.relationships ?: [:];
           ctx.user.entity.relationships.administers = ctx.user.entity.relationships.administers ?: [:];
-          ctx.user.entity.relationships.administers.service = ctx.user.entity.relationships.administers.service ?: [:];
-          ctx.user.entity.relationships.administers.service.id = adminIds;
-          ctx.user.entity.relationships.administers.service.name = adminNames;
+          ctx.user.entity.relationships.administers.entity = ctx.user.entity.relationships.administers.entity ?: [:];
+          ctx.user.entity.relationships.administers.entity.id = adminIds;
         }
 
   # Custom fields: github.members.role

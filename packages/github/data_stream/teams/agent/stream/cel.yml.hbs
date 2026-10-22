@@ -1,0 +1,105 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{api_url}}
+resource.headers:
+  Content-Type:
+    - application/json
+  Accept:
+    - application/vnd.github+json
+  X-GitHub-Api-Version:
+    - "2022-11-28"
+state:
+  access_token: {{access_token}}
+  owner: {{owner}}
+redact:
+  fields:
+    - access_token
+max_executions: 5000
+program: |-
+  // Full organization team snapshot. Page cursor lives in cursor.after and is
+  // cleared after the terminal page so the next interval collects the roster again.
+  state.with(
+    request("POST", state.url.trim_right("/") + "/graphql").with(
+      {
+        "Header": {
+          "Authorization": ["Bearer " + state.access_token],
+        },
+        "Body": {
+          "query": "query OrgTeams($org: String!, $teamCursor: String) { organization(login: $org) { teams(first: 20, after: $teamCursor, orderBy: { field: NAME, direction: ASC }) { pageInfo { hasNextPage endCursor } totalCount edges { node { id databaseId name slug combinedSlug privacy description parentTeam { id slug } } } } } rateLimit { cost remaining resetAt } }",
+          "variables": {
+            "org": state.owner,
+            "teamCursor": state.?cursor.after.orValue(
+              null
+            ),
+          },
+        }.encode_json(),
+      }
+    ).do_request().as(resp,
+      (resp.StatusCode == 200) ?
+        resp.Body.decode_json().as(body,
+          (body.?errors.orValue(null) != null || body.?data.organization.teams.orValue(null) == null) ?
+            {
+              "events": {
+                "error": {
+                  "code": "GraphQLError",
+                  "id": "graphql_error",
+                  "message": "POST /graphql (teams): " + ((body.?errors.orValue(null) != null) ? ((body.errors.size() > 0) ? body.errors[0].?message.orValue("GraphQL error") : "GraphQL error") : "missing organization.teams in response"),
+                },
+              },
+              "want_more": false,
+            }
+          :
+            body.data.organization.teams.edges.map(edge, {"message": edge.node.encode_json()}).as(events,
+              {
+                "events": body.data.organization.teams.pageInfo.hasNextPage ?
+                  events
+                : (size(events) > 0) ? dyn(events) : dyn([{"retry": true}]),
+                "cursor": body.data.organization.teams.pageInfo.hasNextPage ?
+                  {"after": body.data.organization.teams.pageInfo.endCursor}
+                :
+                  {},
+                "want_more": body.data.organization.teams.pageInfo.hasNextPage,
+              }
+            )
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": resp.Status,
+              "message": "POST /graphql (teams): " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
+            },
+          },
+          "want_more": false,
+        }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}

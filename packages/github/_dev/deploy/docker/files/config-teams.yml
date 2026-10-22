@@ -1,0 +1,231 @@
+rules:
+  # HTTP error path. Not used by the default system test (token is test-token).
+  - path: /graphql
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - 'Bearer invalid-token'
+    request_body: /.*query OrgTeams\(.*/
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"message":"Bad credentials","documentation_url":"https://docs.github.com/rest"}
+  # GraphQL error path (HTTP 200 with errors). Not used by the default system test.
+  - path: /graphql
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - 'Bearer test-token'
+    request_body: /.*query OrgTeams\(.*"org":"error-org".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": {"organization": null},
+            "errors": [
+              {"type": "NOT_FOUND", "message": "Could not resolve to an Organization with the login of 'error-org'."}
+            ]
+          }
+  # Terminal page. Round 1 and round 2 both end here (hasNextPage false, no teams).
+  - path: /graphql
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - 'Bearer test-token'
+    request_body: /.*query OrgTeams\(.*"teamCursor"\s*:\s*"cursor-teams-2".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": {
+              "organization": {
+                "teams": {
+                  "pageInfo": {"hasNextPage": false, "endCursor": "cursor-teams-2"},
+                  "totalCount": 3,
+                  "edges": []
+                }
+              },
+              "rateLimit": {"cost": 1, "remaining": 4997, "resetAt": "2026-10-22T12:00:00Z"}
+            }
+          }
+  # Page 2 (non-terminal): Platform Team. req_num 1 is round 1, req_num 2 is the
+  # interval cursor resume. Later matches are empty so the count can stabilize.
+  - path: /graphql
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - 'Bearer test-token'
+    request_body: /.*query OrgTeams\(.*"teamCursor"\s*:\s*"cursor-teams-1".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ if or (eq .req_num 1) (eq .req_num 2) }}
+          {
+            "data": {
+              "organization": {
+                "teams": {
+                  "pageInfo": {"hasNextPage": true, "endCursor": "cursor-teams-2"},
+                  "totalCount": 3,
+                  "edges": [
+                    {
+                      "node": {
+                        "id": "T_kgDOAAFFGG",
+                        "databaseId": 1003,
+                        "name": "Platform Team",
+                        "slug": "platform-team",
+                        "combinedSlug": "example-org/platform-team",
+                        "privacy": "VISIBLE",
+                        "description": null,
+                        "parentTeam": {"id": "T_kgDOAABBCC", "slug": "backend-team"}
+                      }
+                    }
+                  ]
+                }
+              },
+              "rateLimit": {"cost": 1, "remaining": 4998, "resetAt": "2026-10-22T12:00:00Z"}
+            }
+          }
+          {{ else }}
+          {
+            "data": {
+              "organization": {
+                "teams": {
+                  "pageInfo": {"hasNextPage": false, "endCursor": "cursor-teams-2"},
+                  "totalCount": 3,
+                  "edges": []
+                }
+              },
+              "rateLimit": {"cost": 1, "remaining": 4997, "resetAt": "2026-10-22T12:00:00Z"}
+            }
+          }
+          {{ end }}
+  # Page 1 (no cursor). req_num 1 is the first snapshot. req_num 2 is the second
+  # interval cycle after the page cursor is reset. Later cycles are empty.
+  - path: /graphql
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - 'Bearer test-token'
+    request_body: /.*query OrgTeams\(.*"teamCursor"\s*:\s*null.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ if or (eq .req_num 1) (eq .req_num 2) }}
+          {
+            "data": {
+              "organization": {
+                "teams": {
+                  "pageInfo": {"hasNextPage": true, "endCursor": "cursor-teams-1"},
+                  "totalCount": 3,
+                  "edges": [
+                    {
+                      "node": {
+                        "id": "T_kgDOAABBCC",
+                        "databaseId": 1001,
+                        "name": "Backend Team",
+                        "slug": "backend-team",
+                        "combinedSlug": "example-org/backend-team",
+                        "privacy": "VISIBLE",
+                        "description": "Backend services",
+                        "parentTeam": null
+                      }
+                    },
+                    {
+                      "node": {
+                        "id": "T_kgDOAADDEE",
+                        "databaseId": 1002,
+                        "name": "Frontend Team",
+                        "slug": "frontend-team",
+                        "combinedSlug": "example-org/frontend-team",
+                        "privacy": "SECRET",
+                        "description": null,
+                        "parentTeam": {"id": "T_kgDOAABBCC", "slug": "backend-team"}
+                      }
+                    }
+                  ]
+                }
+              },
+              "rateLimit": {"cost": 1, "remaining": 4999, "resetAt": "2026-10-22T12:00:00Z"}
+            }
+          }
+          {{ else }}
+          {
+            "data": {
+              "organization": {
+                "teams": {
+                  "pageInfo": {"hasNextPage": false, "endCursor": null},
+                  "totalCount": 3,
+                  "edges": []
+                }
+              },
+              "rateLimit": {"cost": 1, "remaining": 4997, "resetAt": "2026-10-22T12:00:00Z"}
+            }
+          }
+          {{ end }}
+  # Regression guard. Matches an OrgTeams request whose cursor is not null,
+  # cursor-teams-1, or cursor-teams-2 (cursor cleared or rewritten). The extra
+  # teams make assert.hit_count exceed 6.
+  - path: /graphql
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - 'Bearer test-token'
+    request_body: /.*query OrgTeams\(.*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": {
+              "organization": {
+                "teams": {
+                  "pageInfo": {"hasNextPage": false, "endCursor": "cursor-teams-regression"},
+                  "totalCount": 2,
+                  "edges": [
+                    {
+                      "node": {
+                        "id": "T_kgDOAAHHII",
+                        "databaseId": 1901,
+                        "name": "Regression Guard",
+                        "slug": "regression-guard",
+                        "combinedSlug": "example-org/regression-guard",
+                        "privacy": "VISIBLE",
+                        "description": "cursor regression guard",
+                        "parentTeam": null
+                      }
+                    },
+                    {
+                      "node": {
+                        "id": "T_kgDOAAJJKK",
+                        "databaseId": 1902,
+                        "name": "Regression Guard Two",
+                        "slug": "regression-guard-two",
+                        "combinedSlug": "example-org/regression-guard-two",
+                        "privacy": "SECRET",
+                        "description": null,
+                        "parentTeam": {"id": "T_kgDOAAHHII", "slug": "regression-guard"}
+                      }
+                    }
+                  ]
+                }
+              },
+              "rateLimit": {"cost": 1, "remaining": 4990, "resetAt": "2026-10-22T12:00:00Z"}
+            }
+          }
