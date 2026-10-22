@@ -140,11 +140,15 @@ POST _reindex
   "dest": {
     "index": "logs-island_browser.system_event-<namespace>",
     "op_type": "create"
+  },
+  "script": {
+    "lang": "painless",
+    "source": "ctx._source.data_stream.dataset = 'island_browser.system_event'; ctx._source.event.dataset = 'island_browser.system_event';"
   }
 }
 ```
 
-The destination's default ingest pipeline parses the events. Document IDs are derived from the original event, so running the reindex more than once skips documents that were already copied instead of creating duplicates. After checking the result, you can delete the old documents from `logs-island_browser.siem_event-<namespace>` with the delete by query API.
+The script sets the dataset fields to the **System Events** data stream, and the destination's default ingest pipeline parses the events. Document IDs are derived from the original event, so running the reindex more than once skips documents that were already copied instead of creating duplicates. After checking the result, you can delete the old documents from `logs-island_browser.siem_event-<namespace>` with the delete by query API.
 
 ### Validation
 
@@ -315,15 +319,12 @@ For more information on architectures that can be used for scaling this integrat
 | input.type | Type of Filebeat input. | keyword |
 | island_browser.system_event.category | Category of the system event, such as DeviceManagement, IPA, or UserManagement. | keyword |
 | island_browser.system_event.details | Additional event details. The keys depend on the event type. | flattened |
-| island_browser.system_event.id | Unique ID of the system event. | keyword |
 | island_browser.system_event.primary_entity_id | ID of the primary entity affected by the event. | keyword |
 | island_browser.system_event.primary_entity_name | Name of the primary entity affected by the event, such as a device, connector, application, or user. | keyword |
 | island_browser.system_event.severity | Severity of the system event, such as Info, Medium, or Critical. | keyword |
 | island_browser.system_event.source | Source of the SIEM event. Always SystemEvent. | keyword |
 | island_browser.system_event.sub_category | Sub-category of the system event, such as RETENTION, CONNECTORS, or HEALTHCHECK. | keyword |
 | island_browser.system_event.tenant_id | Island tenant ID. | keyword |
-| island_browser.system_event.timestamp | Time when the system event occurred. | date |
-| island_browser.system_event.type | Type of the system event, such as Connector Network Down. | keyword |
 | log.offset | Log offset. | long |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
@@ -784,22 +785,22 @@ An example event for `system_event` looks as following:
 {
     "@timestamp": "2025-09-13T20:22:32.129Z",
     "agent": {
-        "ephemeral_id": "fc983a17-d14e-4775-b93e-f382ab30f07c",
-        "id": "29b455c1-7bf3-403e-91a9-466746398412",
-        "name": "elastic-agent-66418",
+        "ephemeral_id": "ad4705cb-0cfc-4be4-aaef-4e662690afdb",
+        "id": "d303849d-8e60-4ed3-9526-c0975819430d",
+        "name": "elastic-agent-51402",
         "type": "filebeat",
         "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "island_browser.system_event",
-        "namespace": "61812",
+        "namespace": "34851",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "29b455c1-7bf3-403e-91a9-466746398412",
+        "id": "d303849d-8e60-4ed3-9526-c0975819430d",
         "snapshot": false,
         "version": "9.5.3"
     },
@@ -811,7 +812,7 @@ An example event for `system_event` looks as following:
         ],
         "dataset": "island_browser.system_event",
         "id": "4900fe0c-2c46-4577-b270-fafa804e2e52",
-        "ingested": "2026-10-22T09:10:00Z",
+        "ingested": "2026-10-22T10:43:00Z",
         "kind": "event",
         "original": "{\"tenant_id\":\"elastic-testing\",\"id\":\"4900fe0c-2c46-4577-b270-fafa804e2e52\",\"timestamp\":\"2025-09-13T20:22:32.129Z\",\"type\":\"Connector Network Down\",\"category\":\"IPA\",\"sub_category\":\"CONNECTORS\",\"severity\":\"Medium\",\"primary_entity_id\":\"e76f5871-824f-499a-bcf4-ef3cd945ca7b\",\"primary_entity_name\":\"connector-example-01\",\"details\":{\"hostname\":\"connector-01.example.com\",\"ip_address\":\"10.50.6.126\",\"network_name\":\"example-network\"},\"source\":\"SystemEvent\"}",
         "severity": 3,

@@ -42,7 +42,7 @@ processors:
   - date:
       field: json.timestamp
       tag: date_timestamp
-      target_field: island_browser.system_event.timestamp
+      target_field: '@timestamp'
       formats:
         - ISO8601
       if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
@@ -51,21 +51,11 @@ processors:
             tag: append_error_message_date_timestamp
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: '@timestamp'
-      tag: set_timestamp_from_system_event_timestamp
-      copy_from: island_browser.system_event.timestamp
-      ignore_empty_value: true
   - rename:
       field: json.id
-      tag: rename_id
-      target_field: island_browser.system_event.id
+      tag: rename_id_to_event_id
+      target_field: event.id
       ignore_missing: true
-  - set:
-      field: event.id
-      tag: set_event_id_from_system_event_id
-      copy_from: island_browser.system_event.id
-      ignore_empty_value: true
   - rename:
       field: json.tenant_id
       tag: rename_tenant_id
@@ -73,14 +63,9 @@ processors:
       ignore_missing: true
   - rename:
       field: json.type
-      tag: rename_type
-      target_field: island_browser.system_event.type
+      tag: rename_type_to_event_action
+      target_field: event.action
       ignore_missing: true
-  - set:
-      field: event.action
-      tag: set_event_action_from_system_event_type
-      copy_from: island_browser.system_event.type
-      ignore_empty_value: true
   - rename:
       field: json.category
       tag: rename_category
@@ -226,14 +211,6 @@ processors:
       value: '{{{island_browser.system_event.details.hostname}}}'
       allow_duplicates: false
       if: ctx.island_browser?.system_event?.details instanceof Map && ctx.island_browser.system_event.details.hostname instanceof String
-  - remove:
-      field:
-        - island_browser.system_event.id
-        - island_browser.system_event.timestamp
-        - island_browser.system_event.type
-      tag: remove_custom_duplicate_fields
-      ignore_missing: true
-      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field:
         - json
