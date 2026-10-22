@@ -38,14 +38,18 @@ program: |-
   // not used. While the input is still running with more pages to read
   // (want_more), the token is used whatever its age: the input keeps its state
   // while it waits for the next interval after reaching max_executions, and
-  // that wait can be longer than the TTL. Otherwise begin a new window at the
-  // last timestamp.
+  // that wait can be longer than the TTL. A token only fits the query it was
+  // issued for, so the cursor also holds the user key, application name and
+  // batch size, and a policy change to any of them ends the resume. Otherwise
+  // begin a new window at the last timestamp.
   state.?cursor.orValue({}).as(c,
     (
       (
-        has(c.page_token) && has(c.expires) && (
-          state.?want_more.orValue(false) || timestamp(c.expires) > now
-        )
+        has(c.page_token) && has(c.expires) && c.?query.orValue({}) == {
+          "user_key": state.user_key,
+          "application": state.application_name_for_url,
+          "batch_size": string(int(state.batch_size)),
+        } && (state.?want_more.orValue(false) || timestamp(c.expires) > now)
       ) ?
         {
           "start_time": c.start_time,
@@ -92,7 +96,9 @@ program: |-
               // interruption (such as a restart) resumes at the last published page
               // instead of reading the whole window again. After a restart the token
               // is ignored when it is older than page_token_ttl, in which case the
-              // window is read again from last_timestamp.
+              // window is read again from last_timestamp. The query the token was
+              // issued for is saved with it, so that it is not sent with a different
+              // user key, application name or batch size after a policy change.
               "cursor": has(body.nextPageToken) ?
                 {
                   "last_timestamp": w.start_time,
@@ -100,6 +106,11 @@ program: |-
                   "end_time": w.end_time,
                   "page_token": body.nextPageToken,
                   "expires": (now + duration(state.page_token_ttl)).format(time_layout.RFC3339),
+                  "query": {
+                    "user_key": state.user_key,
+                    "application": state.application_name_for_url,
+                    "batch_size": string(int(state.batch_size)),
+                  },
                 }
               :
                 {"last_timestamp": w.end_time},
