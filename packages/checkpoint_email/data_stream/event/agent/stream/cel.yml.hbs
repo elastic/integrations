@@ -46,7 +46,7 @@ program: |
             "error": {
               "code": string(resp.StatusCode),
               "id": string(resp.Status),
-              "message": "POST:"+(
+              "message": "POST /auth/external: "+(
                 size(resp.Body) != 0 ?
                   string(resp.Body)
                 :
@@ -69,7 +69,13 @@ program: |
         "end_date": now.format(time_layout.RFC3339),
       })
   ).as(token,
-    has(token.events) ? token : // Exit early due to POST failure.
+    has(token.events) ? // Exit early due to POST failure.
+      state.with({
+        "events": token.events,
+        "want_more": false,
+        "scroll_id": null,
+      })
+    :
       state.with(
         post_request(
           state.url.trim_right("/") + "/app/hec-api/v1.0/event/query", "application/json", {
@@ -127,7 +133,7 @@ program: |
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "POST:"+(
+                "message": "POST /app/hec-api/v1.0/event/query: "+(
                   size(resp.Body) != 0 ?
                     string(resp.Body)
                   :
@@ -136,6 +142,7 @@ program: |
               },
             },
             "want_more": false,
+            "scroll_id": null,
             "expiry": now - duration("1h"),
           }
         :
@@ -144,7 +151,7 @@ program: |
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "POST:"+(
+                "message": "POST /app/hec-api/v1.0/event/query: "+(
                   size(resp.Body) != 0 ?
                     string(resp.Body)
                   :
@@ -153,6 +160,7 @@ program: |
               },
             },
             "want_more": false,
+            "scroll_id": null,
           }
         )
       )

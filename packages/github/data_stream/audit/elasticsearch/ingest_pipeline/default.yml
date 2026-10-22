@@ -450,6 +450,21 @@ processors:
       tag: convert_token_id_to_string_97fcfeab
       type: string
       ignore_missing: true
+  - split:
+      field: github.token_scopes
+      tag: split_token_scopes_c8e4b1a7
+      separator: ',\s*'
+      ignore_missing: true
+      if: ctx.github?.token_scopes instanceof String && ctx.github.token_scopes != ''
+  - foreach:
+      field: github.token_scopes
+      tag: foreach_trim_token_scopes_e2d91f06
+      ignore_missing: true
+      if: ctx.github?.token_scopes instanceof List
+      processor:
+        trim:
+          field: _ingest._value
+          tag: trim_token_scope_value_5a7c3b14
   - convert:
       field: github.audit_log_stream_id
       tag: convert_audit_log_stream_id_to_string_24ac67e0
@@ -476,6 +491,7 @@ processors:
         - _temp
         - github.created_at
         - github.@timestamp
+        - github.filtered_request_body.query
       ignore_missing: true
   - remove:
       field:

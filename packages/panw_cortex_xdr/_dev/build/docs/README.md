@@ -25,7 +25,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ## Compatibility
 
-This integration is compatible with Palo Alto Cortex XDR version **V3.13**. For the REST API, it has been tested with versions **v1** and **v2**.
+This integration is compatible with Palo Alto Cortex XDR **3.x through 3.19**. For the REST API, it has been tested with versions **v1** and **v2**.
 
 ## Setup
 
