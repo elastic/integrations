@@ -105,6 +105,18 @@ processors:
     - "^%{IP:microsoft.exchange.clientipaddress_external}%{SPACE}%{IP:microsoft.exchange.clientipaddress_internal}$"
     ignore_failure: true
     ignore_missing: true
+- set:
+    tag: set_source_ip_from_clientipaddress_external
+    field: source.ip
+    copy_from: microsoft.exchange.clientipaddress_external
+    ignore_empty_value: true
+    if: ctx.microsoft?.exchange?.clientipaddress_external != null
+- set:
+    tag: set_source_ip_from_clientipaddress
+    field: source.ip
+    copy_from: microsoft.exchange.clientipaddress
+    ignore_empty_value: true
+    if: ctx.source?.ip == null && ctx.microsoft?.exchange?.clientipaddress != null && ctx.microsoft.exchange.clientipaddress != ''
 - split:
     field: microsoft.exchange.clientipaddress
     separator: "  "
@@ -279,6 +291,41 @@ processors:
     field: event.ingested
     copy_from: _ingest.timestamp
     ignore_failure: true
+- append:
+    tag: append_clientipaddress_to_related
+    field: related.ip
+    value: '{{{source.ip}}}'
+    allow_duplicates: false
+    if: ctx.source?.ip != null && ctx.source.ip != ''
+- append:
+    tag: append_clientipaddress_internal_to_related
+    field: related.ip
+    value: '{{{microsoft.exchange.clientipaddress_internal}}}'
+    allow_duplicates: false
+    if: ctx.microsoft?.exchange?.clientipaddress_internal != null && ctx.microsoft.exchange.clientipaddress_internal != ''
+- foreach:
+    field: host.ip
+    ignore_missing: true
+    if: ctx.host?.ip instanceof List
+    tag: foreach_host_ip_to_related_ip
+    processor:
+      append:
+        field: related.ip
+        value: '{{{_ingest._value}}}'
+        allow_duplicates: false
+        tag: append_host_ip_list_value_to_related_ip
+- append:
+    field: related.ip
+    value: '{{{host.ip}}}'
+    allow_duplicates: false
+    if: ctx.host?.ip != null && !(ctx.host.ip instanceof List) && ctx.host.ip != ''
+    tag: append_host_ip_to_related_ip
+- append:
+    tag: append_user_name_to_related
+    field: related.user
+    value: '{{{user.name}}}'
+    allow_duplicates: false
+    if: "ctx.user?.name != null && ctx.user.name != ''"
 on_failure:
   - set:
       field: event.kind
