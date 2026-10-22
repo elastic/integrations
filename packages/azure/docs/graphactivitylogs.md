@@ -239,7 +239,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.correlation.id | Correlation ID for grouping related operations. | keyword |
-| azure.correlation_id | Legacy flat name for the correlation ID. Populated only in data streams that set it before 1.41.0. Prefer `azure.correlation.id`. | keyword |
+| azure.correlation_id | [Deprecated] Legacy flat name for the correlation ID. Populated only in data streams that set it before 1.41.0. Planned to become an alias of `azure.correlation.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.correlation.id` instead. | keyword |
 | azure.graphactivitylogs.category | Azure Event Category. For example, Graph Activity Logs has value `MicrosoftGraphActivityLogs`. | keyword |
 | azure.graphactivitylogs.operation_name | Operation name. | keyword |
 | azure.graphactivitylogs.operation_version | The Graph API version of the event. | keyword |
@@ -267,17 +267,17 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.graphactivitylogs.properties.wids | Denotes the tenant-wide roles assigned to this user. | keyword |
 | azure.graphactivitylogs.result_signature | Result signature. | keyword |
 | azure.resource.authorization_rule | Authorization rule. | keyword |
-| azure.resource.group | Legacy name for the resource group, still populated. Prefer `azure.resource_group.name`. | keyword |
-| azure.resource.id | Legacy name for the ARM resource ID, still populated. Prefer `cloud.resource_id`. | keyword |
+| azure.resource.group | [Deprecated] Legacy name for the resource group. Still populated. Planned to become an alias of `azure.resource_group.name` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.resource_group.name` instead. | keyword |
+| azure.resource.id | [Deprecated] Legacy name for the ARM resource ID. Still populated. Planned to become an alias of `cloud.resource_id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `cloud.resource_id` instead. | keyword |
 | azure.resource.name | Resource name. | keyword |
 | azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
-| azure.resource.provider | Legacy name for the resource provider namespace, still populated. Prefer `azure.resource_provider.namespace`. | keyword |
+| azure.resource.provider | [Deprecated] Legacy name for the resource provider namespace. Still populated. Planned to become an alias of `azure.resource_provider.namespace` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.resource_provider.namespace` instead. | keyword |
 | azure.resource_group.name | Azure resource group name. | keyword |
 | azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
 | azure.subscription.id | Azure subscription ID. | keyword |
-| azure.subscription_id | Legacy flat name for the subscription ID, still populated. Prefer `azure.subscription.id`. | keyword |
+| azure.subscription_id | [Deprecated] Legacy flat name for the subscription ID. Still populated. Planned to become an alias of `azure.subscription.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.subscription.id` instead. | keyword |
 | azure.tenant.id | Azure tenant ID. | keyword |
-| azure.tenant_id | Legacy flat name for the tenant ID. Populated only in data streams that set it before 1.41.0. Prefer `azure.tenant.id`. | keyword |
+| azure.tenant_id | [Deprecated] Legacy flat name for the tenant ID. Populated only in data streams that set it before 1.41.0. Planned to become an alias of `azure.tenant.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.tenant.id` instead. | keyword |
 | client.geo.location | Longitude and latitude. | geo_point |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |

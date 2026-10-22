@@ -586,9 +586,11 @@ Every data stream in this integration emits a consistent set of Azure metadata f
 
 ### Legacy field names
 
-This release is **additive**: the semantic-convention field names above were added without removing or renaming anything. Every previously published field name is still a concrete field and is still populated with the same value, so existing queries, dashboards, saved searches, custom ingest pipelines, and `_source` consumers continue to work unchanged.
+Version 1.41.0 is **additive**: the semantic-convention field names above were added without removing or renaming anything. Every previously published field name is still a concrete field and is still populated with the same value, so existing queries, dashboards, saved searches, custom ingest pipelines, and `_source` consumers continue to work unchanged.
 
-| Legacy field (still populated) | Semconv equivalent |
+The legacy names below are **deprecated** as of 1.41.0.
+
+| Deprecated legacy field (still populated) | Semconv equivalent |
 |---|---|
 | `azure.resource.id` | `cloud.resource_id` |
 | `azure.resource.group` | `azure.resource_group.name` |
@@ -600,7 +602,17 @@ This release is **additive**: the semantic-convention field names above were add
 
 A legacy name is only populated in the data streams that populated it before this release. For example, `azure.correlation_id` is not added to eventhub, firewall_logs, application_gateway or aadgraphactivitylogs, which never had it.
 
-New integrations and queries should prefer the semconv names. The legacy names are retained for compatibility and might be removed in a future major version.
+#### Deprecation timeline
+
+1. **From 1.41.0, for about six months:** each legacy name is written as a real field next to its semconv name. Both names appear in `_source`. This adds some storage per document.
+2. **About six months after 1.41.0:** the legacy names stop being written. Each one becomes a `type: alias` field that points to its semconv name. A changelog entry will announce the exact release.
+
+After the switch:
+
+- Queries, aggregations, ES|QL, Lens visualizations, dashboards, and detection rules that use a legacy name keep working, because Elasticsearch resolves the alias.
+- The legacy names are no longer in `_source`. Custom ingest pipelines (for example a Painless script or processor that reads `ctx.azure.correlation_id`), and anything else that reads the raw document, must use the semconv name.
+
+Move any custom ingest pipelines, `_source` consumers, and new queries to the semconv names during the transition period.
 
 Three fields were declared in earlier releases but never actually populated by any pipeline. Because no document ever carried them, they are now `type: alias` fields rather than concrete ones, which keeps them queryable at no storage cost:
 
