@@ -23,6 +23,7 @@ The Palo Alto Network integration collects log messages of the following types:
 * [Threat](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/threat-log-fields.html)
 * [Traffic](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/traffic-log-fields.html)
 * [User-ID](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/user-id-log-fields.html)
+* [Audit](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/audit-log-fields)
 * [Authentication](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/authentication-log-fields)
 * [Config](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/config-log-fields)
 * [Correlated Events](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/correlated-events-log-fields)
@@ -440,7 +441,7 @@ For more information on architectures that can be used for scaling this integrat
 | panw.panos.remote_user.ip | IPv4 or IPv6 address of a remote user. | ip |
 | panw.panos.repeat_count | Number of sessions with same Source IP, Destination IP, Application, and Subtype seen within 5 seconds. | long |
 | panw.panos.response_time | The SSL response time of the selected gateway that is measured in milliseconds on the endpoint during tunnel setup. | long |
-| panw.panos.result | Result of the configuration action; values are Submitted, Succeeded, Failed, and Unauthorized. | keyword |
+| panw.panos.result | Result of the action; values are Submitted, Succeeded, Failed, and Unauthorized for configuration logs, and success, failed, and none for audit logs. | keyword |
 | panw.panos.root_certificate_status | The status of the root certificate, for example, trusted, untrusted, or uninspected. | keyword |
 | panw.panos.root_common_name.length | The length of the root common name. | long |
 | panw.panos.root_common_name.value | The name of the root certificate authority. | keyword |

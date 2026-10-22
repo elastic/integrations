@@ -1,0 +1,77 @@
+# A failed Sign-on poll must not drop state.initial_interval.
+#
+# The first evaluation still has initial_interval from the input config. The
+# program returns a new object on the HTTP error path and does not copy that
+# key forward. The next evaluation has no cursor, so it reads
+# state.initial_interval and fails with:
+#   failed eval: ERROR: no such key: initial_interval
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} workday-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# First poll reaches the API and indexes the HTTP error.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 3m ${DATA_STREAM_NAME}
+
+# Wait until the following interval evaluates the state returned by that poll.
+sleep 20s
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -size 20 -want 2 -timeout 2m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# The following evaluation must not fail because initial_interval was dropped.
+exec jq -r '[.hits.hits[]._source.error.message // empty] | flatten | .[]' got_docs.json
+! stdout 'no such key: initial_interval'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down workday-mock
+
+-- test_config.yaml --
+input: cel
+vars: ~
+data_stream:
+  vars:
+    url: http://workday-mock:8080/ccx/service/customreport2/tenant/report_owner/report_name?format=json
+    username: test_user
+    password: test_password
+    initial_interval: 24h
+    interval: 10s
+    preserve_original_event: true
+    enable_request_tracer: false
+-- workday-mock/docker-compose.yml --
+version: '2.3'
+services:
+  workday-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: workday-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- workday-mock/config.yml --
+rules:
+  - path: /ccx/service/customreport2/tenant/report_owner/report_name
+    methods: ['GET']
+    query_params:
+      format: ['json']
+      From_Moment: ['{From_Moment:.*}']
+      To_Moment: ['{To_Moment:.*}']
+    responses:
+      - status_code: 500
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"error":"unavailable"}
