@@ -94,12 +94,18 @@ processors:
         }
         ctx.host['mac'] = fixup(ctx.host?.mac);
 
-  - rename:
-      tag: rename_suricata_eve_src_ip_to_source_address_10be4995
-      field: suricata.eve.src_ip
-      target_field: source.address
-      ignore_missing: true
+  - set:
+      tag: set_source_address_from_suricata_eve_src_ip_10be4995
+      field: source.address
+      copy_from: suricata.eve.src_ip
       if: ctx.source?.address == null
+      ignore_empty_value: true
+      ignore_failure: true
+  - convert:
+      tag: convert_suricata_eve_src_ip_5a236e8c
+      field: suricata.eve.src_ip
+      type: ip
+      ignore_failure: true
   - convert:
       tag: convert_source_address_to_source_ip_0a89ba51
       field: source.address
@@ -785,7 +791,6 @@ processors:
         - suricata.eve.http.http_user_agent
         - suricata.eve.timestamp
         - suricata.eve.src_port
-        - suricata.eve.src_ip
         - suricata.eve.dest_port
         - dns.question.domain
         - _tmp_
