@@ -92,7 +92,7 @@ up() {
     kbn POST '/api/fleet/agent_policies?sys_monitoring=false' "$(jq -n \
       --arg id "$policy_id" --arg n "$POLICY_NAME" --argjson pin "$pin" '{
       id: $id, name: $n, namespace: "default",
-      description: "PROTOTYPE: integration group demo (packages/nginx_group/_dev/shared/demo)",
+      description: "PROTOTYPE: Nginx group demo (packages/nginx/_dev/shared/demo)",
       monitoring_enabled: []} + $pin')" >/dev/null
   else
     read -r policy_id namespace <<<"$found"
