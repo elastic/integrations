@@ -1,5 +1,7 @@
 # NGINX OpenTelemetry Input
 
+> **Deprecated:** use the Nginx (OpenTelemetry) integration (`nginx_otel`) instead. It has the same data streams and settings, with the receiver configuration built in.
+
 ## Overview
 This input package enables collection of telemetry data from NGINX web servers through OpenTelemetry protocols using the [nginxreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/nginxreceiver#nginx-receiver).
 
