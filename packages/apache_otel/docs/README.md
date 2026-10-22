@@ -1,8 +1,10 @@
-# Apache HTTP Server OpenTelemetry Assets
+# Apache HTTP Server (OpenTelemetry)
 
 Apache HTTP Server is a widely used open-source web server that delivers web content over HTTP. It supports modular functionality through dynamically loadable modules, including `mod_status` for runtime server performance monitoring.
 
-This package provides dashboards, alert rules, and SLO templates for monitoring Apache HTTP Server using data collected by the OpenTelemetry Collector's Apache receiver, covering request traffic, worker pool utilization, connection management, and system resource consumption.
+This integration collects Apache HTTP Server status metrics with the OpenTelemetry Collector's Apache receiver in Elastic Agent, and provides dashboards, alert rules, and SLO templates covering request traffic, worker pool utilization, connection management, and system resource consumption.
+
+Metrics go to `metrics-apachereceiver.otel-*`. This package replaces Apache HTTP Server (OpenTelemetry) input (`apache_input_otel`), with the same data stream and setting names.
 
 ## Compatibility
 
@@ -48,9 +50,13 @@ ExtendedStatus On
 curl http://localhost/server-status?auto
 ```
 
-### Configuration
+### With Elastic Agent
 
-Configure the OpenTelemetry Collector (EDOT Collector or upstream Collector) to scrape Apache metrics and export them to Elasticsearch.
+Add the Apache HTTP Server (OpenTelemetry) integration to an agent policy and set the server-status endpoint. Elastic Agent generates the collector configuration.
+
+### With your own collector
+
+Install this package without adding it to a policy to get the dashboard, alert rules, and SLO templates. Configure the OpenTelemetry Collector (EDOT Collector or upstream Collector) to scrape Apache metrics and export them to Elasticsearch.
 
 - `<APACHE_STATUS_ENDPOINT>`: Full URL to the Apache server-status endpoint (for example, `http://localhost:80/server-status?auto`)
 - `<ES_ENDPOINT>`: Elasticsearch endpoint (for example, `https://localhost:9200`)
