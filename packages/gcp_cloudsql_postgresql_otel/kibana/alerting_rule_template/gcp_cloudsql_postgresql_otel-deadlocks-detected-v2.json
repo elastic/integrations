@@ -28,9 +28,9 @@
       },
       "time_field": "@timestamp",
       "query": {
-        "base": "TS metrics-gcp.cloudsql_postgresql.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// PostgreSQL-only metric: no engine marker needed.\n// deadlock_count is a DELTA metric (deadlocks per 60 s sample): SUM(SUM_OVER_TIME)\n// gives an exact total across fragments. Never use RATE() on DELTA metrics.\n| STATS deadlocks = SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/postgresql/deadlock_count`))\n    BY database_id, attributes.database\n| RENAME attributes.database AS database",
+        "base": "TS metrics-gcp.cloudsql_postgresql.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// PostgreSQL-only metric: no engine marker needed.\n// deadlock_count is a DELTA metric (deadlocks per 60 s sample): SUM(SUM_OVER_TIME)\n// gives an exact total across fragments. Never use RATE() on DELTA metrics.\n| STATS deadlocks = SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/postgresql/deadlock_count`))\n    BY database_id, attributes.database",
         "breach": {
-          "segment": "// Alert threshold: deadlocks per database within the rule window.\n// Isolated deadlocks are resolved by PostgreSQL (one transaction is aborted);\n// a burst indicates conflicting lock ordering in application code.\n// Set to >= 1 to be notified of every deadlock.\nWHERE deadlocks >= 5\n| KEEP database_id, database, deadlocks\n| SORT deadlocks DESC\n| LIMIT 100"
+          "segment": "// Keep the source attribute name (no RENAME): alert grouping uses this column,\n// and some rule-creation paths map grouping back to the source field.\n// Alert threshold: deadlocks per database within the rule window.\n// Isolated deadlocks are resolved by PostgreSQL (one transaction is aborted);\n// a burst indicates conflicting lock ordering in application code.\n// Set to >= 1 to be notified of every deadlock.\nWHERE deadlocks >= 5\n| KEEP database_id, attributes.database, deadlocks\n| SORT deadlocks DESC\n| LIMIT 100"
         }
       },
       "state_transition": {
@@ -44,7 +44,7 @@
       "grouping": {
         "fields": [
           "database_id",
-          "database"
+          "attributes.database"
         ]
       },
       "artifacts": [
