@@ -1,7 +1,7 @@
 ---
 name: columnar-readiness
 description: Audits and migrates Elastic integration packages to the logsdb_columnar Elasticsearch index mode. Use for "columnar readiness", "logsdb_columnar", "migrate to columnar", "columnar audit", "index sorting for columnar", "is this package columnar-ready", or when asked why a package is blocked, what index sort a data stream should use, which fields need an inverted index, or what columnar `_source` does to transforms, detection rules and other `_source` consumers.
-compatibility: Designed for packages in elastic/integrations. Needs elastic-package built against package-spec >= 3.7.0 (it runs the columnar checks), Python 3.9+ with PyYAML for scripts/audit.py (`uv run` installs it), and for stack tests a Kibana with the Fleet columnar support.
+compatibility: Designed for packages in elastic/integrations. Needs elastic-package built against package-spec >= 3.8.0 (it runs the columnar checks), Python 3.9+ with PyYAML for scripts/audit.py (`uv run` installs it), and for stack tests a Kibana with the Fleet columnar support.
 license: Apache-2.0
 metadata:
   origin: elastic/integrations
@@ -20,8 +20,8 @@ Last reviewed 2026-10-14; update these facts here when they change.
 
 - **Elasticsearch:** `logsdb_columnar` is tech preview since 9.5, GA targeted for 9.7.
   Keyword doc-value skippers and bloom filters are still to come, so benchmarks move.
-- **package-spec 3.7.0** is unreleased: elastic/package-spec#1250 adds
-  `elasticsearch.logsdb_columnar` and the columnar validator. Until it ships, build
+- **package-spec 3.8.0** is unreleased (3.7.0 shipped without it): elastic/package-spec#1250
+  adds `elasticsearch.logsdb_columnar` and the columnar validator. Until it ships, build
   elastic-package against that branch (`go mod edit -replace
   github.com/elastic/package-spec/v3=/path/to/package-spec`).
 - **Fleet** (elastic/kibana#292285, Kibana 9.6, unmerged) offers one toggle per
@@ -55,7 +55,7 @@ profile adds the default sort `host.name asc, @timestamp desc` (Elasticsearch ma
    the package's minimum stack to 9.6, so older stacks need a backport line. Tell the
    user before writing the change.
 
-## The setting (package-spec 3.7.0)
+## The setting (package-spec 3.8.0)
 
 ```yaml
 # manifest.yml (package)          # data_stream/<ds>/manifest.yml (exceptions only)
@@ -82,7 +82,7 @@ elasticsearch:                    elasticsearch:
 
 In the root `manifest.yml`:
 
-- `format_version: "3.7.0"`. Run `elastic-package check` right after this bump alone:
+- `format_version: "3.8.0"`. Run `elastic-package check` right after this bump alone:
   a multi-minor jump surfaces pre-existing findings (`SVR00008`/`SVR00009` `on_failure`
   handlers: fix; `SVR00006` processor tags: fix or exclude with a comment; `JSE00001`
   `message` → `event.original`: fix, prove with `test pipeline` without `-g`). Keep

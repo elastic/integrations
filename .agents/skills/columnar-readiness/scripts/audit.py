@@ -6,7 +6,7 @@
 """Columnar-readiness audit of one integration package: what the package-spec validator
 cannot see.
 
-`elastic-package check` (package-spec >= 3.7.0) reports the mappings and index sort
+`elastic-package check` (package-spec >= 3.8.0) reports the mappings and index sort
 settings Elasticsearch rejects in `logsdb_columnar`. This script covers the rest, per logs
 data stream: scope and effective readiness, `_source` consumers, objects inside `nested`
 fields, the index sort proposal, the detection rules and dashboards to
@@ -843,7 +843,7 @@ def markdown(r):
            f"- format_version `{r.get('format_version')}`, Kibana `{r.get('kibana_condition')}`, "
            f"package `logsdb_columnar`: `{r.get('logsdb_columnar')}`"
            + (f"; {r['ecs']}" if r.get("ecs") else ""),
-           "- Mapping errors and warnings: run `elastic-package check` (package-spec >= 3.7.0)."]
+           "- Mapping errors and warnings: run `elastic-package check` (package-spec >= 3.8.0)."]
     out += [f"- Out of scope: {r['out_of_scope_reason']}"] if r.get("out_of_scope_reason") else []
     out += [f"- Dashboard fields (benchmark): {', '.join(r['dashboard_fields'])}"] \
         if r.get("dashboard_fields") else []
