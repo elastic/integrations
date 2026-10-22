@@ -2,34 +2,34 @@
 description: Pipeline turning PolySwarm scan metadata into ECS threat indicators.
 processors:
   - set:
-      tag: set-ecs-version
+      tag: set_ecs_version
       field: ecs.version
       value: "9.5.0"
   - json:
-      tag: parse-message-json
+      tag: parse_message_json
       field: message
       target_field: polyswarm
       if: ctx.message != null
   - rename:
       description: Preserve the original vendor payload for audit.
-      tag: rename-message-to-event-original
+      tag: rename_message_to_event_original
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       description: Remove message once event.original is set.
-      tag: remove-message-after-original
+      tag: remove_message_after_original
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
   - rename:
-      tag: rename-conf-interval
+      tag: rename_conf_interval
       field: _conf.interval
       target_field: labels.interval
       ignore_missing: true
   - date:
-      tag: date-artifact-created
+      tag: date_artifact_created
       field: polyswarm.artifact.created
       target_field: '@timestamp'
       formats:
@@ -37,81 +37,81 @@ processors:
         - yyyy-MM-dd HH:mm:ss
       if: ctx.polyswarm?.artifact?.created != null
   - set:
-      tag: set-event-kind-enrichment
+      tag: set_event_kind_enrichment
       field: event.kind
       value: enrichment
   - set:
-      tag: set-event-kind-error
+      tag: set_event_kind_error
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
       description: Categorize indicators only; error documents are not threat indicators.
-      tag: append-event-category
+      tag: append_event_category
       field: event.category
       value: [threat]
       allow_duplicates: false
       if: ctx.error?.message == null
   - append:
       description: Categorize indicators only; error documents are not threat indicators.
-      tag: append-event-type
+      tag: append_event_type
       field: event.type
       value: [indicator]
       allow_duplicates: false
       if: ctx.error?.message == null
   - set:
-      tag: set-threat-feed-name
+      tag: set_threat_feed_name
       field: threat.feed.name
       value: PolySwarm
       if: ctx.error?.message == null
   - set:
-      tag: set-threat-indicator-provider
+      tag: set_threat_indicator_provider
       field: threat.indicator.provider
       value: PolySwarm
       if: ctx.error?.message == null
   - set:
-      tag: set-threat-indicator-type
+      tag: set_threat_indicator_type
       field: threat.indicator.type
       value: file
       if: ctx.polyswarm?.artifact?.sha256 != null
   - rename:
-      tag: rename-sha256
+      tag: rename_sha256
       field: polyswarm.artifact.sha256
       target_field: threat.indicator.file.hash.sha256
       ignore_missing: true
   - rename:
-      tag: rename-sha1
+      tag: rename_sha1
       field: polyswarm.artifact.sha1
       target_field: threat.indicator.file.hash.sha1
       ignore_missing: true
   - rename:
-      tag: rename-md5
+      tag: rename_md5
       field: polyswarm.artifact.md5
       target_field: threat.indicator.file.hash.md5
       ignore_missing: true
   - set:
-      tag: set-threat-indicator-name
+      tag: set_threat_indicator_name
       field: threat.indicator.name
       copy_from: threat.indicator.file.hash.sha256
       if: ctx.threat?.indicator?.file?.hash?.sha256 != null
   - set:
-      tag: set-file-size
+      tag: set_file_size
       field: threat.indicator.file.size
       copy_from: polyswarm.artifact.size
       if: ctx.polyswarm?.artifact?.size != null
   - set:
-      tag: set-file-extension
+      tag: set_file_extension
       field: threat.indicator.file.extension
       copy_from: polyswarm.extension
       if: ctx.polyswarm?.extension != null
   - set:
-      tag: set-file-mime-type
+      tag: set_file_mime_type
       field: threat.indicator.file.mime_type
       copy_from: polyswarm.scan.mimetype.mime
       ignore_failure: true
       if: ctx.polyswarm?.scan?.mimetype?.mime != null
   - date:
-      tag: date-first-seen
+      tag: date_first_seen
       field: polyswarm.scan.first_seen
       target_field: threat.indicator.first_seen
       formats:
@@ -119,12 +119,12 @@ processors:
       ignore_failure: true
       if: ctx.polyswarm?.scan?.first_seen != null
   - set:
-      tag: set-first-seen-fallback
+      tag: set_first_seen_fallback
       field: threat.indicator.first_seen
       copy_from: '@timestamp'
-      if: ctx.threat?.indicator?.type != null && ctx.threat?.indicator?.first_seen == null
+      if: ctx.threat?.indicator?.type != null && ctx.threat.indicator.first_seen == null
   - date:
-      tag: date-last-seen
+      tag: date_last_seen
       field: polyswarm.scan.last_seen
       target_field: threat.indicator.last_seen
       formats:
@@ -132,7 +132,7 @@ processors:
       ignore_failure: true
       if: ctx.polyswarm?.scan?.last_seen != null
   - date:
-      tag: date-modified-at
+      tag: date_modified_at
       field: polyswarm.modified
       target_field: threat.indicator.modified_at
       formats:
@@ -140,7 +140,7 @@ processors:
       ignore_failure: true
       if: ctx.polyswarm?.modified != null
   - script:
-      tag: script-map-polyscore
+      tag: script_map_polyscore
       lang: painless
       description: Map PolyScore (0-1) to ECS confidence and surface polyscore/malware family.
       if: ctx.polyswarm?.scan?.latest_scan?.polyscore != null
@@ -163,35 +163,29 @@ processors:
         if (ctx.threat.indicator == null) ctx.threat.indicator = [:];
         ctx.threat.indicator.confidence = conf;
   - set:
-      tag: set-malware-family
+      tag: set_malware_family
       field: polyswarm.malware_family
       copy_from: polyswarm.polyunite.malware_family
       ignore_failure: true
       if: ctx.polyswarm?.polyunite?.malware_family != null
   - append:
-      tag: append-related-hash-sha256
+      tag: append_related_hash_sha256
       field: related.hash
       value: '{{{threat.indicator.file.hash.sha256}}}'
       allow_duplicates: false
       if: ctx.threat?.indicator?.file?.hash?.sha256 != null
   - append:
-      tag: append-related-hash-sha1
+      tag: append_related_hash_sha1
       field: related.hash
       value: '{{{threat.indicator.file.hash.sha1}}}'
       allow_duplicates: false
       if: ctx.threat?.indicator?.file?.hash?.sha1 != null
   - append:
-      tag: append-related-hash-md5
+      tag: append_related_hash_md5
       field: related.hash
       value: '{{{threat.indicator.file.hash.md5}}}'
       allow_duplicates: false
       if: ctx.threat?.indicator?.file?.hash?.md5 != null
-  - remove:
-      description: Drop the raw payload unless the user asked to preserve it.
-      tag: remove-event-original
-      field: event.original
-      ignore_missing: true
-      if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
 on_failure:
   - append:
       field: error.message

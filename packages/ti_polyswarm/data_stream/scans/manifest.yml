@@ -48,6 +48,37 @@ streams:
         required: true
         show_user: false
         default: 100
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Ensure the username and password are URL encoded.
+        multi: false
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: SSL configuration options. See [documentation](https://www.elastic.co/docs/reference/beats/filebeat/configuration-ssl) for details.
+        multi: false
+        required: false
+        show_user: false
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: false
+        show_user: false
+        default: 30s
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - ti_polyswarm-scans
       - name: preserve_original_event
         type: bool
         title: Preserve original event
@@ -60,7 +91,7 @@ streams:
         type: bool
         title: Enable request tracer
         description: >-
-          When enabled, the agent logs the full HTTP request and response to `../../logs/cel/http-request-trace-*.ndjson`. Use for debugging only; the trace may contain sensitive response data.
+          When enabled, the agent logs the full HTTP request and response to `../../logs/cel/http-request-trace-*.ndjson`. Use for debugging only. The trace might contain sensitive response data.
         required: false
         show_user: false
         default: false

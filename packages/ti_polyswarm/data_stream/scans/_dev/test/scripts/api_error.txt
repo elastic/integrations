@@ -20,10 +20,14 @@ add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
 cp stdout got_docs.json
 
-# The upstream status code and body are preserved in error.message.
+# The upstream response body is preserved in error.message, and the status code
+# in error.code.
 exec jq -r '[.hits.hits[]._source.error.message // empty] | flatten | .[]' got_docs.json
-stdout 'failed with status 401'
+stdout 'GET /v3/search/metadata/query:'
 stdout 'API key is not authorized for metadata search'
+
+exec jq -r '.hits.hits[0]._source.error.code' got_docs.json
+stdout '^401$'
 
 # The document is classified as an error, not as an indicator.
 exec jq -r '.hits.hits[0]._source.event.kind' got_docs.json
@@ -40,7 +44,7 @@ stdout '^0$'
 exec jq '[.hits.hits[]._source | select(.event.type != null)] | length' got_docs.json
 stdout '^0$'
 
-# The failing request URL is recorded for troubleshooting.
+# The upstream status code is recorded for troubleshooting.
 exec jq -r '.hits.hits[0]._source.http.response.status_code' got_docs.json
 stdout '^401$'
 

@@ -6,6 +6,11 @@ data_stream:
     api_key: test-api-key
     community: default
     batch_size: 2
+    # Deliberately carries the embedded double quotes from the README's
+    # "Tuning the query" example. Without escape_string in the template this
+    # renders an unparseable stream config and the input never starts, so this
+    # value pins the escaping.
+    query: 'artifact.created:>now-1d AND scan.detections.malicious:>0 AND artifact.mimetype:"application/vnd.microsoft.portable-executable"'
 wait_for_data_timeout: 1m
 # batch_size 2 forces the offset cursor to be exercised: page 1 returns two
 # artifacts with has_more true, page 2 returns the last one with has_more false.

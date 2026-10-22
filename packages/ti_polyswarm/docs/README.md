@@ -8,13 +8,13 @@ Because the integration writes to `logs-ti_polyswarm.scans-*`, which matches Kib
 
 ### Compatibility
 
-This integration has been tested against PolySwarm CTI API `v3` (`GET /v3/search/metadata/query`) and Elastic Stack 8.19.0 and later.
+This integration has been tested against PolySwarm CTI API `v3` (`GET /v3/search/metadata/query`). For supported Elastic Stack versions, see the version constraints shown on the integration's page in Kibana.
 
 ### How it works
 
 The Elastic Agent uses the [CEL input](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel) to poll the PolySwarm metadata search API on a configurable interval. Each poll submits a server-side metadata query — by default `artifact.created:>now-1d AND scan.detections.malicious:>0`, a rolling one-day window restricted to artifacts at least one engine flagged as malicious — and pages through the results using the cursor PolySwarm returns in `offset`, continuing while `has_more` is `true`.
 
-Every returned artifact becomes one indicator document. The ingest pipeline maps the artifact hashes, file metadata, and scan timestamps to ECS, derives `threat.indicator.confidence` from the PolyScore, and records the raw vendor payload under the `polyswarm.*` field group. A non-200 response from the API is indexed as a single `event.kind: pipeline_error` document carrying `error.message`, `http.response.status_code`, and `url.full`, rather than as a false indicator.
+Every returned artifact becomes one indicator document. The ingest pipeline maps the artifact hashes, file metadata, and scan timestamps to ECS, derives `threat.indicator.confidence` from the PolyScore, and records the raw vendor payload under the `polyswarm.*` field group. A non-200 response from the API is indexed as a single `event.kind: pipeline_error` document carrying `error.code`, `error.message`, and `http.response.status_code`, rather than as a false indicator.
 
 ## What data does this integration collect?
 
@@ -32,9 +32,9 @@ The integration also installs a `latest_scans` transform that deduplicates the s
 
 ## What do I need to use this integration?
 
-- A self-managed or Elastic Cloud deployment running Elastic Stack 8.19.0 or later.
+- A self-managed or Elastic Cloud deployment. The supported Elastic Stack versions are listed on the integration's page in Kibana.
 - An Elastic Agent enrolled in Fleet. If you do not have one, see the [Elastic Agent installation instructions](https://www.elastic.co/docs/reference/fleet/install-elastic-agents). Only one Elastic Agent can be installed per host.
-- A PolySwarm account with CTI API access and an API key. Register at [polyswarm.network](https://polyswarm.network); the API key is available from your account settings. Metadata search is a paid capability — confirm your plan includes it before configuring the integration.
+- A PolySwarm account with CTI API access and an API key. Register at [polyswarm.network](https://polyswarm.network). The API key is available from your account settings. Metadata search is a paid capability — confirm your plan includes it before configuring the integration.
 
 ## How do I deploy this integration?
 
@@ -46,13 +46,15 @@ This integration is deployed using Elastic Agent. For an end-to-end overview of 
 2. Select **PolySwarm Threat Intelligence**, then click **Add PolySwarm Threat Intelligence**.
 3. Configure the following settings:
    - **URL**: PolySwarm API base URL, without a trailing slash. Default `https://api.polyswarm.network`. Change only if PolySwarm provides a different host.
-   - **API Key**: Your PolySwarm API key. Stored as a policy secret, masked in the UI, and redacted from CEL request-trace logs.
+   - **API Key**: Your PolySwarm API key. Stored as a policy secret, masked in the UI, and redacted from agent debug output.
    - **Interval**: How often to poll the API. Default `5m`. Supported units are `h`, `m`, and `s`.
    - **Query**: The server-side metadata query. Default `artifact.created:>now-1d AND scan.detections.malicious:>0`. Keep the `scan.detections.malicious:>0` clause so only artifacts with at least one malicious detection are ingested as indicators — removing it ingests benign artifacts as threat indicators. See [Tuning the query](#tuning-the-query).
    - **Community**: The PolySwarm community to search. Default `default`.
    - **Batch Size**: Number of results requested per API request. Default `100`. Available under **Advanced options**.
-   - **Preserve original event**: Retains the raw PolySwarm JSON for each artifact in `event.original`. Default off; enable when you need an audit trail of exactly what the API returned.
-   - **Enable request tracer**: Writes full HTTP request/response pairs to `../../logs/cel/http-request-trace-*.ndjson` on the agent host. Default off, available under **Advanced options**. Use for debugging only — the trace may contain sensitive response data.
+   - **Preserve original event**: Retains the raw PolySwarm JSON for each artifact in `event.original`. Default off. Enable it when you need an audit trail of exactly what the API returned.
+   - **Proxy URL** (optional): Route the connection through an HTTP proxy, as `http[s]://<user>:<password>@<host>:<port>`. Available under **Advanced options**.
+   - **SSL Configuration** (optional): Custom TLS settings, for example a corporate certificate authority. Available under **Advanced options**.
+   - **HTTP Client Timeout**: How long to wait before declaring the HTTP connection timed out. Default `30s`. Available under **Advanced options**.
 4. Select the agent policy to deploy to, then click **Save and continue**.
 
 ### Validation
@@ -87,7 +89,9 @@ For indicator-match rules and dashboards, always query the deduplicated index `l
 
 Each document records the configured polling interval in `labels.interval` for expiration diagnostics.
 
-Both tiers match the default `logs-ti_*` threat index pattern, so the Intelligence page may show source-stream duplicates alongside the deduplicated view. For a strictly deduplicated view, set `securitySolution:defaultThreatIndex` in Kibana's **Advanced Settings** to `logs-ti_polyswarm_latest.scans` (plus any other feeds you use).
+Both tiers match the default `logs-ti_*` threat index pattern, so a query spanning that pattern reaches the raw stream as well as the deduplicated view. To tell them apart, every document carries `labels.is_ioc_transform_source` as a `constant_keyword`: `"true"` on the raw source stream, `"false"` on the transform's latest index. Filter on `labels.is_ioc_transform_source: "false"` to get only the deduplicated, currently-asserted set.
+
+Elastic's prebuilt threat intelligence rules already use this label — their indicator query excludes `labels.is_ioc_transform_source: "true"` — so they read only the deduplicated tier with no configuration on your part.
 
 ### Keep the interval well below the expiration window
 
@@ -114,7 +118,11 @@ The first poll happens after one **Interval** (default `5m`), and the transform 
 
 ### Mapping failures
 
-Check the failure store: `GET .fs-logs-ti_polyswarm.scans-*/_count`. The expected value is `0`. If non-zero, query the failure store and read `error.message` to identify the offending field. PolySwarm's per-file analysis metadata (`polyswarm.exiftool`, `polyswarm.lief`, `polyswarm.pefile`, `polyswarm.scan`) is mapped as `flattened` precisely because its schema varies by file type.
+Documents that fail in the ingest pipeline are indexed with `event.kind: pipeline_error` and the processor error in `error.message`. Search `logs-ti_polyswarm.scans-*` for `event.kind: pipeline_error` and read `error.message` to identify the offending field. This works on every supported stack version.
+
+On deployments where the data stream failure store is enabled you can additionally check `GET .fs-logs-ti_polyswarm.scans-*/_count`, which should be `0`.
+
+PolySwarm's per-file analysis metadata (`polyswarm.exiftool`, `polyswarm.lief`, `polyswarm.pefile`, `polyswarm.scan`) is mapped as `flattened` precisely because its schema varies by file type.
 
 ### Transform shows zero documents
 
@@ -124,7 +132,7 @@ For PolySwarm-side issues (API entitlements, rate limits, query syntax), consult
 
 ## Performance and scaling
 
-Each poll pages through the entire result set for the configured query, so ingest volume is driven by the query window and the community's artifact rate, not by **Interval**. Shortening **Interval** refreshes indicators sooner but re-reads the same window more often, multiplying source-stream volume; the transform collapses the duplicates, so cluster sizing for the latest index should be based on the count of unique SHA-256 values in the window rather than raw event volume.
+Each poll pages through the entire result set for the configured query, so ingest volume is driven by the query window and the community's artifact rate, not by **Interval**. Shortening **Interval** refreshes indicators sooner but re-reads the same window more often, multiplying source-stream volume. The transform collapses the duplicates, so cluster sizing for the latest index should be based on the count of unique SHA-256 values in the window rather than raw event volume.
 
 If you need broader coverage, prefer a wider **Query** on a moderate interval over a very short interval. Running several policies with disjoint queries (for example, split by mimetype) spreads load across agents without re-reading the same artifacts.
 
@@ -156,6 +164,7 @@ If you need broader coverage, prefer a wider **Query** on a moderate interval ov
 | http.response.status_code | HTTP response status code. | long |
 | input.type | Type of Filebeat input. | keyword |
 | labels.interval | Configured polling interval, recorded for IOC expiration diagnostics. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or in the latest destination index. | constant_keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | polyswarm.artifact.created | Artifact creation time. | date |
 | polyswarm.artifact.id | PolySwarm artifact identifier. | keyword |
@@ -189,8 +198,6 @@ If you need broader coverage, prefer a wider **Query** on a moderate interval ov
 | threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
-| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
-| url.full.text | Multi-field of `url.full`. | match_only_text |
 
 
 An example event for `scans` looks as following:
@@ -199,22 +206,22 @@ An example event for `scans` looks as following:
 {
     "@timestamp": "2024-03-13T21:15:42.000Z",
     "agent": {
-        "ephemeral_id": "f923cdc3-9680-4f9f-b6da-8cbd433cd01f",
-        "id": "bd59379a-cb13-4136-9764-1d51a2a40be1",
-        "name": "elastic-agent-89919",
+        "ephemeral_id": "c5895363-857b-4bd7-8b2f-84e64ab71a9e",
+        "id": "71307fc9-1f95-4e8a-b863-df2f0de2df9e",
+        "name": "elastic-agent-71661",
         "type": "filebeat",
         "version": "9.4.3"
     },
     "data_stream": {
         "dataset": "ti_polyswarm.scans",
-        "namespace": "82601",
+        "namespace": "34907",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "bd59379a-cb13-4136-9764-1d51a2a40be1",
+        "id": "71307fc9-1f95-4e8a-b863-df2f0de2df9e",
         "snapshot": false,
         "version": "9.4.3"
     },
@@ -224,40 +231,19 @@ An example event for `scans` looks as following:
             "threat"
         ],
         "dataset": "ti_polyswarm.scans",
-        "ingested": "2026-09-15T19:48:42Z",
+        "ingested": "2026-10-21T20:21:47Z",
         "kind": "enrichment",
         "module": "ti_polyswarm",
         "type": [
             "indicator"
         ]
     },
-    "host": {
-        "architecture": "aarch64",
-        "containerized": false,
-        "hostname": "elastic-agent-89919",
-        "ip": [
-            "172.26.0.2",
-            "172.20.0.6"
-        ],
-        "mac": [
-            "12-B9-21-30-E7-D3",
-            "2A-71-79-74-01-AF"
-        ],
-        "name": "elastic-agent-89919",
-        "os": {
-            "family": "",
-            "kernel": "7.0.12-linuxkit",
-            "name": "Wolfi",
-            "platform": "wolfi",
-            "type": "linux",
-            "version": "20230201"
-        }
-    },
     "input": {
         "type": "cel"
     },
     "labels": {
-        "interval": "5m"
+        "interval": "5m",
+        "is_ioc_transform_source": "true"
     },
     "polyswarm": {
         "artifact": {
@@ -299,6 +285,10 @@ An example event for `scans` looks as following:
             "ffffffffffffffffffffffffffffffff"
         ]
     },
+    "tags": [
+        "forwarded",
+        "ti_polyswarm-scans"
+    ],
     "threat": {
         "feed": {
             "name": "PolySwarm"
@@ -327,7 +317,7 @@ An example event for `scans` looks as following:
 
 ### Inputs used in this integration
 
-- [CEL input](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel): Polls the PolySwarm metadata search API, paging with the cursor returned in `offset` while `has_more` is `true`, and redacts the API key from request-trace logs.
+- [CEL input](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel): Polls the PolySwarm metadata search API, paging with the cursor returned in `offset` while `has_more` is `true`, and redacts the API key from agent debug output.
 
 ### APIs used to collect data
 

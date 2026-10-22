@@ -1,14 +1,22 @@
 config_version: 2
 interval: {{interval}}
 resource.url: "{{url}}"
-{{#if enable_request_tracer}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
 resource.tracer:
+  enabled: {{enable_request_tracer}}
   filename: "../../logs/cel/http-request-trace-*.ndjson"
   maxbackups: 5
-{{/if}}
 state:
   api_key: "{{api_key}}"
-  query: "{{query}}"
+  query: {{escape_string query}}
   community: "{{community}}"
   batch_size: {{batch_size}}
   offset: ""
@@ -23,9 +31,8 @@ program: |
         "query": [state.query],
         "community": [state.community],
         "limit": [string(int(state.batch_size))],
-      }.with(
-        state.offset != "" ? {"offset": [string(state.offset)]} : {}
-      ).format_query()
+        ?"offset": state.offset != "" ? optional.of([state.offset]) : optional.none(),
+      }.format_query()
     ).with(
       {
         "Header": {
@@ -34,14 +41,14 @@ program: |
       }
     ).do_request().as(resp,
       (resp.StatusCode == 200) ?
-        bytes(resp.Body).decode_json().as(body,
-          (has(body.result) && body.result != null ? body.result : []).as(results,
-            (has(body.has_more) && body.has_more == true && has(body.offset) && string(body.offset) != "").as(more,
+        resp.Body.decode_json().as(body,
+          body.?result.orValue([]).as(results,
+            (body.?has_more.orValue(false) && body.?offset.orValue("") != "").as(more,
               {
                 "events": results.map(a,
                   {"message": a.encode_json()}
                 ),
-                "offset": more ? string(body.offset) : "",
+                "offset": more ? body.offset : "",
                 "want_more": more,
               }
             )
@@ -53,16 +60,15 @@ program: |
             {
               "error": {
                 "code": string(resp.StatusCode),
-                "id": "polyswarm-metadata-search-failed",
-                "message": "GET /v3/search/metadata/query failed with status " + string(resp.StatusCode) + ": " + string(resp.Body),
+                "id": string(resp.Status),
+                "message": "GET /v3/search/metadata/query: " + (
+                  size(resp.Body) != 0 ? string(resp.Body) : resp.Status
+                ),
               },
               "http": {
                 "response": {
                   "status_code": resp.StatusCode,
                 },
-              },
-              "url": {
-                "full": state.url + "/v3/search/metadata/query",
               },
             },
           ],
@@ -71,10 +77,13 @@ program: |
         }
     )
   )
-{{#if preserve_original_event}}
 tags:
+{{#if preserve_original_event}}
   - preserve_original_event
 {{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
 fields_under_root: true
 fields:
   _conf:
