@@ -44,7 +44,7 @@ Please make sure to use the given response formats.
 4. Enable the **Alerts V2** and/or **Events V2** data streams. Under **Alert export types** or **Event export types**, add the iterator types your token can read (for example `policy`, `dlp` for alerts or `application`, `audit` for events).
 5. Do not collect aggregate `/events/dataexport/events/alert` on the Events V2 stream while typed `/alerts/*` endpoints are enabled on Alerts V2 — the same alert can appear in both feeds with the same `_id`.
 
-The collector uses server-side iterators: the first request for each export type uses `operation=<epoch>` from **Initial Interval**, then `operation=next`. Any non-empty page triggers an immediate follow-up request in the same run; once a type returns an empty page it is caught up, and the agent waits for **Interval** before the next poll.
+The collector uses server-side iterators: the first request for each export type uses `operation=<epoch>` from **Initial Interval**, then `operation=next`. A type is paged again immediately while Netskope returns `wait_time: 0` or a full page (10,000 events); otherwise the collector moves on to the next type, and the agent waits for **Interval** before polling that type again.
 
 ### For receiving log from Netskope Log Streaming
 1. To configure Log streaming please refer to the [Log Streaming Configuration](https://docs.netskope.com/en/configuring-streams). Ensure that compression is set to GZIP when configuring the stream as other compression types are not supported.

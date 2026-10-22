@@ -41,6 +41,7 @@ program: |-
     :
       state
   ).as(state,
+    (state.?cursor.index.orValue("") == state.iterator_index ? state.?cursor.started_types.orValue([]) : []).as(started,
     state.with(
       (size(state.export_types) == 0) ?
         {
@@ -58,7 +59,7 @@ program: |-
           get_request(
             state.url.trim_right("/") + "/api/v2/events/dataexport/" + state.family + "/" + current_type + "?" + {
               "operation": [
-                (current_type in state.?cursor.started_types.orValue([])) ?
+                (current_type in started) ?
                   "next"
                 :
                   string(int(now - duration(state.initial_interval))),
@@ -82,10 +83,8 @@ program: |-
                       "want_more": more || size(state.worklist) > 1,
                       "worklist": more ? state.worklist : tail(state.worklist),
                       "cursor": {
-                        "started_types": (current_type in state.?cursor.started_types.orValue([])) ?
-                          state.?cursor.started_types.orValue([])
-                        :
-                          state.?cursor.started_types.orValue([]) + [current_type],
+                        "index": state.iterator_index,
+                        "started_types": (current_type in started) ? started : started + [current_type],
                       },
                     }
                   )
@@ -95,10 +94,8 @@ program: |-
                     "want_more": size(state.worklist) > 1,
                     "worklist": tail(state.worklist),
                     "cursor": {
-                      "started_types": (current_type in state.?cursor.started_types.orValue([])) ?
-                        state.?cursor.started_types.orValue([])
-                      :
-                        state.?cursor.started_types.orValue([]) + [current_type],
+                      "index": state.iterator_index,
+                      "started_types": (current_type in started) ? started : started + [current_type],
                     },
                   }
               )
@@ -117,7 +114,8 @@ program: |-
               "want_more": false,
               "worklist": state.worklist,
               "cursor": {
-                "started_types": state.?cursor.started_types.orValue([]),
+                "index": state.iterator_index,
+                "started_types": started,
               },
             }
           :
@@ -134,11 +132,13 @@ program: |-
               "want_more": size(state.worklist) > 1,
               "worklist": tail(state.worklist),
               "cursor": {
-                "started_types": state.?cursor.started_types.orValue([]),
+                "index": state.iterator_index,
+                "started_types": started,
               },
             }
           )
         )
+    )
     )
   )
 tags:
