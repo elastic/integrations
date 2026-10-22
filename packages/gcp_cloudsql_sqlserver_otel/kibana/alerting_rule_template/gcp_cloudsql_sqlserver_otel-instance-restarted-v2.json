@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_sqlserver_otel-instance-restarted-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL SQL Server OTel] Instance restarted",
+        "description": "Alerts when a SQL Server instance restarted within the last 30 minutes, detected as an `uptime` sample of 0 < uptime < 55 seconds (the first partial minute after a start). Unexpected restarts usually mean a crash or an out-of-memory condition; Google maintenance and owner-initiated restarts also fire. The SQL Server engine marker is evaluated over the 24-hour rule window. Each restart keeps the alert active for about 30 minutes, then it recovers. Grouped by database_id.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "sqlserver"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "24h"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_sqlserver.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// uptime is a DELTA metric: seconds of uptime within each 60 s sample.\n// Sum per minute so fragments of the same series are combined exactly.\n| STATS uptime_s = SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/uptime`)),\n        ss = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/sqlserver/memory/page_life_expectancy`))\n    BY `@timestamp` = TBUCKET(1 minute), database_id\n// SQL Server engine marker over the whole 24h rule window, so an instance in a\n// crash loop (or still warming up) stays in scope.\n| INLINE STATS ss_total = SUM(ss) BY database_id\n// Signal window: restarts seen in the last 30 minutes (>= 15 min for ingest delay).\n| WHERE ss_total > 0 AND `@timestamp` >= NOW() - 30 minutes\n// A restart shows as the first partial minute after start: 0 < uptime < 55 s.\n// Healthy samples read ~60 s; 0 means reporting but not running (downtime, covered\n// by the instance-down rule).\n| EVAL is_restart = CASE(uptime_s > 0 AND uptime_s < 55, 1, 0),\n       restart_ts = CASE(uptime_s > 0 AND uptime_s < 55, `@timestamp`, NULL)\n| STATS restarts = SUM(is_restart), last_restart = MAX(restart_ts) BY database_id",
+        "breach": {
+          "segment": "// Alert threshold: number of restarts in the signal window (default: any restart)\nWHERE restarts >= 1\n| KEEP database_id, restarts, last_restart\n| SORT restarts DESC\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-instance-restarted-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL for SQL Server instance restarted\n\nThe instance reported a partial-minute `uptime` sample in the last 30 minutes, which means the SQL Server process (or its VM) started during that minute.\n\n### Triage\n1. Check the Cloud SQL operations log for the instance around `last_restart`: maintenance, a configuration change (flags, tier), an owner restart or a failover all restart SQL Server.\n2. If no operation explains it, treat it as a crash: check the SQL Server error log in Cloud Logging, memory utilization and memory pressure signals before the restart, and disk utilization (a full disk can stop the engine).\n3. `restarts` > 1 within 30 minutes indicates a crash loop; escalate.\n4. After a restart the buffer pool is cold: page life expectancy restarts from 0 and read IOPS rise until the working set is cached. Expect higher latency for a while.\n\n### Tuning\n- To alert only on repeated restarts, raise the threshold to `restarts >= 2`.\n- Lengthen the signal window (e.g. `NOW() - 60 minutes`) to keep the alert active longer after each restart.\n\n### Behaviour notes\n- Healthy: every uptime sample in the last 30 minutes is ~60 s (or 0 while stopped). Breaching: at least one sample strictly between 0 and 55 s.\n- A sample of exactly 55 s or more counts as a full minute. Instances that stop reporting are not flagged here (see the instance-down rule)."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-instance-restarted-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_sqlserver_otel-46d11bef-3642-4b3f-b979-d748c687acd6"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-instance-restarted-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_sqlserver_otel-0953c329-69c9-4605-9c7c-b2c2d5b10846"
+          }
+        }
+      ]
+    }
+  }
+}
