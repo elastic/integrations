@@ -1335,7 +1335,6 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.windowId | UEBA detection engine uses this field to capture the time range for anomaly. Epoch timestamp in milliseconds | date |
 | netskope.alert_v2.workspace | Workspace name in case of Slack application configured for Enterprise. | keyword |
 | netskope.alert_v2.workspace_id | Workspace id in case of Slack application configured for Enterprise. | keyword |
-| netskope.alert_v2.zip_password | Password used to zip-compress the quarantined file. Required when quarantine is triggered by TSS detection. | keyword |
 
 
 An example event for `alerts_v2` looks as following:
@@ -2241,7 +2240,6 @@ An example event for `events` looks as following:
 | netskope.events_v2.workspace | Workspace name in case of Slack application configured for Enterprise. | keyword |
 | netskope.events_v2.workspace_id | Workspace id in case of Slack application configured for Enterprise. | keyword |
 | netskope.events_v2.zip_file_id | The file identifier of the saved forensic file. | keyword |
-| netskope.events_v2.zip_password | Password used to zip-compress the quarantined file. Required when quarantine is triggered by TSS detection. | keyword |
 
 
 An example event for `events_v2` looks as following:
