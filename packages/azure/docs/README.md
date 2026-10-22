@@ -586,7 +586,7 @@ Every data stream in this integration emits a consistent set of Azure metadata f
 
 ### Legacy field names
 
-Version 1.41.0 is **additive**: the semantic-convention field names above were added without removing or renaming anything. Every previously published field name is still a concrete field and is still populated with the same value, so existing queries, dashboards, saved searches, custom ingest pipelines, and `_source` consumers continue to work unchanged.
+Version 1.41.0 is **additive**: the semantic-convention field names above were added without removing or renaming anything. Every previously populated field name is still a concrete field and is still populated with the same value in the data streams that populated it before, so existing queries, dashboards, saved searches, custom ingest pipelines, and `_source` consumers continue to work unchanged. The only mapping change is to three fields that were never populated, listed at the end of this section, which are now aliases.
 
 The legacy names below are **deprecated** as of 1.41.0.
 
