@@ -1,10 +1,16 @@
-# NGINX OpenTelemetry Assets
+# Nginx (OpenTelemetry)
 
-The NGINX OpenTelemetry Assets package allows you to monitor [Nginx](https://nginx.org/), a high-performance web server, reverse proxy, and load balancer. NGINX is widely used for serving web content, proxying traffic, and load balancing across multiple servers.
+The Nginx (OpenTelemetry) integration collects metrics and logs from [Nginx](https://nginx.org/), a high-performance web server, reverse proxy, and load balancer, using the OpenTelemetry Collector in Elastic Agent. It also ships dashboards, alert rule templates, and SLO templates for that data.
 
-Use the NGINX OpenTelemetry Assets package to collect and analyze performance metrics and logs from your NGINX instances. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics and logs when troubleshooting performance issues.
+It has three data streams:
 
-For example, if you want to monitor the request rate or connection status of your NGINX server, you can use the [NGINX Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/nginxreceiver#nginx-receiver) to collect metrics such as `nginx.requests` or `nginx.connections_current`, and the [Filelog Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver) to collect access and error logs. The NGINX OpenTelemetry Assets package lets you visualize these in Kibana dashboards, set up alerts for high error rates, or troubleshoot by analyzing metric and log trends.
+- `metrics`: stub_status metrics from the `nginx` receiver, in `metrics-nginxreceiver.otel-*`
+- `access`: access logs from the `filelog` receiver, parsed into semantic convention attributes, in `logs-nginx.access.otel-*`
+- `error`: error logs from the `filelog` receiver, with multiline support, in `logs-nginx.error.otel-*`
+
+This package replaces Nginx OpenTelemetry Integration (`nginx_otel_integration`) and NGINX OpenTelemetry Input (`nginx_otel_input`). It uses the same data streams and setting names, so data continues in the same indices.
+
+For example, if you want to monitor the request rate or connection status of your NGINX server, you can use the [NGINX Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/nginxreceiver#nginx-receiver) to collect metrics such as `nginx.requests` or `nginx.connections_current`, and the [Filelog Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver) to collect access and error logs. This package lets you visualize these in Kibana dashboards, set up alerts for high error rates, or troubleshoot by analyzing metric and log trends.
 
 
 ## Requirements
@@ -30,6 +36,16 @@ server {
 
 
 ## Setup
+
+### With Elastic Agent
+
+1. Make sure the NGINX `stub_status` module is enabled and the status endpoint is reachable from the Elastic Agent.
+2. Make sure the NGINX access and error log files are readable by the Elastic Agent.
+3. Add the Nginx (OpenTelemetry) integration to an agent policy. Set the status endpoint and the log paths. Elastic Agent generates the collector configuration.
+
+### With your own collector
+
+If you run your own EDOT or upstream OpenTelemetry Collector, install this package without adding it to a policy to get the dashboards, alert rule templates, and SLO templates, and configure the collector as follows.
 
 1. Make sure the NGINX `stub_status` module is enabled and the status endpoint is accessible.
 
