@@ -24,7 +24,7 @@ func mustParseOwners(t *testing.T, content string) *Owners {
 
 func TestResolve(t *testing.T) {
 	const content = `
-/packages/aws @elastic/obs-infraobs-integrations
+/packages/aws @elastic/obs-signals-integrations-team
 /packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
 /packages/nested/foo @elastic/ecosystem
 `
@@ -39,7 +39,7 @@ func TestResolve(t *testing.T) {
 		{
 			name:     "explicit package root",
 			path:     "/packages/aws",
-			expected: []string{"@elastic/obs-infraobs-integrations"},
+			expected: []string{"@elastic/obs-signals-integrations-team"},
 			found:    true,
 		},
 		{
@@ -51,7 +51,7 @@ func TestResolve(t *testing.T) {
 		{
 			name:     "data stream without override falls back to package owner",
 			path:     "/packages/aws/data_stream/vpcflow",
-			expected: []string{"@elastic/obs-infraobs-integrations"},
+			expected: []string{"@elastic/obs-signals-integrations-team"},
 			found:    true,
 		},
 		{
@@ -80,9 +80,9 @@ func TestResolve(t *testing.T) {
 
 func TestEntriesUnder(t *testing.T) {
 	const content = `
-/packages/aws @elastic/obs-infraobs-integrations
+/packages/aws @elastic/obs-signals-integrations-team
 /packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
-/packages/aws/kibana @elastic/obs-infraobs-integrations
+/packages/aws/kibana @elastic/obs-signals-integrations-team
 /packages/awsome @elastic/unrelated-team
 `
 	o := mustParseOwners(t, content)
@@ -96,7 +96,7 @@ func TestEntriesUnder(t *testing.T) {
 
 func TestExplicitEntry(t *testing.T) {
 	const content = `
-/packages/aws @elastic/obs-infraobs-integrations
+/packages/aws @elastic/obs-signals-integrations-team
 /packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
 `
 	o := mustParseOwners(t, content)
@@ -287,94 +287,6 @@ func TestReadGithubOwners(t *testing.T) {
 			} else {
 				assert.Error(t, err)
 			}
-		})
-	}
-}
-
-func TestReturnPackageOwners(t *testing.T) {
-	cases := []struct {
-		title          string
-		codeownersPath string
-		packageName    string
-		datastream     string
-		expected       []string
-		expectedError  bool
-	}{
-		{
-			title:          "just package",
-			codeownersPath: "testdata/CODEOWNERS-owners-packages-datastreams",
-			packageName:    "aws",
-			datastream:     "",
-			expected:       []string{"@elastic/obs-infraobs-integrations", "@elastic/obs-ds-hosted-services", "@elastic/security-service-integrations"},
-			expectedError:  false,
-		},
-		{
-			title:          "package with trailing slash",
-			codeownersPath: "testdata/CODEOWNERS-owners-trailing-slash",
-			packageName:    "content",
-			datastream:     "",
-			expected:       []string{"@elastic/integrations"},
-			expectedError:  false,
-		},
-		{
-			title:          "data stream with trailing slash",
-			codeownersPath: "testdata/CODEOWNERS-owners-trailing-slash",
-			packageName:    "aws",
-			datastream:     "apigateway_logs",
-			expected:       []string{"@elastic/obs-infraobs-integrations"},
-			expectedError:  false,
-		},
-		{
-			title:          "nested package with trailing slash",
-			codeownersPath: "testdata/CODEOWNERS-owners-trailing-slash",
-			packageName:    "elastic_package_registry",
-			datastream:     "",
-			expected:       []string{"@elastic/integrations"},
-			expectedError:  false,
-		},
-		{
-			title:          "package and datastream",
-			codeownersPath: "testdata/CODEOWNERS-owners-packages-datastreams",
-			packageName:    "aws",
-			datastream:     "cloudtrail",
-			expected:       []string{"@elastic/obs-infraobs-integrations"},
-			expectedError:  false,
-		},
-		{
-			title:          "package and other datastream",
-			codeownersPath: "testdata/CODEOWNERS-owners-packages-datastreams",
-			packageName:    "aws",
-			datastream:     "cloudwatch_logs",
-			expected:       []string{"@elastic/obs-ds-hosted-services"},
-			expectedError:  false,
-		},
-		{
-			title:          "package not found",
-			codeownersPath: "testdata/CODEOWNERS-owners-packages-datastreams",
-			packageName:    "other",
-			datastream:     "",
-			expected:       []string{},
-			expectedError:  true,
-		},
-		{
-			title:          "package found but not data stream defined",
-			codeownersPath: "testdata/CODEOWNERS-owners-packages-datastreams",
-			packageName:    "aws",
-			datastream:     "other",
-			expected:       []string{"@elastic/obs-infraobs-integrations", "@elastic/obs-ds-hosted-services", "@elastic/security-service-integrations"},
-			expectedError:  false,
-		},
-	}
-
-	for _, c := range cases {
-		t.Run(c.title, func(t *testing.T) {
-			owners, err := PackageOwners(c.packageName, c.datastream, c.codeownersPath)
-			if c.expectedError {
-				assert.Error(t, err)
-				return
-			}
-			require.NoError(t, err)
-			assert.Equal(t, c.expected, owners)
 		})
 	}
 }

@@ -44,25 +44,33 @@ Destinations indices are aliased to `logs-ti_eset_latest.<feed name>`.
 | `logs-ti_eset.ransomware-*`         | logs-ti_eset_latest.dest_ransomware-*         | logs-ti_eset_latest.ransomware         |
 | `logs-ti_eset.url-*`                | logs-ti_eset_latest.dest_url-*                | logs-ti_eset_latest.url                |
 
-### ILM Policy
+### Data retention
 
-ILM policy is added to the source indices, so it doesn't lead to unbounded growth.
-Data in these source indices will be deleted after a certain number of days from ingested days:
+Threat indicators are re-collected across polling intervals, and the latest transform keeps the active, deduplicated view in its destination index. The source data streams therefore hold repeated copies of the same indicators. Indicators also expire from the latest view after 48 hours (`apt`: 365 days).
 
-|                             Index | Deleted after | Expired after |
-|----------------------------------:|:--------------|---------------|
-| `logs-ti_eset.androidinfostealer` | 7d            | 48h           |
-|     `logs-ti_eset.androidthreats` | 7d            | 48h           |
-|                `logs-ti_eset.apt` | 365d          | 365d          |
-|             `logs-ti_eset.botnet` | 7d            | 48h           |
-|                 `logs-ti_eset.cc` | 7d            | 48h           |
-|         `logs-ti_eset.cryptoscam` | 7d            | 48h           |
-|            `logs-ti_eset.domains` | 7d            | 48h           |
-|   `logs-ti_eset.emailattachments` | 7d            | 48h           |
-|              `logs-ti_eset.files` | 7d            | 48h           |
-|                 `logs-ti_eset.ip` | 7d            | 48h           |
-|         `logs-ti_eset.ransomware` | 7d            | 48h           |
-|                `logs-ti_eset.url` | 7d            | 48h           |
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-ti_eset.androidinfostealer-*` | `logs-ti_eset.androidinfostealer-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
+| `logs-ti_eset.androidthreats-*` | `logs-ti_eset.androidthreats-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
+| `logs-ti_eset.apt-*` | `logs-ti_eset.apt-default_policy`: roll over after 2d, delete 365d after rollover | delete 365d after rollover |
+| `logs-ti_eset.botnet-*` | `logs-ti_eset.botnet-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
+| `logs-ti_eset.cc-*` | `logs-ti_eset.cc-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
+| `logs-ti_eset.cryptoscam-*` | `logs-ti_eset.cryptoscam-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
+| `logs-ti_eset.domains-*` | `logs-ti_eset.domains-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
+| `logs-ti_eset.emailattachments-*` | `logs-ti_eset.emailattachments-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
+| `logs-ti_eset.files-*` | `logs-ti_eset.files-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
+| `logs-ti_eset.ip-*` | `logs-ti_eset.ip-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
+| `logs-ti_eset.ransomware-*` | `logs-ti_eset.ransomware-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
+| `logs-ti_eset.url-*` | `logs-ti_eset.url-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-ti_eset.androidinfostealer-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
 
 ## Requirements
 
@@ -292,6 +300,7 @@ An example event for `androidthreats` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | eset.id | The UID of the event object. | keyword |
 | eset.labels | Threat labels. | keyword |
+| eset.valid_from | Event start of validity. | date |
 | eset.valid_until | Event expiration date. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
@@ -335,6 +344,7 @@ An example event for `botnet` looks as following:
         "labels": [
             "malicious-activity"
         ],
+        "valid_from": "2023-10-18T02:05:09.000Z",
         "valid_until": "2023-10-20T02:05:09.000Z"
     },
     "event": {
@@ -396,6 +406,7 @@ An example event for `botnet` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | eset.id | The UID of the event object. | keyword |
 | eset.labels | Threat labels. | keyword |
+| eset.valid_from | Event start of validity. | date |
 | eset.valid_until | Event expiration date. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
@@ -439,6 +450,7 @@ An example event for `cc` looks as following:
         "labels": [
             "malicious-activity"
         ],
+        "valid_from": "2023-10-19T02:00:09.000Z",
         "valid_until": "2023-10-21T02:00:09.000Z"
     },
     "event": {
@@ -591,6 +603,7 @@ An example event for `cryptoscam` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | eset.id | The UID of the event object. | keyword |
 | eset.labels | Threat labels. | keyword |
+| eset.valid_from | Event start of validity. | date |
 | eset.valid_until | Event expiration date. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
@@ -634,6 +647,7 @@ An example event for `domains` looks as following:
         "labels": [
             "malicious-activity"
         ],
+        "valid_from": "2023-10-19T02:00:28.000Z",
         "valid_until": "2023-10-21T02:00:28.000Z"
     },
     "event": {
@@ -791,6 +805,7 @@ An example event for `emailattachments` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | eset.id | The UID of the event object. | keyword |
 | eset.labels | Threat labels. | keyword |
+| eset.valid_from | Event start of validity. | date |
 | eset.valid_until | Event expiration date. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
@@ -834,6 +849,7 @@ An example event for `files` looks as following:
         "labels": [
             "malicious-activity"
         ],
+        "valid_from": "2023-10-19T02:00:38.000Z",
         "valid_until": "2023-10-21T02:00:38.000Z"
     },
     "event": {
@@ -895,6 +911,7 @@ An example event for `files` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | eset.id | The UID of the event object. | keyword |
 | eset.labels | Threat labels. | keyword |
+| eset.valid_from | Event start of validity. | date |
 | eset.valid_until | Event expiration date. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
@@ -938,6 +955,7 @@ An example event for `ip` looks as following:
         "labels": [
             "malicious-activity"
         ],
+        "valid_from": "2023-10-19T02:20:06.000Z",
         "valid_until": "2023-10-21T02:20:06.000Z"
     },
     "event": {
@@ -1197,6 +1215,7 @@ An example event for `ransomware` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | eset.id | The UID of the event object. | keyword |
 | eset.labels | Threat labels. | keyword |
+| eset.valid_from | Event start of validity. | date |
 | eset.valid_until | Event expiration date. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
@@ -1240,6 +1259,7 @@ An example event for `url` looks as following:
         "labels": [
             "benign"
         ],
+        "valid_from": "2023-10-19T02:00:13.000Z",
         "valid_until": "2023-10-21T02:00:13.000Z"
     },
     "event": {
