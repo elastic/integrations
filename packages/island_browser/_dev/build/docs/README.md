@@ -14,7 +14,7 @@ The Island Browser integration is compatible with `v1` version of Island Browser
 
 This integration periodically queries the Island Browser API to retrieve details for devices, users, and compromised credentials, and to collect SIEM events.
 
-The **SIEM Events** data stream collects events through the Island SIEM integration. It supports three audit types: user audits, admin audits, and system audits.
+The **SIEM Events** data stream collects events through the Island SIEM integration. It supports three audit types: user audits, admin audits, and system audits. User audits are routed to the **Audit** data stream, admin audits to the **Admin Actions** data stream, and system audits to the **System Events** data stream.
 
 The separate **Audit** and **Admin Actions** data streams are deprecated. New deployments should use **SIEM Events** instead.
 
@@ -25,6 +25,7 @@ This integration collects log messages of the following types:
 - `SIEM Events`: Collects user audits, admin audits, and system audits through the Island SIEM integration.
 - `Admin Actions` (deprecated): Collects all admin actions from the Island Browser via [Admin Actions API endpoint](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter). Use **SIEM Events** instead.
 - `Audit` (deprecated): Collects all timeline audits from the Island Browser via [Audit API endpoint](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter). Use **SIEM Events** instead.
+- `System Events`: System audits (`SystemEvent` records), such as device management, user management, and Island Private Access connector and health-check events. This data stream is populated only by **SIEM Events**; it has no collector of its own.
 - `Compromised Credential`: Collects a list of all compromised credentials from the Island Browser via [Compromised Credential API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-compromised-credentials).
 - `Device`: Collects a list of all devices from the Island Browser via [Device API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
 - `User`: Collects all the users from the Island Browser via [User API endpoint](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
@@ -115,6 +116,40 @@ To collect user, admin, and system audits through the Island SIEM integration:
 1. Complete the [SIEM integration setup](#configure-the-siem-integration) in the Island Management Console.
 2. Enable **SIEM Events** in Fleet, set **URL** to `https://api.island.io`, and configure **API Key** and **Audit ID**.
 
+#### Reprocessing system audits collected before version 1.7.0
+
+Before version 1.7.0, `SystemEvent` records were stored in the `logs-island_browser.siem_event-*` data stream without their parsed content. They can be reprocessed into the **System Events** data stream only if **Preserve original event** was enabled for **SIEM Events** when they were collected, because the original event is the only copy of their content. Documents without `event.original` cannot be recovered.
+
+After upgrading, reprocess them with the reindex API. Replace `<namespace>` with your namespace:
+
+```
+POST _reindex
+{
+  "conflicts": "proceed",
+  "source": {
+    "index": "logs-island_browser.siem_event-<namespace>",
+    "query": {
+      "bool": {
+        "filter": [
+          { "term": { "routing.source": "SystemEvent" } },
+          { "exists": { "field": "event.original" } }
+        ]
+      }
+    }
+  },
+  "dest": {
+    "index": "logs-island_browser.system_event-<namespace>",
+    "op_type": "create"
+  },
+  "script": {
+    "lang": "painless",
+    "source": "ctx._source.data_stream.dataset = 'island_browser.system_event'; ctx._source.event.dataset = 'island_browser.system_event';"
+  }
+}
+```
+
+The script sets the dataset fields to the **System Events** data stream, and the destination's default ingest pipeline parses the events. Document IDs are derived from the original event, so running the reindex more than once skips documents that were already copied instead of creating duplicates. After checking the result, you can delete the old documents from `logs-island_browser.siem_event-<namespace>` with the delete by query API.
+
 ### Validation
 
 #### Dashboards populated
@@ -150,6 +185,10 @@ For more information on architectures that can be used for scaling this integrat
 
 {{fields "audit"}}
 
+#### System Events
+
+{{fields "system_event"}}
+
 #### Compromised Credential
 
 {{fields "compromised_credential"}}
@@ -171,6 +210,10 @@ For more information on architectures that can be used for scaling this integrat
 #### Audit
 
 {{event "audit"}}
+
+#### System Events
+
+{{event "system_event"}}
 
 #### Compromised Credential
 
@@ -197,6 +240,7 @@ This integration dataset uses the following APIs:
 - `SIEM Events`: Island SIEM API
 - `Admin Actions` (deprecated): [Island Browser API](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter). Use **SIEM Events** instead.
 - `Audit` (deprecated): [Island Browser API](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter). Use **SIEM Events** instead.
+- `System Events`: Island SIEM API, through **SIEM Events**.
 - `Compromised Credential`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-compromised-credentials).
 - `Device`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
 - `User`: [Island Browser API](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).

@@ -14,7 +14,7 @@ The Island Browser integration is compatible with `v1` version of Island Browser
 
 This integration periodically queries the Island Browser API to retrieve details for devices, users, and compromised credentials, and to collect SIEM events.
 
-The **SIEM Events** data stream collects events through the Island SIEM integration. It supports three audit types: user audits, admin audits, and system audits.
+The **SIEM Events** data stream collects events through the Island SIEM integration. It supports three audit types: user audits, admin audits, and system audits. User audits are routed to the **Audit** data stream, admin audits to the **Admin Actions** data stream, and system audits to the **System Events** data stream.
 
 The separate **Audit** and **Admin Actions** data streams are deprecated. New deployments should use **SIEM Events** instead.
 
@@ -25,6 +25,7 @@ This integration collects log messages of the following types:
 - `SIEM Events`: Collects user audits, admin audits, and system audits through the Island SIEM integration.
 - `Admin Actions` (deprecated): Collects all admin actions from the Island Browser via [Admin Actions API endpoint](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter). Use **SIEM Events** instead.
 - `Audit` (deprecated): Collects all timeline audits from the Island Browser via [Audit API endpoint](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter). Use **SIEM Events** instead.
+- `System Events`: System audits (`SystemEvent` records), such as device management, user management, and Island Private Access connector and health-check events. This data stream is populated only by **SIEM Events**; it has no collector of its own.
 - `Compromised Credential`: Collects a list of all compromised credentials from the Island Browser via [Compromised Credential API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-compromised-credentials).
 - `Device`: Collects a list of all devices from the Island Browser via [Device API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
 - `User`: Collects all the users from the Island Browser via [User API endpoint](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
@@ -114,6 +115,40 @@ To collect user, admin, and system audits through the Island SIEM integration:
 
 1. Complete the [SIEM integration setup](#configure-the-siem-integration) in the Island Management Console.
 2. Enable **SIEM Events** in Fleet, set **URL** to `https://api.island.io`, and configure **API Key** and **Audit ID**.
+
+#### Reprocessing system audits collected before version 1.7.0
+
+Before version 1.7.0, `SystemEvent` records were stored in the `logs-island_browser.siem_event-*` data stream without their parsed content. They can be reprocessed into the **System Events** data stream only if **Preserve original event** was enabled for **SIEM Events** when they were collected, because the original event is the only copy of their content. Documents without `event.original` cannot be recovered.
+
+After upgrading, reprocess them with the reindex API. Replace `<namespace>` with your namespace:
+
+```
+POST _reindex
+{
+  "conflicts": "proceed",
+  "source": {
+    "index": "logs-island_browser.siem_event-<namespace>",
+    "query": {
+      "bool": {
+        "filter": [
+          { "term": { "routing.source": "SystemEvent" } },
+          { "exists": { "field": "event.original" } }
+        ]
+      }
+    }
+  },
+  "dest": {
+    "index": "logs-island_browser.system_event-<namespace>",
+    "op_type": "create"
+  },
+  "script": {
+    "lang": "painless",
+    "source": "ctx._source.data_stream.dataset = 'island_browser.system_event'; ctx._source.event.dataset = 'island_browser.system_event';"
+  }
+}
+```
+
+The script sets the dataset fields to the **System Events** data stream, and the destination's default ingest pipeline parses the events. Document IDs are derived from the original event, so running the reindex more than once skips documents that were already copied instead of creating duplicates. After checking the result, you can delete the old documents from `logs-island_browser.siem_event-<namespace>` with the delete by query API.
 
 ### Validation
 
@@ -263,6 +298,33 @@ For more information on architectures that can be used for scaling this integrat
 | island_browser.audit.version |  | long |
 | island_browser.audit.website_top_level_url |  | keyword |
 | island_browser.audit.window_id |  | keyword |
+| log.offset | Log offset. | long |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| routing.source | SIEM event source used for routing. | keyword |
+
+
+#### System Events
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| island_browser.system_event.category | Category of the system event, such as DeviceManagement, IPA, or UserManagement. | keyword |
+| island_browser.system_event.details | Additional event details. The keys depend on the event type. | flattened |
+| island_browser.system_event.primary_entity_id | ID of the primary entity affected by the event. | keyword |
+| island_browser.system_event.primary_entity_name | Name of the primary entity affected by the event, such as a device, connector, application, or user. | keyword |
+| island_browser.system_event.severity | Severity of the system event, such as Info, Medium, or Critical. | keyword |
+| island_browser.system_event.source | Source of the SIEM event. Always SystemEvent. | keyword |
+| island_browser.system_event.sub_category | Sub-category of the system event, such as RETENTION, CONNECTORS, or HEALTHCHECK. | keyword |
+| island_browser.system_event.tenant_id | Island tenant ID. | keyword |
 | log.offset | Log offset. | long |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
@@ -715,6 +777,88 @@ An example event for `audit` looks as following:
 }
 ```
 
+#### System Events
+
+An example event for `system_event` looks as following:
+
+```json
+{
+    "@timestamp": "2025-09-13T20:22:32.129Z",
+    "agent": {
+        "ephemeral_id": "ad4705cb-0cfc-4be4-aaef-4e662690afdb",
+        "id": "d303849d-8e60-4ed3-9526-c0975819430d",
+        "name": "elastic-agent-51402",
+        "type": "filebeat",
+        "version": "9.5.3"
+    },
+    "data_stream": {
+        "dataset": "island_browser.system_event",
+        "namespace": "34851",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "d303849d-8e60-4ed3-9526-c0975819430d",
+        "snapshot": false,
+        "version": "9.5.3"
+    },
+    "event": {
+        "action": "Connector Network Down",
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "island_browser.system_event",
+        "id": "4900fe0c-2c46-4577-b270-fafa804e2e52",
+        "ingested": "2026-10-22T10:43:00Z",
+        "kind": "event",
+        "original": "{\"tenant_id\":\"elastic-testing\",\"id\":\"4900fe0c-2c46-4577-b270-fafa804e2e52\",\"timestamp\":\"2025-09-13T20:22:32.129Z\",\"type\":\"Connector Network Down\",\"category\":\"IPA\",\"sub_category\":\"CONNECTORS\",\"severity\":\"Medium\",\"primary_entity_id\":\"e76f5871-824f-499a-bcf4-ef3cd945ca7b\",\"primary_entity_name\":\"connector-example-01\",\"details\":{\"hostname\":\"connector-01.example.com\",\"ip_address\":\"10.50.6.126\",\"network_name\":\"example-network\"},\"source\":\"SystemEvent\"}",
+        "severity": 3,
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "island_browser": {
+        "system_event": {
+            "category": "IPA",
+            "details": {
+                "hostname": "connector-01.example.com",
+                "ip_address": "10.50.6.126",
+                "network_name": "example-network"
+            },
+            "primary_entity_id": "e76f5871-824f-499a-bcf4-ef3cd945ca7b",
+            "primary_entity_name": "connector-example-01",
+            "severity": "Medium",
+            "source": "SystemEvent",
+            "sub_category": "CONNECTORS",
+            "tenant_id": "elastic-testing"
+        }
+    },
+    "related": {
+        "hosts": [
+            "connector-example-01",
+            "connector-01.example.com"
+        ],
+        "ip": [
+            "10.50.6.126"
+        ]
+    },
+    "routing": {
+        "source": "SystemEvent"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "island_browser-siem_event"
+    ]
+}
+```
+
 #### Compromised Credential
 
 An example event for `compromised_credential` looks as following:
@@ -1080,6 +1224,7 @@ This integration dataset uses the following APIs:
 - `SIEM Events`: Island SIEM API
 - `Admin Actions` (deprecated): [Island Browser API](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter). Use **SIEM Events** instead.
 - `Audit` (deprecated): [Island Browser API](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter). Use **SIEM Events** instead.
+- `System Events`: Island SIEM API, through **SIEM Events**.
 - `Compromised Credential`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-compromised-credentials).
 - `Device`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
 - `User`: [Island Browser API](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
