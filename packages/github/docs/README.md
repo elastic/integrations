@@ -1111,7 +1111,7 @@ The previous destination index, `logs-github_latest.dest_issues-1`, is not delet
 | github.issues.locked |  | boolean |  |  |
 | github.issues.node_id | The node_id of GitHub issue. | keyword |  |  |
 | github.issues.number |  | integer |  |  |
-| github.issues.pinned_comment.body |  | text |  |  |
+| github.issues.pinned_comment.body |  | match_only_text |  |  |
 | github.issues.pull_request.diff_url |  | keyword |  |  |
 | github.issues.pull_request.html_url |  | keyword |  |  |
 | github.issues.pull_request.patch_url |  | keyword |  |  |
