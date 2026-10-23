@@ -237,9 +237,9 @@ processors:
       description: >-
         Parses protoPayload.resourceName, formatted as
         {group}/{version}/[namespaces/{namespace}/]{resource}[/{name}[/{subresource}]],
-        into the orchestrator fields.
+        into the orchestrator fields. Non-resource requests (methodName io.k8s.{verb}, e.g. readyz or API discovery paths) are skipped.
       lang: painless
-      if: ctx.kubernetes?.audit?.protoPayload?.resourceName instanceof String && ctx.kubernetes?.audit?.objectRef == null
+      if: ctx.kubernetes?.audit?.protoPayload?.resourceName instanceof String && ctx.kubernetes?.audit?.objectRef == null && !(ctx.kubernetes?.audit?.protoPayload?.methodName instanceof String && ctx.kubernetes.audit.protoPayload.methodName =~ /^io\.k8s\.[a-z]+$/)
       source: >-
         String[] p = ctx.kubernetes.audit.protoPayload.resourceName.splitOnToken('/');
         if (p.length < 3) {
