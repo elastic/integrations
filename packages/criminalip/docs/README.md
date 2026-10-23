@@ -249,7 +249,7 @@ After documents arrive, open the managed dashboard. Cortex panels query the resu
 
 ### Validate synthetic events with the packaged test dashboard
 
-Starting with 0.2.21, open **[Criminal IP] Firewall and TI Validation · Synthetic
+Starting with 0.1.0, open **[Criminal IP] Firewall and TI Validation · Synthetic
 Only**. This is a separate managed asset with a stable ID; it does not overwrite
 the production dashboard or existing user-created copies. All firewall summary,
 action, source/vendor, recent-event, alert-summary/trend/investigation panels and
