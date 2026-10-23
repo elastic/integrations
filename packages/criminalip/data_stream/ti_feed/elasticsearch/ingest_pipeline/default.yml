@@ -2,6 +2,38 @@
 description: Normalize TI Feed observation timestamps and honor original-event preservation.
 processors:
   - dot_expander:
+      tag: expand_feed_confidence
+      field: criminalip.ti_feed.confidence
+      if: "ctx.containsKey('criminalip.ti_feed.confidence')"
+  - convert:
+      tag: convert_feed_confidence
+      field: criminalip.ti_feed.confidence
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_invalid_feed_confidence
+            field: criminalip.ti_feed.confidence
+            ignore_missing: true
+        - append:
+            tag: flag_invalid_feed_confidence
+            field: error.message
+            value: Could not parse TI Feed confidence as a numeric value.
+  - script:
+      tag: normalize_feed_confidence
+      lang: painless
+      if: "ctx.criminalip?.ti_feed?.confidence != null"
+      source: >-
+        def value = ctx.criminalip.ti_feed.confidence;
+        def label = 'Not Specified';
+        if (value == 0) { label = 'None'; }
+        else if (value > 0 && value < 30) { label = 'Low'; }
+        else if (value >= 30 && value < 70) { label = 'Medium'; }
+        else if (value >= 70 && value <= 100) { label = 'High'; }
+        if (ctx.threat == null) { ctx.threat = [:]; }
+        if (ctx.threat.indicator == null) { ctx.threat.indicator = [:]; }
+        ctx.threat.indicator.confidence = label;
+  - dot_expander:
       tag: expand_feed_original
       field: event.original
       if: "ctx.containsKey('event.original')"

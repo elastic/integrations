@@ -123,10 +123,13 @@ Use `source.ip`, `destination.ip`, available ports and `network.transport` for c
 2. Enter a key with TI Feed access, the feed URL, and the interval. Defaults are `https://dl.criminalip.io/ti/v1/feed/outbound` and `5m`; confirm that they suit your subscription.
 3. Verify indicators in `logs-criminalip.ti_feed-*` with `threat.indicator.ip`.
    Observation times in `criminalip.ti_feed.first_seen` and `criminalip.ti_feed.last_seen` are normalized to ISO 8601. Feed timestamps without an offset are interpreted as UTC; confirm the source timezone when using a custom feed. Invalid observation dates are omitted and reported in `error.message` while retaining the IP indicator. Updating the package affects new ingestion; previously ignored date fields require separate reprocessing.
+   Numeric confidence is retained in `criminalip.ti_feed.confidence`. The ECS keyword `threat.indicator.confidence` uses the STIX 0–100 bands: 0 = None, greater than 0 and below 30 = Low, 30 to below 70 = Medium, and 70–100 = High. Out-of-range numeric values are retained with the label Not Specified; missing confidence is omitted. Existing indices that mapped ECS confidence as a number require a planned mapping migration/reindex; updating this package does not rewrite historical mappings.
 4. In **Security → Rules → Add Elastic rules**, install `Criminal IP Firewall Indicator Match`.
 5. Check collection and rule permissions, then enable the rule.
 
 The rule compares firewall `source.ip` or `destination.ip` with TI Feed `threat.indicator.ip`. It runs every minute, searches the previous six minutes of firewall events, and searches indicators within the previous 30 days.
+
+The feed is polled as a snapshot and unchanged indicators are currently republished each interval. At the default five-minute interval this can produce 288 copies per active IP per day. Plan retention and the indicator search window for your feed volume. A latest-indicator destination with refresh and expiry handling is not included; suppressing repeat events alone would let still-active indicators age out of detection.
 
 Review the rule's source indices before enabling it: the packaged default is `logs-*` with ECS network/IP conditions, so other network datasets can also match. Narrow the source scope to your intended firewall indices when necessary. Dashboard traffic panels include the listed firewall datasets; detection scope and displayed traffic scope must be checked together.
 
@@ -208,7 +211,7 @@ The integration does not automatically forward Elastic alerts or TI Feed entries
 
 Default API endpoint: `https://api.criminalip.io/v1/asset/ip/report`.
 
-The primary and additional IPs are queried sequentially each interval. Existing single-IP policies continue to work. Empty additional rows are ignored and identical values after trimming whitespace are queried once per cycle. Failed requests do not discard other results; handled request errors identify the configured value in `criminalip.query_ip`.
+The primary and additional IPs are queried sequentially each interval. Existing single-IP policies continue to work. Empty additional rows are ignored and identical values after trimming whitespace are queried once per cycle. Failed requests do not discard other results; every request retains its configured value in `criminalip.query_ip`, including HTTP-200 responses containing an application-level failure or no usable IP report.
 
 These are fixed lookups, not automatic extraction from logs. The configured IP does not have to be your own. Each distinct IP consumes API usage per cycle: ten IPs at five-minute intervals can make about 2,880 requests per day, before retries or restarts. Large lists take longer to complete; this is not bulk threat-feed import. Use one collecting Agent per configured report input unless duplicated API calls are intentional.
 

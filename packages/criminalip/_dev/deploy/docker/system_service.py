@@ -28,6 +28,9 @@ class MockCriminalIP(BaseHTTPRequestHandler):
                 self._send(403, {"error": "invalid test credentials or missing IP"})
                 return
             ip = params["ip"][0]
+            if ip in ("192.0.2.30", "192.0.2.40"):
+                self._send(200, {"status": 403 if ip == "192.0.2.30" else 200})
+                return
             self._send(200, {
                 "status": 200,
                 "ip": ip,
