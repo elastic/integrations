@@ -1,0 +1,73 @@
+title: "IP Report (optional lookups)"
+type: logs
+
+streams:
+  - input: cel
+    enabled: false
+    title: "Criminal IP API"
+    description: |-
+      Optional reputation lookups for explicitly configured IPs. Does not discover IPs in logs or generate firewall match alerts.
+    template_path: cel.yml.hbs
+
+    vars:
+      - name: api_key
+        type: password
+        title: "Criminal IP API Key"
+        description: "API key used to authenticate with Criminal IP."
+        required: true
+        show_user: true
+        secret: true
+
+      - name: ip
+        type: text
+        title: "IP Address"
+        description: "Primary public IP to query. Existing single-IP policies remain supported."
+        required: true
+        show_user: true
+        default: "1.1.1.1"
+
+      - name: additional_ips
+        type: text
+        title: "Additional IP Addresses"
+        description: "Optional public IPs to query in addition to IP Address. Add one IP per row, not comma-separated values. Each distinct IP consumes API usage every interval."
+        multi: true
+        required: false
+        show_user: true
+
+      - name: url
+        type: text
+        title: "Criminal IP API URL"
+        description: "Criminal IP IP Report API endpoint."
+        required: true
+        show_user: true
+        default: "https://api.criminalip.io/v1/asset/ip/report"
+
+      - name: interval
+        type: text
+        title: "Interval"
+        description: "How often to query Criminal IP."
+        required: true
+        show_user: true
+        default: "5m"
+
+      - name: preserve_original_event
+        type: bool
+        title: "Preserve original event"
+        description: "Preserve the original Criminal IP API response."
+        default: true
+        show_user: true
+
+      - name: tags
+        type: text
+        title: "Tags"
+        description: "Tags to include in the published event."
+        multi: true
+        show_user: true
+        default:
+          - criminalip
+          - threat_intelligence
+
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

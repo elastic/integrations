@@ -1,0 +1,101 @@
+config_version: 2
+
+interval: {{ interval }}
+
+resource:
+  url: {{ feed_url }}
+  # The retry wrapper logs query-string credentials before CEL can catch errors.
+  # Report a sanitized failure and retry on the next polling interval instead.
+  retry:
+    max_attempts: 1
+
+secret_state:
+  api_key: {{ api_key }}
+
+program: |
+  try(
+    request(
+      "GET",
+      state.url.parse_url().as(endpoint,
+        endpoint.with({"RawQuery": endpoint.RawQuery.parse_query().with({
+          "format": ["json"], "key": [state.secret.api_key]
+        }).format_query()}).format_url()
+      )
+    ).with({
+      "Header": {
+        "Accept": ["application/json"]
+      }
+    }).do_request().as(resp,
+      resp.StatusCode == 200 ? resp.Body.decode_json().as(body,
+        type(body) == map && has(body.body) && type(body.body) == map &&
+        has(body.body.data) && type(body.body.data) == list ? {
+          "events": body.body.data.map(e, {
+            "@timestamp": now(),
+            "event.kind": "enrichment",
+            "event.category": ["threat"],
+            "event.type": ["indicator"],
+            "event.module": "criminalip",
+            "event.dataset": "criminalip.ti_feed",
+            "event.outcome": "success",
+            "message": e.encode_json(),
+            "http.response.status_code": resp.StatusCode,
+            "threat.indicator.ip": e.ip,
+            "threat.indicator.type": "ipv4-addr",
+            "threat.indicator.provider": "Criminal IP",
+            ?"threat.indicator.description": e.?reason,
+            ?"criminalip.ti_feed.confidence": e.?confidence,
+            ?"criminalip.ti_feed.score": e.?score,
+            ?"criminalip.ti_feed.first_seen": e.?first_seen,
+            ?"criminalip.ti_feed.last_seen": e.?last_seen
+          }),
+          "status_code": resp.StatusCode,
+          "url": state.url,
+          "secret": state.secret
+        } : {
+          "events": [{
+            "event.outcome": "failure",
+            "error.message": "Criminal IP TI Feed response did not contain a valid body.data list.",
+            "http.response.status_code": resp.StatusCode
+          }],
+          "status_code": resp.StatusCode,
+          "url": state.url,
+          "secret": state.secret
+        }
+      ) : {
+        "events": [{
+          "event.outcome": "failure",
+          "error.message": "Criminal IP TI Feed request failed with HTTP status " + string(resp.StatusCode),
+          "http.response.status_code": resp.StatusCode
+        }],
+        "status_code": resp.StatusCode,
+        "url": state.url,
+        "secret": state.secret
+      }
+    ), "feed_error"
+  ).as(result, has(result.feed_error) ? {
+    "events": [{
+      "event.outcome": "failure",
+      "error.message": "Criminal IP TI Feed request or response decoding failed; check endpoint, connectivity, and response format."
+    }],
+    "url": state.url,
+    "secret": state.secret
+  } : result)
+
+{{#if tags.length}}
+tags:
+{{#each tags as |tag|}}
+- {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+- preserve_original_event
+{{/if}}
+{{else}}
+{{#if preserve_original_event}}
+tags:
+- preserve_original_event
+{{/if}}
+{{/if}}
+
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}

@@ -1,0 +1,61 @@
+{
+    "attributes":  {
+                       "rule_id":  "66f68655-8d93-4f42-824e-e6048b386207",
+                       "name":  "Criminal IP Firewall Indicator Match",
+                       "description":  "Detect ECS-normalized firewall source or destination IPs that match Criminal IP threat indicators.",
+                       "type":  "threat_match",
+                       "language":  "kuery",
+                       "index":  [
+                                     "logs-*"
+                                 ],
+                       "query":  "event.category: network and (source.ip:* or destination.ip:*)",
+                       "threat_index":  [
+                                            "logs-criminalip.ti_feed-*"
+                                        ],
+                       "threat_query":  "@timestamp \u003e= \"now-30d/d\"",
+                       "threat_mapping":  [
+                                              {
+                                                  "entries":  [
+                                                                  {
+                                                                      "field":  "source.ip",
+                                                                      "type":  "mapping",
+                                                                      "value":  "threat.indicator.ip",
+                                                                      "negate":  false
+                                                                  }
+                                                              ]
+                                              },
+                                              {
+                                                  "entries":  [
+                                                                  {
+                                                                      "field":  "destination.ip",
+                                                                      "type":  "mapping",
+                                                                      "value":  "threat.indicator.ip",
+                                                                      "negate":  false
+                                                                  }
+                                                              ]
+                                              }
+                                          ],
+                       "threat_indicator_path":  "threat.indicator",
+                       "interval":  "1m",
+                       "from":  "now-6m",
+                       "to":  "now",
+                       "enabled":  false,
+                       "severity":  "low",
+                       "risk_score":  21,
+                       "max_signals":  100,
+                       "tags":  [
+                                    "criminalip",
+                                    "firewall",
+                                    "indicator-match"
+                                ],
+                       "actions":  [
+
+                                   ],
+                       "related_integrations": [
+                           { "package": "criminalip", "version": "^0.1.0" }
+                       ],
+                       "version":  2
+                   },
+    "id":  "66f68655-8d93-4f42-824e-e6048b386207_2",
+    "type":  "security-rule"
+}

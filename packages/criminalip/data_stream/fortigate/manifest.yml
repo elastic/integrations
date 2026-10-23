@@ -1,0 +1,39 @@
+title: "FortiGate firewall logs"
+type: logs
+streams:
+  - input: tcp
+    title: "FortiGate logs (TCP)"
+    description: Collect RFC 6587 octet-counted or newline-delimited FortiGate syslog messages over TCP.
+    template_path: tcp.yml.hbs
+    vars:
+      - name: host
+        type: text
+        title: Listen address
+        description: Address and port on which Elastic Agent listens for FortiGate TCP syslog.
+        default: 0.0.0.0:9514
+        required: true
+      - name: tags
+        type: text
+        title: Tags
+        description: Additional event tags. Use synthetic only for a dedicated test input. The forwarded tag is always included.
+        multi: true
+        show_user: true
+        default: []
+  - input: udp
+    title: "FortiGate logs (UDP)"
+    description: Collect newline-delimited FortiGate syslog messages over UDP.
+    template_path: udp.yml.hbs
+    vars:
+      - name: host
+        type: text
+        title: Listen address
+        description: Address and port on which Elastic Agent listens for FortiGate UDP syslog.
+        default: 0.0.0.0:9514
+        required: true
+      - name: tags
+        type: text
+        title: Tags
+        description: Additional event tags. Use synthetic only for a dedicated test input. The forwarded tag is always included.
+        multi: true
+        show_user: true
+        default: []
