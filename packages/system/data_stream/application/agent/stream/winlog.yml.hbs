@@ -1,4 +1,4 @@
-name: Application
+name: {{channel}}
 condition: ${host.platform} == 'windows'
 {{#if event_id}}
 event_id: {{event_id}}
@@ -8,17 +8,6 @@ ignore_older: {{ignore_older}}
 {{/if}}
 {{#if language}}
 language: {{language}}
-{{/if}}
-{{#if preserve_original_event}}
-include_xml: true
-{{/if}}
-processors:
-- add_fields:
-    target: event
-    fields:
-      module: system
-{{#if processors.length}}
-{{processors}}
 {{/if}}
 {{#if tags.length}}
 tags:
@@ -33,5 +22,16 @@ tags:
 tags:
   - preserve_original_event
 {{/if}}
+{{/if}}
+{{#if preserve_original_event}}
+include_xml: true
+{{/if}}
+processors:
+- add_fields:
+    target: event
+    fields:
+      module: system
+{{#if processors.length}}
+{{processors}}
 {{/if}}
 {{custom}}
