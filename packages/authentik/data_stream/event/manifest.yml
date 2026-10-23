@@ -6,6 +6,14 @@ streams:
     description: Collecting authentik event logs via API.
     template_path: cel.yml.hbs
     vars:
+      - name: initial_interval
+        type: text
+        title: Initial Lookback Interval
+        description: The time window to look back for events on initial startup (e.g. 24h, 168h). Supported units for this parameter are h/m/s.
+        default: 168h
+        multi: false
+        required: true
+        show_user: true
       - name: interval
         type: text
         title: Interval
@@ -13,6 +21,13 @@ streams:
         default: 5m
         multi: false
         required: true
+        show_user: true
+      - name: custom_filter
+        type: text
+        title: Search Filter (AKQL)
+        description: Optional search filter to query specific events on the Authentik server using AKQL syntax (e.g. action = "login_failed" or app = "authentik.core"). See [Authentik Documentation](https://docs.goauthentik.io/docs/developer-docs/api/reference/events-events-list) for syntax details.
+        multi: false
+        required: false
         show_user: true
       - name: page_size
         type: integer
