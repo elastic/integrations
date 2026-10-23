@@ -1,0 +1,88 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects removal of all snapshots for an ESXi virtual machine. Snapshots are on-host recovery points for a guest. Removing all of them deletes those recovery points, so the virtual machine cannot be reverted to an earlier disk state.",
+        "false_positives": [
+            "Snapshot consolidation after backups, storage pressure, and planned decommissioning can remove every snapshot for a VM. Confirm the account and whether the command ran against one VM or every VM."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-vsphere.log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "message",
+                "event.original",
+                "host.hostname",
+                "log.file.path"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "ESXi Virtual Machine Snapshot Removed",
+        "note": "## Triage and analysis\n\n### Investigating ESXi Virtual Machine Snapshot Removed\n\nSnapshots are the local recovery point on a datastore. snapshot.removeall deletes them for one VM id. Ransomware wraps that command in a loop over every VM.\n\n#### Possible investigation steps\n\n- Read the VM id in message. A loop that calls removeall for every id from getallvms is higher severity than one VM.\n- Check whether VM processes were killed or disks were enumerated in the same session.\n- Ask the backup or virtualization owner whether snapshot consolidation was underway.\n\n### False positive analysis\n\nBackup products and administrators delete snapshots after a successful consolidate. Match the account and the change ticket before closing the alert.\n\n### Response and remediation\n\n- If removal was not approved, isolate the host and stop the shell session.\n- Restore affected VMs from an off-host backup. Datastore snapshots removed by this command are gone.\n- Preserve shell history and hostd logs.\n",
+        "query": "data_stream.dataset: \"vsphere.log\" and (\n  message: \"snapshot.removeall\"\n)\n",
+        "references": [
+            "https://lolesxi-project.github.io/LOLESXi/#",
+            "https://blogs.vmware.com/security/2022/10/esxi-targeting-ransomware-tactics-and-techniques-part-2.html",
+            "https://detect.fyi/vmware-esxi-logging-detection-opportunities-4fb56411ec21"
+        ],
+        "related_integrations": [
+            {
+                "package": "vsphere",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "e822bf97-933f-58f9-bd14-47a2ac9cd5d3",
+        "setup": "## Setup\n\nThis rule requires ESXi host logs collected by the Elastic vSphere integration: https://www.elastic.co/docs/reference/integrations/vsphere\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: VMware vSphere",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Resources: Investigation Guide",
+            "Rule Type: Custom Query (KQL)",
+            "Platform: VMware ESXi",
+            "Threat: Ransomware"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1490",
+                        "name": "Inhibit System Recovery",
+                        "reference": "https://attack.mitre.org/techniques/T1490/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "e822bf97-933f-58f9-bd14-47a2ac9cd5d3_1",
+    "type": "security-rule"
+}

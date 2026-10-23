@@ -1,0 +1,99 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects ESXi ExecInstalledOnly protection being turned off. The setting limits execution to binaries that were installed by a VIB and have not been modified. When it is set to false, the host can run files from paths such as `/tmp` that were never part of the system image.",
+        "false_positives": [
+            "Some recovery and lab images leave ExecInstalledOnly off, and an approved change can disable it while a custom VIB is installed. Confirm the setting is restored to TRUE afterward."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-vsphere.log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "message",
+                "event.original",
+                "host.hostname",
+                "log.file.path"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "ESXi ExecInstalledOnly Protection Disabled",
+        "note": "## Triage and analysis\n\n### Investigating ESXi ExecInstalledOnly Protection Disabled\n\nExecInstalledOnly limits execution to binaries that were installed by a VIB and have not been modified. Turning it off lets a later payload run from a path such as /tmp.\n\n#### Possible investigation steps\n\n- Read message for execInstalledOnly set to FALSE, or /User/ExecInstalledOnly set with -i 0.\n- On the host, run esxcli system settings kernel list -o execInstalledOnly and compare Configured with Runtime.\n- Look for a following vib install with --force, a chmod that adds execute permission, or a file launched from /tmp.\n\n### False positive analysis\n\nA documented install of an unsigned vendor VIB can disable the setting for the duration of the change. The setting should be TRUE when the work is finished.\n\n### Response and remediation\n\n- If the change was not approved, set the control back on: esxcli system settings kernel set -s execInstalledOnly -v TRUE.\n- Review VIBs installed in the same session with esxcli software vib list.\n- Preserve shell.log before rotating credentials.\n",
+        "query": "data_stream.dataset:vsphere.log and event.module:vsphere and message:(execInstalledOnly and (\"-i 0\" or \"-v 0\" or FALSE))\n",
+        "references": [
+            "https://lolesxi-project.github.io/LOLESXi/#",
+            "https://blogs.vmware.com/security/2022/10/esxi-targeting-ransomware-tactics-and-techniques-part-2.html",
+            "https://detect.fyi/vmware-esxi-logging-detection-opportunities-4fb56411ec21"
+        ],
+        "related_integrations": [
+            {
+                "package": "vsphere",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "c7eb51a1-6ca4-5fd2-9842-0f81a046bdd2",
+        "setup": "## Setup\n\nThis rule requires ESXi host logs collected by the Elastic vSphere integration: https://www.elastic.co/docs/reference/integrations/vsphere\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: VMware vSphere",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide",
+            "Rule Type: Custom Query (KQL)",
+            "Platform: VMware ESXi"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "c7eb51a1-6ca4-5fd2-9842-0f81a046bdd2_1",
+    "type": "security-rule"
+}

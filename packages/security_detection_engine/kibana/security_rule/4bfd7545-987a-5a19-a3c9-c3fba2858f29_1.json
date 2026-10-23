@@ -1,0 +1,116 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a program launched from the ESXi shell against `/vmfs/volumes`. The datastore holds the virtual disks of every guest. A process pointed at that path can read or encrypt those disks and take the hosted virtual machines offline.",
+        "false_positives": [
+            "A support script stored under `/tmp` or a Python inventory check can be pointed at a datastore during maintenance. Confirm the file name, the account, and whether virtual machines were shut down in the same session."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-vsphere.log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "message",
+                "event.original",
+                "host.hostname",
+                "log.file.path"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "ESXi Payload Executed Against Datastore",
+        "note": "## Triage and analysis\n\n### Investigating ESXi Payload Executed Against Datastore\n\nThis is the launch command. A path under /tmp, or python, is invoked with /vmfs/volumes as an argument. Ragnar Locker uses /tmp/<filename> /vmfs/volumes/<UUID>/. Pysa uses Python and passes the datastore path.\n\n#### Possible investigation steps\n\n- Read message for the executable path and the datastore argument.\n- Check the same session for chmod +x, VM process kills, snapshot removal, and find commands for vmdk files.\n- On the host, identify the file that was executed and whether it is still under /tmp or on a datastore.\n\n### False positive analysis\n\nApproved maintenance can run a known script from /tmp against a datastore. An unknown filename, especially after a chmod in the same session, is the ransomware launch pattern.\n\n### Response and remediation\n\n- If the program was not approved, isolate the host. Leave powered-on VMs running so their disks stay locked.\n- Remove the file under /tmp and preserve shell.log.\n- Restore any datastore that was modified from an off-host backup.\n",
+        "query": "data_stream.dataset:vsphere.log and event.module:vsphere and message:(\"/vmfs/volumes\" and (\"/tmp/\" or python))\n",
+        "references": [
+            "https://lolesxi-project.github.io/LOLESXi/#",
+            "https://blogs.vmware.com/security/2022/10/esxi-targeting-ransomware-tactics-and-techniques-part-2.html",
+            "https://detect.fyi/vmware-esxi-logging-detection-opportunities-4fb56411ec21"
+        ],
+        "related_integrations": [
+            {
+                "package": "vsphere",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "4bfd7545-987a-5a19-a3c9-c3fba2858f29",
+        "setup": "## Setup\n\nThis rule requires ESXi host logs collected by the Elastic vSphere integration: https://www.elastic.co/docs/reference/integrations/vsphere\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: VMware vSphere",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Tactic: Impact",
+            "Resources: Investigation Guide",
+            "Rule Type: Custom Query (KQL)",
+            "Platform: VMware ESXi",
+            "Threat: Ransomware"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1486",
+                        "name": "Data Encrypted for Impact",
+                        "reference": "https://attack.mitre.org/techniques/T1486/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "4bfd7545-987a-5a19-a3c9-c3fba2858f29_1",
+    "type": "security-rule"
+}

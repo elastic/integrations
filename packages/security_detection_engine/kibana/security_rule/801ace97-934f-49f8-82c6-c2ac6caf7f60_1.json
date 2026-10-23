@@ -1,0 +1,154 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies execution of the Hide From Uninstall List utility or a registry change that marks an installed application as a system component, causing Windows to omit it from Programs and Features. Adversaries may use either method to conceal remote-access, security, or other software.",
+        "false_positives": [
+            "Application installers, software-management systems, and administrators may legitimately set SystemComponent during deployment, updates, packaging, or shared-device and kiosk hardening. Confirm the matched branch, binary or uninstall target, initiating identity, host, parent process, and change window against the change record before adding a narrow exception."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*",
+            "logs-endpoint.events.registry-*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "interval": "5m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.category",
+                "host.name",
+                "user.name",
+                "process.executable",
+                "process.command_line",
+                "process.parent.executable",
+                "process.hash.sha256",
+                "process.pe.original_file_name",
+                "registry.path",
+                "registry.value",
+                "registry.data.strings"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Uninstall Entry Concealment",
+        "note": "## Triage and analysis\n\n### Investigating Potential Uninstall Entry Concealment\n\n#### Possible investigation steps\n\n- Which detection path generated the alert?\n  - Focus: review `event.category`, `process.pe.original_file_name`, `registry.path`, `registry.value`, and `registry.data.strings`.\n  - Implication: a process event identifies HideUL execution but does not prove that an application was hidden. A registry event setting `SystemComponent` to `1` establishes the concealment change but does not by itself identify the utility.\n\n- Which application was targeted, or did the HideUL execution progress to a concealment write?\n  - Focus: for a registry alert, resolve the uninstall subkey's `DisplayName`, `Publisher`, `DisplayVersion`, and `UninstallString` from endpoint state, software inventory, or adjacent events. For a process alert, review same-process events for a `SystemComponent` write. !{investigate{\"description\":\"\",\"label\":\"Events for the same process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: hiding remote-access, security, monitoring, or unfamiliar software raises concern. A process-only alert without a corresponding write remains an execution signal; absent registry telemetry is unresolved, not evidence that no application was hidden.\n\n- What binary and launch chain initiated the execution or registry change?\n  - Focus: review `process.executable`, `process.command_line`, `process.hash.sha256`, `process.parent.executable`, and `user.name`; use the process entity or ancestry to recover missing launch context.\n  - Implication: a renamed binary, user-writable path, unexpected parent, remote-management launcher, or unfamiliar hash raises concern. A stable internal path or known hash identifies the binary but does not by itself establish a recognized administrative workflow.\n\n- Did the same process modify other uninstall entries or removal controls?\n  - Focus: review registry events for the alert's `host.id` and `process.entity_id`, including `registry.path`, `registry.value`, `registry.data.strings`, and `event.action`.\n  - Implication: multiple hidden applications, deletion of uninstall entries, or writes to `NoRemove` or `NoModify` increase scope. `HFULOption` is context about HideUL bookkeeping and is not evidence of concealment by itself.\n\n- Does the target or launch context connect this operation to an active remote-access session or broader defense evasion?\n  - Focus: use the same-host related-alert view to find remote-access installation, interactive-session, or defense-evasion alerts. Separately correlate available RMM audit or session records by host, user, and time. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: an active remote session, recent remote-access installation, or another defense-evasion alert increases priority. Missing product or session telemetry is unresolved, not benign.\n\n- If local evidence remains suspicious, is the same utility hash, writer, or hidden product present on other hosts?\n  - Focus: search for the recovered `process.hash.sha256`, writer executable, and target uninstall subkey or resolved product identity across endpoints, keeping the initial time range close to the alert before broadening.\n  - Implication: repeated execution or concealment on additional hosts raises concern for coordinated activity. Recurrence limited to a recognized software-management or hardening pattern on expected hosts lowers concern but is not clearance by itself.\n\n- Escalate when the matched signal, target application, writer, or surrounding activity indicates concealment of remote-access, security, or unfamiliar software, or other high-risk context. Close only when the exact execution or registry change matches a named change record; otherwise preserve the evidence and keep the case unresolved.\n\n### False positive analysis\n\n- Application installation, update, packaging, shared-device, kiosk, lab, or administrative hardening workflows may intentionally set `SystemComponent`. Confirm the matched branch, exact uninstall target when present, binary hash and path, initiating identity, parent process, host group, and change window against the workflow record.\n\n### Response and remediation\n\n- If confirmed benign, document the matched signal, target application when present, and execution context, and reverse any temporary containment.\n- If suspicious but unconfirmed, preserve the alert source event, HideUL or writer binary and hash, launch lineage, target uninstall subkey and sibling values when present, and related remote-session evidence. Restrict the suspected session first; isolate the host only when the evidence and asset role justify it.\n- If confirmed malicious, isolate the host when operationally safe, disable the unauthorized remote-access channel, and contain the associated account or session. Terminate the recovered process only after preserving its entity ID, command line, hash, and available registry evidence.\n- Restore the affected uninstall registration through the owning product's supported installer or a verified pre-change value. Do not delete the application or registry key before preserving evidence and confirming whether the hidden software itself is authorized.\n- Hunt for the same HideUL or writer hash, launch lineage, uninstall subkey, and hidden product on other hosts. Remove confirmed malicious tooling and persistence only after scope is established, then retain process and registry telemetry needed to detect recurrence.\n",
+        "query": "any where host.os.type == \"windows\" and\n(\n  (\n    event.category == \"process\" and event.type == \"start\" and\n    (process.name : (\"HideUL.exe\", \"HideUL_x64.exe\") or ?process.pe.original_file_name : \"HideUL.exe\")\n  ) or\n  (\n    event.category == \"registry\" and event.type == \"change\" and\n    registry.value : \"SystemComponent\" and\n    registry.path : (\n      \"*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\*\",\n      \"*\\\\Software\\\\WOW6432Node\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\*\"\n    ) and\n    registry.data.strings : (\"1\", \"0x00000001\") and\n    not registry.path : \"*Microsoft EdgeWebView\\\\SystemComponent\" and\n    not (\n      registry.path : \"*\\\\{*}\\\\SystemComponent\" and\n      process.executable : (\"?:\\\\Windows\\\\System32\\\\msiexec.exe\") and\n      user.id : \"S-1-5-18\"\n    )\n  )\n)\n",
+        "references": [
+            "https://www.huntress.com/blog/daisy-chaining-rogue-rmm-tools",
+            "https://www.huntress.com/blog/phishing-bitb-rmm-attacks",
+            "https://www.safebreach.com/blog/ragnarlocker-ransomware-lokilocker-threat-coverage/",
+            "https://www.sygnia.co/blog/threat-actor-spotlight-ragnarlocker-ransomware/",
+            "https://www.microsoft.com/en-us/security/blog/2026/09/29/phishing-abuses-rmm-tools-persistent-access",
+            "https://cofense.com/blog/the-evolution-of-remote-access-tool-abuse",
+            "https://learn.microsoft.com/en-us/windows/win32/msi/arpsystemcomponent",
+            "https://www.sordum.org/11081/hide-from-uninstall-list-v1-1/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.data.strings",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "registry.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.value",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "801ace97-934f-49f8-82c6-c2ac6caf7f60",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Sysmon Registry Events](https://ela.st/sysmon-event-reg-setup)\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "Platform: Windows",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Rule Type: Event Correlation (EQL)",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1564",
+                        "name": "Hide Artifacts",
+                        "reference": "https://attack.mitre.org/techniques/T1564/"
+                    },
+                    {
+                        "id": "T1112",
+                        "name": "Modify Registry",
+                        "reference": "https://attack.mitre.org/techniques/T1112/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "801ace97-934f-49f8-82c6-c2ac6caf7f60_1",
+    "type": "security-rule"
+}

@@ -1,0 +1,130 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 1
+            },
+            "group_by": [
+                "user.email",
+                "organization.id",
+                "Esql.time_bucket"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a ChatGPT Enterprise Codex user invoking a high number of distinct MCP tools across multiple connectors within a 30-minute bucket. Broad tool and connector diversity in a short window can indicate compromised-account recon, unauthorized multi-system collection, or an agent rapidly enumerating organizational data sources.",
+        "false_positives": [
+            "Power users and legitimate multi-connector Codex workflows (for example Slack + GitHub + Google Drive in one session) can approach these thresholds. Raise `Esql.gen_ai_tool_name_count_distinct` or `Esql.connector_id_count_distinct` above your baseline before broad enablement."
+        ],
+        "from": "now-60m",
+        "interval": "10m",
+        "investigation_fields": {
+            "field_names": [
+                "user.email",
+                "organization.id",
+                "Esql.time_bucket",
+                "Esql.gen_ai_tool_name_count_distinct",
+                "Esql.connector_id_count_distinct",
+                "Esql.event_count",
+                "Esql.gen_ai_tool_name_values",
+                "Esql.connector_id_values",
+                "Esql.timestamp_first_seen",
+                "Esql.timestamp_last_seen"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise High Codex MCP Tool Diversity",
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise High Codex MCP Tool Diversity\n\nOne user invoked many distinct Codex MCP tools across multiple connectors in a 30-minute bucket. That pattern can\nindicate compromised-account reconnaissance, unauthorized multi-system collection, or an agent rapidly enumerating\nconnected data sources.\n\nEscalate when the tool set spans unexpected connectors, the actor is unusual for those systems, or nearby events show\ncredential exposure, access-token creation, or bulk downloads. Close as a false positive for known power-user or\napproved automation baselines.\n\n#### Possible investigation steps\n\n- Review `Esql.gen_ai_tool_name_values`, `Esql.connector_id_values`, `Esql.event_count`, and the time bucket.\n- Confirm whether the connectors are approved for that user and whether the session aligns with a known project.\n- Pivot to nearby `app_mcp_result`, prompt, share, and download events for the same `user.email`.\n- Compare against the user's normal Codex MCP diversity over prior days.\n\n### False positive analysis\n\n- Engineers using several approved connectors in one Codex session commonly produce multi-tool bursts.\n- Raise the distinct-tool or distinct-connector thresholds above your normal 30-minute Codex baseline if approved\n  power users remain noisy.\n\n### Response and remediation\n\n- Disable unauthorized connectors, revoke related OAuth links or Codex access tokens, and review data returned into\n  the session.\n- If account compromise is suspected, reset sessions and hunt for follow-on exfiltration.\n",
+        "query": "from logs-openai_chatgpt_enterprise.codex_log-*\n| where\n    data_stream.dataset == \"openai_chatgpt_enterprise.codex_log\" and\n    event.action == \"app_mcp_call\" and\n    user.email is not null and\n    organization.id is not null and\n    gen_ai.tool.name is not null\n| eval Esql.time_bucket = date_trunc(30 minutes, @timestamp)\n| stats\n    Esql.gen_ai_tool_name_count_distinct = count_distinct(gen_ai.tool.name),\n    Esql.connector_id_count_distinct = count_distinct(openai_chatgpt_enterprise.codex_log.event_details.tool_meta.connector_id),\n    Esql.event_count = count(*),\n    Esql.gen_ai_tool_name_values = values(gen_ai.tool.name),\n    Esql.connector_id_values = values(openai_chatgpt_enterprise.codex_log.event_details.tool_meta.connector_id),\n    Esql.timestamp_first_seen = min(@timestamp),\n    Esql.timestamp_last_seen = max(@timestamp)\n  by\n    user.email,\n    organization.id,\n    Esql.time_bucket\n| where\n    Esql.gen_ai_tool_name_count_distinct >= 10 and\n    Esql.connector_id_count_distinct >= 3\n| keep\n    user.email,\n    organization.id,\n    Esql.time_bucket,\n    Esql.gen_ai_tool_name_count_distinct,\n    Esql.connector_id_count_distinct,\n    Esql.event_count,\n    Esql.gen_ai_tool_name_values,\n    Esql.connector_id_values,\n    Esql.timestamp_first_seen,\n    Esql.timestamp_last_seen\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": "^0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.tool.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "openai_chatgpt_enterprise.codex_log.event_details.tool_meta.connector_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "organization.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "ec65644d-c9b9-4e4b-a89f-457c75b1dad8",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect Codex compliance logs into Elasticsearch,\nincluding `app_mcp_call` events. Tune the distinct-tool and distinct-connector thresholds above your normal Codex\nbaseline before broad enablement.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Use Case: UEBA",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Collection",
+            "Mitre Atlas: AML.T0053",
+            "Mitre Atlas: AML.T0085"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1213",
+                        "name": "Data from Information Repositories",
+                        "reference": "https://attack.mitre.org/techniques/T1213/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 3
+    },
+    "id": "ec65644d-c9b9-4e4b-a89f-457c75b1dad8_3",
+    "type": "security-rule"
+}
