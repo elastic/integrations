@@ -63,10 +63,18 @@ program: |-
   // searchable -- shifting the whole polling clock back rather than trying to
   // detect/backfill misses after the fact.
   {
+    // [Copilot review, PR #22143] Both bounds of the very first window (no
+    // cursor yet) are anchored to the same collection_delay-shifted instant,
+    // not to bare `now`: anchoring only `to_date` to it while `from_date`
+    // stays anchored to bare `now - initial_interval` would make the window
+    // [now - initial_interval, now - collection_delay) -- narrower than
+    // initial_interval by collection_delay, and INVERTED (from_date >
+    // to_date) whenever initial_interval < collection_delay, which the
+    // target API would likely reject outright.
     "phase": state.?cursor.phase.orValue("alert"),
     "page": int(state.?cursor.page.orValue(1)),
     "from_date": state.?cursor.from_date.orValue(
-      string(int(now - duration(state.initial_interval)) * 1000)
+      string(int(now - duration(state.collection_delay) - duration(state.initial_interval)) * 1000)
     ),
     "to_date": state.?cursor.to_date.orValue(
       string(int(now - duration(state.collection_delay)) * 1000)
