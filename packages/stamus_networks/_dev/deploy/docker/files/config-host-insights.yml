@@ -16,7 +16,14 @@ rules:
   # host IP), so this content change between polls must produce a NEW, distinct document
   # for the same host.id instead of silently colliding with / overwriting round 1's
   # document for .10 (see data_stream/host_insights/elasticsearch/ingest_pipeline/default.yml).
-  # req_num >=4 (all subsequent polls within the 1m test window): terminal empty
+  # req_num 4 (round 4 / fourth poll, interval-driven): re-returns 198.51.100.10 AGAIN,
+  # with the exact same hostname/services content as round 3 -- only the first_seen/
+  # last_seen timestamps have advanced further (still-active host, nothing actually
+  # changed). Regression test for the refined fingerprint: it excludes first_seen/
+  # last_seen from the hash, so this must NOT produce a new document -- it should
+  # silently collapse onto round 3's document via a version conflict on the same
+  # _id, leaving hit_count unchanged from round 3's total.
+  # req_num >=5 (all subsequent polls within the 1m test window): terminal empty
   # response -- stops hit_count from growing unboundedly across repeated full reads.
   - path: /rest/appliances/host_id/
     methods: ['GET']
@@ -40,6 +47,8 @@ rules:
           {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.12", "host_id": {"first_seen": "2024-01-15T13:00:00.000000+0000", "last_seen": "2024-01-15T13:05:00.000000+0000", "in_home_net": true, "hostname": [], "services": []}}]}
           {{ else if eq .req_num 3 }}
           {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T15:30:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-new.example.com", "first_seen": "2024-01-15T14:00:00.000000+0000", "last_seen": "2024-01-15T15:30:00.000000+0000"}], "services": [{"proto": "tcp", "port": 8443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-15T15:00:00.000000+0000", "last_seen": "2024-01-15T15:30:00.000000+0000"}]}]}}]}
+          {{ else if eq .req_num 4 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T16:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T16:00:00.000000+0000"}, {"host": "host-a-new.example.com", "first_seen": "2024-01-15T14:00:00.000000+0000", "last_seen": "2024-01-15T16:00:00.000000+0000"}], "services": [{"proto": "tcp", "port": 8443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-15T15:00:00.000000+0000", "last_seen": "2024-01-15T16:00:00.000000+0000"}]}]}}]}
           {{ else }}
           {"count": 0, "next": null, "previous": null, "results": []}
           {{ end }}

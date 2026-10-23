@@ -13,9 +13,15 @@ assert:
   #   round 1 (req_num 1 page 1 + req_num 1 page 2): 198.51.100.10, .11, .13  -> 3 docs
   #   round 2 (req_num 2 page 1, terminal):          198.51.100.12           -> 1 doc
   #   round 3 (req_num 3 page 1, terminal):          198.51.100.10 (CHANGED  -> 1 doc
-  #     hostname/services/last_seen content -- same host.id as round 1, but the
-  #     ingest pipeline fingerprints the full event.original snapshot, so a content
+  #     hostname/services content vs. round 1 -- same host.id, but the ingest
+  #     pipeline fingerprints the host's inventory content, so a real content
   #     change produces a NEW _id/document rather than colliding with round 1's
   #     document for .10; this is NOT an overwrite, hence +1 here, not +0)
-  #   total: 3 + 1 + 1 = 5
+  #   round 4 (req_num 4 page 1, terminal):          198.51.100.10 again, SAME     -> 0 docs
+  #     hostname/services content as round 3 -- only first_seen/last_seen advanced
+  #     further (still-active host, nothing actually changed). The fingerprint
+  #     excludes first_seen/last_seen, so this collapses onto round 3's _id via a
+  #     version conflict (silently dropped, not an error) and must NOT add a new
+  #     document -- the key regression test for excluding timestamps from the hash.
+  #   total: 3 + 1 + 1 + 0 = 5
   hit_count: 5
