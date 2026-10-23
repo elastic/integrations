@@ -95,18 +95,28 @@ An example event for `firewall` looks as following:
             "operation_name": "AzureFirewallNetworkRuleLog"
         },
         "resource": {
-            "group": "TEST-FW-RG",
-            "id": "/SUBSCRIPTIONS/23103928-B2CF-472A-8CDB-0146E2849129/RESOURCEGROUPS/TEST-FW-RG/PROVIDERS/MICROSOFT.NETWORK/AZUREFIREWALLS/TEST-FW01",
             "name": "TEST-FW01",
+            "id": "/SUBSCRIPTIONS/23103928-B2CF-472A-8CDB-0146E2849129/RESOURCEGROUPS/TEST-FW-RG/PROVIDERS/MICROSOFT.NETWORK/AZUREFIREWALLS/TEST-FW01",
+            "group": "TEST-FW-RG",
             "provider": "MICROSOFT.NETWORK/AZUREFIREWALLS"
         },
-        "subscription_id": "23103928-B2CF-472A-8CDB-0146E2849129"
+        "subscription": {
+            "id": "23103928-B2CF-472A-8CDB-0146E2849129"
+        },
+        "subscription_id": "23103928-B2CF-472A-8CDB-0146E2849129",
+        "resource_group": {
+            "name": "TEST-FW-RG"
+        },
+        "resource_provider": {
+            "namespace": "MICROSOFT.NETWORK"
+        }
     },
     "cloud": {
         "account": {
             "id": "23103928-B2CF-472A-8CDB-0146E2849129"
         },
-        "provider": "azure"
+        "provider": "azure",
+        "resource_id": "/SUBSCRIPTIONS/23103928-B2CF-472A-8CDB-0146E2849129/RESOURCEGROUPS/TEST-FW-RG/PROVIDERS/MICROSOFT.NETWORK/AZUREFIREWALLS/TEST-FW01"
     },
     "destination": {
         "address": "89.160.20.156",
@@ -178,7 +188,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.correlation_id | Correlation ID. | keyword |
+| azure.correlation.id | Correlation ID for grouping related operations. | keyword |
+| azure.correlation_id | [Deprecated] Legacy flat name for the correlation ID. Populated only in data streams that set it before 1.41.0. Planned to become an alias of `azure.correlation.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.correlation.id` instead. | keyword |
 | azure.firewall.action | Action taken by the firewall following the match with the network rule. | keyword |
 | azure.firewall.action_reason | Reason for the action performed by the firewall. | keyword |
 | azure.firewall.category | Category | keyword |
@@ -207,13 +218,18 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.firewall.target_url | Request's target address URL. | keyword |
 | azure.firewall.web_category | Web Category identified for the requested FQDN (Azure Firewall Standard) or URL (Azure Firewall Premium). | keyword |
 | azure.resource.authorization_rule | Authorization rule. | keyword |
-| azure.resource.group | Resource group. | keyword |
-| azure.resource.id | Resource ID. | keyword |
-| azure.resource.name | Name. | keyword |
-| azure.resource.namespace | Resource type/namespace. | keyword |
-| azure.resource.provider | Resource type/namespace. | keyword |
-| azure.subscription_id | Azure subscription ID. | keyword |
-| azure.tenant_id | tenant ID. | keyword |
+| azure.resource.group | [Deprecated] Legacy name for the resource group. Still populated. Planned to become an alias of `azure.resource_group.name` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.resource_group.name` instead. | keyword |
+| azure.resource.id | [Deprecated] Legacy name for the ARM resource ID. Still populated. Planned to become an alias of `cloud.resource_id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `cloud.resource_id` instead. | keyword |
+| azure.resource.name | Resource name. | keyword |
+| azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
+| azure.resource.provider | [Deprecated] Legacy name for the resource provider namespace. Still populated. Unlike `azure.resource_provider.namespace`, it includes the resource type (for example `Microsoft.KeyVault/vaults`). Planned to become an alias of `azure.resource_provider.namespace` about six months after 1.41.0, after which it is no longer stored in `_source` and returns the namespace only. Use `azure.resource_provider.namespace` instead. | keyword |
+| azure.resource_group.name | Azure resource group name. | keyword |
+| azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
+| azure.subscription.id | Azure subscription ID. | keyword |
+| azure.subscription_id | [Deprecated] Legacy flat name for the subscription ID. Still populated. Planned to become an alias of `azure.subscription.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.subscription.id` instead. | keyword |
+| azure.tenant.id | Azure tenant ID. | keyword |
+| azure.tenant_id | [Deprecated] Legacy flat name for the tenant ID. Populated only in data streams that set it before 1.41.0. Planned to become an alias of `azure.tenant.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.tenant.id` instead. | keyword |
+| cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
