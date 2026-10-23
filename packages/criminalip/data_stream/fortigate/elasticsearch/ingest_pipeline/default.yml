@@ -20,17 +20,62 @@ processors:
       replacement: ''
       ignore_missing: true
 
-  - kv:
+  - script:
       tag: parse_fortigate_kv
-      field: message
-      target_field: _temp.fortigate_fields
-      field_split: ' (?=(?:[^"]*"[^"]*")*[^"]*$)'
-      value_split: "="
-      trim_key: '"'
-      trim_value: '"'
-      strip_brackets: true
-      ignore_missing: true
-      ignore_failure: true
+      lang: painless
+      if: 'ctx.message != null'
+      description: Tokenize key-value fields once, respecting double quotes and escaped quotes/backslashes.
+      source: |-
+        String message = ctx.message;
+        Map fields = [:];
+        StringBuilder key = new StringBuilder();
+        StringBuilder value = new StringBuilder();
+        boolean inValue = false;
+        boolean quoted = false;
+        for (int i = 0; i <= message.length(); i++) {
+          boolean end = i == message.length();
+          int c = end ? 32 : (int) message.charAt(i);
+          boolean space = c == 32 || c == 9 || c == 10 || c == 13;
+          if (!inValue) {
+            if (c == 61) { inValue = true; }
+            else if (space) { key.setLength(0); }
+            else if (c != 34) { key.append((char) c); }
+            continue;
+          }
+          if (!end && quoted && c == 92 && i + 1 < message.length()) {
+            int next = (int) message.charAt(i + 1);
+            if (next == 34 || next == 92) {
+              value.append((char) next);
+              i++;
+              continue;
+            }
+          }
+          if (!end && c == 34) { quoted = !quoted; continue; }
+          if (end && quoted) {
+            throw new IllegalArgumentException('Unterminated quoted FortiGate field');
+          }
+          if (end || (!quoted && space)) {
+            if (key.length() > 0) {
+              String name = key.toString();
+              String text = value.toString();
+              if (text.length() >= 2) {
+                int first = (int) text.charAt(0);
+                int last = (int) text.charAt(text.length() - 1);
+                if ((first == 40 && last == 41) || (first == 91 && last == 93) || (first == 60 && last == 62)) {
+                  text = text.substring(1, text.length() - 1);
+                }
+              }
+              if (!fields.containsKey(name)) { fields[name] = text; }
+              else if (fields[name] instanceof List) { fields[name].add(text); }
+              else { fields[name] = [fields[name], text]; }
+            }
+            key.setLength(0);
+            value.setLength(0);
+            inValue = false;
+          } else { value.append((char) c); }
+        }
+        if (ctx._temp == null) { ctx._temp = [:]; }
+        ctx._temp.fortigate_fields = fields;
 
   - set:
       tag: set_fortigate_event_ingested

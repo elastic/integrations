@@ -4,22 +4,27 @@ interval: {{ interval }}
 
 resource:
   url: {{ feed_url }}
+  # The retry wrapper logs query-string credentials before CEL can catch errors.
+  # Report a sanitized failure and retry on the next polling interval instead.
+  retry:
+    max_attempts: 1
 
 secret_state:
   api_key: {{ api_key }}
 
 program: |
-  request(
-    "GET",
-    state.url + "?format=json&key=" + state.secret.api_key
-  ).with({
-    "Header": {
-      "Accept": ["application/json"]
-    }
-  }).do_request().as(resp,
-    resp.StatusCode == 200 ? resp.Body.decode_json().as(body,
-      has(body.body.data) ?
-        {
+  try(
+    request(
+      "GET",
+      state.url + "?" + {"format": ["json"], "key": [state.secret.api_key]}.format_query()
+    ).with({
+      "Header": {
+        "Accept": ["application/json"]
+      }
+    }).do_request().as(resp,
+      resp.StatusCode == 200 ? resp.Body.decode_json().as(body,
+        type(body) == map && has(body.body) && type(body.body) == map &&
+        has(body.body.data) && type(body.body.data) == list ? {
           "events": body.body.data.map(e, {
             "@timestamp": now(),
             "event.kind": "enrichment",
@@ -42,29 +47,35 @@ program: |
           "status_code": resp.StatusCode,
           "url": state.url,
           "secret": state.secret
-        }
-      :
-        {
+        } : {
           "events": [{
             "event.outcome": "failure",
-            "error.message": "Criminal IP TI Feed response did not contain body.data.",
+            "error.message": "Criminal IP TI Feed response did not contain a valid body.data list.",
             "http.response.status_code": resp.StatusCode
           }],
           "status_code": resp.StatusCode,
           "url": state.url,
           "secret": state.secret
         }
-    ) : {
-      "events": [{
-        "event.outcome": "failure",
-        "error.message": "Criminal IP TI Feed request failed with HTTP status " + string(resp.StatusCode),
-        "http.response.status_code": resp.StatusCode
-      }],
-      "status_code": resp.StatusCode,
-      "url": state.url,
-      "secret": state.secret
-    }
-  )
+      ) : {
+        "events": [{
+          "event.outcome": "failure",
+          "error.message": "Criminal IP TI Feed request failed with HTTP status " + string(resp.StatusCode),
+          "http.response.status_code": resp.StatusCode
+        }],
+        "status_code": resp.StatusCode,
+        "url": state.url,
+        "secret": state.secret
+      }
+    ), "feed_error"
+  ).as(result, has(result.feed_error) ? {
+    "events": [{
+      "event.outcome": "failure",
+      "error.message": "Criminal IP TI Feed request or response decoding failed; check endpoint, connectivity, and response format."
+    }],
+    "url": state.url,
+    "secret": state.secret
+  } : result)
 
 {{#if tags.length}}
 tags:

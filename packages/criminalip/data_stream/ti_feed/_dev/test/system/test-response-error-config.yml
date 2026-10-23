@@ -1,0 +1,16 @@
+deployer: docker
+service: api-mock
+input: cel
+data_stream:
+  vars:
+    api_key: unit-test-key
+    feed_url: "http://{{{Hostname}}}:{{{Port}}}/ti/v1/feed/response-error"
+    interval: 10s
+    tags:
+      - synthetic
+assert:
+  fields_present:
+    - event.outcome
+    - error.message
+    - http.response.status_code
+wait_for_data_timeout: 90s

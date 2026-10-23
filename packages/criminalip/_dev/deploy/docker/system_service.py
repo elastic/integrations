@@ -39,6 +39,10 @@ class MockCriminalIP(BaseHTTPRequestHandler):
             })
             return
 
+        if request.path == "/ti/v1/feed/response-error":
+            self._send(200, {"status": 403})
+            return
+
         if request.path == "/ti/v1/feed/outbound":
             if params.get("key") != [TEST_KEY] or params.get("format") != ["json"]:
                 self._send(403, {"error": "invalid test credentials or format"})

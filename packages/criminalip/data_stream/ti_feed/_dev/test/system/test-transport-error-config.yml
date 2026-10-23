@@ -1,0 +1,15 @@
+deployer: docker
+service: api-mock
+input: cel
+data_stream:
+  vars:
+    api_key: SYNTHETIC-TI-TRANSPORT-KEY
+    feed_url: "http://127.0.0.1:1/feed"
+    interval: 10s
+    tags:
+      - synthetic
+assert:
+  fields_present:
+    - event.outcome
+    - error.message
+wait_for_data_timeout: 90s

@@ -132,6 +132,8 @@ The rule compares firewall `source.ip` or `destination.ip` with TI Feed `threat.
 
 The feed is polled as a snapshot and unchanged indicators are currently republished each interval. At the default five-minute interval this can produce 288 copies per active IP per day. Plan retention and the indicator search window for your feed volume. A latest-indicator destination with refresh and expiry handling is not included; suppressing repeat events alone would let still-active indicators age out of detection.
 
+The feed key is sent as a query parameter required by the provider. Transport and decoding failures emit fixed messages without the request URL or key. Per-request automatic retries are disabled because the Agent retry logger can log query-string credentials before CEL error handling; the next configured polling interval attempts collection again. Do not enable request tracing without reviewing credential redaction.
+
 Review the rule's source indices before enabling it: the packaged default is `logs-*` with ECS network/IP conditions, so other network datasets can also match. Narrow the source scope to your intended firewall indices when necessary. Dashboard traffic panels include the listed firewall datasets; detection scope and displayed traffic scope must be checked together.
 
 The packaged rule is disabled by default with no external actions. Collection or Cortex analysis success alone does not create match alerts. Zero alerts can be expected when no firewall event matches a feed indicator in the search windows.
@@ -206,7 +208,7 @@ The integration does not automatically forward Elastic alerts or TI Feed entries
 ### 5. Optional configured IP Report lookups
 
 1. Register an Elastic Agent in Fleet and add the Criminal IP integration to its policy.
-2. Enable the **Criminal IP API** input.
+2. Explicitly enable the **Criminal IP API** stream, which is disabled by default. Installing TI Feed collection alone does not opt into these quota-consuming lookups.
 3. Enter an IP Report key and the primary public **IP Address** to investigate. For more IPs, use **Additional IP Addresses → Add row**, one IP per row, not comma-separated values.
 4. Set the API URL and collection interval, save the policy, and confirm that the Agent receives it.
 
