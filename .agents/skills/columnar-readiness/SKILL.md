@@ -16,7 +16,7 @@ finding: [`references/columnar.md`](references/columnar.md).
 
 ## Current status
 
-Last reviewed 2026-10-14; update these facts here when they change.
+Last reviewed 2026-10-23; update these facts here when they change.
 
 - **Elasticsearch:** `logsdb_columnar` is tech preview since 9.5, GA targeted for 9.7.
   Keyword doc-value skippers and bloom filters are still to come, so benchmarks move.
@@ -25,8 +25,10 @@ Last reviewed 2026-10-14; update these facts here when they change.
   elastic-package against that branch (`go mod edit -replace
   github.com/elastic/package-spec/v3=/path/to/package-spec`).
 - **Fleet** (elastic/kibana#292285, Kibana 9.6, unmerged) offers one toggle per
-  integration and strips `doc_values: false` and `store: true` from the templates of a
-  stream installed in `logsdb_columnar` mode: those need no package change.
+  integration and only sets the index mode: the package's mappings go in as they are.
+- **`doc_values: false` and `store: true`** are rejected by Elasticsearch in columnar
+  modes (2026-10-15 snapshot), and the validator does not report them yet: the script
+  does. That includes the `event.original` about 50 packages import from ECS.
 - **Objects inside `nested` fields** are split off their element on columnar (9.5.4, 9.6
   snapshots up to 2026-10-01): an Elasticsearch bug, re-check on newer builds.
 - **Open team decisions** the skill follows a default for: OTel and input packages out
@@ -113,7 +115,8 @@ says how:
 
 Never exclude a columnar finding in `validation.yml`, except `SVR00016` with a comment
 when the dataset is never queried by time range. A stream you cannot fix now gets
-`unsupported`. `doc_values: false` and `store: true` are not reported: Fleet strips them.
+`unsupported`. The validator does not report `doc_values: false` and `store: true` yet:
+step 3 does.
 
 ### 3. Run the script for what the validator cannot see
 
@@ -130,6 +133,8 @@ Flags: `--no-dashboards`, `--rules DIR` (default
 stream it reports a status (`READY`, `NEEDS_REVIEW`, `BLOCKED`, `OUT_OF_SCOPE`; `READY`
 only means this script found nothing), the effective `logsdb_columnar`, and findings:
 
+- `doc_values_false`, `store_true`, `import_mappings`: mappings Elasticsearch rejects in
+  columnar modes (`BLOCKED`). Fix them;
 - `source_consumer_latest_transform`, `source_consumer_transform`,
   `source_consumer_kibana`, `source_consumer_detection_rule`: readers of the rebuilt
   `_source`. Nothing fails; they silently get the flat shape. Review each one;
@@ -178,8 +183,7 @@ query in the PR. "None" is a valid decision.
 toggle. Get one with a Kibana that has the Fleet support (temporarily and uncommitted,
 set `logsdb_columnar: default` and install fresh, or turn the toggle on), or on any
 9.5+ stack with a `logs-<pkg>.<ds>@custom` component template that sets
-`index.mode: logsdb_columnar` (only without `doc_values: false`/`store: true` fields:
-Fleet does not strip them there). Run `elastic-package lint`, `build`, `test pipeline`
+`index.mode: logsdb_columnar`. Run `elastic-package lint`, `build`, `test pipeline`
 (identical in both modes; no `-g` unless a fix moved logic into the pipeline),
 `test static`, and `test system` in both modes, diff, then benchmark the dashboard and
 rule queries (Query DSL and EQL, not only ES|QL), needle-in-a-haystack lookups first.

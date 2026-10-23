@@ -64,12 +64,30 @@ keep their doc values, not be `text`, `match_only_text`, `wildcard`, `flattened`
 **`logsdb_columnar` on a non-logs stream, or with `index_mode`** (errors). Remove it
 from that stream's manifest.
 
-**`doc_values: false`, `store: true`** are not reported: Fleet strips them when it
-installs a stream in `logsdb_columnar` mode. Leave them, and never mark a stream
-`unsupported` for them. `external: ecs` on `event.original` brings `doc_values: false`
-in at build time; same handling.
-
 ## Script findings (`scripts/audit.py`)
+
+**`doc_values_false`, `store_true`, `import_mappings`** (blockers). Elasticsearch rejects
+`doc_values: false` and `store: true` in columnar modes, and Fleet installs the mappings as
+they are: on a field, turning the integration on fails with Elasticsearch's error; in a
+dynamic template, every event with a matching field is rejected. Fix them rather than
+marking the stream `unsupported`, and say in the changelog that the LogsDB mapping changes
+too:
+
+- a field of the package: remove `store: true` and `doc_values: false` (a multi-field may
+  keep `doc_values: false`);
+- an `external: ecs` field (`event.original`, `*.x509.public_key_exponent`): add
+  `doc_values: true` to its entry in `fields/ecs.yml`, which is how Elasticsearch's own
+  `ecs@mappings` maps `event.original`:
+
+  ```yaml
+  - name: event.original
+    external: ecs
+    doc_values: true
+  ```
+- a dynamic template in the stream manifest: drop the setting from its `mapping`;
+- `import_mappings: true` in `_dev/build/build.yml`: remove it. It is deprecated, and Fleet
+  adds Elasticsearch's `ecs@mappings`, which keeps doc values on these fields, to every
+  integration template. Diff the mappings of a LogsDB install before and after.
 
 **`nested_object_children`**: a single-level `nested` field whose elements hold objects.
 On columnar, an object sent as JSON inside an element is indexed apart from it: a

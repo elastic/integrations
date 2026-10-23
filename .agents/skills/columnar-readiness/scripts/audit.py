@@ -8,7 +8,8 @@ cannot see.
 
 `elastic-package check` (package-spec >= 3.8.0) reports the mappings and index sort
 settings Elasticsearch rejects in `logsdb_columnar`. This script covers the rest, per logs
-data stream: scope and effective readiness, `_source` consumers, objects inside `nested`
+data stream: scope and effective readiness, `doc_values: false` and `store: true` (also
+rejected, not reported by the validator yet), `_source` consumers, objects inside `nested`
 fields, the index sort proposal, the detection rules and dashboards to
 benchmark, and the lookup candidates for `index: true`. See references/columnar.md.
 
@@ -104,6 +105,14 @@ ECS_ARRAYS = words(
     "email.bcc.address email.from.address email.reply_to.address email.attachments "
     "container.image.tag threat.tactic.id threat.tactic.name threat.technique.id "
     "threat.technique.name vulnerability.category registry.data.strings rule.author")
+# ECS fields with `doc_values: false`, used when elastic-package's ECS cache is missing.
+ECS_NO_DOC_VALUES = words(
+    "event.original gen_ai.agent.description x509.public_key_exponent "
+    "file.x509.public_key_exponent tls.client.x509.public_key_exponent "
+    "tls.server.x509.public_key_exponent threat.indicator.x509.public_key_exponent "
+    "threat.indicator.file.x509.public_key_exponent "
+    "threat.enrichments.indicator.x509.public_key_exponent "
+    "threat.enrichments.indicator.file.x509.public_key_exponent")
 TEMP_ROOTS = words("json _temp_ _temp _tmp _conf _ingest")
 
 
@@ -134,6 +143,10 @@ def is_false(v):
     return v is False or (isinstance(v, str) and v.strip().lower() == "false")
 
 
+def is_true(v):
+    return v is True or (isinstance(v, str) and v.strip().lower() == "true")
+
+
 def finding(code, severity, message, where, field=None):
     return {"code": code, "severity": severity, "message": message, "file": where, "field": field}
 
@@ -152,9 +165,12 @@ def ecs():
             for flat, fdef in (group.get("fields") or {}).items() if isinstance(group, dict) else []:
                 if isinstance(fdef, dict):
                     _ECS[flat] = {"type": fdef.get("type"),
-                                  "array": "array" in (fdef.get("normalize") or [])}
+                                  "array": "array" in (fdef.get("normalize") or []),
+                                  "doc_values": fdef.get("doc_values", True)}
         _ECS_SOURCE.append(f"ECS cache {versions[-1]}" if _ECS else "no ECS cache: built-in fallback")
-        _ECS.update({} if _ECS else {f: {"type": None, "array": True} for f in ECS_ARRAYS})
+        _ECS.update({} if _ECS else {f: {"type": None, "array": f in ECS_ARRAYS,
+                                         "doc_values": f not in ECS_NO_DOC_VALUES}
+                                     for f in ECS_ARRAYS | ECS_NO_DOC_VALUES})
     return _ECS
 
 
@@ -209,6 +225,48 @@ def nested_object_children(entries):
                 f"`{path}` is `nested` and its elements hold objects ({', '.join(sorted(objects))}): "
                 "columnar indexes an object sent as JSON inside an element apart from it.",
                 next(rel for flat, _, rel in fields if flat == path), path))
+    return out
+
+
+def rejected_mappings(entries, itpl, ds_dir, pkg_dir):
+    """`doc_values: false` and `store: true`, which Elasticsearch rejects in columnar modes:
+    Fleet installs the mappings as they are, and package-spec does not report them yet."""
+    out = []
+    for fdef, flat, in_mf, rel, _ in entries:
+        # A multi-field is not rebuilt into `_source`, so it may keep `doc_values: false`.
+        from_ecs = fdef.get("external") == "ecs" and "doc_values" not in fdef \
+            and (ecs().get(flat) or {}).get("doc_values") is False
+        if not in_mf and (is_false(fdef.get("doc_values")) or from_ecs):
+            out.append(finding("doc_values_false", "blocker", f"`{flat}` has `doc_values: false`"
+                               + (" from its ECS definition" if from_ecs else "")
+                               + ": Elasticsearch rejects the mapping in columnar modes.", rel, flat))
+        if is_true(fdef.get("store")):
+            out.append(finding("store_true", "blocker", f"`{flat}` has `store: true`: Elasticsearch "
+                               "rejects the mapping in columnar modes.", rel, flat))
+    mappings = itpl.get("mappings") if isinstance(itpl.get("mappings"), dict) else {}
+    rel = os.path.relpath(os.path.join(ds_dir, "manifest.yml"), pkg_dir)
+    for tpl in mappings.get("dynamic_templates") or []:
+        for name, body in tpl.items() if isinstance(tpl, dict) else []:
+            mapping = body.get("mapping") if isinstance(body, dict) else None
+            mapping = mapping if isinstance(mapping, dict) else {}
+            subs = mapping.get("fields") if isinstance(mapping.get("fields"), dict) else {}
+            if is_false(mapping.get("doc_values")):
+                out.append(finding("doc_values_false", "blocker", f"Dynamic template `{name}` sets "
+                                   "`doc_values: false`: in columnar modes, Elasticsearch rejects "
+                                   "every event with a matching field.", rel, name))
+            if any(is_true(m.get("store")) for m in [mapping, *subs.values()] if isinstance(m, dict)):
+                out.append(finding("store_true", "blocker", f"Dynamic template `{name}` sets "
+                                   "`store: true`: in columnar modes, Elasticsearch rejects every "
+                                   "event with a matching field.", rel, name))
+    build = read_yaml(os.path.join(pkg_dir, "_dev", "build", "build.yml"))
+    deps = build.get("dependencies") if isinstance(build, dict) else None
+    dep = deps.get("ecs") if isinstance(deps, dict) else None
+    if isinstance(dep, dict) and is_true(dep.get("import_mappings")):
+        out.append(finding("import_mappings", "blocker", "`import_mappings: true` adds ECS dynamic "
+                           "templates with `doc_values: false` (`event.original`, "
+                           "`*.x509.public_key_exponent`): in columnar modes, Elasticsearch rejects "
+                           "every event with one of these fields the stream does not map itself.",
+                           os.path.join("_dev", "build", "build.yml")))
     return out
 
 
@@ -802,6 +860,7 @@ def audit_stream(pkg_dir, ds_name, manifest, rules, pkg_name, own_dir, package_v
         if not in_mf:
             fields.setdefault(flat, fdef)
             sources.setdefault(flat, fname)
+    findings.extend(rejected_mappings(entries, itpl, ds_dir, pkg_dir))
     findings.extend(nested_object_children(entries))
     findings.extend(finding("source_consumer_kibana", "review", f"Reads `_source`: {', '.join(a['hits'])}.",
                             a["file"]) for a in kibana)
