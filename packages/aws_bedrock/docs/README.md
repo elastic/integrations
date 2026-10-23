@@ -48,11 +48,21 @@ For more details about these requirements, check the [AWS
 integration
 documentation](https://docs.elastic.co/integrations/aws#requirements).
 
-* Elastic Agent must be installed. For detailed guidance, follow these [instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-* You can install only one Elastic Agent per host.
-* Elastic Agent is required to stream data from the S3 bucket and ship the
-  data to Elastic, where the events will then be processed through the
-  integration's ingest pipelines.
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/docs/reference/fleet/install-elastic-agents). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to collect data from AWS and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
+### Elastic Managed deployment
+
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations).
+
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+Collecting logs from an S3 bucket requires an agent-based deployment.
 
 ## Setup
 
