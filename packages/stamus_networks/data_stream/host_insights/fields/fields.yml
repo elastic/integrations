@@ -1,0 +1,189 @@
+- name: ip
+  type: ip
+  description: >-
+    The host's IP address. Entity identifier for this data stream (weak key -- IP-only, no MAC/UUID alternative is documented; subject to DHCP reassignment, see research-brief.md open question #10).
+- name: host_id
+  type: group
+  description: >-
+    Stamus Host Insights per-host inventory profile. Confirmed absent from the live index mapping: `risk_score` and `os` (operating system) -- do not add these fields unless a separate vendor/version source confirms them for a specific product edition.
+  fields:
+    - name: first_seen
+      type: date
+      format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+      description: Record-level first-observed timestamp for this host (distinct from the per-sub-field first_seen timestamps below).
+    - name: last_seen
+      type: date
+      format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+      description: Record-level last-observed timestamp for this host.
+    - name: in_home_net
+      type: boolean
+      description: Whether the host is inside the configured "home network".
+    - name: hostname
+      type: group
+      description: Observed hostname(s) for this host.
+      fields:
+        - name: host
+          type: keyword
+          description: Observed hostname value.
+        - name: first_seen
+          type: date
+          format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+        - name: last_seen
+          type: date
+          format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+    - name: username
+      type: group
+      description: Usernames observed authenticating from this host.
+      fields:
+        - name: user
+          type: keyword
+          description: Observed username value.
+        - name: first_seen
+          type: date
+          format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+        - name: last_seen
+          type: date
+          format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+    - name: roles
+      type: group
+      description: Inferred host roles (e.g. Domain Controller, DHCP Server, HTTP Proxy, Printer).
+      fields:
+        - name: name
+          type: keyword
+          description: Inferred role name.
+        - name: first_seen
+          type: date
+          format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+        - name: last_seen
+          type: date
+          format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+    - name: services
+      type: group
+      description: Server-side services detected on this host.
+      fields:
+        - name: proto
+          type: keyword
+          description: Transport protocol, e.g. "tcp".
+        - name: port
+          type: long
+          description: Service port number.
+        - name: overflow
+          type: long
+          description: Vendor-internal overflow/truncation counter for this service's observation list.
+        - name: values
+          type: group
+          description: Per-application-protocol observation window for this service.
+          fields:
+            - name: app_proto
+              type: keyword
+              description: Detected application-layer protocol, e.g. "tls", "unknown".
+            - name: first_seen
+              type: date
+              format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+            - name: last_seen
+              type: date
+              format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+            - name: http
+              type: group
+              fields:
+                - name: server
+                  type: keyword
+                  description: HTTP Server header value observed on this service.
+            - name: ssh
+              type: group
+              fields:
+                - name: server
+                  type: group
+                  fields:
+                    - name: software_version
+                      type: keyword
+                      description: SSH server banner/software version observed on this service.
+            - name: tls
+              type: group
+              fields:
+                - name: cn
+                  type: keyword
+                  description: TLS certificate common name.
+                - name: fingerprint
+                  type: keyword
+                  description: TLS certificate fingerprint.
+                - name: issuerdn
+                  type: keyword
+                  description: TLS certificate issuer distinguished name.
+                - name: notafter
+                  type: date
+                  format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+                - name: notbefore
+                  type: date
+                  format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+                - name: serial
+                  type: keyword
+                  description: TLS certificate serial number.
+                - name: subject
+                  type: keyword
+                  description: TLS certificate subject distinguished name.
+    - name: client_service
+      type: group
+      description: Client-side protocol used by this host.
+      fields:
+        - name: name
+          type: keyword
+          description: Client-side protocol/service name.
+        - name: first_seen
+          type: date
+          format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+        - name: last_seen
+          type: date
+          format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+    - name: ssh
+      type: group
+      fields:
+        - name: client
+          type: group
+          description: SSH client banner observed from this host.
+          fields:
+            - name: software_version
+              type: keyword
+              description: SSH client banner/software version.
+            - name: first_seen
+              type: date
+              format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+            - name: last_seen
+              type: date
+              format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+    - name: tls
+      type: group
+      fields:
+        - name: ja4
+          type: group
+          description: >-
+            JA4 TLS client fingerprint. Confirmed live as `ja4` (not `ja3` as earlier vendor-docs-only research anticipated) -- see research-brief.md section 4.3.
+          fields:
+            - name: hash
+              type: keyword
+              description: JA4 fingerprint hash value.
+            - name: agent
+              type: keyword
+              description: Client agent/application associated with this JA4 fingerprint, when known.
+            - name: first_seen
+              type: date
+              format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+            - name: last_seen
+              type: date
+              format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+    - name: http
+      type: group
+      fields:
+        - name: user_agent
+          type: group
+          description: HTTP User-Agent string observed from this host.
+          fields:
+            - name: agent
+              type: keyword
+              description: HTTP User-Agent string value.
+            - name: first_seen
+              type: date
+              format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"
+            - name: last_seen
+              type: date
+              format: "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||strict_date_optional_time||epoch_millis"

@@ -1,0 +1,102 @@
+rules:
+  # --- event_type:alert, page 1 ---
+  # req_num 1 (round 1 / window 1): single page, terminal immediately (next: null).
+  # req_num 2 (round 2 / cursor-resume window): one additional event, terminal.
+  # req_num >=3 (all subsequent windows): terminal empty response -- the mock
+  # must stop producing new events once the two intended rounds have been
+  # served, otherwise the CEL program's advancing from_date/to_date window
+  # causes a brand-new unique event on every poll and the data stream's
+  # document count never stabilizes (elastic-package's system-test runner
+  # requires hit_count to be stable across consecutive polls).
+  - path: /rest/rules/es/events_tail/
+    methods: ['GET']
+    query_params:
+      qfilter: 'event_type:alert'
+      page_number: '1'
+      page_size: '2'
+      from_date: "{fd:.*}"
+      to_date: "{td:.*}"
+    request_headers:
+      Authorization:
+        - 'Token test-token'
+      Content-Type:
+        - 'application/json'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {{ if eq .req_num 1 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"event_type": "alert", "timestamp": "2024-01-15T12:00:00.123456+0000", "src_ip": "198.51.100.10", "dest_ip": "203.0.113.20", "flow_id": 2019054435055803, "alert": {"signature": "SN Example Alert Signature One", "severity": 2, "signature_id": 1000001, "category": "Unknown Traffic"}}]}
+          {{ else if eq .req_num 2 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"event_type": "alert", "timestamp": "2024-01-15T13:30:00.654321+0000", "src_ip": "198.51.100.11", "dest_ip": "203.0.113.21", "flow_id": 9007199254741337, "alert": {"signature": "SN Example Alert Signature Two", "severity": 2, "signature_id": 1000002, "category": "Unknown Traffic"}}]}
+          {{ else }}
+          {"count": 0, "next": null, "previous": null, "results": []}
+          {{ end }}
+  # --- event_type:stamus, page 1 ---
+  # req_num 1 (round 1 / window 1): returns one event + a non-terminal "next" link (page 2 exists).
+  # req_num 2 (round 2 / cursor-resume window): one event, terminal (next: null) -- no page 2 request expected.
+  # req_num >=3 (all subsequent windows): terminal empty response (see alert-rule comment above).
+  - path: /rest/rules/es/events_tail/
+    methods: ['GET']
+    query_params:
+      qfilter: 'event_type:stamus'
+      page_number: '1'
+      page_size: '2'
+      from_date: "{fd:.*}"
+      to_date: "{td:.*}"
+    request_headers:
+      Authorization:
+        - 'Token test-token'
+      Content-Type:
+        - 'application/json'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {{ if eq .req_num 1 }}
+          {"count": 2, "next": "http://{{ hostname }}:{{ env "PORT" }}/rest/rules/es/events_tail/?qfilter=event_type%3Astamus&from_date={{ .request.vars.fd }}&to_date={{ .request.vars.td }}&page_size=2&page_number=2", "previous": null, "results": [{"event_type": "stamus", "timestamp": "2024-01-15T12:10:00.111111+0000", "src_ip": "198.51.100.90", "dest_ip": "224.0.0.252", "alert": {"signature": "SN Example DoC Signature", "severity": 3, "signature_id": 1003120326, "category": ""}, "stamus": {"pk": 1, "event_id": 1, "family_name": "Example family", "threat_name": "Example threat", "kill_chain": "pre_condition", "asset": "198.51.100.90", "asset_type": "ip"}}]}
+          {{ else if eq .req_num 2 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"event_type": "stamus", "timestamp": "2024-01-15T13:40:00.222222+0000", "src_ip": "198.51.100.92", "dest_ip": "224.0.0.253", "alert": {"signature": "SN Example DoC Signature Resumed", "severity": 3, "signature_id": 1003120327, "category": ""}, "stamus": {"pk": 2, "event_id": 2, "family_name": "Example family", "threat_name": "Example threat", "kill_chain": "pre_condition", "asset": "198.51.100.92", "asset_type": "ip"}}]}
+          {{ else }}
+          {"count": 0, "next": null, "previous": null, "results": []}
+          {{ end }}
+  # --- event_type:stamus, page 2 (round 1 only; never requested again in round 2) ---
+  - path: /rest/rules/es/events_tail/
+    methods: ['GET']
+    query_params:
+      qfilter: 'event_type:stamus'
+      page_number: '2'
+      page_size: '2'
+      from_date: "{fd:.*}"
+      to_date: "{td:.*}"
+    request_headers:
+      Authorization:
+        - 'Token test-token'
+      Content-Type:
+        - 'application/json'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"count": 2, "next": null, "previous": "http://{{ hostname }}:{{ env "PORT" }}/rest/rules/es/events_tail/?qfilter=event_type%3Astamus&from_date={{ .request.vars.fd }}&to_date={{ .request.vars.td }}&page_size=2&page_number=1", "results": [{"event_type": "stamus", "timestamp": "2024-01-15T12:11:00.333333+0000", "src_ip": "198.51.100.91", "dest_ip": "224.0.0.252", "alert": {"signature": "SN Example DoC Signature Two", "severity": 3, "signature_id": 1003120328, "category": ""}, "stamus": {"pk": 3, "event_id": 3, "family_name": "Example family", "threat_name": "Example threat", "kill_chain": "pre_condition", "asset": "198.51.100.91", "asset_type": "ip"}}]}
+  # --- Regression guard: catch-all for any other events_tail request (e.g. missing/unmatched
+  # query params, or a cursor regression re-sending the initial-interval window instead of the
+  # persisted bookmark). Returns an oversized batch so hit_count assertions fail loudly. ---
+  - path: /rest/rules/es/events_tail/
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"count": 50, "next": null, "previous": null, "results": [
+            {"event_type": "alert", "timestamp": "2020-01-01T00:00:00Z", "alert": {"signature": "REGRESSION GUARD - unexpected request shape", "severity": 1, "signature_id": 9999999, "category": "regression"}},
+            {"event_type": "alert", "timestamp": "2020-01-01T00:00:01Z", "alert": {"signature": "REGRESSION GUARD - unexpected request shape", "severity": 1, "signature_id": 9999999, "category": "regression"}}
+          ]}

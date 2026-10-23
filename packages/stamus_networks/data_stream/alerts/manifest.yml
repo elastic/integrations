@@ -1,0 +1,90 @@
+title: "Stamus Networks alerts"
+type: logs
+streams:
+  - input: cel
+    title: "Stamus Networks alerts"
+    description: |-
+      Collect Suricata IDS/IPS alert events and Stamus Declaration of Compromise/Policy Violation
+      correlation records via the Clear NDR Central Server REST API.
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: "Collection interval"
+        description: |-
+          How often the API is polled, e.g. 5m, 1h.
+        required: true
+        show_user: true
+        default: 5m
+      - name: initial_interval
+        type: text
+        title: "Initial lookback"
+        description: |-
+          Lookback window used on the very first poll (no stored cursor yet). Go duration units
+          only (h, m, s) -- day units are not supported.
+        required: true
+        show_user: true
+        default: 24h
+      - name: page_size
+        type: integer
+        title: "Page size"
+        description: |-
+          Pagination page size for the events_tail endpoint. The vendor's documented default/cap
+          is 30 -- verify at deployment time whether a larger value is accepted by the target CNCS.
+        required: true
+        show_user: false
+        default: 30
+      - name: http_client_timeout
+        type: text
+        title: "HTTP client timeout"
+        description: |-
+          Duration before declaring that the HTTP client connection has timed out, e.g. 30s.
+        required: false
+        show_user: false
+        default: 30s
+      - name: ssl
+        type: yaml
+        title: "TLS configuration"
+        description: |-
+          TLS configuration for the Central Server connection (certificate_authorities,
+          verification_mode, etc.). Self-signed certificates are common on CNCS deployments.
+        required: false
+        show_user: false
+      - name: proxy_url
+        type: text
+        title: "Proxy URL"
+        description: |-
+          Optional HTTP/HTTPS proxy URL, e.g. http://proxy.example.com:3128.
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: "Tags"
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - stamus_networks-alerts
+      - name: processors
+        type: yaml
+        title: "Processors"
+        description: |-
+          Processors to apply to the event before it is sent to Elasticsearch. See
+          [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html)
+          for details.
+        required: false
+        show_user: false
+      - name: enable_request_tracer
+        type: bool
+        title: "Enable request tracing"
+        description: |-
+          Logs HTTP requests and responses to the agent's local filesystem for debugging. Compromises
+          security (may log secrets) -- use for troubleshooting only, not in steady-state production.
+        required: false
+        show_user: false
+        default: false
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

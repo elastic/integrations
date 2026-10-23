@@ -1,0 +1,69 @@
+rules:
+  # --- page_number:1 ---
+  # req_num 1 (round 1 / first poll): full page (2 hosts), next non-null -> page 2 follows.
+  # req_num 2 (round 2 / second poll, interval-driven): Host Insights has NO incremental
+  # filter (no from_date/to_date, no cursor) -- every poll does a full re-read starting
+  # at page 1 again. This response is intentionally SHORT (1 host, next: null) so it is
+  # observably different from req_num 1 and proves the CEL program resets its page
+  # counter to 1 on each new poll cycle rather than continuing from the previous poll's
+  # last page.
+  # req_num >=3 (all subsequent polls within the 1m test window): terminal empty
+  # response -- stops hit_count from growing unboundedly across repeated full reads.
+  - path: /rest/appliances/host_id/
+    methods: ['GET']
+    query_params:
+      page_number: '1'
+      page_size: '2'
+    request_headers:
+      Authorization:
+        - 'Token test-token'
+      Content-Type:
+        - 'application/json'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {{ if eq .req_num 1 }}
+          {"count": 3, "next": "http://{{ hostname }}:{{ env "PORT" }}/rest/appliances/host_id/?page_size=2&page_number=2", "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}]}]}}, {"ip": "198.51.100.11", "host_id": {"first_seen": "2024-01-11T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000", "in_home_net": false, "hostname": [{"host": "host-b.example.com", "first_seen": "2024-01-11T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "services": []}}]}
+          {{ else if eq .req_num 2 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.12", "host_id": {"first_seen": "2024-01-15T13:00:00.000000+0000", "last_seen": "2024-01-15T13:05:00.000000+0000", "in_home_net": true, "hostname": [], "services": []}}]}
+          {{ else }}
+          {"count": 0, "next": null, "previous": null, "results": []}
+          {{ end }}
+  # --- page_number:2 (round 1 only -- round 2's page 1 response is already terminal,
+  # so no page 2 request is expected on round 2 or later) ---
+  - path: /rest/appliances/host_id/
+    methods: ['GET']
+    query_params:
+      page_number: '2'
+      page_size: '2'
+    request_headers:
+      Authorization:
+        - 'Token test-token'
+      Content-Type:
+        - 'application/json'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"count": 1, "next": null, "previous": "http://{{ hostname }}:{{ env "PORT" }}/rest/appliances/host_id/?page_size=2&page_number=1", "results": [{"ip": "198.51.100.13", "host_id": {"first_seen": "2024-01-12T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-c.example.com", "first_seen": "2024-01-12T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "services": []}}]}
+  # --- Regression guard: catch-all for any other host_id request (e.g. missing/unmatched
+  # query params, or a bug that keeps advancing page_number past where this poll's
+  # reads should have reset to page 1). Returns an oversized batch so hit_count
+  # assertions fail loudly instead of silently under/over-counting. ---
+  - path: /rest/appliances/host_id/
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"count": 50, "next": null, "previous": null, "results": [
+            {"ip": "203.0.113.200", "host_id": {"first_seen": "2020-01-01T00:00:00Z", "last_seen": "2020-01-01T00:00:00Z", "in_home_net": false, "hostname": [{"host": "regression-guard.example.com", "first_seen": "2020-01-01T00:00:00Z", "last_seen": "2020-01-01T00:00:00Z"}], "services": []}},
+            {"ip": "203.0.113.201", "host_id": {"first_seen": "2020-01-01T00:00:00Z", "last_seen": "2020-01-01T00:00:00Z", "in_home_net": false, "hostname": [{"host": "regression-guard.example.com", "first_seen": "2020-01-01T00:00:00Z", "last_seen": "2020-01-01T00:00:00Z"}], "services": []}}
+          ]}

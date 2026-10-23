@@ -1,0 +1,165 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_token: {{api_token}}
+  page_size: {{page_size}}
+  initial_interval: {{initial_interval}}
+redact:
+  fields:
+    - api_token
+program: |-
+  // Stamus Networks alerts: GET /rest/rules/es/events_tail/?qfilter=event_type:<phase>
+  //
+  // [CONFIRMED -- live CNCS instance, open-source Clear NDR Community/SELKS edition]
+  // Despite vendor docs describing `events_tail` as scoped to non-alert protocol
+  // events, GET .../events_tail/?qfilter=event_type:alert DOES return full raw
+  // Suricata alert documents (alert.*, flow.*, http.*, etc.), not just aggregates.
+  // This endpoint choice is correct; no further action needed here. On this
+  // particular (open-source/Community-tier) instance, qfilter=event_type:stamus
+  // returned zero results -- consistent with DoC/DoPV correlation (the `stamus`
+  // event_type) being a higher license tier, not a bug in this program's two-phase
+  // design. See README Troubleshooting for the Tier 3 licensing note.
+  //
+  // Two-phase worklist per time window: fetch all pages of event_type:alert, then
+  // all pages of event_type:stamus, for the same [from_date, to_date) window, then
+  // advance the window and repeat. want_more == true is used both to drive
+  // within-type pagination and to move from the "alert" phase to the "stamus"
+  // phase without waiting for the next poll interval.
+  //
+  // [CONFIRMED -- live CNCS instance] Pagination response envelope is exactly DRF
+  // PageNumberPagination: {count, next, previous, results}. `page_number` (not the
+  // `page=` value that appears, vestigially, in the `next` URL's querystring) is
+  // the real server-side cursor parameter -- confirmed experimentally that
+  // changing `page_number` changes the returned documents. This program already
+  // sends `page_number` (see below), so no fix was needed. Continuation is driven
+  // primarily by `next` (non-null), with fallback heuristics (empty/short page)
+  // retained as a defensive fallback in case a different CNCS version/edition ever
+  // omits `next`.
+  {
+    "phase": state.?cursor.phase.orValue("alert"),
+    "page": int(state.?cursor.page.orValue(1)),
+    "from_date": state.?cursor.from_date.orValue(
+      string(int(now - duration(state.initial_interval)) * 1000)
+    ),
+    "to_date": state.?cursor.to_date.orValue(string(int(now) * 1000)),
+  }.as(cur,
+    state.with(
+      request(
+        "GET",
+        state.url.trim_right("/") + "/rest/rules/es/events_tail/?" + {
+          "qfilter": ["event_type:" + cur.phase],
+          "from_date": [cur.from_date],
+          "to_date": [cur.to_date],
+          "page_size": [string(int(state.page_size))],
+          "page_number": [string(cur.page)],
+        }.format_query()
+      ).with(
+        {
+          "Header": {
+            "Authorization": ["Token " + state.api_token],
+            "Content-Type": ["application/json"],
+          },
+        }
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          // KNOWN LIMITATION: flow_id is a large integer (>= 2^53 in production)
+          // that can lose trailing-digit precision through CEL's float64 JSON
+          // layer when decode_json() parses it as a number. A prior version of
+          // this program rewrote flow_id to a quoted JSON string in the raw body
+          // before decode_json() (via a `regexp:`/re_replace_all pre-processing
+          // step) to avoid this -- that mechanism was removed because it caused
+          // Elastic Agent to silently fail to schedule a component for this input
+          // (confirmed empirically: `regexp:` stream-config + `generateComponentModel`
+          // produced zero components for this input on Elastic Agent 9.5.5, with no
+          // errors logged anywhere). See fields.yml / README Troubleshooting for the
+          // documented precision-loss limitation this reintroduces.
+          resp.Body.decode_json().as(body,
+            body.?results.orValue([]).map(e, {"message": e.encode_json()}).as(mapped,
+              (
+                // Primary signal: DRF-style `next` field, non-null means more pages.
+                // Fallback (if the real envelope omits `next` entirely): a full page
+                // suggests more data may follow; a short/empty page means stop.
+                size(mapped) != 0 && (
+                  body.?next.hasValue() ?
+                    (body.?next.orValue(null) != null)
+                  :
+                    size(mapped) >= int(state.page_size)
+                )
+              ) ?
+                // More pages remain for the current phase in this window.
+                {
+                  "events": (size(mapped) > 0) ? dyn(mapped) : dyn([{"retry": true}]),
+                  "cursor": cur.with({"page": cur.page + 1}),
+                  "want_more": true,
+                }
+              : (cur.phase == "alert") ?
+                // alert phase exhausted for this window -- move to stamus phase
+                // immediately (same window), page reset to 1.
+                {
+                  "events": (size(mapped) > 0) ? dyn(mapped) : dyn([{"retry": true}]),
+                  "cursor": {"phase": "stamus", "from_date": cur.from_date, "to_date": cur.to_date, "page": 1},
+                  "want_more": true,
+                }
+              :
+                // stamus phase exhausted -- both phases done for this window. Advance
+                // the window (next from_date is this window's to_date) and wait for
+                // the next poll interval before starting the next window.
+                {
+                  "events": (size(mapped) > 0) ? dyn(mapped) : dyn([{"retry": true}]),
+                  "cursor": {"phase": "alert", "from_date": cur.to_date},
+                  "want_more": false,
+                }
+            )
+          )
+        :
+          {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET /rest/rules/es/events_tail/: " + (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          }.as(err,
+            // Non-retryable 4xx (bad/expired token, licensing gap, malformed request,
+            // unknown route): advance past the error instead of retrying forever, so
+            // it is indexed and visible to an operator (see README Troubleshooting on
+            // 401s from token rotation). Everything else (429, 5xx, etc.) is treated
+            // as transient: delete the cursor so the next evaluation retries.
+            [400, 401, 403, 404, 422].exists(c, c == int(resp.StatusCode)) ?
+              {"events": [{"error": err}], "want_more": false}
+            :
+              {"events": {"error": err}, "want_more": false}
+          )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}

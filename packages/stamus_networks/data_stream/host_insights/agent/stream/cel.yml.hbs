@@ -1,0 +1,133 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_token: {{api_token}}
+  page_size: {{page_size}}
+redact:
+  fields:
+    - api_token
+program: |-
+  // Stamus Networks host insights: GET /rest/appliances/host_id/
+  //
+  // Host Insights has NO documented "updated since" / incremental filter
+  // (research-brief.md section 8, open question #9) -- every poll cycle must
+  // do a FULL re-read of all hosts, starting at page 1, every time. There is
+  // no time-range window and no cursor/bookmark to resume from (unlike the
+  // `alerts` data stream's from_date/to_date cursor). This has resourcing and
+  // polling-interval implications: a large host inventory means every single
+  // poll re-transfers and re-indexes the entire list, so `interval` should be
+  // set conservatively relative to inventory size and API load tolerance.
+  //
+  // Page tracking uses a plain `state.page` field, not `cursor`. `cursor` is
+  // the only state persisted across agent restarts, and persisting an
+  // in-progress page number across restarts would be meaningless for a
+  // full-inventory poll -- each new polling interval always starts over at
+  // page 1. The plain state field only needs to survive the want_more
+  // re-evaluation chain within a single poll cycle (state.with() propagates
+  // it automatically), and it is explicitly reset to 1 once a poll's
+  // pagination finishes so the next interval starts clean.
+  //
+  // Pagination response envelope is UNCONFIRMED against a live CNCS instance
+  // (research-brief.md section 3.3 / open question #3) -- assumed to be the
+  // same DRF-style {count, next, previous, results} envelope used for the
+  // `alerts` stream, with the same fallback heuristics (empty/short page) in
+  // case the real envelope omits `next`.
+  int(state.?page.orValue(1)).as(page,
+    state.with(
+      request(
+        "GET",
+        state.url.trim_right("/") + "/rest/appliances/host_id/?" + {
+          "page_size": [string(int(state.page_size))],
+          "page_number": [string(page)],
+        }.format_query()
+      ).with(
+        {
+          "Header": {
+            "Authorization": ["Token " + state.api_token],
+            "Content-Type": ["application/json"],
+          },
+        }
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body,
+            body.?results.orValue([]).map(e, {"message": e.encode_json()}).as(mapped,
+              (
+                // Primary signal: DRF-style `next` field, non-null means more
+                // pages. Fallback (if the real envelope omits `next`
+                // entirely): a full page suggests more data may follow; a
+                // short/empty page means stop.
+                size(mapped) != 0 && (
+                  body.?next.hasValue() ?
+                    (body.?next.orValue(null) != null)
+                  :
+                    size(mapped) >= int(state.page_size)
+                )
+              ) ?
+                // More pages remain for this poll's full read.
+                {
+                  "events": (size(mapped) > 0) ? dyn(mapped) : dyn([{"retry": true}]),
+                  "page": page + 1,
+                  "want_more": true,
+                }
+              :
+                // Full read complete for this poll -- reset the page counter
+                // so the next poll cycle starts over at page 1.
+                {
+                  "events": (size(mapped) > 0) ? dyn(mapped) : dyn([{"retry": true}]),
+                  "page": 1,
+                  "want_more": false,
+                }
+            )
+          )
+        :
+          {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET /rest/appliances/host_id/: " + (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          }.as(err,
+            // Non-retryable 4xx (bad/expired token, licensing gap, malformed request,
+            // unknown route): advance past the error instead of retrying forever, so
+            // it is indexed and visible to an operator (see README Troubleshooting on
+            // 401s from token rotation). Everything else (429, 5xx, etc.) is treated
+            // as transient: delete the cursor so the next evaluation retries.
+            [400, 401, 403, 404, 422].exists(c, c == int(resp.StatusCode)) ?
+              {"events": [{"error": err}], "page": 1, "want_more": false}
+            :
+              {"events": {"error": err}, "page": 1, "want_more": false}
+          )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}
