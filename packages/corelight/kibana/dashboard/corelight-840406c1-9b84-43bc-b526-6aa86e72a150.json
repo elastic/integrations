@@ -850,10 +850,10 @@
                                         }
                                     ],
                                     "layers": {
-                                        "a260ef22-6614-47f6-bc3c-b25bd690fa49": {
+                                        "728054f5-a943-4810-affa-8c398bd249d6": {
                                             "columns": [
                                                 {
-                                                    "columnId": "Anomaly Types",
+                                                    "columnId": "6b7b4f12-1982-43a0-8320-9b273a6ab791",
                                                     "fieldName": "Anomaly Types",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -861,26 +861,17 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Anomalous Items",
-                                                    "fieldName": "Anomalous Items",
+                                                    "columnId": "e9de40e8-df20-4ab3-b52b-3e94d110456d",
+                                                    "fieldName": "Anomalous Items (count)",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "Count of Anomalous Items",
-                                                    "fieldName": "Count of Anomalous Items",
-                                                    "inMetricDimension": true,
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
                                                     }
                                                 }
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "FROM logs-corelight.various-*\r\n| WHERE event.dataset == \"anomaly\"\r\n    AND use_case_description IS NOT NULL\r\n    AND anomaly.original_entity IS NOT NULL\r\n    AND anomaly.item IS NOT NULL\r\n| EVAL anomaly_detection = CONCAT(use_case_description, \" | \", anomaly.original_entity)\r\n| STATS\r\n    `Anomalous_Items` = COUNT(anomaly.item),\r\n    item_values = VALUES(anomaly.item),\r\n    usecase_description_values = VALUES(use_case_description)\r\n  BY anomaly_detection, anomaly.item\r\n| MV_EXPAND usecase_description_values\r\n| STATS\r\n    `Anomalous Items`         = VALUES(item_values),\r\n    `Count of Anomalous Items` = VALUES(`Anomalous_Items`)\r\n  BY anomaly_detection, usecase_description_values\r\n| RENAME usecase_description_values AS `Anomaly Types`\r\n| KEEP `Anomaly Types`, `Anomalous Items`, `Count of Anomalous Items`\r\n"
+                                                "esql": "FROM logs-corelight.various-*\r\n| WHERE event.dataset == \"anomaly\"\r\n    AND use_case_description IS NOT NULL\r\n    AND anomaly.original_entity IS NOT NULL\r\n    AND anomaly.item IS NOT NULL\r\n| STATS item_count = COUNT(*) BY use_case_description, anomaly.original_entity, anomaly.item\r\n| EVAL item_with_count = CONCAT(anomaly.item, \" (\", TO_STRING(item_count), \")\")\r\n| STATS `Anomalous Items (count)` = VALUES(item_with_count) BY use_case_description, anomaly.original_entity\r\n| RENAME use_case_description AS `Anomaly Types`, anomaly.original_entity AS `Anomalous Entity`\r\n| KEEP `Anomaly Types`, `Anomalous Items (count)`\r\n"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -889,21 +880,22 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-corelight.various-*\r\n| WHERE event.dataset == \"anomaly\"\r\n    AND use_case_description IS NOT NULL\r\n    AND anomaly.original_entity IS NOT NULL\r\n    AND anomaly.item IS NOT NULL\r\n| EVAL anomaly_detection = CONCAT(use_case_description, \" | \", anomaly.original_entity)\r\n| STATS\r\n    `Anomalous_Items` = COUNT(anomaly.item),\r\n    item_values = VALUES(anomaly.item),\r\n    usecase_description_values = VALUES(use_case_description)\r\n  BY anomaly_detection, anomaly.item\r\n| MV_EXPAND usecase_description_values\r\n| STATS\r\n    `Anomalous Items`         = VALUES(item_values),\r\n    `Count of Anomalous Items` = VALUES(`Anomalous_Items`)\r\n  BY anomaly_detection, usecase_description_values\r\n| RENAME usecase_description_values AS `Anomaly Types`\r\n| KEEP `Anomaly Types`, `Anomalous Items`, `Count of Anomalous Items`\r\n"
+                                "esql": "FROM logs-corelight.various-*\r\n| WHERE event.dataset == \"anomaly\"\r\n    AND use_case_description IS NOT NULL\r\n    AND anomaly.original_entity IS NOT NULL\r\n    AND anomaly.item IS NOT NULL\r\n| STATS item_count = COUNT(*) BY use_case_description, anomaly.original_entity, anomaly.item\r\n| EVAL item_with_count = CONCAT(anomaly.item, \" (\", TO_STRING(item_count), \")\")\r\n| STATS `Anomalous Items (count)` = VALUES(item_with_count) BY use_case_description, anomaly.original_entity\r\n| RENAME use_case_description AS `Anomaly Types`, anomaly.original_entity AS `Anomalous Entity`\r\n| KEEP `Anomaly Types`, `Anomalous Items (count)`\r\n"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "Anomaly Types"
+                                        "columnId": "6b7b4f12-1982-43a0-8320-9b273a6ab791",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Anomalous Items"
-                                    },
-                                    {
-                                        "columnId": "Count of Anomalous Items"
+                                        "columnId": "e9de40e8-df20-4ab3-b52b-3e94d110456d",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     }
                                 ],
-                                "layerId": "a260ef22-6614-47f6-bc3c-b25bd690fa49",
+                                "layerId": "728054f5-a943-4810-affa-8c398bd249d6",
                                 "layerType": "data",
                                 "paging": {
                                     "enabled": true,
@@ -911,7 +903,7 @@
                                 }
                             }
                         },
-                        "title": "Bar vertical stacked",
+                        "title": "Table Anomaly Types \u0026 Anomalous Items (count)",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -1398,7 +1390,7 @@
                     "y": 77
                 },
                 "panelIndex": "e432527c-4e3a-4561-8f3f-52bee2acb2ce",
-                "title": "Detection Breakdown by Anomaly Type and Source IP",
+                "title": "Detection Breakdown by Anomaly Type and Entity Host",
                 "type": "lens"
             },
             {
@@ -2737,7 +2729,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-10-21T08:51:14.793Z",
+    "created_at": "2026-10-23T06:44:37.236Z",
     "id": "corelight-840406c1-9b84-43bc-b526-6aa86e72a150",
     "references": [
         {
