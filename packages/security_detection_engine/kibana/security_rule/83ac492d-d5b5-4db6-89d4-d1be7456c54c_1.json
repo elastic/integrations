@@ -1,0 +1,77 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects Vertex AI prompt-response logs where a candidate safety_ratings.probability is HIGH or MEDIUM. Those values are stronger signals than NEGLIGIBLE or LOW alone. Requires the request to include safetySettings so ratings are logged.",
+        "false_positives": [
+            "Borderline creative-writing or news-summarization prompts can occasionally score MEDIUM. Confirm category and prompt text before escalating."
+        ],
+        "from": "now-60m",
+        "interval": "10m",
+        "investigation_fields": {
+            "field_names": [
+                "cloud.project.id",
+                "gcp.vertexai.prompt_response_logs.model",
+                "gcp.vertexai.prompt_response_logs.api_method",
+                "gcp.vertexai.prompt_response_logs.full_request.contents.parts.text",
+                "gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.category",
+                "gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.probability",
+                "gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.severity",
+                "gcp.vertexai.prompt_response_logs.full_response.candidates.finish_reason",
+                "gcp.vertexai.prompt_response_logs.full_request.safety_settings.threshold"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GCP Vertex AI Elevated Safety Rating on Response",
+        "note": "## Triage and analysis\n\n### Investigating GCP Vertex AI Elevated Safety Rating on Response\n\nA GenerateContent response included `safety_ratings.probability` of HIGH or MEDIUM for one or more\nGemini harm categories (for example `HARM_CATEGORY_HATE_SPEECH` or\n`HARM_CATEGORY_DANGEROUS_CONTENT`). That is a stronger signal than NEGLIGIBLE/LOW and often means\nthe prompt probed disallowed content \u2014 whether or not generation was fully blocked.\n\n#### Possible investigation steps\n\n- Read the prompt in `gcp.vertexai.prompt_response_logs.full_request.contents.parts.text`.\n- Note `safety_ratings.category`, `probability`, and `severity` on the alert, plus\n  `finish_reason`. `SAFETY` with HIGH/MEDIUM is high confidence; `STOP` with HIGH still warrants\n  review of what was returned.\n- Check `full_request.safety_settings.threshold` on the same event. `BLOCK_NONE` means category\n  blocking was disabled for listed categories.\n- Pivot to `logs-gcp_vertexai.auditlogs-*` GenerateContent for `source.ip` and `client.user.email`\n  in the same window to identify the caller.\n- Look for related alerts (jailbreak heuristics, repeated refusals, BLOCK_NONE) from the same\n  project/model.\n\n### False positive analysis\n\n- Authorized red-team or content-moderation workloads that intentionally score MEDIUM/HIGH.\n  Exclude those projects or principals.\n- Borderline creative-writing or news-summarization prompts can occasionally score MEDIUM \u2014 read\n  the prompt before escalating.\n\n### Response and remediation\n\n- If the prompt is malicious and unauthorized: quarantine the calling identity, revoke Vertex\n  credentials, and review IAM.\n- If `BLOCK_NONE` was used, require stricter thresholds (for example BLOCK_MEDIUM_AND_ABOVE) via\n  org policy or application defaults.\n",
+        "query": "from logs-gcp_vertexai.prompt_response_logs-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"gcp_vertexai.prompt_response_logs\" and\n    (\n        MV_CONTAINS(gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.probability, \"HIGH\") or\n        MV_CONTAINS(gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.probability, \"MEDIUM\")\n    )\n| keep\n    _id,\n    _version,\n    _index,\n    @timestamp,\n    cloud.project.id,\n    gcp.vertexai.prompt_response_logs.model,\n    gcp.vertexai.prompt_response_logs.api_method,\n    gcp.vertexai.prompt_response_logs.full_request.contents.parts.text,\n    gcp.vertexai.prompt_response_logs.full_request.safety_settings.threshold,\n    gcp.vertexai.prompt_response_logs.full_response.candidates.finish_reason,\n    gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.category,\n    gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.probability,\n    gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.severity\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/gcp_vertexai",
+            "https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/configure-safety-filters"
+        ],
+        "related_integrations": [
+            {
+                "package": "gcp_vertexai",
+                "version": ">=1.4.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.vertexai.prompt_response_logs.full_response.candidates.safety_ratings.probability",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "83ac492d-d5b5-4db6-89d4-d1be7456c54c",
+        "setup": "## Setup\n\nRequires prompt_response_logs with candidates.safety_ratings.* populated. Ratings appear when the client sends\nsafetySettings on the GenerateContent request.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Domain: Cloud",
+            "Data Source: GCP Vertex AI",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Platform: GCP",
+            "Service: GCP Vertex AI",
+            "Use Case: Policy Violation",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Threat: Unauthorized AI Usage",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL"
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "83ac492d-d5b5-4db6-89d4-d1be7456c54c_1",
+    "type": "security-rule"
+}
