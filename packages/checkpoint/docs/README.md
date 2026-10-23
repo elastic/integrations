@@ -161,6 +161,14 @@ For more information on architectures that can be used for scaling this integrat
 
 The `firewall` data stream provides events from Check Point devices, including firewall traffic, VPN logs, audit logs, and system events.
 
+#### RFC 3164 system logs
+
+Check Point Log Exporter sends firewall, VPN, and audit events as RFC 5424 syslog. The same syslog input can also receive device and operating system messages in RFC 3164 (BSD) format.
+
+The firewall data stream parses an RFC 3164 line into ECS fields: `log.syslog.priority`, `log.syslog.facility.code`, `log.syslog.severity.code`, `process.name`, `process.pid`, `message`, and `@timestamp`. The syslog host is copied to both `host.hostname`/`host.ip` and `observer.hostname`/`observer.ip`. The BSD timestamp has no timezone, so the integration applies the configured timezone offset. The timestamp also has no year; the year is the calendar year of the ingest time in the configured timezone, rolled back one year when that local time would fall after ingest time.
+
+These events are not Check Point security logs. They do not populate `checkpoint.*` fields.
+
 #### Gateway identification fields
 
 Check Point Security Gateways identify themselves in syslog payloads through two distinct fields, which the integration maps to ECS as follows:
@@ -802,6 +810,9 @@ The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Beca
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | log.source.address | Source address of logs received over the network. | keyword |
+| log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
+| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
+| log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
@@ -829,6 +840,7 @@ The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Beca
 | process.parent.hash.md5 | MD5 hash. | keyword |
 | process.parent.name | Process name. Sometimes called program name or similar. | keyword |
 | process.parent.name.text | Multi-field of `process.parent.name`. | match_only_text |
+| process.pid | Process id. | long |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
