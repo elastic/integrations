@@ -4473,6 +4473,514 @@ rules:
             - "application/json"
         body: |
           {"kind":"reports#auditActivities","items":[{"kind":"admin#reports#activity","id":{"time":"2020-10-02T15:00:00Z","uniqueQualifier":1,"applicationName":"device","customerId":"1"},"actor":{"callerType":"USER","email":"foo@bar.com","profileId":1},"ownerDomain":"example.com","ipAddress":"67.43.156.13","events":[{"type":"CLOUD_OSLOGIN","name":"IMPORT_SSH_PUBLIC_KEY","parameters":[{"name":"USER_EMAIL","value":"foo@bar.com"}]}]}]}
+  # Directory API routes for the chromeos_devices entity data stream
+  # (chromeosdevices.list). Every page must resend projection=FULL and
+  # maxResults, and must not carry orgUnitPath or includeChildOrgunits (no
+  # org_unit_path is set in the system test). Four pages: page 2 has no
+  # "chromeosdevices" key but still carries a token; page 4 is the terminal
+  # page. All records are constructed and anonymised. Edge cases:
+  # device 1: ACTIVE, camelCase enums, annotatedUser as an email, lowercase and
+  #   uppercase MACs (including dockMacAddress), a USER_TYPE_UNMANAGED recent
+  #   user with no email, diskSpaceUsage and every telemetry array;
+  # device 2: DEPROVISIONED with no lastKnownNetwork or recentUsers, and
+  #   annotatedUser as a person's name;
+  # device 3: Google's published FULL example (legacy kind, bootMode
+  #   "validated", activeTime as a string, orgUnitPath without a leading "/")
+  #   with annotatedUser "help desk";
+  # device 4: Google's published by-serial example (SHIPPED, supportEndDate as
+  #   an epoch-milliseconds string), an uppercase MAC, no annotatedUser and no
+  #   annotatedAssetId;
+  # device 5: ChromeOS Flex with no annotatedUser and no annotatedAssetId;
+  # device 6: UPPER_SNAKE enums, bootMode "Dev", uppercase MACs including
+  #   dockMacAddress, two lastKnownNetwork entries, an unmanaged recent user
+  #   listed first, and extended support fields;
+  # device 7: DISABLED kiosk, UPPER_SNAKE enums, annotatedUser as free text,
+  #   firstEnrollmentTime as an epoch-milliseconds string;
+  # device 8: PRE_PROVISIONED with no lastSync and only a few fields.
+  - path: /admin/directory/v1/customer/my_customer/devices/chromeos
+    methods: [GET]
+    query_params:
+      projection: FULL
+      maxResults: "3"
+      pageToken: chromeos-page-4
+      orgUnitPath: null
+      includeChildOrgunits: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#chromeosdevices",
+            "etag": "\"exampleEtag_chromeos_page_4\"",
+            "chromeosdevices": [
+              {
+                "kind": "admin#directory#chromeosdevice",
+                "etag": "\"exampleEtag_device_7\"",
+                "deviceId": "77777777-8888-4999-8aaa-bbbbbbbbbbbb",
+                "serialNumber": "EXAMPLESN0007",
+                "status": "DISABLED",
+                "lastSync": "2026-10-11T19:04:12.000Z",
+                "annotatedUser": "Lobby kiosk",
+                "annotatedAssetId": "KIOSK-0007",
+                "annotatedLocation": "Example Corp HQ, Lobby",
+                "notes": "Disabled pending screen repair",
+                "model": "Example Chromebox 3",
+                "osVersion": "128.0.6613.152",
+                "platformVersion": "15964.67.0 (Official Build) stable-channel examplebox",
+                "firmwareVersion": "Google_Examplebox.14505.115.0",
+                "macAddress": "00005e005371",
+                "ethernetMacAddress": "00005e005372",
+                "bootMode": "Verified",
+                "firstEnrollmentTime": "1700000000000",
+                "lastEnrollmentTime": "2023-11-14T22:13:20.000Z",
+                "orgUnitPath": "/Kiosks",
+                "orgUnitId": "03ph8a2z00kiosks",
+                "chromeOsType": "CHROME_OS_FLEX",
+                "deviceLicenseType": "KIOSK_UPGRADE",
+                "osVersionCompliance": "PENDING",
+                "autoUpdateThrough": "2030-06-01T00:00:00Z",
+                "systemRamTotal": "4294967296",
+                "lastKnownNetwork": [
+                  {"ipAddress": "192.0.2.71", "wanIpAddress": "203.0.113.17"}
+                ],
+                "osUpdateStatus": {
+                  "state": "UPDATE_STATE_NEED_REBOOT",
+                  "targetOsVersion": "16033.58.0",
+                  "updateCheckTime": "2026-10-11T18:00:00.000Z"
+                }
+              },
+              {
+                "kind": "admin#directory#chromeosdevice",
+                "etag": "\"exampleEtag_device_8\"",
+                "deviceId": "88888888-9999-4aaa-8bbb-cccccccccccc",
+                "serialNumber": "EXAMPLESN0008",
+                "status": "PRE_PROVISIONED",
+                "model": "Example Chromebook 14",
+                "orgUnitPath": "/",
+                "orgUnitId": "03ph8a2z00rootou",
+                "chromeOsType": "chromeOs",
+                "deviceLicenseType": "enterpriseUpgradePerpetual"
+              }
+            ]
+          }
+          `}}
+  - path: /admin/directory/v1/customer/my_customer/devices/chromeos
+    methods: [GET]
+    query_params:
+      projection: FULL
+      maxResults: "3"
+      pageToken: chromeos-page-3
+      orgUnitPath: null
+      includeChildOrgunits: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#chromeosdevices",
+            "etag": "\"exampleEtag_chromeos_page_3\"",
+            "chromeosdevices": [
+              {
+                "kind": "directory#chromeosdevice",
+                "deviceId": "44444444-5555-4666-8777-888888888888",
+                "serialNumber": "123456",
+                "status": "SHIPPED",
+                "supportEndDate": "1404457200000",
+                "model": "Example Chromebook 13",
+                "meid": "A1000000000004",
+                "macAddress": "00005E005341",
+                "orderNumber": "1234",
+                "willAutoRenew": true
+              },
+              {
+                "kind": "admin#directory#chromeosdevice",
+                "etag": "\"exampleEtag_device_5\"",
+                "deviceId": "bbbbbbbb-cccc-4ddd-8eee-ffffffffffff",
+                "serialNumber": "FAKEFLEXSERIAL05",
+                "status": "ACTIVE",
+                "lastSync": "2026-10-12T22:47:01.880Z",
+                "annotatedLocation": "Example Corp Branch Office",
+                "model": "Example Vendor ExampleBook 840 G5",
+                "osVersion": "129.0.6668.110",
+                "platformVersion": "16002.51.0 (Official Build) stable-channel reven",
+                "firmwareVersion": "Example Vendor BIOS Q78 Ver. 01.24.00",
+                "macAddress": "00005e005351",
+                "ethernetMacAddress": "00005e005352",
+                "bootMode": "Verified",
+                "lastEnrollmentTime": "2025-11-03T13:30:00.000Z",
+                "firstEnrollmentTime": "2025-11-03T13:30:00.000Z",
+                "orgUnitPath": "/Flex",
+                "orgUnitId": "03ph8a2z00flexou",
+                "chromeOsType": "chromeOsFlex",
+                "deviceLicenseType": "enterpriseUpgradeFixedTerm",
+                "osVersionCompliance": "pending",
+                "autoUpdateThrough": "2031-12-31T00:00:00Z",
+                "systemRamTotal": "17179869184",
+                "recentUsers": [
+                  {"type": "USER_TYPE_MANAGED", "email": "bob.smith@example.com"}
+                ],
+                "lastKnownNetwork": [
+                  {"ipAddress": "198.51.100.23", "wanIpAddress": "203.0.113.88"}
+                ],
+                "osUpdateStatus": {
+                  "state": "updateStateNeedReboot",
+                  "targetOsVersion": "16033.58.0",
+                  "updateTime": "2026-09-20T02:00:00.000Z",
+                  "updateCheckTime": "2026-10-12T22:30:00.000Z",
+                  "rebootTime": "2026-10-10T18:00:00.000Z"
+                },
+                "diskSpaceUsage": {
+                  "capacityBytes": "256060514304",
+                  "usedBytes": "40265318400"
+                }
+              },
+              {
+                "kind": "admin#directory#chromeosdevice",
+                "etag": "\"exampleEtag_device_6\"",
+                "deviceId": "66666666-0000-4111-8222-333333333333",
+                "serialNumber": "EXAMPLESN0006",
+                "status": "ACTIVE",
+                "lastSync": "2026-10-12T17:20:33.456+01:00",
+                "supportEndDate": "2030-06-30T00:00:00.000Z",
+                "annotatedUser": "carol.white@example.com",
+                "annotatedAssetId": "ASSET-000206",
+                "annotatedLocation": "Example Corp Lab 2",
+                "model": "Example Chromebook Plus 15",
+                "osVersion": "129.0.6668.110",
+                "platformVersion": "16002.51.0 (Official Build) beta-channel examplebrd3",
+                "firmwareVersion": "Google_Examplebrd3.15899.12.0",
+                "macAddress": "00005E005361",
+                "ethernetMacAddress": "00005E005362",
+                "ethernetMacAddress0": "00005E005363",
+                "dockMacAddress": "00005E005364",
+                "bootMode": "Dev",
+                "lastEnrollmentTime": "2026-01-20T09:45:00.000Z",
+                "firstEnrollmentTime": "2026-01-20T09:45:00.000Z",
+                "manufactureDate": "2025-10-02",
+                "orgUnitPath": "/Engineering/Lab",
+                "orgUnitId": "03ph8a2z00labou",
+                "chromeOsType": "CHROME_OS",
+                "deviceLicenseType": "ENTERPRISE_UPGRADE_FIXED_TERM",
+                "osVersionCompliance": "NOT_COMPLIANT",
+                "autoUpdateThrough": "2035-06-01T00:00:00Z",
+                "extendedSupportEligible": true,
+                "extendedSupportEnabled": true,
+                "extendedSupportStart": "2033-06-01T00:00:00Z",
+                "systemRamTotal": "17179869184",
+                "recentUsers": [
+                  {"type": "USER_TYPE_UNMANAGED"},
+                  {"type": "USER_TYPE_MANAGED", "email": "carol.white@example.com"}
+                ],
+                "lastKnownNetwork": [
+                  {"ipAddress": "192.0.2.61", "wanIpAddress": "203.0.113.61"},
+                  {"ipAddress": "198.51.100.61", "wanIpAddress": "203.0.113.62"}
+                ],
+                "tpmVersionInfo": {
+                  "family": "322e3000",
+                  "specLevel": "116",
+                  "manufacturer": "43524f53",
+                  "tpmModel": "1",
+                  "firmwareVersion": "0",
+                  "vendorSpecific": "xCG fTPM"
+                },
+                "osUpdateStatus": {
+                  "state": "UPDATE_STATE_DOWNLOAD_IN_PROGRESS",
+                  "targetOsVersion": "16033.58.0",
+                  "updateCheckTime": "2026-10-12T16:00:00.000Z"
+                }
+              }
+            ],
+            "nextPageToken": "chromeos-page-4"
+          }
+          `}}
+  - path: /admin/directory/v1/customer/my_customer/devices/chromeos
+    methods: [GET]
+    query_params:
+      projection: FULL
+      maxResults: "3"
+      pageToken: chromeos-page-2
+      orgUnitPath: null
+      includeChildOrgunits: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"kind":"admin#directory#chromeosdevices","etag":"\"exampleEtag_chromeos_page_2\"","nextPageToken":"chromeos-page-3"}'
+  - path: /admin/directory/v1/customer/my_customer/devices/chromeos
+    methods: [GET]
+    query_params:
+      projection: FULL
+      maxResults: "3"
+      pageToken: null
+      orgUnitPath: null
+      includeChildOrgunits: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#chromeosdevices",
+            "etag": "\"exampleEtag_chromeos_page_1\"",
+            "chromeosdevices": [
+              {
+                "kind": "admin#directory#chromeosdevice",
+                "etag": "\"exampleEtag_device_1\"",
+                "deviceId": "11111111-2222-4333-8444-555555555555",
+                "serialNumber": "FAKESERIAL0001",
+                "status": "ACTIVE",
+                "lastSync": "2026-10-12T08:15:42.123Z",
+                "supportEndDate": "2029-06-30T00:00:00.000Z",
+                "annotatedUser": "alice.johnson@example.com",
+                "annotatedLocation": "Example Corp HQ, Floor 3",
+                "annotatedAssetId": "ASSET-000123",
+                "notes": "Loaner pool device",
+                "model": "Example Chromebook 14",
+                "orderNumber": "ORDER-0000001",
+                "willAutoRenew": false,
+                "osVersion": "129.0.6668.110",
+                "platformVersion": "16002.51.0 (Official Build) stable-channel examplebrd",
+                "firmwareVersion": "Google_Examplebrd.15217.441.0",
+                "macAddress": "00005e005301",
+                "ethernetMacAddress": "00005e005302",
+                "ethernetMacAddress0": "00005E005303",
+                "dockMacAddress": "00005E005304",
+                "bootMode": "Verified",
+                "lastEnrollmentTime": "2024-02-14T16:20:05.000Z",
+                "firstEnrollmentTime": "2023-01-09T10:02:11.000Z",
+                "manufactureDate": "2022-11-21",
+                "orgUnitPath": "/Engineering/Chromebooks",
+                "orgUnitId": "03ph8a2z00example",
+                "chromeOsType": "chromeOs",
+                "deviceLicenseType": "enterpriseUpgradePerpetual",
+                "osVersionCompliance": "compliant",
+                "autoUpdateExpiration": "1846368000000",
+                "autoUpdateThrough": "2028-06-30T00:00:00Z",
+                "extendedSupportEligible": false,
+                "extendedSupportEnabled": false,
+                "systemRamTotal": "8589934592",
+                "meid": "A1000000000001",
+                "recentUsers": [
+                  {"type": "USER_TYPE_MANAGED", "email": "alice.johnson@example.com"},
+                  {"type": "USER_TYPE_UNMANAGED"}
+                ],
+                "activeTimeRanges": [
+                  {"date": "2026-10-11", "activeTime": 14400000},
+                  {"date": "2026-10-12", "activeTime": 3600000}
+                ],
+                "lastKnownNetwork": [
+                  {"ipAddress": "192.0.2.45", "wanIpAddress": "203.0.113.17"}
+                ],
+                "tpmVersionInfo": {
+                  "family": "322e3000",
+                  "specLevel": "116",
+                  "manufacturer": "43524f53",
+                  "tpmModel": "1",
+                  "firmwareVersion": "0",
+                  "vendorSpecific": "xCG fTPM"
+                },
+                "osUpdateStatus": {
+                  "state": "updateStateNotStarted",
+                  "targetOsVersion": "16033.58.0",
+                  "updateTime": "2026-10-01T03:12:00.000Z",
+                  "updateCheckTime": "2026-10-12T07:55:10.000Z",
+                  "rebootTime": "2026-10-11T07:40:00.000Z"
+                },
+                "diskSpaceUsage": {
+                  "capacityBytes": "68719476736",
+                  "usedBytes": "21474836480"
+                },
+                "diskVolumeReports": [
+                  {
+                    "volumeInfo": [
+                      {"volumeId": "/home/.shadow", "storageTotal": "54223912960", "storageFree": "32212254720"}
+                    ]
+                  }
+                ],
+                "cpuInfo": [
+                  {
+                    "model": "Example CPU Model 5000",
+                    "architecture": "x64",
+                    "maxClockSpeedKhz": 3400000,
+                    "logicalCpus": [
+                      {
+                        "maxScalingFrequencyKhz": 3400000,
+                        "currentScalingFrequencyKhz": 1200000,
+                        "idleDuration": "45210.250s",
+                        "cStates": [
+                          {"displayName": "C1", "sessionDuration": "1200.5s"}
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "cpuStatusReports": [
+                  {
+                    "reportTime": "2026-10-12T08:10:00.000Z",
+                    "cpuUtilizationPercentageInfo": [12, 9],
+                    "cpuTemperatureInfo": [
+                      {"label": "Core 0", "temperature": 46}
+                    ]
+                  }
+                ],
+                "systemRamFreeReports": [
+                  {
+                    "reportTime": "2026-10-12T08:10:00.000Z",
+                    "systemRamFreeInfo": ["4294967296", "4026531840"]
+                  }
+                ],
+                "backlightInfo": [
+                  {"path": "/sys/class/backlight/intel_backlight", "maxBrightness": 96000, "brightness": 48000}
+                ],
+                "fanInfo": [
+                  {"speedRpm": 2100}
+                ],
+                "bluetoothAdapterInfo": [
+                  {"address": "00:00:5E:00:53:05", "numConnectedDevices": 1}
+                ],
+                "deviceFiles": [
+                  {
+                    "name": "2026-10-12 08:00:00 UTC",
+                    "type": "LOG_FILE",
+                    "downloadUrl": "https://admin.googleapis.com/admin/directory/v1/customer/C00000000/devices/chromeos/11111111-2222-4333-8444-555555555555/media/EXAMPLEFILEID",
+                    "createTime": "2026-10-12T08:00:00.000Z"
+                  }
+                ],
+                "screenshotFiles": [
+                  {
+                    "name": "screenshot_2026-10-12",
+                    "type": "SCREENSHOT_FILE",
+                    "downloadUrl": "https://admin.googleapis.com/admin/directory/v1/customer/C00000000/devices/chromeos/11111111-2222-4333-8444-555555555555/media/EXAMPLESCREENSHOTID",
+                    "createTime": "2026-10-12T08:05:00.000Z"
+                  }
+                ]
+              },
+              {
+                "kind": "admin#directory#chromeosdevice",
+                "etag": "\"exampleEtag_device_2\"",
+                "deviceId": "66666666-7777-4888-9999-aaaaaaaaaaaa",
+                "serialNumber": "FAKESERIAL0002",
+                "status": "DEPROVISIONED",
+                "lastSync": "2025-03-02T14:01:09.554Z",
+                "annotatedUser": "Bob Smith",
+                "annotatedAssetId": "ASSET-000045",
+                "model": "Example Chromebook 11",
+                "osVersion": "122.0.6261.132",
+                "platformVersion": "15753.50.0 (Official Build) stable-channel examplebrd2",
+                "firmwareVersion": "Google_Examplebrd2.13434.788.0",
+                "macAddress": "00005e005311",
+                "bootMode": "Verified",
+                "lastEnrollmentTime": "2021-08-30T09:00:00.000Z",
+                "firstEnrollmentTime": "2021-08-30T09:00:00.000Z",
+                "lastDeprovisionTimestamp": "2025-03-05T11:45:30.000Z",
+                "deprovisionReason": "DEPROVISION_REASON_RETIRING_DEVICE",
+                "manufactureDate": "2021-05-10",
+                "orgUnitPath": "/Retired",
+                "orgUnitId": "03ph8a2z00retired",
+                "chromeOsType": "chromeOs",
+                "deviceLicenseType": "education",
+                "autoUpdateExpiration": "1717200000000",
+                "autoUpdateThrough": "2024-06-01T00:00:00Z",
+                "systemRamTotal": "4294967296"
+              },
+              {
+                "kind": "directory#chromeosdevice",
+                "etag": "1234567890",
+                "deviceId": "def45600-0000-4000-8000-000000000003",
+                "serialNumber": "234567",
+                "status": "ACTIVE",
+                "lastSync": "2013-03-05T17:30:04.325Z",
+                "supportEndDate": "2014-04-05T17:30:04.325Z",
+                "annotatedUser": "help desk",
+                "annotatedLocation": "Example Corp help desk Chromebook",
+                "annotatedAssetId": "1234567890",
+                "notes": "Loaned from support",
+                "orderNumber": "1234",
+                "willAutoRenew": true,
+                "osVersion": "Browser Version 18.0",
+                "platformVersion": "Platform Version 1415.2.0",
+                "firmwareVersion": "Firmware Version 1.2.3.4",
+                "bootMode": "validated",
+                "lastEnrollmentTime": "2012-04-05T17:30:04.325Z",
+                "orgUnitPath": "corp/engineering",
+                "recentUsers": [
+                  {"type": "USER_TYPE_MANAGED", "email": "user@example.com"}
+                ],
+                "activeTimeRanges": [
+                  {"date": "2012-04-05", "activeTime": "3600000"}
+                ]
+              }
+            ],
+            "nextPageToken": "chromeos-page-2"
+          }
+          `}}
+  # ChromeOS devices limited to one organizational unit (the org_unit_path
+  # setting): orgUnitPath and includeChildOrgunits=true must both be sent.
+  - path: /admin/directory/v1/customer/my_customer/devices/chromeos
+    methods: [GET]
+    query_params:
+      projection: FULL
+      maxResults: "3"
+      pageToken: null
+      orgUnitPath: "/Lobby Kiosks"
+      includeChildOrgunits: "true"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#chromeosdevices",
+            "etag": "\"exampleEtag_chromeos_ou\"",
+            "chromeosdevices": [
+              {
+                "kind": "admin#directory#chromeosdevice",
+                "etag": "\"exampleEtag_device_ou\"",
+                "deviceId": "99999999-aaaa-4bbb-8ccc-dddddddddddd",
+                "serialNumber": "FAKESERIAL0009",
+                "status": "ACTIVE",
+                "lastSync": "2026-10-12T07:45:00.000Z",
+                "annotatedAssetId": "KIOSK-000009",
+                "annotatedLocation": "Lobby",
+                "model": "Example Chromebox",
+                "osVersion": "126.0.6478.114",
+                "macAddress": "00005e005319",
+                "bootMode": "Verified",
+                "orgUnitPath": "/Lobby Kiosks/Ground Floor",
+                "orgUnitId": "03ph8a2z00kiosk",
+                "chromeOsType": "chromeOs",
+                "deviceLicenseType": "kioskUpgrade",
+                "lastKnownNetwork": [{"ipAddress": "192.0.2.90", "wanIpAddress": "203.0.113.42"}]
+              }
+            ]
+          }
+          `}}
   # Directory API routes for the users entity data stream
   - path: /admin/directory/v1/customer/my_customer/roles
     methods: [GET]
