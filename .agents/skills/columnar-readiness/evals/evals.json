@@ -1,0 +1,59 @@
+[
+  {
+    "skills": ["columnar-readiness"],
+    "query": "Migrate the canva package to columnar.",
+    "files": ["packages/canva"],
+    "expected_behavior": [
+      "Bumps format_version to 3.8.0, replaces conditions.kibana.version with ^9.7.0, bumps the major version, and declares elasticsearch.logsdb_columnar: opt_in in the root manifest, with no index_mode and no columnar: block",
+      "Runs elastic-package check and the script, and adds the proposed sort organization.id asc, @timestamp desc to data_stream/audit/manifest.yml",
+      "Declares organization.id (external: ecs) in a new data_stream/audit/fields/ecs.yml, because package-spec rejects a sort field the stream does not define",
+      "Adds a single enhancement changelog entry (not breaking-change) that also names the index sort"
+    ]
+  },
+  {
+    "skills": ["columnar-readiness"],
+    "query": "Why is o365 blocked for columnar, and what are our options?",
+    "files": ["packages/o365"],
+    "expected_behavior": [
+      "Names both nested-inside-nested pairs (ExchangeAggregatedFolders -> FolderItems, ExchangeAggregatedMessages -> MessageItems) as validator errors",
+      "Recommends checking for nested queries on the inner path, then mapping the inner level as type: flattened, and warns that type: group alone splits the inner objects off on columnar",
+      "Mentions marking the stream logsdb_columnar: unsupported as the alternative"
+    ]
+  },
+  {
+    "skills": ["columnar-readiness"],
+    "query": "Can we declare network_traffic sip columnar-ready?",
+    "files": ["packages/network_traffic", "packages/security_detection_engine"],
+    "expected_behavior": [
+      "Reports that shipped detection rules read the sip stream's _source with JSON_EXTRACT (Potential SIP Extension Enumeration, Potential SIP REGISTER Brute Force), so they silently stop matching on columnar",
+      "Recommends holding the stream back until the rules read the mapped fields as columns, fixed in elastic/detection-rules, and does not recommend SET unmapped_fields = \"load\""
+    ]
+  },
+  {
+    "skills": ["columnar-readiness"],
+    "query": "What happens to CrowdStrike's lookup indices if the fdr stream goes columnar?",
+    "files": ["packages/crowdstrike"],
+    "expected_behavior": [
+      "Identifies the latest_aidmaster and latest_userinfo latest transforms reading logs-crowdstrike.fdr-*",
+      "Explains that their destination pipelines' rename processors skip dotted keys, and recommends a leading dot_expander with field: \"*\" tested with _ingest/pipeline/_simulate"
+    ]
+  },
+  {
+    "skills": ["columnar-readiness"],
+    "query": "Can anthropic go columnar?",
+    "files": ["packages/anthropic"],
+    "expected_behavior": [
+      "Reports event.original in data_stream/audit/fields/ecs.yml as a blocker: its ECS definition brings doc_values: false, which Elasticsearch rejects in columnar modes",
+      "Says anthropic stays blocked until Elasticsearch accepts doc_values: false and does not declare readiness; mentions doc_values: true on the external: ecs entry only as a mapping change that needs its own LogsDB justification"
+    ]
+  },
+  {
+    "skills": ["columnar-readiness"],
+    "query": "Why is cef blocked for columnar?",
+    "files": ["packages/cef"],
+    "expected_behavior": [
+      "Names import_mappings: true in _dev/build/build.yml: its ECS dynamic templates set doc_values: false on event.original and *.x509.public_key_exponent, so columnar rejects every event with one of those fields",
+      "Says cef stays blocked and does not declare readiness; mentions removing import_mappings only as a change that needs its own justification, since it also changes the LogsDB mappings"
+    ]
+  }
+]
