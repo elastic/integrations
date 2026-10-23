@@ -24,7 +24,7 @@ Last reviewed 2026-10-23; update these facts here when they change.
   adds `elasticsearch.logsdb_columnar` and the columnar validator. Until it ships, build
   elastic-package against that branch (`go mod edit -replace
   github.com/elastic/package-spec/v3=/path/to/package-spec`).
-- **Fleet** (elastic/kibana#292285, Kibana 9.6, unmerged) offers one toggle per
+- **Fleet** (elastic/kibana#292285, Kibana 9.7, unmerged) offers one toggle per
   integration and only sets the index mode: the package's mappings go in as they are.
 - **`doc_values: false` and `store: true`** are rejected by Elasticsearch in columnar
   modes (2026-10-15 snapshot), and the validator does not report them yet: the script
@@ -54,7 +54,7 @@ profile adds the default sort `host.name asc, @timestamp desc` (Elasticsearch ma
 4. **Declare per package, with per-stream exceptions:** `opt_in` in the root manifest,
    `unsupported` on each stream that stays on LogsDB.
 5. **Only for the chosen tech-preview targets**, never catalog-wide: declaring raises
-   the package's minimum stack to 9.6, so older stacks need a backport line. Tell the
+   the package's minimum stack to 9.7, so older stacks need a backport line. Tell the
    user before writing the change.
 
 ## The setting (package-spec 3.8.0)
@@ -89,14 +89,14 @@ In the root `manifest.yml`:
   handlers: fix; `SVR00006` processor tags: fix or exclude with a comment; `JSE00001`
   `message` → `event.original`: fix, prove with `test pipeline` without `-g`). Keep
   them apart from the columnar changes.
-- `conditions.kibana.version: "^9.6.0"`, replacing the whole range (every `||` branch
-  must be 9.6+), and a **major** version bump.
+- `conditions.kibana.version: "^9.7.0"`, replacing the whole range (every `||` branch
+  must be 9.7+), and a **major** version bump.
 - `elasticsearch.logsdb_columnar: opt_in`, merged into an existing `elasticsearch:` key.
 - `logsdb_columnar: unsupported` on every stream that stays on LogsDB: OTel-input
   streams, and streams that steps 2 or 3 leave blocked. A manifest has one
   `elasticsearch:` key: merge, never paste a second one (YAML keeps only one).
 - Changelog: one `enhancement` entry with a placeholder link, for example "Add opt-in
-  LogsDB columnar support, which requires Kibana 9.6.0." Name the index sort in the same
+  LogsDB columnar support, which requires Kibana 9.7.0." Name the index sort in the same
   entry when step 4 adds one. The major bump stays, to keep the old major free for
   backports, but the entry is not `breaking-change`.
 
