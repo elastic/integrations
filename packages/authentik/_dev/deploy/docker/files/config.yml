@@ -27,6 +27,128 @@ rules:
             },
             "results": [
               {
+                "pk": "5e975730-c90d-4197-8ae2-e9e9c491ee8f",
+                "user": {
+                  "pk": 2105,
+                  "email": "testuser@example.com",
+                  "username": "testuser"
+                },
+                "action": "custom_static_authenticator_disable",
+                "app": "authentik.stages.authenticator_static.signals",
+                "context": {
+                  "message": "User disabled Static OTP Tokens."
+                },
+                "client_ip": null,
+                "created": "2024-08-13T05:40:00.670476Z",
+                "expires": "2025-08-13T05:40:00.664729Z",
+                "brand": {
+                  "pk": "d0093d626bd34180bac801037a4f7322",
+                  "app": "authentik_brands",
+                  "name": "Brand fallback",
+                  "model_name": "brand"
+                }
+              },
+              {
+                "pk": "70b7dc85-18ae-4bdd-9968-08b0d658fc52",
+                "user": {
+                  "pk": 4,
+                  "email": "hazel@example.com",
+                  "username": "Hazel"
+                },
+                "action": "secret_view",
+                "app": "authentik.core.api.tokens",
+                "context": {
+                  "secret": {
+                    "pk": "8b03f2c1df9c4cabbb33602efade9ced",
+                    "app": "authentik_core",
+                    "name": "elastic-test",
+                    "model_name": "token"
+                  },
+                  "http_request": {
+                    "args": {},
+                    "path": "/api/v3/core/tokens/elastic-test/view_key/",
+                    "method": "GET",
+                    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+                  }
+                },
+                "client_ip": "67.43.156.0",
+                "created": "2024-08-07T13:45:53.009784Z",
+                "expires": "2025-08-07T13:45:53.006142Z",
+                "brand": {
+                  "pk": "0bb0bcf421994958b51ffc2627ea8fe6",
+                  "app": "authentik_brands",
+                  "name": "Default brand",
+                  "model_name": "brand"
+                }
+              }
+            ]
+          }
+          `}}
+  - path: /api/v3/events/events/
+    methods: ['GET']
+    query_params:
+      ordering: -created
+      page_size: 2
+      page: 2
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "pagination": {
+              "next": 3,
+              "previous": 1,
+              "count": 5,
+              "current": 2,
+              "total_pages": 3,
+              "start_index": 3,
+              "end_index": 4
+            },
+            "results": [
+              {
+                "pk": "e6818c31-e8ff-4bbf-95ac-3da9c53cb716",
+                "user": {
+                  "pk": 4,
+                  "email": "root@example.com",
+                  "username": "akadmin"
+                },
+                "action": "login_failed",
+                "app": "authentik.events.signals",
+                "context": {
+                  "stage": {
+                    "pk": "78aa6805067c4d4cad52322cdfc2f52a",
+                    "app": "authentik_stages_identification",
+                    "name": "default-authentication-identification",
+                    "model_name": "identificationstage"
+                  },
+                  "password": "********************",
+                  "username": "akadmin",
+                  "http_request": {
+                    "args": {
+                      "next": "/"
+                    },
+                    "path": "/api/v3/flows/executor/default-authentication-flow/",
+                    "method": "POST",
+                    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+                  }
+                },
+                "client_ip": "81.2.69.144",
+                "created": "2024-08-07T06:29:02.402447Z",
+                "expires": "2025-08-07T06:29:02.397911Z",
+                "brand": {
+                  "pk": "0bb0bcf421994958b51ffc2627ea8fe6",
+                  "app": "authentik_brands",
+                  "name": "Default brand",
+                  "model_name": "brand"
+                }
+              },
+              {
                 "pk": "1e399dbf-bb30-4d0f-acf3-a5275e065cd0",
                 "user": {
                   "pk": 4,
@@ -82,128 +204,6 @@ rules:
                   "pk": "df46a0dde5cc4d9397e5cface96e5c9c",
                   "app": "authentik_brands",
                   "name": "Brand fallback",
-                  "model_name": "brand"
-                }
-              },
-              {
-                "pk": "e6818c31-e8ff-4bbf-95ac-3da9c53cb716",
-                "user": {
-                  "pk": 4,
-                  "email": "root@example.com",
-                  "username": "akadmin"
-                },
-                "action": "login_failed",
-                "app": "authentik.events.signals",
-                "context": {
-                  "stage": {
-                    "pk": "78aa6805067c4d4cad52322cdfc2f52a",
-                    "app": "authentik_stages_identification",
-                    "name": "default-authentication-identification",
-                    "model_name": "identificationstage"
-                  },
-                  "password": "********************",
-                  "username": "akadmin",
-                  "http_request": {
-                    "args": {
-                      "next": "/"
-                    },
-                    "path": "/api/v3/flows/executor/default-authentication-flow/",
-                    "method": "POST",
-                    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-                  }
-                },
-                "client_ip": "81.2.69.144",
-                "created": "2024-08-07T06:29:02.402447Z",
-                "expires": "2025-08-07T06:29:02.397911Z",
-                "brand": {
-                  "pk": "0bb0bcf421994958b51ffc2627ea8fe6",
-                  "app": "authentik_brands",
-                  "name": "Default brand",
-                  "model_name": "brand"
-                }
-              }
-            ]
-          }
-          `}}
-  - path: /api/v3/events/events/
-    methods: ['GET']
-    query_params:
-      ordering: -created
-      page_size: 2
-      page: 2
-    request_headers:
-      Authorization:
-        - "Bearer xxxx"
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - 'application/json'
-        body: |-
-          {{ minify_json `
-          {
-            "pagination": {
-              "next": 3,
-              "previous": 1,
-              "count": 5,
-              "current": 2,
-              "total_pages": 3,
-              "start_index": 3,
-              "end_index": 4
-            },
-            "results": [
-              {
-                "pk": "5e975730-c90d-4197-8ae2-e9e9c491ee8f",
-                "user": {
-                  "pk": 2105,
-                  "email": "testuser@example.com",
-                  "username": "testuser"
-                },
-                "action": "custom_static_authenticator_disable",
-                "app": "authentik.stages.authenticator_static.signals",
-                "context": {
-                  "message": "User disabled Static OTP Tokens."
-                },
-                "client_ip": null,
-                "created": "2024-08-13T05:40:00.670476Z",
-                "expires": "2025-08-13T05:40:00.664729Z",
-                "brand": {
-                  "pk": "d0093d626bd34180bac801037a4f7322",
-                  "app": "authentik_brands",
-                  "name": "Brand fallback",
-                  "model_name": "brand"
-                }
-              },
-              {
-                "pk": "70b7dc85-18ae-4bdd-9968-08b0d658fc52",
-                "user": {
-                  "pk": 4,
-                  "email": "hazel@example.com",
-                  "username": "Hazel"
-                },
-                "action": "secret_view",
-                "app": "authentik.core.api.tokens",
-                "context": {
-                  "secret": {
-                    "pk": "8b03f2c1df9c4cabbb33602efade9ced",
-                    "app": "authentik_core",
-                    "name": "elastic-test",
-                    "model_name": "token"
-                  },
-                  "http_request": {
-                    "args": {},
-                    "path": "/api/v3/core/tokens/elastic-test/view_key/",
-                    "method": "GET",
-                    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-                  }
-                },
-                "client_ip": "67.43.156.0",
-                "created": "2024-08-07T13:45:53.009784Z",
-                "expires": "2025-08-07T13:45:53.006142Z",
-                "brand": {
-                  "pk": "0bb0bcf421994958b51ffc2627ea8fe6",
-                  "app": "authentik_brands",
-                  "name": "Default brand",
                   "model_name": "brand"
                 }
               }
