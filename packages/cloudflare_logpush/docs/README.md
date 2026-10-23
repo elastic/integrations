@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, Zero Trust Network Session, and Workers Trace Events logs.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
 
 Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
@@ -45,6 +45,8 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 - `gateway_http`: HTTP requests inspected by Cloudflare Gateway. See [Gateway HTTP schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_http/).
 - `gateway_network`: Network packets inspected by Cloudflare Gateway. See [Gateway Network schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_network/).
 - `network_session`: Network session logs for traffic proxied by Cloudflare Gateway. See [Zero Trust Network Session schema](https://developers.cloudflare.com/logs/reference/log-fields/account/zero_trust_network_sessions/).
+- `warp_config_changes`: WARP configuration switch events from the Cloudflare One Client (WARP), recording the account and configuration a device switched from and to. See [WARP Config Changes schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/warp_config_changes/).
+- `warp_toggle_changes`: WARP on/off toggle events from the Cloudflare One Client (WARP) per device. See [WARP Toggle Changes schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/warp_toggle_changes/).
 
 ### Non Zero Trust events
 
@@ -67,7 +69,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 Integrating Cloudflare Logpush with Elastic provides centralized visibility across Cloudflare's edge, Zero Trust, and network-layer products. Common use cases include:
 
 - Investigating traffic, WAF, and DDoS-mitigation events from the Cloudflare edge (`http_request`, `firewall_event`, `network_analytics`).
-- Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`).
+- Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `warp_config_changes`, `warp_toggle_changes`).
 - Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
 - Auditing administrative activity on the Cloudflare account (`audit`).
 - Troubleshooting DNS and client-side performance issues (`dns`, `dns_firewall`, `nel_report`, `workers_trace`).
@@ -138,6 +140,8 @@ Configure one of the following delivery pipelines before enabling the integratio
   | Zero Trust Network Session | network_session        |
   | Sinkhole HTTP              | sinkhole_http          |
   | Spectrum Event             | spectrum_event         |
+  | WARP Config Changes        | warp_config_changes    |
+  | WARP Toggle Changes        | warp_toggle_changes    |
   | Workers Trace Events       | workers_trace          |
 
 #### Collect data from AWS SQS
@@ -4694,6 +4698,292 @@ An example event for `spectrum_event` looks as following:
 | cloudflare_logpush.spectrum_event.proxy.protocol | Which form of proxy protocol is applied to the given connection. | keyword |
 | cloudflare_logpush.spectrum_event.status | A code indicating reason for connection closure. | long |
 | cloudflare_logpush.spectrum_event.timestamp | Timestamp at which the event took place. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
+| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
+| gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
+| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+
+
+#### warp_config_changes
+
+This is the `warp_config_changes` dataset.
+
+##### Example
+
+An example event for `warp_config_changes` looks as following:
+
+```json
+{
+    "@timestamp": "2023-10-11T00:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "0f7100e1-e094-4b74-844c-c6d989ebe4ed",
+        "id": "731f3288-713a-459b-99c1-06cbc8c08500",
+        "name": "elastic-agent-82890",
+        "type": "filebeat",
+        "version": "8.17.1"
+    },
+    "cloud": {
+        "provider": "google cloud"
+    },
+    "cloudflare_logpush": {
+        "warp_config_changes": {
+            "account": {
+                "from": {
+                    "id": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6",
+                    "name": "Example Corp"
+                },
+                "to": {
+                    "id": "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7",
+                    "name": "Example Corp Staging"
+                }
+            },
+            "config": {
+                "from": {
+                    "name": "Default"
+                },
+                "to": {
+                    "name": "Restricted"
+                }
+            },
+            "device": {
+                "registration_id": "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.warp_config_changes",
+        "namespace": "21927",
+        "type": "logs"
+    },
+    "device": {
+        "id": "083a8354-d56c-11ed-9771-abcdef123456",
+        "serial_number": "C02XX1ZZAB12"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "731f3288-713a-459b-99c1-06cbc8c08500",
+        "snapshot": false,
+        "version": "8.17.1"
+    },
+    "event": {
+        "action": "warp-config-change",
+        "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
+        "dataset": "cloudflare_logpush.warp_config_changes",
+        "ingested": "2026-09-25T09:57:23Z",
+        "kind": "event",
+        "type": [
+            "change"
+        ]
+    },
+    "gcs": {
+        "storage": {
+            "bucket": {
+                "name": "testbucket"
+            },
+            "object": {
+                "content_type": "application/json",
+                "name": "warp_config_changes.log"
+            }
+        }
+    },
+    "host": {
+        "id": "083a8354-d56c-11ed-9771-abcdef123456",
+        "name": "zt-test-vm1"
+    },
+    "input": {
+        "type": "gcs"
+    },
+    "log": {
+        "file": {
+            "path": "gs://testbucket/warp_config_changes.log"
+        },
+        "offset": 0
+    },
+    "related": {
+        "hosts": [
+            "083a8354-d56c-11ed-9771-abcdef123456",
+            "zt-test-vm1"
+        ],
+        "user": [
+            "user@example.com"
+        ]
+    },
+    "tags": [
+        "forwarded",
+        "cloudflare_logpush-warp_config_changes"
+    ],
+    "user": {
+        "email": "user@example.com"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
+| cloudflare_logpush.warp_config_changes.account.from.id | The Cloudflare account ID the user switched from. | keyword |
+| cloudflare_logpush.warp_config_changes.account.from.name | The name of the account the user switched from. | keyword |
+| cloudflare_logpush.warp_config_changes.account.to.id | The Cloudflare account ID the user switched to. | keyword |
+| cloudflare_logpush.warp_config_changes.account.to.name | The name of the account the user switched to. | keyword |
+| cloudflare_logpush.warp_config_changes.config.from.name | The name of the config the user switched from. | keyword |
+| cloudflare_logpush.warp_config_changes.config.to.name | The name of the config the user switched to. | keyword |
+| cloudflare_logpush.warp_config_changes.device.registration_id | Device registration ID. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
+| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
+| gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
+| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+
+
+#### warp_toggle_changes
+
+This is the `warp_toggle_changes` dataset.
+
+##### Example
+
+An example event for `warp_toggle_changes` looks as following:
+
+```json
+{
+    "@timestamp": "2023-10-11T00:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "95633d0b-a7dc-432a-9ed0-2cbbf5c16388",
+        "id": "d15d1139-8c45-4d0c-a531-d1e6996cc873",
+        "name": "elastic-agent-37056",
+        "type": "filebeat",
+        "version": "8.17.1"
+    },
+    "cloud": {
+        "provider": "google cloud"
+    },
+    "cloudflare_logpush": {
+        "warp_toggle_changes": {
+            "account": {
+                "id": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6",
+                "name": "Example Corp"
+            },
+            "device": {
+                "registration_id": "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
+            },
+            "toggled": true
+        }
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.warp_toggle_changes",
+        "namespace": "68415",
+        "type": "logs"
+    },
+    "device": {
+        "id": "083a8354-d56c-11ed-9771-abcdef123456",
+        "serial_number": "C02XX1ZZAB12"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "d15d1139-8c45-4d0c-a531-d1e6996cc873",
+        "snapshot": false,
+        "version": "8.17.1"
+    },
+    "event": {
+        "action": "warp-toggle-change",
+        "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
+        "dataset": "cloudflare_logpush.warp_toggle_changes",
+        "ingested": "2026-09-25T09:54:10Z",
+        "kind": "event",
+        "type": [
+            "change"
+        ]
+    },
+    "gcs": {
+        "storage": {
+            "bucket": {
+                "name": "testbucket"
+            },
+            "object": {
+                "content_type": "application/json",
+                "name": "warp_toggle_changes.log"
+            }
+        }
+    },
+    "host": {
+        "id": "083a8354-d56c-11ed-9771-abcdef123456",
+        "name": "zt-test-vm1"
+    },
+    "input": {
+        "type": "gcs"
+    },
+    "log": {
+        "file": {
+            "path": "gs://testbucket/warp_toggle_changes.log"
+        },
+        "offset": 0
+    },
+    "related": {
+        "hosts": [
+            "083a8354-d56c-11ed-9771-abcdef123456",
+            "zt-test-vm1"
+        ],
+        "user": [
+            "user@example.com"
+        ]
+    },
+    "tags": [
+        "forwarded",
+        "cloudflare_logpush-warp_toggle_changes"
+    ],
+    "user": {
+        "email": "user@example.com"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
+| cloudflare_logpush.warp_toggle_changes.account.id | The Cloudflare account ID when the toggle happened. | keyword |
+| cloudflare_logpush.warp_toggle_changes.account.name | The account name when the toggle happened. | keyword |
+| cloudflare_logpush.warp_toggle_changes.device.registration_id | Device registration ID. | keyword |
+| cloudflare_logpush.warp_toggle_changes.toggled | Indicates whether the device WARP client was toggled or not. | boolean |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
