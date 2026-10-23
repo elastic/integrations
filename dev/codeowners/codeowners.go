@@ -33,47 +33,6 @@ func Check() error {
 	return nil
 }
 
-func PackageOwners(packageName, dataStream, codeownersPath string) ([]string, error) {
-	owners, err := readGithubOwners(codeownersPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read CODEOWNERS file: %w", err)
-	}
-	// look for the path of the package taking into account nested directories
-	packagePath := ""
-	for path := range owners.owners {
-		if !strings.HasSuffix(path, "/"+packageName) {
-			continue
-		}
-		// Verify the path is a valid package path: /packages/<name> or /packages/<category>/<name>.
-		// This prevents matching data stream paths or other sub-paths that happen to end with the package name.
-		if path == "/packages/"+packageName {
-			packagePath = path
-			break
-		}
-		// Check for a nested package path: /packages/<category>/<name>, where <category> is a single path segment.
-		prefix := strings.TrimSuffix(path, "/"+packageName)
-		if strings.HasPrefix(prefix, "/packages/") && !strings.Contains(prefix[len("/packages/"):], "/") {
-			packagePath = path
-			break
-		}
-	}
-	packageTeams, found := owners.owners[packagePath]
-	if !found {
-		return nil, fmt.Errorf("no owner found for package %s", packageName)
-	}
-
-	if dataStream == "" {
-		return packageTeams, nil
-	}
-
-	dataStreamPath := fmt.Sprintf("/packages/%s/data_stream/%s", packageName, dataStream)
-	dataStreamTeams, found := owners.owners[dataStreamPath]
-	if !found {
-		return packageTeams, nil
-	}
-	return dataStreamTeams, nil
-}
-
 // Owners holds a parsed CODEOWNERS file for repeated lookups without re-reading disk.
 // Obtain one via LoadOwners; use PackageOwnersByPath to look up a package by its
 // filesystem path rather than its folder basename.
@@ -82,8 +41,7 @@ type Owners struct {
 }
 
 // LoadOwners parses the CODEOWNERS file at codeownersPath once. Use the returned
-// *Owners for repeated lookups across many packages instead of calling
-// PackageOwners (which re-reads the file on every call).
+// *Owners for repeated lookups across many packages.
 func LoadOwners(codeownersPath string) (*Owners, error) {
 	inner, err := readGithubOwners(codeownersPath)
 	if err != nil {
@@ -141,9 +99,8 @@ func (o *Owners) ExplicitEntry(p string) ([]string, bool) {
 // (relative to the repo root, e.g. "packages/observability/nginx") and, when
 // dataStream is set, the more-specific data-stream-level owner if one is defined.
 //
-// Prefer this over PackageOwners when the full package path is available:
-// it handles arbitrary directory nesting by walking up the tree and avoids
-// the folder-basename ambiguity in PackageOwners. See
+// It handles arbitrary directory nesting by walking up the tree and avoids
+// the folder-basename ambiguity of looking up packages by name. See
 // https://github.com/elastic/elastic-package/issues/3586.
 func (o *Owners) PackageOwnersByPath(pkgPath, dataStream string) ([]string, error) {
 	teams, found := o.inner.findOwnerForFile(filepath.Join(pkgPath, citools.ManifestFileName))
