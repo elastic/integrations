@@ -123,7 +123,7 @@
                                 "applyColorTo": "background"
                             },
                             "query": {
-                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE process_cpu_seconds_total IS NOT NULL\n| STATS total = SUM(process_cpu_seconds_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)\n| EVAL duration_sec = DATE_DIFF(\"seconds\", min_ts, max_ts)\n| EVAL cpu_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)\n| KEEP cpu_rate"
+                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE process_cpu_seconds_total IS NOT NULL\n| STATS cpu_rate = SUM(RATE(process_cpu_seconds_total))"
                             },
                             "filters": [],
                             "datasourceStates": {
@@ -131,7 +131,7 @@
                                     "layers": {
                                         "358e8389-7a01-dd37-26a4-babb648d2d1c": {
                                             "query": {
-                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE process_cpu_seconds_total IS NOT NULL\n| STATS total = SUM(process_cpu_seconds_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)\n| EVAL duration_sec = DATE_DIFF(\"seconds\", min_ts, max_ts)\n| EVAL cpu_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)\n| KEEP cpu_rate"
+                                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE process_cpu_seconds_total IS NOT NULL\n| STATS cpu_rate = SUM(RATE(process_cpu_seconds_total))"
                                             },
                                             "columns": [
                                                 {
@@ -815,7 +815,7 @@
                                 "valueLabels": "hide"
                             },
                             "query": {
-                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE process_cpu_seconds_total IS NOT NULL\n| STATS total = SUM(process_cpu_seconds_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| EVAL bucket_secs = GREATEST(DATE_DIFF(\"seconds\", min_ts, max_ts), 1)\n| EVAL cpu_rate = total / bucket_secs\n| KEEP time_bucket, cpu_rate\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE process_cpu_seconds_total IS NOT NULL\n| STATS cpu_rate = SUM(RATE(process_cpu_seconds_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| KEEP time_bucket, cpu_rate\n| SORT time_bucket ASC"
                             },
                             "filters": [],
                             "datasourceStates": {
@@ -823,7 +823,7 @@
                                     "layers": {
                                         "a9a510cf-e039-a3aa-b81e-9caa3ec63df9": {
                                             "query": {
-                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE process_cpu_seconds_total IS NOT NULL\n| STATS total = SUM(process_cpu_seconds_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| EVAL bucket_secs = GREATEST(DATE_DIFF(\"seconds\", min_ts, max_ts), 1)\n| EVAL cpu_rate = total / bucket_secs\n| KEEP time_bucket, cpu_rate\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE process_cpu_seconds_total IS NOT NULL\n| STATS cpu_rate = SUM(RATE(process_cpu_seconds_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| KEEP time_bucket, cpu_rate\n| SORT time_bucket ASC"
                                             },
                                             "columns": [
                                                 {
