@@ -75,18 +75,27 @@ program: |-
         }
       ).do_request().as(resp,
         (resp.StatusCode == 200) ?
-          // KNOWN LIMITATION: flow_id is a large integer (>= 2^53 in production)
-          // that can lose trailing-digit precision through CEL's float64 JSON
-          // layer when decode_json() parses it as a number. A prior version of
-          // this program rewrote flow_id to a quoted JSON string in the raw body
-          // before decode_json() (via a `regexp:`/re_replace_all pre-processing
-          // step) to avoid this -- that mechanism was removed because it caused
-          // Elastic Agent to silently fail to schedule a component for this input
-          // (confirmed empirically: `regexp:` stream-config + `generateComponentModel`
-          // produced zero components for this input on Elastic Agent 9.5.5, with no
-          // errors logged anywhere). See fields.yml / README Troubleshooting for the
-          // documented precision-loss limitation this reintroduces.
-          resp.Body.decode_json().as(body,
+          // flow_id is a large integer (>= 2^53 in production) that would lose
+          // trailing-digit precision through CEL's float64 JSON layer if parsed
+          // with plain decode_json(). decode_json_string_numbers() decodes every
+          // JSON number in the response (not just flow_id) using its exact
+          // original textual form instead of float64; this is harmless for every
+          // other numeric field below because they are never inspected or
+          // compared in this program -- they only pass through
+          // `e.encode_json()`, which re-serializes preserved numbers back to
+          // bare (unquoted) JSON numbers via their exact original digits, so the
+          // wire shape of the emitted "message" is unchanged for every field
+          // except flow_id gains exact precision. A prior version of this
+          // program instead rewrote flow_id to a quoted JSON string in the raw
+          // body before decode_json() (via a `regexp:`/re_replace_all
+          // pre-processing step) -- that mechanism was removed because it caused
+          // Elastic Agent to silently fail to schedule a component for this
+          // input (confirmed empirically: `regexp:` stream-config +
+          // `generateComponentModel` produced zero components for this input on
+          // Elastic Agent 9.5.5, with no errors logged anywhere).
+          // decode_json_string_numbers() requires no stream-config changes at
+          // all, so it does not reintroduce that failure mode.
+          resp.Body.decode_json_string_numbers().as(body,
             body.?results.orValue([]).map(e, {"message": e.encode_json()}).as(mapped,
               (
                 // Primary signal: DRF-style `next` field, non-null means more pages.
@@ -140,8 +149,32 @@ program: |-
             // it is indexed and visible to an operator (see README Troubleshooting on
             // 401s from token rotation). Everything else (429, 5xx, etc.) is treated
             // as transient: delete the cursor so the next evaluation retries.
+            //
+            // The two phases are NOT treated the same way here. A persistent
+            // non-retryable error on the "stamus" (DoC/DoPV correlation) phase is
+            // advanced past -- same window-advance transition used for a clean
+            // terminal/empty stamus result -- because stamus correlation requires a
+            // higher Stamus license tier and can be permanently unavailable
+            // (403/404) on Tier 2/Community instances; leaving "cursor" out of this
+            // map would let the enclosing state.with() preserve the cursor from
+            // before this request (still pointing at the failed stamus phase/page),
+            // so every later poll would retry that same phase/window forever and
+            // alert collection for every later window would never happen (see
+            // README Troubleshooting). A persistent error on the "alert" phase is
+            // the primary data this program collects, so it intentionally keeps the
+            // old halt/retry behavior (no explicit "cursor" transition) rather than
+            // risk silently skipping alert data.
             [400, 401, 403, 404, 422].exists(c, c == int(resp.StatusCode)) ?
-              {"events": [{"error": err}], "want_more": false}
+              (
+                (cur.phase == "stamus") ?
+                  {
+                    "events": [{"error": err}],
+                    "cursor": {"phase": "alert", "from_date": cur.to_date},
+                    "want_more": false,
+                  }
+                :
+                  {"events": [{"error": err}], "want_more": false}
+              )
             :
               {"events": {"error": err}, "want_more": false}
           )

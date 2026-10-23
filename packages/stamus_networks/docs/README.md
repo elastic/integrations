@@ -85,7 +85,7 @@ Elastic Agent polls the Stamus Clear NDR Central Server REST API on the configur
 
 Add the **Stamus Networks** integration in Fleet and configure:
 
-* **Central Server URL** — the base URL of your CNCS instance, e.g. `https://cncs.example.com`
+* **Central Server URL** — the base URL of your CNCS instance, for example, `https://cncs.example.com`
   (no trailing `/rest/`).
 * **API Token** — the token generated above.
 
@@ -104,11 +104,11 @@ network, then check **Discover** in Kibana for documents in the
 
 - No data is being collected: Verify the Central Server URL and API token are correct, and that the host running Elastic Agent can reach the CNCS REST API over HTTPS.
 - 401 Unauthorized errors: The API token may have been regenerated or revoked in the CNCS UI. Regenerate the token in CNCS and update the integration configuration; the Stamus API has no automated token-rotation mechanism.
-- Duplicate or missing host_insights documents: The host_insights data stream performs a full re-read of the host inventory on every poll cycle, since the API does not expose an incremental filter. The ingest pipeline derives a stable document `_id` from the host IP address so repeated reads of the same host upsert rather than duplicate; hosts are keyed only by IP address, which is not a maximally stable identifier (no MAC address or UUID is exposed by the API), so a host that changes IP address via DHCP may appear as a new entity.
+- Multiple host_insights documents per host: The host_insights data stream performs a full re-read of the host inventory on every poll cycle, since the API does not expose an incremental filter. Elasticsearch data streams only support append (`create`) writes, so this data stream intentionally does **not** attempt to upsert: the ingest pipeline derives the document `_id` from a fingerprint of the full raw snapshot (`event.original`), so each poll is indexed as its own append-only snapshot of that host's state. A host whose profile has changed since the last poll (new hostname, services, or last-seen timestamp) is indexed as a **new** document rather than silently overwriting or being dropped; a byte-identical re-read of an unchanged host collapses onto the same `_id` and does not create a duplicate. This means `host_insights` will normally contain **multiple documents per host over time** by design -- this is not a bug. If you need a single current-state-per-host view, build it downstream (for example an Elasticsearch transform aggregating by `entity.id` with `max(@timestamp)`, or ingestion into the Elastic Entity Store); this package does not maintain that view itself. Separately, hosts are keyed only by IP address, which is not a maximally stable identifier (no MAC address or UUID is exposed by the API), so a host that changes IP address via DHCP may appear as a new entity.
 - REST endpoint behavior for the alerts data stream (confirmed against a live, open-source Clear NDR Community/SELKS instance): this integration's CEL program retrieves alert and stamus documents from `/rest/rules/es/events_tail/` filtered with `qfilter=event_type:alert` and `qfilter=event_type:stamus`. Although vendor documentation describes this endpoint's scope as non-alert protocol events only, a live test confirmed it does return full raw alert documents when filtered this way, and that the pagination response envelope is a standard DRF `{count, next, previous, results}` shape with `page_number` as the real server-side cursor parameter — both match what this integration's CEL program already implements, so no changes were needed.
-- Host Insights (`/rest/appliances/host_id/`) and the full DoC/DoPV correlation layer (`event_type: stamus`) require a Stamus Clear NDR **Tier 3** license. Both were validated only against the documented API shape and a mock. Confirmed against a live, open-source Clear NDR Community/SELKS (below Tier 3) instance: the REST API itself works fine, `qfilter=event_type:stamus` consistently returns zero results, and `/rest/appliances/host_id/` returns a `404` (ruled out as a routing/path issue — on that server, every unmatched path under `/rest/` returns `404` and every unmatched path under `/api/v1/` returns a generic `500`, and `/rest/appliances/host_id/` cleanly follows the `404` pattern). This matches Stamus's own licensing documentation, which lists Host Insights ("Assets Insights") and Declaration of Compromise as Tier 3-only, with the REST API itself available starting at Tier 2. If you see no data, or a 404, on `host_insights` or no `stamus`-typed events, confirm your license tier before treating it as an integration bug.
+- Host Insights (`/rest/appliances/host_id/`) and the full DoC/DoPV correlation layer (`event_type: stamus`) require a Stamus Clear NDR **Tier 3** license. Both were validated only against the documented API shape and a mock. Confirmed against a live, open-source Clear NDR Community/SELKS (below Tier 3) instance: the REST API itself works fine, `qfilter=event_type:stamus` consistently returns zero results, and `/rest/appliances/host_id/` returns a `404` (ruled out as a routing/path issue — on that server, every unmatched path under `/rest/` returns `404` and every unmatched path under `/api/v1/` returns a generic `500`, and `/rest/appliances/host_id/` cleanly follows the `404` pattern). This matches Stamus's own licensing documentation, which lists Host Insights ("Assets Insights") and Declaration of Compromise as Tier 3-only, with the REST API itself available starting at Tier 2. If you see no data, or a 404, on `host_insights` or no `stamus`-typed events, confirm your license tier before treating it as an integration bug. On some server configurations the `stamus` correlation phase may instead return a persistent 400/401/403/404/422 (rather than a clean zero-result page) when gated by licensing; the CEL program treats a non-retryable error on the `stamus` phase as "this phase is unavailable for this window" and advances to the next window's alert collection instead of retrying the failed phase forever — only a persistent error on the `alert` phase (the primary data) halts and retries.
 - Beaconing detection fields (`beaconing_report.*`, `beaconing_statistics.*`) are mapped but have not been observed in any sample data used to build this integration; treat as unverified end-to-end even though the fields are vendor-documented.
-- `flow_id` precision on very large values: `flow_id` is delivered by the API as a large integer (commonly >= 2^53 in production) but is mapped as `keyword` since it is used only as an opaque correlation key, never as a metric. The CEL program parses the raw API response with `decode_json()`, which decodes all JSON numbers as float64; `flow_id` values at or above 2^53 may therefore lose trailing-digit precision. An earlier version of this program avoided this by rewriting `flow_id` to a quoted JSON string before `decode_json()` ran (via a CEL `regexp:` stream-config block), but that mechanism caused Elastic Agent to silently fail to schedule a component for this input (confirmed on Elastic Agent 9.5.5, with no errors logged anywhere) and was removed. If you rely on exact `flow_id` values above 2^53 for cross-referencing with other systems, be aware the last few digits may be rounded.
+- `flow_id` precision: `flow_id` is delivered by the API as a large integer (commonly >= 2^53 in production) and is mapped as `keyword` since it is used only as an opaque correlation key, never as a metric. The CEL program parses the raw API response with `decode_json_string_numbers()`, which decodes every JSON number (not just `flow_id`) using its exact original textual form instead of float64, and re-emits it the same way through `encode_json()`; `flow_id` therefore round-trips through this integration with no precision loss, even above 2^53. (An earlier version of this program instead rewrote `flow_id` to a quoted JSON string before a plain `decode_json()` call, via a CEL `regexp:` stream-config block; that mechanism caused Elastic Agent to silently fail to schedule a component for this input — confirmed on Elastic Agent 9.5.5, with no errors logged anywhere — and was removed. `decode_json_string_numbers()` requires no stream-config changes, so it does not reintroduce that failure mode.)
 
 ## Performance and scaling
 
@@ -163,7 +163,7 @@ See the [REST API documentation](https://docs.stamus-networks.com/42.2.0/develop
 
 - [Stamus Networks Clear NDR documentation](https://docs.stamus-networks.com/)
 - [REST API](https://docs.stamus-networks.com/42.2.0/developer-corner/rest-api.html)
-- [DoC vs. DoPV concepts](https://docs.stamus-networks.com/42.2.0/concepts/doc-vs-dopv.html)
+- [DoC versus DoPV concepts](https://docs.stamus-networks.com/42.2.0/concepts/doc-vs-dopv.html)
 - [Host Insights concepts](https://docs.stamus-networks.com/42.2.0/concepts/host-insights.html)
 - [Outlier Alerts concepts](https://docs.stamus-networks.com/42.2.0/concepts/alert-outliers.html)
 
@@ -187,30 +187,30 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | alert.gid | Generator ID of the rule that fired (almost always 1). | long |
 | alert.metadata.affected_product |  | keyword |
 | alert.metadata.attack_target |  | keyword |
-| alert.metadata.confidence | Rule-writer-assigned confidence label (e.g. "Medium"). | keyword |
+| alert.metadata.confidence | Rule-writer-assigned confidence label (for example, "Medium.") | keyword |
 | alert.metadata.created_at |  | keyword |
 | alert.metadata.deployment |  | keyword |
 | alert.metadata.former_category |  | keyword |
 | alert.metadata.llmnr_asset | Which side of the 5-tuple ("src_ip" or "dest_ip") is the asset for an LLMNR legacy-protocol classification. | keyword |
 | alert.metadata.malware_family |  | keyword |
 | alert.metadata.ntlm_asset | Which side of the 5-tuple ("src_ip" or "dest_ip") is the asset for an NTLM legacy-protocol classification. | keyword |
-| alert.metadata.ntlm_key | NTLM protocol variant key (e.g. "ntlmv1"). | keyword |
+| alert.metadata.ntlm_key | NTLM protocol variant key (for example, "ntlmv1"). | keyword |
 | alert.metadata.original_sid | Original upstream signature ID this Stamus rule was derived from. | keyword |
 | alert.metadata.performance_impact |  | keyword |
 | alert.metadata.provider | Rule provider tag — "Stamus" marks Stamus-authored detections (DoC/DoPV, sightings, outlier). | keyword |
 | alert.metadata.sightings_asset | Which side of the 5-tuple ("src_ip" or "dest_ip") is the asset for a Sightings detection. | keyword |
-| alert.metadata.sightings_key | Dotted field path that triggered a Sightings detection, e.g. "http.http_user_agent". | keyword |
-| alert.metadata.signature_severity | Free-text, rule-writer-assigned severity label (e.g. Informational, Minor, Major, Critical). Can disagree with the numeric `event.severity` (mapped from `alert.severity`). | keyword |
-| alert.metadata.source | Detection source/method tag (e.g. "mime-type" on File Identification alerts). | keyword |
-| alert.metadata.stamus_classification | Stamus sub-classification tag, e.g. a DoC/DoPV threat classification, "stamus_sightings", or "fileidentification". | keyword |
-| alert.metadata.stamus_type | Stamus detection family tag, e.g. "doc" or "dopv". | keyword |
+| alert.metadata.sightings_key | Dotted field path that triggered a Sightings detection, for example, "http.http_user_agent." | keyword |
+| alert.metadata.signature_severity | Free-text, rule-writer-assigned severity label (for example, Informational, Minor, Major, Critical). Can disagree with the numeric `event.severity` (mapped from `alert.severity`). | keyword |
+| alert.metadata.source | Detection source/method tag (for example, "mime-type" on File Identification alerts). | keyword |
+| alert.metadata.stamus_classification | Stamus sub-classification tag, for example, a DoC/DoPV threat classification, "stamus_sightings", or "fileidentification". | keyword |
+| alert.metadata.stamus_type | Stamus detection family tag, for example, "doc" or "dopv." | keyword |
 | alert.metadata.tag |  | keyword |
-| alert.metadata.tls_state | TLS state observed on the flow (e.g. "plaintext"). | keyword |
+| alert.metadata.tls_state | TLS state observed on the flow (for example, "plaintext"). | keyword |
 | alert.metadata.updated_at |  | keyword |
 | beaconing_report.client_ip | Client-side IP of the suspected beaconing flow. | ip |
 | beaconing_report.serving_ip | Server-side IP of the suspected beaconing flow. | ip |
 | beaconing_statistics.assets | Asset(s) associated with the beaconing statistics. | keyword |
-| beaconing_statistics.tech_info | Technical beaconing metrics (e.g. interval/jitter statistics). Internal shape is not confirmed against a live example; stored as flattened until a populated sample is available. | flattened |
+| beaconing_statistics.tech_info | Technical beaconing metrics (for example, interval/jitter statistics). Internal shape is not confirmed against a live example; stored as flattened until a populated sample is available. | flattened |
 | capture_file | Full path to a per-alert pcap capture, only present when multi-mode pcap logging is enabled. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
@@ -222,7 +222,7 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | direction | Packet direction relative to the flow ("to_client" or "to_server"). Not mapped to ECS `network.direction` because that field's allowed values (inbound/outbound/internal/external) do not match Suricata's client/server semantics. | keyword |
 | discovery.asset | Asset (IP/hostname) the sighting was observed on. | keyword |
 | discovery.asset_net |  | keyword |
-| discovery.key | Dotted field path that was newly observed, e.g. "http.http_user_agent". | keyword |
+| discovery.key | Dotted field path that was newly observed, for example, "http.http_user_agent." | keyword |
 | discovery.value | The newly observed value for the key field. | keyword |
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
@@ -239,10 +239,10 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | files.gaps | Whether there were gaps in the captured file content. | boolean |
 | files.mimetype |  | keyword |
 | files.size |  | long |
-| files.state | File transfer state, e.g. "UNKNOWN", "CLOSED", "TRUNCATED". | keyword |
+| files.state | File transfer state, for example, "UNKNOWN," "CLOSED," "TRUNCATED." | keyword |
 | files.stored | Whether the file content itself was stored to disk by the sensor. | boolean |
 | files.tx_id | Transaction ID within the parent flow. | long |
-| flow_id | Suricata flow identifier. Primary cross-event correlation/join key for tying an alert back to its underlying flow or to other alerts on the same flow; delivered as a large integer but treated as an opaque identifier (keyword), not a metric. KNOWN LIMITATION: flow_id values commonly exceed 2^53 (the float64 safe-integer ceiling). The CEL program parses the raw response with decode_json(), which decodes all JSON numbers as float64; flow_id values at or above 2^53 may therefore lose trailing-digit precision before this field is ever populated. An earlier version of this program avoided this by rewriting flow_id to a quoted JSON string before decode_json() (using a `regexp:` stream-config block and re_replace_all()), but that mechanism caused Elastic Agent to silently fail to schedule a component for this input (confirmed on Elastic Agent 9.5.5) and was removed. See the package README's Troubleshooting section for details. | keyword |
+| flow_id | Suricata flow identifier. Primary cross-event correlation/join key for tying an alert back to its underlying flow or to other alerts on the same flow; delivered as a large integer (commonly \>= 2^53, the float64 safe-integer ceiling) but treated as an opaque identifier (keyword), not a metric. The CEL program parses the raw response with decode_json_string_numbers(), which decodes every JSON number in the response (not just flow_id) using its exact original textual form instead of float64, and re-emits it the same way through encode_json(); flow_id therefore round-trips through this integration with no precision loss, even above 2^53. An earlier version of this program instead rewrote flow_id to a quoted JSON string before a plain decode_json() call (using a `regexp:` stream-config block and re_replace_all()), but that mechanism caused Elastic Agent to silently fail to schedule a component for this input (confirmed on Elastic Agent 9.5.5) and was removed; decode_json_string_numbers() requires no stream-config changes, so it does not reintroduce that failure mode. See the package README's Troubleshooting section for historical context. | keyword |
 | hostname_info.domain | Full domain portion of the hostname. | keyword |
 | hostname_info.domain_without_tld | Domain with the top-level domain removed. | keyword |
 | hostname_info.host | The hostname observed for this event. | keyword |
@@ -250,10 +250,10 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | hostname_info.tld | Top-level domain. | keyword |
 | hostname_info.url | URL context associated with the hostname enrichment. | keyword |
 | input.type | Type of Elastic Agent input. | keyword |
-| metadata.flowbits | Suricata flowbits set/checked for this event (e.g. "stamus.sightings", "stamus.file.identification"). Cross-cutting enrichment tag, not rule metadata. | keyword |
+| metadata.flowbits | Suricata flowbits set/checked for this event (for example, "stamus.sightings", "stamus.file.identification.") Cross-cutting enrichment tag, not rule metadata. | keyword |
 | net_info.dest | Network/zone label for the destination IP. | keyword |
 | net_info.dest_agg | Aggregated/parent network label for the destination IP. | keyword |
-| net_info.src | Network/zone label for the source IP (e.g. a named network segment). | keyword |
+| net_info.src | Network/zone label for the source IP (for example, a named network segment). | keyword |
 | net_info.src_agg | Aggregated/parent network label for the source IP. | keyword |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
@@ -275,13 +275,13 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | stamus.asset_info.incident_id |  | long |
 | stamus.asset_info.kill_chain |  | keyword |
 | stamus.asset_info.last_seen |  | date |
-| stamus.asset_info.state | One of "new", "ongoing", "kill_chain_increase". | keyword |
+| stamus.asset_info.state | One of "new," "ongoing," "kill_chain_increase." | keyword |
 | stamus.asset_net_info | Network/zone label for the asset. | keyword |
-| stamus.asset_type | One of "ip", "hostname", "user". | keyword |
+| stamus.asset_type | One of "ip," "hostname," "user." | keyword |
 | stamus.event_id | Occurrence counter for this detection method against this asset/offender. | long |
 | stamus.extra_info | Free-form extra context. | keyword |
 | stamus.family_id | Threat family identifier (deep-links to the Clear NDR GUI). | long |
-| stamus.family_name | Threat family name, e.g. "Lateral Movement", "Adware". | keyword |
+| stamus.family_name | Threat family name, for example, "Lateral Movement," "Adware." | keyword |
 | stamus.family_type |  | keyword |
 | stamus.incidents_id | Linked incident ID(s); two entries when both asset and offender sides are tracked. | long |
 | stamus.kill_chain | Kill-chain phase: "pre_condition" (DoPV only), or "delivery"/"exploitation"/"installation"/ "command_and_control"/"action_on_objectives" (DoC). Lockheed-Martin-style phase naming, not MITRE ATT&CK — intentionally not mapped into `threat.tactic.\*`. | keyword |
@@ -294,10 +294,10 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | stamus.offender_info.kill_chain_offender |  | keyword |
 | stamus.offender_info.last_seen |  | date |
 | stamus.offender_info.state |  | keyword |
-| stamus.offender_type | One of "ip", "hostname", "user". | keyword |
+| stamus.offender_type | One of "ip," "hostname," "user." | keyword |
 | stamus.pk | Primary key of the Declaration record. | long |
 | stamus.threat_id | Unique threat identifier (deep-links to the Clear NDR GUI). | long |
-| stamus.threat_name | Name of the specific threat, e.g. "Powershell", "Potentially Unwanted Program". | keyword |
+| stamus.threat_name | Name of the specific threat, for example, "Powershell," "Potentially Unwanted Program." | keyword |
 | stamus_novel | True when this alert also represents a Stamus Outlier detection (novelty on an otherwise known signature); can co-occur with any alert. | boolean |
 | stamus_sensor.id | Identifier of the sensor/probe that recorded this event. | keyword |
 | stamus_sensor.name | Name of the sensor/probe that recorded this event. | keyword |
@@ -318,15 +318,15 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2024-01-15T12:00:00.123Z",
     "agent": {
-        "ephemeral_id": "8eeb4803-de23-42ae-816e-37afce6dbe1c",
-        "id": "7a7be06f-235d-40e0-ac95-14a3027066d1",
-        "name": "elastic-agent-13166",
+        "ephemeral_id": "c4fb7cb6-58a0-4676-b0ef-038d9165f82e",
+        "id": "1f0b85e5-e246-4772-82fa-df056099d860",
+        "name": "elastic-agent-33426",
         "type": "filebeat",
         "version": "9.5.5"
     },
     "data_stream": {
         "dataset": "stamus_networks.alerts",
-        "namespace": "66054",
+        "namespace": "42217",
         "type": "logs"
     },
     "destination": {
@@ -357,7 +357,7 @@ An example event for `alerts` looks as following:
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "7a7be06f-235d-40e0-ac95-14a3027066d1",
+        "id": "1f0b85e5-e246-4772-82fa-df056099d860",
         "snapshot": false,
         "version": "9.5.5"
     },
@@ -368,7 +368,7 @@ An example event for `alerts` looks as following:
             "network"
         ],
         "dataset": "stamus_networks.alerts",
-        "ingested": "2026-10-23T11:53:14Z",
+        "ingested": "2026-10-23T13:08:26Z",
         "kind": "alert",
         "module": "stamus_networks",
         "outcome": "unknown",
@@ -463,15 +463,15 @@ TLS/SSH/HTTP client fingerprints observed for the host). This is an entity/inven
 | host_id.http.user_agent.agent | HTTP User-Agent string value. | keyword |
 | host_id.http.user_agent.first_seen |  | date |
 | host_id.http.user_agent.last_seen |  | date |
-| host_id.in_home_net | Whether the host is inside the configured "home network". | boolean |
+| host_id.in_home_net | Whether the host is inside the configured "home network." | boolean |
 | host_id.last_seen | Record-level last-observed timestamp for this host. | date |
 | host_id.roles.first_seen |  | date |
 | host_id.roles.last_seen |  | date |
 | host_id.roles.name | Inferred role name. | keyword |
 | host_id.services.overflow | Vendor-internal overflow/truncation counter for this service's observation list. | long |
 | host_id.services.port | Service port number. | long |
-| host_id.services.proto | Transport protocol, e.g. "tcp". | keyword |
-| host_id.services.values.app_proto | Detected application-layer protocol, e.g. "tls", "unknown". | keyword |
+| host_id.services.proto | Transport protocol, for example, "tcp". | keyword |
+| host_id.services.values.app_proto | Detected application-layer protocol, for example, "tls," "unknown." | keyword |
 | host_id.services.values.first_seen |  | date |
 | host_id.services.values.http.server | HTTP Server header value observed on this service. | keyword |
 | host_id.services.values.last_seen |  | date |
@@ -507,24 +507,24 @@ An example event for `host_insights` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-23T11:37:59.782Z",
+    "@timestamp": "2026-10-23T13:09:22.611Z",
     "agent": {
-        "ephemeral_id": "64e8d575-bd5f-48ab-812f-3d073f112fff",
-        "id": "cc7b036d-24e7-4667-94ee-e4921b9a2608",
-        "name": "elastic-agent-97825",
+        "ephemeral_id": "29d6d919-311b-4b6b-bb35-a9eab61b05da",
+        "id": "6d5fe3ad-ea4b-4374-a900-e51dea95a6ce",
+        "name": "elastic-agent-89776",
         "type": "filebeat",
         "version": "9.5.5"
     },
     "data_stream": {
         "dataset": "stamus_networks.host_insights",
-        "namespace": "83032",
+        "namespace": "17432",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "cc7b036d-24e7-4667-94ee-e4921b9a2608",
+        "id": "6d5fe3ad-ea4b-4374-a900-e51dea95a6ce",
         "snapshot": false,
         "version": "9.5.5"
     },
@@ -543,7 +543,7 @@ An example event for `host_insights` looks as following:
             "host"
         ],
         "dataset": "stamus_networks.host_insights",
-        "ingested": "2026-10-23T11:38:03Z",
+        "ingested": "2026-10-23T13:09:26Z",
         "kind": "asset",
         "module": "stamus_networks",
         "type": [

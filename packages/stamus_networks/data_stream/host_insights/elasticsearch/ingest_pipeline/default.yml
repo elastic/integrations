@@ -2,13 +2,26 @@
 description: >-
   Pipeline for processing Stamus Networks Clear NDR Host Insights (`host_id`) inventory
   profiles. This is an entity/inventory data stream: Host Insights has no incremental
-  "updated since" filter, so every poll re-reads the ENTIRE host inventory and re-indexes
-  the same host documents on every cycle. `entity.id` is derived from the host's `ip`
-  address, which is a weak key -- no MAC address or asset UUID is documented by the
-  vendor, so the same physical host could in principle re-appear under a different IP
-  after DHCP reassignment. A `fingerprint`-derived `_id` keyed on `ip` keeps repeated
-  polls of the same host collapsing onto the same document (upsert-style) instead of
-  accumulating unbounded duplicates in the entity store.
+  "updated since" filter, so every poll re-reads the ENTIRE host inventory and re-sends
+  every host on every cycle. `entity.id` is derived from the host's `ip` address, which
+  is a weak key -- no MAC address or asset UUID is documented by the vendor, so the same
+  physical host could in principle re-appear under a different IP after DHCP
+  reassignment. Elasticsearch data streams only support `op_type: create` writes (this
+  is a core data-stream constraint, not a configuration choice), so a stable `_id` does
+  NOT upsert here: a later write using a previously-seen `_id` causes a version conflict
+  that is dropped, silently discarding any changed hostnames, services, or last-seen
+  timestamps. This pipeline therefore derives `_id` from a `fingerprint` of
+  `event.original` (the full raw snapshot content), following the same pattern used by
+  other entity packages in this repo (e.g. `github` members, `jamf_pro` inventory): each
+  poll is indexed as its own append-only snapshot, so a host whose profile changed
+  between polls is captured as a new document instead of being dropped, while a
+  byte-identical re-read of an unchanged host naturally collapses onto the same `_id`
+  (a harmless no-op write) instead of accumulating redundant copies. There is
+  intentionally no "latest state per host" view maintained by this pipeline -- consumers
+  that need current-state-per-host should build it downstream (for example an
+  Elasticsearch transform aggregating by `entity.id` with `max(@timestamp)`, or
+  ingestion into the Elastic Entity Store) rather than relying on this data stream's
+  raw documents to self-collapse to one row per host.
 processors:
   - set:
       field: ecs.version
@@ -195,16 +208,20 @@ processors:
       allow_duplicates: false
       if: ctx.json?.ip != null
 
-  # --- Entity-store deduplication across full-inventory re-reads: derive a stable
-  #     `_id` from the entity key so every poll cycle upserts the same document
-  #     instead of appending a new one each time the vendor re-sends this host. ---
+  # --- Append-only snapshot `_id`: data streams only support `create`, so a `_id`
+  #     derived purely from the entity key (e.g. host.id) would conflict and be
+  #     silently dropped on every re-read, discarding any changed fields. Fingerprint
+  #     the full `event.original` payload instead so a content change between polls
+  #     (new hostname, services, last-seen, etc.) always produces a new document,
+  #     while a byte-identical re-read of an unchanged host harmlessly collapses onto
+  #     the same `_id`. See the pipeline `description` above for the full rationale. ---
   - fingerprint:
       fields:
-        - host.id
+        - event.original
       target_field: _id
       method: SHA-256
-      tag: fingerprint_entity_id_to_doc_id
-      if: ctx.host?.id != null
+      tag: fingerprint_snapshot_to_doc_id
+      if: ctx.event?.original != null
 
   # --- ECS categorization ---
   - set:

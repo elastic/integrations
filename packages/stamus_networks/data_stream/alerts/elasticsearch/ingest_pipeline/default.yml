@@ -9,8 +9,17 @@ description: >-
   (`source.bytes`/`destination.bytes`/`source.packets`/`destination.packets`/`event.start`); the
   raw `flow.src_ip`/`src_port`/`dest_ip`/`dest_port` duplicate fields are discarded along with the
   rest of `json.*` since the authoritative 5-tuple is already captured via `alert.source`/
-  `alert.target`/`json.src_ip`/`json.dest_ip` above. The vendor fields `tunnel.*` (GRE tunnel
-  endpoints), `ether.*` (MAC addresses), `packet_info.linktype`, `pkt_src`, `in_iface`, and
+  `alert.target`/`json.src_ip`/`json.dest_ip` above. `flow.bytes_toserver`/`bytes_toclient`/
+  `pkts_toserver`/`pkts_toclient` are oriented relative to the flow's OWN `flow.src_ip` ->
+  `flow.dest_ip` direction (the flow's fixed client/server orientation), which is NOT always the
+  same as the final `source.ip`/`destination.ip` -- a single EVE alert record's top-level
+  `src_ip`/`dest_ip` can report either packet direction of the flow, and `alert.source`/
+  `alert.target` can additionally replace them with attacker/victim attribution when a Suricata
+  rule uses the `target` keyword. The pipeline detects any such mismatch by comparing the
+  finalized `source.ip` against `flow.src_ip` and swaps the byte/packet counter targets
+  accordingly, so `source.bytes`/`source.packets` always reflect the traffic actually sent by
+  whichever endpoint ends up as `source.ip`. The vendor fields `tunnel.*` (GRE
+  tunnel endpoints), `ether.*` (MAC addresses), `packet_info.linktype`, `pkt_src`, `in_iface`, and
   `app_proto_tc` are intentionally NOT mapped in this version -- they are capture/L2 metadata with
   no clean ECS home (MAC format normalization and a new vendor field group would add complexity)
   and lower incremental analytic value than the 5-tuple, `network.community_id`, and the flow
@@ -253,27 +262,81 @@ processors:
   # Suricata EVE `flow.*` object -> ECS byte/packet counters + flow start time.
   # `flow.src_ip`/`src_port`/`dest_ip`/`dest_port` are duplicates of the 5-tuple already
   # captured above and are intentionally left for the final `json` cleanup to discard.
+  #
+  # `bytes_toserver`/`pkts_toserver` are traffic FROM the flow's OWN `src_ip` (the flow's
+  # initiator) TO its OWN `dest_ip` -- this is the flow's fixed client/server orientation and is
+  # independent of the alert-record-level `src_ip`/`dest_ip`/`direction` fields above (a single
+  # EVE alert record can report either packet direction of a flow, and/or have its 5-tuple
+  # replaced by `alert.source`/`alert.target` attacker/victim attribution). `bytes_toclient`/
+  # `pkts_toclient` are the reverse direction (flow `dest_ip` -> flow `src_ip`).
+  #
+  # The final `source.ip`/`destination.ip` are NOT guaranteed to align with the flow's own
+  # `src_ip`/`dest_ip` -- compare them directly (never assume `source.ip == flow.src_ip`) to
+  # determine which ECS endpoint actually matches the flow's traffic originator:
+  #   - `source.ip == json.flow.src_ip`      -> source is the flow originator: `toserver` traffic
+  #     (source -> destination) maps to `source.*`, `toclient` (destination -> source) to
+  #     `destination.*` -- this is the "not flipped" case.
+  #   - `source.ip == json.flow.dest_ip` (or any other mismatch with `json.flow.src_ip`) -> source
+  #     is actually the flow's destination endpoint, so the mapping must be swapped: `toserver`
+  #     traffic (still flow `src_ip` -> flow `dest_ip`, i.e. destination -> source in the final
+  #     ECS orientation) maps to `destination.*`, and `toclient` maps to `source.*`.
   ###
+  - set:
+      field: json._flow_orientation_flipped
+      value: true
+      tag: set_flow_orientation_flipped
+      if: ctx.source?.ip != null && ctx.json?.flow?.src_ip != null && ctx.source.ip != ctx.json.flow.src_ip
+      description: >-
+        True when the final `source.ip` does not match the flow's own `src_ip`, meaning the flow
+        byte/packet counters below must be swapped to stay attributed to the correct ECS endpoint.
   - rename:
       field: json.flow.bytes_toserver
       target_field: source.bytes
-      tag: rename_flow_bytes_toserver
+      tag: rename_flow_bytes_toserver_to_source
       ignore_missing: true
+      if: ctx.json?._flow_orientation_flipped != true
+  - rename:
+      field: json.flow.bytes_toserver
+      target_field: destination.bytes
+      tag: rename_flow_bytes_toserver_to_destination
+      ignore_missing: true
+      if: ctx.json?._flow_orientation_flipped == true
   - rename:
       field: json.flow.bytes_toclient
       target_field: destination.bytes
-      tag: rename_flow_bytes_toclient
+      tag: rename_flow_bytes_toclient_to_destination
       ignore_missing: true
+      if: ctx.json?._flow_orientation_flipped != true
+  - rename:
+      field: json.flow.bytes_toclient
+      target_field: source.bytes
+      tag: rename_flow_bytes_toclient_to_source
+      ignore_missing: true
+      if: ctx.json?._flow_orientation_flipped == true
   - rename:
       field: json.flow.pkts_toserver
       target_field: source.packets
-      tag: rename_flow_pkts_toserver
+      tag: rename_flow_pkts_toserver_to_source
       ignore_missing: true
+      if: ctx.json?._flow_orientation_flipped != true
+  - rename:
+      field: json.flow.pkts_toserver
+      target_field: destination.packets
+      tag: rename_flow_pkts_toserver_to_destination
+      ignore_missing: true
+      if: ctx.json?._flow_orientation_flipped == true
   - rename:
       field: json.flow.pkts_toclient
       target_field: destination.packets
-      tag: rename_flow_pkts_toclient
+      tag: rename_flow_pkts_toclient_to_destination
       ignore_missing: true
+      if: ctx.json?._flow_orientation_flipped != true
+  - rename:
+      field: json.flow.pkts_toclient
+      target_field: source.packets
+      tag: rename_flow_pkts_toclient_to_source
+      ignore_missing: true
+      if: ctx.json?._flow_orientation_flipped == true
   - date:
       field: json.flow.start
       target_field: event.start

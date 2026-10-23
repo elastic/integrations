@@ -1,7 +1,7 @@
 - name: flow_id
   type: keyword
   description: >-
-    Suricata flow identifier. Primary cross-event correlation/join key for tying an alert back to its underlying flow or to other alerts on the same flow; delivered as a large integer but treated as an opaque identifier (keyword), not a metric. KNOWN LIMITATION: flow_id values commonly exceed 2^53 (the float64 safe-integer ceiling). The CEL program parses the raw response with decode_json(), which decodes all JSON numbers as float64; flow_id values at or above 2^53 may therefore lose trailing-digit precision before this field is ever populated. An earlier version of this program avoided this by rewriting flow_id to a quoted JSON string before decode_json() (using a `regexp:` stream-config block and re_replace_all()), but that mechanism caused Elastic Agent to silently fail to schedule a component for this input (confirmed on Elastic Agent 9.5.5) and was removed. See the package README's Troubleshooting section for details.
+    Suricata flow identifier. Primary cross-event correlation/join key for tying an alert back to its underlying flow or to other alerts on the same flow; delivered as a large integer (commonly >= 2^53, the float64 safe-integer ceiling) but treated as an opaque identifier (keyword), not a metric. The CEL program parses the raw response with decode_json_string_numbers(), which decodes every JSON number in the response (not just flow_id) using its exact original textual form instead of float64, and re-emits it the same way through encode_json(); flow_id therefore round-trips through this integration with no precision loss, even above 2^53. An earlier version of this program instead rewrote flow_id to a quoted JSON string before a plain decode_json() call (using a `regexp:` stream-config block and re_replace_all()), but that mechanism caused Elastic Agent to silently fail to schedule a component for this input (confirmed on Elastic Agent 9.5.5) and was removed; decode_json_string_numbers() requires no stream-config changes, so it does not reintroduce that failure mode. See the package README's Troubleshooting section for historical context.
 - name: direction
   type: keyword
   description: >-
@@ -15,7 +15,7 @@
   fields:
     - name: src
       type: keyword
-      description: Network/zone label for the source IP (e.g. a named network segment).
+      description: Network/zone label for the source IP (for example, a named network segment).
     - name: src_agg
       type: keyword
       description: Aggregated/parent network label for the source IP.
@@ -56,7 +56,7 @@
     - name: flowbits
       type: keyword
       description: >-
-        Suricata flowbits set/checked for this event (e.g. "stamus.sightings", "stamus.file.identification"). Cross-cutting enrichment tag, not rule metadata.
+        Suricata flowbits set/checked for this event (for example, "stamus.sightings", "stamus.file.identification.") Cross-cutting enrichment tag, not rule metadata.
 - name: beaconing_report
   type: group
   description: >-
@@ -79,7 +79,7 @@
     - name: tech_info
       type: flattened
       description: >-
-        Technical beaconing metrics (e.g. interval/jitter statistics). Internal shape is not confirmed against a live example; stored as flattened until a populated sample is available.
+        Technical beaconing metrics (for example, interval/jitter statistics). Internal shape is not confirmed against a live example; stored as flattened until a populated sample is available.
 - name: alert
   type: group
   fields:
@@ -92,7 +92,7 @@
     - name: metadata.signature_severity
       type: keyword
       description: >-
-        Free-text, rule-writer-assigned severity label (e.g. Informational, Minor, Major, Critical). Can disagree with the numeric `event.severity` (mapped from `alert.severity`).
+        Free-text, rule-writer-assigned severity label (for example, Informational, Minor, Major, Critical). Can disagree with the numeric `event.severity` (mapped from `alert.severity`).
     - name: metadata.created_at
       type: keyword
     - name: metadata.updated_at
@@ -116,18 +116,18 @@
       description: Rule provider tag — "Stamus" marks Stamus-authored detections (DoC/DoPV, sightings, outlier).
     - name: metadata.stamus_type
       type: keyword
-      description: Stamus detection family tag, e.g. "doc" or "dopv".
+      description: Stamus detection family tag, for example, "doc" or "dopv."
     - name: metadata.stamus_classification
       type: keyword
       description: >-
-        Stamus sub-classification tag, e.g. a DoC/DoPV threat classification, "stamus_sightings", or "fileidentification".
+        Stamus sub-classification tag, for example, a DoC/DoPV threat classification, "stamus_sightings", or "fileidentification".
     - name: metadata.confidence
       type: keyword
-      description: Rule-writer-assigned confidence label (e.g. "Medium").
+      description: Rule-writer-assigned confidence label (for example, "Medium.")
     - name: metadata.source
       type: keyword
       description: >-
-        Detection source/method tag (e.g. "mime-type" on File Identification alerts).
+        Detection source/method tag (for example, "mime-type" on File Identification alerts).
     - name: metadata.llmnr_asset
       type: keyword
       description: >-
@@ -138,20 +138,20 @@
         Which side of the 5-tuple ("src_ip" or "dest_ip") is the asset for an NTLM legacy-protocol classification.
     - name: metadata.ntlm_key
       type: keyword
-      description: NTLM protocol variant key (e.g. "ntlmv1").
+      description: NTLM protocol variant key (for example, "ntlmv1").
     - name: metadata.original_sid
       type: keyword
       description: Original upstream signature ID this Stamus rule was derived from.
     - name: metadata.tls_state
       type: keyword
-      description: TLS state observed on the flow (e.g. "plaintext").
+      description: TLS state observed on the flow (for example, "plaintext").
     - name: metadata.sightings_asset
       type: keyword
       description: >-
         Which side of the 5-tuple ("src_ip" or "dest_ip") is the asset for a Sightings detection.
     - name: metadata.sightings_key
       type: keyword
-      description: Dotted field path that triggered a Sightings detection, e.g. "http.http_user_agent".
+      description: Dotted field path that triggered a Sightings detection, for example, "http.http_user_agent."
 - name: stamus
   type: group
   description: >-
@@ -171,7 +171,7 @@
       description: Threat family identifier (deep-links to the Clear NDR GUI).
     - name: family_name
       type: keyword
-      description: Threat family name, e.g. "Lateral Movement", "Adware".
+      description: Threat family name, for example, "Lateral Movement," "Adware."
     - name: family_type
       type: keyword
     - name: threat_id
@@ -179,7 +179,7 @@
       description: Unique threat identifier (deep-links to the Clear NDR GUI).
     - name: threat_name
       type: keyword
-      description: Name of the specific threat, e.g. "Powershell", "Potentially Unwanted Program".
+      description: Name of the specific threat, for example, "Powershell," "Potentially Unwanted Program."
     - name: kill_chain
       type: keyword
       description: >-
@@ -190,7 +190,7 @@
         The subject/victim — IP, hostname, mail address, or username. Also appended to the matching `related.*` array (`related.ip`/`related.hosts`/`related.user`) based on `asset_type`.
     - name: asset_type
       type: keyword
-      description: One of "ip", "hostname", "user".
+      description: One of "ip," "hostname," "user."
     - name: asset_net_info
       type: keyword
       description: Network/zone label for the asset.
@@ -200,7 +200,7 @@
         The actor/attacker side — IP, hostname, mail, or user, when separately tracked. Also appended to the matching `related.*` array based on `offender_type`.
     - name: offender_type
       type: keyword
-      description: One of "ip", "hostname", "user".
+      description: One of "ip," "hostname," "user."
     - name: incidents_id
       type: long
       description: Linked incident ID(s); two entries when both asset and offender sides are tracked.
@@ -213,7 +213,7 @@
       type: date
     - name: asset_info.state
       type: keyword
-      description: One of "new", "ongoing", "kill_chain_increase".
+      description: One of "new," "ongoing," "kill_chain_increase."
     - name: asset_info.kill_chain
       type: keyword
     - name: asset_info.incident_id
@@ -258,7 +258,7 @@
       description: Asset (IP/hostname) the sighting was observed on.
     - name: key
       type: keyword
-      description: Dotted field path that was newly observed, e.g. "http.http_user_agent".
+      description: Dotted field path that was newly observed, for example, "http.http_user_agent."
     - name: value
       type: keyword
       description: The newly observed value for the key field.
@@ -277,7 +277,7 @@
       type: long
     - name: state
       type: keyword
-      description: File transfer state, e.g. "UNKNOWN", "CLOSED", "TRUNCATED".
+      description: File transfer state, for example, "UNKNOWN," "CLOSED," "TRUNCATED."
     - name: stored
       type: boolean
       description: Whether the file content itself was stored to disk by the sensor.

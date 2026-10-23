@@ -7,7 +7,16 @@ rules:
   # observably different from req_num 1 and proves the CEL program resets its page
   # counter to 1 on each new poll cycle rather than continuing from the previous poll's
   # last page.
-  # req_num >=3 (all subsequent polls within the 1m test window): terminal empty
+  # req_num 3 (round 3 / third poll, interval-driven): re-returns 198.51.100.10 -- a host
+  # ALREADY seen in round 1 -- but with CHANGED content: an added `hostname` entry
+  # (host-a-new.example.com joins host-a.example.com), different `services` (the tcp/443
+  # entry drops its tls detail and a new tcp/8443 entry appears), and an advanced
+  # `last_seen` (12:00 -> 15:30). Regression test for the pipeline's `_id` fingerprint:
+  # the fingerprint processor hashes the full `event.original` snapshot (not just the
+  # host IP), so this content change between polls must produce a NEW, distinct document
+  # for the same host.id instead of silently colliding with / overwriting round 1's
+  # document for .10 (see data_stream/host_insights/elasticsearch/ingest_pipeline/default.yml).
+  # req_num >=4 (all subsequent polls within the 1m test window): terminal empty
   # response -- stops hit_count from growing unboundedly across repeated full reads.
   - path: /rest/appliances/host_id/
     methods: ['GET']
@@ -29,6 +38,8 @@ rules:
           {"count": 3, "next": "http://{{ hostname }}:{{ env "PORT" }}/rest/appliances/host_id/?page_size=2&page_number=2", "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}]}]}}, {"ip": "198.51.100.11", "host_id": {"first_seen": "2024-01-11T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000", "in_home_net": false, "hostname": [{"host": "host-b.example.com", "first_seen": "2024-01-11T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "services": []}}]}
           {{ else if eq .req_num 2 }}
           {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.12", "host_id": {"first_seen": "2024-01-15T13:00:00.000000+0000", "last_seen": "2024-01-15T13:05:00.000000+0000", "in_home_net": true, "hostname": [], "services": []}}]}
+          {{ else if eq .req_num 3 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T15:30:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-new.example.com", "first_seen": "2024-01-15T14:00:00.000000+0000", "last_seen": "2024-01-15T15:30:00.000000+0000"}], "services": [{"proto": "tcp", "port": 8443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-15T15:00:00.000000+0000", "last_seen": "2024-01-15T15:30:00.000000+0000"}]}]}}]}
           {{ else }}
           {"count": 0, "next": null, "previous": null, "results": []}
           {{ end }}
