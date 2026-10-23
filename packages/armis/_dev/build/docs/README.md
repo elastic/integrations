@@ -8,7 +8,17 @@ Use this integration to collect and parse data from your Armis instance.
 
 ### Compatibility
 
-This module has been tested against the Armis API version **v1**.
+This module has been tested against the Armis API version **v1**. Armis documents v1 as a supported API. v3 does not replace the device, alert, and vulnerability search calls this integration uses.
+
+### How it works
+
+The Elastic Agent uses the CEL input to poll the Armis API v1. Each data stream authenticates with `POST /api/v1/access_token/` using the secret key, then sends the access token in the `Authorization` header.
+
+- **Devices** call `GET /api/v1/search/` with `in:devices`, ordered by `lastSeen`. The next poll starts from the latest `lastSeen` value.
+- **Alerts** call `GET /api/v1/search/` with `in:alerts` and a `statusChangeTime` window.
+- **Vulnerabilities** call `GET /api/v1/search/` with `in:vulnerabilities` and a `lastDetected` window, then `GET /api/v1/vulnerability-match/` for the devices where those vulnerabilities were detected.
+
+Search requests follow `data.next` until the page is exhausted. Ingest pipelines map the response to ECS and keep the Armis fields under `armis.*`. The alert and device data streams also install a latest transform so the dashboards show the current record for each alert and device.
 
 ## What data does this integration collect?
 
@@ -22,7 +32,19 @@ The Armis integration collects three types of logs.
 
 1. The **vulnerability data stream** retrieves information by first fetching vulnerabilities and then identifying the devices where these vulnerabilities were detected, using a chained call between the vulnerability search and vulnerability match endpoints.
 
+### Supported use cases
+
+- Review the device inventory, including host identity, addresses, and operating system, on the Devices dashboard. Device documents set `host.id` and `host.name`, which Elastic Security can use to build host entities.
+- Investigate Armis alerts. Alert documents set `event.kind` to `alert`.
+- Review detected vulnerabilities and the devices they match, including the CVE identifier and severity, on the Vulnerabilities dashboard.
+
 ## What do I need to use this integration?
+
+### Agent-based installation
+
+Elastic Agent must be installed and enrolled in Fleet. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+
+You also need an Armis secret key from **Settings > Asset Management & Security > API Management**, and the base URL of the Armis API.
 
 ### Elastic Managed enabled integration
 
@@ -30,11 +52,9 @@ Elastic Managed integrations are only supported on Elastic Cloud Serverless and 
 
 For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
-### Agent-based installation
+## How do I deploy this integration?
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
-
-## Setup
+Fleet-managed Elastic Agent and Elastic Managed (agentless) deployment are both supported. Standalone Elastic Agent is not required.
 
 ### Collect logs through REST API
 
@@ -48,8 +68,22 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 1. In Kibana navigate to **Management** > **Integrations**.
 2. In the search bar, type **Armis**.
 3. Select the **Armis** integration and add it.
-4. Add all the required integration configuration parameters, including the URL, Secret Key to enable data collection.
+4. Add all the required integration configuration parameters, including the URL and Secret Key, to enable data collection.
+   - **URL**: Base URL of the Armis API.
+   - **Secret Key**: Secret key generated in Armis.
+   - **Interval**: Time between polls. The default is `5m` for each data stream.
+   - **Initial Interval**: How far back the first poll looks. The default is `24h`.
+   - **Page Size**: Number of records per search request. The default is `2000` for alerts and devices, and `89` for vulnerabilities. Vulnerability match requests place the returned ids on the query string, so that page size is smaller.
 5. Save the integration.
+
+### Validation
+
+After the integration is saved, confirm that data is arriving:
+
+1. In **Fleet**, confirm the Armis integration is healthy.
+2. In **Discover**, open `logs-armis.device-*`, `logs-armis.alert-*`, and `logs-armis.vulnerability-*`. Documents appear after the first interval. The first collection looks back the Initial Interval.
+3. Open the Armis **Devices**, **Alerts**, and **Vulnerabilities** dashboards. The Devices and Alerts dashboards read the latest-transform destination.
+4. If a data stream returns no documents, check the Elastic Agent logs for errors from the CEL input and refer to [Troubleshooting](#troubleshooting).
 
 ## Data retention
 
@@ -86,46 +120,66 @@ In the **vulnerability data stream**, our filtering mechanism for the **vulnerab
   **Example error:**
   - `The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.`
 
-## Logs reference
+## Performance and scaling
 
-### Alert
+Each data stream polls on its own interval. The default is 5 minutes. Alert and device searches request 2000 records per page. Vulnerability search requests 89 records per page, then requests the matching devices. One integration policy per Armis tenant is enough for all three streams.
+
+If a request returns `502` or `414`, lower the page size. If the first alert collection fails because the initial window is too large, shorten the Initial Interval. Raise the interval when the tenant is large and the API cannot keep up with the default poll rate.
+
+The alert and device latest transforms keep one current document per alert or device. Size the cluster for the source data streams plus those destination indices. Source retention is described in [Data retention](#data-retention).
+
+## Reference
+
+### Logs reference
+
+#### Alert
 
 This is the `alert` dataset.
 
-#### Example
+##### Example
 
 An example event for `alert` looks as following:
 
 {{event "alert"}}
 
-#### Exported fields
+##### Exported fields
 
 {{fields "alert"}}
 
-### Device
+#### Device
 
 This is the `device` dataset.
 
-#### Example
+##### Example
 
 An example event for `device` looks as following:
 
 {{event "device"}}
 
-#### Exported fields
+##### Exported fields
 
 {{fields "device"}}
 
-### Vulnerability
+#### Vulnerability
 
 This is the `vulnerability` dataset.
 
-#### Example
+##### Example
 
 An example event for `vulnerability` looks as following:
 
 {{event "vulnerability"}}
 
-#### Exported fields
+##### Exported fields
 
 {{fields "vulnerability"}}
+
+### Inputs used in this integration
+
+- [CEL input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html): Polls the Armis API v1 and paginates each search response.
+
+### APIs used to collect data
+
+- `POST /api/v1/access_token/`: Exchanges the secret key for an access token.
+- `GET /api/v1/search/`: Collects devices (`in:devices`), alerts (`in:alerts`), and vulnerabilities (`in:vulnerabilities`).
+- `GET /api/v1/vulnerability-match/`: Collects the devices matched to the vulnerabilities returned by search.
