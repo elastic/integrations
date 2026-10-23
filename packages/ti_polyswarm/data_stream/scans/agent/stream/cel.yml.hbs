@@ -1,0 +1,93 @@
+config_version: 2
+interval: {{interval}}
+resource.url: "{{url}}"
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+state:
+  api_key: "{{api_key}}"
+  query: {{escape_string query}}
+  community: "{{community}}"
+  batch_size: {{batch_size}}
+  offset: ""
+redact:
+  fields:
+    - api_key
+program: |
+  state.with(
+    request(
+      "GET",
+      state.url + "/v3/search/metadata/query?" + {
+        "query": [state.query],
+        "community": [state.community],
+        "limit": [string(int(state.batch_size))],
+        ?"offset": state.offset != "" ? optional.of([state.offset]) : optional.none(),
+      }.format_query()
+    ).with(
+      {
+        "Header": {
+          "Authorization": [state.api_key],
+        },
+      }
+    ).do_request().as(resp,
+      (resp.StatusCode == 200) ?
+        resp.Body.decode_json().as(body,
+          body.?result.orValue([]).as(results,
+            (body.?has_more.orValue(false) && body.?offset.orValue("") != "").as(more,
+              {
+                "events": results.map(a,
+                  {"message": a.encode_json()}
+                ),
+                "offset": more ? body.offset : "",
+                "want_more": more,
+              }
+            )
+          )
+        )
+      :
+        {
+          "events": [
+            {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET /v3/search/metadata/query: " + (
+                  size(resp.Body) != 0 ? string(resp.Body) : resp.Status
+                ),
+              },
+              "http": {
+                "response": {
+                  "status_code": resp.StatusCode,
+                },
+              },
+            },
+          ],
+          "offset": "",
+          "want_more": false,
+        }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+fields_under_root: true
+fields:
+  _conf:
+    interval: "{{interval}}"
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
