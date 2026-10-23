@@ -889,7 +889,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.block_reason | SMTP Block Reason | keyword |
 | netskope.alert_v2.breach_date | Breach Metric date for compromised credentials. | date |
 | netskope.alert_v2.breach_description | Breach description for compromised credentials. | keyword |
-| netskope.alert_v2.breach_id | Breach description for compromised credentials. | keyword |
+| netskope.alert_v2.breach_id | Breach ID for compromised credentials. | keyword |
 | netskope.alert_v2.breach_media_references | Media references of breach in compromised credentials. | keyword |
 | netskope.alert_v2.breach_score | Breach score for compromised credentials. | long |
 | netskope.alert_v2.breach_target_references | Breach target references for compromised credentials. | keyword |
@@ -1880,7 +1880,7 @@ An example event for `events` looks as following:
 | netskope.events_v2.boolean_metric_value | Indicates if metric details are present in the infrastructure events. | keyword |
 | netskope.events_v2.breach_date | Breach Metric date for compromised credentials. | date |
 | netskope.events_v2.breach_description | Breach description for compromised credentials. | keyword |
-| netskope.events_v2.breach_id | Breach description for compromised credentials. | keyword |
+| netskope.events_v2.breach_id | Breach ID for compromised credentials. | keyword |
 | netskope.events_v2.breach_media_references | Media references of breach in compromised credentials. | keyword |
 | netskope.events_v2.breach_score | Breach score for compromised credentials. | long |
 | netskope.events_v2.breach_target_references | Breach target references for compromised credentials. | keyword |
