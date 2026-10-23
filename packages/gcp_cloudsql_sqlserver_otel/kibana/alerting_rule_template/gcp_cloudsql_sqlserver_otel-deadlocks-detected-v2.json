@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_sqlserver_otel-deadlocks-detected-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL SQL Server OTel] Deadlocks detected",
+        "description": "Alerts when a SQL Server instance records 5 or more deadlocks within 15 minutes. SQL Server resolves each deadlock by killing a victim transaction, so the application receives an error. SQL Server-only metric, so no engine marker is needed. Grouped by database_id; the locked resource types involved are listed.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "sqlserver"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_sqlserver.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// SQL Server-only metric: no engine marker needed.\n// deadlock_count is a DELTA metric (deadlocks per 60 s sample) with one series per\n// locked_resource; SUM(SUM_OVER_TIME) is exact across fragments. Never use RATE().\n| STATS deadlocks = SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/sqlserver/transactions/deadlock_count`))\n    BY database_id, attributes.locked_resource\n| WHERE deadlocks > 0\n| STATS deadlocks = SUM(deadlocks),\n        locked_resources = MV_CONCAT(MV_SORT(VALUES(attributes.locked_resource)), \", \")\n    BY database_id",
+        "breach": {
+          "segment": "// Alert threshold: deadlocks per instance within the rule window.\n// Set to >= 1 to be notified of every deadlock.\nWHERE deadlocks >= 5\n| KEEP database_id, deadlocks, locked_resources\n| SORT deadlocks DESC\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-deadlocks-detected-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL for SQL Server deadlocks detected\n\nSQL Server detected deadlocks and killed a victim transaction for each (error 1205 in the application). A burst indicates conflicting lock ordering in application code or contention escalating from blocking.\n\n### Triage\n1. Capture the deadlock graphs from the `system_health` Extended Events session (`xml_deadlock_report`) to see which statements and objects are involved.\n2. `locked_resources` shows the resource types (Key, Page, Object, ...). Object/Page deadlocks often come from lock escalation on scans; Key deadlocks from conflicting access order.\n3. Check the blocking alert and the Instance Detail dashboard for concurrent blocking and lock wait time.\n4. Confirm the application retries deadlock victims; fix access order, add supporting indexes, or shorten transactions.\n\n### Tuning\n- Change `deadlocks >= 5` to `>= 1` to be notified about every deadlock, or raise it for workloads with known, retried deadlocks.\n\n### Behaviour notes\n- Healthy: fewer than 5 deadlocks in 15 minutes. Breaching: 5 or more (exactly 5 breaches). Fires on the first breaching check.\n- Missing data: no deadlock samples means no alert."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-deadlocks-detected-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_sqlserver_otel-46d11bef-3642-4b3f-b979-d748c687acd6"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-deadlocks-detected-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_sqlserver_otel-0953c329-69c9-4605-9c7c-b2c2d5b10846"
+          }
+        }
+      ]
+    }
+  }
+}

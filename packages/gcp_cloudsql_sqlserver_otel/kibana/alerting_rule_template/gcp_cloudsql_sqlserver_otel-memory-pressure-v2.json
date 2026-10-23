@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_sqlserver_otel-memory-pressure-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL SQL Server OTel] Memory pressure (grants pending or buffer pool churn)",
+        "description": "Alerts when a SQL Server instance shows memory pressure over 15 minutes: queries waiting for workspace memory (memory_grants_pending averages at least 1), page life expectancy staying below a memory-size-scaled floor (300 s per 4 GiB of instance memory) for the whole window without warming up (growing at least 30 s per minute, as after a restart), or the buffer cache hit ratio averaging below 90%. Requires at least 5 samples, for 2 consecutive checks. Instances with less than 1 GB of memory are excluded. Built on SQL Server-only metrics. Grouped by database_id.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "sqlserver"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_sqlserver.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// SQL Server-only metrics: no engine marker needed (memory/quota is context only).\n// Gauges without labels: one value per minute per instance (fragmentation-safe).\n| STATS ple = MIN(MIN_OVER_TIME(`cloudsql.googleapis.com/database/sqlserver/memory/page_life_expectancy`)),\n        ple_hi = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/sqlserver/memory/page_life_expectancy`)),\n        hit_ratio = MIN(MIN_OVER_TIME(`cloudsql.googleapis.com/database/sqlserver/memory/buffer_cache_hit_ratio`)),\n        grants_pending = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/sqlserver/memory/memory_grants_pending`)),\n        mem_quota = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/memory/quota`))\n    BY `@timestamp` = TBUCKET(1 minute), database_id\n| EVAL ple_ts = CASE(ple IS NOT NULL, `@timestamp`, NULL)\n| STATS ple_n = COUNT(ple),\n        ple_max = MAX(ple_hi),\n        ple_first = FIRST(ple, ple_ts),\n        ple_last = LAST(ple, ple_ts),\n        hit_ratio_avg = AVG(hit_ratio),\n        grants_avg = AVG(grants_pending),\n        grants_n = COUNT(grants_pending),\n        mem_quota = MAX(mem_quota)\n    BY database_id",
+        "breach": {
+          "segment": "WHERE ple_n >= 5 OR grants_n >= 5\n// Exclude very small tiers (< 1 GB memory): they run permanently at their memory limit.\n// Remove this filter to include them.\n| WHERE mem_quota IS NULL OR mem_quota >= 1000000000\n// PLE floor scales with memory: 300 s per 4 GiB (never below 300 s). Tune the 300.\n| EVAL ple_floor = GREATEST(300.0, 300.0 * COALESCE(mem_quota, 0) / 4294967296.0),\n       ple_growth = ple_last - ple_first,\n       hit_ratio_avg = ROUND(hit_ratio_avg, 2),\n       grants_avg = ROUND(grants_avg, 2)\n// Breach conditions (any of):\n//  - grants: queries queued for workspace memory (sorts, hashes) on average\n//  - ple: PLE below the floor for the whole window AND not climbing steadily\n//    (a restarted instance's PLE grows ~60 s per minute; growth >= 30 s per minute is warm-up, which also covers short post-start windows)\n//  - hit ratio: buffer cache hit ratio (percent 0-100) persistently low\n| EVAL grants_breach = grants_n >= 5 AND grants_avg >= 1,\n       ple_breach = ple_n >= 5 AND ple_max < ple_floor AND ple_growth < 30.0 * (ple_n - 1),\n       hit_breach = ple_n >= 5 AND hit_ratio_avg < 90\n| WHERE grants_breach OR ple_breach OR hit_breach\n| EVAL reason = CASE(\n    grants_breach, \"memory grants pending\",\n    ple_breach, \"page life expectancy below floor\",\n    \"buffer cache hit ratio low\")\n| KEEP database_id, reason, grants_avg, ple_max, ple_floor, hit_ratio_avg, mem_quota\n| SORT database_id\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-memory-pressure-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL for SQL Server memory pressure\n\nSQL Server is short of memory. The `reason` column says which signal fired:\n- `memory grants pending`: queries are queued waiting for workspace memory for sorts and hash joins. This shows up immediately as latency for large queries.\n- `page life expectancy below floor`: pages are evicted from the buffer pool quickly (PLE stayed under 300 s per 4 GiB of instance memory for 15 minutes), so reads go to disk.\n- `buffer cache hit ratio low`: a large share of page reads miss the buffer pool.\n\nHigh `memory/utilization` alone is normal for SQL Server (it deliberately reserves most RAM for the buffer pool) and is not alerted on.\n\n### Triage\n1. Open the Instance Detail dashboard: look at PLE, buffer cache hit ratio, memory grants pending, read IOPS and CPU together. Memory pressure typically appears as PLE collapse, then read IOPS spike, then CPU rise, then batch throughput drop.\n2. For grants pending, find queries with large memory grants (`sys.dm_exec_query_memory_grants`), usually large sorts/hashes from missing indexes or bad cardinality estimates.\n3. For buffer pool churn, look for large scans, new reporting workloads or index rebuilds.\n4. Check the `max server memory` flag and whether the tier is right-sized; scaling memory is the structural fix.\n\n### Tuning\n- `grants_avg >= 1`: raise for bursty analytical workloads where short grant queues are acceptable.\n- PLE floor: change the `300.0` constants. Compare with each instance's own normal PLE on the dashboard; a fixed absolute PLE is rarely right for every instance.\n- `hit_ratio_avg < 90`: OLTP instances usually sit above 99%; raise to 95 for earlier warning.\n- Tiny-tier exclusion: `mem_quota >= 1000000000`.\n\n### Behaviour notes\n- Healthy: no pending grants on average, PLE above the floor at some point in the window (or climbing after a restart), hit ratio of 90% or more. Breaching: any branch true (grants_avg exactly 1 breaches; hit ratio exactly 90 does not) for 2 consecutive checks.\n- Shortly after a restart or cold start PLE is low but climbs about 60 s per minute; the growth guard treats growth of at least 30 s per minute of data as warm-up and suppresses it, even when only a few post-start samples are in the window. If a restart coincides with real pressure the restart alert covers it.\n- Missing data: instances with fewer than 5 samples in the window are not evaluated."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-memory-pressure-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_sqlserver_otel-46d11bef-3642-4b3f-b979-d748c687acd6"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-memory-pressure-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_sqlserver_otel-0953c329-69c9-4605-9c7c-b2c2d5b10846"
+          }
+        }
+      ]
+    }
+  }
+}
