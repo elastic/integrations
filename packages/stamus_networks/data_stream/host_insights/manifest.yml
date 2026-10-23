@@ -1,0 +1,85 @@
+title: "Stamus Networks host insights"
+type: logs
+streams:
+  - input: cel
+    title: "Stamus Networks host insights"
+    description: |-
+      Collect per-host inventory profiles (Host Insights) via the Clear NDR Central Server
+      REST API. Host Insights has no incremental "updated since" filter -- every poll does a
+      full re-read of the entire host inventory.
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: "Collection interval"
+        description: |-
+          How often the API is polled, for example, 10m, 1h. Host Insights has no incremental filter --
+          every poll re-reads the ENTIRE host inventory from page 1, so this should be set
+          conservatively relative to inventory size and API load tolerance (unlike the `alerts`
+          stream's interval, which only fetches new events since the last poll).
+        required: true
+        show_user: true
+        default: 15m
+      - name: page_size
+        type: integer
+        title: "Page size"
+        description: |-
+          Pagination page size for the host_id endpoint. The vendor's documented default/cap
+          is 30 -- verify at deployment time whether a larger value is accepted by the target CNCS.
+        required: true
+        show_user: false
+        default: 30
+      - name: http_client_timeout
+        type: text
+        title: "HTTP client timeout"
+        description: |-
+          Duration before declaring that the HTTP client connection has timed out, for example, 30s.
+        required: false
+        show_user: false
+        default: 30s
+      - name: ssl
+        type: yaml
+        title: "TLS configuration"
+        description: |-
+          TLS configuration for the Central Server connection (certificate_authorities,
+          verification_mode, and so on). Self-signed certificates are common on CNCS deployments.
+        required: false
+        show_user: false
+      - name: proxy_url
+        type: text
+        title: "Proxy URL"
+        description: |-
+          Optional HTTP/HTTPS proxy URL, for example, http://proxy.example.com:3128.
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: "Tags"
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - stamus_networks-host_insights
+      - name: processors
+        type: yaml
+        title: "Processors"
+        description: |-
+          Processors to apply to the event before it is sent to Elasticsearch. See
+          [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html)
+          for details.
+        required: false
+        show_user: false
+      - name: enable_request_tracer
+        type: bool
+        title: "Enable request tracing"
+        description: |-
+          Logs HTTP requests and responses to the agent's local filesystem for debugging. Compromises
+          security (may log secrets) -- use for troubleshooting only, not in steady-state production.
+        required: false
+        show_user: false
+        default: false
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

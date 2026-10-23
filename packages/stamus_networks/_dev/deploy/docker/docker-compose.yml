@@ -1,0 +1,28 @@
+version: '2.3'
+services:
+  stamus_networks-alerts-mock:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: stamus_networks-alerts-mock
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-alerts.yml
+  stamus_networks-host-insights-mock:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: stamus_networks-host-insights-mock
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-host-insights.yml

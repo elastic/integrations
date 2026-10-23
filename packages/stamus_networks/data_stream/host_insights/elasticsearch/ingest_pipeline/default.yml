@@ -1,0 +1,256 @@
+---
+description: >-
+  Pipeline for processing Stamus Networks Clear NDR Host Insights (`host_id`) inventory
+  profiles. This is an entity/inventory data stream: Host Insights has no incremental
+  "updated since" filter, so every poll re-reads the ENTIRE host inventory. Change
+  detection happens upstream, in the CEL program's persisted `cursor.host_states` map
+  (one comparable content snapshot per `host.ip`, carried across poll cycles) -- the CEL
+  program only emits a host into a given poll's events when that host is new to the
+  baseline, or its comparable content has genuinely changed since the last time THAT
+  specific host was observed (see `agent/stream/cel.yml.hbs` for the full rationale,
+  including why this is correct for a host whose profile reverts, e.g. A -> B -> A,
+  where a stateless content fingerprint would incorrectly collide with the first A).
+  Because of that upstream filtering, every document that reaches this pipeline already
+  represents a genuine observation -- a first-time sighting of a host, or a real change
+  in its state -- so `_id` is left to Elasticsearch's normal auto-generation, exactly
+  like any other log event; no custom `_id` scheme is needed or applied here.
+  `entity.id` is derived from the host's `ip` address, which remains a weak key -- no
+  MAC address or asset UUID is documented by the vendor, so the same physical host
+  could in principle re-appear under a different IP after DHCP reassignment; this part
+  of the design is unaffected by the change-detection move to CEL. There is
+  intentionally no "latest state per host" view maintained by this pipeline -- consumers
+  that need current-state-per-host should build it downstream (for example an
+  Elasticsearch transform aggregating by `entity.id` with `max(@timestamp)`, or
+  ingestion into the Elastic Entity Store).
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+
+  # --- CEL input only ---
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  # --- end CEL-only ---
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the original `message` field to `event.original` to store a copy of the
+        original message. The `event.original` field is not touched if the document
+        already has one.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_json
+            value: '{{{ _ingest.on_failure_message }}}'
+
+  # --- Entity identity: host.* and entity.* ---
+  - append:
+      field: host.ip
+      tag: append_ip_to_host_ip
+      value: '{{{json.ip}}}'
+      allow_duplicates: false
+      if: ctx.json?.ip != null
+      description: >-
+        `host.ip` is ECS `normalize: [array]` -- always append (never `set`/`convert`)
+        so the field is emitted as an array even though Host Insights only documents a
+        single IP per host.
+  - set:
+      field: host.id
+      copy_from: json.ip
+      ignore_empty_value: true
+      tag: set_host_id_from_ip
+      description: >-
+        `ip` is the only stable-ish identifier Stamus documents for Host Insights (no
+        MAC address or asset UUID). Used verbatim as `host.id`/`entity.id` -- see the
+        weak-key caveat in `fields/fields.yml` and the pipeline description above.
+
+  # --- Move the vendor `host_id` inventory object to its final location ---
+  - rename:
+      field: json.host_id
+      target_field: host_id
+      ignore_missing: true
+      tag: rename_json_host_id_to_host_id
+
+  # --- Resolve the most recently observed hostname (host_id.hostname[] can carry
+  #     multiple DHCP/NetBIOS/Kerberos-sourced entries; built-in processors cannot
+  #     express a max-by-timestamp reduction over an array, hence the script). ---
+  - script:
+      lang: painless
+      tag: resolve_latest_hostname
+      description: >-
+        Pick the host_id.hostname[] entry with the most recent last_seen timestamp and
+        use it for host.name / entity.name. Vendor timestamps are
+        yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ with a per-record (not always identical) UTC
+        offset, so entries are compared as parsed instants, not lexically.
+      if: ctx.host_id?.hostname instanceof List && !ctx.host_id.hostname.isEmpty()
+      source: |-
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ");
+        String bestHost = null;
+        Instant bestInstant = null;
+        for (def entry : ctx.host_id.hostname) {
+          if (entry.host == null || entry.last_seen == null) {
+            continue;
+          }
+          Instant parsed;
+          try {
+            parsed = ZonedDateTime.parse(entry.last_seen, formatter).toInstant();
+          } catch (Exception e) {
+            continue;
+          }
+          if (bestInstant == null || parsed.isAfter(bestInstant)) {
+            bestInstant = parsed;
+            bestHost = entry.host;
+          }
+        }
+        if (bestHost != null) {
+          ctx.host = ctx.host == null ? new HashMap() : ctx.host;
+          ctx.host.name = bestHost;
+          ctx.entity = ctx.entity == null ? new HashMap() : ctx.entity;
+          ctx.entity.name = bestHost;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_resolve_latest_hostname
+            value: '{{{ _ingest.on_failure_message }}}'
+
+  - set:
+      field: host.entity.id
+      copy_from: host.id
+      ignore_empty_value: true
+      tag: mirror_host_id_to_entity_id
+  - set:
+      field: entity.id
+      copy_from: host.id
+      ignore_empty_value: true
+      tag: set_entity_id
+  - set:
+      field: entity.source
+      value: stamus_networks
+      tag: set_entity_source
+  - set:
+      field: entity.type
+      value: [host]
+      tag: set_entity_type
+  - date:
+      field: host_id.last_seen
+      target_field: entity.last_seen_timestamp
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ"
+        - ISO8601
+      if: ctx.host_id?.last_seen != null
+      tag: date_host_id_last_seen_to_entity_last_seen_timestamp
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_date_host_id_last_seen
+            value: '{{{ _ingest.on_failure_message }}}'
+
+  # --- Related-field enrichment ---
+  - foreach:
+      field: host_id.hostname
+      tag: foreach_hostname_append_related_hosts
+      ignore_missing: true
+      processor:
+        append:
+          field: related.hosts
+          value: '{{{_ingest._value.host}}}'
+          allow_duplicates: false
+  - foreach:
+      field: host_id.username
+      tag: foreach_username_append_related_user
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value.user}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_host_name_to_related_hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - append:
+      field: related.ip
+      tag: append_host_ip_to_related_ip
+      value: '{{{json.ip}}}'
+      allow_duplicates: false
+      if: ctx.json?.ip != null
+
+  # --- ECS categorization ---
+  - set:
+      field: event.kind
+      tag: set_event_kind_asset
+      value: asset
+  - append:
+      field: event.category
+      tag: append_event_category_host
+      value: host
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+      allow_duplicates: false
+
+  # --- Cleanup ---
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+      tag: remove_temp_fields
+
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_pipeline_error
+      value: preserve_original_event
+      allow_duplicates: false

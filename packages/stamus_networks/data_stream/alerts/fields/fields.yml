@@ -1,0 +1,289 @@
+- name: flow_id
+  type: keyword
+  description: >-
+    Suricata flow identifier. Primary cross-event correlation/join key for tying an alert back to its underlying flow or to other alerts on the same flow; delivered as a large integer (commonly >= 2^53, the float64 safe-integer ceiling) but treated as an opaque identifier (keyword), not a metric. The CEL program parses the raw response with decode_json_string_numbers(), which decodes every JSON number in the response (not just flow_id) using its exact original textual form instead of float64, and re-emits it the same way through encode_json(); flow_id therefore round-trips through this integration with no precision loss, even above 2^53. An earlier version of this program instead rewrote flow_id to a quoted JSON string before a plain decode_json() call (using a `regexp:` stream-config block and re_replace_all()), but that mechanism caused Elastic Agent to silently fail to schedule a component for this input (confirmed on Elastic Agent 9.5.5) and was removed; decode_json_string_numbers() requires no stream-config changes, so it does not reintroduce that failure mode. See the package README's Troubleshooting section for historical context.
+- name: direction
+  type: keyword
+  description: >-
+    Packet direction relative to the flow ("to_client" or "to_server"). Not mapped to ECS `network.direction` because that field's allowed values (inbound/outbound/internal/external) do not match Suricata's client/server semantics.
+- name: capture_file
+  type: keyword
+  description: Full path to a per-alert pcap capture, only present when multi-mode pcap logging is enabled.
+- name: net_info
+  type: group
+  description: Stamus network/zone classification of the source and destination IPs.
+  fields:
+    - name: src
+      type: keyword
+      description: Network/zone label for the source IP (for example, a named network segment).
+    - name: src_agg
+      type: keyword
+      description: Aggregated/parent network label for the source IP.
+    - name: dest
+      type: keyword
+      description: Network/zone label for the destination IP.
+    - name: dest_agg
+      type: keyword
+      description: Aggregated/parent network label for the destination IP.
+- name: hostname_info
+  type: group
+  description: >-
+    Stamus DNS/SNI/Host-header-derived hostname enrichment. `host` is also appended to `related.hosts`.
+  fields:
+    - name: host
+      type: keyword
+      description: The hostname observed for this event.
+    - name: domain
+      type: keyword
+      description: Full domain portion of the hostname.
+    - name: domain_without_tld
+      type: keyword
+      description: Domain with the top-level domain removed.
+    - name: subdomain
+      type: keyword
+      description: Subdomain portion of the hostname, if any.
+    - name: tld
+      type: keyword
+      description: Top-level domain.
+    - name: url
+      type: keyword
+      description: URL context associated with the hostname enrichment.
+- name: metadata
+  type: group
+  description: >-
+    Cross-cutting Stamus/ET flowbits enrichment at the event root — distinct from the rule-specific `alert.metadata.*` object.
+  fields:
+    - name: flowbits
+      type: keyword
+      description: >-
+        Suricata flowbits set/checked for this event (for example, "stamus.sightings", "stamus.file.identification.") Cross-cutting enrichment tag, not rule metadata.
+- name: beaconing_report
+  type: group
+  description: >-
+    Stamus beaconing detection report. Schema-confirmed in the product's index mappings but no live example with populated values was available at build time — included for forward-compatibility.
+  fields:
+    - name: client_ip
+      type: ip
+      description: Client-side IP of the suspected beaconing flow.
+    - name: serving_ip
+      type: ip
+      description: Server-side IP of the suspected beaconing flow.
+- name: beaconing_statistics
+  type: group
+  description: >-
+    Stamus beaconing detection statistics. Schema-confirmed in the product's index mappings but no live example with populated values was available at build time — included for forward-compatibility.
+  fields:
+    - name: assets
+      type: keyword
+      description: Asset(s) associated with the beaconing statistics.
+    - name: tech_info
+      type: flattened
+      description: >-
+        Technical beaconing metrics (for example, interval/jitter statistics). Internal shape is not confirmed against a live example; stored as flattened until a populated sample is available.
+- name: alert
+  type: group
+  fields:
+    - name: gid
+      type: long
+      description: Generator ID of the rule that fired (almost always 1).
+    - name: engine
+      type: keyword
+      description: '"fw" or "td" — only present in Suricata firewall mode.'
+    - name: metadata.signature_severity
+      type: keyword
+      description: >-
+        Free-text, rule-writer-assigned severity label (for example, Informational, Minor, Major, Critical). Can disagree with the numeric `event.severity` (mapped from `alert.severity`).
+    - name: metadata.created_at
+      type: keyword
+    - name: metadata.updated_at
+      type: keyword
+    - name: metadata.affected_product
+      type: keyword
+    - name: metadata.attack_target
+      type: keyword
+    - name: metadata.deployment
+      type: keyword
+    - name: metadata.former_category
+      type: keyword
+    - name: metadata.performance_impact
+      type: keyword
+    - name: metadata.tag
+      type: keyword
+    - name: metadata.malware_family
+      type: keyword
+    - name: metadata.provider
+      type: keyword
+      description: Rule provider tag — "Stamus" marks Stamus-authored detections (DoC/DoPV, sightings, outlier).
+    - name: metadata.stamus_type
+      type: keyword
+      description: Stamus detection family tag, for example, "doc" or "dopv."
+    - name: metadata.stamus_classification
+      type: keyword
+      description: >-
+        Stamus sub-classification tag, for example, a DoC/DoPV threat classification, "stamus_sightings", or "fileidentification".
+    - name: metadata.confidence
+      type: keyword
+      description: Rule-writer-assigned confidence label (for example, "Medium.")
+    - name: metadata.source
+      type: keyword
+      description: >-
+        Detection source/method tag (for example, "mime-type" on File Identification alerts).
+    - name: metadata.llmnr_asset
+      type: keyword
+      description: >-
+        Which side of the 5-tuple ("src_ip" or "dest_ip") is the asset for an LLMNR legacy-protocol classification.
+    - name: metadata.ntlm_asset
+      type: keyword
+      description: >-
+        Which side of the 5-tuple ("src_ip" or "dest_ip") is the asset for an NTLM legacy-protocol classification.
+    - name: metadata.ntlm_key
+      type: keyword
+      description: NTLM protocol variant key (for example, "ntlmv1").
+    - name: metadata.original_sid
+      type: keyword
+      description: Original upstream signature ID this Stamus rule was derived from.
+    - name: metadata.tls_state
+      type: keyword
+      description: TLS state observed on the flow (for example, "plaintext").
+    - name: metadata.sightings_asset
+      type: keyword
+      description: >-
+        Which side of the 5-tuple ("src_ip" or "dest_ip") is the asset for a Sightings detection.
+    - name: metadata.sightings_key
+      type: keyword
+      description: Dotted field path that triggered a Sightings detection, for example, "http.http_user_agent."
+- name: stamus
+  type: group
+  description: >-
+    Declaration of Compromise (DoC) / Declaration of Policy Violation (DoPV) correlation record. Only present on documents where event_type is "stamus" (requires Stamus Tier 3 licensing).
+  fields:
+    - name: pk
+      type: long
+      description: Primary key of the Declaration record.
+    - name: event_id
+      type: long
+      description: Occurrence counter for this detection method against this asset/offender.
+    - name: method_id
+      type: long
+      description: Identifier of the specific detection method/rule that triggered this event.
+    - name: family_id
+      type: long
+      description: Threat family identifier (deep-links to the Clear NDR GUI).
+    - name: family_name
+      type: keyword
+      description: Threat family name, for example, "Lateral Movement," "Adware."
+    - name: family_type
+      type: keyword
+    - name: threat_id
+      type: long
+      description: Unique threat identifier (deep-links to the Clear NDR GUI).
+    - name: threat_name
+      type: keyword
+      description: Name of the specific threat, for example, "Powershell," "Potentially Unwanted Program."
+    - name: kill_chain
+      type: keyword
+      description: >-
+        Kill-chain phase: "pre_condition" (DoPV only), or "delivery"/"exploitation"/"installation"/ "command_and_control"/"action_on_objectives" (DoC). Lockheed-Martin-style phase naming, not MITRE ATT&CK — intentionally not mapped into `threat.tactic.*`.
+    - name: asset
+      type: keyword
+      description: >-
+        The subject/victim — IP, hostname, mail address, or username. Also appended to the matching `related.*` array (`related.ip`/`related.hosts`/`related.user`) based on `asset_type`.
+    - name: asset_type
+      type: keyword
+      description: One of "ip," "hostname," "user."
+    - name: asset_net_info
+      type: keyword
+      description: Network/zone label for the asset.
+    - name: offender
+      type: keyword
+      description: >-
+        The actor/attacker side — IP, hostname, mail, or user, when separately tracked. Also appended to the matching `related.*` array based on `offender_type`.
+    - name: offender_type
+      type: keyword
+      description: One of "ip," "hostname," "user."
+    - name: incidents_id
+      type: long
+      description: Linked incident ID(s); two entries when both asset and offender sides are tracked.
+    - name: extra_info
+      type: keyword
+      description: Free-form extra context.
+    - name: asset_info.first_seen
+      type: date
+    - name: asset_info.last_seen
+      type: date
+    - name: asset_info.state
+      type: keyword
+      description: One of "new," "ongoing," "kill_chain_increase."
+    - name: asset_info.kill_chain
+      type: keyword
+    - name: asset_info.incident_id
+      type: long
+    - name: asset_info.event_id
+      type: long
+    - name: offender_info.first_seen
+      type: date
+    - name: offender_info.last_seen
+      type: date
+    - name: offender_info.state
+      type: keyword
+    - name: offender_info.kill_chain
+      type: keyword
+    - name: offender_info.kill_chain_offender
+      type: keyword
+    - name: offender_info.incident_id
+      type: long
+    - name: offender_info.event_id
+      type: long
+- name: stamus_novel
+  type: boolean
+  description: >-
+    True when this alert also represents a Stamus Outlier detection (novelty on an otherwise known signature); can co-occur with any alert.
+- name: stamus_sensor
+  type: group
+  description: Sightings/novelty-tracking sensor identity metadata.
+  fields:
+    - name: id
+      type: keyword
+      description: Identifier of the sensor/probe that recorded this event.
+    - name: name
+      type: keyword
+      description: Name of the sensor/probe that recorded this event.
+- name: discovery
+  type: group
+  description: >-
+    Present on Stamus Sightings alerts (alert.metadata.stamus_classification: stamus_sightings) — describes the newly-observed field/value pair that triggered the sighting.
+  fields:
+    - name: asset
+      type: keyword
+      description: Asset (IP/hostname) the sighting was observed on.
+    - name: key
+      type: keyword
+      description: Dotted field path that was newly observed, for example, "http.http_user_agent."
+    - name: value
+      type: keyword
+      description: The newly observed value for the key field.
+    - name: asset_net
+      type: keyword
+- name: files
+  type: group
+  description: >-
+    Present on File Identification alerts (alert.metadata.stamus_classification: fileidentification) — one or more transferred-file records associated with the alert (standard Suricata EVE `fileinfo`-style file transaction fields).
+  fields:
+    - name: filename
+      type: keyword
+    - name: mimetype
+      type: keyword
+    - name: size
+      type: long
+    - name: state
+      type: keyword
+      description: File transfer state, for example, "UNKNOWN," "CLOSED," "TRUNCATED."
+    - name: stored
+      type: boolean
+      description: Whether the file content itself was stored to disk by the sensor.
+    - name: gaps
+      type: boolean
+      description: Whether there were gaps in the captured file content.
+    - name: tx_id
+      type: long
+      description: Transaction ID within the parent flow.
