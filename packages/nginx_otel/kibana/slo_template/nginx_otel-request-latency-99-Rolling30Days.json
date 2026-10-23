@@ -1,0 +1,58 @@
+{
+    "id": "nginx_otel-request-latency-99-Rolling30Days",
+    "type": "slo_template",
+    "attributes": {
+        "name": "[Nginx OTel] Request latency 99% within 1 s rolling 30 days",
+        "description": "This SLO tracks NGINX request latency from OTel access logs, ensuring that 99% of requests complete within 1 second ($request_time) over a rolling 30-day period. Requires the extended NGINX log format with timing fields; the collector's /nginx_status checks are excluded.",
+        "indicator": {
+            "type": "sli.metric.custom",
+            "params": {
+                "index": "logs-*",
+                "filter": "data_stream.dataset: \"nginx.access.otel\" AND http.server.request.duration: * AND NOT url.path: \"/nginx_status\"",
+                "good": {
+                    "metrics": [
+                        {
+                            "name": "A",
+                            "aggregation": "doc_count",
+                            "filter": "http.server.request.duration <= 1"
+                        }
+                    ],
+                    "equation": "A"
+                },
+                "total": {
+                    "metrics": [
+                        {
+                            "name": "A",
+                            "aggregation": "doc_count"
+                        }
+                    ],
+                    "equation": "A"
+                },
+                "timestampField": "@timestamp"
+            }
+        },
+        "budgetingMethod": "occurrences",
+        "timeWindow": {
+            "duration": "30d",
+            "type": "rolling"
+        },
+        "objective": {
+            "target": 0.99
+        },
+        "tags": [
+            "nginx",
+            "otel"
+        ],
+        "groupBy": "host.name",
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "nginx_otel-1c93999f-fbcd-4fe8-ae55-7a3186fd5602"
+                },
+                {
+                    "id": "nginx_otel-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                }
+            ]
+        }
+    }
+}
