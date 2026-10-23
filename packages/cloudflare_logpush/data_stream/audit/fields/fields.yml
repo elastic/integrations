@@ -1,9 +1,21 @@
 - name: cloudflare_logpush.audit
   type: group
   fields:
+    - name: account
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The Cloudflare account ID.
+        - name: name
+          type: keyword
+          description: The Cloudflare account name.
     - name: action
       type: group
       fields:
+        - name: description
+          type: text
+          description: Description of action taken.
         - name: result
           type: keyword
           description: Whether the action was successful.
@@ -13,6 +25,9 @@
     - name: actor
       type: group
       fields:
+        - name: context
+          type: keyword
+          description: Context of the actor.
         - name: email
           type: keyword
           description: Email of the actor.
@@ -22,6 +37,9 @@
         - name: ip
           type: ip
           description: Physical network address of the actor.
+        - name: token_details
+          type: flattened
+          description: Details of how the actor is authenticated.
         - name: type
           type: keyword
           description: Type of user that started the audit trail.
@@ -46,18 +64,51 @@
         - name: id
           type: keyword
           description: The identifier of the user that was acting or was acted on behalf of.
+    - name: raw
+      type: flattened
+      description: Raw data.
+    - name: ray
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The Cloudflare Ray ID of the API request that produced the audit event.
     - name: resource
       type: group
       fields:
         - name: id
           type: keyword
           description: Unique identifier of the resource within Cloudflare system.
+        - name: product
+          type: keyword
+          description: Resource product.
+        - name: request
+          type: flattened
+          description: Resource request.
+        - name: response
+          type: flattened
+          description: Resource response.
+        - name: scope
+          type: keyword
+          description: Resource scope.
         - name: type
           type: keyword
           description: The type of resource that was changed.
+        - name: value
+          type: flattened
+          description: Resource value.
     - name: timestamp
       type: date
       description: When the change happened.
+    - name: zone
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The Cloudflare zone ID.
+        - name: name
+          type: keyword
+          description: The Cloudflare zone name.
 - name: log.source.address
   type: keyword
   description: Source address from which the log event was read / sent from.
