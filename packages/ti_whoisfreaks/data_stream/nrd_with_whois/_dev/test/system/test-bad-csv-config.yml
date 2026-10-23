@@ -1,0 +1,18 @@
+wait_for_data_timeout: 1m
+input: cel
+service: ti_whoisfreaks
+vars:
+  # The mock's first gTLD page for this key has a row with a bare quote in an
+  # unquoted field, which fails CSV parsing of the whole page.
+  api_key: badcsv_api_key
+data_stream:
+  vars:
+    url: "http://{{Hostname}}:{{Port}}/v3.3/stream/domainer"
+    status_url: "http://{{Hostname}}:{{Port}}/v3.4/status"
+    page_limit: 2
+    interval: 1h
+    enable_request_tracer: true
+# The valid row of page 1, one error event for the bad row, the row of page 2
+# and the ccTLD row: the bad row neither stalls the feed nor drops other rows.
+assert:
+  hit_count: 4
