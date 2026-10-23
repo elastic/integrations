@@ -1,0 +1,63 @@
+# Several syslog events concatenated into one message, as produced when an
+# upstream receiver does not decode RFC 6587 framing (FortiGate reliable syslog
+# mode), must fail fast as a pipeline_error document that keeps the raw payload.
+# Messages over 900000 characters are rejected by the length check before
+# parsing; smaller concatenations are rejected by the repeated-key check in the
+# key-value parser. A single event, and a large message just under the length
+# limit, are still parsed.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+install_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+# 0: one event.
+# 1: two events with an RFC 6587 length prefix between them.
+# 2: 3000 events, about 540000 characters, under the length limit.
+# 3: 6000 events, about 1080000 characters, over the length limit.
+# 4: one event padded with unique keys to 899000 characters, under the length
+#    limit and the Painless loop limit.
+exec jq -nc '"date=2025-03-04 time=10:00:00 devname=\"FGT-01\" devid=\"FG100FTK00000001\" eventtime=1741053600000000000 tz=\"+0800\" logid=\"0000000013\" type=\"traffic\" subtype=\"forward\" level=\"notice\" vd=\"root\" srcip=10.0.0.1 dstip=192.0.2.20 action=\"accept\"" as $e | {message: ("<189>" + $e)}, {message: ("<189>" + $e + "180 <189>" + $e)}, {message: (("180 <189>" + $e) * 3000)}, {message: (("180 <189>" + $e) * 6000)}, {message: (("<189>" + $e + " " + ([range(100000)] | map("k\(.)=v") | join(" ")))[0:899000])}'
+cp stdout data.json
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default data.json
+! stderr .
+cp stdout got.json
+
+exec jq -s 'length' got.json
+stdout '^5$'
+
+# The single event is parsed.
+exec jq -r '.[0] | [.event.kind, .observer.name, (has("error") | tostring)] | join(",")' -s got.json
+stdout '^event,FGT-01,false$'
+
+# Concatenations under the length limit stop at the first repeated
+# once-per-event key, before any fields are set.
+exec jq -r '.[1:3][] | .event.kind' -s got.json
+stdout '^pipeline_error\npipeline_error$'
+exec jq -r '.[1:3][] | .error.message | tostring' -s got.json
+stdout -count=2 'with tag .fail_concatenated_events_3b9d27e1. in pipeline .* failed with message .Key .eventtime. appears more than once'
+
+# A message over the length limit is rejected before parsing.
+exec jq -r '.[3].event.kind' -s got.json
+stdout '^pipeline_error$'
+exec jq -r '.[3].error.message | tostring' -s got.json
+stdout 'with tag .fail_oversized_message_8e3c1f2a. in pipeline .* failed with message .Message exceeds 900000 characters'
+exec jq '.[3].event.original | length > 900000' -s got.json
+stdout '^true$'
+
+# Rejected messages keep the raw payload and set no parsed fields.
+exec jq '.[1:4] | all(has("fortinet") | not)' -s got.json
+stdout '^true$'
+exec jq '.[1:4] | all(.tags | index("preserve_original_event") != null)' -s got.json
+stdout '^true$'
+
+# A large message just under the length limit is still parsed.
+exec jq -r '.[4] | [.event.kind, .observer.name, (has("error") | tostring)] | join(",")' -s got.json
+stdout '^event,FGT-01,false$'
+
+uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
