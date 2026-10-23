@@ -52,7 +52,7 @@ This package ships six alerting rule templates that you can enable and customize
 | **[Nginx OTel] High 4xx error rate** | > 15% | 15 min | Fires when the share of HTTP 4xx client errors exceeds the threshold per host (minimum 50 requests). |
 | **[Nginx OTel] High 5xx error rate** | > 5% | 15 min | Fires when the share of HTTP 5xx server errors exceeds the threshold per host (minimum 50 requests). |
 | **[Nginx OTel] High active connections** | > 256 avg | 5 min | Fires when average active connections exceed the threshold. Adjust to match your NGINX `worker_connections` setting. |
-| **[Nginx OTel] Error log spike** | > 50 entries | 15 min | Fires when severe error log entries (`error`, `crit`, `alert`, `emerg`) exceed the threshold per host, excluding the "No such file or directory" lines NGINX writes for every 404. |
+| **[Nginx OTel] Error log spike** | > 50 entries | 15 min | Fires when severe error log entries (`error`, `crit`, `alert`, `emerg`) exceed the threshold per host, excluding the error-level "No such file or directory" lines NGINX writes for every 404 (the same message at `crit` or above still counts). |
 | **[Nginx OTel] Dropped connections** | Any drop detected | 5 min | Fires when NGINX accepted more connections than it handled, indicating resource exhaustion. |
 | **[Nginx OTel] High P95 upstream response time** | > 1 s | 15 min | Fires when the 95th percentile of upstream response time exceeds the threshold per host (minimum 20 proxied requests). Requires the extended log format with timing fields. |
 
