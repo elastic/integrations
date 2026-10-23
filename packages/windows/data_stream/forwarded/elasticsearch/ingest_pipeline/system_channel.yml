@@ -1,0 +1,202 @@
+---
+description: Pipeline for forwarded Windows System channel events
+processors:
+  - script:
+      lang: painless
+      ignore_failure: false
+      tag: set_system_event_categorization
+      description: Set ECS categorization for Windows System channel events 6005 and 7045.
+      params:
+        "6005":
+          category:
+            - process
+          type:
+            - start
+          action: logging-service-started
+          outcome: success
+        "7045":
+          category:
+            - iam
+            - configuration
+          type:
+            - admin
+            - change
+          action: service-installed
+          outcome: success
+      source: |-
+        if (ctx.event?.code == null) {
+          return;
+        }
+        def code = ctx.event.code.toString();
+        if (params.get(code) == null) {
+          return;
+        }
+        params.get(code).forEach((k, v) -> {
+          if (v instanceof List) {
+            ctx.event[k] = new ArrayList(v);
+          } else {
+            ctx.event[k] = v;
+          }
+        });
+  - script:
+      lang: painless
+      ignore_failure: false
+      tag: map_event_7045_service_installed
+      description: >
+        Map Windows System event 7045 (a service was installed) into ECS.
+        Named event_data fields are preferred. param1 through param5 are the
+        unnamed equivalents from older events. No customer sample was available
+        for 7045; the field positions follow the Service Control Manager schema.
+      params:
+        service_types:
+          "1": "Kernel Driver"
+          "0x1": "Kernel Driver"
+          "2": "File System Driver"
+          "0x2": "File System Driver"
+          "4": "Adapter"
+          "0x4": "Adapter"
+          "8": "Recognizer Driver"
+          "0x8": "Recognizer Driver"
+          "16": "Win32 Own Process"
+          "0x10": "Win32 Own Process"
+          "32": "Win32 Share Process"
+          "0x20": "Win32 Share Process"
+          "272": "Interactive Own Process"
+          "0x110": "Interactive Own Process"
+          "288": "Interactive Share Process"
+          "0x120": "Interactive Share Process"
+      source: |-
+        if (ctx.event?.code == null || ctx.event.code.toString() != "7045") {
+          return;
+        }
+        def eventData = ctx.winlog?.event_data;
+        def serviceName = null;
+        def imagePath = null;
+        def serviceType = null;
+        def accountName = null;
+        if (eventData != null) {
+          if (eventData.ServiceName != null && eventData.ServiceName != "" && eventData.ServiceName != "-") {
+            serviceName = eventData.ServiceName.toString();
+          } else if (eventData.param1 != null && eventData.param1 != "" && eventData.param1 != "-") {
+            serviceName = eventData.param1.toString();
+          }
+          if (eventData.ImagePath != null && eventData.ImagePath != "" && eventData.ImagePath != "-") {
+            imagePath = eventData.ImagePath.toString();
+          } else if (eventData.ServiceFileName != null && eventData.ServiceFileName != "" && eventData.ServiceFileName != "-") {
+            imagePath = eventData.ServiceFileName.toString();
+          } else if (eventData.param2 != null && eventData.param2 != "" && eventData.param2 != "-") {
+            imagePath = eventData.param2.toString();
+          }
+          if (eventData.ServiceType != null && eventData.ServiceType != "" && eventData.ServiceType != "-") {
+            serviceType = eventData.ServiceType.toString();
+          } else if (eventData.param3 != null && eventData.param3 != "" && eventData.param3 != "-") {
+            serviceType = eventData.param3.toString();
+          }
+          if (eventData.AccountName != null && eventData.AccountName != "" && eventData.AccountName != "-") {
+            accountName = eventData.AccountName.toString();
+          } else if (eventData.param5 != null && eventData.param5 != "" && eventData.param5 != "-") {
+            accountName = eventData.param5.toString();
+          }
+        }
+        if (serviceName != null) {
+          if (ctx.service == null) {
+            ctx.put("service", new HashMap());
+          }
+          if (ctx.service.name == null) {
+            ctx.service.put("name", serviceName);
+          }
+        }
+        if (serviceType != null) {
+          if (ctx.service == null) {
+            ctx.put("service", new HashMap());
+          }
+          if (ctx.service.type == null) {
+            def mapped = params.service_types.get(serviceType);
+            ctx.service.put("type", mapped != null ? mapped : serviceType);
+          }
+        }
+        if (imagePath != null) {
+          if (ctx.process == null) {
+            ctx.put("process", new HashMap());
+          }
+          if (ctx.process.executable == null) {
+            ctx.process.put("executable", imagePath);
+          }
+          if (ctx.process.name == null) {
+            def parts = imagePath.splitOnToken("\\");
+            def filePart = parts[-1];
+            def exeIdx = filePart.toLowerCase().indexOf(".exe ");
+            if (exeIdx > 0) {
+              filePart = filePart.substring(0, exeIdx + 4);
+            }
+            ctx.process.put("name", filePart);
+          }
+        }
+        if (ctx.process?.pid == null && ctx.winlog?.process?.pid != null) {
+          if (ctx.process == null) {
+            ctx.put("process", new HashMap());
+          }
+          ctx.process.put("pid", ctx.winlog.process.pid);
+        }
+        if (ctx.user == null && (ctx.winlog?.user?.name != null || ctx.winlog?.user?.domain != null || ctx.winlog?.user?.identifier != null || accountName != null)) {
+          ctx.put("user", new HashMap());
+        }
+        if (ctx.user?.name == null && ctx.winlog?.user?.name != null && ctx.winlog.user.name != "") {
+          ctx.user.put("name", ctx.winlog.user.name.toString());
+        }
+        if (ctx.user?.domain == null && ctx.winlog?.user?.domain != null && ctx.winlog.user.domain != "") {
+          ctx.user.put("domain", ctx.winlog.user.domain.toString());
+        }
+        if (ctx.user?.id == null && ctx.winlog?.user?.identifier != null && ctx.winlog.user.identifier != "") {
+          ctx.user.put("id", ctx.winlog.user.identifier.toString());
+        }
+        if (ctx.user?.name == null && accountName != null) {
+          if (ctx.user == null) {
+            ctx.put("user", new HashMap());
+          }
+          ctx.user.put("name", accountName);
+          if (ctx.user.domain == null && accountName.contains("\\")) {
+            def domainParts = accountName.splitOnToken("\\");
+            if (domainParts.length > 1 && domainParts[0].length() > 0) {
+              ctx.user.put("domain", domainParts[0]);
+            }
+          }
+        }
+        def names = new ArrayList();
+        if (ctx.user?.name != null && ctx.user.name != "") {
+          names.add(ctx.user.name);
+        }
+        if (accountName != null && !names.contains(accountName)) {
+          names.add(accountName);
+        }
+        if (names.size() == 0) {
+          return;
+        }
+        if (ctx.related == null) {
+          ctx.put("related", new HashMap());
+        }
+        if (ctx.related.user instanceof List) {
+          for (def n : names) {
+            if (!ctx.related.user.contains(n)) {
+              ctx.related.user.add(n);
+            }
+          }
+        } else if (ctx.related.user != null) {
+          def users = new ArrayList();
+          users.add(ctx.related.user.toString());
+          for (def n : names) {
+            if (!users.contains(n)) {
+              users.add(n);
+            }
+          }
+          ctx.related.put("user", users);
+        } else {
+          ctx.related.put("user", names);
+        }
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "{{{ _ingest.on_failure_message }}}"
