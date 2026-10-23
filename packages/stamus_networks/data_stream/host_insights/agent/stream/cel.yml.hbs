@@ -205,12 +205,29 @@ program: |-
               // Emit only hosts that are new to the baseline or whose comparable
               // content differs from the baseline -- a host whose content is
               // unchanged from cursor.host_states is skipped entirely this poll.
-              records.map(r,
-                ((r.ip in ctx.baseline) ? (ctx.baseline[r.ip] != r.comparable) : true) ?
-                  [{"message": r.message}]
-                :
-                  []
-              ).flatten().as(emitted,
+              //
+              // `pageData` consolidates this page's ip list, emitted-events
+              // list, and the seen-anywhere-this-scan lookup map into a single
+              // binding reused by both branches below.
+              {
+                "recordIps": records.map(r, r.ip),
+                "emitted": records.map(r,
+                  ((r.ip in ctx.baseline) ? (ctx.baseline[r.ip] != r.comparable) : true) ?
+                    [{"message": r.message}]
+                  :
+                    []
+                ).flatten(),
+                // Seen-anywhere-this-scan set as a MAP (ip -> true), built via
+                // zip() exactly once per page (not per baseline key) -- see
+                // the PERFORMANCE comment in the terminal-page branch below
+                // for why this must be a map, not a list, and why it must
+                // live here as a plain field (not a single-use `.as()`
+                // binding) so `celfmt -s` cannot inline it back into the
+                // per-key filter predicate below, which would silently
+                // reintroduce the quadratic behaviour this field exists to
+                // eliminate.
+                "seenMap": (ctx.seen + records.map(r, r.ip)).as(allSeen, allSeen.zip(allSeen.map(ip, true))),
+              }.as(pageData,
                 (
                   // Primary signal: DRF-style `next` field, non-null means more
                   // pages. Fallback (if the real envelope omits `next`
@@ -232,12 +249,12 @@ program: |-
                   // later pages (restart, or a later page's non-retryable
                   // error -- see the array-error branch below).
                   {
-                    "events": (size(emitted) > 0) ? dyn(emitted) : dyn([{"retry": true}]),
+                    "events": (size(pageData.emitted) > 0) ? dyn(pageData.emitted) : dyn([{"retry": true}]),
                     "page": ctx.page + 1,
                     "cursor": {
-                      "host_states": ctx.baseline.with(records.map(r, r.ip).zip(records.map(r, r.comparable))),
+                      "host_states": ctx.baseline.with(pageData.recordIps.zip(records.map(r, r.comparable))),
                     },
-                    "pending_seen_ips": ctx.seen + records.map(r, r.ip),
+                    "pending_seen_ips": ctx.seen + pageData.recordIps,
                     "want_more": true,
                   }
                 :
@@ -250,24 +267,42 @@ program: |-
                   // page counter and the intra-scan seen-ips tracker for the
                   // next poll.
                   //
-                  // NOTE: this rebuilds the kept subset via keys().filter() +
+                  // PERFORMANCE (GitHub Copilot review finding on PR #22143):
+                  // `pageData.seenMap` -- "ips seen anywhere in this
+                  // now-complete scan" -- is a MAP (ip -> true), built via
+                  // zip() exactly once per page. CEL's `in` operator is a
+                  // hash lookup against a map but a linear scan against a
+                  // list, so checking every baseline key against a map here
+                  // is O(1) per key instead of O(n) per key (the old
+                  // list-concatenation `ctx.seen + records.map(...)` was also
+                  // rebuilt from scratch on every single predicate
+                  // evaluation, compounding the cost). `keptKeys` -- the
+                  // surviving baseline keys -- is likewise computed with a
+                  // SINGLE filter() pass over ctx.baseline.keys() and then
+                  // reused for both the key list and (via ctx.baseline[k])
+                  // the value list below, instead of filtering
+                  // ctx.baseline.keys() twice with the same predicate.
+                  //
+                  // NOTE: the retained subset is rebuilt via keys().filter() +
                   // zip() rather than `.drop(dropKeys)` -- `drop()` treats a
                   // dotted key string as a nested path (see its dot-path
                   // navigation support), so a literal IPv4 address like
                   // "198.51.100.10" used as a top-level map key is silently
                   // NOT removed by `drop()`. Rebuilding the surviving subset
                   // directly sidesteps that pitfall.
-                  {
-                    "events": (size(emitted) > 0) ? dyn(emitted) : dyn([{"retry": true}]),
-                    "page": 1,
-                    "cursor": {
-                      "host_states": ctx.baseline.keys().filter(k, k in ctx.seen + records.map(r, r.ip)).zip(
-                        ctx.baseline.keys().map(k, k in ctx.seen + records.map(r, r.ip), ctx.baseline[k])
-                      ).with(records.map(r, r.ip).zip(records.map(r, r.comparable))),
-                    },
-                    "pending_seen_ips": [],
-                    "want_more": false,
-                  }
+                  ctx.baseline.keys().filter(k, k in pageData.seenMap).as(keptKeys,
+                    {
+                      "events": (size(pageData.emitted) > 0) ? dyn(pageData.emitted) : dyn([{"retry": true}]),
+                      "page": 1,
+                      "cursor": {
+                        "host_states": keptKeys.zip(keptKeys.map(k, ctx.baseline[k])).with(
+                          pageData.recordIps.zip(records.map(r, r.comparable))
+                        ),
+                      },
+                      "pending_seen_ips": [],
+                      "want_more": false,
+                    }
+                  )
               )
             )
           )

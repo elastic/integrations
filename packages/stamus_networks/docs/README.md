@@ -328,15 +328,15 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2024-01-15T12:00:00.123Z",
     "agent": {
-        "ephemeral_id": "cccd1967-f03e-4154-970a-c6ff5b0f4127",
-        "id": "fb224b57-628e-479b-96d1-c79ddb7aafe8",
-        "name": "elastic-agent-79057",
+        "ephemeral_id": "a2bd474d-25a5-4a54-86dd-5d834f57acb5",
+        "id": "db184ef1-04b7-410d-9301-b65402c506da",
+        "name": "elastic-agent-80343",
         "type": "filebeat",
         "version": "9.5.5"
     },
     "data_stream": {
         "dataset": "stamus_networks.alerts",
-        "namespace": "12667",
+        "namespace": "90873",
         "type": "logs"
     },
     "destination": {
@@ -364,7 +364,7 @@ An example event for `alerts` looks as following:
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "fb224b57-628e-479b-96d1-c79ddb7aafe8",
+        "id": "db184ef1-04b7-410d-9301-b65402c506da",
         "snapshot": false,
         "version": "9.5.5"
     },
@@ -375,7 +375,7 @@ An example event for `alerts` looks as following:
             "network"
         ],
         "dataset": "stamus_networks.alerts",
-        "ingested": "2026-10-23T15:49:36Z",
+        "ingested": "2026-10-23T17:19:07Z",
         "kind": "alert",
         "module": "stamus_networks",
         "outcome": "unknown",
@@ -511,11 +511,11 @@ An example event for `host_insights` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-23T15:56:22.516Z",
+    "@timestamp": "2026-10-23T17:17:44.208Z",
     "agent": {
-        "ephemeral_id": "34707612-0dde-4bc5-a1a3-12802a98e56c",
-        "id": "8f8d3f9e-a94e-4e8d-b906-d41ca6c93285",
-        "name": "elastic-agent-12064",
+        "ephemeral_id": "8a683061-594c-4826-bd8f-4ce980cacaef",
+        "id": "92c07d3c-e2ba-469c-9e67-e018a270e3ea",
+        "name": "elastic-agent-21713",
         "type": "filebeat",
         "version": "9.5.5"
     },
@@ -528,7 +528,7 @@ An example event for `host_insights` looks as following:
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "8f8d3f9e-a94e-4e8d-b906-d41ca6c93285",
+        "id": "92c07d3c-e2ba-469c-9e67-e018a270e3ea",
         "snapshot": false,
         "version": "9.5.5"
     },
@@ -547,7 +547,7 @@ An example event for `host_insights` looks as following:
             "host"
         ],
         "dataset": "stamus_networks.host_insights",
-        "ingested": "2026-10-23T15:56:26Z",
+        "ingested": "2026-10-23T17:17:48Z",
         "kind": "asset",
         "module": "stamus_networks",
         "type": [
