@@ -1,0 +1,88 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects ChatGPT Enterprise audit events that toggle a workspace feature flag (for example GPT sharing). Adversaries may enable sharing or weaken controls to persist access or broaden data exposure.",
+        "false_positives": [
+            "Administrators intentionally enable or disable workspace features during rollout."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.id",
+                "openai_chatgpt_enterprise.audit_log.action_data.feature",
+                "openai_chatgpt_enterprise.audit_log.action_data.value",
+                "openai_chatgpt_enterprise.audit_log.action_privilege",
+                "source.ip"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Workspace Feature Toggled",
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Workspace Feature Toggled\n\nA workspace feature flag changed. Adversaries may enable sharing or weaken controls to broaden data exposure or persist access.\n\nEscalate when the feature increases sharing or reduces security controls without an approved change. Close as a false positive for documented rollout toggles by administrators.\n\n#### Possible investigation steps\n\n- Identify the actor and which feature was enabled or disabled.\n- Determine whether the change increases sharing, external visibility, or weakens security controls.\n- Correlate with other admin actions by the same actor, such as role changes, invites, or exports.\n- Confirm whether a change request authorized the toggle.\n\n### False positive analysis\n\n- Administrators intentionally enable or disable workspace features during approved rollouts.\n\n### Response and remediation\n\n- Revert unauthorized feature changes and review other admin actions by the same actor.\n",
+        "query": "from logs-openai_chatgpt_enterprise.audit_log-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"openai_chatgpt_enterprise.audit_log\" and\n    event.action == \"workspace_toggle_feature\"\n| keep\n    _id, _version, _index, @timestamp, event.action, user.id, user.email, source.ip,\n    openai_chatgpt_enterprise.audit_log.action_data.feature,\n    openai_chatgpt_enterprise.audit_log.action_data.value,\n    openai_chatgpt_enterprise.audit_log.action_data.value_bool,\n    openai_chatgpt_enterprise.audit_log.action_privilege, data_stream.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": "^0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "58a99563-5ad7-4f1f-b618-717928747cea",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect compliance logs into Elasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Defense Evasion",
+            "Tactic: Persistence",
+            "Mitre Atlas: AML.T0081"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "58a99563-5ad7-4f1f-b618-717928747cea_1",
+    "type": "security-rule"
+}

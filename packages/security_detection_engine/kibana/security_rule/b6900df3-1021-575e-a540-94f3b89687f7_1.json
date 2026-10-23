@@ -1,0 +1,94 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the ESXi firewall being turned off or switched to a default allow. The firewall is the host filter for management services. Disabling it, or setting the default action to accept, lets later connections reach services that were previously blocked.",
+        "false_positives": [
+            "Firewall changes are part of some network troubleshooting and product installs. Confirm the change was temporary and that `--enabled true` and a DROP default action were restored."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-vsphere.log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "message",
+                "event.original",
+                "host.hostname",
+                "log.file.path"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "ESXi Firewall Disabled",
+        "note": "## Triage and analysis\n\n### Investigating ESXi Firewall Disabled\n\nThe ESXi firewall is the host filter for management services. Disabling it, or setting the default action to accept, lets later connections skip that control.\n\n#### Possible investigation steps\n\n- Read message to see whether the firewall was disabled or the default action was set to true.\n- Check a later esxcli network firewall get or hostd message showing the firewall enabled again.\n- Correlate with SSH enablement, syslog changes, and VM shutdown commands.\n\n### False positive analysis\n\nA short troubleshooting window that turns the firewall off and back on can be benign. A disable that is still in effect, with no ticket, should be treated as hostile.\n\n### Response and remediation\n\n- Re-enable the firewall and set the default action back to DROP: esxcli network firewall set --enabled true --default-action false.\n- Review ruleset changes made in the same session.\n- If the change was unauthorized, isolate the host and rotate credentials.\n",
+        "query": "data_stream.dataset:vsphere.log and message:(\"Firewall has been disabled\" or \"network firewall set\" and (\"--default-action true\" or \"--default-action=true\" or \"--enabled false\" or \"--enabled=false\"))\n",
+        "references": [
+            "https://lolesxi-project.github.io/LOLESXi/#",
+            "https://blogs.vmware.com/security/2022/10/esxi-targeting-ransomware-tactics-and-techniques-part-2.html",
+            "https://detect.fyi/vmware-esxi-logging-detection-opportunities-4fb56411ec21"
+        ],
+        "related_integrations": [
+            {
+                "package": "vsphere",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "b6900df3-1021-575e-a540-94f3b89687f7",
+        "setup": "## Setup\n\nThis rule requires ESXi host logs collected by the Elastic vSphere integration: https://www.elastic.co/docs/reference/integrations/vsphere\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: VMware vSphere",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide",
+            "Rule Type: Custom Query (KQL)",
+            "Platform: VMware ESXi"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.004",
+                                "name": "Disable or Modify System Firewall",
+                                "reference": "https://attack.mitre.org/techniques/T1562/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "b6900df3-1021-575e-a540-94f3b89687f7_1",
+    "type": "security-rule"
+}

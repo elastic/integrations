@@ -1,0 +1,199 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "m",
+                "value": 15
+            },
+            "group_by": [
+                "source.ip",
+                "azure.ai_foundry.service_name",
+                "azure.ai_foundry.properties.api_id"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects three or more completed assistant refusals from the same client, API Management subscription, and model. Matching replies finished on their own (finish_reason stop) and declined the prompt. A burst means that caller kept sending prompts the model will not answer.",
+        "false_positives": [
+            "Red-team or application tests that intentionally send prompts the model refuses. Exclude that source IP or API Management subscription.",
+            "A shared subscription key behind one NAT can combine refusals from unrelated users. Raise the threshold or split keys per application if that subscription is noisy."
+        ],
+        "from": "now-15m",
+        "interval": "5m",
+        "investigation_fields": {
+            "field_names": [
+                "source.ip",
+                "azure.ai_foundry.properties.user_agent",
+                "azure.ai_foundry.properties.apim_subscription_id",
+                "azure.ai_foundry.properties.api_id",
+                "azure.ai_foundry.properties.operation_id",
+                "azure.ai_foundry.properties.backend_response_body.model",
+                "azure.ai_foundry.service_name",
+                "azure.resource.group",
+                "url.domain",
+                "url.path",
+                "source.geo.country_iso_code",
+                "source.geo.city_name",
+                "source.as.organization.name",
+                "Esql.event_count",
+                "Esql.timestamp_first_seen",
+                "Esql.timestamp_last_seen",
+                "Esql.azure_ai_foundry_properties_backend_request_body_messages_content_values",
+                "Esql.azure_ai_foundry_properties_backend_response_body_choices_message_content_values"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Microsoft Foundry Repeated Assistant Refusals",
+        "note": "## Triage and analysis\n\n### Investigating Microsoft Foundry Repeated Assistant Refusals\n\nOne client received three or more completed refusals in 15 minutes. The alert is grouped by source IP, user agent,\nAPI Management subscription, API, operation, model, gateway, and the URL the client called. Prompt and reply samples\nare on the alert.\n\nTrue positive: several disallowed prompts from one IP or subscription, often a scripting user agent, with replies such\nas \"I'm sorry, but I can't assist with that request.\" False positive: an approved eval, or many users sharing one\nsubscription key and one egress IP.\n\n#### Possible investigation steps\n\n- Read the prompt and reply samples. Confirm the replies are refusals and the prompts are what the model declined.\n- Review other GatewayLogs for the same source IP and subscription in the same window: successful completions, HTTP\n  400 jailbreak blocks, or a sharp rise in calls.\n- Check whether this subscription and user agent match the application's normal client. curl or a scripted agent on a\n  key that usually comes from an application gateway deserves a closer look.\n- Use the geo and ASN fields to see whether the client network is expected for that subscription.\n\n### False positive analysis\n\n- Approved prompt-security tests and model evaluations. Exclude the test source IP or subscription.\n- A busy shared subscription behind one NAT. The count is per IP and subscription; raise the threshold if normal\n  traffic still reaches three refusals in 15 minutes.\n\n### Response and remediation\n\n- Rotate or disable the API Management subscription key when the client is not approved for this traffic.\n- Block the source IP at the gateway when it is not a known application egress.\n- Review the prompts for secrets, and for any later call from the same client that the model answered instead of\n  refusing.\n",
+        "query": "from logs-azure_ai_foundry.logs-*\n| eval Esql.reply_text = mv_concat(azure.ai_foundry.properties.backend_response_body.choices.message.content, \" \")\n| where\n    data_stream.dataset == \"azure_ai_foundry.logs\" and\n    azure.ai_foundry.category == \"GatewayLogs\" and\n    azure.ai_foundry.properties.backend_response_body.choices.finish_reason in (\"stop\", \"content_filter\") and\n    (\n        Esql.reply_text like \"*I can't assist*\" or\n        Esql.reply_text like \"*I can't help*\" or\n        Esql.reply_text like \"*I cannot fulfill*\" or\n        Esql.reply_text like \"*I cannot help*\" or\n        Esql.reply_text like \"*I cannot provide*\" or\n        Esql.reply_text like \"*I can't provide*\" or\n        Esql.reply_text like \"*I will not provide*\" or\n        Esql.reply_text like \"*I cannot answer*\" or\n        Esql.reply_text like \"*I can't answer*\"\n    )\n| stats\n    Esql.event_count = count(*),\n    Esql.timestamp_first_seen = min(@timestamp),\n    Esql.timestamp_last_seen = max(@timestamp),\n    Esql.azure_ai_foundry_properties_backend_request_body_messages_content_values = values(azure.ai_foundry.properties.backend_request_body.messages.content),\n    Esql.azure_ai_foundry_properties_backend_response_body_choices_message_content_values = values(azure.ai_foundry.properties.backend_response_body.choices.message.content)\n  by\n    source.ip,\n    azure.ai_foundry.properties.user_agent,\n    azure.ai_foundry.properties.apim_subscription_id,\n    azure.ai_foundry.properties.api_id,\n    azure.ai_foundry.properties.operation_id,\n    azure.ai_foundry.properties.backend_response_body.model,\n    azure.ai_foundry.service_name,\n    azure.resource.group,\n    url.domain,\n    url.path,\n    source.geo.country_iso_code,\n    source.geo.city_name,\n    source.as.organization.name\n| where Esql.event_count >= 3\n| keep\n    source.ip,\n    azure.ai_foundry.properties.user_agent,\n    azure.ai_foundry.properties.apim_subscription_id,\n    azure.ai_foundry.properties.api_id,\n    azure.ai_foundry.properties.operation_id,\n    azure.ai_foundry.properties.backend_response_body.model,\n    azure.ai_foundry.service_name,\n    azure.resource.group,\n    url.domain,\n    url.path,\n    source.geo.country_iso_code,\n    source.geo.city_name,\n    source.as.organization.name,\n    Esql.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/azure_ai_foundry",
+            "https://learn.microsoft.com/en-us/azure/api-management/diagnostic-logs-reference"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure_ai_foundry",
+                "version": "^0.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.api_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.apim_subscription_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.backend_request_body.messages.content",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.backend_response_body.choices.finish_reason",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.backend_response_body.choices.message.content",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.backend_response_body.model",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.operation_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.user_agent",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.service_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.resource.group",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.organization.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.city_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.country_iso_code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "url.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "url.path",
+                "type": "wildcard"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "3c694712-7bd9-43b5-ac6b-1db841abc8de",
+        "setup": "## Setup\n\nThis rule needs the Microsoft Foundry integration collecting Azure API Management GatewayLogs with the backend\nresponse body. Foundry RequestResponse logs do not include the assistant reply, so they will not match.\n\n- Use an API Management tier that emits resource logs. Developer or higher works. Consumption does not.\n- Send the GatewayLogs category to the Event Hub the integration reads.\n- Log the backend request and response bodies in API diagnostics so the prompt, finish_reason, and assistant message are stored.\n\nhttps://www.elastic.co/docs/reference/integrations/azure_ai_foundry\n",
+        "severity": "high",
+        "tags": [
+            "Data Source: Microsoft Foundry",
+            "Use Case: Policy Violation",
+            "Mitre Atlas: AML.T0051",
+            "Mitre Atlas: AML.T0054",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Platform: Azure",
+            "Domain: Cloud",
+            "Domain: GenAI",
+            "Service: Azure API Management"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "3c694712-7bd9-43b5-ac6b-1db841abc8de_1",
+    "type": "security-rule"
+}

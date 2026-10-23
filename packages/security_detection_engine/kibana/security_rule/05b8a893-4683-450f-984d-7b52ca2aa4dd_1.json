@@ -1,0 +1,117 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the first time a ChatGPT Enterprise MCP app name is used by a given user email within an organization in the rule history window. MCP apps connect ChatGPT to external systems and can move organizational data into third-party tools. Alerting on first-seen organization, user, and app id triples highlights new or unexpected connector usage rather than every routine approved MCP request. App name is still required in the query for investigation context.",
+        "false_positives": [
+            "Approved MCP apps such as Slack or ticketing connectors generate routine traffic during normal work. First-seen alerts are common during onboarding when a user first uses an approved app."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-10d",
+        "index": [
+            "logs-openai_chatgpt_enterprise.app_log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "organization.id",
+                "user.id",
+                "user.email",
+                "openai_chatgpt_enterprise.app_log.app_name",
+                "openai_chatgpt_enterprise.app_log.app_id",
+                "openai_chatgpt_enterprise.app_log.query"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Unusual MCP App Activity",
+        "new_terms_fields": [
+            "organization.id",
+            "user.email",
+            "openai_chatgpt_enterprise.app_log.app_id"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Unusual MCP App Activity\n\nFirst-seen MCP app name for this `organization.id` and `user.email` within the rule history window. MCP apps can move organizational data\ninto third-party tools.\n\nEscalate when the app is not in the approved inventory, the query looks like bulk data access, or the user recently\nhad suspicious authentication activity. Close as a false positive when the app is approved for that user.\n\n#### Possible investigation steps\n\n- Identify the user and app (`openai_chatgpt_enterprise.app_log.app_name`, `app_id`).\n- Review `openai_chatgpt_enterprise.app_log.query` and conversation identifiers when present.\n- Confirm whether the app is approved for the workspace and whether OAuth links for that app are expected.\n- Correlate with app-auth link events, conversation shares, or file downloads from the same user nearby.\n\n### False positive analysis\n\n- Approved MCP apps generate routine request logs. First-seen alerts often reflect a user adopting an already-approved\n  connector.\n\n### Response and remediation\n\n- Disable unauthorized MCP apps, revoke linked credentials, and review conversation context for sensitive data\n  exposure.\n",
+        "query": "data_stream.dataset: \"openai_chatgpt_enterprise.app_log\" and\n    openai_chatgpt_enterprise.app_log.app_type: \"MCP\" and\n    organization.id: * and\n    user.email: * and\n    openai_chatgpt_enterprise.app_log.app_name: * and\n    openai_chatgpt_enterprise.app_log.app_id: *\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": "^0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": false,
+                "name": "openai_chatgpt_enterprise.app_log.app_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "openai_chatgpt_enterprise.app_log.app_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "openai_chatgpt_enterprise.app_log.app_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "organization.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "05b8a893-4683-450f-984d-7b52ca2aa4dd",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect compliance logs into Elasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Use Case: UEBA",
+            "Resources: Investigation Guide",
+            "Rule Type: New Terms",
+            "Tactic: Collection",
+            "Mitre Atlas: AML.T0053"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1213",
+                        "name": "Data from Information Repositories",
+                        "reference": "https://attack.mitre.org/techniques/T1213/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "05b8a893-4683-450f-984d-7b52ca2aa4dd_1",
+    "type": "security-rule"
+}
