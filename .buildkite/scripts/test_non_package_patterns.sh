@@ -74,6 +74,8 @@ NON_PACKAGE_PATHS=(
     "dev/gitutil/git.go"
     "dev/requiresupdate/requiresupdate.go"
     "dev/scripts/foo.sh"
+    "dev/testsreporter/testsreporter.go"
+    "dev/testsreporter/_static/summary.tmpl"
     "docs/extend/developer-workflow.md"
     "docs/some/nested/page.md"
     "CODE_OF_CONDUCT.md"
