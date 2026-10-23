@@ -84,6 +84,8 @@ Configure the features you selected below. Uploading a package and completing in
 
 #### Configure the FortiGate sender
 
+The TCP listener uses RFC 6587 framing for FortiGate reliable syslog. It accepts octet-counted messages (a byte length followed by the message) and legacy newline-delimited messages, including multiple messages on a persistent connection.
+
 Set the remote syslog destination to the Agent server IP. The following is a **UDP/9514 example**; adapt it to your FortiOS version, VDOM, and existing configuration.
 
 ```text

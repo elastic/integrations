@@ -88,11 +88,11 @@ def run_api():
     server.serve_forever()
 
 
-def fortigate_line():
+def fortigate_line(source_port=45001):
     current = datetime.now(timezone.utc)
     return (
         f'date={current:%Y-%m-%d} time={current:%H:%M:%S} tz="+0000" '
-        f"type=traffic subtype=forward srcip={TEST_IP} srcport=45001 "
+        f"type=traffic subtype=forward srcip={TEST_IP} srcport={source_port} "
         "dstip=198.51.100.20 dstport=443 proto=6 action=deny synthetic=true"
     )
 
@@ -117,7 +117,20 @@ def send_syslog(protocol, host, port):
                 client.settimeout(2)
                 if protocol == "tcp":
                     client.connect((host, port))
-                    client.sendall(payload)
+                    frames = []
+                    for source_port in (45001, 45002):
+                        message = fortigate_line(source_port).encode("utf-8")
+                        frames.append(str(len(message)).encode("ascii") + b" " + message)
+                    # Also check legacy delimiter framing on the same connection.
+                    frames.append((fortigate_line(45003) + "\n").encode("utf-8"))
+                    client.sendall(b"".join(frames))
+                    print("Sent two octet-counted and one newline-delimited FortiGate events; keeping TCP open", flush=True)
+                    # Wait for the receiver to close at test teardown. Ingestion must
+                    # finish without EOF flushing messages buffered by the input.
+                    client.settimeout(None)
+                    while client.recv(1):
+                        pass
+                    return
                 else:
                     client.sendto(payload, (host, port))
             print(f"Sent one synthetic FortiGate event over {protocol.upper()}", flush=True)
