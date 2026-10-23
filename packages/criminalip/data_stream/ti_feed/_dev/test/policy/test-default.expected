@@ -14,7 +14,11 @@ inputs:
             try(
               request(
                 "GET",
-                state.url + "?" + {"format": ["json"], "key": [state.secret.api_key]}.format_query()
+                state.url.parse_url().as(endpoint,
+                  endpoint.with({"RawQuery": endpoint.RawQuery.parse_query().with({
+                    "format": ["json"], "key": [state.secret.api_key]
+                  }).format_query()}).format_url()
+                )
               ).with({
                 "Header": {
                   "Accept": ["application/json"]

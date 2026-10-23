@@ -14,7 +14,11 @@ inputs:
             state.ips.map(ip, string(ip).trim_space()).filter(ip, ip != "").as(ips, {
               "events": ips.zip(ips).keys().map(ip,
                 try(
-                  request("GET", state.url + "?" + {"ip": [ip]}.format_query()).with({
+                  request("GET", state.url.parse_url().as(endpoint,
+                    endpoint.with({"RawQuery": endpoint.RawQuery.parse_query().with({
+                      "ip": [ip]
+                    }).format_query()}).format_url()
+                  )).with({
                     "Header": {
                       "x-api-key": [state.secret.api_key],
                       "Accept": ["application/json"]

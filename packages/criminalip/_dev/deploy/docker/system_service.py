@@ -18,7 +18,15 @@ TEST_IP = "192.0.2.10"
 class MockCriminalIP(BaseHTTPRequestHandler):
     def do_GET(self):
         request = urlsplit(self.path)
-        params = parse_qs(request.query)
+        params = parse_qs(request.query, keep_blank_values=True)
+        if request.path.endswith('/query'):
+            if (params.get('tenant') != ['a b', 'second'] or params.get('empty') != [''] or
+                    (request.path.startswith('/v1/') and params.get('ip') != [TEST_IP]) or
+                    (request.path.startswith('/ti/') and (
+                        params.get('format') != ['json'] or params.get('key') != [TEST_KEY]))):
+                self._send(400, {'error': 'query parameters were not preserved or replaced'})
+                return
+            request = request._replace(path=request.path.removesuffix('/query'))
         if request.path == "/health":
             self._send(200, {"status": "ok"})
             return
