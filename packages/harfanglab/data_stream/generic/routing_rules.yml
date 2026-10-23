@@ -1,0 +1,9 @@
+# Split telemetry across data streams: detection alerts (event.kind: alert) are rerouted to
+# the harfanglab.detection data stream; everything else stays in harfanglab.generic.
+- source_dataset: harfanglab.generic
+  rules:
+    - target_dataset: harfanglab.detection
+      if: "ctx.event?.kind == 'alert'"
+      namespace:
+        - "{{{data_stream.namespace}}}"
+        - default
