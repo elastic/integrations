@@ -328,15 +328,15 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2024-01-15T12:00:00.123Z",
     "agent": {
-        "ephemeral_id": "c89dfae9-e714-4a67-810c-62b7cdb96560",
-        "id": "0b42aaef-80a8-4d3c-b603-3228776c69f0",
-        "name": "elastic-agent-73569",
+        "ephemeral_id": "cccd1967-f03e-4154-970a-c6ff5b0f4127",
+        "id": "fb224b57-628e-479b-96d1-c79ddb7aafe8",
+        "name": "elastic-agent-79057",
         "type": "filebeat",
         "version": "9.5.5"
     },
     "data_stream": {
         "dataset": "stamus_networks.alerts",
-        "namespace": "68976",
+        "namespace": "12667",
         "type": "logs"
     },
     "destination": {
@@ -352,11 +352,8 @@ An example event for `alerts` looks as following:
             "country_iso_code": "ES",
             "country_name": "Spain",
             "location": {
-                "coordinates": [
-                    -3.702500034123659,
-                    40.416389987803996
-                ],
-                "type": "Point"
+                "lat": 40.416389987803996,
+                "lon": -3.702500034123659
             },
             "region_iso_code": "ES-M",
             "region_name": "Madrid"
@@ -367,7 +364,7 @@ An example event for `alerts` looks as following:
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "0b42aaef-80a8-4d3c-b603-3228776c69f0",
+        "id": "fb224b57-628e-479b-96d1-c79ddb7aafe8",
         "snapshot": false,
         "version": "9.5.5"
     },
@@ -378,7 +375,7 @@ An example event for `alerts` looks as following:
             "network"
         ],
         "dataset": "stamus_networks.alerts",
-        "ingested": "2026-10-23T14:24:26Z",
+        "ingested": "2026-10-23T15:49:36Z",
         "kind": "alert",
         "module": "stamus_networks",
         "outcome": "unknown",
@@ -412,11 +409,8 @@ An example event for `alerts` looks as following:
             "country_iso_code": "NL",
             "country_name": "Netherlands",
             "location": {
-                "coordinates": [
-                    4.889689916744828,
-                    52.37403995823115
-                ],
-                "type": "Point"
+                "lat": 52.37403995823115,
+                "lon": 4.889689916744828
             },
             "region_iso_code": "NL-NH",
             "region_name": "North Holland"
@@ -517,24 +511,24 @@ An example event for `host_insights` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-23T14:23:18.016Z",
+    "@timestamp": "2026-10-23T15:56:22.516Z",
     "agent": {
-        "ephemeral_id": "b0038032-dfe9-4690-b6d5-8ef5b4af6031",
-        "id": "0e291aa0-fb99-44b9-813c-4ab61aefa796",
-        "name": "elastic-agent-59025",
+        "ephemeral_id": "34707612-0dde-4bc5-a1a3-12802a98e56c",
+        "id": "8f8d3f9e-a94e-4e8d-b906-d41ca6c93285",
+        "name": "elastic-agent-12064",
         "type": "filebeat",
         "version": "9.5.5"
     },
     "data_stream": {
         "dataset": "stamus_networks.host_insights",
-        "namespace": "45783",
+        "namespace": "58090",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "0e291aa0-fb99-44b9-813c-4ab61aefa796",
+        "id": "8f8d3f9e-a94e-4e8d-b906-d41ca6c93285",
         "snapshot": false,
         "version": "9.5.5"
     },
@@ -553,7 +547,7 @@ An example event for `host_insights` looks as following:
             "host"
         ],
         "dataset": "stamus_networks.host_insights",
-        "ingested": "2026-10-23T14:23:21Z",
+        "ingested": "2026-10-23T15:56:26Z",
         "kind": "asset",
         "module": "stamus_networks",
         "type": [

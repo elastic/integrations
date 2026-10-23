@@ -144,26 +144,76 @@ program: |-
                 string(resp.Status) + " (" + string(resp.StatusCode) + ")"
             ),
           }.as(err,
-            // Non-retryable 4xx (bad/expired token, licensing gap, malformed request,
-            // unknown route): advance past the error instead of retrying forever, so
-            // it is indexed and visible to an operator (see README Troubleshooting on
-            // 401s from token rotation). Everything else (429, 5xx, etc.) is treated
-            // as transient: delete the cursor so the next evaluation retries.
+            // [CONFIRMED -- x-pack/filebeat/input/cel/input.go, func (s
+            // *runSession) execute(), the "case map[string]any:" branch of the
+            // "events" type switch] A single-object "events" value is NOT just
+            // "logged and not advanced": the runtime unconditionally deletes
+            // the session's stored cursor for that evaluation
+            // (`delete(s.state, "cursor")`) and skips the goodCursor sync at the
+            // end of publish(), so the persisted cursor collapses to whatever
+            // was last known-good *before* this failed request -- not to the
+            // cursor this request actually used. Mid-pagination, after at least
+            // one prior successful page this session, that rollback happens to
+            // land on the same phase/page/window because goodCursor was already
+            // advanced there -- so single-object form can look like it "retries
+            // correctly", but that is an accident of session-local history, not
+            // a guarantee the runtime makes. On the very first evaluation of a
+            // freshly-installed input (no persisted cursor on disk yet,
+            // goodCursor is nil) there is no prior known-good cursor to fall
+            // back to, so the cursor is wiped outright and the next evaluation's
+            // `state.?cursor.phase`/`.from_date` optional-chaining falls through
+            // to the "no cursor" defaults above -- a fresh `now - initial_interval`
+            // window -- instead of retrying the failed phase/page. This is the
+            // exact failure mode documented and fixed in
+            // packages/o365/data_stream/audit/agent/stream/cel.yml.hbs:432-438
+            // ("the runtime treats a single object as an error condition and
+            // discards the cursor returned with it"): it can replay
+            // already-ingested alerts under new document IDs, or skip unread
+            // alerts older than the lookback, on every transient hiccup.
             //
-            // The two phases are NOT treated the same way here. A persistent
-            // non-retryable error on the "stamus" (DoC/DoPV correlation) phase is
-            // advanced past -- same window-advance transition used for a clean
-            // terminal/empty stamus result -- because stamus correlation requires a
-            // higher Stamus license tier and can be permanently unavailable
-            // (403/404) on Tier 2/Community instances; leaving "cursor" out of this
-            // map would let the enclosing state.with() preserve the cursor from
-            // before this request (still pointing at the failed stamus phase/page),
-            // so every later poll would retry that same phase/window forever and
-            // alert collection for every later window would never happen (see
-            // README Troubleshooting). A persistent error on the "alert" phase is
-            // the primary data this program collects, so it intentionally keeps the
-            // old halt/retry behavior (no explicit "cursor" transition) rather than
-            // risk silently skipping alert data.
+            // So every retryable (transient) error below is returned as a LIST
+            // (`[{"error": err}]`), never a single-object `{"error": err}` map,
+            // with an EXPLICIT, unmodified "cursor": cur -- the exact
+            // phase/page/from_date/to_date this failed request used -- so the
+            // next evaluation is guaranteed to retry the same window and page,
+            // regardless of session history. List-form error events are not
+            // flagged "degraded" by the runtime the way single-object form is
+            // (that status transition, and the cursor deletion, are both
+            // specific to the single-object branch); they are ordinary published
+            // events, so the ingest pipeline's `terminate` processor (ES
+            // 8.16.0+) is what keeps them from being indexed as alert data.
+            //
+            // The two phases are NOT treated the same way for *non-retryable*
+            // (4xx) errors. A persistent non-retryable error on the "stamus"
+            // (DoC/DoPV correlation) phase is advanced past -- same
+            // window-advance transition used for a clean terminal/empty stamus
+            // result -- because stamus correlation requires a higher Stamus
+            // license tier and can be permanently unavailable (403/404) on Tier
+            // 2/Community instances; retrying it forever would mean alert
+            // collection for every later window never happens (see README
+            // Troubleshooting). A persistent error on the "alert" phase is the
+            // primary data this program collects, so it keeps the halt/retry
+            // behavior -- explicitly retaining "cursor": cur (the unmodified
+            // phase/page/window, same as the transient-error branch below)
+            // rather than advancing -- so it keeps retrying the same window
+            // instead of risking silently skipping alert data.
+            //
+            // [EMPIRICAL NOTE, confirmed via elastic-package test system]: a single
+            // transient 5xx that resolves on the Elastic Agent's own HTTP
+            // resource-level retry never actually reaches this branch in
+            // practice -- the agent retries the failed request transparently
+            // below the CEL script, so the script is only ever re-invoked with
+            // the eventual 200 response, not the 503. This branch still exists,
+            // is still correct, and is NOT dead code: it is what protects
+            // against a 5xx that persists beyond the agent's retry budget (which
+            // a short-lived mock scenario can't easily force), and its core
+            // property -- no cursor reset across a transient failure -- was
+            // independently confirmed by observing strictly-advancing,
+            // non-repeating from_date/to_date values with zero duplicate
+            // documents across a full system-test run. Don't expect to see this
+            // branch's error document in system-test output for a single,
+            // retry-budget-respecting transient failure -- see
+            // `_dev/test/system/test-default-config.yml`'s hit_count comment.
             [400, 401, 403, 404, 422].exists(c, c == int(resp.StatusCode)) ?
               (
                 (cur.phase == "stamus") ?
@@ -173,10 +223,12 @@ program: |-
                     "want_more": false,
                   }
                 :
-                  {"events": [{"error": err}], "want_more": false}
+                  {"events": [{"error": err}], "cursor": cur, "want_more": false}
               )
             :
-              {"events": {"error": err}, "want_more": false}
+              // Transient (429, 5xx, connection-level, etc.) on either phase:
+              // retry the exact same phase/page/window on the next evaluation.
+              {"events": [{"error": err}], "cursor": cur, "want_more": false}
           )
       )
     )

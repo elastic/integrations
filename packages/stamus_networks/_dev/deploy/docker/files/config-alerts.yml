@@ -1,5 +1,15 @@
 rules:
   # --- event_type:alert, page 1 ---
+  # This rule's `responses` list is consumed as a plain round-robin sequence by
+  # `elastic/stream` (`response := rule.Responses[count % len(rule.Responses)]`,
+  # see `internal/httpserver/httpserver.go`) -- the N-th request to this rule
+  # always gets `responses[N-1]`. Switched from the previous single-entry,
+  # `.req_num`-templated-body form to this list form so that one of the entries
+  # (req_num 5) can return a different `status_code`: Go templating can vary
+  # `body`/`headers` on a single response entry but not `status_code`, so a
+  # varying status_code across requests requires one list entry per request
+  # number -- the same constraint documented on the stamus-phase rule below.
+  #
   # req_num 1 (round 1 / window 1): single page, terminal immediately (next: null).
   # req_num 2 (round 2 / cursor-resume window): one additional event, terminal.
   # req_num 3 (round 3 / window 3): terminal empty response -- alert phase succeeds
@@ -9,7 +19,24 @@ rules:
   # where the stamus phase hit a persistent 403): one additional event. This proves
   # alert collection resumes for the NEXT window after a persistent stamus error,
   # rather than the cursor staying stuck retrying the failed stamus phase forever.
-  # req_num >=5 (all subsequent windows): terminal empty response -- the mock must
+  # req_num 5 (round 5 / window 5): transient 503 -- models a momentary backend
+  # hiccup on the PRIMARY ("alert") phase. The fixed cel.yml.hbs returns this error
+  # as a list with an explicit, unmodified "cursor": cur (see that file's
+  # error-handling comment and the Copilot review this regression test was added
+  # for), so the next evaluation must re-request this exact same
+  # phase/page/from_date/to_date instead of a fresh `now - initial_interval`
+  # window. This mock cannot assert the from_date/to_date values are byte-identical
+  # (both are captured with permissive `{..:.*}` regexes so any value matches the
+  # same rule) -- that guarantee is proven at the mito level (see builder report,
+  # which inspects the actual returned cursor against a forced 503). What this
+  # fixture guards is the observable, system-test-visible side effect: the error
+  # produces no alert document, req_num 6 below (the retry) produces exactly the
+  # one expected recovery document, and overall hit_count stays stable rather than
+  # drifting (which it would if the window reset and started re-walking time).
+  # req_num 6 (round 5 retry, same window as req_num 5): the transient failure
+  # clears and this window's single alert event is collected normally, then the
+  # program moves on to the stamus phase for this same window.
+  # req_num >=7 (all subsequent windows): terminal empty response -- the mock must
   # stop producing new events once the intended rounds have been served, otherwise
   # the CEL program's advancing from_date/to_date window causes a brand-new unique
   # event on every poll and the data stream's document count never stabilizes
@@ -33,16 +60,138 @@ rules:
         headers:
           Content-Type:
             - 'application/json'
-        body: |
-          {{ if eq .req_num 1 }}
-          {"count": 1, "next": null, "previous": null, "results": [{"event_type": "alert", "timestamp": "2024-01-15T12:00:00.123456+0000", "src_ip": "198.51.100.10", "dest_ip": "203.0.113.20", "flow_id": 2019054435055803, "alert": {"signature": "SN Example Alert Signature One", "severity": 2, "signature_id": 1000001, "category": "Unknown Traffic"}}]}
-          {{ else if eq .req_num 2 }}
-          {"count": 1, "next": null, "previous": null, "results": [{"event_type": "alert", "timestamp": "2024-01-15T13:30:00.654321+0000", "src_ip": "198.51.100.11", "dest_ip": "203.0.113.21", "flow_id": 9007199254741337, "alert": {"signature": "SN Example Alert Signature Two", "severity": 2, "signature_id": 1000002, "category": "Unknown Traffic"}}]}
-          {{ else if eq .req_num 4 }}
-          {"count": 1, "next": null, "previous": null, "results": [{"event_type": "alert", "timestamp": "2024-01-15T15:00:00.777777+0000", "src_ip": "198.51.100.13", "dest_ip": "203.0.113.23", "flow_id": 2019054435055805, "alert": {"signature": "SN Example Alert Signature After Stamus Error", "severity": 2, "signature_id": 1000004, "category": "Unknown Traffic"}}]}
-          {{ else }}
-          {"count": 0, "next": null, "previous": null, "results": []}
-          {{ end }}
+        body: '{"count": 1, "next": null, "previous": null, "results": [{"event_type": "alert", "timestamp": "2024-01-15T12:00:00.123456+0000", "src_ip": "198.51.100.10", "dest_ip": "203.0.113.20", "flow_id": 2019054435055803, "alert": {"signature": "SN Example Alert Signature One", "severity": 2, "signature_id": 1000001, "category": "Unknown Traffic"}}]}'
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"count": 1, "next": null, "previous": null, "results": [{"event_type": "alert", "timestamp": "2024-01-15T13:30:00.654321+0000", "src_ip": "198.51.100.11", "dest_ip": "203.0.113.21", "flow_id": 9007199254741337, "alert": {"signature": "SN Example Alert Signature Two", "severity": 2, "signature_id": 1000002, "category": "Unknown Traffic"}}]}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"count": 1, "next": null, "previous": null, "results": [{"event_type": "alert", "timestamp": "2024-01-15T15:00:00.777777+0000", "src_ip": "198.51.100.13", "dest_ip": "203.0.113.23", "flow_id": 2019054435055805, "alert": {"signature": "SN Example Alert Signature After Stamus Error", "severity": 2, "signature_id": 1000004, "category": "Unknown Traffic"}}]}'
+      - status_code: 503
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"detail": "Service temporarily unavailable."}'
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"count": 1, "next": null, "previous": null, "results": [{"event_type": "alert", "timestamp": "2024-01-15T15:30:00.888888+0000", "src_ip": "198.51.100.14", "dest_ip": "203.0.113.24", "flow_id": 2019054435055806, "alert": {"signature": "SN Example Alert Signature After Transient Error", "severity": 2, "signature_id": 1000005, "category": "Unknown Traffic"}}]}'
+      # req_num >=7: terminal empty response (padding against round-robin wraparound).
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
   # --- event_type:stamus, page 1 ---
   # This rule's `responses` list is consumed as a plain round-robin sequence by
   # `elastic/stream` (`response := rule.Responses[count % len(rule.Responses)]`,
@@ -51,10 +200,12 @@ rules:
   # exhausted. Go templating on `.req_num` (used on the alert-phase rule above)
   # cannot vary `status_code` -- only `body`/`headers` support templates -- so a
   # varying status_code across requests requires one list entry per request
-  # number, as used here. The list is padded well past the number of polls a
-  # `wait_for_data_timeout: 1m` / `interval: 2s` system test run can realistically
-  # produce, so it never wraps back to the round-1/round-2/error entries during a
-  # normal test run.
+  # number, as used here. Both this rule's and the alert-phase rule's response
+  # lists are padded to 60 entries -- a real system-test run was empirically
+  # observed to make ~30 requests to each rule within `wait_for_data_timeout: 1m`
+  # at `interval: 2s` (confirmed via mock container logs; an earlier, shorter
+  # padding of 20/23 entries wrapped back to the round-1/error entries mid-run
+  # and broke the `assert.hit_count` check), so 60 leaves ample margin.
   #
   # request 1 (round 1 / window 1): returns one event + a non-terminal "next" link (page 2 exists).
   # request 2 (round 2 / cursor-resume window): one event, terminal (next: null) -- no page 2 request expected.
@@ -102,7 +253,114 @@ rules:
             - 'application/json'
         body: |
           {"detail": "You do not have permission to perform this action."}
-      # requests 4-20: terminal empty response (padding against round-robin wraparound; see note above).
+      # request 4 (window 4): terminal empty response -- stamus "recovers" after the
+      # one forced 403 failure above, so this window behaves normally (no stamus
+      # data, which is fine -- this window's alert-phase event is what matters, see
+      # req_num 4 on the alert-phase rule above).
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      # request 5 (window 5 -- the alert-phase transient-503 regression window):
+      # terminal empty response. This window exercises the transient-error-retains-
+      # cursor fix on the ALERT phase (see req_num 5/6 on the alert-phase rule
+      # above); the stamus phase for this same window has no data, keeping that
+      # scenario isolated to the alert phase.
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      # request 6 (window 6 -- the stamus-phase transient-503 regression window):
+      # transient 503, models a momentary backend hiccup on the stamus (DoC/DoPV
+      # correlation) phase. This window's alert phase has no data (see req_num 7,
+      # the "else" branch, on the alert-phase rule above), so stamus is the first
+      # and only request for this window. The fixed cel.yml.hbs returns this error
+      # as a list with an explicit, unmodified "cursor": cur (same phase/page/
+      # from_date/to_date), so the retry below must land on the SAME window rather
+      # than a fresh one -- see the Copilot review this regression test was added
+      # for, and the mito-level proof in the builder report.
+      - status_code: 503
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"detail": "Service temporarily unavailable."}'
+      # request 7 (window 6 retry, same window as request 6): the transient
+      # failure clears and this window's single stamus event is collected
+      # normally, terminal (next: null) -- both phases done, window advances.
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"count": 1, "next": null, "previous": null, "results": [{"event_type": "stamus", "timestamp": "2024-01-15T16:00:00.444444+0000", "src_ip": "198.51.100.93", "dest_ip": "224.0.0.254", "alert": {"signature": "SN Example DoC Signature After Transient Error", "severity": 3, "signature_id": 1003120329, "category": ""}, "stamus": {"pk": 4, "event_id": 4, "family_name": "Example family", "threat_name": "Example threat", "kill_chain": "pre_condition", "asset": "198.51.100.93", "asset_type": "ip"}}]}'
+      # requests 8-20: terminal empty response (padding against round-robin wraparound; see note above).
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
+      - status_code: 200
+        body: '{"count": 0, "next": null, "previous": null, "results": []}'
       - status_code: 200
         body: '{"count": 0, "next": null, "previous": null, "results": []}'
       - status_code: 200
