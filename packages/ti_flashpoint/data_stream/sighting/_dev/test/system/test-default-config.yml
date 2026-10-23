@@ -1,0 +1,16 @@
+wait_for_data_timeout: 1m
+input: cel
+service: ti_flashpoint-sighting
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  api_token: xxxx
+data_stream:
+  vars:
+    interval: 2s
+    initial_interval: 24h
+    page_size: 2
+    preserve_original_event: true
+assert:
+  # Round 1: page 1 (2) + scroll page 2 (2) + terminal (0) = 4
+  # Round 2: cursor-resumed search (1) + terminal scroll (0) = 1
+  hit_count: 5
