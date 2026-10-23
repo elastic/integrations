@@ -20,18 +20,33 @@ resource.url: {{url}}
 resource.rate_limit.burst: {{resource_rate_limit_burst}}
 resource.rate_limit.limit: {{resource_rate_limit_limit}}
 state:
+  # Treat a missing value from a pre-0.4.0 package policy as combined.
+  collection_strategy: "{{collection_strategy}}"
   account_ids:
   {{#each account_ids as |account_id|}}
     - !!str {{account_id}}
   {{/each}}
   api_key: {{api_key}}
   {{!--
-    max_page_limit: 3000 — Cato EventsFeed returns at most 3000 records per filtered feed.
-    want_more is true when any partition returns a full page, indicating more data may be available.
+    max_page_limit: 3000 — Cato EventsFeed returns at most 3000 records per feed.
+    want_more is true when the combined feed or any split partition returns a full page.
   --}}
   max_page_limit: 3000
-  query: >-
-    query EventsFeed(
+  combined_query: >-
+    query CombinedEventsFeed($accountIDs: [ID!] $marker: String) {
+      eventsFeed(accountIDs: $accountIDs marker: $marker) {
+        fetchedCount
+        marker
+        accounts {
+          errorString
+          records {
+            fieldsMap
+          }
+        }
+      }
+    }
+  split_query: >-
+    query SplitEventsFeed(
       $accountIDs: [ID!]
       $internetFirewallMarker: String
       $wanFirewallMarker: String
@@ -84,48 +99,52 @@ redact:
   fields:
     - api_key
 program: |-
-  state.with(
-    request(
-      "POST",
-      state.url.trim_right("/") + "/api/v1/graphql2"
-    ).with(
+  (state.collection_strategy != "split") ?
+    (
+      (
+        state.?cursor.mode.orValue("combined") == "split" ||
+        state.?cursor.internet_firewall.orValue(null) != null ||
+        state.?cursor.wan_firewall.orValue(null) != null ||
+        state.?cursor.other.orValue(null) != null
+      ) ?
       {
-        "Header": {
-          "Content-Type": ["application/json"],
-          "x-api-key": [state.api_key],
-        },
-        "Body": {
-          "query": state.query,
-          "variables": {
-            "accountIDs": state.account_ids,
-            ?"internetFirewallMarker": state.?cursor.internet_firewall.or(state.?cursor.marker),
-            ?"wanFirewallMarker": state.?cursor.wan_firewall.or(state.?cursor.marker),
-            ?"otherMarker": state.?cursor.other.or(state.?cursor.marker),
+        "events": {
+          "error": {
+            "message": "changing the Cato EventsFeed collection strategy from split to combined is not supported because the three split markers cannot be converted into one combined marker; set Collection Strategy back to Split, or create a new integration policy for Combined",
           },
-        }.encode_json(),
+        },
+        "want_more": false,
       }
-    ).do_request().as(resp,
-      (resp.StatusCode == 200) ?
-        resp.Body.decode_json().as(body,
-          (
-            // In case of rate limiting or a wrong API key, StatusCode can be 200 and a feed can be null.
-            body.?data.internetFirewall.orValue(null) != null && body.?data.wanFirewall.orValue(null) != null &&
-            body.?data.other.orValue(null) != null
-          ) ?
-            [
-              {"feed": body.data.internetFirewall},
-              {"feed": body.data.wanFirewall},
-              {"feed": body.data.other},
-            ].as(feeds,
-              {
-                "account_errors": feeds.map(partition,
-                  partition.feed.?accounts.orValue([]).map(account,
+    :
+      state.with(
+        request(
+          "POST",
+          state.url.trim_right("/") + "/api/v1/graphql2"
+        ).with(
+          {
+            "Header": {
+              "Content-Type": ["application/json"],
+              "x-api-key": [state.api_key],
+            },
+            "Body": {
+              "query": state.combined_query,
+              "variables": {
+                "accountIDs": state.account_ids,
+                ?"marker": state.?cursor.marker,
+              },
+            }.encode_json(),
+          }
+        ).do_request().as(resp,
+          (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              // In case of rate limiting or a wrong API key, StatusCode can be 200 and eventsFeed can be null.
+              (body.?data.eventsFeed.orValue(null) != null) ?
+                {
+                  "account_errors": body.data.eventsFeed.?accounts.orValue([]).map(account,
                     account.?errorString.orValue("") != "",
                     account.errorString
-                  )
-                ).flatten(),
-                "events": feeds.map(partition,
-                  partition.feed.?accounts.orValue([]).map(account,
+                  ),
+                  "events": body.data.eventsFeed.?accounts.orValue([]).map(account,
                     (account.?records.orValue(null) != null) ?
                       account.records.map(record,
                         {
@@ -134,66 +153,174 @@ program: |-
                       )
                     :
                       []
-                  ).flatten()
-                ).flatten(),
-              }.as(result,
-                (size(result.account_errors) > 0) ?
-                  {
-                    "events": {
-                      "error": {
-                        "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + result.account_errors.join("; "),
+                  ).flatten(),
+                }.as(result,
+                  (size(result.account_errors) > 0) ?
+                    {
+                      "events": {
+                        "error": {
+                          "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + result.account_errors.join("; "),
+                        },
                       },
+                      "want_more": false,
+                    }
+                  :
+                    {
+                      // Persist marker-only responses and migrate marker-only cursors to mode: combined.
+                      "events": (size(result.events) > 0) ? result.events : [{"retry": true}],
+                      "cursor": {
+                        "mode": "combined",
+                        ?"marker": body.data.eventsFeed.?marker,
+                      },
+                      "want_more": body.data.eventsFeed.fetchedCount >= state.max_page_limit,
+                    }
+                )
+              :
+                {
+                  "events": {
+                    "error": {
+                      "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + (
+                        (has(body.errors) && size(body.errors) > 0) ?
+                          body.errors[0].message
+                        :
+                          "eventsFeed returned null (possible rate limit or invalid API key)"
+                      ),
                     },
-                    "want_more": false,
-                  }
-                :
-                  {
-                    // Persist marker-only initialization responses by publishing an event that is dropped below.
-                    "events": (size(result.events) > 0) ? result.events : [{"retry": true}],
-                    "cursor": {
-                      ?"internet_firewall": body.data.internetFirewall.?marker,
-                      ?"wan_firewall": body.data.wanFirewall.?marker,
-                      ?"other": body.data.other.?marker,
-                    },
-                    "want_more": feeds.exists(partition,
-                      partition.feed.fetchedCount >= state.max_page_limit
-                    ),
-                  }
-              )
+                  },
+                  "want_more": false,
+                }
             )
           :
             {
               "events": {
                 "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
                   "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + (
-                    (has(body.errors) && size(body.errors) > 0) ?
-                      body.errors[0].message
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
                     :
-                      "an eventsFeed partition returned null (possible rate limit or invalid API key)"
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
                   ),
                 },
               },
               "want_more": false,
             }
         )
-      :
-        {
-          "events": {
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + (
-                (size(resp.Body) != 0) ?
-                  string(resp.Body)
-                :
-                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-              ),
-            },
-          },
-          "want_more": false,
-        }
+      )
     )
-  )
+  :
+    state.with(
+      request(
+        "POST",
+        state.url.trim_right("/") + "/api/v1/graphql2"
+      ).with(
+        {
+          "Header": {
+            "Content-Type": ["application/json"],
+            "x-api-key": [state.api_key],
+          },
+          "Body": {
+            "query": state.split_query,
+            "variables": {
+              "accountIDs": state.account_ids,
+              ?"internetFirewallMarker": state.?cursor.internet_firewall.or(state.?cursor.marker),
+              ?"wanFirewallMarker": state.?cursor.wan_firewall.or(state.?cursor.marker),
+              ?"otherMarker": state.?cursor.other.or(state.?cursor.marker),
+            },
+          }.encode_json(),
+        }
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body,
+            (
+              // In case of rate limiting or a wrong API key, StatusCode can be 200 and a feed can be null.
+              body.?data.internetFirewall.orValue(null) != null && body.?data.wanFirewall.orValue(null) != null &&
+              body.?data.other.orValue(null) != null
+            ) ?
+              [
+                {"feed": body.data.internetFirewall},
+                {"feed": body.data.wanFirewall},
+                {"feed": body.data.other},
+              ].as(feeds,
+                {
+                  "account_errors": feeds.map(partition,
+                    partition.feed.?accounts.orValue([]).map(account,
+                      account.?errorString.orValue("") != "",
+                      account.errorString
+                    )
+                  ).flatten(),
+                  "events": feeds.map(partition,
+                    partition.feed.?accounts.orValue([]).map(account,
+                      (account.?records.orValue(null) != null) ?
+                        account.records.map(record,
+                          {
+                            "message": record.fieldsMap.encode_json(),
+                          }
+                        )
+                      :
+                        []
+                    ).flatten()
+                  ).flatten(),
+                }.as(result,
+                  (size(result.account_errors) > 0) ?
+                    {
+                      "events": {
+                        "error": {
+                          "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + result.account_errors.join("; "),
+                        },
+                      },
+                      "want_more": false,
+                    }
+                  :
+                    {
+                      // Persist marker-only responses and migrate a combined marker to three split markers.
+                      "events": (size(result.events) > 0) ? result.events : [{"retry": true}],
+                      "cursor": {
+                        "mode": "split",
+                        ?"internet_firewall": body.data.internetFirewall.?marker,
+                        ?"wan_firewall": body.data.wanFirewall.?marker,
+                        ?"other": body.data.other.?marker,
+                      },
+                      "want_more": feeds.exists(partition,
+                        partition.feed.fetchedCount >= state.max_page_limit
+                      ),
+                    }
+                )
+              )
+            :
+              {
+                "events": {
+                  "error": {
+                    "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + (
+                      (has(body.errors) && size(body.errors) > 0) ?
+                        body.errors[0].message
+                      :
+                        "an eventsFeed partition returned null (possible rate limit or invalid API key)"
+                    ),
+                  },
+                },
+                "want_more": false,
+              }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+    )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

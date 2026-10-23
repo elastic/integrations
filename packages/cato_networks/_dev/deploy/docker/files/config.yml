@@ -3,7 +3,7 @@ rules:
   # markers without replaying any records.
   - path: /api/v1/graphql2
     methods: ["POST"]
-    request_body: /.*"internetFirewallMarker":"internet-3".*/
+    request_body: /.*"variables":\{"accountIDs":\["12345","67890"\],"internetFirewallMarker":"internet-3","otherMarker":"other-3","wanFirewallMarker":"wan-3"\}\}$/
     request_headers:
       X-Api-Key:
         - "xxxx"
@@ -23,7 +23,7 @@ rules:
   # all aliases are queried again with their independently advanced markers.
   - path: /api/v1/graphql2
     methods: ["POST"]
-    request_body: /.*"internetFirewallMarker":"internet-2".*/
+    request_body: /.*"variables":\{"accountIDs":\["12345","67890"\],"internetFirewallMarker":"internet-2","otherMarker":"other-2","wanFirewallMarker":"wan-2"\}\}$/
     request_headers:
       X-Api-Key:
         - "xxxx"
@@ -57,7 +57,7 @@ rules:
   # page makes the CEL program request another page for all three aliases.
   - path: /api/v1/graphql2
     methods: ["POST"]
-    request_body: /.*"internetFirewallMarker":"internet-1".*/
+    request_body: /.*"variables":\{"accountIDs":\["12345","67890"\],"internetFirewallMarker":"internet-1","otherMarker":"other-1","wanFirewallMarker":"wan-1"\}\}$/
     request_headers:
       X-Api-Key:
         - "xxxx"
@@ -121,11 +121,12 @@ rules:
               }
             }
           `}}
-  # A marker-less request initializes all three feeds. Matching all filter
-  # terms also verifies the GraphQL aliases use event_sub_type terminology.
+  # Only a marker-less SplitEventsFeed request initializes all three feeds.
+  # The exact variables object prevents malformed marker combinations from
+  # falling through and silently restarting the fixture.
   - path: /api/v1/graphql2
     methods: ["POST"]
-    request_body: /.*Internet Firewall.*WAN Firewall.*not_in.*/
+    request_body: /.*SplitEventsFeed.*Internet Firewall.*WAN Firewall.*not_in.*"variables":\{"accountIDs":\["12345","67890"\]\}\}$/
     request_headers:
       X-Api-Key:
         - "xxxx"
@@ -857,7 +858,7 @@ rules:
   # First Matching Rule
   - path: /api/v1/graphql2
     methods: ["POST"]
-    request_body: /.*"accountIDs":\["12345","67890"\].*/
+    request_body: /.*CombinedEventsFeed.*"variables":\{"accountIDs":\["12345","67890"\]\}\}$/
     request_headers:
       X-Api-Key:
         - "xxxx"
