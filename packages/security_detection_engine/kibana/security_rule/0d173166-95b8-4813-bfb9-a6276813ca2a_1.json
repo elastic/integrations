@@ -1,0 +1,109 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule identifies the first PHP fatal error observed on a web server during the configured history window. PHP fatal errors are not inherently malicious, but a newly observed fatal condition can indicate exploitation of a previously unseen application or PHP engine failure. The rule is intentionally generic so it can identify both known and novel exploit attempts that terminate PHP request processing.",
+        "false_positives": [
+            "New deployments, application defects, dependency changes, resource exhaustion, and configuration errors can legitimately produce a first-seen PHP fatal error.",
+            "Development, staging, and quality-assurance systems may generate frequent novel fatal errors during testing."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-apache.error-*",
+            "logs-apache_tomcat.catalina-*",
+            "logs-apache_tomcat.localhost-*",
+            "logs-nginx.error-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "host.name",
+                "host.ip",
+                "source.ip",
+                "event.dataset",
+                "log.file.path",
+                "message"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "First Occurrence of a PHP Fatal Error on a Web Server",
+        "new_terms_fields": [
+            "agent.id"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating First Occurrence of a PHP Fatal Error on a Web Server\n\nThis rule establishes first-seen state by `host.id`, so it alerts when a host with no matching event in the history window\nproduces a PHP fatal error. The alert does not establish malicious activity; it prioritizes a previously unseen condition\nfor investigation and can provide generic coverage for exploitation paths that intentionally trigger fatal PHP states.\n\n### Possible investigation steps\n\n- Review the complete error text and identify the affected host, virtual host, PHP script, application, and PHP version.\n- Examine `source.ip` when present. It represents the immediate requester seen by the web server and may be a proxy,\n  load balancer, CDN node, NAT gateway, or container bridge rather than the original external client.\n- Correlate access logs for the same host and time with request methods, URLs, response codes, multipart bodies, session\n  activity, and unusual cookies. Determine whether many hosts or requests produced the same error.\n- Review endpoint telemetry for web-server or PHP-worker crashes, unusual child processes, file writes, and outbound\n  connections after the fatal error.\n- Compare the error with recent deployments, configuration changes, memory-limit changes, and application test activity.\n\n### False positive analysis\n\n- Fatal errors commonly result from application bugs, missing dependencies, incompatible upgrades, and resource limits.\n  Validate the stack trace and deployment history before treating the alert as exploitation.\n- Consider excluding tightly scoped, well-understood development hosts or known error strings rather than disabling the\n  rule across production PHP servers.\n\n### Response and remediation\n\n- Patch or roll back the affected application or PHP runtime after preserving relevant logs and process telemetry.\n- If the request or surrounding host behavior is suspicious, isolate the server, block the confirmed origin at the edge,\n  rotate exposed secrets, and scope similar errors across the environment.\n",
+        "query": "agent.id:* and\nevent.dataset:(\n  \"apache.error\" or \"nginx.error\" or \"apache_tomcat.catalina\" or \"apache_tomcat.localhost\"\n) and (\n  message:(PHP and Fatal and error)\n)\n",
+        "related_integrations": [
+            {
+                "package": "apache",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "apache_tomcat",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "nginx",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "agent.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "0d173166-95b8-4813-bfb9-a6276813ca2a",
+        "severity": "medium",
+        "tags": [
+            "Domain: Web",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Data Source: Nginx",
+            "Data Source: Apache",
+            "Data Source: Apache Tomcat",
+            "Resources: Investigation Guide",
+            "Rule Type: New Terms",
+            "Service: Nginx",
+            "Service: Apache Tomcat",
+            "Service: Apache HTTP Server"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "0d173166-95b8-4813-bfb9-a6276813ca2a_1",
+    "type": "security-rule"
+}

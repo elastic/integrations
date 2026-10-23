@@ -1,0 +1,96 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects ChatGPT Enterprise Codex prompt or response text that matches known credential patterns. Secrets pasted into Codex sessions can be retained in compliance logs and may be reused by agent tool calls.",
+        "false_positives": [
+            "Developers may paste example keys while debugging or documenting integrations."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.id",
+                "user.email",
+                "openai_chatgpt_enterprise.codex_log.event_details.session_id",
+                "openai_chatgpt_enterprise.codex_log.event_details.prompt_text",
+                "openai_chatgpt_enterprise.codex_log.client_id"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Codex Prompt Containing Credentials",
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Codex Prompt Containing Credentials\n\nA Codex prompt or response matched a known credential pattern. Secrets pasted into Codex can be retained in compliance logs and may be reused by later tool calls in the same session.\n\nEscalate when the value appears live, when tool or MCP activity follows the prompt, or when the same user repeats credential-like content. Close as a false positive for clearly synthetic or documentation examples.\n\n#### Possible investigation steps\n\n- Read the prompt and response text on the alert and decide whether the match is a live secret, an example key, or incidental text.\n- Identify the user, Codex client, and session identifiers on the alert.\n- Check for nearby Codex tool calls, MCP activity, or access-token creation in the same session.\n- If the assistant response echoes the secret, treat that as additional exposure.\n\n### False positive analysis\n\n- Developers sometimes paste example keys while debugging or documenting integrations. Confirm the value is live before rotating it.\n\n### Response and remediation\n\n- If the credential is live, rotate or revoke it and review use of that credential after the prompt time.\n- Review Codex tool activity in the same session and remove residual copies from shared artifacts where possible.\n- Restrict who can read compliance logs that retain prompt text, because the alert may contain secret material.\n",
+        "query": "from logs-openai_chatgpt_enterprise.codex_log-* metadata _id, _version, _index\n| eval Esql.prompt_text = coalesce(openai_chatgpt_enterprise.codex_log.event_details.prompt_text, \"\")\n| eval Esql.response_text = coalesce(openai_chatgpt_enterprise.codex_log.event_details.response_text, \"\")\n| where\n    data_stream.dataset == \"openai_chatgpt_enterprise.codex_log\" and\n    event.action == \"prompt_response_received\" and\n    (\n        (\n        Esql.prompt_text is not null and\n        Esql.prompt_text != \"\" and\n        not Esql.prompt_text like \"*AKIAIOSFODNN7EXAMPLE*\" and\n        not Esql.prompt_text like \"*ASIAIOSFODNN7EXAMPLE*\" and\n        not Esql.prompt_text like \"*ghp_example*\" and\n        not Esql.prompt_text like \"*sk-ant-api03-test*\" and\n        (\n\n        Esql.prompt_text rlike \"\"\".*(AKIA|ASIA)[A-Z0-9]{16}.*\"\"\" or\n        Esql.prompt_text rlike \"\"\".*gh[pousr]_[A-Za-z0-9]{36}.*\"\"\" or\n        Esql.prompt_text rlike \"\"\".*github_pat_[A-Za-z0-9_]+.*\"\"\" or\n        Esql.prompt_text rlike \"\"\".*-----BEGIN [A-Z ]*PRIVATE KEY-----.*\"\"\" or\n        Esql.prompt_text rlike \"\"\".*xox[baprs]-[0-9]+-[0-9]+-[A-Za-z0-9]+.*\"\"\" or\n        Esql.prompt_text rlike \"\"\".*sk_live_[A-Za-z0-9]+.*\"\"\" or\n        Esql.prompt_text rlike \"\"\".*AIza[-A-Za-z0-9_]+.*\"\"\" or\n        Esql.prompt_text rlike \"\"\".*npm_[A-Za-z0-9]{36}.*\"\"\" or\n        Esql.prompt_text rlike \"\"\".*sk-ant-[A-Za-z0-9-]+.*\"\"\" or\n        Esql.prompt_text rlike \"\"\".*sk-[A-Za-z0-9]{20,}.*\"\"\" or\n        Esql.prompt_text rlike \"\"\".*hvs[.][A-Za-z0-9]+.*\"\"\" or\n        Esql.prompt_text rlike \"\"\".*dckr_pat_[-A-Za-z0-9_]+.*\"\"\" or\n        Esql.prompt_text rlike \"\"\".*SG[.][-A-Za-z0-9_]+[.][-A-Za-z0-9_]+.*\"\"\" or\n        Esql.prompt_text rlike \"\"\".*(AccountKey=|SharedAccessKey=)[-A-Za-z0-9+/=]+.*\"\"\" or\n        Esql.prompt_text rlike \"\"\".*eyJ[-A-Za-z0-9_]+[.]eyJ[-A-Za-z0-9_]+[.][-A-Za-z0-9_]+.*\"\"\"\n        )\n    )\n        or\n        (\n        Esql.response_text is not null and\n        Esql.response_text != \"\" and\n        not Esql.response_text like \"*AKIAIOSFODNN7EXAMPLE*\" and\n        not Esql.response_text like \"*ASIAIOSFODNN7EXAMPLE*\" and\n        not Esql.response_text like \"*ghp_example*\" and\n        not Esql.response_text like \"*sk-ant-api03-test*\" and\n        (\n\n        Esql.response_text rlike \"\"\".*(AKIA|ASIA)[A-Z0-9]{16}.*\"\"\" or\n        Esql.response_text rlike \"\"\".*gh[pousr]_[A-Za-z0-9]{36}.*\"\"\" or\n        Esql.response_text rlike \"\"\".*github_pat_[A-Za-z0-9_]+.*\"\"\" or\n        Esql.response_text rlike \"\"\".*-----BEGIN [A-Z ]*PRIVATE KEY-----.*\"\"\" or\n        Esql.response_text rlike \"\"\".*xox[baprs]-[0-9]+-[0-9]+-[A-Za-z0-9]+.*\"\"\" or\n        Esql.response_text rlike \"\"\".*sk_live_[A-Za-z0-9]+.*\"\"\" or\n        Esql.response_text rlike \"\"\".*AIza[-A-Za-z0-9_]+.*\"\"\" or\n        Esql.response_text rlike \"\"\".*npm_[A-Za-z0-9]{36}.*\"\"\" or\n        Esql.response_text rlike \"\"\".*sk-ant-[A-Za-z0-9-]+.*\"\"\" or\n        Esql.response_text rlike \"\"\".*sk-[A-Za-z0-9]{20,}.*\"\"\" or\n        Esql.response_text rlike \"\"\".*hvs[.][A-Za-z0-9]+.*\"\"\" or\n        Esql.response_text rlike \"\"\".*dckr_pat_[-A-Za-z0-9_]+.*\"\"\" or\n        Esql.response_text rlike \"\"\".*SG[.][-A-Za-z0-9_]+[.][-A-Za-z0-9_]+.*\"\"\" or\n        Esql.response_text rlike \"\"\".*(AccountKey=|SharedAccessKey=)[-A-Za-z0-9+/=]+.*\"\"\" or\n        Esql.response_text rlike \"\"\".*eyJ[-A-Za-z0-9_]+[.]eyJ[-A-Za-z0-9_]+[.][-A-Za-z0-9_]+.*\"\"\"\n        )\n    )\n    )\n| keep\n    _id, _version, _index, @timestamp, event.action, user.id, user.email,\n    openai_chatgpt_enterprise.codex_log.client_id,\n    openai_chatgpt_enterprise.codex_log.event_details.session_id,\n    openai_chatgpt_enterprise.codex_log.event_details.prompt_text,\n    openai_chatgpt_enterprise.codex_log.event_details.response_text,\n    gen_ai.request.model, data_stream.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": "^0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "openai_chatgpt_enterprise.codex_log.event_details.prompt_text",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "openai_chatgpt_enterprise.codex_log.event_details.response_text",
+                "type": "text"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "de41effc-9966-4cae-a5bb-2773bf7f641f",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect compliance logs into Elasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "high",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Credential Access",
+            "Mitre Atlas: AML.T0055"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "de41effc-9966-4cae-a5bb-2773bf7f641f_1",
+    "type": "security-rule"
+}

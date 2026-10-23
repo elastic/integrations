@@ -1,0 +1,93 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects ChatGPT Enterprise Codex security-log events that create or update a repository scan configuration. Changing scan scope, lookback, or notification rules can weaken secrets scanning coverage or redirect findings.",
+        "false_positives": [
+            "Security engineering teams legitimately onboard repositories and tune scan lookback windows."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.id",
+                "openai_chatgpt_enterprise.codex_security_log.event_details.scan_configuration_fields.repo_url",
+                "openai_chatgpt_enterprise.codex_security_log.event_details.scan_configuration_fields.scan_type",
+                "openai_chatgpt_enterprise.codex_security_log.event_details.scan_configuration_fields.state"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Codex Security Scan Configuration Changed",
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Codex Security Scan Configuration Changed\n\nA Codex security scan configuration was created or updated. Changes to repository scope, lookback, or notification rules can weaken secrets-scanning coverage or redirect findings.\n\nEscalate when the repository is unexpected, notification targets change, or the actor is not on the security engineering team. Close as a false positive for documented onboarding or tuning of approved repositories.\n\n#### Possible investigation steps\n\n- Identify the actor and the scan configuration fields on the alert (repository URL, scan type, state, lookback).\n- Confirm repository ownership and whether the change matches an approved security-engineering request.\n- Review related Codex security findings or follow-on activity after the configuration change.\n- Compare with other admin or security-configuration changes by the same actor.\n\n### False positive analysis\n\n- Security engineering teams legitimately onboard repositories and tune scan lookback windows during rollout.\n\n### Response and remediation\n\n- Revert unauthorized scan configuration changes and review related findings.\n- If coverage was reduced, restore the prior configuration and investigate why it was changed.\n",
+        "query": "from logs-openai_chatgpt_enterprise.codex_security_log-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"openai_chatgpt_enterprise.codex_security_log\" and\n    event.action in (\"scan_configuration_created\", \"scan_configuration_updated\")\n| keep\n    _id, _version, _index, @timestamp, event.action, user.id, user.email,\n    openai_chatgpt_enterprise.codex_security_log.client_id,\n    openai_chatgpt_enterprise.codex_security_log.workspace_id,\n    openai_chatgpt_enterprise.codex_security_log.event_details.scan_configuration_id,\n    openai_chatgpt_enterprise.codex_security_log.event_details.scan_configuration_fields.repo_url,\n    openai_chatgpt_enterprise.codex_security_log.event_details.scan_configuration_fields.scan_type,\n    openai_chatgpt_enterprise.codex_security_log.event_details.scan_configuration_fields.state,\n    openai_chatgpt_enterprise.codex_security_log.event_details.scan_configuration_fields.lookback_days,\n    data_stream.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": "^0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "6c634405-3880-4354-8fea-925ec7eadd9b",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect compliance logs into Elasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Defense Evasion",
+            "Mitre Atlas: AML.T0081"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "6c634405-3880-4354-8fea-925ec7eadd9b_1",
+    "type": "security-rule"
+}

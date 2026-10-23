@@ -1,0 +1,104 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects changes to Vertex AI publisher model configuration via SetPublisherModelConfig (for example enabling or retargeting prompt/response BigQuery logging). Unexpected config changes can disable security-relevant logging or redirect logs.",
+        "false_positives": [
+            "Approved platform engineering changes that update publisher logging destinations. Confirm the actor and change ticket."
+        ],
+        "from": "now-60m",
+        "interval": "10m",
+        "investigation_fields": {
+            "field_names": [
+                "event.action",
+                "cloud.project.id",
+                "source.ip",
+                "gcp.vertexai.audit.service_name",
+                "gcp.vertexai.audit.resource_name",
+                "client.user.email",
+                "user_agent.original"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GCP Vertex AI Publisher Model Config Modified",
+        "note": "## Triage and analysis\n\n### Investigating GCP Vertex AI Publisher Model Config Modified\n\nSomeone called `SetPublisherModelConfig` on a publisher model. That API can enable, disable, or\nretarget prompt/response BigQuery logging and related publisher settings. Unexpected changes can\nblind detection (logging off or redirected) or move sensitive prompt data to an unapproved sink.\n\n#### Possible investigation steps\n\n- Note `@timestamp`, `event.action`, `source.ip`, `client.user.email`,\n  `gcp.vertexai.audit.resource_name`, and `user_agent.original` on the alert.\n- Confirm the actor is an approved platform owner. Check change tickets / IaC pipelines for a\n  matching change.\n- In GCP, verify the publisher model config still points at the expected BigQuery dataset/table and\n  sampling rate.\n- Compare `prompt_response_logs` volume before and after the change for gaps or a sudden destination\n  shift.\n- Hunt for other privilege or config changes by the same principal around the same time.\n\n### False positive analysis\n\n- Approved platform engineering work that enables or retargets logging. Validate with the change\n  ticket and expected actor/IP before escalating.\n\n### Response and remediation\n\n- Revert unauthorized config to the last known-good logging destination and sampling settings.\n- Restrict IAM who can call `SetPublisherModelConfig`; rotate credentials for the actor if\n  compromise is suspected.\n",
+        "query": "from logs-gcp_vertexai.auditlogs-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"gcp_vertexai.auditlogs\" and\n    event.action like \"*SetPublisherModelConfig*\" and\n    (gcp.vertexai.audit.status.code is null or gcp.vertexai.audit.status.code == 0)\n| keep\n    _id,\n    _version,\n    _index,\n    @timestamp,\n    event.action,\n    cloud.project.id,\n    source.ip,\n    gcp.vertexai.audit.service_name,\n    gcp.vertexai.audit.resource_name,\n    client.user.email,\n    user_agent.original\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/gcp_vertexai",
+            "https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/request-response-logging"
+        ],
+        "related_integrations": [
+            {
+                "package": "gcp_vertexai",
+                "version": "^1.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.vertexai.audit.status.code",
+                "type": "integer"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "6987cc9a-1f4c-47ae-9bfe-50190a2c5683",
+        "setup": "## Setup\n\nRequires GCP Vertex AI `auditlogs` via Pub/Sub sink for `aiplatform.googleapis.com`.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Domain: Cloud",
+            "Data Source: GCP Vertex AI",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Platform: GCP",
+            "Service: GCP Vertex AI",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Threat: Unauthorized AI Usage",
+            "Mitre Atlas: AML.T0015",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.008",
+                                "name": "Disable or Modify Cloud Logs",
+                                "reference": "https://attack.mitre.org/techniques/T1562/008/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "6987cc9a-1f4c-47ae-9bfe-50190a2c5683_1",
+    "type": "security-rule"
+}

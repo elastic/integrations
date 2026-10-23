@@ -1,0 +1,115 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 1
+            },
+            "group_by": [
+                "gcp.vertexai.prompt_response_logs.model",
+                "cloud.project.id"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects three or more Vertex AI GenerateContent replies in 60 minutes whose assistant text indicates a refusal (cannot fulfill/assist/help/answer, unable to assist, decline the request, against my guidelines, and similar), aggregated by project and model. Prompt-response logs lack a stable caller identity, so this is a project-wide refusal burst signal \u2014 pivot to auditlogs for principal/IP attribution.",
+        "false_positives": [
+            "Approved red-team suites that intentionally elicit refusals. Exclude those models or raise the threshold."
+        ],
+        "from": "now-60m",
+        "interval": "10m",
+        "investigation_fields": {
+            "field_names": [
+                "gcp.vertexai.prompt_response_logs.model",
+                "cloud.project.id",
+                "Esql.event_count",
+                "Esql.prompt_values",
+                "Esql.response_values",
+                "Esql.timestamp_first_seen",
+                "Esql.timestamp_last_seen"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GCP Vertex AI Repeated Assistant Refusals",
+        "note": "## Triage and analysis\n\n### Investigating GCP Vertex AI Repeated Assistant Refusals\n\nOne project/model pair produced three or more refusal-style completions in the lookback window\n(assistant text such as \"I cannot fulfill\u2026\", \"I cannot provide\u2026\", \"unable to assist\u2026\", or\n\"against my guidelines\u2026\", typically with `finish_reason` STOP). Aggregation is project-wide\nbecause prompt_response_logs do not carry caller email/IP; use auditlogs to attribute the burst.\n\n#### Possible investigation steps\n\n- Review `Esql.event_count`, `Esql.prompt_values`, and `Esql.response_values` on the alert. Skim\n  prompts for jailbreak attempts, malware requests, or credential harvesting.\n- Remember this rule keys on textual refusals with STOP \u2014 not provider `SAFETY` blocks. Use the\n  safety-filter / elevated-rating rules for those.\n- Pivot to `logs-gcp_vertexai.auditlogs-*` with `event.action like \"*GenerateContent*\"` in the same\n  window for `source.ip` and `client.user.email`.\n- Correlate with jailbreak-heuristic, elevated-safety, and BLOCK_NONE alerts for the same\n  project/model.\n\n### False positive analysis\n\n- Quoted refusal examples and non-security limitations can also match these text heuristics. Read\n  the original prompts and responses before treating a match as a policy refusal.\n- Approved content-safety evaluation or red-team suites that intentionally elicit refusals. Exclude\n  those models/principals or raise the count threshold.\n\n### Response and remediation\n\n- Identify the calling workload via auditlogs; if unauthorized, restrict or rotate credentials and\n  review application allowlists.\n- If prompts show a clear attack theme, expand the hunt across other models and projects for the\n  same principal/IP.\n",
+        "query": "from logs-gcp_vertexai.prompt_response_logs-*\n| where\n    data_stream.dataset == \"gcp_vertexai.prompt_response_logs\" and\n    MV_CONTAINS(gcp.vertexai.prompt_response_logs.full_response.candidates.finish_reason, \"STOP\")\n| eval response_text = to_lower(coalesce(mv_concat(gcp.vertexai.prompt_response_logs.full_response.candidates.content.parts.text, \" \"), \"\"))\n| where\n    response_text like \"*cannot fulfill*\" or\n    response_text like \"*cannot assist*\" or\n    response_text like \"*can't assist*\" or\n    response_text like \"*can't help*\" or\n    response_text like \"*cannot help*\" or\n    response_text like \"*i cannot provide*\" or\n    response_text like \"*i can't provide*\" or\n    response_text like \"*i will not provide*\" or\n    response_text like \"*i cannot answer*\" or\n    response_text like \"*i can't answer*\" or\n    response_text like \"*unable to provide*\" or\n    response_text like \"*unable to assist*\" or\n    response_text like \"*unable to fulfill*\" or\n    response_text like \"*not able to help*\" or\n    response_text like \"*not able to provide*\" or\n    response_text like \"*must decline*\" or\n    response_text like \"*respectfully decline*\" or\n    response_text like \"*decline this request*\" or\n    response_text like \"*decline that request*\" or\n    response_text like \"*cannot disclose*\" or\n    response_text like \"*can't disclose*\" or\n    response_text like \"*against my guidelines*\" or\n    response_text like \"*that violates my guidelines*\"\n| stats\n    Esql.event_count = count(*),\n    Esql.timestamp_first_seen = min(@timestamp),\n    Esql.timestamp_last_seen = max(@timestamp),\n    Esql.prompt_values = values(gcp.vertexai.prompt_response_logs.full_request.contents.parts.text),\n    Esql.response_values = values(gcp.vertexai.prompt_response_logs.full_response.candidates.content.parts.text)\n  by\n    gcp.vertexai.prompt_response_logs.model,\n    cloud.project.id\n| where Esql.event_count >= 3\n| keep\n    gcp.vertexai.prompt_response_logs.model,\n    cloud.project.id,\n    Esql.event_count,\n    Esql.timestamp_first_seen,\n    Esql.timestamp_last_seen,\n    Esql.prompt_values,\n    Esql.response_values\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/gcp_vertexai"
+        ],
+        "related_integrations": [
+            {
+                "package": "gcp_vertexai",
+                "version": "^1.4.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.project.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.vertexai.prompt_response_logs.full_request.contents.parts.text",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.vertexai.prompt_response_logs.full_response.candidates.content.parts.text",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.vertexai.prompt_response_logs.full_response.candidates.finish_reason",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.vertexai.prompt_response_logs.model",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "response_text",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "949912f8-6736-439e-a2fb-d28dcf866017",
+        "setup": "## Setup\n\nRequires GCP Vertex AI `prompt_response_logs` with response text populated in BigQuery export.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: GenAI",
+            "Domain: Cloud",
+            "Data Source: GCP Vertex AI",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Platform: GCP",
+            "Service: GCP Vertex AI",
+            "Use Case: Policy Violation",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Threat: Unauthorized AI Usage",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL"
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "949912f8-6736-439e-a2fb-d28dcf866017_1",
+    "type": "security-rule"
+}

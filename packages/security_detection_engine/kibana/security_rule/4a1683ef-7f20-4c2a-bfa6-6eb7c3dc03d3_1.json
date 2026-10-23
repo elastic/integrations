@@ -1,0 +1,116 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a GCP Vertex AI GenerateContent exchange whose prompt or model reply contains a known credential pattern (AWS access keys, GitHub tokens, PEM private keys, and similar), or whose assistant reply warns about exposed keys and revocation. Secrets in prompt/response logs are visible to anyone with access to BigQuery prompt-response export and Elastic.",
+        "false_positives": [
+            "Documentation and unit tests that paste example keys (for example an AWS access key ending in EXAMPLE) match the token patterns. Confirm the value is live before rotating it."
+        ],
+        "from": "now-60m",
+        "interval": "10m",
+        "investigation_fields": {
+            "field_names": [
+                "cloud.project.id",
+                "gcp.vertexai.prompt_response_logs.model",
+                "gcp.vertexai.prompt_response_logs.api_method",
+                "gcp.vertexai.prompt_response_logs.full_request.contents.parts.text",
+                "gcp.vertexai.prompt_response_logs.full_response.candidates.content.parts.text",
+                "gcp.vertexai.prompt_response_logs.full_response.candidates.finish_reason",
+                "gcp.vertexai.prompt_response_logs.full_response.usage_metadata.prompt_token_count",
+                "gcp.vertexai.prompt_response_logs.full_response.usage_metadata.candidates_token_count"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GCP Vertex AI Prompt or Response Containing Credentials",
+        "note": "## Triage and analysis\n\n### Investigating GCP Vertex AI Prompt or Response Containing Credentials\n\nA Vertex AI prompt-response log row matched a credential pattern in the user prompt and/or model\nreply (AWS access keys, GitHub tokens, PEM private keys, Slack tokens, Stripe live keys, Google API\nkeys, or GitLab PATs). There is no provider-side credential flag \u2014 the match is content-only.\nSecrets in these logs are visible to anyone with access to the BigQuery export and Elastic.\n\n#### Possible investigation steps\n\n- Read `gcp.vertexai.prompt_response_logs.full_request.contents.parts.text` and\n  `...full_response.candidates.content.parts.text` on the alert. Decide whether the match is a live\n  secret or an example/placeholder (for example an AWS key ending in `EXAMPLE`).\n- Note `gcp.vertexai.prompt_response_logs.model`, `api_method`, and `@timestamp`.\n- Correlate with `logs-gcp_vertexai.auditlogs-*` GenerateContent events in the same window for\n  `source.ip` and `client.user.email` to identify the calling principal and application egress.\n- If the secret appears in the model reply, treat it as completion exposure as well as prompt\n  exposure; review whether the prompt asked the model to recall or transform secrets.\n- Scope impact: which system the credential belongs to and what privileges it has.\n\n### False positive analysis\n\n- Documentation, unit tests, and tutorials that paste example keys match the same prefixes. Confirm\n  the value is live before rotating or paging.\n\n### Response and remediation\n\n- If the credential is live: rotate or revoke it immediately and hunt for use of that secret outside\n  Vertex (CloudTrail, GitHub audit, IdP, etc.).\n- Find and fix the application path that placed the secret in the prompt; add input/output filtering\n  (Model Armor / sensitive-data policies) so secrets are not logged again.\n",
+        "query": "from logs-gcp_vertexai.prompt_response_logs-* metadata _id, _version, _index\n| where data_stream.dataset == \"gcp_vertexai.prompt_response_logs\"\n| eval request_text = coalesce(mv_concat(gcp.vertexai.prompt_response_logs.full_request.contents.parts.text, \" \"), \"\"),\n       response_raw = coalesce(mv_concat(gcp.vertexai.prompt_response_logs.full_response.candidates.content.parts.text, \" \"), \"\"),\n       response_text = to_lower(response_raw)\n| where\n    request_text rlike \"\"\".*(AKIA|ASIA)[A-Z0-9]{16}.*\"\"\" or\n    response_raw rlike \"\"\".*(AKIA|ASIA)[A-Z0-9]{16}.*\"\"\" or\n    request_text rlike \"\"\".*gh[pousr]_[A-Za-z0-9]{36}.*\"\"\" or\n    response_raw rlike \"\"\".*gh[pousr]_[A-Za-z0-9]{36}.*\"\"\" or\n    request_text rlike \"\"\".*github_pat_[A-Za-z0-9_]+.*\"\"\" or\n    response_raw rlike \"\"\".*github_pat_[A-Za-z0-9_]+.*\"\"\" or\n    request_text rlike \"\"\".*-----BEGIN [A-Z ]*PRIVATE KEY-----.*\"\"\" or\n    response_raw rlike \"\"\".*-----BEGIN [A-Z ]*PRIVATE KEY-----.*\"\"\" or\n    request_text rlike \"\"\".*xox[baprs]-[0-9]+-[0-9]+-[A-Za-z0-9]+.*\"\"\" or\n    response_raw rlike \"\"\".*xox[baprs]-[0-9]+-[0-9]+-[A-Za-z0-9]+.*\"\"\" or\n    request_text rlike \"\"\".*sk_live_[A-Za-z0-9]+.*\"\"\" or\n    response_raw rlike \"\"\".*sk_live_[A-Za-z0-9]+.*\"\"\" or\n    request_text rlike \"\"\".*AIza[-A-Za-z0-9_]+.*\"\"\" or\n    response_raw rlike \"\"\".*AIza[-A-Za-z0-9_]+.*\"\"\" or\n    request_text rlike \"\"\".*glpat-[-A-Za-z0-9_]+.*\"\"\" or\n    response_raw rlike \"\"\".*glpat-[-A-Za-z0-9_]+.*\"\"\" or\n    response_text like \"*serious security concern*\" or\n    response_text like \"*exposing api keys*\" or\n    response_text like \"*revoke/delete the api key*\"\n| keep\n    _id,\n    _version,\n    _index,\n    @timestamp,\n    cloud.project.id,\n    gcp.vertexai.prompt_response_logs.model,\n    gcp.vertexai.prompt_response_logs.api_method,\n    gcp.vertexai.prompt_response_logs.full_request.contents.parts.text,\n    gcp.vertexai.prompt_response_logs.full_response.candidates.content.parts.text,\n    gcp.vertexai.prompt_response_logs.full_response.candidates.finish_reason,\n    gcp.vertexai.prompt_response_logs.full_response.usage_metadata.prompt_token_count,\n    gcp.vertexai.prompt_response_logs.full_response.usage_metadata.candidates_token_count\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/gcp_vertexai",
+            "https://github.com/elastic/integrations/issues/20740",
+            "https://genai.owasp.org/llmrisk/llm06-sensitive-information-disclosure"
+        ],
+        "related_integrations": [
+            {
+                "package": "gcp_vertexai",
+                "version": "^1.4.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.vertexai.prompt_response_logs.full_request.contents.parts.text",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.vertexai.prompt_response_logs.full_response.candidates.content.parts.text",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "request_text",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "response_raw",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "response_text",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "4a1683ef-7f20-4c2a-bfa6-6eb7c3dc03d3",
+        "setup": "## Setup\n\nRequires the GCP Vertex AI integration collecting `prompt_response_logs` from BigQuery request/response logging.\n\nhttps://www.elastic.co/docs/reference/integrations/gcp_vertexai\n",
+        "severity": "high",
+        "tags": [
+            "Domain: GenAI",
+            "Domain: Cloud",
+            "Data Source: GCP Vertex AI",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Platform: GCP",
+            "Service: GCP Vertex AI",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Threat: LLMjacking",
+            "Threat: Unauthorized AI Usage",
+            "Mitre Atlas: AML.T0055",
+            "Mitre Atlas: AML.T0057",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "4a1683ef-7f20-4c2a-bfa6-6eb7c3dc03d3_1",
+    "type": "security-rule"
+}

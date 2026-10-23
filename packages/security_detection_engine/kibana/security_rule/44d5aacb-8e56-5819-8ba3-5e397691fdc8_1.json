@@ -1,0 +1,92 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a change to the ESXi root password, the credential for SSH, the Host Client, and the API. Replacing it locks out the previous password and gives the new value full control of the host. Hostd records `Password was changed for account root`. The shell records `esxcli system account set -i root`.",
+        "false_positives": [
+            "Administrators rotate the root password during scheduled maintenance. Confirm the change ticket and that the new password was stored with the approved break-glass process."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-vsphere.log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "message",
+                "event.original",
+                "host.hostname",
+                "log.file.path"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "ESXi Root Password Changed",
+        "note": "## Triage and analysis\n\n### Investigating ESXi Root Password Changed\n\nThe root account is the local administrator on a standalone ESXi host. A password change keeps the same account and replaces the credential used for SSH, the Host Client, and the API.\n\n#### Possible investigation steps\n\n- Read message for Password was changed for account root or esxcli system account set -i root.\n- Note the account in the hostd user field. That is who performed the change.\n- Check the same session for lockdown mode being disabled, a new local account, or an Admin role grant.\n- Ask whether the new password was recorded in the approved secret store.\n\n### False positive analysis\n\nA documented root password rotation is commonly benign. An unplanned change, especially after lockdown mode was disabled, deserves review.\n\n### Response and remediation\n\n- If the change was not approved, set a new root password and store it with the break-glass process.\n- Review other account and permission changes from the same session.\n- Preserve hostd.log and shell.log before closing the session.\n",
+        "query": "data_stream.dataset:vsphere.log and event.module:vsphere and message:(\"Password was changed for account root\" or \"-i root\" and \"esxcli system account set\")\n",
+        "references": [
+            "https://lolesxi-project.github.io/LOLESXi/#",
+            "https://blogs.vmware.com/security/2022/10/esxi-targeting-ransomware-tactics-and-techniques-part-2.html",
+            "https://detect.fyi/vmware-esxi-logging-detection-opportunities-4fb56411ec21"
+        ],
+        "related_integrations": [
+            {
+                "package": "vsphere",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "44d5aacb-8e56-5819-8ba3-5e397691fdc8",
+        "setup": "## Setup\n\nThis rule requires ESXi host logs collected by the Elastic vSphere integration: https://www.elastic.co/docs/reference/integrations/vsphere\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: VMware vSphere",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide",
+            "Rule Type: Custom Query (KQL)",
+            "Platform: VMware ESXi"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "44d5aacb-8e56-5819-8ba3-5e397691fdc8_1",
+    "type": "security-rule"
+}
