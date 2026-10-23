@@ -171,28 +171,30 @@ processors:
       value: '{{{whoisfreaks.domain_name}}}'
       allow_duplicates: false
       if: ctx.whoisfreaks?.domain_name instanceof String && ctx.whoisfreaks.domain_name != ''
-  - script:
-      tag: script_name_servers_to_related_hosts
-      description: Adds name_server_1..4 to related.hosts.
-      lang: painless
-      if: ctx.whoisfreaks instanceof Map
-      params:
-        max_name_servers: 4
-      source: |-
-        for (int i = 1; i <= params.max_name_servers; i++) {
-          def ns = ctx.whoisfreaks['name_server_' + i];
-          if (ns instanceof String && ns.trim() != '') {
-            if (ctx.related == null) {
-              ctx.related = new HashMap();
-            }
-            if (ctx.related.hosts == null) {
-              ctx.related.hosts = new ArrayList();
-            }
-            if (!ctx.related.hosts.contains(ns)) {
-              ctx.related.hosts.add(ns);
-            }
-          }
-        }
+  - append:
+      tag: append_related_hosts_name_server_1
+      field: related.hosts
+      value: '{{{whoisfreaks.name_server_1}}}'
+      allow_duplicates: false
+      if: ctx.whoisfreaks?.name_server_1 instanceof String && ctx.whoisfreaks.name_server_1.trim() != ''
+  - append:
+      tag: append_related_hosts_name_server_2
+      field: related.hosts
+      value: '{{{whoisfreaks.name_server_2}}}'
+      allow_duplicates: false
+      if: ctx.whoisfreaks?.name_server_2 instanceof String && ctx.whoisfreaks.name_server_2.trim() != ''
+  - append:
+      tag: append_related_hosts_name_server_3
+      field: related.hosts
+      value: '{{{whoisfreaks.name_server_3}}}'
+      allow_duplicates: false
+      if: ctx.whoisfreaks?.name_server_3 instanceof String && ctx.whoisfreaks.name_server_3.trim() != ''
+  - append:
+      tag: append_related_hosts_name_server_4
+      field: related.hosts
+      value: '{{{whoisfreaks.name_server_4}}}'
+      allow_duplicates: false
+      if: ctx.whoisfreaks?.name_server_4 instanceof String && ctx.whoisfreaks.name_server_4.trim() != ''
   # Deduplicate so a re-polled file does not create duplicate documents.
   - fingerprint:
       tag: fingerprint_for_dedup
@@ -209,7 +211,8 @@ on_failure:
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       tag: set_pipeline_error_to_event_kind
       field: event.kind
