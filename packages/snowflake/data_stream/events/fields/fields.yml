@@ -1,0 +1,548 @@
+- name: snowflake.events
+  type: group
+  description: Fields from the Snowflake event table that have no ECS equivalent.
+  fields:
+    - name: record_type
+      type: keyword
+      description: >-
+        RECORD_TYPE from the event table. Only LOG rows are ingested; other types are dropped in the pipeline.
+    - name: query_id
+      type: keyword
+      description: Query identifier copied from RESOURCE_ATTRIBUTES snow.query.id.
+    - name: session_id
+      type: keyword
+      description: Session identifier copied from RESOURCE_ATTRIBUTES snow.session.id. ECS has no session.id.
+    - name: value
+      type: double
+      description: Numeric VALUE for METRIC rows. Log messages and string EVENT values are mapped to message.
+      metric_type: gauge
+    - name: resource_attributes
+      type: group
+      description: >
+        RESOURCE_ATTRIBUTES. Attributes that identify the event source. Snowflake sets these and handler code cannot add keys. Includes Openflow resource attributes.
+
+      fields:
+        - name: application
+          type: keyword
+          description: Openflow application name. Fixed value openflow.
+        - name: deployment
+          type: group
+          fields:
+            - name: version
+              type: keyword
+              description: Openflow deployment version (deployment.version).
+        - name: k8s
+          type: group
+          fields:
+            - name: container
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: Kubernetes container name (k8s.container.name).
+                - name: restart_count
+                  type: keyword
+                  description: Container restart count, stored by Openflow as a numeric string (k8s.container.restart_count).
+            - name: pod
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: Kubernetes pod name (k8s.pod.name).
+                - name: start_time
+                  type: date
+                  description: Pod start time (k8s.pod.start_time).
+                - name: uid
+                  type: keyword
+                  description: Pod UID (k8s.pod.uid).
+        - name: openflow
+          type: group
+          fields:
+            - name: dataplane
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Openflow deployment identifier (openflow.dataplane.id).
+        - name: snow
+          type: group
+          fields:
+            - name: application
+              type: group
+              description: Snowflake Native App resource attributes.
+              fields:
+                - name: consumer
+                  type: group
+                  fields:
+                    - name: account_locator
+                      type: keyword
+                      description: Consumer account locator (snow.application.consumer.account_locator).
+                    - name: account_name
+                      type: keyword
+                      description: Consumer account name (snow.application.consumer.account_name).
+                    - name: name
+                      type: keyword
+                      description: Deprecated consumer account locator (snow.application.consumer.name).
+                    - name: organization
+                      type: keyword
+                      description: Consumer organization (snow.application.consumer.organization).
+                    - name: snowflake_region
+                      type: keyword
+                      description: Consumer Snowflake region (snow.application.consumer.snowflake_region).
+                - name: id
+                  type: keyword
+                  description: Native App identifier (snow.application.id).
+                - name: name
+                  type: keyword
+                  description: Installed Native App name (snow.application.name).
+                - name: package
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: Application package name (snow.application.package.name).
+            - name: catalog
+              type: group
+              fields:
+                - name: integration
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: Catalog integration for Iceberg automated refresh (snow.catalog.integration.name).
+                - name: table
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: Iceberg catalog table name (snow.catalog.table.name).
+            - name: database
+              type: group
+              fields:
+                - name: id
+                  type: long
+                  description: Internal database identifier (snow.database.id).
+                - name: name
+                  type: keyword
+                  description: Database containing the executable (snow.database.name).
+            - name: executable
+              type: group
+              fields:
+                - name: id
+                  type: long
+                  description: Internal executable identifier (snow.executable.id).
+                - name: name
+                  type: keyword
+                  description: Executable name, such as a procedure, function, or Streamlit app (snow.executable.name).
+                - name: runtime
+                  type: group
+                  fields:
+                    - name: version
+                      type: keyword
+                      description: Language runtime version (snow.executable.runtime.version).
+                - name: type
+                  type: keyword
+                  description: >
+                    Executable type (snow.executable.type). Documented values include procedure, function, query, sql, spcs, streamlit, DBT_PROJECT, and TASK.
+
+            - name: listing
+              type: group
+              fields:
+                - name: global_name
+                  type: keyword
+                  description: Native App listing identifier (snow.listing.global_name).
+                - name: name
+                  type: keyword
+                  description: Native App listing name (snow.listing.name).
+            - name: owner
+              type: group
+              fields:
+                - name: id
+                  type: long
+                  description: Internal identifier of the role with OWNERSHIP on the executable (snow.owner.id).
+                - name: name
+                  type: keyword
+                  description: Role with OWNERSHIP on the executable (snow.owner.name).
+            - name: patch
+              type: keyword
+              description: Executable patch level (snow.patch).
+            - name: release
+              type: group
+              fields:
+                - name: version
+                  type: keyword
+                  description: Snowflake release that generated the event (snow.release.version).
+            - name: schema
+              type: group
+              fields:
+                - name: id
+                  type: long
+                  description: Internal schema identifier (snow.schema.id).
+                - name: name
+                  type: keyword
+                  description: Schema containing the executable (snow.schema.name).
+            - name: session
+              type: group
+              fields:
+                - name: role
+                  type: group
+                  fields:
+                    - name: primary
+                      type: group
+                      fields:
+                        - name: id
+                          type: long
+                          description: Internal identifier of the session primary role (snow.session.role.primary.id).
+            - name: table
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: Table associated with the executable (snow.table.name).
+            - name: version
+              type: keyword
+              description: Executable version (snow.version).
+            - name: warehouse
+              type: group
+              fields:
+                - name: id
+                  type: long
+                  description: Internal warehouse identifier (snow.warehouse.id).
+                - name: name
+                  type: keyword
+                  description: Warehouse that ran the query (snow.warehouse.name).
+        - name: telemetry
+          type: group
+          fields:
+            - name: sdk
+              type: group
+              fields:
+                - name: language
+                  type: keyword
+                  description: Handler or SDK language (telemetry.sdk.language). Snowflake uses java, scala, python, javascript, and sql.
+    - name: record
+      type: group
+      description: RECORD object. Fixed keys for the row RECORD_TYPE.
+      fields:
+        - name: aggregation_temporality
+          type: keyword
+          description: Openflow metric aggregation temporality. cumulative for strictly increasing metrics.
+        - name: dropped_attributes_count
+          type: long
+          description: Span attributes dropped after the recorded maximum was reached.
+        - name: is_monotonic
+          type: boolean
+          description: Openflow flag for cumulative metrics that only increase.
+        - name: kind
+          type: keyword
+          description: Span kind. SPAN_KIND_SERVER for SQL traces, otherwise SPAN_KIND_INTERNAL.
+        - name: metric
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: Metric name, such as process.memory.usage or an Openflow metric name.
+            - name: type
+              type: keyword
+              description: OpenTelemetry metric type label when present in handler telemetry.
+            - name: unit
+              type: keyword
+              description: Metric unit, such as bytes, nanosecond, or millisecond.
+        - name: metric_type
+          type: keyword
+          description: OpenTelemetry metric point type, such as sum or gauge.
+        - name: name
+          type: keyword
+          description: Span name, span event name, or EVENT name such as iceberg_auto_refresh_snapshot_lifecycle.
+        - name: parent_span_id
+          type: keyword
+          description: Span id of the caller when this span was invoked from another procedure or UDF.
+        - name: severity_number
+          type: long
+          description: Numeric severity for Snowflake Native App lifecycle events.
+        - name: snow
+          type: group
+          fields:
+            - name: process
+              type: group
+              fields:
+                - name: memory
+                  type: group
+                  fields:
+                    - name: usage
+                      type: group
+                      fields:
+                        - name: max
+                          type: keyword
+                          description: Maximum memory in bytes used during the span (snow.process.memory.usage.max).
+        - name: status
+          type: group
+          description: Span status. Snowflake stores this as an object even though some column docs call it a string.
+          fields:
+            - name: code
+              type: keyword
+              description: Span status code, such as STATUS_CODE_UNSET, STATUS_CODE_OK, or STATUS_CODE_ERROR.
+        - name: value_type
+          type: keyword
+          description: Data type of the metric VALUE, such as DOUBLE or INT.
+    - name: record_attributes
+      type: group
+      description: >
+        RECORD_ATTRIBUTES. Documented keys for logs, spans, Iceberg events, and Openflow telemetry. Handler-defined keys remain on this object when present.
+
+      fields:
+        - name: architecture
+          type: keyword
+          description: Operating system architecture from Openflow CPU metrics.
+        - name: authorization
+          type: group
+          fields:
+            - name: issue
+              type: keyword
+              description: Authorization used to access an Openflow remote process group (authorization.issue).
+        - name: code
+          type: group
+          fields:
+            - name: namespace
+              type: keyword
+              description: Namespace of the code that generated a log message (code.namespace).
+        - name: component
+          type: keyword
+          description: Immutable class name of an Openflow processor.
+        - name: counter
+          type: keyword
+          description: User- or system-generated name of an Openflow processor counter.
+        - name: db
+          type: group
+          fields:
+            - name: query
+              type: group
+              fields:
+                - name: executable
+                  type: group
+                  fields:
+                    - name: names
+                      type: keyword
+                      description: Executables run under the traced query (db.query.executable.names).
+                - name: table
+                  type: group
+                  fields:
+                    - name: names
+                      type: keyword
+                      description: Tables read or modified by the traced query (db.query.table.names).
+                - name: text
+                  type: wildcard
+                  description: SQL text of the traced statement (db.query.text). Present only when SQL statement tracing is enabled.
+                - name: view
+                  type: group
+                  fields:
+                    - name: names
+                      type: keyword
+                      description: Views accessed by the traced query (db.query.view.names).
+        - name: destination
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Openflow component receiving FlowFiles from a connection (destination.id).
+            - name: name
+              type: keyword
+              description: Name of the Openflow component receiving FlowFiles (destination.name).
+        - name: exception
+          type: group
+          fields:
+            - name: escaped
+              type: boolean
+              description: True when the log entry is an unhandled exception (exception.escaped).
+            - name: message
+              type: wildcard
+              description: Unhandled exception message (exception.message).
+            - name: stacktrace
+              type: wildcard
+              description: Unhandled exception stack trace (exception.stacktrace).
+            - name: type
+              type: keyword
+              description: Exception class name (exception.type).
+        - name: execution
+          type: group
+          fields:
+            - name: node
+              type: keyword
+              description: Openflow processor execution node, ALL or PRIMARY (execution.node).
+        - name: group
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Openflow process group that contains the component (group.id).
+        - name: id
+          type: keyword
+          description: Openflow component identifier.
+        - name: log
+          type: group
+          fields:
+            - name: file
+              type: group
+              fields:
+                - name: path
+                  type: keyword
+                  description: Openflow log file path (log.file.path).
+            - name: iostream
+              type: keyword
+              description: Openflow log stream, such as stdout (log.iostream).
+        - name: logtag
+          type: keyword
+          description: Openflow log tag, such as F.
+        - name: name
+          type: keyword
+          description: User-visible Openflow component name.
+        - name: snow
+          type: group
+          fields:
+            - name: input
+              type: group
+              fields:
+                - name: rows
+                  type: long
+                  description: Input rows processed by a UDF span (snow.input.rows).
+            - name: output
+              type: group
+              fields:
+                - name: rows
+                  type: long
+                  description: Output rows emitted by a UDF span (snow.output.rows).
+            - name: snapshot
+              type: group
+              fields:
+                - name: id
+                  type: long
+                  description: Iceberg snapshot id being refreshed (snow.snapshot.id). Null when automated refresh fails.
+        - name: source
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Openflow component sending FlowFiles to a connection (source.id).
+            - name: name
+              type: keyword
+              description: Name of the Openflow component sending FlowFiles (source.name).
+        - name: storage
+          type: group
+          fields:
+            - name: type
+              type: keyword
+              description: Openflow storage repository type (storage.type). One of flowfile, content, or provenance.
+        - name: target
+          type: group
+          fields:
+            - name: uri
+              type: keyword
+              description: URI of an Openflow remote process group (target.uri).
+        - name: thread
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: Thread id that created the log event (thread.id).
+            - name: name
+              type: keyword
+              description: Thread name that created the log event (thread.name).
+        - name: tree
+          type: group
+          fields:
+            - name: level
+              type: long
+              description: Openflow process group depth relative to the flow root (tree.level).
+        - name: type
+          type: keyword
+          description: >
+            Openflow component type, such as connection, port-input, port-output, process-group, processor, counter, or remote-process-group.
+
+        - name: version
+          type: keyword
+          description: Operating system version from Openflow CPU metrics.
+    - name: event_value
+      type: group
+      description: Structured VALUE object for EVENT rows, including Iceberg automated refresh and Native App lifecycle.
+      fields:
+        - name: action
+          type: keyword
+          description: Privilege action during Native App install or upgrade. GRANTED or REVOKED.
+        - name: error_message
+          type: wildcard
+          description: Iceberg automated refresh error message when snapshot_state is errored.
+        - name: health_status
+          type: keyword
+          description: Native App health status. OK, PAUSED, or FAILED.
+        - name: metadata_file_location
+          type: keyword
+          description: Iceberg metadata file location. Null when automated refresh failed.
+        - name: privileges
+          type: keyword
+          description: Privileges granted or revoked during Native App install or upgrade.
+        - name: snapshot_state
+          type: keyword
+          description: Iceberg automated refresh state. started, completed, or errored.
+        - name: target_upgrade_patch
+          type: keyword
+          description: Patch level of the Native App version that is running or pending upgrade.
+        - name: target_upgrade_version
+          type: keyword
+          description: Native App version that is running or pending upgrade.
+        - name: upgrade_attempt
+          type: keyword
+          description: Whether an upgrade was attempted for the Native App.
+        - name: upgrade_failure_reason
+          type: wildcard
+          description: Reason a Native App upgrade failed, when present.
+        - name: upgrade_state
+          type: keyword
+          description: Current state of a Native App background install or upgrade.
+    - name: runtime_log
+      type: group
+      description: Openflow runtime log JSON parsed from the VALUE column.
+      fields:
+        - name: logger_name
+          type: keyword
+          description: Fully qualified Openflow logger class name.
+        - name: mdc
+          type: group
+          description: Openflow mapped diagnostic context.
+          fields:
+            - name: process_group_id
+              type: keyword
+              description: Process group identifier.
+            - name: process_group_id_path
+              type: keyword
+              description: Hierarchical path of process group identifiers.
+            - name: process_group_name
+              type: keyword
+              description: Process group name.
+            - name: process_group_name_path
+              type: keyword
+              description: Hierarchical path of process group names.
+            - name: registered_flow_identifier
+              type: keyword
+              description: Registered flow identifier.
+            - name: registered_flow_version
+              type: keyword
+              description: Registered flow version.
+        - name: nanoseconds
+          type: long
+          description: Nanosecond component of the Openflow log timestamp.
+        - name: thread_name
+          type: keyword
+          description: Thread that emitted the Openflow log.
+        - name: throwable
+          type: group
+          description: Exception attached to an Openflow log, when present.
+          fields:
+            - name: class_name
+              type: keyword
+              description: Exception class name.
+            - name: message
+              type: wildcard
+              description: Exception message.
+        - name: timestamp
+          type: long
+          description: Openflow log time as epoch milliseconds.
