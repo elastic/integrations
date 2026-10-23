@@ -8,10 +8,11 @@ cannot see.
 
 `elastic-package check` (package-spec >= 3.8.0) reports the mappings and index sort
 settings Elasticsearch rejects in `logsdb_columnar`. This script covers the rest, per logs
-data stream: scope and effective readiness, `doc_values: false` and `store: true` (also
-rejected, not reported by the validator yet), `_source` consumers, objects inside `nested`
-fields, the index sort proposal, the detection rules and dashboards to
-benchmark, and the lookup candidates for `index: true`. See references/columnar.md.
+data stream: scope and effective readiness, `doc_values: false` and `store: true` before
+readiness is declared (the validator reports them once it is), `_source` consumers,
+objects inside `nested` fields, the index sort proposal, the detection rules and
+dashboards to benchmark, and the lookup candidates for `index: true`. See
+references/columnar.md.
 
     python3 <skill-dir>/scripts/audit.py packages/<pkg> [--format markdown|json|both]
 """
@@ -230,7 +231,8 @@ def nested_object_children(entries):
 
 def rejected_mappings(entries, itpl, ds_dir, pkg_dir):
     """`doc_values: false` and `store: true`, which Elasticsearch rejects in columnar modes:
-    Fleet installs the mappings as they are, and package-spec does not report them yet."""
+    Fleet installs the mappings as they are. package-spec reports them only once the stream
+    declares readiness, and only on the built package for ECS imports and `import_mappings`."""
     out = []
     for fdef, flat, in_mf, rel, _ in entries:
         # A multi-field is not rebuilt into `_source`, so it may keep `doc_values: false`.

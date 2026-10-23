@@ -27,8 +27,9 @@ Last reviewed 2026-10-23; update these facts here when they change.
 - **Fleet** (elastic/kibana#292285, Kibana 9.7, unmerged) offers one toggle per
   integration and only sets the index mode: the package's mappings go in as they are.
 - **`doc_values: false` and `store: true`** are rejected by Elasticsearch in columnar
-  modes (2026-10-15 snapshot), and the validator does not report them yet: the script
-  does. That includes the `event.original` about 50 packages import from ECS.
+  modes (9.6 and 9.7 snapshots, 2026-10-22), including the `event.original` about 50
+  packages import from ECS. Elasticsearch plans to accept `doc_values: false`; until then
+  an integration with either stays blocked.
 - **Objects inside `nested` fields** are split off their element on columnar (9.5.4, 9.6
   snapshots up to 2026-10-01): an Elasticsearch bug, re-check on newer builds.
 - **Open team decisions** the skill follows a default for: OTel and input packages out
@@ -111,12 +112,14 @@ says how:
   `enabled: false`, an invalid `index.sort`, `logsdb_columnar` on a non-logs stream or
   together with `index_mode`. Elasticsearch rejects them in columnar modes: fix the
   mapping, or mark the stream `unsupported`;
+- errors on `doc_values: false` and `store: true`, also from ECS imports and the dynamic
+  templates `import_mappings` adds (only the built package has those, so `check` reports
+  them and `lint` does not): the integration stays blocked, so don't declare readiness;
 - warning: a custom `index.sort` without `@timestamp` (`SVR00016`).
 
 Never exclude a columnar finding in `validation.yml`, except `SVR00016` with a comment
 when the dataset is never queried by time range. A stream you cannot fix now gets
-`unsupported`. The validator does not report `doc_values: false` and `store: true` yet:
-step 3 does.
+`unsupported`.
 
 ### 3. Run the script for what the validator cannot see
 
@@ -133,8 +136,9 @@ Flags: `--no-dashboards`, `--rules DIR` (default
 stream it reports a status (`READY`, `NEEDS_REVIEW`, `BLOCKED`, `OUT_OF_SCOPE`; `READY`
 only means this script found nothing), the effective `logsdb_columnar`, and findings:
 
-- `doc_values_false`, `store_true`, `import_mappings`: mappings Elasticsearch rejects in
-  columnar modes (`BLOCKED`). Fix them;
+- `doc_values_false`, `store_true`, `import_mappings`: the validator's `doc_values` and
+  `store` errors, found before readiness is declared (`BLOCKED`): the integration stays
+  blocked;
 - `source_consumer_latest_transform`, `source_consumer_transform`,
   `source_consumer_kibana`, `source_consumer_detection_rule`: readers of the rebuilt
   `_source`. Nothing fails; they silently get the flat shape. Review each one;

@@ -43,8 +43,8 @@
     "query": "Can anthropic go columnar?",
     "files": ["packages/anthropic"],
     "expected_behavior": [
-      "Reports event.original in data_stream/audit/fields/ecs.yml as a blocker: its ECS definition brings doc_values: false, which Elasticsearch rejects in columnar modes and the validator does not report",
-      "Fixes it by adding doc_values: true to the event.original entry (external: ecs), not by marking the stream logsdb_columnar: unsupported"
+      "Reports event.original in data_stream/audit/fields/ecs.yml as a blocker: its ECS definition brings doc_values: false, which Elasticsearch rejects in columnar modes",
+      "Says anthropic stays blocked until Elasticsearch accepts doc_values: false and does not declare readiness; mentions doc_values: true on the external: ecs entry only as a mapping change that needs its own LogsDB justification"
     ]
   },
   {
@@ -53,7 +53,7 @@
     "files": ["packages/cef"],
     "expected_behavior": [
       "Names import_mappings: true in _dev/build/build.yml: its ECS dynamic templates set doc_values: false on event.original and *.x509.public_key_exponent, so columnar rejects every event with one of those fields",
-      "Recommends removing import_mappings, since Fleet adds ecs@mappings to every integration template, and diffing the LogsDB mappings before and after"
+      "Says cef stays blocked and does not declare readiness; mentions removing import_mappings only as a change that needs its own justification, since it also changes the LogsDB mappings"
     ]
   }
 ]
