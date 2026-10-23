@@ -460,31 +460,26 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-30T20:19:48.000Z",
     "agent": {
-        "ephemeral_id": "ee38898f-1f90-4152-a306-603536867b63",
-        "id": "e4771775-5139-4af4-8500-924d0c851faa",
-        "name": "elastic-agent-91354",
+        "ephemeral_id": "40e5b225-8c53-496f-ac39-3ee8e0e16f10",
+        "id": "ffc3bcbe-fb3e-4c8e-83e7-100b3ef15b22",
+        "name": "elastic-agent-88721",
         "type": "filebeat",
         "version": "8.17.1"
     },
-    "aws": {
-        "s3": {
-            "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-audit-bucket-76026",
-                "name": "elastic-package-audit-bucket-76026"
-            },
-            "object": {
-                "key": "test-audit.log"
-            }
-        }
-    },
-    "cloud": {
-        "region": "us-east-1"
-    },
     "cloudflare_logpush": {
         "audit": {
+            "action": {
+                "result": "success",
+                "type": "token_create"
+            },
             "actor": {
+                "email": "user@example.com",
+                "id": "enl3j9du8rnx2swwd9l32qots7l54t9s",
+                "ip": "81.2.69.142",
                 "type": "user"
             },
+            "id": "73fd39ed-5aab-4a2a-b93c-c9a4abf0c425",
+            "interface": "UI",
             "metadata": {
                 "token_name": "test",
                 "token_tag": "b7261c49a793a82678d12285f0bc1401"
@@ -503,19 +498,20 @@ An example event for `audit` looks as following:
             "resource": {
                 "id": "enl3j9du8rnx2swwd9l32qots7l54t9s",
                 "type": "account"
-            }
+            },
+            "timestamp": "2021-11-30T20:19:48.000Z"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.audit",
-        "namespace": "88193",
+        "namespace": "43350",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "e4771775-5139-4af4-8500-924d0c851faa",
+        "id": "ffc3bcbe-fb3e-4c8e-83e7-100b3ef15b22",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -527,7 +523,7 @@ An example event for `audit` looks as following:
         ],
         "dataset": "cloudflare_logpush.audit",
         "id": "73fd39ed-5aab-4a2a-b93c-c9a4abf0c425",
-        "ingested": "2026-10-13T12:31:22Z",
+        "ingested": "2026-10-23T12:24:43Z",
         "kind": "event",
         "original": "{\"ActionResult\":true,\"ActionType\":\"token_create\",\"ActorEmail\":\"user@example.com\",\"ActorID\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ActorIP\":\"81.2.69.142\",\"ActorType\":\"user\",\"ID\":\"73fd39ed-5aab-4a2a-b93c-c9a4abf0c425\",\"Interface\":\"UI\",\"Metadata\":{\"token_name\":\"test\",\"token_tag\":\"b7261c49a793a82678d12285f0bc1401\"},\"NewValue\":{\"key1\":\"value1\",\"key2\":\"value2\"},\"OldValue\":{\"key3\":\"value4\",\"key4\":\"value4\"},\"OwnerID\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ResourceID\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ResourceType\":\"account\",\"When\":\"2021-11-30T20:19:48Z\"}",
         "outcome": "success",
@@ -537,13 +533,7 @@ An example event for `audit` looks as following:
         ]
     },
     "input": {
-        "type": "aws-s3"
-    },
-    "log": {
-        "file": {
-            "path": "https://elastic-package-audit-bucket-76026.s3.us-east-1.amazonaws.com/test-audit.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "related": {
         "ip": [
@@ -558,8 +548,8 @@ An example event for `audit` looks as following:
         "ip": "81.2.69.142"
     },
     "tags": [
-        "collect_sqs_logs",
         "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-audit"
     ],
@@ -599,7 +589,7 @@ An example event for `audit` looks as following:
 | cloudflare_logpush.audit.old_value | Contains the old value for the audited item. | flattened |
 | cloudflare_logpush.audit.owner.id | The identifier of the user that was acting or was acted on behalf of. | keyword |
 | cloudflare_logpush.audit.raw | Raw data. | flattened |
-| cloudflare_logpush.audit.ray.id |  | keyword |
+| cloudflare_logpush.audit.ray.id | The Cloudflare Ray ID of the API request that produced the audit event. | keyword |
 | cloudflare_logpush.audit.resource.id | Unique identifier of the resource within Cloudflare system. | keyword |
 | cloudflare_logpush.audit.resource.product | Resource product. | keyword |
 | cloudflare_logpush.audit.resource.request | Resource request. | flattened |
@@ -609,7 +599,7 @@ An example event for `audit` looks as following:
 | cloudflare_logpush.audit.resource.value | Resource value. | flattened |
 | cloudflare_logpush.audit.timestamp | When the change happened. | date |
 | cloudflare_logpush.audit.zone.id | The Cloudflare zone ID. | keyword |
-| cloudflare_logpush.audit.zone.name |  | keyword |
+| cloudflare_logpush.audit.zone.name | The Cloudflare zone name. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
