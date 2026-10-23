@@ -335,4 +335,4 @@ Local validation checks package structure and generated assets. Installation, pe
 - [ECS threat match fields](https://www.elastic.co/docs/reference/ecs/ecs-threat)
 - [Vega dashboard filters](https://www.elastic.co/docs/explore-analyze/visualize/custom-visualizations-with-vega)
 
-The FortiGate `date` and `time` fields populate `@timestamp`; when `tz` is present, its offset is applied. If the log has no timezone, the timestamp is interpreted as UTC. The original date, time, and `eventtime` remain available under `fortigate.*`, and `event.ingested` records receipt time.
+The FortiGate `date` and `time` fields populate `@timestamp`; when `tz` is present, its offset is applied. Repeated `tz` fields use the first valid offset, and forms such as `UTC-5:00` are normalized to `-0500`. If the log has no timezone, the timestamp is interpreted as UTC. The original date, time, and `eventtime` remain available under `fortigate.*`, and `event.ingested` records receipt time.
