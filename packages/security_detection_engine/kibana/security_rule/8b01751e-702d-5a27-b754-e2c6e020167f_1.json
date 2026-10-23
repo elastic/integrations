@@ -1,0 +1,93 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects `curl` or `wget` from the ESXi shell. These tools download a file or contact a remote URL from the hypervisor. A successful transfer can place a package or script on the host, often under `/tmp`, where a later command can execute it against the datastore.",
+        "false_positives": [
+            "Administrators use `wget` to download a patch, VIB, or support script during maintenance. Confirm the URL and whether the same session continues into file execution or virtual machine shutdown."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-vsphere.log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "message",
+                "event.original",
+                "host.hostname",
+                "log.file.path"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "ESXi Curl or Wget Activity",
+        "note": "## Triage and analysis\n\n### Investigating ESXi Curl or Wget Activity\n\ncurl and wget download a file or check a URL from the ESXi shell. The shell log records the command even when the binary is missing or the host has no route to the destination.\n\n#### Possible investigation steps\n\n- Read the URL and output path in message.\n- Check the same session for a file under /tmp, chmod, or execution of the downloaded file.\n- Confirm the URL with the virtualization owner.\n\n### False positive analysis\n\nA documented download of a vendor package is commonly benign. A download of an unknown file into /tmp, followed by chmod, deserves review.\n\n### Response and remediation\n\n- If the download was not approved, remove the file and end the shell session.\n- Preserve shell.log and review commands issued after the download.\n",
+        "query": "data_stream.dataset: \"vsphere.log\" and event.module: \"vsphere\" and message: (\"curl\" or \"wget\")\n",
+        "references": [
+            "https://lolesxi-project.github.io/LOLESXi/#",
+            "https://blogs.vmware.com/security/2022/10/esxi-targeting-ransomware-tactics-and-techniques-part-2.html",
+            "https://detect.fyi/vmware-esxi-logging-detection-opportunities-4fb56411ec21"
+        ],
+        "related_integrations": [
+            {
+                "package": "vsphere",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "8b01751e-702d-5a27-b754-e2c6e020167f",
+        "setup": "## Setup\n\nThis rule requires ESXi host logs collected by the Elastic vSphere integration: https://www.elastic.co/docs/reference/integrations/vsphere\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: VMware vSphere",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Resources: Investigation Guide",
+            "Rule Type: Custom Query (KQL)",
+            "Platform: VMware ESXi",
+            "Threat: Ransomware"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "8b01751e-702d-5a27-b754-e2c6e020167f_1",
+    "type": "security-rule"
+}

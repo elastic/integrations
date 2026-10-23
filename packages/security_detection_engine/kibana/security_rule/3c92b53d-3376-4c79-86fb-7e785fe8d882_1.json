@@ -1,0 +1,160 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a Linux process running from a potentially suspicious location that resolves an account-specific AWS IoT Core data endpoint and then connects over TCP/443 or TCP/8883. Adversaries can use an attacker-controlled AWS IoT Core MQTT broker to relay commands, results, and files without a direct connection from the compromised host to the operator's backend server.",
+        "false_positives": [
+            "IoT development, device testing, telemetry agents, installers, and administrative scripts can legitimately run from temporary or hidden paths and connect to AWS IoT Core. Confirm the executable, parent process, source asset role, and complete AWS IoT endpoint before creating an exception. Scope exceptions to an approved executable and endpoint pair rather than excluding AWS IoT or a writable directory globally."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.network-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.name",
+                "process.name",
+                "process.executable",
+                "process.entity_id",
+                "process.command_line",
+                "process.parent.name",
+                "dns.question.name",
+                "dns.resolved_ip",
+                "destination.ip",
+                "destination.port",
+                "network.direction",
+                "network.transport"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Linux Process Connection to AWS IoT Core MQTT",
+        "note": "## Triage and analysis\n\n### Investigating Suspicious Linux Process Connection to AWS IoT Core MQTT\n\nAWS IoT Core supports direct MQTT over TLS with X.509 client certificates on TCP/8883 and on TCP/443. AWS IoT data\nendpoints are account- and region-specific. ATS endpoints normally follow\n`<account-specific-prefix>-ats.iot.<region>.amazonaws.com`, while legacy endpoints omit `-ats`. China regions can use\n`<account-specific-prefix>.ats.iot.<region>.amazonaws.com.cn`. An attacker can provision a broker in an account they\ncontrol, place matching client credentials and an agent on a compromised host, and use the broker as a rendezvous point\nfor command and control.\n\nThis rule requires the same Linux process to successfully resolve an AWS IoT data endpoint and then attempt an outbound\nTCP connection to one of the resolved IP addresses on port 443 or 8883 within one minute. The process must run from a\ntemporary, hidden, boot, log, or per-user runtime path. The DNS-to-connection sequence identifies the service without\ndecrypting TLS. It does not reveal MQTT client IDs, topics, commands, results, or file content.\n\n### Possible investigation steps\n\n- Review `dns.question.name` and preserve the complete account-specific endpoint. Determine whether the endpoint, AWS\n  region, source asset, and executable are approved for AWS IoT use.\n- Inspect the process executable, hash, ancestry, user, working directory, creation time, and prevalence. Determine how\n  the binary or script reached the host and whether it has persistence.\n- Review nearby file events for X.509 certificates and private keys introduced before the connection. Preserve\n  certificate metadata and fingerprints, but protect private-key contents as sensitive evidence.\n- Examine network events from the same `process.entity_id`. TCP/8883 conventionally carries MQTT over TLS. On TCP/443,\n  correlate with packet telemetry and verify that the client offered ALPN `x-amzn-mqtt-ca`.\n- Check for files created or read by the process, child process activity, process discovery, and changes in inbound or\n  outbound byte volume. These can support file transfer or command execution but do not establish transferred content.\n- Search for the same endpoint, process hash, executable path, certificate fingerprint, user, and parent chain across\n  the environment.\n- The sequence confirms that the destination IP appeared in the DNS answer, but shared or rotating AWS infrastructure\n  can still create an incidental correlation. Validate packet-level SNI and application protocol where available.\n\n### False positive analysis\n\n- Approved IoT clients, SDK tests, deployment scripts, and device-management tooling can use AWS IoT Core. Verify the\n  business owner and expected source-to-endpoint relationship.\n- Temporary installers and development builds can execute from writable paths. Validate the executable hash, parent,\n  user, timing, and whether the endpoint belongs to an approved AWS account.\n- Red-team and lab use can be indistinguishable from malicious use. Confirm authorized testing before suppressing the\n  activity.\n\n### Response and remediation\n\n- If unauthorized, isolate the host, preserve the process and credential material, terminate the process and active\n  socket, and block the exact endpoint at DNS and egress controls.\n- Do not block all Amazon addresses or `amazonaws.com`. Destination IPs can rotate and Amazon infrastructure is shared.\n- Search backward for the initial code-execution and credential-placement mechanism and review persistence.\n- Report confirmed attacker-controlled AWS IoT infrastructure to AWS with the complete endpoint and supporting\n  timestamps.\n",
+        "query": "sequence by host.id, process.entity_id with maxspan=1m\n  [network where host.os.type == \"linux\" and\n    event.action == \"lookup_result\" and\n    dns.question.name regex~ (\n      \"\"\"[^.]+-ats\\.iot\\.[^.]+\\.amazonaws\\.com\"\"\",\n      \"\"\"[^.]+\\.iot\\.[^.]+\\.amazonaws\\.com\"\"\",\n      \"\"\"[^.]+-ats\\.iot\\.[^.]+\\.amazonaws\\.com\\.cn\"\"\",\n      \"\"\"[^.]+\\.ats\\.iot\\.[^.]+\\.amazonaws\\.com\\.cn\"\"\",\n      \"\"\"[^.]+\\.iot\\.[^.]+\\.amazonaws\\.com\\.cn\"\"\"\n    ) and\n    (\n      process.executable like (\n        \"/boot/*\",\n        \"/dev/shm/*\",\n        \"/tmp/*\",\n        \"/var/tmp/*\",\n        \"/var/log/*\",\n        \"/var/run/user/*\",\n        \"/run/user/*\",\n        \"/home/*/.*\",\n        \"/root/.*\"\n      ) or\n      process.name like \".*\"\n    )] by dns.resolved_ip\n  [network where host.os.type == \"linux\" and\n    event.action == \"connection_attempted\" and\n    network.direction in (\"egress\", \"outbound\") and\n    network.transport == \"tcp\" and\n    destination.port in (443, 8883) and\n    not (\n      destination.ip == null or\n      destination.ip == \"0.0.0.0\" or\n      cidrmatch(\n        destination.ip,\n        \"10.0.0.0/8\",\n        \"100.64.0.0/10\",\n        \"127.0.0.0/8\",\n        \"169.254.0.0/16\",\n        \"172.16.0.0/12\",\n        \"192.0.0.0/24\",\n        \"192.0.0.0/29\",\n        \"192.0.0.8/32\",\n        \"192.0.0.9/32\",\n        \"192.0.0.10/32\",\n        \"192.0.0.170/32\",\n        \"192.0.0.171/32\",\n        \"192.0.2.0/24\",\n        \"192.31.196.0/24\",\n        \"192.52.193.0/24\",\n        \"192.88.99.0/24\",\n        \"192.168.0.0/16\",\n        \"192.175.48.0/24\",\n        \"198.18.0.0/15\",\n        \"198.51.100.0/24\",\n        \"203.0.113.0/24\",\n        \"224.0.0.0/4\",\n        \"240.0.0.0/4\",\n        \"::1\",\n        \"FC00::/7\",\n        \"FE80::/10\",\n        \"FF00::/8\"\n      )\n    )] by destination.ip\n",
+        "references": [
+            "https://hackerhermanos.com/posts/aws-iot-mqtt-red-teamer/",
+            "https://docs.aws.amazon.com/iot/latest/developerguide/protocols.html",
+            "https://docs.aws.amazon.com/iot/latest/developerguide/x509-client-certs.html",
+            "https://github.com/MythicC2Profiles/mqtt"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "destination.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "dns.question.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "dns.resolved_ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.direction",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.transport",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "3c92b53d-3376-4c79-86fb-7e785fe8d882",
+        "setup": "## Setup\n\nThis rule requires Elastic Defend network events from Linux hosts.\n\nLinux DNS events from Elastic Defend require Elastic Stack 9.3.0 or later. The integration policy must collect DNS\nlookup and network connection events with `process.entity_id`, `process.executable`, `dns.question.name`,\n`dns.resolved_ip`, `destination.ip`, `destination.port`, and `network.transport`.\n\nTLS decryption is not required. The rule uses process-attributed DNS and connection metadata. Packet-level TLS telemetry\nis recommended during investigation to confirm SNI and, for direct MQTT with X.509 authentication on TCP/443, the\nclient-offered ALPN value `x-amzn-mqtt-ca`.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "Domain: Network",
+            "Domain: OT/IoT",
+            "OS: Linux",
+            "Platform: Linux",
+            "Platform: AWS",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Data Source: Elastic Defend",
+            "Service: AWS IoT",
+            "Rule Type: Event Correlation (EQL)",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1071",
+                        "name": "Application Layer Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1071/",
+                        "subtechnique": [
+                            {
+                                "id": "T1071.005",
+                                "name": "Publish/Subscribe Protocols",
+                                "reference": "https://attack.mitre.org/techniques/T1071/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "3c92b53d-3376-4c79-86fb-7e785fe8d882_1",
+    "type": "security-rule"
+}

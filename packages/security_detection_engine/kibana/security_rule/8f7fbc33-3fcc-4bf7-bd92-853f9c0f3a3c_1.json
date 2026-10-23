@@ -1,0 +1,133 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the first ChatGPT Enterprise Codex plugin install for a given plugin display name and plugin name pair within the rule history window. Newly installed Codex plugins expand the tools and data sources available inside agent sessions; adversaries can enable unexpected connectors to persist access to mail, chat, or file systems after initial compromise.",
+        "false_positives": [
+            "Approved rollout of Codex plugins such as Slack, Gmail, or Google Drive for engineering or support teams. Confirm the plugin against your workspace connector inventory and change process before escalating."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-14d",
+        "index": [
+            "logs-openai_chatgpt_enterprise.codex_log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "organization.id",
+                "user.id",
+                "user.email",
+                "openai_chatgpt_enterprise.codex_log.event_details.plugin_display_name",
+                "openai_chatgpt_enterprise.codex_log.event_details.plugin_name",
+                "openai_chatgpt_enterprise.codex_log.client_id"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Unusual Codex Plugin Installed",
+        "new_terms_fields": [
+            "openai_chatgpt_enterprise.codex_log.event_details.plugin_display_name",
+            "openai_chatgpt_enterprise.codex_log.event_details.plugin_name"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Unusual Codex Plugin Installed\n\nA Codex plugin was installed for the first time for this plugin pair within the rule history window. Plugins can add\nconnectors that pull mail, chat, or file content into Codex sessions.\n\nEscalate when the plugin is not on the approved inventory, the installing user is unexpected, or nearby activity shows\nsensitive search bursts, MCP tool abuse, or access-token creation. Close as a false positive for approved connector\nrollouts.\n\n#### Possible investigation steps\n\n- Record `plugin_display_name`, `plugin_name`, and the installing user (`user.email` / `user.id`).\n- Confirm whether the plugin is approved in your ChatGPT Enterprise or Codex workspace inventory.\n- Review nearby Codex and app-log activity for the same user for MCP calls, Drive or Slack query bursts, or credential\n  exposure.\n- Search for the same plugin installed by other users to distinguish org-wide rollout from a single anomalous install.\n\n### False positive analysis\n\n- Planned enablement of common plugins (Slack, Gmail, Google Drive) during onboarding or team pilots.\n\n### Response and remediation\n\n- Remove unauthorized plugins, revoke related OAuth links, and review data accessed after the install.\n- If sensitive data may have been retrieved, follow your data-incident process for the session window.\n",
+        "query": "data_stream.dataset: \"openai_chatgpt_enterprise.codex_log\" and\n    event.action: \"plugin_installed\" and\n    organization.id: * and\n    user.email: * and\n    openai_chatgpt_enterprise.codex_log.event_details.plugin_display_name: * and\n    openai_chatgpt_enterprise.codex_log.event_details.plugin_name: *\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": "^0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "openai_chatgpt_enterprise.codex_log.event_details.plugin_display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "openai_chatgpt_enterprise.codex_log.event_details.plugin_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "organization.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "8f7fbc33-3fcc-4bf7-bd92-853f9c0f3a3c",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect Codex compliance logs into Elasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Use Case: UEBA",
+            "Resources: Investigation Guide",
+            "Rule Type: New Terms",
+            "Tactic: Persistence",
+            "Tactic: Collection",
+            "Mitre Atlas: AML.T0053",
+            "Mitre Atlas: AML.T0085"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1176",
+                        "name": "Software Extensions",
+                        "reference": "https://attack.mitre.org/techniques/T1176/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1213",
+                        "name": "Data from Information Repositories",
+                        "reference": "https://attack.mitre.org/techniques/T1213/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "8f7fbc33-3fcc-4bf7-bd92-853f9c0f3a3c_1",
+    "type": "security-rule"
+}

@@ -1,0 +1,105 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects shell commands that collect ESXi host details or the local account list, including `uname -a`, system version, hostname, and `esxcli system account list`. The output identifies the build and the accounts that can log in. Listing accounts shows which identities exist before one of them is changed or used.",
+        "false_positives": [
+            "Administrators run these commands during inventory, troubleshooting, and support. Review whether the same session continues into virtual machine shutdown, snapshot removal, or a datastore search."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-vsphere.log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "message",
+                "event.original",
+                "host.hostname",
+                "log.file.path"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "ESXi System and Account Enumeration",
+        "note": "## Triage and analysis\n\n### Investigating ESXi System and Account Enumeration\n\nThese commands collect the OS build, product version, hostname, or the local account list. Account listing is the higher-interest command. Version and hostname checks are common on their own.\n\n#### Possible investigation steps\n\n- Read message to see which command ran.\n- Check the same session for vm process list, vm process kill, chmod, or a search under /vmfs/volumes.\n- For esxcli system account list, compare the listed accounts with the known set for that host.\n\n### False positive analysis\n\nA single version or hostname check during maintenance is commonly benign. Several of these commands in one session, especially account listing followed by VM shutdown, deserves review.\n\n### Response and remediation\n\n- If the same session kills virtual machines or writes a file under /tmp, isolate the host.\n- Otherwise record the account and source for hunting on other hosts.\n",
+        "query": "data_stream.dataset: \"vsphere.log\" and event.module: \"vsphere\" and \nmessage: (\n  \"uname -a\" or\n  \"esxcli system version get\" or\n  \"esxcli system hostname get\" or\n  \"esxcli system account list\"\n)\n",
+        "references": [
+            "https://lolesxi-project.github.io/LOLESXi/#",
+            "https://blogs.vmware.com/security/2022/10/esxi-targeting-ransomware-tactics-and-techniques-part-2.html",
+            "https://detect.fyi/vmware-esxi-logging-detection-opportunities-4fb56411ec21"
+        ],
+        "related_integrations": [
+            {
+                "package": "vsphere",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "5173b00b-9546-5925-862a-a93e43472b29",
+        "setup": "## Setup\n\nThis rule requires ESXi host logs collected by the Elastic vSphere integration: https://www.elastic.co/docs/reference/integrations/vsphere\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: VMware vSphere",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide",
+            "Rule Type: Custom Query (KQL)",
+            "Platform: VMware ESXi",
+            "Threat: Ransomware"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1082",
+                        "name": "System Information Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1082/"
+                    },
+                    {
+                        "id": "T1087",
+                        "name": "Account Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1087/",
+                        "subtechnique": [
+                            {
+                                "id": "T1087.001",
+                                "name": "Local Account",
+                                "reference": "https://attack.mitre.org/techniques/T1087/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "5173b00b-9546-5925-862a-a93e43472b29_1",
+    "type": "security-rule"
+}

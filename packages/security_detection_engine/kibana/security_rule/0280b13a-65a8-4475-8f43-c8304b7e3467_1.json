@@ -1,0 +1,86 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects ChatGPT Enterprise Codex events that create an access token. Codex access tokens enable automated CLI or environment access and can be abused for persistence or lateral automation after account compromise. Treat tokens with a missing `expires_at` as higher priority during triage.",
+        "false_positives": [
+            "Developers create Codex tokens for CI runners and local environments."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.id",
+                "user.email",
+                "openai_chatgpt_enterprise.codex_log.event_details.access_token_name",
+                "openai_chatgpt_enterprise.codex_log.event_details.access_token_id",
+                "openai_chatgpt_enterprise.codex_log.client_id"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Codex Access Token Created",
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Codex Access Token Created\n\nA Codex access token was created. These tokens enable automated CLI or environment access and can be abused for persistence or automation after account compromise.\n\nEscalate when the token owner or purpose is unclear, the creator is unexpected, or tool and MCP activity follows immediately. Close as a false positive for documented CI or local development token creation.\n\n#### Possible investigation steps\n\n- Identify the creator (`user.email` / `user.id`) and token-related fields on the alert.\n- Confirm the intended automation use and whether a ticket or runbook covers the token.\n- Review subsequent Codex tool calls, MCP activity, or security-scan changes from the same user or client.\n- Inventory other active Codex tokens for the same user.\n\n### False positive analysis\n\n- Developers create Codex tokens for CI runners and local development environments as part of normal workflows.\n\n### Response and remediation\n\n- Revoke unauthorized tokens and review subsequent Codex tool and MCP activity.\n- Rotate related credentials if the token may have been exposed.\n",
+        "query": "from logs-openai_chatgpt_enterprise.codex_log-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"openai_chatgpt_enterprise.codex_log\" and\n    event.action == \"access_token_created\"\n| keep\n    _id, _version, _index, @timestamp, event.action, user.id, user.email,\n    openai_chatgpt_enterprise.codex_log.client_id,\n    openai_chatgpt_enterprise.codex_log.event_details.access_token_id,\n    openai_chatgpt_enterprise.codex_log.event_details.access_token_name,\n    openai_chatgpt_enterprise.codex_log.event_details.created_by_user_id,\n    openai_chatgpt_enterprise.codex_log.event_details.expires_at,\n    data_stream.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": "^0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "0280b13a-65a8-4475-8f43-c8304b7e3467",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect compliance logs into Elasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Persistence",
+            "Mitre Atlas: AML.T0083"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "0280b13a-65a8-4475-8f43-c8304b7e3467_1",
+    "type": "security-rule"
+}

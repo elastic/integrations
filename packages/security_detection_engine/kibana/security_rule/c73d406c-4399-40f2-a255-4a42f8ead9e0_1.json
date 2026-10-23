@@ -1,0 +1,86 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects ChatGPT Enterprise custom-agent publish events (`agent_published`). Publishing an agent with connectors, skills, or store visibility can establish durable automation and broaden data access beyond the original user.",
+        "false_positives": [
+            "Platform teams publish approved custom agents during workspace rollouts."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.id",
+                "gen_ai.agent.id",
+                "openai_chatgpt_enterprise.custom_agents_log.event_details.agent_fields.store_visible",
+                "openai_chatgpt_enterprise.custom_agents_log.event_details.publish_type"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Custom Agent Published",
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Custom Agent Published\n\nA custom agent was published. Published agents with connectors, skills, and store visibility can establish durable automation and broaden data access.\n\nEscalate when visibility is broader than expected, connectors are sensitive, or the publisher is not authorized to release agents. Close as a false positive for approved platform rollouts.\n\n#### Possible investigation steps\n\n- Identify the actor and agent identifiers on the alert.\n- Review connectors, skills, store visibility, and any release notes or description fields.\n- Confirm whether publication matches an approved change request.\n- Look for related trigger creation or OAuth link events from the same actor.\n\n### False positive analysis\n\n- Platform teams publish approved custom agents during controlled workspace rollouts.\n\n### Response and remediation\n\n- Unpublish or delete unauthorized agents and revoke connected OAuth links.\n- Review recent agent runs if the agent may already have executed.\n",
+        "query": "from logs-openai_chatgpt_enterprise.custom_agents_log-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"openai_chatgpt_enterprise.custom_agents_log\" and\n    event.action == \"agent_published\"\n| keep\n    _id, _version, _index, @timestamp, event.action, user.id, user.email,\n    gen_ai.agent.id,\n    openai_chatgpt_enterprise.custom_agents_log.client_id,\n    openai_chatgpt_enterprise.custom_agents_log.event_details.publish_type,\n    openai_chatgpt_enterprise.custom_agents_log.event_details.release_name,\n    openai_chatgpt_enterprise.custom_agents_log.event_details.agent_fields.store_visible,\n    openai_chatgpt_enterprise.custom_agents_log.event_details.agent_fields.workspace_capability,\n    data_stream.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": "^0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "c73d406c-4399-40f2-a255-4a42f8ead9e0",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect compliance logs into Elasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Persistence",
+            "Mitre Atlas: AML.T0081"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1176",
+                        "name": "Software Extensions",
+                        "reference": "https://attack.mitre.org/techniques/T1176/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "c73d406c-4399-40f2-a255-4a42f8ead9e0_1",
+    "type": "security-rule"
+}

@@ -1,0 +1,88 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a shell search under `/vmfs/volumes` for virtual disk and snapshot files (`vmdk`, `vmsn`, `vmsd`). Those files are the guest disks and their on-host recovery points. Listing them builds the set of files a later process can encrypt or delete.",
+        "false_positives": [
+            "Capacity reports, backup troubleshooting, and support scripts list `vmdk` files on a datastore. Review the account and whether the search was followed by process kills or snapshot removal."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-vsphere.log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "message",
+                "event.original",
+                "host.hostname",
+                "log.file.path"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "ESXi Virtual Disk Files Enumerated",
+        "note": "## Triage and analysis\n\n### Investigating ESXi Virtual Disk Files Enumerated\n\nThe datastore path and the vmdk family of extensions are how ESXi ransomware chooses what to encrypt. The search itself does not change files.\n\n#### Possible investigation steps\n\n- Read the exact find arguments in message, including any -name filter.\n- Correlate with later vm process kill, power.off, or snapshot.removeall from the same session.\n- If the command stands alone during a known support window, it is often benign.\n\n### False positive analysis\n\nSupport bundles and storage reports list virtual disks. Escalation is for a search followed by VM shutdown or snapshot deletion.\n\n### Response and remediation\n\n- If the same session starts killing VMs or deleting snapshots, isolate the host.\n- Otherwise record the account and command for hunting across other ESXi hosts.\n",
+        "query": "data_stream.dataset:vsphere.log and message:(\"/vmfs/volumes\" and find and (vmdk or vmsd or vmsn))\n",
+        "references": [
+            "https://lolesxi-project.github.io/LOLESXi/#",
+            "https://blogs.vmware.com/security/2022/10/esxi-targeting-ransomware-tactics-and-techniques-part-2.html",
+            "https://detect.fyi/vmware-esxi-logging-detection-opportunities-4fb56411ec21"
+        ],
+        "related_integrations": [
+            {
+                "package": "vsphere",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "60f469cf-9adb-59c1-814d-39b78bc702ad",
+        "setup": "## Setup\n\nThis rule requires ESXi host logs collected by the Elastic vSphere integration: https://www.elastic.co/docs/reference/integrations/vsphere\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: VMware vSphere",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide",
+            "Rule Type: Custom Query (KQL)",
+            "Platform: VMware ESXi",
+            "Threat: Ransomware"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1083",
+                        "name": "File and Directory Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1083/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "60f469cf-9adb-59c1-814d-39b78bc702ad_1",
+    "type": "security-rule"
+}

@@ -1,0 +1,95 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects ESXi audit record transmission being turned off, locally or to a remote collector. Audit records are the host's own trail of administrative changes. Disabling them means later changes to accounts, the firewall, and SSH are not recorded there.",
+        "false_positives": [
+            "Audit settings change during collector maintenance. Confirm that transmission was enabled again and that the change matches a ticket."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-vsphere.log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "message",
+                "event.original",
+                "host.hostname",
+                "log.file.path",
+                "host.ip"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "ESXi Audit Records Disabled",
+        "note": "## Triage and analysis\n\n### Investigating ESXi Audit Records Disabled\n\nESXi audit records capture administrative changes. Turning off local or remote transmission hides the commands that follow, including firewall, account, and VM actions.\n\n#### Possible investigation steps\n\n- Read message to see whether local or remote transmission was disabled.\n- Check for a later auditrecords command that sets --enabled true.\n- Correlate with syslog reset, firewall changes, and VM shutdowns.\n\n### False positive analysis\n\nA collector outage can include a temporary disable. The setting should be turned back on in the same change.\n\n### Response and remediation\n\n- Re-enable local and remote audit transmission.\n- Review shell and hostd logs for commands issued while auditing was off.\n- If the disable was unauthorized, isolate the host and rotate credentials.\n",
+        "query": "data_stream.dataset:vsphere.log and message:(auditrecords and (\"--enabled false\" or \"--enabled=false\" or \"local disable\" or \"remote disable\"))\n",
+        "references": [
+            "https://lolesxi-project.github.io/LOLESXi/#",
+            "https://blogs.vmware.com/security/2022/10/esxi-targeting-ransomware-tactics-and-techniques-part-2.html",
+            "https://detect.fyi/vmware-esxi-logging-detection-opportunities-4fb56411ec21"
+        ],
+        "related_integrations": [
+            {
+                "package": "vsphere",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "224d0328-36d4-553f-804a-5ff765aa85e5",
+        "setup": "## Setup\n\nThis rule requires ESXi host logs collected by the Elastic vSphere integration: https://www.elastic.co/docs/reference/integrations/vsphere\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: VMware vSphere",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide",
+            "Rule Type: Custom Query (KQL)",
+            "Platform: VMware ESXi"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "224d0328-36d4-553f-804a-5ff765aa85e5_1",
+    "type": "security-rule"
+}
