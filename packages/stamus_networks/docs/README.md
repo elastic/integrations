@@ -115,8 +115,13 @@ network, then check **Discover** in Kibana for documents in the
 The `host_insights` data stream performs a full inventory read on every poll cycle, since the
 Stamus REST API does not expose an incremental ("updated since") filter for the host insights
 endpoint. For large host inventories, tune the **Interval** setting conservatively to balance
-freshness against API and ingest load; the ingest pipeline deduplicates by host IP via a stable
-document `_id`, so repeated reads do not accumulate duplicate documents over time.
+freshness against API and ingest load. The ingest pipeline derives each document's `_id` from a
+fingerprint of the full host snapshot (not the host IP alone), since Elasticsearch data streams
+only support appending new documents, not updating existing ones. An unchanged re-poll of a host
+collapses onto the same `_id` and adds no new document, but any change to the host's profile
+(a new hostname, service, or even just an advanced `last_seen` timestamp) produces a new document.
+For an actively-changing inventory, expect roughly one new document per host per poll cycle in the
+steady state, not a fixed one-document-per-host total — size retention accordingly.
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
