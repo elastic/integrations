@@ -1,0 +1,151 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 1
+            },
+            "group_by": [
+                "azure.ai_foundry.caller_ip_address",
+                "azure.ai_foundry.properties.model_deployment_name",
+                "azure.ai_foundry.operation_name"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects one caller IP sending a high number of requests and consuming a high number of tokens against the same Foundry deployment and operation during the rule lookback. That rate fits a script or a stolen key burning quota. The rule uses RequestResponse logs and does not need the prompt text. Tune the request count and token sum in the query.",
+        "false_positives": [
+            "Approved batch jobs, evaluation harnesses, and user-facing apps that fan out from one NAT. Exclude that caller IP prefix and deployment, or raise the thresholds to sit above the normal 9-minute peak.",
+            "Foundry masks the last octet of caller_ip_address, so unrelated users behind the same network prefix are counted together."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "azure.ai_foundry.caller_ip_address",
+                "azure.ai_foundry.properties.model_deployment_name",
+                "azure.ai_foundry.operation_name",
+                "azure.resource.name",
+                "azure.resource.group",
+                "Esql.event_count",
+                "Esql.azure_ai_foundry_properties_prompt_tokens_sum",
+                "Esql.azure_ai_foundry_properties_completion_tokens_sum",
+                "Esql.total_tokens_sum",
+                "Esql.azure_ai_foundry_result_signature_failed_count",
+                "Esql.timestamp_first_seen",
+                "Esql.timestamp_last_seen"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Microsoft Foundry High Request and Token Volume",
+        "note": "## Triage and analysis\n\n### Investigating Microsoft Foundry High Request and Token Volume\n\nOne masked caller IP exceeded the request count and combined token sum in the query, on one deployment and\noperation during the rule lookback. RequestResponse logs carry the counts and the caller prefix. They do not carry\nthe prompt.\n\nOn a quiet deployment, manual testing stays under this line. A scripted burst, such as repeated short chats from one\nclient, crosses it.\n\n#### Possible investigation steps\n\n- Compare request count with prompt and completion token sums. Many calls and modest tokens fit a loop. Few calls and\n  a large token sum is a different pattern and will not match this rule.\n- Check result_signature for 429s. Rate-limit errors alongside the burst fit quota exhaustion.\n- See whether this caller prefix and deployment are new. A first-seen prefix with this volume fits a stolen key.\n- If API Management GatewayLogs exist for the same time, pivot on the caller prefix for full source.ip and prompts.\n  This rule does not require those logs.\n\n### False positive analysis\n\n- Known automation and a shared egress prefix. Raise the thresholds or exclude that caller prefix and deployment.\n- The zero-token duplicate RequestResponse event is already excluded by the caller IP and prompt_tokens filters.\n\n### Response and remediation\n\n- Rotate the Foundry key if the caller prefix is not an approved application.\n- Apply a lower rate limit or quota on the deployment until the caller is identified.\n- Review token spend for that deployment over the surrounding hour.\n",
+        "query": "from logs-azure_ai_foundry.logs-*\n| where\n    data_stream.dataset == \"azure_ai_foundry.logs\" and\n    azure.ai_foundry.category == \"RequestResponse\" and\n    azure.ai_foundry.caller_ip_address is not null and\n    azure.ai_foundry.properties.prompt_tokens > 0\n| stats\n    Esql.event_count = count(*),\n    Esql.azure_ai_foundry_properties_prompt_tokens_sum = sum(azure.ai_foundry.properties.prompt_tokens),\n    Esql.azure_ai_foundry_properties_completion_tokens_sum = sum(azure.ai_foundry.properties.completion_tokens),\n    Esql.azure_ai_foundry_result_signature_failed_count = count(*) where azure.ai_foundry.result_signature != \"200\",\n    Esql.timestamp_first_seen = min(@timestamp),\n    Esql.timestamp_last_seen = max(@timestamp)\n  by\n    azure.ai_foundry.caller_ip_address,\n    azure.ai_foundry.properties.model_deployment_name,\n    azure.ai_foundry.operation_name,\n    azure.resource.name,\n    azure.resource.group\n| eval Esql.total_tokens_sum = Esql.azure_ai_foundry_properties_prompt_tokens_sum + Esql.azure_ai_foundry_properties_completion_tokens_sum\n| where Esql.event_count >= 100 and Esql.total_tokens_sum >= 10000\n| keep\n    azure.ai_foundry.caller_ip_address,\n    azure.ai_foundry.properties.model_deployment_name,\n    azure.ai_foundry.operation_name,\n    azure.resource.name,\n    azure.resource.group,\n    Esql.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/azure_ai_foundry",
+            "https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/monitor-openai"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure_ai_foundry",
+                "version": "^0.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.caller_ip_address",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.operation_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.completion_tokens",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.model_deployment_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.properties.prompt_tokens",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "azure.ai_foundry.result_signature",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.resource.group",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.resource.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "bb2bc0e2-bc6f-4f6b-a6cc-7deb99fe2588",
+        "setup": "## Setup\n\nThis rule needs the Microsoft Foundry integration collecting the RequestResponse diagnostic category. Prompt and\nresponse bodies are not required.\n\n- Send the RequestResponse category from the Foundry resource to the Event Hub the integration reads.\n- Keep calls that have caller_ip_address and prompt_tokens greater than zero. Foundry also emits a zero-token twin of\n  each call, and counting those doubles the volume.\n\nhttps://www.elastic.co/docs/reference/integrations/azure_ai_foundry\n",
+        "severity": "medium",
+        "tags": [
+            "Data Source: Microsoft Foundry",
+            "Use Case: Threat Detection",
+            "Mitre Atlas: AML.T0029",
+            "Resources: Investigation Guide",
+            "Tactic: Impact",
+            "Rule Type: ES|QL",
+            "Platform: Azure",
+            "Domain: Cloud",
+            "Domain: GenAI",
+            "Service: Azure AI Foundry"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1496",
+                        "name": "Resource Hijacking",
+                        "reference": "https://attack.mitre.org/techniques/T1496/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "bb2bc0e2-bc6f-4f6b-a6cc-7deb99fe2588_1",
+    "type": "security-rule"
+}

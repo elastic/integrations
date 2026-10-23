@@ -1,0 +1,100 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects chmod making a file executable on an ESXi host, including `+x` and numeric modes such as `755` and `777`. The host will not run a file until the execute bit is set. Making a file under `/tmp` executable is the step that lets a later command launch it against the datastore.",
+        "false_positives": [
+            "Administrators mark a maintenance or support script executable during a change window. Confirm the path, the account, and whether the same session then executes a file from `/tmp` or enumerates virtual disks."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-vsphere.log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "message",
+                "event.original",
+                "host.hostname",
+                "log.file.path"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "ESXi File Made Executable with chmod",
+        "note": "## Triage and analysis\n\n### Investigating ESXi File Made Executable with chmod\n\nchmod +x, chmod a+x, and numeric modes such as 777 and 755 add the execute bit. On ESXi this is the step that turns a file dropped in /tmp into a runnable payload. Modes that do not grant execute, such as 644, are not included.\n\n#### Possible investigation steps\n\n- Read the full command in message, including the target path.\n- Check the same session for a copy into /tmp, a following execution of that path, VM process kills, or a search for vmdk files.\n- Confirm with the virtualization owner whether that file was part of an approved script.\n\n### False positive analysis\n\nSupport workflows sometimes chmod a known script. A chmod of an unknown file under /tmp, followed by execution, is the staging pattern.\n\n### Response and remediation\n\n- If the file was not approved, remove it and end the shell session.\n- Preserve shell.log and review commands issued after the chmod.\n- If the path was executed, isolate the host and rotate credentials used in that session.\n",
+        "query": "data_stream.dataset:vsphere.log and event.module:vsphere and message:(chmod and (\"+x\" or 0511 or 0555 or 0700 or 0711 or 0750 or 0755 or 0775 or 0777 or 111 or 1777 or 4755 or 511 or 555 or 700 or 711 or 750 or 755 or 775 or 777 or \"a+x\" or \"g+x\" or \"o+x\" or \"u+x\"))\n",
+        "references": [
+            "https://lolesxi-project.github.io/LOLESXi/#",
+            "https://blogs.vmware.com/security/2022/10/esxi-targeting-ransomware-tactics-and-techniques-part-2.html",
+            "https://detect.fyi/vmware-esxi-logging-detection-opportunities-4fb56411ec21"
+        ],
+        "related_integrations": [
+            {
+                "package": "vsphere",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "c4e0a1d2-7b58-5f31-9c44-6a8e2f0d91ab",
+        "setup": "## Setup\n\nThis rule requires ESXi host logs collected by the Elastic vSphere integration: https://www.elastic.co/docs/reference/integrations/vsphere\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: VMware vSphere",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide",
+            "Rule Type: Custom Query (KQL)",
+            "Platform: VMware ESXi",
+            "Threat: Ransomware"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1222",
+                        "name": "File and Directory Permissions Modification",
+                        "reference": "https://attack.mitre.org/techniques/T1222/",
+                        "subtechnique": [
+                            {
+                                "id": "T1222.002",
+                                "name": "Linux and Mac File and Directory Permissions Modification",
+                                "reference": "https://attack.mitre.org/techniques/T1222/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "c4e0a1d2-7b58-5f31-9c44-6a8e2f0d91ab_1",
+    "type": "security-rule"
+}
