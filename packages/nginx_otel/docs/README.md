@@ -72,35 +72,4 @@ Both SLOs are grouped by `host.name`, allowing per-instance tracking.
 
 ## Metrics reference
 
-### NGINX metrics
-The [NGINX receiver]((https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/nginxreceiver/documentation.md)) collects performance metrics from the NGINX `stub_status` module. Key metrics include:
-
-
-| Metric Name | Description | Type | Attributes |
-|-------------|-------------|------|------------|
-| `nginx.requests` | Total number of client requests | Counter | - |
-| `nginx.connections_accepted` | Total number of accepted client connections | Counter | - |
-| `nginx.connections_handled` | Total number of handled connections | Counter | - |
-| `nginx.connections_current` | Current number of client connections by state | Gauge | `state`: `active`, `reading`, `writing`, `waiting` |
-
-#### Connection States
-
-- `active`: Currently active client connections
-- `reading`: Connections currently reading request headers
-- `writing`: Connections currently writing response to client  
-- `waiting`: Idle client connections waiting for a request
-
-These metrics provide insights into:
-- **Request volume and patterns** through request counts
-- **Connection health** via accepted, and handled connection statistics  
-- **Server performance** using active, reading, writing, and waiting connection states
-
-For a complete list of all available metrics and their detailed descriptions, refer to the [NGINX Receiver documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/nginxreceiver/documentation.md) in the upstream OpenTelemetry Collector repository.
-
-
-
-
-
-
-
-
+The dashboards use the `stub_status` metrics collected by the NGINX receiver. For the full list of metrics and their attributes, refer to the [NGINX receiver documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/nginxreceiver/documentation.md) in the upstream OpenTelemetry Collector repository.
