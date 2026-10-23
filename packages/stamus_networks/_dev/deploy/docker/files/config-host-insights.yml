@@ -41,7 +41,23 @@ rules:
   # hostname/services content to round 6 (only the top-level host_id.last_seen, which is
   # excluded from the comparable entirely, advances). Steady-state suppression test:
   # must NOT be emitted.
-  # req_num >=8 (all subsequent polls within the 1m test window): terminal empty
+  # req_num 8 (round 8 / eighth poll): THE INTERRUPTED-SCAN REGRESSION TEST (GitHub
+  # Copilot review finding on PR #22143). This page-1 response changes 198.51.100.10's
+  # content again (round 6/7's stored baseline "D" + a new tcp/22 service -- call it
+  # "E"), with `next` non-null so a page 2 is requested. Page 2 (see the page_number:2
+  # rule below, req_num 2 there) returns a non-retryable 4xx, halting this scan BEFORE
+  # its terminal page. The fix under test: cursor.host_states["198.51.100.10"] must
+  # already be durably updated to "E" the moment this page-1 response is processed --
+  # not deferred to a terminal page this scan never reaches.
+  # req_num 9 (round 9 / ninth poll): a full, uninterrupted scan where 198.51.100.10
+  # reverts to EXACTLY round 6/7's content ("E" -> "D" again). If round 8's "E" baseline
+  # update had been lost (the pre-fix bug -- staged only in a plain, non-cursor
+  # accumulator that never reached cursor.host_states because the scan was interrupted
+  # before its terminal page), this round would incorrectly compare against the stale
+  # "D" baseline and suppress this document as "unchanged" -- even though the most
+  # recently indexed document for this host (round 8's page 1) shows "E". Confirming
+  # this IS emitted proves cursor.host_states was correctly checkpointed mid-scan.
+  # req_num >=10 (all subsequent polls within the 1m test window): terminal empty
   # response -- stops hit_count from growing unboundedly across repeated full reads.
   - path: /rest/appliances/host_id/
     methods: ['GET']
@@ -73,11 +89,26 @@ rules:
           {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-alt.example.com", "first_seen": "2024-01-18T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000"}]}]}}]}
           {{ else if eq .req_num 7 }}
           {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-20T11:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-alt.example.com", "first_seen": "2024-01-18T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000"}]}]}}]}
+          {{ else if eq .req_num 8 }}
+          {"count": 1, "next": "http://{{ hostname }}:{{ env "PORT" }}/rest/appliances/host_id/?page_size=2&page_number=2", "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-21T09:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-alt.example.com", "first_seen": "2024-01-18T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000"}]}, {"proto": "tcp", "port": 22, "overflow": 0, "values": [{"app_proto": "ssh", "first_seen": "2024-01-21T08:30:00.000000+0000", "last_seen": "2024-01-21T09:00:00.000000+0000"}]}]}}]}
+          {{ else if eq .req_num 9 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-22T10:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-alt.example.com", "first_seen": "2024-01-18T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000"}]}]}}]}
           {{ else }}
           {"count": 0, "next": null, "previous": null, "results": []}
           {{ end }}
-  # --- page_number:2 (round 1 only -- every later round's page 1 response is already
-  # terminal, so no page 2 request is expected on round 2 or later) ---
+  # --- page_number:2 ---
+  # elastic/stream cycles through multiple `responses` list entries in order (one per
+  # request to this rule, by index -- status_code is NOT Go-template-able, only
+  # headers/body are, so distinct status codes per request require distinct list
+  # entries rather than a single templated body).
+  # Request 1 (round 1 only -- every subsequent round's page-1 response is already
+  # terminal, so no page-2 request is expected until round 8): 200, returns host
+  # 198.51.100.13, terminal (next: null).
+  # Request 2 (round 8's page 2 -- the interrupted-scan regression test): a
+  # non-retryable 4xx (404) so the scan halts BEFORE its terminal page. Round 8's page
+  # 1 (see the page_number:1 rule, req_num 8) has already published its event and, per
+  # the fix, already durably merged 198.51.100.10's new content into cursor.host_states
+  # -- this 4xx must not roll that back.
   - path: /rest/appliances/host_id/
     methods: ['GET']
     query_params:
@@ -95,6 +126,11 @@ rules:
             - 'application/json'
         body: |
           {"count": 1, "next": null, "previous": "http://{{ hostname }}:{{ env "PORT" }}/rest/appliances/host_id/?page_size=2&page_number=1", "results": [{"ip": "198.51.100.13", "host_id": {"first_seen": "2024-01-12T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-c.example.com", "first_seen": "2024-01-12T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "username": [], "roles": [], "services": []}}]}
+      - status_code: 404
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"detail": "not found"}'
   # --- Regression guard: catch-all for any other host_id request (e.g. missing/unmatched
   # query params, or a bug that keeps advancing page_number past where this poll's
   # reads should have reset to page 1). Returns an oversized batch so hit_count

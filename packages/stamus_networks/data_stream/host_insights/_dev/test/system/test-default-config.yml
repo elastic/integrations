@@ -37,6 +37,19 @@ assert:
   #   round 7 (req_num 7 page 1, terminal): 198.51.100.10 again, byte-identical to
   #     round 6 (only the excluded top-level host_id.last_seen advances) -> 0 docs
   #     (suppressed -- steady-state/unchanged test)
-  #   round >=8: terminal empty response -> 0 docs
-  #   total: 3 + 1 + 1 + 1 + 0 + 1 + 0 = 7
-  hit_count: 7
+  #   round 8 (req_num 8 page 1 + req_num 8 page 2 -- INTERRUPTED-SCAN REGRESSION TEST,
+  #     GitHub Copilot review finding on PR #22143): page 1 changes 198.51.100.10's
+  #     content vs. its round 6/7 baseline (adds a tcp/22 service) -> emitted and, per
+  #     the fix, immediately merged into the durable cursor.host_states (1 doc). Page 2
+  #     (same round, req_num 2 on the page_number:2 rule) returns a non-retryable 4xx,
+  #     halting the scan before its terminal page; the array-error form advances past
+  #     the error and is itself indexed (1 doc) -> round total 2 docs
+  #   round 9 (req_num 9 page 1, terminal): 198.51.100.10 reverts to EXACTLY round 6/7's
+  #     content (undoing round 8's tcp/22 addition). This is the core assertion of the
+  #     interrupted-scan fix: if round 8's change had NOT been durably checkpointed
+  #     (the pre-fix bug), this round would incorrectly compare against the stale
+  #     round-6/7 baseline and see no difference, suppressing a document that should be
+  #     emitted -> 1 doc
+  #   round >=10: terminal empty response -> 0 docs
+  #   total: 3 + 1 + 1 + 1 + 0 + 1 + 0 + 2 + 1 = 10
+  hit_count: 10
