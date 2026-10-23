@@ -1,0 +1,75 @@
+{
+  "id": "gcp_cloudsql_postgresql_otel-oldest-transaction-age-high-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL PostgreSQL OTel] Vacuum blocked by old transaction",
+        "description": "Alerts when the age of the oldest transaction not yet vacuumed stays at or above 100 million transactions for the whole 30-minute window, per holder type (running, prepared, replication_slot, replica). This is a leading indicator of bloat and transaction ID wraparound, and the holder type says what to end or drop. The unit is a transaction count, not seconds. PostgreSQL-only metric, so no engine marker is needed. Grouped by database_id and blocker type.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "postgresql"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "30m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_postgresql.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// PostgreSQL-only metric: no engine marker needed.\n// Age of the oldest transaction not yet vacuumed, in number of transactions (not seconds),\n// split by what holds it: running, prepared, replication_slot or replica.\n| STATS oldest_age = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/postgresql/vacuum/oldest_transaction_age`)),\n        latest_minute_age = MIN(MIN_OVER_TIME(`cloudsql.googleapis.com/database/postgresql/vacuum/oldest_transaction_age`))\n    BY database_id, attributes.oldest_transaction_type",
+        "breach": {
+          "segment": "// Keep the source attribute name (no RENAME): alert grouping uses this column,\n// and some rule-creation paths map grouping back to the source field.\nWHERE oldest_age IS NOT NULL\n// Use the window minimum so the alert needs the age to stay high for the whole\n// window (a long-lived blocker), not a single spike.\n// Alert threshold (transactions). 100 million is half of PostgreSQL's default\n// autovacuum_freeze_max_age (200M): vacuum cannot freeze rows older than this\n// transaction, so XID utilization will keep climbing until it is ended.\n// Tune to your write rate: lower for low-throughput instances.\n| WHERE latest_minute_age >= 100000000\n| RENAME latest_minute_age AS sustained_age\n| KEEP database_id, attributes.oldest_transaction_type, sustained_age, oldest_age\n| SORT sustained_age DESC\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id",
+          "attributes.oldest_transaction_type"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_postgresql_otel-oldest-transaction-age-high-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL PostgreSQL vacuum blocked by an old transaction\n\nSomething has held back the vacuum horizon for at least 100 million transactions. Vacuum cannot remove dead rows or freeze transaction IDs newer than it.\n\n### Triage by `attributes.oldest_transaction_type`\n- `running`: a long-running or `idle in transaction` session. Find it with `SELECT pid, usename, state, xact_start, backend_xmin FROM pg_stat_activity ORDER BY age(backend_xmin) DESC NULLS LAST;` and terminate it if safe.\n- `prepared`: an orphaned two-phase transaction in `pg_prepared_xacts`. Commit or roll it back.\n- `replication_slot`: an inactive or lagging logical/physical slot in `pg_replication_slots`. Drop it if unused. It also retains WAL and fills the disk.\n- `replica`: a read replica with `hot_standby_feedback` running long queries.\n\nThen check transaction ID utilization and disk utilization for the same instance.\n\n### Tuning\n- The threshold is in transactions, so its meaning depends on write rate. Lower it for low-throughput instances, where an hours-old transaction may only be a few million transactions old."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-oldest-transaction-age-high-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-86472830-c83c-4f8b-8753-5d275d1d9391"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-oldest-transaction-age-high-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-b8e67303-561a-4a0c-9acf-b35357a26541"
+          }
+        }
+      ]
+    }
+  }
+}
