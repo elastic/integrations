@@ -206,40 +206,58 @@ program: |-
               // content differs from the baseline -- a host whose content is
               // unchanged from cursor.host_states is skipped entirely this poll.
               //
-              // `pageData` consolidates this page's ip list, emitted-events
-              // list, and the seen-anywhere-this-scan lookup map into a single
-              // binding reused by both branches below.
-              {
-                "recordIps": records.map(r, r.ip),
-                "emitted": records.map(r,
-                  ((r.ip in ctx.baseline) ? (ctx.baseline[r.ip] != r.comparable) : true) ?
-                    [{"message": r.message}]
+              // `morePages` is hoisted above `pageData` (and referenced from
+              // both `pageData.seenMap`'s guard below and the branch selector
+              // further down) specifically so it is a multi-use `.as()`
+              // binding, not a single-use one -- `celfmt -s` inlines single-use
+              // `.as()` bindings back into every call site (see
+              // cel-code-style.md), which would duplicate this condition's
+              // evaluation; multi-use bindings are left alone.
+              (
+                // Primary signal: DRF-style `next` field, non-null means more
+                // pages. Fallback (if the real envelope omits `next`
+                // entirely): a full page suggests more data may follow; a
+                // short/empty page means stop.
+                size(records) != 0 && (
+                  body.?next.hasValue() ?
+                    (body.?next.orValue(null) != null)
                   :
-                    []
-                ).flatten(),
-                // Seen-anywhere-this-scan set as a MAP (ip -> true), built via
-                // zip() exactly once per page (not per baseline key) -- see
-                // the PERFORMANCE comment in the terminal-page branch below
-                // for why this must be a map, not a list, and why it must
-                // live here as a plain field (not a single-use `.as()`
-                // binding) so `celfmt -s` cannot inline it back into the
-                // per-key filter predicate below, which would silently
-                // reintroduce the quadratic behaviour this field exists to
-                // eliminate.
-                "seenMap": (ctx.seen + records.map(r, r.ip)).as(allSeen, allSeen.zip(allSeen.map(ip, true))),
-              }.as(pageData,
-                (
-                  // Primary signal: DRF-style `next` field, non-null means more
-                  // pages. Fallback (if the real envelope omits `next`
-                  // entirely): a full page suggests more data may follow; a
-                  // short/empty page means stop.
-                  size(records) != 0 && (
-                    body.?next.hasValue() ?
-                      (body.?next.orValue(null) != null)
+                    size(records) >= int(state.page_size)
+                )
+              ).as(morePages,
+                // `pageData` consolidates this page's ip list, emitted-events
+                // list, and (on a terminal page only) the seen-anywhere-this-
+                // scan lookup map into a single binding reused by both
+                // branches below.
+                {
+                  "recordIps": records.map(r, r.ip),
+                  "emitted": records.map(r,
+                    ((r.ip in ctx.baseline) ? (ctx.baseline[r.ip] != r.comparable) : true) ?
+                      [{"message": r.message}]
                     :
-                      size(records) >= int(state.page_size)
-                  )
-                ) ?
+                      []
+                  ).flatten(),
+                  // [Copilot review, PR #22143] Guarded by `morePages` rather
+                  // than built unconditionally: CEL's map-literal construction
+                  // evaluates every field regardless of which branch below
+                  // ends up using it, so without this guard the zip() below
+                  // would run on every NONTERMINAL page too, where it is never
+                  // read (only `pending_seen_ips` is used there). The `{}`
+                  // placeholder on a nonterminal page is never read either.
+                  // Keeping this as a plain field of `pageData` (itself
+                  // multi-use: `pageData.recordIps`/`pageData.emitted` are
+                  // each referenced in both branches) rather than its own
+                  // `.as()` binding is what keeps it immune to the same
+                  // single-use inlining `morePages` is hoisted to avoid above
+                  // -- see the PERFORMANCE comment in the terminal branch
+                  // below for why that inlining would reintroduce quadratic
+                  // behaviour here specifically.
+                  "seenMap": morePages ?
+                    {}
+                  :
+                    (ctx.seen + records.map(r, r.ip)).as(allSeen, allSeen.zip(allSeen.map(ip, true))),
+                }.as(pageData,
+                morePages ?
                   // More pages remain for this poll's full read -- merge THIS
                   // page's host states into the durable cursor right now (see
                   // the PER-PAGE DURABLE MERGE header note above), and extend
@@ -270,10 +288,12 @@ program: |-
                   // PERFORMANCE (GitHub Copilot review finding on PR #22143):
                   // `pageData.seenMap` -- "ips seen anywhere in this
                   // now-complete scan" -- is a MAP (ip -> true), built via
-                  // zip() exactly once per page. CEL's `in` operator is a
-                  // hash lookup against a map but a linear scan against a
-                  // list, so checking every baseline key against a map here
-                  // is O(1) per key instead of O(n) per key (the old
+                  // zip() exactly once per page, and (per the `morePages`
+                  // guard on its field above) only actually computed on the
+                  // terminal page that reaches this branch. CEL's `in`
+                  // operator is a hash lookup against a map but a linear scan
+                  // against a list, so checking every baseline key against a
+                  // map here is O(1) per key instead of O(n) per key (the old
                   // list-concatenation `ctx.seen + records.map(...)` was also
                   // rebuilt from scratch on every single predicate
                   // evaluation, compounding the cost). `keptKeys` -- the
@@ -303,6 +323,7 @@ program: |-
                       "want_more": false,
                     }
                   )
+              )
               )
             )
           )
