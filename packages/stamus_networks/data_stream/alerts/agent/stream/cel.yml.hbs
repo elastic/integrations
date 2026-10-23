@@ -17,6 +17,7 @@ state:
   api_token: {{api_token}}
   page_size: {{page_size}}
   initial_interval: {{initial_interval}}
+  collection_delay: {{collection_delay}}
 redact:
   fields:
     - api_token
@@ -48,13 +49,28 @@ program: |-
   // primarily by `next` (non-null), with fallback heuristics (empty/short page)
   // retained as a defensive fallback in case a different CNCS version/edition ever
   // omits `next`.
+  // [Copilot review, PR #22143] `to_date` is always this evaluation's `now`
+  // (minus the safety margin below), and a window's upper bound is never
+  // revisited once the cursor has moved past it -- only `from_date` carries
+  // forward (as the prior window's `to_date`) when a window completes. That
+  // means any alert whose own timestamp falls inside a window, but which does
+  // not become searchable via events_tail until after that window's `to_date`
+  // was already queried, is permanently skipped: no later poll will ever
+  // re-query that earlier, already-advanced-past window to pick it up. The
+  // `collection_delay` margin subtracted from `now` below exists so that, by
+  // the time a window's `to_date` is actually queried, every alert timestamped
+  // at or before it has had `collection_delay` worth of time to become
+  // searchable -- shifting the whole polling clock back rather than trying to
+  // detect/backfill misses after the fact.
   {
     "phase": state.?cursor.phase.orValue("alert"),
     "page": int(state.?cursor.page.orValue(1)),
     "from_date": state.?cursor.from_date.orValue(
       string(int(now - duration(state.initial_interval)) * 1000)
     ),
-    "to_date": state.?cursor.to_date.orValue(string(int(now) * 1000)),
+    "to_date": state.?cursor.to_date.orValue(
+      string(int(now - duration(state.collection_delay)) * 1000)
+    ),
   }.as(cur,
     state.with(
       // [Copilot review, PR #22143] do_request() itself can return a CEL error

@@ -25,6 +25,21 @@ streams:
         required: true
         show_user: true
         default: 24h
+      - name: collection_delay
+        type: text
+        title: "Collection delay"
+        description: |-
+          Safety margin subtracted from the upper bound (`to_date`) of every collection window,
+          to tolerate delay between an alert's own timestamp and the moment it becomes
+          searchable via the events_tail API. Without this margin, an alert that becomes
+          searchable even a moment after its window's upper bound has already been queried is
+          permanently skipped: the window boundary only ever advances forward, so a later poll
+          never re-queries an earlier window to catch it. Increase this if the target CNCS
+          instance has higher Suricata-to-searchable-index latency than the default assumes. Go
+          duration units only (h, m, s).
+        required: true
+        show_user: true
+        default: 1m
       - name: page_size
         type: integer
         title: "Page size"
