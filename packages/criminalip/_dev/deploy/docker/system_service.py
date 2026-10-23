@@ -47,6 +47,8 @@ class MockCriminalIP(BaseHTTPRequestHandler):
                 "reason": "Synthetic integration system-test indicator",
                 "first_seen": "2026-01-01 00:00:00",
                 "last_seen": "2026-01-01 01:00:00",
+            }, {
+                "ip": "198.51.100.20",
             }]}})
             return
 

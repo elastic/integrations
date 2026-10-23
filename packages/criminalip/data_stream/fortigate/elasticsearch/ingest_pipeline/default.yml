@@ -23,6 +23,7 @@ processors:
   - kv:
       tag: parse_fortigate_kv
       field: message
+      target_field: _temp.fortigate_fields
       field_split: ' (?=(?:[^"]*"[^"]*")*[^"]*$)'
       value_split: "="
       trim_key: '"'
@@ -40,14 +41,14 @@ processors:
   - set:
       tag: combine_fortigate_date_time_timezone
       field: _temp.fortigate_time
-      value: "{{date}} {{time}} {{tz}}"
-      if: 'ctx.date != null && ctx.time != null && ctx.tz != null && ctx.tz != ""'
+      value: "{{_temp.fortigate_fields.date}} {{_temp.fortigate_fields.time}} {{_temp.fortigate_fields.tz}}"
+      if: 'ctx._temp?.fortigate_fields?.date != null && ctx._temp.fortigate_fields.time != null && ctx._temp.fortigate_fields.tz != null && ctx._temp.fortigate_fields.tz != ""'
 
   - set:
       tag: combine_fortigate_date_time
       field: _temp.fortigate_time
-      value: "{{date}} {{time}}"
-      if: 'ctx.date != null && ctx.time != null && (ctx.tz == null || ctx.tz == "")'
+      value: "{{_temp.fortigate_fields.date}} {{_temp.fortigate_fields.time}}"
+      if: 'ctx._temp?.fortigate_fields?.date != null && ctx._temp.fortigate_fields.time != null && (ctx._temp.fortigate_fields.tz == null || ctx._temp.fortigate_fields.tz == "")'
 
   - date:
       tag: parse_fortigate_event_time
@@ -63,46 +64,46 @@ processors:
       field: tags
       value: synthetic
       allow_duplicates: false
-      if: 'ctx.synthetic != null && ctx.synthetic.toString().trim() == "true"'
+      if: '(ctx._temp?.fortigate_fields?.synthetic != null && ctx._temp.fortigate_fields.synthetic.toString().trim() == "true") || (ctx.synthetic != null && ctx.synthetic.toString().trim() == "true")'
 
   - rename:
       tag: rename_source_ip
-      field: srcip
+      field: _temp.fortigate_fields.srcip
       target_field: source.ip
       ignore_missing: true
       ignore_failure: true
 
   - rename:
       tag: rename_destination_ip
-      field: dstip
+      field: _temp.fortigate_fields.dstip
       target_field: destination.ip
       ignore_missing: true
       ignore_failure: true
 
   - rename:
       tag: rename_source_port
-      field: srcport
+      field: _temp.fortigate_fields.srcport
       target_field: source.port
       ignore_missing: true
       ignore_failure: true
 
   - rename:
       tag: rename_destination_port
-      field: dstport
+      field: _temp.fortigate_fields.dstport
       target_field: destination.port
       ignore_missing: true
       ignore_failure: true
 
   - rename:
       tag: rename_event_action
-      field: action
+      field: _temp.fortigate_fields.action
       target_field: event.action
       ignore_missing: true
       ignore_failure: true
 
   - rename:
       tag: rename_network_iana_number
-      field: proto
+      field: _temp.fortigate_fields.proto
       target_field: network.iana_number
       ignore_missing: true
       ignore_failure: true
@@ -139,35 +140,35 @@ processors:
 
   - rename:
       tag: rename_log_level
-      field: level
+      field: _temp.fortigate_fields.level
       target_field: log.level
       ignore_missing: true
       ignore_failure: true
 
   - rename:
       tag: rename_fortigate_log_id
-      field: logid
+      field: _temp.fortigate_fields.logid
       target_field: fortigate.logid
       ignore_missing: true
       ignore_failure: true
 
   - rename:
       tag: rename_fortigate_policy_id
-      field: policyid
+      field: _temp.fortigate_fields.policyid
       target_field: fortigate.policyid
       ignore_missing: true
       ignore_failure: true
 
   - rename:
       tag: rename_fortigate_subtype
-      field: subtype
+      field: _temp.fortigate_fields.subtype
       target_field: fortigate.subtype
       ignore_missing: true
       ignore_failure: true
 
   - rename:
       tag: rename_fortigate_type
-      field: type
+      field: _temp.fortigate_fields.type
       target_field: fortigate.type
       ignore_missing: true
       ignore_failure: true
@@ -179,31 +180,36 @@ processors:
 
   - rename:
       tag: rename_fortigate_date
-      field: date
+      field: _temp.fortigate_fields.date
       target_field: fortigate.date
       ignore_missing: true
       ignore_failure: true
 
   - rename:
       tag: rename_fortigate_time
-      field: time
+      field: _temp.fortigate_fields.time
       target_field: fortigate.time
       ignore_missing: true
       ignore_failure: true
 
   - rename:
       tag: rename_fortigate_eventtime
-      field: eventtime
+      field: _temp.fortigate_fields.eventtime
       target_field: fortigate.eventtime
       ignore_missing: true
       ignore_failure: true
 
   - rename:
       tag: rename_fortigate_timezone
-      field: tz
+      field: _temp.fortigate_fields.tz
       target_field: event.timezone
       ignore_missing: true
       ignore_failure: true
+
+  - remove:
+      tag: remove_temporary_fortigate_fields
+      field: _temp.fortigate_fields
+      ignore_missing: true
 
   - remove:
       tag: remove_temporary_fortigate_time
