@@ -1,5 +1,7 @@
 # Apache HTTP Server (OpenTelemetry)
 
+> **Deprecated:** use the Apache HTTP Server (OpenTelemetry) integration (`apache_otel`) instead. It has the same data stream and settings, with the receiver configuration built in.
+
 ## Overview
 This input package enables collection of telemetry data from Apache web servers through OpenTelemetry protocols using the [apachereceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/apachereceiver).
 

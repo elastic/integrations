@@ -1,5 +1,7 @@
 # Nginx OpenTelemetry Integration
 
+> **Deprecated:** use the Nginx (OpenTelemetry) integration (`nginx_otel`) instead. It has the same data streams and settings, with the receiver configuration built in.
+
 [Nginx](https://nginx.org/) is a high-performance web server, reverse proxy, and load balancer.
 
 ## Overview
@@ -32,7 +34,7 @@ The Elastic Agent (or EDOT Collector) must be able to reach the Nginx `stub_stat
 | **Log files** | Agent must have read access to the access and error log paths |
 | **Elastic Stack** | 9.4.0+ |
 | **Input packages** | `nginx_otel_input` and `filelog_otel` (installed automatically as dependencies) |
-| **Content package** | `nginx_otel` (installed automatically as a dependency) |
+| **Content package** | none, use `nginx_otel` instead |
 
 ## Setup
 

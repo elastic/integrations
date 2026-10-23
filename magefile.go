@@ -20,6 +20,7 @@ import (
 	"github.com/elastic/integrations/dev/citools"
 	"github.com/elastic/integrations/dev/codeowners"
 	"github.com/elastic/integrations/dev/coverage"
+	"github.com/elastic/integrations/dev/groups"
 	"github.com/elastic/integrations/dev/packagenames"
 )
 
@@ -42,6 +43,7 @@ func Check() error {
 	mg.Deps(goTest)
 	mg.Deps(codeowners.Check)
 	mg.Deps(packagenames.Check)
+	mg.Deps(groups.Check)
 	return nil
 }
 

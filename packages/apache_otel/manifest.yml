@@ -1,12 +1,11 @@
-format_version: 3.5.4
+format_version: 3.6.5
 name: apache_otel
-title: "Apache OpenTelemetry Assets"
-version: 0.6.1
+title: "Apache HTTP Server (OpenTelemetry)"
+version: 1.0.0
 source:
   license: "Elastic-2.0"
-description: "Apache HTTP Server Assets for OpenTelemetry Collector"
-type: content
-group: apache
+description: "Collect Apache HTTP Server status metrics using the OTel Collector apachereceiver, with a dashboard, alert rule templates and SLO templates."
+type: integration
 categories:
   - observability
   - web
@@ -16,6 +15,7 @@ conditions:
     version: "^9.4.0"
   elastic:
     subscription: "basic"
+# PROTOTYPE: discovery on an integration package (package-spec prototype, was content packages only).
 discovery:
   datasets:
     - name: apachereceiver.otel
@@ -29,6 +29,18 @@ icons:
     title: Apache Logo
     size: 32x32
     type: image/svg+xml
+# PROTOTYPE: receiver config is written inline in the metrics data stream
+# (agent/stream/stream.yml.hbs), taken from apache_input_otel. No `requires`.
+policy_templates:
+  - name: apache
+    title: Apache HTTP Server metrics
+    description: Collect Apache HTTP Server status metrics using the OpenTelemetry Collector
+    data_streams:
+      - metrics
+    inputs:
+      - type: otelcol
+        title: Apache HTTP Server Metrics
+        description: Scrape Apache HTTP Server mod_status metrics using the OTel Collector apachereceiver
 owner:
   github: elastic/obs-signals-integrations-team
   type: elastic
