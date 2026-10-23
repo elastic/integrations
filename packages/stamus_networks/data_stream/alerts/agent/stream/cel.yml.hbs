@@ -57,6 +57,21 @@ program: |-
     "to_date": state.?cursor.to_date.orValue(string(int(now) * 1000)),
   }.as(cur,
     state.with(
+      // [Copilot review, PR #22143] do_request() itself can return a CEL error
+      // (not an HTTP response) for a transport-level failure -- a timeout or
+      // connection failure that exhausts the HTTP client's own retries, a DNS
+      // failure, a TLS handshake failure -- i.e. anything that happens before a
+      // response is ever received. Accessing `resp.StatusCode` on such an error
+      // value would not hit any of the branches below; it would make the whole
+      // `state.with(...)` expression itself an error, bypassing every
+      // cursor-preserving branch this program relies on for retryable failures.
+      // is_error() applied directly to the (non-strict) `.as(resp, ...)`
+      // binding detects this before `resp.StatusCode` is ever accessed --
+      // deliberately NOT wrapped in try() first: try() immediately stringifies
+      // any error it's given, so is_error() on a try()'d value is always
+      // false (confirmed empirically with mito). Handled the same way as any
+      // other retryable condition: preserve "cursor": cur unmodified so the
+      // next evaluation retries the exact same phase/page/window.
       request(
         "GET",
         state.url.trim_right("/") + "/rest/rules/es/events_tail/?" + {
@@ -74,6 +89,15 @@ program: |-
           },
         }
       ).do_request().as(resp,
+        is_error(resp) ?
+          {
+            "code": "transport_error",
+            "id": "transport_error",
+            "message": "GET /rest/rules/es/events_tail/: transport-level failure (timeout, connection reset, DNS failure, TLS handshake failure, etc.) before an HTTP response was received: " + try(resp, "error").error,
+          }.as(err,
+            {"events": [{"error": err}], "cursor": cur, "want_more": false}
+          )
+        :
         (resp.StatusCode == 200) ?
           // flow_id is a large integer (>= 2^53 in production) that would lose
           // trailing-digit precision through CEL's float64 JSON layer if parsed
