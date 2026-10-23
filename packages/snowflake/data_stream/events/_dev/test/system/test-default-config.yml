@@ -1,0 +1,21 @@
+wait_for_data_timeout: 1m
+input: cel
+service: snowflake
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  role: ELASTIC_SNOWFLAKE_ROLE
+  warehouse: SECURITY_WH
+  token: test-snowflake-pat
+data_stream:
+  vars:
+    interval: 2s
+    initial_interval: 24h
+    lag_time: 15m
+    batch_size: 10000
+    event_table: SNOWFLAKE.TELEMETRY.EVENTS
+    http_client_timeout: 90s
+    preserve_original_event: true
+assert:
+  # Mock returns 5 event-table rows (round 1: LOG, SPAN, METRIC, SPAN_EVENT; round 2: LOG).
+  # Ingest drops non-LOG record types, so only 2 documents are indexed.
+  hit_count: 2

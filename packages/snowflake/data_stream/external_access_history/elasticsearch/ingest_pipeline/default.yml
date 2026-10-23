@@ -1,0 +1,427 @@
+---
+description: Parse Snowflake EXTERNAL_ACCESS_HISTORY events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+
+  # One QUERY_ID can access multiple IPs, so include IP in the document id.
+  - fingerprint:
+      tag: fingerprint_document_id
+      fields:
+        - json.QUERY_ID
+        - json.IP
+      target_field: _id
+      ignore_missing: true
+
+  - date:
+      field: json.END_TIME
+      target_field: '@timestamp'
+      tag: date_end_time
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS Z
+        - yyyy-MM-dd HH:mm:ss.SSS XX
+        - yyyy-MM-dd HH:mm:ss Z
+        - ISO8601
+      if: ctx.json?.END_TIME != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_date_end_time_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.end
+      tag: set_event_end
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+      if: ctx.json?.END_TIME != null && ctx['@timestamp'] != null
+  - date:
+      field: json.START_TIME
+      target_field: event.start
+      tag: date_start_time
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS Z
+        - yyyy-MM-dd HH:mm:ss.SSS XX
+        - yyyy-MM-dd HH:mm:ss Z
+        - ISO8601
+      if: ctx.json?.START_TIME != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_date_start_time_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+
+  - rename:
+      field: json.QUERY_ID
+      target_field: snowflake.external_access_history.query_id
+      ignore_missing: true
+      tag: rename_query_id
+  - set:
+      field: event.id
+      tag: set_event_id
+      copy_from: snowflake.external_access_history.query_id
+      ignore_empty_value: true
+      if: ctx.snowflake?.external_access_history?.query_id != null
+  - rename:
+      field: json.USER_NAME
+      target_field: user.name
+      ignore_missing: true
+      tag: rename_user_name
+  - rename:
+      field: json.STATUS
+      target_field: snowflake.external_access_history.status
+      ignore_missing: true
+      tag: rename_status
+  - rename:
+      field: json.HOSTNAMES
+      target_field: snowflake.external_access_history.hostnames
+      ignore_missing: true
+      tag: rename_hostnames
+  - trim:
+      field: snowflake.external_access_history.hostnames
+      ignore_missing: true
+      tag: trim_hostnames
+      if: ctx.snowflake?.external_access_history?.hostnames instanceof String
+  - set:
+      field: destination.domain
+      tag: set_destination_domain
+      copy_from: snowflake.external_access_history.hostnames
+      ignore_empty_value: true
+      if: >-
+        ctx.snowflake?.external_access_history?.hostnames instanceof String &&
+        ctx.snowflake.external_access_history.hostnames != '' &&
+        !ctx.snowflake.external_access_history.hostnames.contains(',') &&
+        !ctx.snowflake.external_access_history.hostnames.contains(' ')
+  - set:
+      field: host.name
+      tag: set_host_name
+      copy_from: snowflake.external_access_history.hostnames
+      ignore_empty_value: true
+      if: >-
+        ctx.snowflake?.external_access_history?.hostnames instanceof String &&
+        ctx.snowflake.external_access_history.hostnames != '' &&
+        !ctx.snowflake.external_access_history.hostnames.contains(',') &&
+        !ctx.snowflake.external_access_history.hostnames.contains(' ')
+  - rename:
+      field: json.SOURCE_CLOUD
+      target_field: snowflake.external_access_history.source_cloud
+      ignore_missing: true
+      tag: rename_source_cloud
+  - rename:
+      field: json.SOURCE_REGION
+      target_field: snowflake.external_access_history.source_region
+      ignore_missing: true
+      tag: rename_source_region
+  - rename:
+      field: json.TARGET_CLOUD
+      target_field: snowflake.external_access_history.target_cloud
+      ignore_missing: true
+      tag: rename_target_cloud
+  - rename:
+      field: json.TARGET_REGION
+      target_field: snowflake.external_access_history.target_region
+      ignore_missing: true
+      tag: rename_target_region
+  - set:
+      field: cloud.origin.provider
+      tag: set_cloud_origin_provider
+      copy_from: snowflake.external_access_history.source_cloud
+      ignore_empty_value: true
+      if: >-
+        ctx.snowflake?.external_access_history?.source_cloud instanceof String &&
+        !ctx.snowflake.external_access_history.source_cloud.equalsIgnoreCase('internet')
+  - set:
+      field: cloud.origin.region
+      tag: set_cloud_origin_region
+      copy_from: snowflake.external_access_history.source_region
+      ignore_empty_value: true
+      if: >-
+        ctx.snowflake?.external_access_history?.source_region instanceof String &&
+        !ctx.snowflake.external_access_history.source_region.equalsIgnoreCase('internet')
+  - set:
+      field: cloud.target.provider
+      tag: set_cloud_target_provider
+      copy_from: snowflake.external_access_history.target_cloud
+      ignore_empty_value: true
+      if: >-
+        ctx.snowflake?.external_access_history?.target_cloud instanceof String &&
+        !ctx.snowflake.external_access_history.target_cloud.equalsIgnoreCase('internet')
+  - set:
+      field: cloud.target.region
+      tag: set_cloud_target_region
+      copy_from: snowflake.external_access_history.target_region
+      ignore_empty_value: true
+      if: >-
+        ctx.snowflake?.external_access_history?.target_region instanceof String &&
+        !ctx.snowflake.external_access_history.target_region.equalsIgnoreCase('internet')
+
+  - convert:
+      field: json.SENT_BYTES
+      type: long
+      ignore_missing: true
+      tag: convert_sent_bytes
+      if: ctx.json?.SENT_BYTES != null && ctx.json.SENT_BYTES != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_convert_sent_bytes_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.SENT_BYTES
+      target_field: source.bytes
+      ignore_missing: true
+      tag: rename_sent_bytes
+  - convert:
+      field: json.RECEIVED_BYTES
+      type: long
+      ignore_missing: true
+      tag: convert_received_bytes
+      if: ctx.json?.RECEIVED_BYTES != null && ctx.json.RECEIVED_BYTES != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_convert_received_bytes_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.RECEIVED_BYTES
+      target_field: destination.bytes
+      ignore_missing: true
+      tag: rename_received_bytes
+
+  - convert:
+      field: json.IP
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+      tag: convert_destination_ip
+      if: ctx.json?.IP != null && ctx.json.IP != ''
+      on_failure:
+        - rename:
+            field: json.IP
+            target_field: snowflake.external_access_history.ip
+            ignore_missing: true
+            tag: rename_non_ip_to_custom
+
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+      tag: enrich_destination_geo
+      if: ctx.destination?.ip != null && ctx.destination.geo == null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_enrich_destination_geo_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      tag: enrich_destination_asn
+      if: ctx.destination?.ip != null && ctx.destination.as == null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_enrich_destination_asn_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+      tag: rename_destination_asn
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+      tag: rename_destination_as_org
+
+  - append:
+      field: related.ip
+      tag: append_destination_ip_to_related
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - append:
+      field: related.user
+      tag: append_user_name_to_related
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.hosts
+      tag: append_hostname_to_related
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category_network
+      value: network
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_connection
+      value: connection
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_allowed
+      value: allowed
+      allow_duplicates: false
+      if: ctx.snowflake?.external_access_history?.status != null && ctx.snowflake.external_access_history.status.equalsIgnoreCase('Success')
+  - append:
+      field: event.type
+      tag: append_event_type_denied
+      value: denied
+      allow_duplicates: false
+      if: ctx.snowflake?.external_access_history?.status != null && ctx.snowflake.external_access_history.status.equalsIgnoreCase('Deny')
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success
+      value: success
+      if: ctx.snowflake?.external_access_history?.status != null && ctx.snowflake.external_access_history.status.equalsIgnoreCase('Success')
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      value: failure
+      if: ctx.snowflake?.external_access_history?.status != null && ctx.snowflake.external_access_history.status.equalsIgnoreCase('Deny')
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Snowflake
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Snowflake
+
+  - remove:
+      field:
+        - snowflake.external_access_history.query_id
+        - snowflake.external_access_history.hostnames
+        - snowflake.external_access_history.source_cloud
+        - snowflake.external_access_history.source_region
+        - snowflake.external_access_history.target_cloud
+        - snowflake.external_access_history.target_region
+      ignore_missing: true
+      tag: remove_duplicate_vendor_fields_mapped_to_ecs
+
+  - remove:
+      field: json
+      ignore_missing: true
+      tag: remove_temp_fields
+
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+
+  - append:
+      field: tags
+      tag: append_preserve_on_collector_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_failure
+      value: preserve_original_event
+      allow_duplicates: false

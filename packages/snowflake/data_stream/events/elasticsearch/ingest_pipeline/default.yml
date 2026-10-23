@@ -1,0 +1,549 @@
+---
+description: Parse Snowflake event table events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+
+  # Event table rows have no unique id. Fingerprint the keyset used by the collector.
+  - fingerprint:
+      tag: fingerprint_document_id
+      fields:
+        - json.TIMESTAMP
+        - json.RECORD_TYPE
+        - json.VALUE
+      target_field: _id
+      ignore_missing: true
+
+  - json:
+      field: json.RESOURCE_ATTRIBUTES
+      tag: parse_resource_attributes
+      if: ctx.json?.RESOURCE_ATTRIBUTES instanceof String && ctx.json.RESOURCE_ATTRIBUTES != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_parse_resource_attributes_failure
+            value: '{{{_ingest.on_failure_message}}}'
+  - json:
+      field: json.SCOPE
+      tag: parse_scope
+      if: ctx.json?.SCOPE instanceof String && ctx.json.SCOPE != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_parse_scope_failure
+            value: '{{{_ingest.on_failure_message}}}'
+  - json:
+      field: json.RECORD
+      tag: parse_record
+      if: ctx.json?.RECORD instanceof String && ctx.json.RECORD != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_parse_record_failure
+            value: '{{{_ingest.on_failure_message}}}'
+  - json:
+      field: json.RECORD_ATTRIBUTES
+      tag: parse_record_attributes
+      if: ctx.json?.RECORD_ATTRIBUTES instanceof String && ctx.json.RECORD_ATTRIBUTES != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_parse_record_attributes_failure
+            value: '{{{_ingest.on_failure_message}}}'
+  - json:
+      field: json.VALUE
+      tag: parse_value_object
+      if: ctx.json?.VALUE instanceof String && ctx.json.VALUE.startsWith('{') && ctx.json.VALUE.endsWith('}')
+      on_failure:
+        - set:
+            field: json.value_parse_failed
+            tag: mark_value_parse_failed
+            value: true
+            override: true
+
+  - dot_expander:
+      field: '*'
+      path: json.RESOURCE_ATTRIBUTES
+      override: true
+      tag: expand_resource_attributes
+      if: ctx.json?.RESOURCE_ATTRIBUTES instanceof Map
+  - dot_expander:
+      field: '*'
+      path: json.RECORD_ATTRIBUTES
+      override: true
+      tag: expand_record_attributes
+      if: ctx.json?.RECORD_ATTRIBUTES instanceof Map
+  - dot_expander:
+      field: '*'
+      path: json.RECORD
+      override: true
+      tag: expand_record
+      if: ctx.json?.RECORD instanceof Map
+
+  - date:
+      field: json.TIMESTAMP
+      target_field: '@timestamp'
+      tag: date_timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS Z
+        - yyyy-MM-dd HH:mm:ss.SSS XX
+        - yyyy-MM-dd HH:mm:ss Z
+        - ISO8601
+      if: ctx.json?.TIMESTAMP != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_date_timestamp_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - date:
+      field: json.START_TIMESTAMP
+      target_field: event.start
+      tag: date_start_timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS Z
+        - yyyy-MM-dd HH:mm:ss.SSS XX
+        - yyyy-MM-dd HH:mm:ss Z
+        - ISO8601
+      if: ctx.json?.START_TIMESTAMP != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_date_start_timestamp_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - date:
+      field: json.OBSERVED_TIMESTAMP
+      target_field: event.created
+      tag: date_observed_timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS Z
+        - yyyy-MM-dd HH:mm:ss.SSS XX
+        - yyyy-MM-dd HH:mm:ss Z
+        - ISO8601
+      if: ctx.json?.OBSERVED_TIMESTAMP != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_date_observed_timestamp_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+
+  - rename:
+      field: json.RECORD_TYPE
+      target_field: snowflake.events.record_type
+      ignore_missing: true
+      tag: rename_record_type
+  - drop:
+      tag: drop_non_log_record_types
+      description: >-
+        The events data stream only supports LOG rows from the Snowflake event table.
+        SPAN, SPAN_EVENT, METRIC, and EVENT rows are dropped.
+      if: ctx.snowflake?.events?.record_type != 'LOG'
+  - set:
+      field: event.action
+      tag: set_event_action
+      copy_from: snowflake.events.record_type
+      ignore_empty_value: true
+
+  - rename:
+      field: json.RESOURCE_ATTRIBUTES
+      target_field: snowflake.events.resource_attributes
+      ignore_missing: true
+      tag: rename_resource_attributes
+      if: ctx.json?.RESOURCE_ATTRIBUTES != null
+  - set:
+      field: user.name
+      tag: set_user_name
+      copy_from: snowflake.events.resource_attributes.db.user
+      ignore_empty_value: true
+  - set:
+      field: snowflake.events.session_id
+      tag: set_session_id
+      copy_from: snowflake.events.resource_attributes.snow.session.id
+      ignore_empty_value: true
+  - convert:
+      field: snowflake.events.session_id
+      type: string
+      ignore_missing: true
+      tag: convert_session_id
+      if: ctx.snowflake?.events?.session_id != null
+  - set:
+      field: snowflake.events.query_id
+      tag: set_query_id
+      copy_from: snowflake.events.resource_attributes.snow.query.id
+      ignore_empty_value: true
+
+  - rename:
+      field: json.SCOPE
+      target_field: snowflake.events.scope
+      ignore_missing: true
+      tag: rename_scope
+      if: ctx.json?.SCOPE != null
+  - rename:
+      field: json.RECORD
+      target_field: snowflake.events.record
+      ignore_missing: true
+      tag: rename_record
+      if: ctx.json?.RECORD != null
+  - rename:
+      field: json.RECORD_ATTRIBUTES
+      target_field: snowflake.events.record_attributes
+      ignore_missing: true
+      tag: rename_record_attributes
+      if: ctx.json?.RECORD_ATTRIBUTES != null
+  - set:
+      field: log.logger
+      tag: set_log_logger
+      copy_from: snowflake.events.scope.name
+      ignore_empty_value: true
+  - set:
+      field: log.origin.file.name
+      tag: set_log_origin_file_name
+      copy_from: snowflake.events.record_attributes.code.filepath
+      ignore_empty_value: true
+  - set:
+      field: log.origin.function
+      tag: set_log_origin_function
+      copy_from: snowflake.events.record_attributes.code.function
+      ignore_empty_value: true
+  - set:
+      field: log.origin.file.line
+      tag: set_log_origin_file_line
+      copy_from: snowflake.events.record_attributes.code.lineno
+      ignore_empty_value: true
+  - set:
+      field: user.id
+      tag: set_user_id
+      copy_from: snowflake.events.resource_attributes.snow.user.id
+      ignore_empty_value: true
+  - convert:
+      field: user.id
+      type: string
+      ignore_missing: true
+      tag: convert_user_id
+      if: ctx.user?.id != null
+  - append:
+      field: user.roles
+      tag: append_user_role
+      value: '{{{snowflake.events.resource_attributes.snow.session.role.primary.name}}}'
+      allow_duplicates: false
+      if: ctx.snowflake?.events?.resource_attributes?.snow?.session?.role?.primary?.name != null
+  - set:
+      field: service.version
+      tag: set_service_version
+      copy_from: snowflake.events.resource_attributes.service.version
+      ignore_empty_value: true
+  - set:
+      field: cloud.provider
+      tag: set_cloud_provider
+      copy_from: snowflake.events.resource_attributes.cloud.service.provider
+      ignore_empty_value: true
+  - set:
+      field: container.id
+      tag: set_container_id
+      copy_from: snowflake.events.resource_attributes.container.id
+      ignore_empty_value: true
+  - set:
+      field: container.image.name
+      tag: set_container_image_name
+      copy_from: snowflake.events.resource_attributes.container.image.name
+      ignore_empty_value: true
+  - append:
+      field: container.image.tag
+      tag: append_container_image_tag
+      value: '{{{snowflake.events.resource_attributes.container.image.tag}}}'
+      allow_duplicates: false
+      if: ctx.snowflake?.events?.resource_attributes?.container?.image?.tag != null
+  - set:
+      field: orchestrator.namespace
+      tag: set_orchestrator_namespace
+      copy_from: snowflake.events.resource_attributes.k8s.namespace.name
+      ignore_empty_value: true
+  - set:
+      field: orchestrator.type
+      tag: set_orchestrator_type
+      value: kubernetes
+      if: ctx.orchestrator?.namespace != null
+  - set:
+      field: host.name
+      tag: set_host_name
+      copy_from: snowflake.events.resource_attributes.k8s.node.name
+      ignore_empty_value: true
+
+  - set:
+      field: log.level
+      tag: set_log_level
+      copy_from: snowflake.events.record.severity_text
+      ignore_empty_value: true
+  - lowercase:
+      field: log.level
+      tag: lowercase_log_level
+      if: ctx.log?.level != null
+
+  - set:
+      field: message
+      tag: set_message_from_openflow_log
+      copy_from: json.VALUE.formattedMessage
+      ignore_empty_value: true
+      if: ctx.json?.VALUE instanceof Map
+  - rename:
+      field: json.VALUE.level
+      target_field: snowflake.events.runtime_log.level
+      ignore_missing: true
+      tag: rename_openflow_log_level
+      if: ctx.json?.VALUE instanceof Map && ctx.json.VALUE.formattedMessage != null
+  - rename:
+      field: json.VALUE.loggerName
+      target_field: snowflake.events.runtime_log.logger_name
+      ignore_missing: true
+      tag: rename_openflow_logger_name
+      if: ctx.json?.VALUE instanceof Map && ctx.json.VALUE.formattedMessage != null
+  - rename:
+      field: json.VALUE.nanoseconds
+      target_field: snowflake.events.runtime_log.nanoseconds
+      ignore_missing: true
+      tag: rename_openflow_log_nanoseconds
+      if: ctx.json?.VALUE instanceof Map && ctx.json.VALUE.formattedMessage != null
+  - rename:
+      field: json.VALUE.threadName
+      target_field: snowflake.events.runtime_log.thread_name
+      ignore_missing: true
+      tag: rename_openflow_thread_name
+      if: ctx.json?.VALUE instanceof Map && ctx.json.VALUE.formattedMessage != null
+  - rename:
+      field: json.VALUE.timestamp
+      target_field: snowflake.events.runtime_log.timestamp
+      ignore_missing: true
+      tag: rename_openflow_log_timestamp
+      if: ctx.json?.VALUE instanceof Map && ctx.json.VALUE.formattedMessage != null
+  - set:
+      field: snowflake.events.runtime_log.throwable.class_name
+      tag: set_openflow_throwable_class_name
+      copy_from: json.VALUE.throwable.className
+      ignore_empty_value: true
+      if: ctx.json?.VALUE instanceof Map
+  - set:
+      field: snowflake.events.runtime_log.throwable.message
+      tag: set_openflow_throwable_message
+      copy_from: json.VALUE.throwable.message
+      ignore_empty_value: true
+      if: ctx.json?.VALUE instanceof Map
+  - set:
+      field: snowflake.events.runtime_log.mdc.process_group_id
+      tag: set_openflow_mdc_process_group_id
+      copy_from: json.VALUE.mdc.processGroupId
+      ignore_empty_value: true
+      if: ctx.json?.VALUE instanceof Map
+  - set:
+      field: snowflake.events.runtime_log.mdc.process_group_id_path
+      tag: set_openflow_mdc_process_group_id_path
+      copy_from: json.VALUE.mdc.processGroupIdPath
+      ignore_empty_value: true
+      if: ctx.json?.VALUE instanceof Map
+  - set:
+      field: snowflake.events.runtime_log.mdc.process_group_name
+      tag: set_openflow_mdc_process_group_name
+      copy_from: json.VALUE.mdc.processGroupName
+      ignore_empty_value: true
+      if: ctx.json?.VALUE instanceof Map
+  - set:
+      field: snowflake.events.runtime_log.mdc.process_group_name_path
+      tag: set_openflow_mdc_process_group_name_path
+      copy_from: json.VALUE.mdc.processGroupNamePath
+      ignore_empty_value: true
+      if: ctx.json?.VALUE instanceof Map
+  - set:
+      field: snowflake.events.runtime_log.mdc.registered_flow_identifier
+      tag: set_openflow_mdc_registered_flow_identifier
+      copy_from: json.VALUE.mdc.registeredFlowIdentifier
+      ignore_empty_value: true
+      if: ctx.json?.VALUE instanceof Map
+  - set:
+      field: snowflake.events.runtime_log.mdc.registered_flow_version
+      tag: set_openflow_mdc_registered_flow_version
+      copy_from: json.VALUE.mdc.registeredFlowVersion
+      ignore_empty_value: true
+      if: ctx.json?.VALUE instanceof Map
+  - set:
+      field: log.level
+      tag: set_log_level_from_openflow
+      copy_from: snowflake.events.runtime_log.level
+      ignore_empty_value: true
+      if: ctx.log?.level == null
+  - lowercase:
+      field: log.level
+      tag: lowercase_openflow_log_level
+      if: ctx.log?.level != null && ctx.snowflake?.events?.runtime_log?.level != null
+  - rename:
+      field: json.VALUE
+      target_field: message
+      ignore_missing: true
+      tag: rename_value_to_message
+      if: ctx.json?.VALUE != null && !(ctx.json.VALUE instanceof Map)
+
+  - append:
+      field: related.user
+      tag: append_user_name_to_related
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_user_id_to_related
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - append:
+      field: related.hosts
+      tag: append_host_name_to_related
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+
+  - set:
+      field: event.kind
+      tag: set_event_kind_event
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category_process
+      value: process
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+      allow_duplicates: false
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Snowflake
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Snowflake
+
+  - remove:
+      field:
+        - snowflake.events.resource_attributes.db.user
+        - snowflake.events.resource_attributes.cloud.service.provider
+        - snowflake.events.resource_attributes.container.id
+        - snowflake.events.resource_attributes.container.image.name
+        - snowflake.events.resource_attributes.container.image.tag
+        - snowflake.events.resource_attributes.k8s.namespace.name
+        - snowflake.events.resource_attributes.k8s.node.name
+        - snowflake.events.resource_attributes.service.version
+        - snowflake.events.resource_attributes.snow.query.id
+        - snowflake.events.resource_attributes.snow.session.id
+        - snowflake.events.resource_attributes.snow.user.id
+        - snowflake.events.resource_attributes.snow.session.role.primary.name
+        - snowflake.events.scope.name
+        - snowflake.events.record.severity_text
+        - snowflake.events.record_attributes.code.filepath
+        - snowflake.events.record_attributes.code.function
+        - snowflake.events.record_attributes.code.lineno
+        - snowflake.events.runtime_log.level
+      ignore_missing: true
+      tag: remove_duplicate_vendor_fields_mapped_to_ecs
+
+  - remove:
+      field: json
+      ignore_missing: true
+      tag: remove_temp_fields
+
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+
+  - append:
+      field: tags
+      tag: append_preserve_on_collector_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_failure
+      value: preserve_original_event
+      allow_duplicates: false

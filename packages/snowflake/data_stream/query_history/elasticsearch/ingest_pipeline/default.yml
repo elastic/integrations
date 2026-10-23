@@ -1,0 +1,407 @@
+---
+description: Parse Snowflake QUERY_HISTORY events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+
+  - date:
+      field: json.END_TIME
+      target_field: '@timestamp'
+      tag: date_end_time
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS Z
+        - yyyy-MM-dd HH:mm:ss.SSS XX
+        - yyyy-MM-dd HH:mm:ss Z
+        - ISO8601
+      if: ctx.json?.END_TIME != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_date_end_time_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.end
+      tag: set_event_end
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+      if: ctx.json?.END_TIME != null && ctx['@timestamp'] != null
+  - date:
+      field: json.START_TIME
+      target_field: event.start
+      tag: date_start_time
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS Z
+        - yyyy-MM-dd HH:mm:ss.SSS XX
+        - yyyy-MM-dd HH:mm:ss Z
+        - ISO8601
+      if: ctx.json?.START_TIME != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_date_start_time_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+
+  - rename:
+      field: json.QUERY_ID
+      target_field: event.id
+      ignore_missing: true
+      tag: rename_query_id
+  - fingerprint:
+      tag: fingerprint_document_id
+      fields:
+        - event.id
+      target_field: _id
+      ignore_missing: true
+      if: ctx.event?.id != null
+  - rename:
+      field: json.USER_NAME
+      target_field: user.name
+      ignore_missing: true
+      tag: rename_user_name
+  - rename:
+      field: json.SESSION_ID
+      target_field: snowflake.query_history.session_id
+      ignore_missing: true
+      tag: rename_session_id
+  - rename:
+      field: json.ERROR_CODE
+      target_field: error.code
+      ignore_missing: true
+      tag: rename_error_code
+  - rename:
+      field: json.ERROR_MESSAGE
+      target_field: event.reason
+      ignore_missing: true
+      tag: rename_error_message
+
+  - rename:
+      field: json.QUERY_TEXT
+      target_field: snowflake.query_history.query_text
+      ignore_missing: true
+      tag: rename_query_text
+  - rename:
+      field: json.QUERY_TYPE
+      target_field: snowflake.query_history.query_type
+      ignore_missing: true
+      tag: rename_query_type
+  - set:
+      field: event.action
+      tag: set_event_action
+      copy_from: snowflake.query_history.query_type
+      ignore_empty_value: true
+      if: ctx.snowflake?.query_history?.query_type != null
+  - rename:
+      field: json.ROLE_NAME
+      target_field: snowflake.query_history.role_name
+      ignore_missing: true
+      tag: rename_role_name
+  - append:
+      field: user.roles
+      tag: append_role_name_to_user_roles
+      value: '{{{snowflake.query_history.role_name}}}'
+      allow_duplicates: false
+      if: ctx.snowflake?.query_history?.role_name != null
+  - rename:
+      field: json.EXECUTION_STATUS
+      target_field: snowflake.query_history.execution_status
+      ignore_missing: true
+      tag: rename_execution_status
+  - rename:
+      field: json.DATABASE_NAME
+      target_field: snowflake.query_history.database_name
+      ignore_missing: true
+      tag: rename_database_name
+  - rename:
+      field: json.SCHEMA_NAME
+      target_field: snowflake.query_history.schema_name
+      ignore_missing: true
+      tag: rename_schema_name
+  - rename:
+      field: json.WAREHOUSE_NAME
+      target_field: snowflake.query_history.warehouse_name
+      ignore_missing: true
+      tag: rename_warehouse_name
+  - rename:
+      field: json.AUTHN_EVENT_ID
+      target_field: snowflake.query_history.authn_event_id
+      ignore_missing: true
+      tag: rename_authn_event_id
+  - rename:
+      field: json.QUERY_HASH
+      target_field: snowflake.query_history.query_hash
+      ignore_missing: true
+      tag: rename_query_hash
+  - rename:
+      field: json.USER_TYPE
+      target_field: snowflake.query_history.user_type
+      ignore_missing: true
+      tag: rename_user_type
+  - rename:
+      field: json.AGENT_TYPE
+      target_field: snowflake.query_history.agent_type
+      ignore_missing: true
+      tag: rename_agent_type
+
+  - convert:
+      field: json.TOTAL_ELAPSED_TIME
+      type: long
+      ignore_missing: true
+      tag: convert_total_elapsed_time
+      if: ctx.json?.TOTAL_ELAPSED_TIME != null && ctx.json.TOTAL_ELAPSED_TIME != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_convert_total_elapsed_time_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - script:
+      lang: painless
+      tag: set_event_duration
+      description: Convert TOTAL_ELAPSED_TIME from milliseconds to nanoseconds for event.duration.
+      if: ctx.json?.TOTAL_ELAPSED_TIME != null
+      params:
+        ms_to_ns: 1000000
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        ctx.event.duration = ctx.json.TOTAL_ELAPSED_TIME * params.ms_to_ns;
+  - convert:
+      field: json.BYTES_SCANNED
+      type: long
+      ignore_missing: true
+      tag: convert_bytes_scanned
+      if: ctx.json?.BYTES_SCANNED != null && ctx.json.BYTES_SCANNED != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_convert_bytes_scanned_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.BYTES_SCANNED
+      target_field: snowflake.query_history.bytes_scanned
+      ignore_missing: true
+      tag: rename_bytes_scanned
+  - convert:
+      field: json.ROWS_UNLOADED
+      type: long
+      ignore_missing: true
+      tag: convert_rows_unloaded
+      if: ctx.json?.ROWS_UNLOADED != null && ctx.json.ROWS_UNLOADED != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_convert_rows_unloaded_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.ROWS_UNLOADED
+      target_field: snowflake.query_history.rows_unloaded
+      ignore_missing: true
+      tag: rename_rows_unloaded
+  - convert:
+      field: json.OUTBOUND_DATA_TRANSFER_BYTES
+      type: long
+      ignore_missing: true
+      tag: convert_outbound_bytes
+      if: ctx.json?.OUTBOUND_DATA_TRANSFER_BYTES != null && ctx.json.OUTBOUND_DATA_TRANSFER_BYTES != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_convert_outbound_bytes_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.OUTBOUND_DATA_TRANSFER_BYTES
+      target_field: source.bytes
+      ignore_missing: true
+      tag: rename_outbound_bytes
+  - convert:
+      field: json.INBOUND_DATA_TRANSFER_BYTES
+      type: long
+      ignore_missing: true
+      tag: convert_inbound_bytes
+      if: ctx.json?.INBOUND_DATA_TRANSFER_BYTES != null && ctx.json.INBOUND_DATA_TRANSFER_BYTES != ''
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_convert_inbound_bytes_failure
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.INBOUND_DATA_TRANSFER_BYTES
+      target_field: destination.bytes
+      ignore_missing: true
+      tag: rename_inbound_bytes
+
+  - append:
+      field: related.user
+      tag: append_user_name_to_related
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category_database
+      value: database
+      allow_duplicates: false
+  - append:
+      field: event.category
+      tag: append_event_category_iam
+      value: iam
+      allow_duplicates: false
+      if: >-
+        ['GRANT', 'REVOKE', 'CREATE_USER', 'DROP_USER', 'CREATE_ROLE', 'DROP_ROLE',
+        'ALTER_ROLE', 'CREATE_NETWORK_POLICY', 'ALTER_NETWORK_POLICY',
+        'DROP_NETWORK_POLICY', 'RENAME_NETWORK_POLICY', 'ALTER_ACCOUNT']
+        .contains(ctx.snowflake?.query_history?.query_type)
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+      allow_duplicates: false
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success
+      value: success
+      if: ctx.snowflake?.query_history?.execution_status != null && ctx.snowflake.query_history.execution_status.equalsIgnoreCase('success')
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      value: failure
+      if: >-
+        ctx.snowflake?.query_history?.execution_status != null &&
+        (ctx.snowflake.query_history.execution_status.equalsIgnoreCase('fail')
+        || ctx.snowflake.query_history.execution_status.equalsIgnoreCase('incident')
+        || ctx.snowflake.query_history.execution_status.equalsIgnoreCase('failed_with_error')
+        || ctx.snowflake.query_history.execution_status.equalsIgnoreCase('failed_with_incident'))
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Snowflake
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Snowflake
+
+  - remove:
+      field:
+        - snowflake.query_history.query_type
+        - snowflake.query_history.role_name
+      ignore_missing: true
+      tag: remove_duplicate_vendor_fields_mapped_to_ecs
+
+  - remove:
+      field: json
+      ignore_missing: true
+      tag: remove_temp_fields
+
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+
+  - append:
+      field: tags
+      tag: append_preserve_on_collector_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_failure
+      value: preserve_original_event
+      allow_duplicates: false
