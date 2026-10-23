@@ -1,0 +1,67 @@
+{
+    "attributes": {
+        "description": "Every state-changing operation across Kibana and Elasticsearch security config. This is the shortest, highest-value list in the whole audit stream. Kibana rows are selected by ECS event.type so newer features (workflows, ML, agent builder) are included; Elasticsearch rows are every security configuration change (API keys created, changed or invalidated, roles written or deleted, user profiles written), selected by the presence of the security_config_change payload: their actions carry no create/update/delete suffix (create_apikey, put_role), and event.type is multi-valued there, so an IN comparison returns null rather than matching. Operation (the verb derived from the action) is kept in the result but not shown, because Action already says it; add it from the field list to group by verb. Elasticsearch security changes carry no message, so their Object is what the security_config_change payload names (the API key's name, the key ids of an invalidation, the role or the profile uid) and their Message is the payload itself, in full; their Object type is named from the action (api-key, role or user-profile) rather than repeating it. Kibana's own API-key clean-up (invalidate_apikeys by a platform service account through no named key, every few seconds) is left out, as on the Config changes tile. An Identity shown as “_4KEO… · Cloud API key” is an organization-level Elastic Cloud API key: the audit stream records it only by its opaque 20-character id, shown here by its first five characters; it has no name and no owner email.",
+        "tabs": [
+            {
+                "attributes": {
+                    "chartInterval": "auto",
+                    "columns": [
+                        "Time",
+                        "Identity",
+                        "Action",
+                        "Object type",
+                        "Object",
+                        "Space id",
+                        "Message"
+                    ],
+                    "controlGroupJson": "{}",
+                    "grid": {
+                        "columns": {
+                            "Action": {
+                                "width": 175
+                            },
+                            "Identity": {
+                                "width": 185
+                            },
+                            "Object": {
+                                "width": 300
+                            },
+                            "Object type": {
+                                "width": 115
+                            },
+                            "Space id": {
+                                "width": 95
+                            },
+                            "Time": {
+                                "width": 235
+                            }
+                        }
+                    },
+                    "hideChart": false,
+                    "isTextBasedQuery": true,
+                    "kibanaSavedObjectMeta": {
+                        "searchSourceJSON": "{\"query\":{\"esql\":\"FROM logs-elastic_cloud.serverless_audit.otel-* | WHERE (resource.attributes.service.name == \\\"serverless-kibana\\\" AND ((attributes.event.type IN (\\\"change\\\",\\\"creation\\\",\\\"deletion\\\") AND (attributes.event.action IS NULL OR NOT (attributes.event.action IN (\\\"saved_object_open_point_in_time\\\",\\\"saved_object_close_point_in_time\\\")))) OR attributes.event.action IN (\\\"rule_run_soon\\\",\\\"secret_create\\\"))) OR attributes.elasticsearch.audit.security_config_change IS NOT NULL | WHERE NOT (attributes.event.action IS NOT NULL AND attributes.event.action == \\\"invalidate_apikeys\\\" AND attributes.user.name IS NOT NULL AND attributes.user.name IN (\\\"elastic.maintenance\\\",\\\"autoscaling\\\",\\\"elasticsearch-controller\\\",\\\"elastic/fleet-server\\\",\\\"elastic/kibana\\\") AND attributes.api_key.name IS NULL) | SORT @timestamp DESC | EVAL actor = COALESCE(attributes.user.email, attributes.api_key.name, attributes.user.name, \\\"\u003canonymous\u003e\\\"), actor_kind = CASE(attributes.user.email IS NOT NULL, \\\"human\\\", \\\"service\\\") | EVAL verb = CASE(attributes.event.action LIKE \\\"*_execution_cancel\\\", \\\"cancel\\\", attributes.event.action LIKE \\\"*_run_soon\\\", \\\"run\\\", attributes.event.action LIKE \\\"*_run\\\", \\\"run\\\", attributes.event.action LIKE \\\"*_test\\\", \\\"test\\\", attributes.event.action LIKE \\\"*_enable\\\", \\\"enable\\\", attributes.event.action LIKE \\\"*_disable\\\", \\\"disable\\\", attributes.event.action LIKE \\\"ml_put_*\\\", \\\"create\\\", attributes.event.action LIKE \\\"ml_open_*\\\", \\\"open\\\", attributes.event.action LIKE \\\"ml_start_*\\\", \\\"start\\\", attributes.event.action LIKE \\\"*point_in_time\\\", \\\"pit\\\", attributes.event.action LIKE \\\"*_create*\\\", \\\"create\\\", attributes.event.action LIKE \\\"*_update*\\\", \\\"update\\\", attributes.event.action LIKE \\\"*_delete\\\", \\\"delete\\\", attributes.event.action LIKE \\\"*_find\\\", \\\"find\\\", attributes.event.action LIKE \\\"*_get\\\", \\\"get\\\", attributes.event.action LIKE \\\"*_resolve\\\", \\\"resolve\\\", \\\"other\\\") | GROK body.text \\\"\\\"\\\"\\\\[(?:id|workflowId)=%{DATA:g_id}(?:,|\\\\])\\\"\\\"\\\" | GROK body.text \\\"\\\"\\\"\\\\[name=%{GREEDYDATA:g_name}\\\\]\\\"\\\"\\\" | GROK body.text \\\"\\\"\\\"\\\\[executionId=%{DATA:g_exec}\\\\]\\\"\\\"\\\" | GROK body.text \\\"\\\"\\\"case id: %{NOTSPACE:g_case}\\\"\\\"\\\" | GROK body.text \\\"\\\"\\\"(?:job|datafeed) %{NOTSPACE:g_ml}\\\"\\\"\\\" | EVAL obj_type = CASE(attributes.kibana.saved_object.type IS NOT NULL, attributes.kibana.saved_object.type, attributes.event.action LIKE \\\"ml_*ad_job\\\", \\\"ml-job\\\", attributes.event.action LIKE \\\"ml_*ad_datafeed\\\", \\\"ml-datafeed\\\", attributes.event.action LIKE \\\"workflow_execution_*\\\", \\\"workflow-execution\\\", attributes.event.action LIKE \\\"workflow_*\\\", \\\"workflow\\\", attributes.event.action LIKE \\\"agent_builder_agent_*\\\", \\\"agent-builder-agent\\\", attributes.event.action LIKE \\\"agent_builder_tool_*\\\", \\\"agent-builder-tool\\\", attributes.event.action LIKE \\\"product_documentation_*\\\", \\\"product-documentation\\\", attributes.event.action == \\\"secret_create\\\", \\\"secret\\\", attributes.event.action IS NULL, \\\"unclassified\\\", REPLACE(attributes.event.action, \\\"_(create|update|delete|enable|disable|run|run_soon|test|cancel)$\\\", \\\"\\\")) | EVAL obj_name = COALESCE(attributes.kibana.saved_object.name, g_name, g_id, attributes.kibana.saved_object.id, g_case, g_ml, g_exec, body.text) | GROK attributes.elasticsearch.audit.security_config_change \\\"\\\"\\\"\\\"name\\\":\\\"%{DATA:t_name}\\\"\\\"\\\"\\\" | GROK attributes.elasticsearch.audit.security_config_change \\\"\\\"\\\"\\\"ids\\\":\\\\[%{DATA:t_ids}\\\\]\\\"\\\"\\\" | GROK attributes.elasticsearch.audit.security_config_change \\\"\\\"\\\"\\\"id\\\":\\\"%{DATA:t_id}\\\"\\\"\\\"\\\" | GROK attributes.elasticsearch.audit.security_config_change \\\"\\\"\\\"\\\"uid\\\":\\\"%{DATA:t_uid}\\\"\\\"\\\"\\\" | EVAL target = COALESCE(t_name, REPLACE(REPLACE(t_ids, \\\"\\\\\\\"\\\", \\\"\\\"), \\\",\\\", \\\", \\\"), t_id, t_uid) | EVAL obj_name = COALESCE(obj_name, target, CASE(attributes.elasticsearch.audit.security_config_change IS NOT NULL, \\\"(none named in the payload)\\\")), message = COALESCE(body.text, attributes.elasticsearch.audit.security_config_change) | EVAL obj_type = CASE(resource.attributes.service.name == \\\"serverless-kibana\\\", obj_type, attributes.event.action LIKE \\\"*apikey*\\\", \\\"api-key\\\", attributes.event.action LIKE \\\"*_role\\\", \\\"role\\\", attributes.event.action LIKE \\\"*user_profile*\\\", \\\"user-profile\\\", obj_type) | KEEP @timestamp, actor, verb, attributes.event.action, obj_type, obj_name, attributes.kibana.space.id, message | EVAL actor = CASE((LENGTH(actor) == 20 AND actor RLIKE \\\"[-_A-Za-z0-9]{20}\\\" AND NOT actor RLIKE \\\"[0-9]{20}\\\"), CONCAT(LEFT(actor, 5), \\\"… · Cloud API key\\\"), actor) | RENAME @timestamp AS Time, actor AS Identity, verb AS Operation, attributes.event.action AS Action, obj_type AS `Object type`, obj_name AS Object, attributes.kibana.space.id AS `Space id`, message AS Message\"},\"index\":{\"id\":\"cloud-audit-adhoc-dv\",\"title\":\"logs-elastic_cloud.serverless_audit.otel-*\",\"timeFieldName\":\"@timestamp\",\"sourceFilters\":[],\"type\":\"esql\",\"fieldFormats\":{},\"runtimeFieldMap\":{},\"allowNoIndex\":false,\"name\":\"logs-elastic_cloud.serverless_audit.otel-*\",\"allowHidden\":false},\"filter\":[],\"highlightAll\":true,\"version\":true}"
+                    },
+                    "rowHeight": 1,
+                    "sort": [
+                        [
+                            "Time",
+                            "desc"
+                        ]
+                    ],
+                    "timeRestore": false,
+                    "usesAdHocDataView": true
+                },
+                "id": "d15677ec-6657-50a3-ab2a-8abaf57f6353",
+                "label": "Results"
+            }
+        ],
+        "title": "[Audit] All mutations — every create, update and delete"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-10-15T20:20:09.492Z",
+    "id": "elastic_cloud-cloud-audit-search-01-all-mutations",
+    "references": [],
+    "type": "search",
+    "typeMigrationVersion": "10.18.0"
+}
