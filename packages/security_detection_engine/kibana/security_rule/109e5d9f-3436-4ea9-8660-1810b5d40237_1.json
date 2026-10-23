@@ -1,0 +1,132 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects ChatGPT Enterprise audit events where a user role is updated to account-owner. Account owners control workspace membership, connectors, usage limits, and other security-sensitive settings. An adversary who promotes a compromised account to owner gains durable control-plane access.",
+        "false_positives": [
+            "IT administrators legitimately promote users to account-owner during staffing changes."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.id",
+                "user.email",
+                "openai_chatgpt_enterprise.audit_log.action_data.role",
+                "openai_chatgpt_enterprise.audit_log.action_data.new_role",
+                "openai_chatgpt_enterprise.audit_log.action_data.previous_role",
+                "openai_chatgpt_enterprise.audit_log.action_data.user_id",
+                "openai_chatgpt_enterprise.audit_log.action_privilege",
+                "source.ip"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Account Owner Role Assigned",
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Account Owner Role Assigned\n\nA user role was updated to `account-owner`. Account owners control workspace membership, connectors, usage limits, and other security-sensitive settings.\n\nEscalate when the promotion lacks change management, the actor is unexpected, or privileged activity follows. Close as a false positive for planned ownership transfers with an approved request.\n\n#### Possible investigation steps\n\n- Identify the actor (`user.id` / `user.email`) and the target user in `openai_chatgpt_enterprise.audit_log.action_data`.\n- Confirm whether a ticket or change request authorized the promotion.\n- Review invites, usage-limit changes, plugin or feature policy updates, and log exports after the promotion.\n- Check authentication anomalies for the actor or target around the same time.\n\n### False positive analysis\n\n- IT administrators legitimately promote users to account-owner during staffing or ownership changes when the request is approved.\n\n### Response and remediation\n\n- Downgrade unauthorized owners, revoke sessions, and audit other IAM changes by the same actor.\n",
+        "query": "from logs-openai_chatgpt_enterprise.audit_log-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"openai_chatgpt_enterprise.audit_log\" and\n    event.action == \"user_role_updated\" and\n    (\n        openai_chatgpt_enterprise.audit_log.action_data.new_role == \"account-owner\" or\n        openai_chatgpt_enterprise.audit_log.action_data.role == \"account-owner\"\n    )\n| keep\n    _id, _version, _index, @timestamp, event.action, event.outcome, user.id, user.email, source.ip,\n    source.geo.country_iso_code, openai_chatgpt_enterprise.audit_log.action_data.role,\n    openai_chatgpt_enterprise.audit_log.action_data.new_role,\n    openai_chatgpt_enterprise.audit_log.action_data.previous_role,\n    openai_chatgpt_enterprise.audit_log.action_data.user_id,\n    openai_chatgpt_enterprise.audit_log.action_privilege,\n    openai_chatgpt_enterprise.audit_log.actor.type, data_stream.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": "^0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "openai_chatgpt_enterprise.audit_log.action_data.new_role",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "openai_chatgpt_enterprise.audit_log.action_data.role",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "109e5d9f-3436-4ea9-8660-1810b5d40237",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect compliance logs into Elasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "high",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Domain: Identity",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Persistence",
+            "Tactic: Privilege Escalation",
+            "Mitre Atlas: AML.T0012"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.003",
+                                "name": "Additional Cloud Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.003",
+                                "name": "Additional Cloud Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "109e5d9f-3436-4ea9-8660-1810b5d40237_1",
+    "type": "security-rule"
+}

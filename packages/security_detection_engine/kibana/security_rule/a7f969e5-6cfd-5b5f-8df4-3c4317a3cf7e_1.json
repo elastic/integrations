@@ -1,0 +1,93 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects `esxcli vm process list` on an ESXi host. The command lists running virtual machines and the world IDs of their `vmx` processes. Those IDs are what a later kill command uses to stop the VMs and release the locks on their virtual disks.",
+        "false_positives": [
+            "Administrators list virtual machines during maintenance and troubleshooting. Review whether the same session then kills those processes or searches the datastore."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-vsphere.log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "message",
+                "event.original",
+                "host.hostname",
+                "log.file.path"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "ESXi Virtual Machine Process List",
+        "note": "## Triage and analysis\n\n### Investigating ESXi Virtual Machine Process List\n\nesxcli vm process list enumerates running virtual machines and their world ids. A later kill command uses those world ids to stop the VMs.\n\n#### Possible investigation steps\n\n- Read message for a plain list versus a list piped into vm process kill.\n- Check the same session for pkill, power.off, snapshot removal, or a search for vmdk files.\n- Confirm with the virtualization owner whether the list was part of a scheduled check.\n\n### False positive analysis\n\nA standalone list during a change window is commonly benign. A list immediately followed by a force kill of every world id is the shutdown step before encryption.\n\n### Response and remediation\n\n- If the same session kills virtual machines or deletes snapshots, isolate the host.\n- Otherwise record the account and source for hunting on other hosts.\n",
+        "query": "data_stream.dataset: \"vsphere.log\" and event.module: \"vsphere\" and message: (\"esxcli\" and \"vm process list\")\n",
+        "references": [
+            "https://lolesxi-project.github.io/LOLESXi/#",
+            "https://blogs.vmware.com/security/2022/10/esxi-targeting-ransomware-tactics-and-techniques-part-2.html",
+            "https://detect.fyi/vmware-esxi-logging-detection-opportunities-4fb56411ec21"
+        ],
+        "related_integrations": [
+            {
+                "package": "vsphere",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "a7f969e5-6cfd-5b5f-8df4-3c4317a3cf7e",
+        "setup": "## Setup\n\nThis rule requires ESXi host logs collected by the Elastic vSphere integration: https://www.elastic.co/docs/reference/integrations/vsphere\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: VMware vSphere",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide",
+            "Rule Type: Custom Query (KQL)",
+            "Platform: VMware ESXi",
+            "Threat: Ransomware"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1057",
+                        "name": "Process Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1057/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "a7f969e5-6cfd-5b5f-8df4-3c4317a3cf7e_1",
+    "type": "security-rule"
+}

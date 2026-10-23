@@ -1,0 +1,119 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects outbound connection attempts from unusual Linux process locations or common living-off-the-land utilities to autonomous systems associated with bulletproof or high-abuse hosting. Adversaries often stage payloads in world-writable or web directories and beacon to infrastructure that ignores abuse reports, including providers such as Storm Industries, Ecatel/IP Volume, Aeza, and Proton66.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.network*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Linux Process Connection to Bulletproof Hosting ASN",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Linux Process Connection to Bulletproof Hosting ASN\n\nThis rule flags a Linux process that initiates an outbound connection to an ASN commonly associated with bulletproof or high-abuse hosting. The process is either running from an unusual location such as `/tmp`, `/dev/shm`, a web directory, or `memfd`, or it is a downloader, shell, or interpreter frequently abused to fetch and launch follow-on payloads. A typical pattern is a dropped ELF in `/tmp` or a webshell-spawned `curl`/`wget`/`python` process beaconing to providers such as Storm Industries, Ecatel/IP Volume, Aeza, or Proton66.\n\nASN enrichment is applied at ingest. Confirm `destination.as.number` and `destination.as.organization.name` on the source event, because the endpoint agent does not populate these fields natively.\n\n### Possible investigation steps\n\n- Review the process executable path, name, command line, parent lineage, user, and working directory to determine whether the connection came from a dropped binary, a webshell, or an expected administrative tool.\n- Enrich the destination IP with ASN, organization, reputation, passive DNS, and related hosts that contacted the same address or ASN around the same time.\n- Correlate nearby file, process, and DNS activity on the same `host.id` and `process.entity_id` for payload writes, `chmod`/`exec` of the same path, interpreter downloads, or additional beacons.\n- Check whether the destination was reached by raw IP with no preceding DNS lookup, which is common for malware command-and-control.\n- Scope the same process hash, destination IP, and ASN across the environment, and review web server, SSH, and privilege-escalation telemetry if the parent is a web process or an unusual interactive shell.\n\n### False positive analysis\n\n- An administrator or automation job may use `curl`, `wget`, `python`, or a shell to retrieve packages or updates from a VPS that happens to sit in a high-abuse ASN such as HOSTKEY, Aeza, or FlokiNET; confirm the parent process, change record, and destination ownership.\n- Software installers, self-extracting packages, or development builds running from `/tmp` can make outbound connections during setup; verify the binary path, publisher, and whether the destination is expected for that installer.\n- Privacy-oriented or Tor-related tooling hosted on FlokiNET or similar providers can trigger this rule; validate that the process and destination match an approved use case.\n\n### Response and remediation\n\n- Isolate the affected Linux host from the network except for approved management access, terminate the suspicious process tree, and block the destination IP, domain, and ASN at DNS, proxy, and firewall layers where policy allows.\n- Preserve the executable, command line, destination IP, ASN, and related files under `/tmp`, `/var/tmp`, `/dev/shm`, web directories, and `memfd` for forensic review.\n- Remove attacker footholds including dropped binaries, webshells, cron or systemd persistence, and unauthorized SSH keys, then rotate credentials exposed on the host.\n- Rebuild or restore the host from a known-good image if a malicious payload executed, and hunt for the same hash, destination, or ASN on other systems.\n- Escalate to incident response if the process ran as root, the same infrastructure appears on multiple hosts, or you observe follow-on payload execution, credential access, or lateral movement.\n",
+        "query": "network where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"connection_attempted\" and\n(\n  process.executable like (\n    \"/tmp/*\", \"/var/tmp/*\", \"/dev/shm/*\", \"/run/*\", \"/var/run/*\", \"/boot/*\", \"/sys/*\", \"*/www/html/*\",\n    \"/lost+found/*\", \"/var/mail/*\", \"/var/www/*\", \"/mnt/*\", \"/media/*\", \"/proc/*/fd/*\", \"?memfd:*\", \"memfd:*\",\n    \"*/wp-content/*\", \"*/wp-includes/*\", \"*/wp-admin/*\"\n  ) or\n  process.name in (\n    \"curl\", \"wget\", \"ftp\", \"tftp\", \"scp\", \"rsync\", \"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\",\n    \"busybox\", \"timeout\", \"env\", \"bun\"\n  ) or\n  process.name like (\".*\", \"python*\", \"perl*\", \"php*\", \"ruby*\", \"lua*\", \"node*\", \"deno*\")\n) and\ndestination.as.number in (\n  // Storm Industries / StormCloud / Pfcloud / OMEGATECH\n  202412, 214472, 219502, 51396,\n  // Ecatel / IP Volume / Novogara / SpectraIP\n  48090, 56611, 57717, 62068, 202425, 202769, 204655,\n  // 4Vendeta / Tamatiya\n  200391, 204428, 207812,\n  // KoDDoS / Amarutu\n  206264,\n  // 1337 Services (rdp.sh)\n  210558,\n  // TEAM-HOST\n  202984,\n  // HOSTKEY (frequently abused for malware C2)\n  50867, 57043,\n  // Proton66 / Prospero\n  198953, 200593,\n  // Aeza / Hypercore (OFAC)\n  210644, 211522, 215552, 216246,\n  // Stark / PQ.Hosting / WorkTitans / MIRhosting / UFO Hosting\n  33993, 44477, 52000, 209847,\n  // Zservers / XHost\n  213010, 213194, 61336, 216071,\n  // Media Land (OFAC)\n  48721, 206728, 211409, 215311,\n  // ELITETEAM / 1337TEAM\n  39770, 51381, 56873, 60424,\n  // aurologic downstream BPH brands\n  209800, 210281, 213887, 214351, 214940, 214943, 215789, 216309,\n  // QWINS, GCSAS, Cloudzy, HostSlick, AlexHost, FlokiNET, PINSPB\n  14956, 44050, 200019, 200651, 208046, 213702, 215540,\n  // FUNNULL / CTG Server\n  152194,\n  // First Server Limited\n  50113, 204997, 205090,\n  // CrazyRDP / Delis\n  211252, 394711,\n  // BtHoster / BTCloud\n  213388, 213790, 214295,\n  // SHANGXING\n  400619\n)\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1071/",
+            "https://www.spamhaus.org/blocklists/do-not-route-or-peer/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.as.number",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "01d8b52c-61b0-4a28-96cf-14d5b3c01e05",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "Domain: Network",
+            "OS: Linux",
+            "Platform: Linux",
+            "Rule Type: Event Correlation (EQL)",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1071",
+                        "name": "Application Layer Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1071/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "01d8b52c-61b0-4a28-96cf-14d5b3c01e05_1",
+    "type": "security-rule"
+}

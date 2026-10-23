@@ -1,0 +1,113 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the first ChatGPT Enterprise Codex MCP tool name used by a given user email within an organization in the rule history window. Codex MCP tools can query external systems and pull organizational data into an agent session. Alerting on first-seen organization, user, and tool triples highlights new or unexpected connector usage rather than every routine approved tool call.",
+        "false_positives": [
+            "Engineers enable approved Codex MCP connectors for GitHub, Slack, ticketing, and internal tools during normal development. Validate the tool name, connector, and whether the integration matches an approved workflow."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-14d",
+        "index": [
+            "logs-openai_chatgpt_enterprise.codex_log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "organization.id",
+                "user.id",
+                "user.email",
+                "gen_ai.tool.name",
+                "openai_chatgpt_enterprise.codex_log.event_details.tool_meta.connector_id",
+                "openai_chatgpt_enterprise.codex_log.event_details.tool_meta.resource_id",
+                "openai_chatgpt_enterprise.codex_log.client_id"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Unusual Codex MCP Tool Call",
+        "new_terms_fields": [
+            "organization.id",
+            "user.email",
+            "gen_ai.tool.name"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Unusual Codex MCP Tool Call\n\nFirst-seen Codex MCP tool name for this `organization.id` and `user.email` within the rule history window. MCP tools can move organizational\ndata into external systems through Codex.\n\nEscalate when the tool or connector is not on the approved inventory, the actor is unexpected, or the same session also\nshows credential exposure, broad file access, or unusual shares. Close as a false positive when the tool is approved\nfor that user or team.\n\n#### Possible investigation steps\n\n- Record `gen_ai.tool.name`, connector or resource identifiers, and the user (`user.email` / `user.id`).\n- Confirm whether the MCP connector is approved in your ChatGPT Enterprise workspace inventory.\n- Review nearby Codex events for the same session for additional tool calls, prompts containing secrets, or\n  access-token creation.\n- Search for the same tool used by other users to distinguish a new org-wide rollout from a single anomalous account.\n\n### False positive analysis\n\n- Approved engineering automation commonly introduces first-seen tool names during connector rollouts and pilot work.\n\n### Response and remediation\n\n- Disable unauthorized connectors, revoke related credentials, and review data returned into the Codex session.\n- If sensitive data was retrieved, treat the session as a potential exposure and follow your data-incident process.\n",
+        "query": "data_stream.dataset: \"openai_chatgpt_enterprise.codex_log\" and\n    event.action: \"app_mcp_call\" and\n    organization.id: * and\n    user.email: * and\n    gen_ai.tool.name: *\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": "^0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.tool.name",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "organization.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "2b284f6d-5307-4f42-968a-0769005c740e",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect compliance logs into Elasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Use Case: UEBA",
+            "Resources: Investigation Guide",
+            "Rule Type: New Terms",
+            "Tactic: Collection",
+            "Mitre Atlas: AML.T0085"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1213",
+                        "name": "Data from Information Repositories",
+                        "reference": "https://attack.mitre.org/techniques/T1213/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 3
+    },
+    "id": "2b284f6d-5307-4f42-968a-0769005c740e_3",
+    "type": "security-rule"
+}

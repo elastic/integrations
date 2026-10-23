@@ -1,0 +1,100 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects hostd accepting the ESXi root password from a remote address. A successful remote root login opens the Host Client or the API with full control of the host. Local sessions from 127.0.0.1 are left out of the rule.",
+        "false_positives": [
+            "Administrators sign in to the Host Client or the API as root from a jump host during maintenance. Confirm the source address is a known workstation and that the session does not continue into SSH enablement, file copies to `/tmp`, or virtual machine shutdowns."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-vsphere.log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "message",
+                "event.original",
+                "host.hostname",
+                "log.file.path"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "ESXi Root Password Accepted from Remote Host",
+        "note": "## Triage and analysis\n\n### Investigating ESXi Root Password Accepted from Remote Host\n\nVimsvc.HaSessionManager writes this line when a root password is accepted. The source after from is the client address. A remote address is a direct HTTPS login to the host. from 127.0.0.1 is local esxcli and is not part of this rule. vpxuser from 127.0.0.1 is the host's own client.\n\n#### Possible investigation steps\n\n- Read the source address in message. Compare it with known admin workstations.\n- In the same sid and opID, look for the following User root@<ip> logged in event and for SSH access has been enabled.\n- Check later shell commands for chmod, /tmp, and /vmfs/volumes.\n\n### False positive analysis\n\nA documented Host Client login as root from the admin network can be benign. A root acceptance from an unexpected address, followed by SSH being enabled, is the lateral-movement pattern.\n\n### Response and remediation\n\n- If the source was not approved, disable the session, rotate the root password, and review accounts created in that window.\n- Preserve hostd.log for the sid on the event.\n- Hunt other hosts for Accepted password for user root from the same source address.\n",
+        "query": "data_stream.dataset:vsphere.log and event.module:vsphere and message:(\"Accepted password for user root\" and not \"from 127.0.0.1\")\n",
+        "references": [
+            "https://lolesxi-project.github.io/LOLESXi/#",
+            "https://blogs.vmware.com/security/2022/10/esxi-targeting-ransomware-tactics-and-techniques-part-2.html",
+            "https://detect.fyi/vmware-esxi-logging-detection-opportunities-4fb56411ec21"
+        ],
+        "related_integrations": [
+            {
+                "package": "vsphere",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "b4837b9b-db8b-5b7c-afa5-599202651b10",
+        "setup": "## Setup\n\nThis rule requires ESXi host logs collected by the Elastic vSphere integration: https://www.elastic.co/docs/reference/integrations/vsphere\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: VMware vSphere",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Resources: Investigation Guide",
+            "Rule Type: Custom Query (KQL)",
+            "Platform: VMware ESXi",
+            "Threat: Ransomware"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.001",
+                                "name": "Default Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "b4837b9b-db8b-5b7c-afa5-599202651b10_1",
+    "type": "security-rule"
+}

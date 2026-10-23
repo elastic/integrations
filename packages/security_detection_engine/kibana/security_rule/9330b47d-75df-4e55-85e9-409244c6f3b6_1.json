@@ -1,0 +1,123 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 1
+            },
+            "group_by": [
+                "user.email"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects multiple failed ChatGPT Enterprise login attempts for the same user email within a short window. Password spraying or credential stuffing against enterprise accounts often precedes a successful compromise.",
+        "false_positives": [
+            "Users mistype passwords repeatedly or SSO misconfiguration can generate clusters of failed logins."
+        ],
+        "from": "now-1h",
+        "interval": "15m",
+        "investigation_fields": {
+            "field_names": [
+                "user.email",
+                "Esql.event_count",
+                "Esql.source_ip_values",
+                "Esql.source_geo_country_iso_code_values",
+                "Esql.timestamp_first_seen",
+                "Esql.timestamp_last_seen"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Multiple Authentication Failures",
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Multiple Authentication Failures\n\nOne email produced a burst of failed ChatGPT Enterprise login attempts. That pattern can indicate password spraying, credential stuffing, or repeated guessing before a successful compromise.\n\nEscalate when many distinct source IPs are involved, failures precede a successful login from an unfamiliar IP or user agent, or privileged activity follows. Close as a false positive for repeated typos or SSO misconfiguration from a single client.\n\n#### Possible investigation steps\n\n- Review `Esql.event_count`, `Esql.source_ip_values`, and geo values on the alert.\n- Low IP diversity usually indicates one device or egress. High diversity suggests distributed automation.\n- Search for successful logins for the same email immediately after the failure burst.\n- Correlate with role changes, invites, or data-access events if a successful login follows.\n\n### False positive analysis\n\n- Users mistyping passwords or temporary SSO misconfiguration can generate short clusters of failures from one IP and user agent.\n\n### Response and remediation\n\n- If compromise is suspected, lock or reset the account, revoke sessions, and review subsequent successful authentication and audit activity.\n",
+        "query": "from logs-openai_chatgpt_enterprise.auth_log-*\n| where\n    data_stream.dataset == \"openai_chatgpt_enterprise.auth_log\" and\n    event.action == \"login_failed\" and\n    user.email is not null\n| stats\n    Esql.event_count = count(*),\n    Esql.source_ip_values = values(source.ip),\n    Esql.source_geo_country_iso_code_values = values(source.geo.country_iso_code),\n    Esql.user_agent_original_values = values(user_agent.original),\n    Esql.timestamp_first_seen = min(@timestamp),\n    Esql.timestamp_last_seen = max(@timestamp)\n  by user.email\n| where Esql.event_count >= 10\n| keep user.email, Esql.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": "^0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.country_iso_code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "9330b47d-75df-4e55-85e9-409244c6f3b6",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect compliance logs into Elasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Domain: Identity",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Credential Access"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "9330b47d-75df-4e55-85e9-409244c6f3b6_1",
+    "type": "security-rule"
+}

@@ -1,0 +1,88 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects termination of a virtual machine process on an ESXi host, including `esxcli vm process kill`, `pkill` of `vmx` processes, and `vmdumper` suspend. A running VM holds a lock on its disks. Stopping the process releases that lock and makes the disks writable.",
+        "false_positives": [
+            "Virtual machine process kills also happen during planned maintenance, host upgrades, and troubleshooting of a stuck VM. Confirm the world id, the account, and whether the same session also enumerates `/vmfs/volumes` or removes snapshots."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-vsphere.log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "message",
+                "event.original",
+                "host.hostname",
+                "log.file.path"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "ESXi Virtual Machine Process Killed",
+        "note": "## Triage and analysis\n\n### Investigating ESXi Virtual Machine Process Killed\n\nStopping vmx releases the lock on a virtual disk. ESXi ransomware does this immediately before it encrypts files under /vmfs/volumes.\n\n#### Possible investigation steps\n\n- Read the full command in message and event.original. Note --type (soft, hard, force), --world-id / -w, and whether the line is an awk loop over vm process list.\n- Identify the account and source from the same host in /var/log/shell.log and /var/log/auth.log around @timestamp.\n- Check whether the same session listed VMs, searched for *.vmdk, removed snapshots, or reset the syslog loghost.\n- Confirm with the VM owner whether that world id was shut down on purpose.\n\n### False positive analysis\n\nMaintenance and crash recovery use the same esxcli kill types. A single soft shutdown of a named VM during a change window is often expected. A loop that kills every world id is not.\n\n### Response and remediation\n\n- If the kill was not approved, isolate the host from the management network and stop further shell activity.\n- Leave powered-on VMs running. Shutting them down releases disk locks and lets encryption continue.\n- Preserve shell.log, hostd.log, and auth.log, and restore any VM that was stopped from a known-good backup.\n",
+        "query": "data_stream.dataset:vsphere.log and message:(\"vm process kill\" or pkill and vmx or suspend_v and vmdumper)\n",
+        "references": [
+            "https://lolesxi-project.github.io/LOLESXi/#",
+            "https://blogs.vmware.com/security/2022/10/esxi-targeting-ransomware-tactics-and-techniques-part-2.html",
+            "https://detect.fyi/vmware-esxi-logging-detection-opportunities-4fb56411ec21"
+        ],
+        "related_integrations": [
+            {
+                "package": "vsphere",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "2f0a3a40-1b21-5201-8657-ed84f67600c9",
+        "setup": "## Setup\n\nThis rule requires ESXi host logs collected by the Elastic vSphere integration: https://www.elastic.co/docs/reference/integrations/vsphere\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: VMware vSphere",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Resources: Investigation Guide",
+            "Rule Type: Custom Query (KQL)",
+            "Platform: VMware ESXi",
+            "Threat: Ransomware"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1489",
+                        "name": "Service Stop",
+                        "reference": "https://attack.mitre.org/techniques/T1489/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "2f0a3a40-1b21-5201-8657-ed84f67600c9_1",
+    "type": "security-rule"
+}

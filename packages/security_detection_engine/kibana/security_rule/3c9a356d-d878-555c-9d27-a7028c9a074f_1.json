@@ -1,0 +1,100 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects an attempt to install a VMware VIB with `--force`. A VIB is how ESXi adds drivers and host software, and signature checks normally block an unsigned package. `--force` skips that validation, so an untrusted package can be written onto the hypervisor and affect every virtual machine it runs.",
+        "false_positives": [
+            "Administrators sometimes force a vendor VIB during a documented recovery or upgrade when the acceptance level would otherwise reject it. Confirm the VIB name against the change ticket."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-vsphere.log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "message",
+                "event.original",
+                "host.hostname",
+                "log.file.path",
+                "process.pid"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "ESXi Attempt to Force Install a VMware VIB Package",
+        "note": "## Triage and analysis\n\n### Investigating ESXi Attempt to Force Install a VMware VIB Package\n\nesxcli software vib install --force writes the package even when its signature or acceptance level would block it. The shell records the command in shell.log, including attempts that fail because the file is missing.\n\n#### Possible investigation steps\n\n- Read the VIB path in message (-v, -d, or --viburl). A path under /tmp is worth a closer look.\n- On the host, run esxcli software vib list and compare new packages with the approved image.\n- Check the same session for ExecInstalledOnly set to FALSE and SSH being enabled.\n\n### False positive analysis\n\nA forced install of a known vendor VIB during an approved window can be expected. The package name should match the ticket.\n\n### Response and remediation\n\n- If the package was not approved, remove it with esxcli software vib remove and review files left under /tmp.\n- Set ExecInstalledOnly back to TRUE if it was turned off in the same session.\n- Preserve shell.log before rotating credentials.\n",
+        "query": "data_stream.dataset:vsphere.log and event.module:vsphere and message:(\"vib install\" and (\"--force\" or \"-f\" or \"--no-sig-check\"))\n",
+        "references": [
+            "https://lolesxi-project.github.io/LOLESXi/#",
+            "https://blogs.vmware.com/security/2022/10/esxi-targeting-ransomware-tactics-and-techniques-part-2.html",
+            "https://detect.fyi/vmware-esxi-logging-detection-opportunities-4fb56411ec21"
+        ],
+        "related_integrations": [
+            {
+                "package": "vsphere",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "3c9a356d-d878-555c-9d27-a7028c9a074f",
+        "setup": "## Setup\n\nThis rule requires ESXi host logs collected by the Elastic vSphere integration: https://www.elastic.co/docs/reference/integrations/vsphere\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: VMware vSphere",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide",
+            "Rule Type: Custom Query (KQL)",
+            "Platform: VMware ESXi"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1553",
+                        "name": "Subvert Trust Controls",
+                        "reference": "https://attack.mitre.org/techniques/T1553/",
+                        "subtechnique": [
+                            {
+                                "id": "T1553.006",
+                                "name": "Code Signing Policy Modification",
+                                "reference": "https://attack.mitre.org/techniques/T1553/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "3c9a356d-d878-555c-9d27-a7028c9a074f_1",
+    "type": "security-rule"
+}

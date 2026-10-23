@@ -1,0 +1,101 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects ChatGPT Enterprise audit events that invite a new user into the workspace. An adversary who compromises an administrator can invite a mailbox they control to gain durable access.",
+        "false_positives": [
+            "IT and hiring workflows routinely invite new members during onboarding."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.id",
+                "openai_chatgpt_enterprise.audit_log.action_data.email_addresses",
+                "openai_chatgpt_enterprise.audit_log.action_data.role",
+                "openai_chatgpt_enterprise.audit_log.action_privilege",
+                "source.ip"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise User Invite Sent",
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise User Invite Sent\n\nA workspace invite was sent. An adversary who compromises an administrator can invite a mailbox they control to gain durable access.\n\nEscalate when the invitee domain is unexpected, the invited role is privileged, or the actor is unusual. Close as a false positive for routine onboarding with an approved request.\n\n#### Possible investigation steps\n\n- Inspect invitee email fields, invited role, and actor privilege on the alert.\n- Compare the invitee domain with trusted corporate domains.\n- Look for role promotions, owner changes, or domain additions near the invite.\n- Determine whether the invite was accepted and what activity followed.\n\n### False positive analysis\n\n- IT and hiring workflows routinely invite new members during onboarding when the invitee and role are expected.\n\n### Response and remediation\n\n- Revoke unauthorized pending invites, remove the user if already accepted, and rotate compromised admin credentials.\n",
+        "query": "from logs-openai_chatgpt_enterprise.audit_log-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"openai_chatgpt_enterprise.audit_log\" and\n    event.action == \"invite_send\" and\n    event.outcome == \"success\"\n| keep\n    _id, _version, _index, @timestamp, event.action, event.outcome, user.id, user.email, source.ip,\n    openai_chatgpt_enterprise.audit_log.action_data.email_addresses,\n    openai_chatgpt_enterprise.audit_log.action_data.email_address,\n    openai_chatgpt_enterprise.audit_log.action_data.role,\n    openai_chatgpt_enterprise.audit_log.action_privilege,\n    openai_chatgpt_enterprise.audit_log.action_result, data_stream.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": "^0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "d0aaa2e8-9bde-4f3b-8599-c767958d45e3",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect compliance logs into Elasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Domain: Identity",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Persistence",
+            "Mitre Atlas: AML.T0125"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1136",
+                        "name": "Create Account",
+                        "reference": "https://attack.mitre.org/techniques/T1136/",
+                        "subtechnique": [
+                            {
+                                "id": "T1136.003",
+                                "name": "Cloud Account",
+                                "reference": "https://attack.mitre.org/techniques/T1136/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "d0aaa2e8-9bde-4f3b-8599-c767958d45e3_1",
+    "type": "security-rule"
+}

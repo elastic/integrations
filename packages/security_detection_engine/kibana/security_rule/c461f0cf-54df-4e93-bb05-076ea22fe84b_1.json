@@ -1,0 +1,100 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects successful ChatGPT Enterprise authentication events where the user agent looks scripted (for example Python, curl, Go HTTP clients, aiohttp, scrapers, or headless browsers) rather than a normal browser. Adversaries and automation often reuse stolen sessions or tokens with non-browser clients.",
+        "false_positives": [
+            "Approved automation, compliance API tooling, or SSO libraries that use non-browser user agents."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.email",
+                "user.id",
+                "source.ip",
+                "source.geo.country_iso_code",
+                "user_agent.original"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Authentication from a Suspicious User Agent",
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Authentication from a Suspicious User Agent\n\nA successful authentication event used a scripted user agent (for example Python, curl, Go HTTP clients, or similar) rather than a typical browser.\n\nEscalate when the user has no approved CLI or API access, the user agent is unfamiliar, or privileged activity follows the sign-in. Close as a false positive for documented automation, compliance collectors, or SSO libraries that use non-browser clients.\n\n#### Possible investigation steps\n\n- Confirm `user_agent.original`, `source.ip`, `source.geo.country_iso_code`, and the authenticated user.\n- Determine whether the account is expected to use CLI, API, or compliance automation.\n- Search for role changes, file downloads, conversation shares, or admin actions from the same user shortly after the event.\n- Compare with the user's normal browser-based authentication history.\n\n### False positive analysis\n\n- Approved automation, compliance API tooling, and some SSO client libraries use non-browser user agents by design.\n\n### Response and remediation\n\n- Revoke sessions for the user, rotate credentials where appropriate, and inventory automation that uses that user agent.\n- If takeover is suspected, review subsequent data-access and admin activity for the same account.\n",
+        "query": "from logs-openai_chatgpt_enterprise.auth_log-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"openai_chatgpt_enterprise.auth_log\" and\n    event.action in (\"login_success\", \"native_login_success\", \"token_issued\") and\n    user_agent.original is not null and\n    (\n        to_lower(user_agent.original) like \"*python*\" or\n        to_lower(user_agent.original) like \"*curl/*\" or\n        to_lower(user_agent.original) like \"*wget*\" or\n        to_lower(user_agent.original) like \"*httpie*\" or\n        to_lower(user_agent.original) like \"*go-http*\" or\n        to_lower(user_agent.original) like \"*aiohttp*\" or\n        to_lower(user_agent.original) like \"*fasthttp*\" or\n        to_lower(user_agent.original) like \"*httpclient*\" or\n        to_lower(user_agent.original) like \"*postmanruntime*\" or\n        to_lower(user_agent.original) like \"*headlesschrome*\" or\n        to_lower(user_agent.original) like \"*phantomjs*\" or\n        to_lower(user_agent.original) like \"*selenium*\" or\n        to_lower(user_agent.original) like \"*okhttp*\" or\n        to_lower(user_agent.original) like \"*scrapy*\" or\n        to_lower(user_agent.original) like \"*hydra*\" or\n        to_lower(user_agent.original) like \"*patator*\" or\n        to_lower(user_agent.original) like \"*metasploit*\" or\n        to_lower(user_agent.original) like \"*curio*\" or\n        to_lower(user_agent.original) like \"*hyper*\" or\n        to_lower(user_agent.original) like \"*kali*\" or\n        to_lower(user_agent.original) like \"ruby*\" or\n        to_lower(user_agent.original) like \"node*\" or\n        to_lower(user_agent.original) like \"undici*\" or\n        to_lower(user_agent.original) like \"java*\" or\n        to_lower(user_agent.original) like \"php*\" or\n        to_lower(user_agent.original) like \"*bun/*\" or\n        to_lower(user_agent.original) like \"*axios*\"\n    )\n| keep _id, _version, _index, @timestamp, event.action, event.outcome, user.email, user.id, source.ip, source.geo.country_iso_code, user_agent.original, data_stream.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": "^0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "c461f0cf-54df-4e93-bb05-076ea22fe84b",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect compliance logs into Elasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Domain: Identity",
+            "Tactic: Initial Access",
+            "Mitre Atlas: AML.T0012"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.004",
+                                "name": "Cloud Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "c461f0cf-54df-4e93-bb05-076ea22fe84b_1",
+    "type": "security-rule"
+}
