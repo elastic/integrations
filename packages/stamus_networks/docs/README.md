@@ -104,7 +104,7 @@ network, then check **Discover** in Kibana for documents in the
 
 - No data is being collected: Verify the Central Server URL and API token are correct, and that the host running Elastic Agent can reach the CNCS REST API over HTTPS.
 - 401 Unauthorized errors: The API token may have been regenerated or revoked in the CNCS UI. Regenerate the token in CNCS and update the integration configuration; the Stamus API has no automated token-rotation mechanism.
-- Multiple host_insights documents per host: The host_insights data stream performs a full re-read of the host inventory on every poll cycle, since the API does not expose an incremental filter. Elasticsearch data streams only support append (`create`) writes, so this data stream intentionally does **not** attempt to upsert: the ingest pipeline derives the document `_id` from a fingerprint of the host's inventory content (`host_id.*`), with every `first_seen`/`last_seen` timestamp excluded from the hash (those observation-window timestamps advance on nearly every poll for an active host and would otherwise produce a new document almost every cycle regardless of whether the host's actual profile changed). A host whose content has genuinely changed since the last poll (new hostname, service, or fingerprint) is indexed as a **new** document rather than silently overwriting or being dropped; a re-poll of an unchanged host collapses onto the same `_id` and does not create a duplicate, even as its `last_seen` timestamp advances. This means `host_insights` will contain **multiple documents per host over time whenever its profile actually changes** by design -- this is not a bug. If you need a single current-state-per-host view, build it downstream (for example an Elasticsearch transform aggregating by `entity.id` with `max(@timestamp)`, or ingestion into the Elastic Entity Store); this package does not maintain that view itself. Separately, hosts are keyed only by IP address, which is not a maximally stable identifier (no MAC address or UUID is exposed by the API), so a host that changes IP address via DHCP may appear as a new entity.
+- Multiple host_insights documents per host: The host_insights data stream performs a full re-read of the host inventory on every poll cycle, since the API does not expose an incremental filter. Change detection is handled upstream, by the CEL program's persisted per-host baseline (`host.ip` -> a comparable snapshot of that host's inventory content, with `hostname[]` kept in full and `first_seen`/`last_seen` stripped from every other sub-object): a host is only emitted into a given poll's events when it is new to the baseline or its comparable content has genuinely changed since the last time that specific host was observed, so an unchanged re-poll produces no document at all. Documents therefore get a normal, Elasticsearch-auto-generated `_id`, exactly like any other log event -- no custom `_id` scheme is used. This means `host_insights` will contain **a new document per host only when it is first observed, or when its profile genuinely changes** by design -- not on every poll, and not a fixed one-document-per-host total. If you need a single current-state-per-host view, build it downstream (for example an Elasticsearch transform aggregating by `entity.id` with `max(@timestamp)`, or ingestion into the Elastic Entity Store); this package does not maintain that view itself. Separately, hosts are keyed only by IP address, which is not a maximally stable identifier (no MAC address or UUID is exposed by the API), so a host that changes IP address via DHCP may appear as a new entity.
 - REST endpoint behavior for the alerts data stream (confirmed against a live, open-source Clear NDR Community/SELKS instance): this integration's CEL program retrieves alert and stamus documents from `/rest/rules/es/events_tail/` filtered with `qfilter=event_type:alert` and `qfilter=event_type:stamus`. Although vendor documentation describes this endpoint's scope as non-alert protocol events only, a live test confirmed it does return full raw alert documents when filtered this way, and that the pagination response envelope is a standard DRF `{count, next, previous, results}` shape with `page_number` as the real server-side cursor parameter — both match what this integration's CEL program already implements, so no changes were needed.
 - Host Insights (`/rest/appliances/host_id/`) and the full DoC/DoPV correlation layer (`event_type: stamus`) require a Stamus Clear NDR **Tier 3** license. Both were validated only against the documented API shape and a mock. Confirmed against a live, open-source Clear NDR Community/SELKS (below Tier 3) instance: the REST API itself works fine, `qfilter=event_type:stamus` consistently returns zero results, and `/rest/appliances/host_id/` returns a `404` (ruled out as a routing/path issue — on that server, every unmatched path under `/rest/` returns `404` and every unmatched path under `/api/v1/` returns a generic `500`, and `/rest/appliances/host_id/` cleanly follows the `404` pattern). This matches Stamus's own licensing documentation, which lists Host Insights ("Assets Insights") and Declaration of Compromise as Tier 3-only, with the REST API itself available starting at Tier 2. If you see no data, or a 404, on `host_insights` or no `stamus`-typed events, confirm your license tier before treating it as an integration bug. On some server configurations the `stamus` correlation phase may instead return a persistent 400/401/403/404/422 (rather than a clean zero-result page) when gated by licensing; the CEL program treats a non-retryable error on the `stamus` phase as "this phase is unavailable for this window" and advances to the next window's alert collection instead of retrying the failed phase forever — only a persistent error on the `alert` phase (the primary data) halts and retries.
 - Beaconing detection fields (`beaconing_report.*`, `beaconing_statistics.*`) are mapped but have not been observed in any sample data used to build this integration; treat as unverified end-to-end even though the fields are vendor-documented.
@@ -115,14 +115,18 @@ network, then check **Discover** in Kibana for documents in the
 The `host_insights` data stream performs a full inventory read on every poll cycle, since the
 Stamus REST API does not expose an incremental ("updated since") filter for the host insights
 endpoint. For large host inventories, tune the **Interval** setting conservatively to balance
-freshness against API and ingest load. The ingest pipeline derives each document's `_id` from a
-fingerprint of the host's inventory content (`host_id.*`, with `first_seen`/`last_seen`
-timestamps excluded), since Elasticsearch data streams only support appending new documents, not
-updating existing ones. A re-poll of a host whose profile hasn't actually changed collapses onto
-the same `_id` and adds no new document, even as its `last_seen` timestamp advances; only a real
-content change (a new hostname, service, or fingerprint) produces a new document. Expect roughly
-one new document per host each time its profile changes, not a new document on every single poll
-or a fixed one-document-per-host total — size retention accordingly.
+freshness against API and ingest load. Change detection happens before ingestion, in the CEL
+program: it keeps a persisted per-host baseline (keyed on `host.ip`) and only emits a host into a
+given poll's events when it is new to the baseline or its comparable content has genuinely
+changed since that host was last observed (hostname entries are compared in full, since the
+pipeline's `resolve_latest_hostname` script can change `host.name` purely from their relative
+timestamp ordering; every other sub-object is compared with its own `first_seen`/`last_seen`
+stripped, since those observation-window timestamps advance on nearly every poll regardless of
+whether the host's actual profile changed). A re-poll of a host whose state hasn't actually
+changed produces no document at all, so there is nothing for the ingest pipeline to deduplicate —
+each document that does arrive gets a normal, auto-generated `_id`. Expect roughly one new
+document per host each time it is first observed or its profile changes, not a new document on
+every single poll or a fixed one-document-per-host total — size retention accordingly.
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
@@ -324,15 +328,15 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2024-01-15T12:00:00.123Z",
     "agent": {
-        "ephemeral_id": "c4fb7cb6-58a0-4676-b0ef-038d9165f82e",
-        "id": "1f0b85e5-e246-4772-82fa-df056099d860",
-        "name": "elastic-agent-33426",
+        "ephemeral_id": "c89dfae9-e714-4a67-810c-62b7cdb96560",
+        "id": "0b42aaef-80a8-4d3c-b603-3228776c69f0",
+        "name": "elastic-agent-73569",
         "type": "filebeat",
         "version": "9.5.5"
     },
     "data_stream": {
         "dataset": "stamus_networks.alerts",
-        "namespace": "42217",
+        "namespace": "68976",
         "type": "logs"
     },
     "destination": {
@@ -363,7 +367,7 @@ An example event for `alerts` looks as following:
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "1f0b85e5-e246-4772-82fa-df056099d860",
+        "id": "0b42aaef-80a8-4d3c-b603-3228776c69f0",
         "snapshot": false,
         "version": "9.5.5"
     },
@@ -374,7 +378,7 @@ An example event for `alerts` looks as following:
             "network"
         ],
         "dataset": "stamus_networks.alerts",
-        "ingested": "2026-10-23T13:08:26Z",
+        "ingested": "2026-10-23T14:24:26Z",
         "kind": "alert",
         "module": "stamus_networks",
         "outcome": "unknown",
@@ -513,24 +517,24 @@ An example event for `host_insights` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-23T13:33:30.454Z",
+    "@timestamp": "2026-10-23T14:23:18.016Z",
     "agent": {
-        "ephemeral_id": "a1cd2244-9f71-435f-a035-3fd7e04cfad0",
-        "id": "219b2e5f-2035-4266-988d-012d0e5da405",
-        "name": "elastic-agent-49175",
+        "ephemeral_id": "b0038032-dfe9-4690-b6d5-8ef5b4af6031",
+        "id": "0e291aa0-fb99-44b9-813c-4ab61aefa796",
+        "name": "elastic-agent-59025",
         "type": "filebeat",
         "version": "9.5.5"
     },
     "data_stream": {
         "dataset": "stamus_networks.host_insights",
-        "namespace": "59122",
+        "namespace": "45783",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "219b2e5f-2035-4266-988d-012d0e5da405",
+        "id": "0e291aa0-fb99-44b9-813c-4ab61aefa796",
         "snapshot": false,
         "version": "9.5.5"
     },
@@ -549,7 +553,7 @@ An example event for `host_insights` looks as following:
             "host"
         ],
         "dataset": "stamus_networks.host_insights",
-        "ingested": "2026-10-23T13:33:34Z",
+        "ingested": "2026-10-23T14:23:21Z",
         "kind": "asset",
         "module": "stamus_networks",
         "type": [

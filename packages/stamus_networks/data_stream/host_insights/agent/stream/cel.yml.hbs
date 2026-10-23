@@ -25,33 +25,107 @@ program: |-
   // Host Insights has NO documented "updated since" / incremental filter
   // (research-brief.md section 8, open question #9) -- every poll cycle must
   // do a FULL re-read of all hosts, starting at page 1, every time. There is
-  // no time-range window and no cursor/bookmark to resume from (unlike the
-  // `alerts` data stream's from_date/to_date cursor). This has resourcing and
+  // no time-range window to narrow what the API returns (unlike the `alerts`
+  // data stream's from_date/to_date cursor). This has resourcing and
   // polling-interval implications: a large host inventory means every single
-  // poll re-transfers and re-indexes the entire list, so `interval` should be
-  // set conservatively relative to inventory size and API load tolerance.
+  // poll re-transfers the entire list, so `interval` should be set
+  // conservatively relative to inventory size and API load tolerance.
   //
-  // Page tracking uses a plain `state.page` field, not `cursor`. `cursor` is
-  // the only state persisted across agent restarts, and persisting an
+  // Change detection lives HERE, in the CEL cursor -- not in the ingest
+  // pipeline. A prior approach tried to deduplicate repeated/unchanged
+  // observations by fingerprinting each document's content at the pipeline
+  // layer (hash of host_id.* with timestamps stripped -> _id). That approach
+  // is STATELESS: it only knows "have I ever produced this exact hash
+  // before", not "what was the immediately preceding observation for this
+  // specific host". A host whose profile goes A -> B -> A (e.g. a service
+  // temporarily disappears and later returns) would have its third
+  // observation (A again) collide with and silently drop against the FIRST
+  // observation's _id, because Elasticsearch data streams only support
+  // `create` writes -- so the transition back to A would be lost, and any
+  // downstream "latest state per host" view (built via max(@timestamp))
+  // would incorrectly keep showing B as current. `cursor.host_states` fixes
+  // this because it is the only place in this architecture with genuine
+  // memory of "what did I see last time for this specific host" (a single,
+  // most-recent baseline per host.ip), not "have I ever seen this content,
+  // in any order, across all of history".
+  //
+  // `cursor.host_states` is a map of host.ip -> a content-only comparable
+  // snapshot of that host's host_id.* (JSON-encoded to a string so map
+  // equality is a plain string compare). Per host, per poll:
+  // - absent from cursor.host_states (never seen, or pruned -- see below)
+  // -> always emit, this host is "new" to the baseline.
+  // - present and the freshly computed comparable differs from the stored
+  // value -> emit (a real, externally-visible change happened).
+  // - present and identical -> suppress entirely (no event for this host
+  // this poll); the baseline is still refreshed to the latest value.
+  // Either way, cursor.host_states[ip] is always updated to this poll's
+  // value, so the NEXT poll always compares against the truly most-recent
+  // known state, not the first-ever state -- this is what fixes A -> B -> A
+  // (round 2 stores B; round 3's A differs from the stored B, so it is
+  // correctly re-emitted, rather than colliding with round 1's A as a
+  // content fingerprint would).
+  //
+  // What counts as "comparable" (research-brief.md / field-schema-analysis.md
+  // document the full host_id.* shape):
+  // - host_id.hostname[] is kept IN FULL, including its own first_seen/
+  // last_seen. The pipeline's resolve_latest_hostname script picks the
+  // host's "current" name by max-last_seen over this array, so the
+  // relative timestamp ordering of hostname entries is itself a real,
+  // externally-visible state change (it can flip which name is reported
+  // as current) even when the set of hostnames is otherwise identical.
+  // - Every OTHER sub-object (username[], roles[], services[] and their
+  // nested values[], client_service, ssh.client, tls.ja4,
+  // http.user_agent) has first_seen/last_seen stripped. Those are pure
+  // observation-window timestamps that advance on nearly every poll for
+  // an active host and do not feed any resolved/derived output field --
+  // including them would make the comparison fire on every single poll
+  // regardless of whether the host's actual profile changed. host_id's
+  // own top-level first_seen/last_seen are excluded from the comparison
+  // entirely for the same reason.
+  // - host_id.in_home_net is included as-is (not a timestamp).
+  //
+  // Cursor size growth: cursor.host_states accumulates one entry per
+  // distinct host.ip. Since Host Insights has no incremental filter, every
+  // poll already performs a FULL re-read of the entire inventory -- so
+  // cursor.host_states is wholly REPLACED (not merged) with exactly the
+  // hosts seen in this poll's full read once all pages are collected. This
+  // bounds cursor.host_states to the current inventory size and naturally
+  // prunes any host that has dropped out of the inventory (decommissioned,
+  // DHCP-reassigned IP no longer in use, etc.) without needing an explicit
+  // LRU/expiry scheme. The accepted tradeoff: if a host genuinely churns out
+  // of the inventory and later reappears with unchanged content, it is
+  // treated as "new" again (re-emitted once) because its prior baseline was
+  // pruned -- this is intentional and matches the existing weak-IP-key
+  // posture already documented in the ingest pipeline (ip is reused via
+  // DHCP, so "the same IP later" is not assumed to be "the same host").
+  //
+  // Page tracking uses a plain `state.page` field, not `cursor` -- an
   // in-progress page number across restarts would be meaningless for a
-  // full-inventory poll -- each new polling interval always starts over at
-  // page 1. The plain state field only needs to survive the want_more
-  // re-evaluation chain within a single poll cycle (state.with() propagates
-  // it automatically), and it is explicitly reset to 1 once a poll's
-  // pagination finishes so the next interval starts clean.
+  // full-inventory poll (each new polling interval always starts over at
+  // page 1). `state.pending_host_states` is the same kind of plain,
+  // non-cursor field: it accumulates this poll's host_states across pages
+  // as they are fetched, and is only promoted into `cursor.host_states` once
+  // the full read for this poll completes (the terminal page), at which
+  // point it is reset to {} for the next poll. Both plain fields are reset
+  // on every error branch too, so a partial poll never contaminates the
+  // next one's accumulation.
   //
   // Pagination response envelope is UNCONFIRMED against a live CNCS instance
   // (research-brief.md section 3.3 / open question #3) -- assumed to be the
   // same DRF-style {count, next, previous, results} envelope used for the
   // `alerts` stream, with the same fallback heuristics (empty/short page) in
   // case the real envelope omits `next`.
-  int(state.?page.orValue(1)).as(page,
+  {
+    "page": int(state.?page.orValue(1)),
+    "baseline": state.?cursor.host_states.orValue({}),
+    "pending": state.?pending_host_states.orValue({}),
+  }.as(ctx,
     state.with(
       request(
         "GET",
         state.url.trim_right("/") + "/rest/appliances/host_id/?" + {
           "page_size": [string(int(state.page_size))],
-          "page_number": [string(page)],
+          "page_number": [string(ctx.page)],
         }.format_query()
       ).with(
         {
@@ -63,33 +137,80 @@ program: |-
       ).do_request().as(resp,
         (resp.StatusCode == 200) ?
           resp.Body.decode_json().as(body,
-            body.?results.orValue([]).map(e, {"message": e.encode_json()}).as(mapped,
-              (
-                // Primary signal: DRF-style `next` field, non-null means more
-                // pages. Fallback (if the real envelope omits `next`
-                // entirely): a full page suggests more data may follow; a
-                // short/empty page means stop.
-                size(mapped) != 0 && (
-                  body.?next.hasValue() ?
-                    (body.?next.orValue(null) != null)
-                  :
-                    size(mapped) >= int(state.page_size)
-                )
-              ) ?
-                // More pages remain for this poll's full read.
+            // Per host: carry the raw event through untouched (`message`) and
+            // separately build a content-only `comparable` snapshot (JSON string)
+            // used purely for this-poll-vs-last-poll change detection -- see the
+            // comparable-content rules in the header comment above.
+            body.?results.orValue([]).map(e,
+              e.?host_id.orValue({}).as(h,
                 {
-                  "events": (size(mapped) > 0) ? dyn(mapped) : dyn([{"retry": true}]),
-                  "page": page + 1,
-                  "want_more": true,
+                  "ip": string(e.?ip.orValue("")),
+                  "message": e.encode_json(),
+                  "comparable": {
+                    "in_home_net": h.?in_home_net.orValue(false),
+                    "hostname": h.?hostname.orValue([]),
+                    "username": h.?username.orValue([]).map(u, {"user": u.?user.orValue("")}),
+                    "roles": h.?roles.orValue([]).map(r, {"name": r.?name.orValue("")}),
+                    "services": h.?services.orValue([]).map(s,
+                      {
+                        "proto": s.?proto.orValue(""),
+                        "port": s.?port.orValue(0),
+                        "overflow": s.?overflow.orValue(0),
+                        "values": s.?values.orValue([]).map(v, v.drop(["first_seen", "last_seen"])),
+                      }
+                    ),
+                    "client_service": h.?client_service.orValue({}).drop(["first_seen", "last_seen"]),
+                    "ssh_client": h.?ssh.client.orValue({}).drop(["first_seen", "last_seen"]),
+                    "tls_ja4": h.?tls.ja4.orValue({}).drop(["first_seen", "last_seen"]),
+                    "http_user_agent": h.?http.user_agent.orValue({}).drop(["first_seen", "last_seen"]),
+                  }.encode_json(),
                 }
-              :
-                // Full read complete for this poll -- reset the page counter
-                // so the next poll cycle starts over at page 1.
-                {
-                  "events": (size(mapped) > 0) ? dyn(mapped) : dyn([{"retry": true}]),
-                  "page": 1,
-                  "want_more": false,
-                }
+              )
+            ).as(records,
+              // Emit only hosts that are new to the baseline or whose comparable
+              // content differs from the baseline -- a host whose content is
+              // unchanged from cursor.host_states is skipped entirely this poll.
+              records.map(r,
+                ((r.ip in ctx.baseline) ? (ctx.baseline[r.ip] != r.comparable) : true) ?
+                  [{"message": r.message}]
+                :
+                  []
+              ).flatten().as(emitted,
+                (
+                  // Primary signal: DRF-style `next` field, non-null means more
+                  // pages. Fallback (if the real envelope omits `next`
+                  // entirely): a full page suggests more data may follow; a
+                  // short/empty page means stop.
+                  size(records) != 0 && (
+                    body.?next.hasValue() ?
+                      (body.?next.orValue(null) != null)
+                    :
+                      size(records) >= int(state.page_size)
+                  )
+                ) ?
+                  // More pages remain for this poll's full read -- stage this
+                  // page's host states; the persisted cursor is not touched
+                  // until the full read completes (terminal page below).
+                  {
+                    "events": (size(emitted) > 0) ? dyn(emitted) : dyn([{"retry": true}]),
+                    "page": ctx.page + 1,
+                    "pending_host_states": ctx.pending.with(records.map(r, r.ip).zip(records.map(r, r.comparable))),
+                    "want_more": true,
+                  }
+                :
+                  // Full read complete for this poll -- replace cursor.host_states
+                  // wholesale with exactly the hosts seen this poll (natural
+                  // pruning of any host that dropped out of the inventory -- see
+                  // the cursor-size-growth note above), reset the page counter,
+                  // and clear the intra-poll accumulator for the next poll.
+                  {
+                    "events": (size(emitted) > 0) ? dyn(emitted) : dyn([{"retry": true}]),
+                    "page": 1,
+                    "cursor": {"host_states": ctx.pending.with(records.map(r, r.ip).zip(records.map(r, r.comparable)))},
+                    "pending_host_states": {},
+                    "want_more": false,
+                  }
+              )
             )
           )
         :
@@ -107,11 +228,14 @@ program: |-
             // unknown route): advance past the error instead of retrying forever, so
             // it is indexed and visible to an operator (see README Troubleshooting on
             // 401s from token rotation). Everything else (429, 5xx, etc.) is treated
-            // as transient: delete the cursor so the next evaluation retries.
+            // as transient: the single-object error form deletes the cursor so the
+            // next evaluation retries -- this also forgets cursor.host_states, so the
+            // next successful poll re-emits the full inventory once more as a
+            // one-time, self-healing consequence of a transient failure.
             [400, 401, 403, 404, 422].exists(c, c == int(resp.StatusCode)) ?
-              {"events": [{"error": err}], "page": 1, "want_more": false}
+              {"events": [{"error": err}], "page": 1, "pending_host_states": {}, "want_more": false}
             :
-              {"events": {"error": err}, "page": 1, "want_more": false}
+              {"events": {"error": err}, "page": 1, "pending_host_states": {}, "want_more": false}
           )
       )
     )

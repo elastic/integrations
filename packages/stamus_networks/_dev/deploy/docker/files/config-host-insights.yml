@@ -1,29 +1,47 @@
 rules:
   # --- page_number:1 ---
-  # req_num 1 (round 1 / first poll): full page (2 hosts), next non-null -> page 2 follows.
-  # req_num 2 (round 2 / second poll, interval-driven): Host Insights has NO incremental
-  # filter (no from_date/to_date, no cursor) -- every poll does a full re-read starting
-  # at page 1 again. This response is intentionally SHORT (1 host, next: null) so it is
-  # observably different from req_num 1 and proves the CEL program resets its page
-  # counter to 1 on each new poll cycle rather than continuing from the previous poll's
-  # last page.
-  # req_num 3 (round 3 / third poll, interval-driven): re-returns 198.51.100.10 -- a host
-  # ALREADY seen in round 1 -- but with CHANGED content: an added `hostname` entry
-  # (host-a-new.example.com joins host-a.example.com), different `services` (the tcp/443
-  # entry drops its tls detail and a new tcp/8443 entry appears), and an advanced
-  # `last_seen` (12:00 -> 15:30). Regression test for the pipeline's `_id` fingerprint:
-  # the fingerprint processor hashes the full `event.original` snapshot (not just the
-  # host IP), so this content change between polls must produce a NEW, distinct document
-  # for the same host.id instead of silently colliding with / overwriting round 1's
-  # document for .10 (see data_stream/host_insights/elasticsearch/ingest_pipeline/default.yml).
-  # req_num 4 (round 4 / fourth poll, interval-driven): re-returns 198.51.100.10 AGAIN,
-  # with the exact same hostname/services content as round 3 -- only the first_seen/
-  # last_seen timestamps have advanced further (still-active host, nothing actually
-  # changed). Regression test for the refined fingerprint: it excludes first_seen/
-  # last_seen from the hash, so this must NOT produce a new document -- it should
-  # silently collapse onto round 3's document via a version conflict on the same
-  # _id, leaving hit_count unchanged from round 3's total.
-  # req_num >=5 (all subsequent polls within the 1m test window): terminal empty
+  # Change detection is now entirely a CEL-side concern (cursor.host_states, keyed by
+  # host.ip) rather than a pipeline-side content fingerprint -- see
+  # data_stream/host_insights/agent/stream/cel.yml.hbs for the full design rationale.
+  # Each poll below is driven by `.req_num` (elastic/stream's per-rule request counter),
+  # modelling consecutive poll cycles against the same CEL program instance.
+  #
+  # req_num 1 (round 1 / first poll): full page (198.51.100.10 content "A", plus
+  # 198.51.100.11), next non-null -> page 2 follows (198.51.100.13). All three hosts are
+  # new to cursor.host_states, so all three must be emitted. Pagination/page-reset test.
+  # req_num 2 (round 2 / second poll): Host Insights has NO incremental filter (no
+  # from_date/to_date, no cursor) -- every poll does a full re-read starting at page 1
+  # again. This response returns a DIFFERENT, previously-unseen host (198.51.100.12) and
+  # is intentionally SHORT (next: null) so it is observably different from req_num 1 and
+  # proves the CEL program resets its page counter to 1 on each new poll cycle rather
+  # than continuing from the previous poll's last page. 198.51.100.12 is new -> emit.
+  # req_num 3 (round 3 / third poll): re-returns 198.51.100.10 -- a host ALREADY in
+  # cursor.host_states from round 1 -- but with CHANGED content ("B"): an added
+  # `hostname` entry (host-a-new.example.com joins host-a.example.com) and a new
+  # tcp/8443 service. A real content change must be emitted.
+  # req_num 4 (round 4 / fourth poll): THE CORE REGRESSION TEST. 198.51.100.10 reverts
+  # to EXACTLY round 1's content ("A" again -- same hostname[] entry, same single
+  # tcp/443 service, nothing else). This is the A -> B -> A scenario a pure content
+  # fingerprint cannot handle (round 3's "B" and round 4's "A" would each collide with
+  # whichever document first produced that hash, rather than being compared against the
+  # immediately preceding observation). cursor.host_states compares against round 3's
+  # stored "B", sees a difference, and correctly re-emits "A" a second time.
+  # req_num 5 (round 5 / fifth poll): re-returns 198.51.100.10 with the exact same
+  # hostname/services content as round 4 -- only a first_seen/last_seen timestamp
+  # (services[].values[].last_seen) has advanced further (still-active host, nothing
+  # actually changed). Regression test for timestamp stripping: this must NOT be
+  # emitted -- it should be silently suppressed against round 4's stored comparable.
+  # req_num 6 (round 6 / sixth poll): 198.51.100.10 gains a second hostname[] entry
+  # (host-a-alt.example.com) with a LATER last_seen than host-a.example.com, flipping
+  # which entry the ingest pipeline's resolve_latest_hostname script would pick as the
+  # host's current name. hostname[] (including its own timestamps) is kept in full in
+  # the comparable snapshot specifically so this kind of timestamp-driven resolved-name
+  # change is treated as a real, must-emit state transition.
+  # req_num 7 (round 7 / seventh poll): re-returns 198.51.100.10 with byte-identical
+  # hostname/services content to round 6 (only the top-level host_id.last_seen, which is
+  # excluded from the comparable entirely, advances). Steady-state suppression test:
+  # must NOT be emitted.
+  # req_num >=8 (all subsequent polls within the 1m test window): terminal empty
   # response -- stops hit_count from growing unboundedly across repeated full reads.
   - path: /rest/appliances/host_id/
     methods: ['GET']
@@ -42,18 +60,24 @@ rules:
             - 'application/json'
         body: |
           {{ if eq .req_num 1 }}
-          {"count": 3, "next": "http://{{ hostname }}:{{ env "PORT" }}/rest/appliances/host_id/?page_size=2&page_number=2", "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}]}]}}, {"ip": "198.51.100.11", "host_id": {"first_seen": "2024-01-11T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000", "in_home_net": false, "hostname": [{"host": "host-b.example.com", "first_seen": "2024-01-11T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "services": []}}]}
+          {"count": 3, "next": "http://{{ hostname }}:{{ env "PORT" }}/rest/appliances/host_id/?page_size=2&page_number=2", "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}]}]}}, {"ip": "198.51.100.11", "host_id": {"first_seen": "2024-01-11T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000", "in_home_net": false, "hostname": [{"host": "host-b.example.com", "first_seen": "2024-01-11T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "username": [], "roles": [], "services": []}}]}
           {{ else if eq .req_num 2 }}
-          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.12", "host_id": {"first_seen": "2024-01-15T13:00:00.000000+0000", "last_seen": "2024-01-15T13:05:00.000000+0000", "in_home_net": true, "hostname": [], "services": []}}]}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.12", "host_id": {"first_seen": "2024-01-15T13:00:00.000000+0000", "last_seen": "2024-01-15T13:05:00.000000+0000", "in_home_net": true, "hostname": [], "username": [], "roles": [], "services": []}}]}
           {{ else if eq .req_num 3 }}
-          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T15:30:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-new.example.com", "first_seen": "2024-01-15T14:00:00.000000+0000", "last_seen": "2024-01-15T15:30:00.000000+0000"}], "services": [{"proto": "tcp", "port": 8443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-15T15:00:00.000000+0000", "last_seen": "2024-01-15T15:30:00.000000+0000"}]}]}}]}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T15:30:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-new.example.com", "first_seen": "2024-01-15T14:00:00.000000+0000", "last_seen": "2024-01-15T15:30:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}]}, {"proto": "tcp", "port": 8443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-15T15:00:00.000000+0000", "last_seen": "2024-01-15T15:30:00.000000+0000"}]}]}}]}
           {{ else if eq .req_num 4 }}
-          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T16:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T16:00:00.000000+0000"}, {"host": "host-a-new.example.com", "first_seen": "2024-01-15T14:00:00.000000+0000", "last_seen": "2024-01-15T16:00:00.000000+0000"}], "services": [{"proto": "tcp", "port": 8443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-15T15:00:00.000000+0000", "last_seen": "2024-01-15T16:00:00.000000+0000"}]}]}}]}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T16:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}]}]}}]}
+          {{ else if eq .req_num 5 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000"}]}]}}]}
+          {{ else if eq .req_num 6 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-alt.example.com", "first_seen": "2024-01-18T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000"}]}]}}]}
+          {{ else if eq .req_num 7 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-20T11:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-alt.example.com", "first_seen": "2024-01-18T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000"}]}]}}]}
           {{ else }}
           {"count": 0, "next": null, "previous": null, "results": []}
           {{ end }}
-  # --- page_number:2 (round 1 only -- round 2's page 1 response is already terminal,
-  # so no page 2 request is expected on round 2 or later) ---
+  # --- page_number:2 (round 1 only -- every later round's page 1 response is already
+  # terminal, so no page 2 request is expected on round 2 or later) ---
   - path: /rest/appliances/host_id/
     methods: ['GET']
     query_params:
@@ -70,7 +94,7 @@ rules:
           Content-Type:
             - 'application/json'
         body: |
-          {"count": 1, "next": null, "previous": "http://{{ hostname }}:{{ env "PORT" }}/rest/appliances/host_id/?page_size=2&page_number=1", "results": [{"ip": "198.51.100.13", "host_id": {"first_seen": "2024-01-12T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-c.example.com", "first_seen": "2024-01-12T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "services": []}}]}
+          {"count": 1, "next": null, "previous": "http://{{ hostname }}:{{ env "PORT" }}/rest/appliances/host_id/?page_size=2&page_number=1", "results": [{"ip": "198.51.100.13", "host_id": {"first_seen": "2024-01-12T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-c.example.com", "first_seen": "2024-01-12T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "username": [], "roles": [], "services": []}}]}
   # --- Regression guard: catch-all for any other host_id request (e.g. missing/unmatched
   # query params, or a bug that keeps advancing page_number past where this poll's
   # reads should have reset to page 1). Returns an oversized batch so hit_count
@@ -84,6 +108,6 @@ rules:
             - 'application/json'
         body: |
           {"count": 50, "next": null, "previous": null, "results": [
-            {"ip": "203.0.113.200", "host_id": {"first_seen": "2020-01-01T00:00:00Z", "last_seen": "2020-01-01T00:00:00Z", "in_home_net": false, "hostname": [{"host": "regression-guard.example.com", "first_seen": "2020-01-01T00:00:00Z", "last_seen": "2020-01-01T00:00:00Z"}], "services": []}},
-            {"ip": "203.0.113.201", "host_id": {"first_seen": "2020-01-01T00:00:00Z", "last_seen": "2020-01-01T00:00:00Z", "in_home_net": false, "hostname": [{"host": "regression-guard.example.com", "first_seen": "2020-01-01T00:00:00Z", "last_seen": "2020-01-01T00:00:00Z"}], "services": []}}
+            {"ip": "203.0.113.200", "host_id": {"first_seen": "2020-01-01T00:00:00Z", "last_seen": "2020-01-01T00:00:00Z", "in_home_net": false, "hostname": [{"host": "regression-guard.example.com", "first_seen": "2020-01-01T00:00:00Z", "last_seen": "2020-01-01T00:00:00Z"}], "username": [], "roles": [], "services": []}},
+            {"ip": "203.0.113.201", "host_id": {"first_seen": "2020-01-01T00:00:00Z", "last_seen": "2020-01-01T00:00:00Z", "in_home_net": false, "hostname": [{"host": "regression-guard.example.com", "first_seen": "2020-01-01T00:00:00Z", "last_seen": "2020-01-01T00:00:00Z"}], "username": [], "roles": [], "services": []}}
           ]}

@@ -9,19 +9,34 @@ data_stream:
     interval: 2s
     page_size: 2
 assert:
-  # hit_count math (per-poll, no incremental filter -- every poll re-reads from page 1):
-  #   round 1 (req_num 1 page 1 + req_num 1 page 2): 198.51.100.10, .11, .13  -> 3 docs
-  #   round 2 (req_num 2 page 1, terminal):          198.51.100.12           -> 1 doc
-  #   round 3 (req_num 3 page 1, terminal):          198.51.100.10 (CHANGED  -> 1 doc
-  #     hostname/services content vs. round 1 -- same host.id, but the ingest
-  #     pipeline fingerprints the host's inventory content, so a real content
-  #     change produces a NEW _id/document rather than colliding with round 1's
-  #     document for .10; this is NOT an overwrite, hence +1 here, not +0)
-  #   round 4 (req_num 4 page 1, terminal):          198.51.100.10 again, SAME     -> 0 docs
-  #     hostname/services content as round 3 -- only first_seen/last_seen advanced
-  #     further (still-active host, nothing actually changed). The fingerprint
-  #     excludes first_seen/last_seen, so this collapses onto round 3's _id via a
-  #     version conflict (silently dropped, not an error) and must NOT add a new
-  #     document -- the key regression test for excluding timestamps from the hash.
-  #   total: 3 + 1 + 1 + 0 = 5
-  hit_count: 5
+  # hit_count math (per-poll, no incremental filter -- every poll re-reads from page 1).
+  # Change detection is CEL-side (cursor.host_states, keyed by host.ip) -- see
+  # data_stream/host_insights/agent/stream/cel.yml.hbs for the full design, and
+  # _dev/deploy/docker/files/config-host-insights.yml for the per-round mock responses.
+  #   round 1 (req_num 1 page 1 + req_num 1 page 2): 198.51.100.10, .11, .13 all new
+  #     to cursor.host_states -> 3 docs
+  #   round 2 (req_num 2 page 1, terminal): 198.51.100.12, new host (also proves the
+  #     page counter resets to 1 each poll rather than continuing from the previous
+  #     poll's last page) -> 1 doc
+  #   round 3 (req_num 3 page 1, terminal): 198.51.100.10 again, CONTENT CHANGED
+  #     ("A" -> "B": added hostname entry, new tcp/8443 service) vs. its round 1
+  #     baseline -> 1 doc
+  #   round 4 (req_num 4 page 1, terminal): 198.51.100.10 again, REVERTS to EXACTLY
+  #     round 1's content ("B" -> "A"). This is the A -> B -> A regression: a pure
+  #     content fingerprint would collide this with round 1's document and drop it;
+  #     cursor.host_states compares against round 3's stored "B", sees a difference,
+  #     and correctly re-emits -> 1 doc
+  #   round 5 (req_num 5 page 1, terminal): 198.51.100.10 again, byte-identical
+  #     hostname/services content to round 4 -- only a services[].values[].last_seen
+  #     timestamp advanced (stripped from the comparable) -> 0 docs (suppressed)
+  #   round 6 (req_num 6 page 1, terminal): 198.51.100.10 gains a second hostname[]
+  #     entry with a later last_seen, flipping which entry the ingest pipeline's
+  #     resolve_latest_hostname would pick as the current name -- hostname[] is kept
+  #     in full (including timestamps) in the comparable specifically to catch this
+  #     -> 1 doc
+  #   round 7 (req_num 7 page 1, terminal): 198.51.100.10 again, byte-identical to
+  #     round 6 (only the excluded top-level host_id.last_seen advances) -> 0 docs
+  #     (suppressed -- steady-state/unchanged test)
+  #   round >=8: terminal empty response -> 0 docs
+  #   total: 3 + 1 + 1 + 1 + 0 + 1 + 0 = 7
+  hit_count: 7

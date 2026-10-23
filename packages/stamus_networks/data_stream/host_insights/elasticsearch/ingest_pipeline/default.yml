@@ -2,32 +2,26 @@
 description: >-
   Pipeline for processing Stamus Networks Clear NDR Host Insights (`host_id`) inventory
   profiles. This is an entity/inventory data stream: Host Insights has no incremental
-  "updated since" filter, so every poll re-reads the ENTIRE host inventory and re-sends
-  every host on every cycle. `entity.id` is derived from the host's `ip` address, which
-  is a weak key -- no MAC address or asset UUID is documented by the vendor, so the same
-  physical host could in principle re-appear under a different IP after DHCP
-  reassignment. Elasticsearch data streams only support `op_type: create` writes (this
-  is a core data-stream constraint, not a configuration choice), so a stable `_id` does
-  NOT upsert here: a later write using a previously-seen `_id` causes a version conflict
-  that is dropped, silently discarding any changed hostnames, services, or last-seen
-  timestamps. This pipeline therefore derives `_id` from a fingerprint of the host's
-  inventory content (`host_id.*`), following the same pattern used by other entity
-  packages in this repo (e.g. `github` members, `jamf_pro` inventory): a host whose
-  profile changed between polls (new hostname, service, fingerprint, etc.) is captured
-  as a new document instead of being dropped. The fingerprint deliberately EXCLUDES
-  every `first_seen`/`last_seen` leaf in `host_id.*` (stripped recursively before
-  hashing) -- those observation-window timestamps advance on nearly every poll for any
-  actively-communicating host, so including them (e.g. by hashing the raw
-  `event.original` payload verbatim) would produce a new document almost every cycle
-  regardless of whether the host's actual profile changed, defeating the point of
-  fingerprinting. With timestamps excluded, a host whose content is genuinely unchanged
-  collapses onto the same `_id` (a harmless no-op write) even as its `last_seen`
-  advances, while any real content change still produces a new document. There is
+  "updated since" filter, so every poll re-reads the ENTIRE host inventory. Change
+  detection happens upstream, in the CEL program's persisted `cursor.host_states` map
+  (one comparable content snapshot per `host.ip`, carried across poll cycles) -- the CEL
+  program only emits a host into a given poll's events when that host is new to the
+  baseline, or its comparable content has genuinely changed since the last time THAT
+  specific host was observed (see `agent/stream/cel.yml.hbs` for the full rationale,
+  including why this is correct for a host whose profile reverts, e.g. A -> B -> A,
+  where a stateless content fingerprint would incorrectly collide with the first A).
+  Because of that upstream filtering, every document that reaches this pipeline already
+  represents a genuine observation -- a first-time sighting of a host, or a real change
+  in its state -- so `_id` is left to Elasticsearch's normal auto-generation, exactly
+  like any other log event; no custom `_id` scheme is needed or applied here.
+  `entity.id` is derived from the host's `ip` address, which remains a weak key -- no
+  MAC address or asset UUID is documented by the vendor, so the same physical host
+  could in principle re-appear under a different IP after DHCP reassignment; this part
+  of the design is unaffected by the change-detection move to CEL. There is
   intentionally no "latest state per host" view maintained by this pipeline -- consumers
   that need current-state-per-host should build it downstream (for example an
   Elasticsearch transform aggregating by `entity.id` with `max(@timestamp)`, or
-  ingestion into the Elastic Entity Store) rather than relying on this data stream's
-  raw documents to self-collapse to one row per host.
+  ingestion into the Elastic Entity Store).
 processors:
   - set:
       field: ecs.version
@@ -214,61 +208,6 @@ processors:
       allow_duplicates: false
       if: ctx.json?.ip != null
 
-  # --- Append-only snapshot `_id`: data streams only support `create`, so a `_id`
-  #     derived purely from the entity key (e.g. host.id) would conflict and be
-  #     silently dropped on every re-read, discarding any changed fields. Build a
-  #     content-only copy of host_id.* with every first_seen/last_seen leaf stripped
-  #     (recursively, at any depth -- hostname[]/username[]/roles[]/services[].values[]
-  #     all carry their own first_seen/last_seen), since those observation-window
-  #     timestamps advance on nearly every poll for an active host and would otherwise
-  #     make the fingerprint produce a new document almost every cycle regardless of
-  #     whether the host's actual inventory changed. See the pipeline `description`
-  #     above for the full rationale. ---
-  - script:
-      lang: painless
-      tag: build_fingerprint_content
-      description: >-
-        Recursively strip first_seen/last_seen leaves from a deep copy of host_id.*
-        and pair it with host.id, so the fingerprint below hashes only the host's
-        actual inventory content, not its observation-window timestamps.
-      if: ctx.host_id != null
-      source: |-
-        def stripTimestamps(def node) {
-          if (node instanceof Map) {
-            Map copy = new HashMap();
-            for (def key : node.keySet()) {
-              if (key == 'first_seen' || key == 'last_seen') {
-                continue;
-              }
-              copy.put(key, stripTimestamps(node.get(key)));
-            }
-            return copy;
-          } else if (node instanceof List) {
-            List copy = new ArrayList();
-            for (def item : node) {
-              copy.add(stripTimestamps(item));
-            }
-            return copy;
-          }
-          return node;
-        }
-        Map fingerprintContent = new HashMap();
-        fingerprintContent.id = ctx.host?.id;
-        fingerprintContent.content = stripTimestamps(ctx.host_id);
-        ctx._fingerprint_content = fingerprintContent;
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_build_fingerprint_content
-            value: '{{{ _ingest.on_failure_message }}}'
-  - fingerprint:
-      fields:
-        - _fingerprint_content
-      target_field: _id
-      method: SHA-256
-      tag: fingerprint_snapshot_to_doc_id
-      if: ctx._fingerprint_content != null
-
   # --- ECS categorization ---
   - set:
       field: event.kind
@@ -289,7 +228,6 @@ processors:
   - remove:
       field:
         - json
-        - _fingerprint_content
       ignore_missing: true
       tag: remove_temp_fields
 
