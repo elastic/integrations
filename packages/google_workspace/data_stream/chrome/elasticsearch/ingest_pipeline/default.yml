@@ -247,6 +247,11 @@ processors:
       field: google_workspace.chrome.local_ip
       tag: trim_local_ip_558f0046
       ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_remove_empty_local_ips
+      if: ctx.google_workspace?.chrome?.local_ip instanceof List
+      source: ctx.google_workspace.chrome.local_ip.removeIf(ip -> ip == '');
   - foreach:
       tag: foreach_google_workspace_chrome_local_ip_329b4ed8
       field: google_workspace.chrome.local_ip
@@ -281,6 +286,11 @@ processors:
       field: google_workspace.chrome.remote_ip
       tag: trim_remote_ip_17a281e2
       ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_remove_empty_remote_ips
+      if: ctx.google_workspace?.chrome?.remote_ip instanceof List
+      source: ctx.google_workspace.chrome.remote_ip.removeIf(ip -> ip == '');
   - foreach:
       tag: foreach_google_workspace_chrome_remote_ip_0c6f0b5f
       field: google_workspace.chrome.remote_ip
