@@ -267,10 +267,18 @@ processors:
       value: event
 
   - set:
-      tag: set_event_category
+      tag: set_event_category_network
       field: event.category
       value:
         - network
+      if: 'ctx.fortigate?.type == "traffic"'
+
+  - set:
+      tag: set_event_category_host_info
+      field: event.category
+      value:
+        - host
+      if: 'ctx.fortigate?.type == "event" && ctx.fortigate?.subtype == "system" && ctx.event?.action == "perf-stats"'
 
   - set:
       tag: set_event_module
@@ -298,10 +306,18 @@ processors:
       value: firewall
 
   - set:
-      tag: set_event_type
+      tag: set_event_type_connection
       field: event.type
       value:
         - connection
+      if: 'ctx.fortigate?.type == "traffic"'
+
+  - set:
+      tag: set_event_type_host_info
+      field: event.type
+      value:
+        - info
+      if: 'ctx.fortigate?.type == "event" && ctx.fortigate?.subtype == "system" && ctx.event?.action == "perf-stats"'
 
   - set:
       tag: set_event_outcome_failure
