@@ -15,11 +15,25 @@ streams:
         multi: false
         required: true
         show_user: true
+      - name: collection_strategy
+        type: select
+        title: Collection Strategy
+        description: >-
+          Combined uses one EventsFeed query and one marker for all event subtypes. Split uses independent markers for Internet Firewall, WAN Firewall, and other events to improve throughput when one subtype has a large backlog. Changing from Combined to Split is supported, but changing an existing Split input back to Combined is not.
+        default: combined
+        multi: false
+        required: true
+        show_user: true
+        options:
+          - text: Combined
+            value: combined
+          - text: Split
+            value: split
       - name: max_executions
         type: integer
         title: Maximum Pages Per Cycle
         description: >-
-          Maximum number of pages (up to 3000 events each) requested back to back in one polling cycle. When the limit is reached, the next cycle starts at the next interval tick. A value of 0 uses the default (1000).
+          Maximum number of GraphQL operations requested back to back in one polling cycle. In Combined mode, each operation can return up to 3000 events total. In Split mode, each operation can return up to 3000 Internet Firewall, 3000 WAN Firewall, and 3000 other events. When the limit is reached, the next cycle starts at the next interval tick. A value of 0 uses the default (1000).
         default: 1000
         multi: false
         required: false
