@@ -1,0 +1,55 @@
+{
+  "id": "gcp_cloudstorage_otel-request-throttling",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Fires when a bucket receives rate-limit or resource-exhaustion responses. This is the definitive saturation signal for Cloud Storage: the bucket is shedding load because demand has grown faster than it can redistribute IO capacity. Reports approximate read and write request rates alongside so the ramp can be judged against Google's ramp-up guidance.",
+    "name": "[GCP Cloud Storage OTel] Bucket requests throttled by rate limits",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "gcp_cloudstorage_otel",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Cloud Storage bucket is being rate limited\n\nThe bucket is returning resource-exhaustion / rate-limit responses. Cloud Storage redistributes a\nbucket's IO capacity across its servers over a period of **minutes**; when request rate grows faster\nthan that redistribution, the bucket sheds load. This is the single most common self-inflicted\nCloud Storage failure mode, and it is almost always fixed on the client, not by Google.\n\n### Triage\n\n1. **Check the ramp.** Compare `approx_read_requests_per_second` and\n   `approx_write_requests_per_second` against Google's guidance: no managed ramp is needed below\n   roughly 5,000 reads/s or 1,000 writes/s per bucket, and above that the rate should not double\n   faster than every 20 minutes. If a deploy, backfill or batch job started recently, that is your\n   cause.\n2. **Treat the rates as a lower bound.** They are derived from polled Cloud Monitoring samples, so\n   they understate the true rate whenever the collection interval misses 60s samples. Use them to\n   judge the *shape* of the ramp, and confirm absolute rates against the client's own metrics.\n3. **Which methods?** `throttled_methods` tells you whether writes or reads are being shed. Write\n   throttling on a single object prefix usually means a hot key; the remedy is to spread writes\n   across a wider key space rather than to raise a quota.\n4. **Is it one bucket?** Per-bucket limits are the usual cause. If several buckets in the same\n   `location` throttle together, you are contending for per-location or per-project bandwidth\n   instead, and the remedy is to spread load across locations.\n5. **Expect correlated service faults.** `gcp_cloudstorage_otel-service-fault-errors` commonly fires on\n   the same bucket during a saturation incident. Fix the ramp first and the retryable errors should\n   subside.\n\n### Remediation\n\n- Add exponential backoff with jitter on the client and cap concurrency.\n- Ramp traffic gradually: hold below the ramp-free threshold, then no faster than doubling every\n  20 minutes.\n- Spread object keys so writes are not concentrated on a narrow prefix range.\n- If the workload genuinely requires a sustained rate above the guidance, request a quota review\n  with GCP support before the next ramp rather than during the incident.\n\n### Tuning\n\n- `throttled_requests >= 5` and `throttled_pct >= 0.05` are deliberately low because the healthy\n  baseline is zero. Remove the percentage clause entirely for buckets where any throttling should\n  page.\n- The `1800.0` divisors must be kept in sync with `timeWindowSize` if you change the window."
+      },
+      "dashboards": [
+        {
+          "id": "gcp_cloudstorage_otel-ffad2d3a-43f6-482a-a35c-97f6df9e0479"
+        },
+        {
+          "id": "gcp_cloudstorage_otel-61c5320c-19f7-4676-a8ae-5d2d889d99a7"
+        }
+      ]
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-gcp.cloudstorage.otel-default\n// Scope to Cloud Storage; this data stream carries every GCP service the receiver collects.\n| WHERE resource.attributes.gcp.resource_type == \"gcs_bucket\"\n    AND `metrics.storage.googleapis.com/api/request_count` IS NOT NULL\n// Rate-limit / quota-exhaustion responses. RESOURCE_EXHAUSTED is the canonical status string; the\n// LIKE clauses are defensive so provider-specific variants are not missed.\n| EVAL is_throttled = attributes.response_code == \"RESOURCE_EXHAUSTED\"\n      OR attributes.response_code LIKE \"*RATE_LIMIT*\"\n      OR attributes.response_code LIKE \"*QUOTA*\"\n      OR attributes.response_code LIKE \"*TOO_MANY*\"\n// Read vs write path matters here: Google's guidance is that a bucket needs no managed ramp below\n// roughly 5,000 reads/s or 1,000 writes/s, and above that should not double faster than every\n// 20 minutes. Adjust the method lists if your estate uses methods not shown here.\n| EVAL is_read  = attributes.method IN (\"ReadObject\", \"GetObjectMetadata\", \"ListObjects\", \"GetBucketMetadata\")\n| EVAL is_write = attributes.method IN (\"WriteObject\", \"DeleteObject\")\n// request_count is a ~60s delta counter stored as a gauge: SUM it, never RATE() it.\n| STATS total_requests     = SUM(`metrics.storage.googleapis.com/api/request_count`),\n        throttled_requests = SUM(`metrics.storage.googleapis.com/api/request_count`) WHERE is_throttled,\n        read_requests      = SUM(`metrics.storage.googleapis.com/api/request_count`) WHERE is_read,\n        write_requests     = SUM(`metrics.storage.googleapis.com/api/request_count`) WHERE is_write,\n        throttled_codes    = VALUES(attributes.response_code) WHERE is_throttled,\n        throttled_methods  = VALUES(attributes.method) WHERE is_throttled\n    BY resource.attributes.bucket_name, resource.attributes.location\n| EVAL throttled_requests = COALESCE(throttled_requests, 0)\n| WHERE throttled_requests >= 5\n// Approximate per-second rates. 1800 = timeWindowSize (30m) expressed in seconds \u2014 keep the two in\n// sync if you change the window. Treat these as a lower bound: the collector polls Cloud Monitoring\n// on an operator-configured interval and will not always retrieve every 60s sample.\n| EVAL approx_read_requests_per_second  = ROUND(COALESCE(read_requests, 0)::DOUBLE / 1800.0, 2),\n       approx_write_requests_per_second = ROUND(COALESCE(write_requests, 0)::DOUBLE / 1800.0, 2)\n// Cast before dividing: request_count is a long and `a / b` would be integer division.\n| EVAL throttled_pct = ROUND(throttled_requests::DOUBLE / total_requests * 100.0, 3)\n// Throttling has a near-zero healthy baseline, so this share threshold is deliberately tiny.\n// Remove this clause for zero-tolerance buckets; raise it if a workload is designed to be throttled.\n| WHERE throttled_pct >= 0.05\n| SORT throttled_requests DESC\n| LIMIT 50"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 30,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.bucket_name",
+      "termSize": 50
+    }
+  }
+}

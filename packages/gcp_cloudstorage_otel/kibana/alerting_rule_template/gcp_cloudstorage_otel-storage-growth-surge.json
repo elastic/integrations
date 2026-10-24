@@ -1,0 +1,55 @@
+{
+  "id": "gcp_cloudstorage_otel-storage-growth-surge",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Fires when a bucket's stored bytes grow more than 50% over 14 days. Storage metrics are daily snapshots, so this runs on a slow clock and is a capacity and cost-trajectory signal rather than an operational one. Reports the share of bytes sitting in a hot storage class so the lifecycle-policy opportunity is visible from the alert.",
+    "name": "[GCP Cloud Storage OTel] Bucket storage growing faster than expected",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "gcp_cloudstorage_otel",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "6h"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "lookBackWindow": 5,
+      "statusChangeThreshold": 2
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Cloud Storage bucket is growing faster than expected\n\nStored bytes in this bucket grew by more than half over the last 14 days. This is a capacity and\ncost-trajectory alert, not an operational one: Cloud Storage recomputes the storage metrics roughly\nonce a day, so the rule runs on a slow clock and will not tell you anything about the last hour.\n\n### Triage\n\n1. **Is the growth intentional?** Match it against onboarding of a new data source, a retention\n   change, a migration, or a backup job that changed schedule or frequency.\n2. **Is retention actually working?** The most common cause is a lifecycle rule that was never\n   created, was scoped to the wrong prefix, or was disabled. Check the bucket's lifecycle\n   configuration and confirm the rules reference prefixes that still exist.\n3. **Is object versioning on?** With versioning enabled and no lifecycle rule to expire noncurrent\n   versions, a bucket grows without the visible object set growing at all. This is a very frequent\n   cause of surprise growth.\n4. **Could a cheaper class carry it?** `hot_bytes_pct` is the share of the bucket's bytes that sit\n   outside `NEARLINE`, `COLDLINE` and `ARCHIVE`. A high percentage on data that is written once and\n   rarely read is the clearest cost-optimisation opportunity available \u2014 move it with a lifecycle\n   rule or enable Autoclass.\n5. **Project the bill.** `growth_gib` over 14 days extrapolates directly. If the trajectory is real\n   and intended, raise the budget and the quota expectations now rather than at the end of the month.\n\n### Tuning\n\n- `growth_pct > 50.0` over 14 days is roughly a doubling per month. Lower to `25` for tight budget\n  control; raise it for buckets that are expected to grow fast.\n- `latest_bytes >= 10737418240` (10 GiB) excludes buckets too small to matter. Raise it in large\n  estates so only buckets with real cost impact can alert.\n- The 2-day head and tail slices are wide enough to capture at least one daily snapshot. If your\n  collection interval is very long, widen them.\n\n### Note\n\n`storage/total_byte_seconds` is the billing-aligned measure of storage consumption and is the right\nfield for a true cost report. This rule uses `storage/total_bytes` because the question it answers is\n\"is this bucket growing\", which is about trajectory rather than accrued spend."
+      },
+      "dashboards": [
+        {
+          "id": "gcp_cloudstorage_otel-ffad2d3a-43f6-482a-a35c-97f6df9e0479"
+        },
+        {
+          "id": "gcp_cloudstorage_otel-61c5320c-19f7-4676-a8ae-5d2d889d99a7"
+        }
+      ]
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-gcp.cloudstorage.otel-default\n// Scope to Cloud Storage; this data stream carries every GCP service the receiver collects.\n| WHERE resource.attributes.gcp.resource_type == \"gcs_bucket\"\n    AND `metrics.storage.googleapis.com/storage/total_bytes` IS NOT NULL\n//\n// --- Snapshot handling -------------------------------------------------------------------------\n// total_bytes is a point-in-time snapshot recomputed by Cloud Monitoring roughly once per day and\n// re-reported on every poll. It must NEVER be summed over time: that would multiply it by the poll\n// count. The correct shape is MAX per series within a narrow slice, then SUM across series.\n// A bucket can hold several storage classes at once (lifecycle transitions, Autoclass), so the\n// first STATS groups by bucket AND class and the second sums the classes together.\n// The 2-day head and tail slices are wide enough to always contain at least one daily snapshot.\n| STATS latest_class_bytes   = MAX(`metrics.storage.googleapis.com/storage/total_bytes`) WHERE @timestamp >= NOW() - 2 days,\n        earliest_class_bytes = MAX(`metrics.storage.googleapis.com/storage/total_bytes`) WHERE @timestamp < NOW() - 12 days\n    BY resource.attributes.bucket_name, attributes.storage_class\n| STATS latest_bytes     = SUM(latest_class_bytes),\n        earliest_bytes   = SUM(earliest_class_bytes),\n        // Everything that is not an archival class is billed at a hot rate. Written as an exclusion\n        // so that an unfamiliar class is counted as hot rather than silently ignored.\n        latest_hot_bytes = SUM(latest_class_bytes) WHERE attributes.storage_class NOT IN (\"NEARLINE\", \"COLDLINE\", \"ARCHIVE\"),\n        storage_classes  = VALUES(attributes.storage_class)\n    BY resource.attributes.bucket_name\n// Guard against divide-by-zero, and ignore buckets too small for growth to cost anything.\n// 10 GiB; raise this so only buckets that matter to the bill can alert.\n| WHERE earliest_bytes > 0 AND latest_bytes >= 10737418240\n| EVAL growth_gib = ROUND((latest_bytes - earliest_bytes) / 1073741824.0, 2),\n       growth_pct = ROUND((latest_bytes - earliest_bytes) / earliest_bytes * 100.0, 2),\n       latest_gib = ROUND(latest_bytes / 1073741824.0, 2),\n       hot_bytes_pct = ROUND(COALESCE(latest_hot_bytes, 0.0) / latest_bytes * 100.0, 1)\n// 50% over 14 days is roughly a doubling per month. Lower to 25 for tighter budget control, or\n// raise it for buckets that are expected to grow quickly.\n| WHERE growth_pct > 50.0\n| SORT growth_pct DESC\n| LIMIT 50"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 14,
+      "timeWindowUnit": "d",
+      "groupBy": "row",
+      "termField": "resource.attributes.bucket_name",
+      "termSize": 50
+    }
+  }
+}
