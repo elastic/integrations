@@ -1,0 +1,55 @@
+{
+  "id": "gcp_cloudstorage_otel-authorization-failure-surge",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Fires when the share of PERMISSION_DENIED and UNAUTHENTICATED responses on a bucket steps up sharply against its own recent baseline. Compares the last hour with the preceding three hours, so the signal is change rather than absolute level. This is the characteristic shape of an IAM policy change, a key rotation, or an expired service-account credential.",
+    "name": "[GCP Cloud Storage OTel] Authorization failures rising on a bucket",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "gcp_cloudstorage_otel",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "15m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Authorization failures rising on a Cloud Storage bucket\n\n`PERMISSION_DENIED` and `UNAUTHENTICATED` have stepped up sharply as a share of this bucket's\ntraffic. Some baseline is normal in estates that probe for access, which is why the rule compares\nthe last hour against the preceding three rather than using a fixed threshold. A step change of this\nshape almost always means a credential or policy regression, not an attack.\n\n### Triage\n\n1. **What changed in the last hour?** Look at IAM policy changes on the bucket and on the project,\n   service-account key rotations, Workload Identity binding changes, and any move to uniform\n   bucket-level access that removed a legacy ACL grant.\n2. **Which methods?** `denied_methods` is the strongest clue. Denials concentrated on\n   `GetBucketMetadata` or `TestIamPermissions` point at a bucket-level policy change. Denials on\n   `ReadObject` or `WriteObject` mean a running workload has already lost access and is failing.\n3. **Which code?** `PERMISSION_DENIED` means the caller authenticated but is not authorised \u2014 check\n   the IAM binding. `UNAUTHENTICATED` means the credential itself is missing, malformed or expired \u2014\n   check key expiry and token refresh on the client.\n4. **One bucket or many?** A single bucket points at a policy edit on that bucket. Several buckets\n   at once points at a shared service account, a rotated key, or an org-level policy change.\n5. **Confirm the blast radius.** Cloud Audit Logs for `storage.googleapis.com` will name the\n   principal being denied, which this metric cannot \u2014 the receiver does not expose a caller\n   dimension.\n\n### Tuning\n\n- `recent_denied_pct > (baseline_denied_pct * 3.0) + 1.0` is the step-change test. Raise the\n  multiplier in estates where access probing is a normal pattern; raise the `+ 1.0` floor if\n  low-traffic buckets generate noise.\n- `recent_total >= 200`, `baseline_total >= 600` and `recent_denied >= 20` are the volume floors.\n  Scale them to your busiest buckets.\n- The 1h / 3h split is set by the `is_recent` expression and `timeWindowSize` together. Change both\n  if you want a faster or steadier detector.\n\n### Note\n\nA bucket that has been failing authorization for longer than the 4h window will have no healthy\nbaseline left inside the window and will stop alerting. Pair this rule with\n`gcp_cloudstorage_otel-bucket-traffic-stopped`, which catches the end state where the client gives up\nentirely."
+      },
+      "dashboards": [
+        {
+          "id": "gcp_cloudstorage_otel-ffad2d3a-43f6-482a-a35c-97f6df9e0479"
+        },
+        {
+          "id": "gcp_cloudstorage_otel-61c5320c-19f7-4676-a8ae-5d2d889d99a7"
+        }
+      ]
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-gcp.cloudstorage.otel-default\n// Scope to Cloud Storage; this data stream carries every GCP service the receiver collects.\n| WHERE resource.attributes.gcp.resource_type == \"gcs_bucket\"\n    AND `metrics.storage.googleapis.com/api/request_count` IS NOT NULL\n// Split the rule's 4h window into a 1h \"recent\" slice and a 3h baseline. Adjust both the slice here\n// and timeWindowSize together: a longer baseline is steadier, a shorter recent slice reacts faster.\n| EVAL is_recent = @timestamp >= NOW() - 1 hour\n| EVAL is_denied = attributes.response_code IN (\"PERMISSION_DENIED\", \"UNAUTHENTICATED\")\n// request_count is a ~60s delta counter stored as a gauge: SUM it, never RATE() it. Computing the\n// denied count and the total in one STATS keeps the ratio correct regardless of document layout.\n| STATS recent_denied   = SUM(`metrics.storage.googleapis.com/api/request_count`) WHERE is_denied AND is_recent,\n        recent_total    = SUM(`metrics.storage.googleapis.com/api/request_count`) WHERE is_recent,\n        baseline_denied = SUM(`metrics.storage.googleapis.com/api/request_count`) WHERE is_denied AND NOT is_recent,\n        baseline_total  = SUM(`metrics.storage.googleapis.com/api/request_count`) WHERE NOT is_recent,\n        denied_methods  = VALUES(attributes.method) WHERE is_denied AND is_recent,\n        denied_codes    = VALUES(attributes.response_code) WHERE is_denied AND is_recent\n    BY resource.attributes.bucket_name, resource.attributes.location\n| EVAL recent_denied = COALESCE(recent_denied, 0), baseline_denied = COALESCE(baseline_denied, 0)\n// Require enough traffic in both slices for the comparison to mean anything.\n| WHERE recent_total >= 200 AND baseline_total >= 600 AND recent_denied >= 20\n// Cast before dividing: request_count is a long and `a / b` would be integer division. Comparing\n// shares rather than raw counts means ordinary traffic growth does not trip the rule.\n| EVAL recent_denied_pct   = ROUND(recent_denied::DOUBLE / recent_total * 100.0, 3),\n       baseline_denied_pct = ROUND(baseline_denied::DOUBLE / baseline_total * 100.0, 3)\n// Step-change test. The `+ 1.0` sets a floor so a bucket with a zero baseline needs to reach ~1%\n// before it alerts. Raise the multiplier for workloads that legitimately probe for access.\n| WHERE recent_denied_pct > (baseline_denied_pct * 3.0) + 1.0\n| SORT recent_denied DESC\n| LIMIT 50"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 4,
+      "timeWindowUnit": "h",
+      "groupBy": "row",
+      "termField": "resource.attributes.bucket_name",
+      "termSize": 50
+    }
+  }
+}
