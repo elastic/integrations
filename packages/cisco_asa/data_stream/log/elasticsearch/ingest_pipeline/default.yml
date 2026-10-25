@@ -1287,6 +1287,7 @@ processors:
   # not captured, keeping the placeholder out of the `ip`-mapped fields. The group policy is bounded
   # with %{NOTSPACE} rather than %{DATA}: because the clauses that follow it are optional, a lazy
   # capture would backtrack and swallow the rest of the message when a later clause cannot match.
+  # Allow a comma-delimited trailing clause without dropping already parsed VPN fields.
   # The second pattern is a fallback that recovers at least the username from any other variant,
   # preserving the behaviour of the original pattern.
   - grok:
@@ -1295,7 +1296,7 @@ processors:
       tag: parse_751025
       description: "751025"
       patterns:
-        - '^Local:%{IPORHOST:source.address}:%{NUMBER:source.port} Remote:%{IPORHOST:destination.address}:%{NUMBER:destination.port} Username:%{NOTSPACE:source.user.name}(?: %{GROUP}:%{NOTSPACE:_temp_.cisco.group_policy})?(?: IPv4 Address=(?:%{IP:_temp_.cisco.assigned_ip}|%{NOTSPACE}))?(?: IPv6 address=(?:%{IP:_temp_.cisco.assigned_ipv6}|%{NOTSPACE}))?(?: assigned to session)?\s*$'
+        - '^Local:%{IPORHOST:source.address}:%{NUMBER:source.port} Remote:%{IPORHOST:destination.address}:%{NUMBER:destination.port} Username:%{NOTSPACE:source.user.name}(?: %{GROUP}:%{NOTSPACE:_temp_.cisco.group_policy})?(?: IPv4 Address=(?:%{IP:_temp_.cisco.assigned_ip}|%{NOTSPACE}))?(?: IPv6 address=(?:%{IP:_temp_.cisco.assigned_ipv6}|%{NOTSPACE}))?(?: assigned to session)?(?:, %{GREEDYDATA})?\s*$'
         - '^%{DATA} Username:%{NOTSPACE:source.user.name}\s*%{GREEDYDATA}$'
       pattern_definitions:
         GROUP: "(?:%{IKEGROUP}|%{NONIKEGROUP})"
