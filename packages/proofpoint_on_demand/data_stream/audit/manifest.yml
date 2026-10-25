@@ -17,11 +17,25 @@ streams:
       - name: keep_alive_interval
         type: text
         title: Keep Alive Interval
-        description: The interval at which the agent will send a keep alive message to the websocket endpoint. This is a time duration value. Examples, 30s, 1m, 1h.
+        description: >-
+          Time between websocket keep-alive pings. Must be shorter than three
+          times the Write Control Deadline to avoid a client-side read timeout.
+          For the default 10s deadline, use an interval below 30s.
         multi: false
         required: false
         show_user: false
-        default: 30s
+        default: 10s
+      - name: write_control_deadline
+        type: text
+        title: Write Control Deadline
+        description: >-
+          Deadline for websocket control frame writes. The input derives its
+          read deadline as three times this value; increase it when using a
+          longer Keep Alive Interval. Duration examples are 10s and 1m.
+        multi: false
+        required: false
+        show_user: true
+        default: 10s
       - name: preserve_original_event
         required: true
         show_user: true
