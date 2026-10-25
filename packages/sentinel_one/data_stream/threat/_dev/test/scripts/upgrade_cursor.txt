@@ -1,0 +1,171 @@
+# Test that upgrading from the latest released version stops the threat data
+# stream re-sending the most recently updated threat.
+#
+# The released version stores a cursor without the IDs sent at the cursor
+# timestamp, and re-sends the boundary threat on every poll. After the upgrade
+# the first poll may send it once more. Later polls must not.
+#
+# Phase 1 (released version): the mock returns threat 1 (updatedAt 10:01).
+# Phase 2 (after the upgrade) the mock answers:
+#   updatedAt__gte 10:30  -> threat 3
+#   updatedAt__gte 10:01  -> threats 1 and 3 (threat 3 at 10:30)
+# The test asserts both threats are indexed, then that the version conflict
+# counter does not change over a further 30 seconds.
+
+# The mock threats carry a top-level "id", as the real API does. The ingest
+# pipeline builds _id from it, so a re-sent threat is rejected as a version
+# conflict inside one backing index. The document count cannot show a re-send,
+# so the tests assert on the data stream's version conflict counter.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+[!exec:curl] skip 'Skipping test requiring absent curl command'
+[!env:LATEST_EPR_VERSION] skip 'no EPR release to upgrade from'
+[!is_latest_version] skip 'dev version is not newer than latest EPR release'
+[breaking_change] skip 'Cannot upgrade across breaking change.'
+
+# Connect to the running stack and install an agent.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start the mock SentinelOne API server.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} s1-mock
+
+# Install the released version and create a policy from its manifests.
+install_package_from_registry -profile ${CONFIG_PROFILES}/${PROFILE} ${PACKAGE_NAME} ${LATEST_EPR_VERSION}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} -version ${LATEST_EPR_VERSION} test_config.yaml DATA_STREAM_NAME
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs_pre_upgrade.json
+
+exec jq '[.hits.hits[]._source.sentinel_one.threat.id] | sort | join(",")' got_docs_pre_upgrade.json
+stdout '"1000000000000000001"'
+
+# Upgrade to the local version and switch the mock to phase 2.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+upgrade_package_latest -profile ${CONFIG_PROFILES}/${PROFILE}
+stdout 'upgraded package '${PACKAGE_NAME}
+
+docker_down s1-mock
+cp s1-mock/config-phase2.yml s1-mock/config.yml
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} s1-mock
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 30s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+exec jq '[.hits.hits[]._source.sentinel_one.threat.id] | sort | join(",")' got_docs.json
+stdout '"1000000000000000001,1000000000000000003"'
+
+# The released version keeps re-sending until the agent applies the upgraded
+# policy, and the conflict counter includes those re-sends. Wait for the agent
+# to switch, then compare two readings.
+sleep 45s
+
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X GET 'https://localhost:9200/'${DATA_STREAM_NAME}'/_stats/indexing'
+cp stdout got_stats.json
+
+exec jq '._all.primaries.indexing.index_failed_due_to_version_conflict' got_stats.json
+cp stdout conflicts_before.txt
+
+sleep 20s
+
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X GET 'https://localhost:9200/'${DATA_STREAM_NAME}'/_stats/indexing'
+cp stdout got_stats.json
+
+exec jq '._all.primaries.indexing.index_failed_due_to_version_conflict' got_stats.json
+cp stdout conflicts_after.txt
+
+cmp conflicts_before.txt conflicts_after.txt
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down s1-mock
+
+
+-- test_config.yaml --
+input: httpjson
+vars:
+  url: http://s1-mock:8080
+  api_token: test-api-token
+data_stream:
+  vars:
+    interval: 10s
+    initial_interval: 1h
+    preserve_original_event: true
+    enable_request_tracer: false
+
+-- s1-mock/docker-compose.yml --
+version: '2.3'
+services:
+  s1-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: s1-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+
+-- s1-mock/config.yml --
+rules:
+  - path: /web/api/v2.1/threats
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "ApiToken test-api-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"data":[{"id":"1000000000000000001","agentDetectionInfo":{"agentId":"agent-001","siteId":"site-001","siteName":"Default","agentOsName":"Windows 10","machineType":"desktop","agentVersion":"22.2.5.2"},"threatInfo":{"threatId":"threat-00000000000000000000000000000001","threatName":"TestThreat1","classification":"Malware","createdAt":"2024-01-15T10:00:00.000001Z","updatedAt":"2024-01-15T10:01:00.123456Z","incidentStatus":"Unresolved","analystVerdict":"Undefined","status":"Active","severity":"High"}}],"pagination":{"nextCursor":null,"totalItems":1}}
+
+-- s1-mock/config-phase2.yml --
+rules:
+  - path: /web/api/v2.1/threats
+    methods: [GET]
+    query_params:
+      updatedAt__gte: "{gte:2024-01-15T10:30:00[.]654321Z}"
+    request_headers:
+      Authorization:
+        - "ApiToken test-api-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"data":[{"id":"1000000000000000003","agentDetectionInfo":{"agentId":"agent-003","siteId":"site-001","siteName":"Default","agentOsName":"Windows 10","machineType":"desktop","agentVersion":"22.2.5.2"},"threatInfo":{"threatId":"threat-00000000000000000000000000000003","threatName":"TestThreat3","classification":"Malware","createdAt":"2024-01-15T10:00:00.000001Z","updatedAt":"2024-01-15T10:30:00.654321Z","incidentStatus":"Unresolved","analystVerdict":"Undefined","status":"Active","severity":"High"}}],"pagination":{"nextCursor":null,"totalItems":1}}
+  - path: /web/api/v2.1/threats
+    methods: [GET]
+    query_params:
+      updatedAt__gte: "{gte:2024-01-15T10:01:00[.]123456Z}"
+    request_headers:
+      Authorization:
+        - "ApiToken test-api-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"data":[{"id":"1000000000000000001","agentDetectionInfo":{"agentId":"agent-001","siteId":"site-001","siteName":"Default","agentOsName":"Windows 10","machineType":"desktop","agentVersion":"22.2.5.2"},"threatInfo":{"threatId":"threat-00000000000000000000000000000001","threatName":"TestThreat1","classification":"Malware","createdAt":"2024-01-15T10:00:00.000001Z","updatedAt":"2024-01-15T10:01:00.123456Z","incidentStatus":"Unresolved","analystVerdict":"Undefined","status":"Active","severity":"High"}},{"id":"1000000000000000003","agentDetectionInfo":{"agentId":"agent-003","siteId":"site-001","siteName":"Default","agentOsName":"Windows 10","machineType":"desktop","agentVersion":"22.2.5.2"},"threatInfo":{"threatId":"threat-00000000000000000000000000000003","threatName":"TestThreat3","classification":"Malware","createdAt":"2024-01-15T10:00:00.000001Z","updatedAt":"2024-01-15T10:30:00.654321Z","incidentStatus":"Unresolved","analystVerdict":"Undefined","status":"Active","severity":"High"}}],"pagination":{"nextCursor":null,"totalItems":2}}
+  - path: /web/api/v2.1/threats
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "ApiToken test-api-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"data":[{"id":"1000000000000000001","agentDetectionInfo":{"agentId":"agent-001","siteId":"site-001","siteName":"Default","agentOsName":"Windows 10","machineType":"desktop","agentVersion":"22.2.5.2"},"threatInfo":{"threatId":"threat-00000000000000000000000000000001","threatName":"TestThreat1","classification":"Malware","createdAt":"2024-01-15T10:00:00.000001Z","updatedAt":"2024-01-15T10:01:00.123456Z","incidentStatus":"Unresolved","analystVerdict":"Undefined","status":"Active","severity":"High"}}],"pagination":{"nextCursor":null,"totalItems":1}}
