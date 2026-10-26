@@ -69,6 +69,7 @@ processors:
       tag: date_action_boot_time_1779edca
       target_field: panw_cortex.xdr.event.action.boot_time
       formats:
+        - UNIX_MS
         - ISO8601
       if: ctx.json?.action_boot_time != null && ctx.json.action_boot_time != ''
       on_failure:
@@ -81,6 +82,7 @@ processors:
       tag: date_action_file_access_time_bb8183e1
       target_field: panw_cortex.xdr.event.action.file.access_time
       formats:
+        - UNIX_MS
         - ISO8601
       if: ctx.json?.action_file_access_time != null && ctx.json.action_file_access_time != ''
       on_failure:
@@ -109,6 +111,7 @@ processors:
       tag: date_action_file_create_time_452cca39
       target_field: panw_cortex.xdr.event.action.file.create_time
       formats:
+        - UNIX_MS
         - ISO8601
       if: ctx.json?.action_file_create_time != null && ctx.json.action_file_create_time != ''
       on_failure:
@@ -183,6 +186,7 @@ processors:
       tag: date_action_file_mod_time_d1c64831
       target_field: panw_cortex.xdr.event.action.file.mod_time
       formats:
+        - UNIX_MS
         - ISO8601
       if: ctx.json?.action_file_mod_time != null && ctx.json.action_file_mod_time != ''
       on_failure:
@@ -564,16 +568,18 @@ processors:
             tag: append_error_message_68f4158a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
+  - convert:
       field: json.action_network_protocol
-      tag: rename_action_network_protocol_1a2bacd1
       target_field: panw_cortex.xdr.event.action.network.protocol
+      tag: convert_action_network_protocol_to_string_797196d6
+      type: string
       ignore_missing: true
   - date:
       field: json.action_network_creation_time
       tag: date_action_network_creation_time_c0b467b3
       target_field: panw_cortex.xdr.event.action.network.creation_time
       formats:
+        - UNIX_MS
         - ISO8601
       if: ctx.json?.action_network_creation_time != null && ctx.json.action_network_creation_time != ''
       on_failure:
@@ -586,6 +592,7 @@ processors:
       tag: set_network_protocol_from_xdr_event_action_network_protocol_c42aee8f
       copy_from: panw_cortex.xdr.event.action.network.protocol
       ignore_empty_value: true
+      if: ctx.panw_cortex?.xdr?.event?.action?.network?.protocol instanceof String && ctx.panw_cortex.xdr.event.action.network.protocol =~ /[A-Za-z]/
   - lowercase:
       field: network.protocol
       tag: lowercase_network_protocol_12733ef1
@@ -679,6 +686,7 @@ processors:
       tag: date_action_process_instance_execution_time_763e2494
       target_field: panw_cortex.xdr.event.action.process.instance_execution_time
       formats:
+        - UNIX_MS
         - ISO8601
       if: ctx.json?.action_process_instance_execution_time != null && ctx.json.action_process_instance_execution_time != ''
       on_failure:
@@ -814,6 +822,7 @@ processors:
       tag: date_action_process_termination_date_f4ea1cf5
       target_field: panw_cortex.xdr.event.action.process.termination_date
       formats:
+        - UNIX_MS
         - ISO8601
       if: ctx.json?.action_process_termination_date != null && ctx.json.action_process_termination_date != ''
       on_failure:
@@ -1255,11 +1264,100 @@ processors:
       tag: set_agent_id_from_xdr_event_agent_id_40b6c945
       copy_from: panw_cortex.xdr.event.agent.id
       ignore_empty_value: true
+  - script:
+      tag: script_normalize_interface_map
+      lang: painless
+      description: Convert legacy string interface_map values such as eth0-192.168.1.10 into object records.
+      if: ctx.json?.agent_interface_map instanceof String || ctx.json?.host_metadata_interface_map instanceof String
+      source: |
+        def recordFromString(String v) {
+          if (v == null || v == '') {
+            return null;
+          }
+          int idx = v.lastIndexOf('-');
+          String ip = idx >= 0 ? v.substring(idx + 1) : v;
+          if (ip == '') {
+            return null;
+          }
+          if (ip.contains('.')) {
+            return ['ipv4': [ip]];
+          }
+          if (ip.contains(':')) {
+            return ['ipv6': [ip]];
+          }
+          return null;
+        }
+        if (ctx.json.agent_interface_map instanceof String) {
+          def rec = recordFromString(ctx.json.agent_interface_map);
+          ctx.json.agent_interface_map = rec == null ? null : [rec];
+        }
+        if (ctx.json.host_metadata_interface_map instanceof String) {
+          def rec = recordFromString(ctx.json.host_metadata_interface_map);
+          ctx.json.host_metadata_interface_map = rec == null ? null : [rec];
+        }
   - rename:
       field: json.agent_interface_map
       tag: rename_agent_interface_map_8937fb22
       target_field: panw_cortex.xdr.event.agent.interface_map
       ignore_missing: true
+  - foreach:
+      field: panw_cortex.xdr.event.agent.interface_map
+      if: ctx.panw_cortex?.xdr?.event?.agent?.interface_map instanceof List
+      tag: foreach_agent_interface_map_ipv4
+      processor:
+        foreach:
+          field: _ingest._value.ipv4
+          ignore_missing: true
+          tag: foreach_agent_interface_map_ipv4_values
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_agent_interface_map_ipv4
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    tag: remove_agent_interface_map_ipv4
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    tag: append_error_message_agent_interface_map_ipv4
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: panw_cortex.xdr.event.agent.interface_map
+      if: ctx.panw_cortex?.xdr?.event?.agent?.interface_map instanceof List
+      tag: foreach_agent_interface_map_ipv6
+      processor:
+        foreach:
+          field: _ingest._value.ipv6
+          ignore_missing: true
+          tag: foreach_agent_interface_map_ipv6_values
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_agent_interface_map_ipv6
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    tag: remove_agent_interface_map_ipv6
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    tag: append_error_message_agent_interface_map_ipv6
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: script_wrap_agent_ip_addresses
+      lang: painless
+      if: ctx.json?.agent_ip_addresses != null && !(ctx.json.agent_ip_addresses instanceof List)
+      source: ctx.json.agent_ip_addresses = [ctx.json.agent_ip_addresses];
+  - script:
+      tag: script_wrap_agent_ip_addresses_v6
+      lang: painless
+      if: ctx.json?.agent_ip_addresses_v6 != null && !(ctx.json.agent_ip_addresses_v6 instanceof List)
+      source: ctx.json.agent_ip_addresses_v6 = [ctx.json.agent_ip_addresses_v6];
   - foreach:
       field: json.agent_ip_addresses
       if: ctx.json?.agent_ip_addresses instanceof List
@@ -1369,16 +1467,18 @@ processors:
       tag: rename_event_rpc_interface_uuid_c836527b
       target_field: panw_cortex.xdr.event.event_rpc_interface_uuid
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.event_sub_type
-      tag: rename_event_sub_type_907a01a9
       target_field: panw_cortex.xdr.event.event_sub_type
+      tag: convert_event_sub_type_to_string_2c6241b8
+      type: string
       ignore_missing: true
   - set:
       field: event.action
       tag: set_event_action_from_xdr_event_event_sub_type_91acb445
       copy_from: panw_cortex.xdr.event.event_sub_type
       ignore_empty_value: true
+      if: ctx.panw_cortex?.xdr?.event?.event_sub_type instanceof String && ctx.panw_cortex.xdr.event.event_sub_type =~ /[A-Za-z]/
   - lowercase:
       field: event.action
       tag: lowercase_event_action_945f0fcf
@@ -1388,7 +1488,7 @@ processors:
       tag: split_event_action_ee0a3f8a
       separator: \s+
       ignore_missing: true
-      if: ctx.event?.action != ''
+      if: ctx.event?.action instanceof String && ctx.event?.action != ''
       on_failure:
         - append:
             tag: append_error_message_ce1e3af4
@@ -1414,6 +1514,7 @@ processors:
           tag: date_event_timestamp_86a55da5
           formats:
             - ISO8601
+            - UNIX_MS
           on_failure:
             - remove:
                 tag: remove_ingest_value_5469a7d3
@@ -1423,11 +1524,25 @@ processors:
                 tag: append_error_message_2ab61a90
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.event_timestamp
+      tag: date_event_timestamp_scalar_7a8fca4f
+      target_field: '@timestamp'
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.json?.event_timestamp != null && !(ctx.json.event_timestamp instanceof List) && ctx.json.event_timestamp != ''
+      on_failure:
+        - append:
+            tag: append_error_message_85e99d10
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
       tag: set_timestamp_from_xdr_event_event_timestamp_ec8c3834
-      copy_from: json.event_timestamp.0 #To be changed
+      copy_from: json.event_timestamp.0
       ignore_empty_value: true
+      if: ctx.json?.event_timestamp instanceof List
   - rename:
       field: json.event_timestamp
       tag: rename_event_timestamp_657245f2
@@ -1504,6 +1619,54 @@ processors:
       tag: rename_host_metadata_interface_map_4000f653
       target_field: panw_cortex.xdr.event.host_metadata.interface_map
       ignore_missing: true
+  - foreach:
+      field: panw_cortex.xdr.event.host_metadata.interface_map
+      if: ctx.panw_cortex?.xdr?.event?.host_metadata?.interface_map instanceof List
+      tag: foreach_host_metadata_interface_map_ipv4
+      processor:
+        foreach:
+          field: _ingest._value.ipv4
+          ignore_missing: true
+          tag: foreach_host_metadata_interface_map_ipv4_values
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_host_metadata_interface_map_ipv4
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    tag: remove_host_metadata_interface_map_ipv4
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    tag: append_error_message_host_metadata_interface_map_ipv4
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: panw_cortex.xdr.event.host_metadata.interface_map
+      if: ctx.panw_cortex?.xdr?.event?.host_metadata?.interface_map instanceof List
+      tag: foreach_host_metadata_interface_map_ipv6
+      processor:
+        foreach:
+          field: _ingest._value.ipv6
+          ignore_missing: true
+          tag: foreach_host_metadata_interface_map_ipv6_values
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_host_metadata_interface_map_ipv6
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    tag: remove_host_metadata_interface_map_ipv6
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    tag: append_error_message_host_metadata_interface_map_ipv6
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.os_actor_local_ip
       tag: convert_os_actor_local_ip_to_ip_66d9db76

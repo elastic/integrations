@@ -52,9 +52,25 @@ For Filebeat input documentation, refer to the following pages:
 
 *This integration is not compatible with GitHub Enterprise server.*
 
+#### Routing API request events to a separate data stream
+
+When GitHub audit log streaming has [API Request Events](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise) enabled, `api.request` events are typically much higher in volume than regular audit records. To manage their retention and index lifecycle independently, enable the **Route API request events to a separate data stream** setting on the audit data stream. When enabled, events with `event.action` set to `api.request` are routed to the `github.api_requests` data stream (`logs-github.api_requests-*`) instead of `github.audit`.
+
+Notes:
+ - The setting is available on the streaming inputs only (AWS S3/SQS, Azure Blob Storage, Azure Event Hub and Google Cloud Storage). GitHub does not return `api.request` events through the REST audit log API, so the setting does not apply to the API input.
+ - Enabling the setting only affects new data; existing documents remain in `logs-github.audit-*`. Queries that must span old and new data should target both data streams.
+ - The rerouted documents keep the `github.*` field names, and carry a `route_api_request_events` tag.
+ - Routing on its own does not change retention. To apply a different retention, customize the `logs-github.api_requests@custom` component template (for example, set `index.lifecycle.name` to an ILM policy, or set a data stream lifecycle `data_retention`).
+
 {{fields "audit"}}
 
 {{event "audit"}}
+
+### API Request
+
+The API Request data stream receives GitHub `api.request` audit log events rerouted from the audit data stream when the **Route API request events to a separate data stream** setting is enabled on a streaming audit input. It has no inputs of its own.
+
+{{fields "api_requests"}}
 
 
 ### Code Scanning
@@ -104,6 +120,12 @@ To use this integration, users must use GitHub Apps or Personal Access Token wit
 - At least `Read-only` permission on Issues
 - At least `Read-only` permission on Metadata
 If misconfigured, the integration could run successfully without any data being processed. Alternatively, you might encounter an error like `⁠GET: server returned a 404 (Not Found)`.
+
+#### Upgrading to version 2.32.0
+
+Version 2.32.0 recreates the latest-issues transform with destination index `logs-github_latest.dest_issues-2` so the additional Issues API field mappings can take effect. The `logs-github_latest.issues` alias moves to the new index when it is created. The transform rebuilds the latest issue state from retained documents in `logs-github.issues-*`; source documents that have expired cannot be recovered this way.
+
+The previous destination index, `logs-github_latest.dest_issues-1`, is not deleted automatically. After upgrading, verify that the transform has caught up and the alias points to the new index. Before removing the old index, preserve any issue records that are no longer available in the source data stream and take a snapshot if needed. Once the new index contains the records you need, delete only `logs-github_latest.dest_issues-1`. Keeping both destination indices can produce duplicate results and field type conflicts in wildcard queries.
 
 {{fields "issues"}}
 
