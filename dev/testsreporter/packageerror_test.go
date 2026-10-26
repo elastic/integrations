@@ -32,7 +32,6 @@ func TestNewPackageError(t *testing.T) {
 					ClassName: "elastic_package_registry.datastream",
 					Error:     "could not find hits",
 				},
-				CodeownersPath: "./testdata/CODEOWNERS-default-tests",
 			},
 			expectedError: false,
 			expected: packageError{
@@ -52,6 +51,7 @@ func TestNewPackageError(t *testing.T) {
 					Error:     "could not find hits",
 				},
 				packageName: "elastic_package_registry",
+				packagePath: "packages/elastic_package_registry",
 				dataStream:  "datastream",
 				teams:       []string{"@elastic/ecosystem"},
 			},
@@ -69,7 +69,6 @@ func TestNewPackageError(t *testing.T) {
 					ClassName: "elastic_package_registry",
 					Error:     "could not find hits",
 				},
-				CodeownersPath: "./testdata/CODEOWNERS-default-tests",
 			},
 			expectedError: false,
 			expected: packageError{
@@ -88,6 +87,7 @@ func TestNewPackageError(t *testing.T) {
 					Error:     "could not find hits",
 				},
 				packageName: "elastic_package_registry",
+				packagePath: "packages/elastic_package_registry",
 				dataStream:  "",
 				teams:       []string{"@elastic/ecosystem"},
 			},
@@ -105,13 +105,53 @@ func TestNewPackageError(t *testing.T) {
 					ClassName: "notexist.datastream",
 					Error:     "could not find hits",
 				},
-				CodeownersPath: "./testdata/CODEOWNERS-default-tests",
 			},
 			expectedError: true,
+		},
+		{
+			title: "Not found package allowing missing owners",
+			options: packageErrorOptions{
+				Serverless:        true,
+				ServerlessProject: "observability",
+				LogsDB:            false,
+				StackVersion:      "8.16.0-SNAPSHOT",
+				BuildURL:          "https://buildkite.com/elastic/integrations/build/1",
+				TestCase: testCase{
+					Name:      "failing test",
+					ClassName: "notexist.datastream",
+					Error:     "could not find hits",
+				},
+				AllowMissingOwners: true,
+			},
+			expectedError: false,
+			expected: packageError{
+				dataError: dataError{
+					serverless:        true,
+					serverlessProject: "observability",
+					logsDB:            false,
+					stackVersion:      "8.16.0-SNAPSHOT",
+					errorLinks: errorLinks{
+						firstBuild: "https://buildkite.com/elastic/integrations/build/1",
+					},
+				},
+				testCase: testCase{
+					Name:      "failing test",
+					ClassName: "notexist.datastream",
+					Error:     "could not find hits",
+				},
+				packageName: "notexist",
+				dataStream:  "datastream",
+				teams:       nil,
+			},
 		},
 	}
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
+			codeownersPath, packagesPath := createDefaultPackagesTree(t)
+			resolver, err := newOwnersResolver(codeownersPath, packagesPath)
+			require.NoError(t, err)
+			c.options.OwnersResolver = resolver
+
 			packageError, err := newPackageError(c.options)
 			if c.expectedError {
 				require.Error(t, err)
@@ -119,7 +159,27 @@ func TestNewPackageError(t *testing.T) {
 			}
 			require.NoError(t, err)
 
+			if c.options.AllowMissingOwners && len(c.expected.teams) == 0 {
+				// The problem looking for owners is kept to be returned after reporting.
+				assert.Error(t, packageError.ownersErr)
+				packageError.ownersErr = nil
+			}
 			assert.Equal(t, c.expected, *packageError)
 		})
 	}
+}
+
+func TestNewPackageErrorWithoutOwnersSource(t *testing.T) {
+	_, err := newPackageError(packageErrorOptions{
+		TestCase: testCase{Name: "failing test", ClassName: "apache.access"},
+	})
+	require.Error(t, err)
+
+	// The teams can be set explicitly, without looking for them.
+	p, err := newPackageError(packageErrorOptions{
+		TestCase: testCase{Name: "failing test", ClassName: "apache.access"},
+		Teams:    []string{"@elastic/apache-team"},
+	})
+	require.NoError(t, err)
+	assert.Equal(t, []string{"@elastic/apache-team"}, p.teams)
 }

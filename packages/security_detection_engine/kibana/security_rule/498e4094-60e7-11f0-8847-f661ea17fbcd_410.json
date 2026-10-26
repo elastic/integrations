@@ -1,0 +1,149 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when a federated identity credential is added to an Entra ID application, or when the issuer or subject of an existing credential is changed. Adversaries with application-management rights can federate the application to an attacker-controlled identity provider, or re-scope an existing trust on a shared issuer such as GitHub Actions to an identity they control, and authenticate as its service principal without creating a client secret.",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Entra ID Federated Identity Credential Modified",
+        "note": "## Triage and analysis\n\n### Investigating Entra ID Federated Identity Credential Modified\n\nThis rule detects changes to the federated identity credentials on an Entra ID application. `Esql.fic_change` says which change was observed:\n\n- `fic_created`: the credential collection was an empty array and now holds a credential.\n- `fic_added`: a credential `Id` is present in the new value and absent from the old value, and the credential count increased.\n- `fic_issuer_changed`: a credential `Id` is in both values, but its issuer URL changed.\n- `fic_subject_changed`: a credential `Id` is in both values with the same issuer, but its subject identifier changed. On shared public issuers such as GitHub Actions or GitLab the issuer is identical for every tenant, so the subject is the only value scoping the trust to a specific repository, branch, or environment.\n\nThe query expands the new credential array into one row per credential and matches each one to the old array by `Id`, so a change to the audience of an existing credential does not alert, and neither does removing a credential.\n\n### Possible investigation steps\n\n- Review `azure.auditlogs.properties.initiated_by.user.userPrincipalName` and `ipAddress` to identify who made the change and from where.\n- Use `Esql.fic_change` to decide whether this is a new trust, an existing trust pointed at a different issuer, or an existing trust re-scoped to a different subject.\n- For an issuer change, compare `Esql.fic_old_issuer` and `Esql.fic_new_issuer` for the credential in `Esql.fic_id`.\n- For a subject change, compare `Esql.fic_old_subject` and `Esql.fic_new_subject`. Confirm the new repository, organization, branch, or environment belongs to the organization and that the change was expected by the pipeline owner. A subject that is now null may indicate a switch to a claims matching expression; review the new credential object in `azure.auditlogs.properties.target_resources.0.modified_properties.0.new_value`.\n- For an added credential, review `Esql.fic_id`, `Esql.fic_new_issuer`, and `Esql.fic_new_subject`.\n- Check whether the issuer domain is controlled by the organization.\n- Review the application's assigned roles and permissions to understand the scope of access.\n- Use `azure.correlation_id` to pivot to related changes in the same session.\n- Check for subsequent federated sign-ins as the application's service principal.\n\n### False positive analysis\n\n- Onboarding a workload to workload identity federation adds the first credential.\n- DevOps teams add further credentials for additional repositories, branches, or environments.\n- Migrations from one identity provider to another change the issuer on an existing credential id.\n- Renaming a branch, transferring a repository to a new organization, or moving a pipeline from a branch-scoped to an environment-scoped subject changes the subject on an existing credential id.\n- Validate the change with the application owner before taking action.\n\n### Response and remediation\n\n- If the change is unauthorized, immediately remove or revert the federated identity credential.\n- Rotate any secrets or certificates associated with the application.\n- Review Azure sign-in logs and audit logs for any unauthorized activity using the application's identity.\n- Disable the application or service principal if compromise is confirmed.\n- Investigate how the unauthorized change occurred (e.g., compromised admin account, over-privileged service principal).\n- Implement conditional access policies and PIM (Privileged Identity Management) to protect application management operations.\n",
+        "query": "from logs-azure.auditlogs-* metadata _id, _version, _index\n| where event.action == \"Update application\"\n| where `azure.auditlogs.properties.target_resources.0.modified_properties.0.display_name` == \"FederatedIdentityCredentials\"\n| eval Esql.fic_old_value = `azure.auditlogs.properties.target_resources.0.modified_properties.0.old_value`\n| eval Esql.fic_new_value = `azure.auditlogs.properties.target_resources.0.modified_properties.0.new_value`\n// each credential is one JSON object, so the number of \"{\" is the credential count\n| eval Esql.fic_old_count = mv_count(split(Esql.fic_old_value, \"{\")) - 1\n| eval Esql.fic_new_count = mv_count(split(Esql.fic_new_value, \"{\")) - 1\n// removals never alert\n| where Esql.fic_new_count > 0 and Esql.fic_new_count >= Esql.fic_old_count\n// strip the outer brackets and expand the new array into one row per credential object\n| eval Esql.fic_object = split(replace(substring(Esql.fic_new_value, 2, length(Esql.fic_new_value) - 2), \"\\\\},\\\\{\", \"}\\n{\"), \"\\n\")\n| mv_expand Esql.fic_object\n| eval Esql.fic_id = json_extract(Esql.fic_object, \"Id\"),\n       Esql.fic_new_issuer = json_extract(Esql.fic_object, \"Issuer\"),\n       Esql.fic_new_subject = json_extract(Esql.fic_object, \"Subject\")\n// locate the same credential Id in the old array and rebuild that object to read its previous issuer and subject\n| eval Esql.fic_old_id_pos = locate(Esql.fic_old_value, concat(\"\\\"Id\\\":\\\"\", Esql.fic_id, \"\\\"\"))\n| eval Esql.fic_old_object = case(\n    Esql.fic_old_id_pos > 0,\n    concat(\"{\", mv_last(split(substring(Esql.fic_old_value, 1, Esql.fic_old_id_pos - 1), \"{\")), mv_first(split(substring(Esql.fic_old_value, Esql.fic_old_id_pos), \"}\")), \"}\"),\n    null\n  )\n| eval Esql.fic_old_issuer = json_extract(Esql.fic_old_object, \"Issuer\"),\n       Esql.fic_old_subject = json_extract(Esql.fic_old_object, \"Subject\")\n// subject is null on flexible credentials that use a claims matching expression, so coalesce before comparing\n| eval Esql.fic_change = case(\n    Esql.fic_old_count == 0, \"fic_created\",\n    Esql.fic_old_id_pos == 0 and Esql.fic_new_count > Esql.fic_old_count, \"fic_added\",\n    Esql.fic_old_issuer != Esql.fic_new_issuer, \"fic_issuer_changed\",\n    coalesce(Esql.fic_old_subject, \"\") != coalesce(Esql.fic_new_subject, \"\"), \"fic_subject_changed\",\n    \"none\"\n  )\n| where Esql.fic_change != \"none\"\n// the raw old/new arrays stay on the alert under azure.*; drop the working copies and intermediates\n| drop Esql.fic_old_value, Esql.fic_new_value, Esql.fic_object, Esql.fic_old_object, Esql.fic_old_id_pos\n| keep @timestamp, Esql.*, azure.*, event.*, cloud.*, related.*, tags, source.*, agent.*, client.*, _id, _version, _index, data_stream.namespace\n",
+        "references": [
+            "https://dirkjanm.io/persisting-with-federated-credentials-entra-apps-managed-identities/",
+            "https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure",
+                "version": ">=1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.auditlogs.properties.target_resources.0.modified_properties.0.display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.auditlogs.properties.target_resources.0.modified_properties.0.new_value",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.auditlogs.properties.target_resources.0.modified_properties.0.old_value",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "498e4094-60e7-11f0-8847-f661ea17fbcd",
+        "setup": "### Microsoft Entra ID Audit Logs\nThis rule requires the Azure integration with Microsoft Entra ID Audit Logs data stream ingesting in your Elastic Stack deployment. For more information, refer to the [Microsoft Entra ID Audit Logs integration documentation](https://www.elastic.co/docs/reference/integrations/azure/adlogs).\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: Azure",
+            "Data Source: Microsoft Entra ID Audit Logs",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Persistence",
+            "Tactic: Privilege Escalation",
+            "Resources: Investigation Guide",
+            "Profile: Beta",
+            "Rule Type: ES|QL",
+            "Platform: Entra ID",
+            "Tactic: Defense Impairment"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.001",
+                                "name": "Additional Cloud Credentials",
+                                "reference": "https://attack.mitre.org/techniques/T1098/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.001",
+                                "name": "Additional Cloud Credentials",
+                                "reference": "https://attack.mitre.org/techniques/T1098/001/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1484",
+                        "name": "Domain or Tenant Policy Modification",
+                        "reference": "https://attack.mitre.org/techniques/T1484/",
+                        "subtechnique": [
+                            {
+                                "id": "T1484.002",
+                                "name": "Trust Modification",
+                                "reference": "https://attack.mitre.org/techniques/T1484/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0112",
+                    "name": "Defense Impairment",
+                    "reference": "https://attack.mitre.org/tactics/TA0112/"
+                },
+                "technique": [
+                    {
+                        "id": "T1484",
+                        "name": "Domain or Tenant Policy Modification",
+                        "reference": "https://attack.mitre.org/techniques/T1484/",
+                        "subtechnique": [
+                            {
+                                "id": "T1484.002",
+                                "name": "Trust Modification",
+                                "reference": "https://attack.mitre.org/techniques/T1484/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 410
+    },
+    "id": "498e4094-60e7-11f0-8847-f661ea17fbcd_410",
+    "type": "security-rule"
+}
