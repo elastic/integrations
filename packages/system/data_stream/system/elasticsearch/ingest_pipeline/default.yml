@@ -38,6 +38,12 @@ processors:
           return;
         }
         def code = ctx.event.code.toString();
+        if (code == "6005") {
+          def provider = ctx.winlog?.provider_name;
+          if (!(provider instanceof String) || provider != "EventLog") {
+            return;
+          }
+        }
         if (params.get(code) == null) {
           return;
         }
@@ -141,11 +147,14 @@ processors:
               exe = exe.substring(0, idx + 4);
             }
           }
+          def nameSource = exe;
           if (ctx.process.executable == null) {
             ctx.process.put("executable", exe);
+          } else {
+            nameSource = ctx.process.executable.toString();
           }
           if (ctx.process.name == null) {
-            def parts = exe.splitOnToken("\\");
+            def parts = nameSource.splitOnToken("\\");
             ctx.process.put("name", parts[-1]);
           }
         }
@@ -165,13 +174,15 @@ processors:
           if (ctx.user == null) {
             ctx.put("user", new HashMap());
           }
-          ctx.user.put("name", accountName);
-          if (ctx.user.domain == null && accountName.contains("\\")) {
+          def userName = accountName;
+          if (accountName.contains("\\")) {
             def domainParts = accountName.splitOnToken("\\");
-            if (domainParts.length > 1 && domainParts[0].length() > 0) {
+            if (domainParts.length > 1 && domainParts[0].length() > 0 && domainParts[-1].length() > 0) {
               ctx.user.put("domain", domainParts[0]);
+              userName = domainParts[-1];
             }
           }
+          ctx.user.put("name", userName);
         }
         def names = new ArrayList();
         if (ctx.user?.name != null && ctx.user.name != "") {
