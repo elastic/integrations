@@ -3374,7 +3374,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.bigquery.otel-*-f2a56b85f9c9ca5eab9572f6a9036e8582153fc7296db807f4529b4a85029ef4",
                                             "query": {
-                                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS Rows = SUM(SUM_OVER_TIME(`metrics.bigquery.googleapis.com/storage/uploaded_row_count`)), Bytes = SUM(SUM_OVER_TIME(`metrics.bigquery.googleapis.com/storage/uploaded_bytes`)), Billed = SUM(SUM_OVER_TIME(`metrics.bigquery.googleapis.com/storage/uploaded_bytes_billed`)) BY Dataset = resource.attributes.dataset_id, Table = attributes.table, API = attributes.api\n| WHERE Rows \u003e 0\n| KEEP Dataset, Table, API, Rows, Bytes, Billed\n| SORT Rows DESC\n| LIMIT 10"
+                                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS Rows = SUM(SUM_OVER_TIME(`metrics.bigquery.googleapis.com/storage/uploaded_row_count`)), Bytes = SUM(SUM_OVER_TIME(`metrics.bigquery.googleapis.com/storage/uploaded_bytes`)), Billed = SUM(SUM_OVER_TIME(`metrics.bigquery.googleapis.com/storage/uploaded_bytes_billed`)) BY Dataset = CONCAT(resource.attributes.project_id, \":\", resource.attributes.dataset_id), Table = attributes.table, API = attributes.api\n| WHERE Rows \u003e 0\n| KEEP Dataset, Table, API, Rows, Bytes, Billed\n| SORT Rows DESC\n| LIMIT 10"
                                             }
                                         }
                                     }
@@ -3389,7 +3389,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS Rows = SUM(SUM_OVER_TIME(`metrics.bigquery.googleapis.com/storage/uploaded_row_count`)), Bytes = SUM(SUM_OVER_TIME(`metrics.bigquery.googleapis.com/storage/uploaded_bytes`)), Billed = SUM(SUM_OVER_TIME(`metrics.bigquery.googleapis.com/storage/uploaded_bytes_billed`)) BY Dataset = resource.attributes.dataset_id, Table = attributes.table, API = attributes.api\n| WHERE Rows \u003e 0\n| KEEP Dataset, Table, API, Rows, Bytes, Billed\n| SORT Rows DESC\n| LIMIT 10"
+                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS Rows = SUM(SUM_OVER_TIME(`metrics.bigquery.googleapis.com/storage/uploaded_row_count`)), Bytes = SUM(SUM_OVER_TIME(`metrics.bigquery.googleapis.com/storage/uploaded_bytes`)), Billed = SUM(SUM_OVER_TIME(`metrics.bigquery.googleapis.com/storage/uploaded_bytes_billed`)) BY Dataset = CONCAT(resource.attributes.project_id, \":\", resource.attributes.dataset_id), Table = attributes.table, API = attributes.api\n| WHERE Rows \u003e 0\n| KEEP Dataset, Table, API, Rows, Bytes, Billed\n| SORT Rows DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "columns": [
@@ -3451,7 +3451,7 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "The 10 table and API combinations with the most rows uploaded in the selected time range, with uploaded and billed bytes. Only streaming uploads are billed.",
+                    "description": "The 10 table and API combinations with the most rows uploaded in the selected time range (dataset shown as project:dataset), with uploaded and billed bytes. Only streaming uploads are billed.",
                     "drilldowns": [],
                     "title": "Top 10 tables by rows uploaded"
                 },
@@ -3507,7 +3507,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.bigquery.otel-*-2ea7b8f0abe32888b6896e6addb8a7ae73ff08fbcc4c4ad7f2cb88c2cc2049b7",
                                             "query": {
-                                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS v = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/stored_bytes`)) BY @timestamp = TBUCKET(1 hour), resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS v = LAST(v, CASE(v IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS `Stored bytes` = SUM(v)"
+                                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS v = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/stored_bytes`)) BY @timestamp = TBUCKET(1 minute), resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS v = LAST(v, CASE(v IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS `Stored bytes` = SUM(v)"
                                             }
                                         }
                                     }
@@ -3522,7 +3522,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS v = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/stored_bytes`)) BY @timestamp = TBUCKET(1 hour), resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS v = LAST(v, CASE(v IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS `Stored bytes` = SUM(v)"
+                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS v = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/stored_bytes`)) BY @timestamp = TBUCKET(1 minute), resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS v = LAST(v, CASE(v IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS `Stored bytes` = SUM(v)"
                             },
                             "visualization": {
                                 "density": "default",
@@ -3598,7 +3598,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.bigquery.otel-*-cd54a745d57f691f96ed075cdd823fc222d8d44060014659e268ae3fc363a299",
                                             "query": {
-                                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS v = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/table_count`)) BY @timestamp = TBUCKET(1 hour), resource.attributes.project_id, resource.attributes.dataset_id\n| STATS v = LAST(v, CASE(v IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id\n| STATS `Tables` = SUM(v)"
+                                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS v = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/table_count`)) BY @timestamp = TBUCKET(1 minute), resource.attributes.project_id, resource.attributes.dataset_id\n| STATS v = LAST(v, CASE(v IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id\n| STATS `Tables` = SUM(v)"
                                             }
                                         }
                                     }
@@ -3613,7 +3613,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS v = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/table_count`)) BY @timestamp = TBUCKET(1 hour), resource.attributes.project_id, resource.attributes.dataset_id\n| STATS v = LAST(v, CASE(v IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id\n| STATS `Tables` = SUM(v)"
+                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS v = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/table_count`)) BY @timestamp = TBUCKET(1 minute), resource.attributes.project_id, resource.attributes.dataset_id\n| STATS v = LAST(v, CASE(v IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id\n| STATS `Tables` = SUM(v)"
                             },
                             "visualization": {
                                 "density": "default",
@@ -3688,7 +3688,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.bigquery.otel-*-d00245e6a389867caff6a0dff3811456a497061e67fdcde0bf2a4f9f5fc1d674",
                                             "query": {
-                                                "esql": "TS metrics-gcp.bigquery.otel-*\n| WHERE `metrics.bigquery.googleapis.com/storage/table_count` IS NOT NULL\n| STATS `Datasets` = COUNT_DISTINCT(resource.attributes.dataset_id)"
+                                                "esql": "TS metrics-gcp.bigquery.otel-*\n| WHERE `metrics.bigquery.googleapis.com/storage/table_count` IS NOT NULL\n| STATS `Datasets` = COUNT_DISTINCT(CONCAT(resource.attributes.project_id, \":\", resource.attributes.dataset_id))"
                                             }
                                         }
                                     }
@@ -3703,7 +3703,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.bigquery.otel-*\n| WHERE `metrics.bigquery.googleapis.com/storage/table_count` IS NOT NULL\n| STATS `Datasets` = COUNT_DISTINCT(resource.attributes.dataset_id)"
+                                "esql": "TS metrics-gcp.bigquery.otel-*\n| WHERE `metrics.bigquery.googleapis.com/storage/table_count` IS NOT NULL\n| STATS `Datasets` = COUNT_DISTINCT(CONCAT(resource.attributes.project_id, \":\", resource.attributes.dataset_id))"
                             },
                             "visualization": {
                                 "density": "default",
@@ -3721,7 +3721,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Number of distinct datasets that reported storage metrics in the selected time range.",
+                    "description": "Number of distinct datasets (counted per project, so same-named datasets in different projects are counted separately) that reported storage metrics in the selected time range.",
                     "drilldowns": [],
                     "title": "Datasets"
                 },
@@ -3783,7 +3783,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.bigquery.otel-*-21f568dd10fa1f4012366a5542920ad56e464e7669c8a40b0bbab938c9a8e344",
                                             "query": {
-                                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS v = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/stored_bytes`)) BY @timestamp = TBUCKET(1 hour), resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS v = LAST(v, CASE(v IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS `Stored Bytes` = SUM(v) BY `Dataset` = resource.attributes.dataset_id\n| SORT `Stored Bytes` DESC\n| LIMIT 10"
+                                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS v = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/stored_bytes`)) BY @timestamp = TBUCKET(1 minute), resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS v = LAST(v, CASE(v IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS `Stored Bytes` = SUM(v) BY `Dataset` = CONCAT(resource.attributes.project_id, \":\", resource.attributes.dataset_id)\n| SORT `Stored Bytes` DESC\n| LIMIT 10"
                                             }
                                         }
                                     }
@@ -3798,7 +3798,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS v = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/stored_bytes`)) BY @timestamp = TBUCKET(1 hour), resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS v = LAST(v, CASE(v IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS `Stored Bytes` = SUM(v) BY `Dataset` = resource.attributes.dataset_id\n| SORT `Stored Bytes` DESC\n| LIMIT 10"
+                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS v = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/stored_bytes`)) BY @timestamp = TBUCKET(1 minute), resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS v = LAST(v, CASE(v IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS `Stored Bytes` = SUM(v) BY `Dataset` = CONCAT(resource.attributes.project_id, \":\", resource.attributes.dataset_id)\n| SORT `Stored Bytes` DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -3842,7 +3842,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "The 10 largest datasets by stored bytes, using the most recent value reported for each table in the selected time range.",
+                    "description": "The 10 largest datasets by stored bytes (shown as project:dataset), using the most recent value reported for each table in the selected time range.",
                     "drilldowns": [],
                     "title": "Top 10 datasets by stored bytes"
                 },
@@ -3905,7 +3905,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.bigquery.otel-*-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.bigquery.otel-*\n| WHERE attributes.table IS NOT NULL\n| STATS v = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/stored_bytes`)) BY @timestamp = TBUCKET(1 hour), resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS v = LAST(v, CASE(v IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS `Stored Bytes` = SUM(v) BY `Table` = CONCAT(resource.attributes.dataset_id, \".\", attributes.table)\n| SORT `Stored Bytes` DESC\n| LIMIT 10"
+                                                "esql": "TS metrics-gcp.bigquery.otel-*\n| WHERE attributes.table IS NOT NULL\n| STATS v = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/stored_bytes`)) BY @timestamp = TBUCKET(1 minute), resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS v = LAST(v, CASE(v IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS `Stored Bytes` = SUM(v) BY `Table` = CONCAT(resource.attributes.project_id, \":\", resource.attributes.dataset_id, \".\", attributes.table)\n| SORT `Stored Bytes` DESC\n| LIMIT 10"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -3921,7 +3921,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.bigquery.otel-*\n| WHERE attributes.table IS NOT NULL\n| STATS v = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/stored_bytes`)) BY @timestamp = TBUCKET(1 hour), resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS v = LAST(v, CASE(v IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS `Stored Bytes` = SUM(v) BY `Table` = CONCAT(resource.attributes.dataset_id, \".\", attributes.table)\n| SORT `Stored Bytes` DESC\n| LIMIT 10"
+                                "esql": "TS metrics-gcp.bigquery.otel-*\n| WHERE attributes.table IS NOT NULL\n| STATS v = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/stored_bytes`)) BY @timestamp = TBUCKET(1 minute), resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS v = LAST(v, CASE(v IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS `Stored Bytes` = SUM(v) BY `Table` = CONCAT(resource.attributes.project_id, \":\", resource.attributes.dataset_id, \".\", attributes.table)\n| SORT `Stored Bytes` DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -3965,7 +3965,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "The 10 largest tables by stored bytes (shown as dataset.table), using the most recent value reported for each table in the selected time range. Only the top 100 tables per dataset are reported individually.",
+                    "description": "The 10 largest tables by stored bytes (shown as project:dataset.table), using the most recent value reported for each table in the selected time range. Only the top 100 tables per dataset are reported individually.",
                     "drilldowns": [],
                     "title": "Top 10 tables by stored bytes"
                 },
@@ -4059,7 +4059,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.bigquery.otel-*-8ed8116abfbc7c20f29c5ac24d0bd825c33f17b8f05ebb324500c2fc1c627a48",
                                             "query": {
-                                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS s = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/stored_bytes`)), t = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/table_count`)) BY @timestamp = TBUCKET(1 hour), resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS s = LAST(s, CASE(s IS NOT NULL, @timestamp, NULL)), t = LAST(t, CASE(t IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS Stored = SUM(s), Tables = SUM(t) BY Project = resource.attributes.project_id, Dataset = resource.attributes.dataset_id\n| SORT Stored DESC NULLS LAST\n| LIMIT 10"
+                                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS s = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/stored_bytes`)), t = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/table_count`)) BY @timestamp = TBUCKET(1 minute), resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS s = LAST(s, CASE(s IS NOT NULL, @timestamp, NULL)), t = LAST(t, CASE(t IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS Stored = SUM(s), Tables = SUM(t) BY Project = resource.attributes.project_id, Dataset = resource.attributes.dataset_id\n| SORT Stored DESC NULLS LAST\n| LIMIT 10"
                                             }
                                         }
                                     }
@@ -4074,7 +4074,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS s = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/stored_bytes`)), t = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/table_count`)) BY @timestamp = TBUCKET(1 hour), resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS s = LAST(s, CASE(s IS NOT NULL, @timestamp, NULL)), t = LAST(t, CASE(t IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS Stored = SUM(s), Tables = SUM(t) BY Project = resource.attributes.project_id, Dataset = resource.attributes.dataset_id\n| SORT Stored DESC NULLS LAST\n| LIMIT 10"
+                                "esql": "TS metrics-gcp.bigquery.otel-*\n| STATS s = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/stored_bytes`)), t = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/storage/table_count`)) BY @timestamp = TBUCKET(1 minute), resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS s = LAST(s, CASE(s IS NOT NULL, @timestamp, NULL)), t = LAST(t, CASE(t IS NOT NULL, @timestamp, NULL)) BY resource.attributes.project_id, resource.attributes.dataset_id, attributes.table\n| STATS Stored = SUM(s), Tables = SUM(t) BY Project = resource.attributes.project_id, Dataset = resource.attributes.dataset_id\n| SORT Stored DESC NULLS LAST\n| LIMIT 10"
                             },
                             "visualization": {
                                 "columns": [
