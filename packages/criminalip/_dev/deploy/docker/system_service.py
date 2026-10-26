@@ -65,7 +65,7 @@ class MockCriminalIP(BaseHTTPRequestHandler):
             }, {
                 "reason": "Missing IP must not discard the valid indicators",
             }, None, "invalid feed entry", {"ip": None}, {"ip": ""}, {"ip": "   "}, {
-                "ip": "198.51.100.20",
+                "ip": "\t 198.51.100.20 \r\n",
             }]}})
             return
 
