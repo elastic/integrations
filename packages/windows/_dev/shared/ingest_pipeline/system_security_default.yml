@@ -1,0 +1,112 @@
+---
+description: Pipeline for Security events
+processors:
+    - convert:
+            field: event.code
+            type: string
+            ignore_missing: true
+    - script:
+            tag: remove_empty_values_from_event_data
+            description: Remove all empty values from event_data.
+            lang: painless
+            source: ctx.winlog?.event_data?.entrySet().removeIf(entry -> [null, "", "-", "{00000000-0000-0000-0000-000000000000}"].contains(entry.getValue()))
+            if: ctx.winlog?.event_data instanceof Map
+    - pipeline:
+            name: '{{ IngestPipeline "standard" }}'
+            if: 'ctx.winlog?.provider_name != null && ["Microsoft-Windows-Eventlog", "Microsoft-Windows-Security-Auditing"].contains(ctx.winlog.provider_name)'
+    - pipeline:
+            name: '{{ IngestPipeline "scheduled_task" }}'
+            if: >-
+                ctx.winlog != null &&
+                ctx.winlog.provider_name == 'Microsoft-Windows-Security-Auditing' &&
+                ctx.event != null &&
+                ctx.winlog._tmp?.scheduled_task instanceof Map &&
+                (
+                    (
+                        ['4698', '4699', '4700', '4701'].contains(ctx.event.code) &&
+                        ctx.winlog._tmp.scheduled_task.task_content instanceof Map
+                    ) ||
+                    (
+                        ctx.event.code == '4702' &&
+                        ctx.winlog._tmp.scheduled_task.task_content_new instanceof Map
+                    )
+                )
+    - rename:
+            field: winlog.event_data._MemberUserName
+            target_field: user.name
+            ignore_failure: true
+            ignore_missing: true
+    - rename:
+            field: winlog.event_data._MemberDomain
+            target_field: user.domain
+            ignore_failure: true
+            ignore_missing: true
+    - append:
+            value: '{{{winlog.event_data._MemberAccountType}}}'
+            field: user.roles
+            ignore_failure: true
+            allow_duplicates: false
+            if: ctx.winlog?.event_data?._MemberAccountType != null
+    - remove:
+            field:
+                - winlog.event_data._MemberUserName
+                - winlog.event_data._MemberDomain
+                - winlog.event_data._MemberAccountType
+            ignore_missing: true
+            ignore_failure: true
+    - set:
+            field: ecs.version
+            value: '8.11.0'
+    - pipeline:
+            name: '{{ IngestPipeline "security_common" }}'
+    - script:
+            description: This script processor iterates over the whole document to remove fields with null values.
+            tag: script_to_drop_null_values
+            lang: painless
+            source: |
+                void handleMap(Map map) {
+                    map.values().removeIf(v -> {
+                        if (v instanceof Map) {
+                                handleMap(v);
+                        } else if (v instanceof List) {
+                                handleList(v);
+                        }
+                        return v == null || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)  || (v instanceof String && ((String) v).trim() == '')
+                    });
+                }
+                void handleList(List list) {
+                    list.removeIf(v -> {
+                        if (v instanceof Map) {
+                                handleMap(v);
+                        } else if (v instanceof List) {
+                                handleList(v);
+                        }
+                        return v == null || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)  || (v instanceof String && ((String) v).trim() == '')
+                    });
+                }
+                handleMap(ctx);
+    - set:
+            field: event.kind
+            tag: set_pipeline_error_into_event_kind
+            value: pipeline_error
+            if: ctx.error?.message != null
+    - append:
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
+            if: ctx.error?.message != null
+on_failure:
+    - append:
+            field: error.message
+            value: >-
+                Processor '{{{ _ingest.on_failure_processor_type }}}'
+                {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+                {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+    - set:
+            field: event.kind
+            tag: set_pipeline_error_to_event_kind
+            value: pipeline_error
+    - append:
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false

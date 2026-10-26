@@ -1,4 +1,4 @@
-name: Security
+name: {{channel}}
 condition: ${host.platform} == 'windows'
 {{#if event_id}}
 event_id: {{event_id}}
@@ -9,15 +9,22 @@ ignore_older: {{ignore_older}}
 {{#if language}}
 language: {{language}}
 {{/if}}
-{{#if preserve_original_event}}
-include_xml: true
-{{/if}}
+{{#if tags.length}}
 tags:
-{{#each tags as |tag i|}}
+{{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
 {{#if preserve_original_event}}
   - preserve_original_event
+{{/if}}
+{{else}}
+{{#if preserve_original_event}}
+tags:
+  - preserve_original_event
+{{/if}}
+{{/if}}
+{{#if preserve_original_event}}
+include_xml: true
 {{/if}}
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
@@ -27,6 +34,13 @@ processors:
     target: event
     fields:
       module: system
+- translate_sid:
+    field: winlog.event_data.MemberSid
+    account_name_target: winlog.event_data._MemberUserName
+    domain_target: winlog.event_data._MemberDomain
+    account_type_target: winlog.event_data._MemberAccountType
+    ignore_missing: true
+    ignore_failure: true
 - decode_xml:
     when:
       and:
@@ -34,6 +48,8 @@ processors:
             - winlog.event_data.TaskContent
         - equals:
             winlog.provider_name: Microsoft-Windows-Security-Auditing
+        - regexp:
+            winlog.channel: '^[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]$'
     field: winlog.event_data.TaskContent
     target_field: winlog._tmp.scheduled_task.task_content
     to_lower: true
@@ -46,6 +62,8 @@ processors:
             - winlog.event_data.TaskContentNew
         - equals:
             winlog.provider_name: Microsoft-Windows-Security-Auditing
+        - regexp:
+            winlog.channel: '^[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]$'
     field: winlog.event_data.TaskContentNew
     target_field: winlog._tmp.scheduled_task.task_content_new
     to_lower: true
