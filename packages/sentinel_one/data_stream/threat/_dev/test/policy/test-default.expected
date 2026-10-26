@@ -13,7 +13,9 @@ inputs:
                 state
               :
                 (
-                  state.?want_more.orValue(false) ?
+                  // A page token belongs to the filter it was issued under, so keep that filter
+                  // while a token is stored, including after an error or a restart.
+                  (state.?want_more.orValue(false) || state.?cursor.next_page.token.hasValue()) ?
                     state
                   :
                     state.with(
@@ -54,7 +56,7 @@ inputs:
                               "worklist": body.with(
                                 {
                                   // updatedAt__gte is inclusive, so the threat that set the cursor comes back every poll.
-                                  "data": body.?data.orValue([]).filter(t,
+                                  "data": body.?data.orValue(null).as(d, (type(d) == list) ? d : []).filter(t,
                                     !(
                                       t.?threatInfo.updatedAt.orValue("") == state.?cursor.last_update_at.orValue("") &&
                                       has(t.id) && state.?cursor.seen.orValue([]).exists(s, s == t.id)
