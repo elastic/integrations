@@ -129,7 +129,7 @@ Use `source.ip`, `destination.ip`, available ports and `network.transport` for c
 4. In **Security → Rules → Add Elastic rules**, install `Criminal IP Firewall Indicator Match`.
 5. Check collection and rule permissions, then enable the rule.
 
-The rule compares firewall `source.ip` or `destination.ip` with TI Feed `threat.indicator.ip`. It runs every minute, searches the previous six minutes of firewall events, and searches indicators within the previous 30 days.
+The rule compares firewall `source.ip` or `destination.ip` with TI Feed `threat.indicator.ip`. It runs every minute, searches the previous six minutes of firewall events using `event.ingested` (falling back to `@timestamp` when `event.ingested` is missing), and searches indicators within the previous 30 days. This allows delayed firewall logs to match based on their ingestion time without changing their original event timestamp. Events without `event.ingested` still depend on their original timestamp being within the search window.
 
 The feed is polled as a snapshot and unchanged indicators are currently republished each interval. At the default five-minute interval this can produce 288 copies per active IP per day. Plan retention and the indicator search window for your feed volume. A latest-indicator destination with refresh and expiry handling is not included; suppressing repeat events alone would let still-active indicators age out of detection.
 
