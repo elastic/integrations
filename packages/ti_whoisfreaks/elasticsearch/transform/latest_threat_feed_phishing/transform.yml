@@ -1,0 +1,53 @@
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - "logs-ti_whoisfreaks.threat_feed_phishing-*"
+  query:
+    bool:
+      must_not:
+        - exists:
+            field: error.message
+        # Rows of a historical file fetched through File Date never replace the
+        # indicators of the newest file in the latest index.
+        - term:
+            whoisfreaks.pinned_file: true
+        - terms:
+            _tier:
+              - data_frozen
+              - data_cold
+# The version suffix on the dest.index should be incremented if a breaking change
+# is made to the index mapping. You must also bump the fleet_transform_version
+# for any change to this transform configuration to take effect. The old destination
+# index is not automatically removed.
+dest:
+  index: "logs-ti_whoisfreaks_latest.dest_threat_feed_phishing-1"
+  aliases:
+    - alias: "logs-ti_whoisfreaks_latest.threat_feed_phishing"
+      move_on_creation: true
+latest:
+  unique_key:
+    # Namespace is deliberately excluded: threat indicators are global, so the
+    # same indicator from different namespaces should deduplicate to one entry.
+    - event.dataset
+    - threat.indicator.url.domain
+  # Sort by the WhoisFreaks file date, so within a checkpoint the copy from the
+  # newest daily file wins and its expiration (whoisfreaks.threat_feed.deleted_at)
+  # applies. Files fetched through File Date are excluded by the source query.
+  sort: "whoisfreaks.file_date"
+description: Latest WhoisFreaks phishing domain indicators.
+frequency: 30s
+sync:
+  time:
+    field: event.ingested
+    delay: 120s
+retention_policy:
+  time:
+    field: whoisfreaks.threat_feed.deleted_at
+    max_age: 1m
+settings:
+  unattended: true
+_meta:
+  managed: false
+  # Bump this version to delete, reinstall, and restart the transform during package upgrade.
+  # Version bump is needed if there is any code change in transform.
+  fleet_transform_version: 0.1.0
