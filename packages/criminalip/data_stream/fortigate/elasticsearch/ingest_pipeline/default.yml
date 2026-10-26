@@ -251,28 +251,28 @@ processors:
   - rename:
       tag: rename_fortigate_log_id
       field: _temp.fortigate_fields.logid
-      target_field: fortigate.logid
+      target_field: criminalip.fortigate.logid
       ignore_missing: true
       ignore_failure: true
 
   - rename:
       tag: rename_fortigate_policy_id
       field: _temp.fortigate_fields.policyid
-      target_field: fortigate.policyid
+      target_field: criminalip.fortigate.policyid
       ignore_missing: true
       ignore_failure: true
 
   - rename:
       tag: rename_fortigate_subtype
       field: _temp.fortigate_fields.subtype
-      target_field: fortigate.subtype
+      target_field: criminalip.fortigate.subtype
       ignore_missing: true
       ignore_failure: true
 
   - rename:
       tag: rename_fortigate_type
       field: _temp.fortigate_fields.type
-      target_field: fortigate.type
+      target_field: criminalip.fortigate.type
       ignore_missing: true
       ignore_failure: true
 
@@ -285,21 +285,21 @@ processors:
       tag: rename_fortigate_date
       if: 'ctx._temp?.invalid_event_time != true'
       field: _temp.fortigate_fields.date
-      target_field: fortigate.date
+      target_field: criminalip.fortigate.date
       ignore_missing: true
       ignore_failure: true
 
   - rename:
       tag: rename_fortigate_time
       field: _temp.fortigate_fields.time
-      target_field: fortigate.time
+      target_field: criminalip.fortigate.time
       ignore_missing: true
       ignore_failure: true
 
   - rename:
       tag: rename_fortigate_eventtime
       field: _temp.fortigate_fields.eventtime
-      target_field: fortigate.eventtime
+      target_field: criminalip.fortigate.eventtime
       ignore_missing: true
       ignore_failure: true
 
@@ -316,7 +316,7 @@ processors:
       value: denied
       allow_duplicates: false
       if: >-
-        (ctx.fortigate?.type == "traffic" || ctx.fortigate?.type == "utm") &&
+        (ctx.criminalip?.fortigate?.type == "traffic" || ctx.criminalip?.fortigate?.type == "utm") &&
         (ctx.event?.action == "deny" || ctx.event?.action == "block" || ctx.event?.action == "blocked" ||
         ctx._temp?.fortigate_fields?.utmaction == "block" ||
         (ctx._temp?.fortigate_fields?.utmaction instanceof List && ctx._temp.fortigate_fields.utmaction.contains("block")))
@@ -342,7 +342,7 @@ processors:
       value:
         - network
       allow_duplicates: false
-      if: 'ctx.fortigate?.type == "traffic" || (ctx.fortigate?.type == "utm" && (ctx.source?.ip != null || ctx.destination?.ip != null))'
+      if: 'ctx.criminalip?.fortigate?.type == "traffic" || (ctx.criminalip?.fortigate?.type == "utm" && (ctx.source?.ip != null || ctx.destination?.ip != null))'
 
   - append:
       tag: set_event_category_host_info
@@ -350,7 +350,7 @@ processors:
       value:
         - host
       allow_duplicates: false
-      if: 'ctx.fortigate?.type == "event" && ctx.fortigate?.subtype == "system" && ctx.event?.action == "perf-stats"'
+      if: 'ctx.criminalip?.fortigate?.type == "event" && ctx.criminalip?.fortigate?.subtype == "system" && ctx.event?.action == "perf-stats"'
 
   - set:
       tag: set_event_module
@@ -383,7 +383,7 @@ processors:
       value:
         - connection
       allow_duplicates: false
-      if: 'ctx.fortigate?.type == "traffic"'
+      if: 'ctx.criminalip?.fortigate?.type == "traffic"'
 
   - append:
       tag: set_event_type_host_info
@@ -391,7 +391,7 @@ processors:
       value:
         - info
       allow_duplicates: false
-      if: 'ctx.fortigate?.type == "event" && ctx.fortigate?.subtype == "system" && ctx.event?.action == "perf-stats"'
+      if: 'ctx.criminalip?.fortigate?.type == "event" && ctx.criminalip?.fortigate?.subtype == "system" && ctx.event?.action == "perf-stats"'
 
   - set:
       tag: set_event_outcome_failure

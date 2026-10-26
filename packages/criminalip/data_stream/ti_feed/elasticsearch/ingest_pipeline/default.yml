@@ -33,6 +33,49 @@ processors:
       field: message
       ignore_missing: true
       if: "ctx.event?.original != null"
+  - json:
+      tag: parse_feed_record
+      field: event.original
+      target_field: _temp.feed
+      if: "ctx.event?.original != null && ctx.event?.outcome != 'failure'"
+  - set:
+      tag: set_feed_module
+      field: event.module
+      value: criminalip
+  - set:
+      tag: set_feed_dataset
+      field: event.dataset
+      value: criminalip.ti_feed
+  - set:
+      tag: copy_feed_ip
+      field: threat.indicator.ip
+      copy_from: _temp.feed.ip
+      ignore_empty_value: true
+  - set:
+      tag: copy_feed_reason
+      field: threat.indicator.description
+      copy_from: _temp.feed.reason
+      ignore_empty_value: true
+  - set:
+      tag: copy_feed_confidence
+      field: criminalip.ti_feed.confidence
+      copy_from: _temp.feed.confidence
+      ignore_empty_value: true
+  - set:
+      tag: copy_feed_score
+      field: criminalip.ti_feed.score
+      copy_from: _temp.feed.score
+      ignore_empty_value: true
+  - set:
+      tag: copy_feed_first_seen
+      field: criminalip.ti_feed.first_seen
+      copy_from: _temp.feed.first_seen
+      ignore_empty_value: true
+  - set:
+      tag: copy_feed_last_seen
+      field: criminalip.ti_feed.last_seen
+      copy_from: _temp.feed.last_seen
+      ignore_empty_value: true
   - convert:
       tag: convert_feed_confidence
       field: criminalip.ti_feed.confidence
@@ -123,6 +166,10 @@ processors:
       field: threat.indicator.last_seen
       copy_from: criminalip.ti_feed.last_seen
       ignore_empty_value: true
+  - trim:
+      tag: trim_indicator_ip
+      field: threat.indicator.ip
+      ignore_missing: true
   - convert:
       tag: validate_indicator_ip
       field: threat.indicator.ip
@@ -131,7 +178,9 @@ processors:
       on_failure:
         - remove:
             tag: remove_invalid_indicator_ip
-            field: threat.indicator.ip
+            field:
+              - threat.indicator.ip
+              - threat.indicator.type
             ignore_missing: true
         - append:
             tag: flag_invalid_indicator_ip
@@ -150,12 +199,33 @@ processors:
             tag: mark_invalid_indicator_ip_kind
             field: event.kind
             value: pipeline_error
+  - script:
+      tag: classify_feed_indicator_ip
+      description: Set the ECS indicator type from the validated IPv4 or IPv6 address.
+      if: 'ctx.threat?.indicator?.ip != null'
+      lang: painless
+      source: >-
+        ctx.threat.indicator.type = ctx.threat.indicator.ip.toString().indexOf(':') >= 0 ? 'ipv6-addr' : 'ipv4-addr';
+  - set:
+      tag: set_feed_indicator_provider
+      field: threat.indicator.provider
+      value: Criminal IP
+      if: 'ctx.threat?.indicator?.ip != null'
+  - set:
+      tag: set_feed_success
+      field: event.outcome
+      value: success
+      if: "ctx.threat?.indicator?.ip != null && ctx.event?.outcome != 'failure'"
   - append:
       tag: append_related_indicator_ip
       field: related.ip
       value: '{{{threat.indicator.ip}}}'
       allow_duplicates: false
       if: 'ctx.threat?.indicator?.ip != null'
+  - remove:
+      tag: remove_feed_temporary_fields
+      field: _temp
+      ignore_missing: true
 on_failure:
   - append:
       tag: append_feed_pipeline_error_message
@@ -174,3 +244,11 @@ on_failure:
       tag: set_feed_pipeline_error_outcome
       field: event.outcome
       value: failure
+  - remove:
+      tag: remove_failed_feed_temporary_fields
+      field:
+        - _temp
+        - threat.indicator.ip
+        - threat.indicator.type
+        - related.ip
+      ignore_missing: true

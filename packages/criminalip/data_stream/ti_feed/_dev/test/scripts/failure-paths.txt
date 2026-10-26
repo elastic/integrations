@@ -23,6 +23,15 @@ simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case
 stdout '"original":'
 ! stdout '&lt;|&gt;|&amp;'
 
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-3.json
+! stderr .
+stdout 'pipeline_error'
+stdout 'failure'
+stdout 'preserve_original_event'
+stdout 'TI Feed indicator IP is not a valid IPv4 or IPv6 address'
+stdout '"original":'
+! stdout '"ip":\s*"not-an-ip"'
+
 uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
 ! stderr .
 
@@ -50,4 +59,12 @@ uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
   "message": "{\"ip\":\"198.51.100.20\"}",
   "threat.indicator.ip": "198.51.100.20",
   "criminalip.ti_feed.confidence": 120
+}
+
+-- case-3.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "event.outcome": "success",
+  "threat.indicator.ip": "not-an-ip",
+  "message": "{\"ip\":\"not-an-ip\"}"
 }

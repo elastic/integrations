@@ -66,9 +66,9 @@ These results support investigation. A match or suspicious classification alone 
 
 In Fleet, open **Integrations**, search for **Criminal IP**, and follow the installation and policy configuration steps in the target Kibana Space. During development, if this package is not yet available in the catalog, use your organization's package upload process instead. Then open:
 
-`[Logs Criminal IP] Firewall, Threat Intelligence, and Cortex Overview` for the primary detection/investigation workflow. `[Logs Criminal IP] IP Intelligence Overview` is for optional explicitly configured IP lookups, not observed firewall communications.
+`[Logs Criminal IP] Firewall Threat Detection and Threat Intelligence` for the primary detection/investigation workflow. `[Logs Criminal IP] IP Intelligence Overview` is for optional explicitly configured IP lookups, not observed firewall communications.
 
-For firewall detection, follow **Collect firewall logs**, then **Collect TI Feed indicators and enable alerts** below. Cortex and configured IP lookups can be used independently; configure only the paths you need. Existing dashboard IDs and stored data are retained.
+For firewall detection, follow **Collect firewall logs**, then **Collect TI Feed indicators and enable alerts** below. Cortex and configured IP lookups can be used independently; configure only the paths you need.
 
 Configure the features you selected below. Installing package assets and applying an Agent policy are separate steps; installing assets alone does not start collection. Open the managed dashboard from the installed assets, since existing custom dashboard copies do not receive its updates automatically.
 
@@ -124,13 +124,13 @@ Use `source.ip`, `destination.ip`, available ports and `network.transport` for c
 
 1. Enable **Criminal IP Threat Intelligence Feed** in the Agent policy.
 2. Enter a key with TI Feed access, the feed URL, and the interval. Defaults are `https://dl.criminalip.io/ti/v1/feed/outbound` and `1h`; confirm that they suit your subscription.
-3. Verify collected snapshots in `logs-criminalip.ti_feed-*`. The package also runs a latest transform that keeps one current record per `threat.indicator.ip` in the `logs-criminalip_latest.ti_feed` alias; the indicator match rule queries this deduplicated destination.
-   Observation times are normalized to ISO 8601 in `threat.indicator.first_seen` and `threat.indicator.last_seen`; parsed values are also available under `criminalip.ti_feed`. Feed timestamps without an offset are interpreted as UTC; confirm the source timezone when using a custom feed. Invalid observation dates are omitted and reported in `error.message` while the IP indicator is retained.
+3. Verify collected snapshots in `logs-criminalip.ti_feed-*`. The package also runs a latest transform that keeps one current record per `threat.indicator.ip` in the `logs-criminalip_latest.ti_feed` alias; it checkpoints on `event.ingested` so late-indexed snapshots are picked up, while `@timestamp` determines which indicator record is latest. The indicator match rule queries this deduplicated destination.
+   Observation times are normalized to ISO 8601 in `threat.indicator.first_seen` and `threat.indicator.last_seen`; parsed values are also available under `criminalip.ti_feed`. Feed timestamps without an offset are interpreted as UTC; confirm the source timezone when using a custom feed. Invalid observation dates are omitted and reported in `error.message` while the IP indicator is retained. Invalid indicator IPs are removed from IP-mapped fields, marked as pipeline failures, and retained with their original payload for troubleshooting; they are excluded from the latest-indicator transform.
    Numeric confidence is available in `criminalip.ti_feed.confidence`. The ECS keyword `threat.indicator.confidence` uses the STIX 0–100 bands: 0 = None, greater than 0 and below 30 = Low, 30 to below 70 = Medium, and 70–100 = High. Out-of-range numeric values use the label Not Specified; missing confidence is omitted.
 4. In **Security → Rules → Add Elastic rules**, install `Criminal IP Firewall Indicator Match`.
 5. Check collection and rule permissions, then enable the rule.
 
-The rule compares firewall `source.ip` or `destination.ip` with TI Feed `threat.indicator.ip`. It runs every minute, searches the previous six minutes of firewall events using `event.ingested` (falling back to `@timestamp` when `event.ingested` is missing), and searches indicators within the previous 30 days. This allows delayed firewall logs to match based on their ingestion time without changing their original event timestamp. Events without `event.ingested` still depend on their original timestamp being within the search window.
+The rule compares firewall `source.ip` or `destination.ip` with TI Feed `threat.indicator.ip`. It runs every minute, searches the previous ten minutes of firewall events using `event.ingested` (falling back to `@timestamp` when `event.ingested` is missing), and searches indicators within the previous 30 days. The wider window allows for the five-minute TI Feed transform cadence, its one-minute delay, the next rule run, and processing overhead. This allows delayed firewall logs to match based on their ingestion time without changing their original event timestamp. Events without `event.ingested` still depend on their original timestamp being within the search window.
 
 The feed is polled as a snapshot and unchanged indicators are republished each interval. At the default one-hour interval this can produce 24 source documents per active IP per day. The latest transform keeps one destination document per IP, refreshes it from each snapshot, and expires destination indicators after 30 days without a newer copy. Source snapshots remain in the source data stream; configure source retention for your volume.
 
@@ -301,7 +301,7 @@ The recent-alert table also shows available original event time, reporting vendo
 
 Matched IPs come from `threat.enrichments.matched.atomic` and source/destination match evidence. Duplicate indicators for one IP in one alert count once. One alert can match multiple IPs, so IP-specific totals can exceed total alerts.
 
-The alert panels use the **default Space** alias, `.alerts-security.alerts-default`. For another Space, update every alert ES|QL `FROM` and the matched IP visualization's `data.url.index` to `.alerts-security.alerts-<space-id>`. Before the first alert, a missing alert index can produce a panel error.
+The alert panels use the **default Space** alias, `.alerts-security.alerts-default`. For another Space, duplicate the managed Criminal IP dashboard in the target Space and edit the copy; managed package dashboards are read-only. In the copy, update every alert ES|QL `FROM` to `.alerts-security.alerts-<space-id>` and duplicate or replace any referenced alert visualization so it uses the same Space-specific alias. Use the customized dashboard afterward. Before the first alert, a missing alert index can produce a panel error.
 
 ### Cortex results
 
@@ -336,7 +336,7 @@ Local validation checks package structure and generated assets. Installation, pe
 - [ECS threat match fields](https://www.elastic.co/docs/reference/ecs/ecs-threat)
 - [Vega dashboard filters](https://www.elastic.co/docs/explore-analyze/visualize/custom-visualizations-with-vega)
 
-The FortiGate `date` and `time` fields populate `@timestamp`; when `tz` is present, its offset is applied. Repeated `tz` fields use the first valid offset, and forms such as `UTC-5:00` are normalized to `-0500`. If the log has no timezone, the timestamp is interpreted as UTC. Invalid event times are reported in `error.message`, the original event is preserved, and invalid raw dates are not indexed as dates. Valid original date, time, and `eventtime` values remain available under `fortigate.*`. Fleet's final pipeline populates `event.ingested` and handles the `preserve_original_event` tag; failed events automatically retain their raw payload.
+The FortiGate `date` and `time` fields populate `@timestamp`; when `tz` is present, its offset is applied. Repeated `tz` fields use the first valid offset, and forms such as `UTC-5:00` are normalized to `-0500`. If the log has no timezone, the timestamp is interpreted as UTC. Invalid event times are reported in `error.message`, the original event is preserved, and invalid raw dates are not indexed as dates. Valid original date, time, and `eventtime` values remain available under `criminalip.fortigate.*`. Fleet's final pipeline populates `event.ingested` and handles the `preserve_original_event` tag; failed events automatically retain their raw payload.
 
 ## Data stream reference
 
@@ -388,12 +388,6 @@ An example event for `fortigate` looks as following:
             "connection"
         ]
     },
-    "fortigate": {
-        "date": "2026-10-26T00:00:00.000Z",
-        "subtype": "forward",
-        "time": "02:57:25",
-        "type": "traffic"
-    },
     "input": {
         "type": "udp"
     },
@@ -424,7 +418,15 @@ An example event for `fortigate` looks as following:
     "tags": [
         "forwarded",
         "synthetic"
-    ]
+    ],
+    "criminalip": {
+        "fortigate": {
+            "date": "2026-10-26T00:00:00.000Z",
+            "subtype": "forward",
+            "time": "02:57:25",
+            "type": "traffic"
+        }
+    }
 }
 ```
 
@@ -437,6 +439,13 @@ An example event for `fortigate` looks as following:
 | agent.name | Custom name of the agent. This is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from. | keyword |
 | agent.type | Type of the agent. The agent type always stays the same and should be given by the agent used. In case of Filebeat the agent would always be Filebeat also if two Filebeat instances are run on the same machine. | keyword |
 | agent.version | Version of the agent. | keyword |
+| criminalip.fortigate.date | Date recorded in the original FortiGate event. | date |
+| criminalip.fortigate.eventtime | FortiGate event-time epoch value preserved from the original log. | keyword |
+| criminalip.fortigate.logid | FortiGate event identifier. | keyword |
+| criminalip.fortigate.policyid | FortiGate policy identifier. | keyword |
+| criminalip.fortigate.subtype | FortiGate event subtype. | keyword |
+| criminalip.fortigate.time | Time of day recorded in the original FortiGate event. | keyword |
+| criminalip.fortigate.type | FortiGate event type preserved from the original key-value log. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
@@ -454,13 +463,6 @@ An example event for `fortigate` looks as following:
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| fortigate.date | Date recorded in the original FortiGate event. | date |
-| fortigate.eventtime | FortiGate event-time epoch value preserved from the original log. | keyword |
-| fortigate.logid | FortiGate event identifier. | keyword |
-| fortigate.policyid | FortiGate policy identifier. | keyword |
-| fortigate.subtype | FortiGate event subtype. | keyword |
-| fortigate.time | Time of day recorded in the original FortiGate event. | keyword |
-| fortigate.type | FortiGate event type preserved from the original key-value log. | keyword |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | input.type | Elastic Agent input type used to collect FortiGate syslog. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |

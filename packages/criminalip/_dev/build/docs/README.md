@@ -65,9 +65,9 @@ These results support investigation. A match or suspicious classification alone 
 
 In Fleet, open **Integrations**, search for **Criminal IP**, and follow the installation and policy configuration steps in the target Kibana Space. During development, if this package is not yet available in the catalog, use your organization's package upload process instead. Then open:
 
-`[Logs Criminal IP] Firewall, Threat Intelligence, and Cortex Overview` for the primary detection/investigation workflow. `[Logs Criminal IP] IP Intelligence Overview` is for optional explicitly configured IP lookups, not observed firewall communications.
+`[Logs Criminal IP] Firewall Threat Detection and Threat Intelligence` for the primary detection/investigation workflow. `[Logs Criminal IP] IP Intelligence Overview` is for optional explicitly configured IP lookups, not observed firewall communications.
 
-For firewall detection, follow **Collect firewall logs**, then **Collect TI Feed indicators and enable alerts** below. Cortex and configured IP lookups can be used independently; configure only the paths you need. Existing dashboard IDs and stored data are retained.
+For firewall detection, follow **Collect firewall logs**, then **Collect TI Feed indicators and enable alerts** below. Cortex and configured IP lookups can be used independently; configure only the paths you need.
 
 Configure the features you selected below. Installing package assets and applying an Agent policy are separate steps; installing assets alone does not start collection. Open the managed dashboard from the installed assets, since existing custom dashboard copies do not receive its updates automatically.
 
@@ -300,7 +300,7 @@ The recent-alert table also shows available original event time, reporting vendo
 
 Matched IPs come from `threat.enrichments.matched.atomic` and source/destination match evidence. Duplicate indicators for one IP in one alert count once. One alert can match multiple IPs, so IP-specific totals can exceed total alerts.
 
-The alert panels use the **default Space** alias, `.alerts-security.alerts-default`. For another Space, update every alert ES|QL `FROM` and the matched IP visualization's `data.url.index` to `.alerts-security.alerts-<space-id>`. Before the first alert, a missing alert index can produce a panel error.
+The alert panels use the **default Space** alias, `.alerts-security.alerts-default`. For another Space, duplicate the managed Criminal IP dashboard in the target Space and edit the copy; managed package dashboards are read-only. In the copy, update every alert ES|QL `FROM` to `.alerts-security.alerts-<space-id>` and duplicate or replace any referenced alert visualization so it uses the same Space-specific alias. Use the customized dashboard afterward. Before the first alert, a missing alert index can produce a panel error.
 
 ### Cortex results
 
@@ -335,7 +335,7 @@ Local validation checks package structure and generated assets. Installation, pe
 - [ECS threat match fields](https://www.elastic.co/docs/reference/ecs/ecs-threat)
 - [Vega dashboard filters](https://www.elastic.co/docs/explore-analyze/visualize/custom-visualizations-with-vega)
 
-The FortiGate `date` and `time` fields populate `@timestamp`; when `tz` is present, its offset is applied. Repeated `tz` fields use the first valid offset, and forms such as `UTC-5:00` are normalized to `-0500`. If the log has no timezone, the timestamp is interpreted as UTC. Invalid event times are reported in `error.message`, the original event is preserved, and invalid raw dates are not indexed as dates. Valid original date, time, and `eventtime` values remain available under `fortigate.*`. Fleet's final pipeline populates `event.ingested` and handles the `preserve_original_event` tag; failed events automatically retain their raw payload.
+The FortiGate `date` and `time` fields populate `@timestamp`; when `tz` is present, its offset is applied. Repeated `tz` fields use the first valid offset, and forms such as `UTC-5:00` are normalized to `-0500`. If the log has no timezone, the timestamp is interpreted as UTC. Invalid event times are reported in `error.message`, the original event is preserved, and invalid raw dates are not indexed as dates. Valid original date, time, and `eventtime` values remain available under `criminalip.fortigate.*`. Fleet's final pipeline populates `event.ingested` and handles the `preserve_original_event` tag; failed events automatically retain their raw payload.
 
 ## Data stream reference
 
