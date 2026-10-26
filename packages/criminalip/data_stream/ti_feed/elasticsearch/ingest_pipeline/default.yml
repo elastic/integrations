@@ -123,6 +123,33 @@ processors:
       field: threat.indicator.last_seen
       copy_from: criminalip.ti_feed.last_seen
       ignore_empty_value: true
+  - convert:
+      tag: validate_indicator_ip
+      field: threat.indicator.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_invalid_indicator_ip
+            field: threat.indicator.ip
+            ignore_missing: true
+        - append:
+            tag: flag_invalid_indicator_ip
+            field: error.message
+            value: TI Feed indicator IP is not a valid IPv4 or IPv6 address.
+        - append:
+            tag: preserve_invalid_indicator_ip_event
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
+        - set:
+            tag: mark_invalid_indicator_ip_outcome
+            field: event.outcome
+            value: failure
+        - set:
+            tag: mark_invalid_indicator_ip_kind
+            field: event.kind
+            value: pipeline_error
   - append:
       tag: append_related_indicator_ip
       field: related.ip
