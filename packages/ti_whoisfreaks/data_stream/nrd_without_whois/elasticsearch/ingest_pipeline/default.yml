@@ -1,0 +1,73 @@
+---
+description: Pipeline for processing WhoisFreaks newly registered domains without WHOIS records.
+processors:
+  - terminate:
+      tag: terminate_cel_failure
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: Error message set and no data to process.
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '9.5.0'
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: enrichment
+  - rename:
+      tag: rename_message_to_event_original
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      tag: remove_message
+      field: message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      tag: json_event_original
+      field: event.original
+      target_field: whoisfreaks
+  - date:
+      tag: date_whoisfreaks_query_time
+      field: whoisfreaks.query_time
+      target_field: '@timestamp'
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss'
+        - ISO8601
+      if: ctx.whoisfreaks?.query_time != null && ctx.whoisfreaks.query_time != ''
+  - append:
+      tag: append_related_hosts_domain_name
+      field: related.hosts
+      value: '{{{whoisfreaks.domain_name}}}'
+      allow_duplicates: false
+      if: ctx.whoisfreaks?.domain_name instanceof String && ctx.whoisfreaks.domain_name != ''
+  # Deduplicate so a re-polled file does not create duplicate documents.
+  - fingerprint:
+      tag: fingerprint_for_dedup
+      fields:
+        - whoisfreaks.tld_type
+        - whoisfreaks.domain_name
+        - whoisfreaks.query_time
+      target_field: _id
+      if: ctx.whoisfreaks?.domain_name != null && ctx.whoisfreaks?.query_time != null
+on_failure:
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

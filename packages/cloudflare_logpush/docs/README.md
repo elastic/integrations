@@ -1071,11 +1071,14 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2022-05-26T09:23:54.000Z",
     "agent": {
-        "ephemeral_id": "333c9617-e828-4159-9f0c-85495de4f5a0",
-        "id": "c0c3eba6-e72e-4926-b2f7-27938eb1df85",
-        "name": "elastic-agent-24362",
+        "ephemeral_id": "febee18c-196d-47c3-9fb9-0f4191565696",
+        "id": "081ee046-57fb-4297-a029-60c2d9f90b72",
+        "name": "elastic-agent-54850",
         "type": "filebeat",
         "version": "8.17.1"
+    },
+    "cloud": {
+        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "dns": {
@@ -1102,7 +1105,7 @@ An example event for `dns` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.dns",
-        "namespace": "34585",
+        "namespace": "91364",
         "type": "logs"
     },
     "dns": {
@@ -1115,7 +1118,7 @@ An example event for `dns` looks as following:
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "c0c3eba6-e72e-4926-b2f7-27938eb1df85",
+        "id": "081ee046-57fb-4297-a029-60c2d9f90b72",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -1125,15 +1128,32 @@ An example event for `dns` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.dns",
-        "ingested": "2026-05-18T06:39:07Z",
+        "ingested": "2026-10-26T05:32:34Z",
         "kind": "event",
         "original": "{\"ColoCode\":\"MRS\",\"EDNSSubnet\":\"1.128.0.0\",\"EDNSSubnetLength\":0,\"QueryName\":\"example.com\",\"QueryType\":65535,\"ResponseCached\":false,\"ResponseCode\":0,\"SourceIP\":\"175.16.199.0\",\"Timestamp\":\"2022-05-26T09:23:54Z\"}",
         "type": [
             "info"
         ]
     },
+    "gcs": {
+        "storage": {
+            "bucket": {
+                "name": "testbucket"
+            },
+            "object": {
+                "content_type": "application/json",
+                "name": "dns.log"
+            }
+        }
+    },
     "input": {
-        "type": "http_endpoint"
+        "type": "gcs"
+    },
+    "log": {
+        "file": {
+            "path": "gs://testbucket/dns.log"
+        },
+        "offset": 0
     },
     "related": {
         "hosts": [
