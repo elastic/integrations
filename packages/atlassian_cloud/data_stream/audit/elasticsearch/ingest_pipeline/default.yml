@@ -196,6 +196,57 @@ processors:
       tag: rename_actor_app_attributes
   - script:
       lang: painless
+      tag: replace_nul_in_attribute_keys
+      description: >-
+        Replace NUL (U+0000) characters in the keys of the flattened attributes objects with an
+        underscore, at any depth, because Elasticsearch rejects NUL in flattened keys. If the
+        replaced key already exists, the existing key is kept; event.original retains the raw event.
+      if: ctx.atlassian_cloud?.audit != null
+      source: |-
+        void cleanKeys(def node, String nul) {
+          if (node instanceof Map) {
+            Map map = (Map) node;
+            List keys = new ArrayList();
+            for (def key : map.keySet()) {
+              if (key instanceof String && ((String) key).indexOf(nul) >= 0) {
+                keys.add(key);
+              }
+            }
+            Collections.sort(keys);
+            for (String key : keys) {
+              def value = map.remove(key);
+              String renamed = key.replace(nul, '_');
+              if (!map.containsKey(renamed)) {
+                map.put(renamed, value);
+              }
+            }
+            for (def value : map.values()) {
+              cleanKeys(value, nul);
+            }
+          } else if (node instanceof List) {
+            for (def value : (List) node) {
+              cleanKeys(value, nul);
+            }
+          }
+        }
+        String nul = Character.toString((char) 0);
+        def audit = ctx.atlassian_cloud.audit;
+        for (String name : ['context', 'container']) {
+          def items = audit[name];
+          if (items instanceof Map) {
+            items = [items];
+          }
+          if (items instanceof List) {
+            for (def item : items) {
+              if (item instanceof Map) {
+                cleanKeys(item.attributes, nul);
+              }
+            }
+          }
+        }
+        cleanKeys(audit.actor?.app?.attributes, nul);
+  - script:
+      lang: painless
       tag: map_actor_to_user_or_app
       description: >-
         Map human actors to ECS user fields when the actor id looks like an account id or email is present.
