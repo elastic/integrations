@@ -14,6 +14,10 @@ processors:
       target_field: network_traffic.redis.query
       ignore_missing: true
   - rename:
+      field: resource
+      target_field: network_traffic.redis.resource
+      ignore_missing: true
+  - rename:
       # Retained for legacy dashboard behaviour.
       field: status
       target_field: network_traffic.status
@@ -22,12 +26,9 @@ processors:
       field: process.ppid
       target_field: process.parent.pid
       ignore_missing: true
-  # Remove packetbeat fields that are handled by agent or fleet.
+  # Remove the packetbeat type field; network.protocol holds this.
   - remove:
       field: type
-      ignore_missing: true
-  - remove:
-      field: event.dataset
       ignore_missing: true
 
 on_failure:
