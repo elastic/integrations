@@ -102,6 +102,8 @@ Replace `<AGENT_SERVER_IP>` with the collection server address. Use the default 
 
 Reference: [FortiGate syslog configuration](https://docs.fortinet.com/document/fortigate/7.0.0/cli-reference/456620/config-log-syslogd-setting).
 
+The FortiGate `date` and `time` fields populate `@timestamp`; when `tz` is present, its offset is applied. Repeated `tz` fields use the first valid offset, and forms such as `UTC-5:00` are normalized to `-0500`. If the log has no timezone, the timestamp is interpreted as UTC. Invalid event times are reported in `error.message`, the original event is preserved, and invalid raw dates are not indexed as dates. Valid original date, time, and `eventtime` values remain available under `criminalip.fortigate.*`. Fleet's final pipeline populates `event.ingested` and handles the `preserve_original_event` tag; failed events automatically retain their raw payload.
+
 #### Connect other vendors
 
 Configure the vendor's official Elastic integration separately for Palo Alto PAN-OS, Juniper SRX, or Cisco ASA/FTD. The dashboard currently includes:
@@ -334,8 +336,6 @@ Local validation checks package structure and generated assets. Installation, pe
 - [ES|QL time zones](https://www.elastic.co/docs/explore-analyze/query-filter/languages/esql-kibana#timezone-handling)
 - [ECS threat match fields](https://www.elastic.co/docs/reference/ecs/ecs-threat)
 - [Vega dashboard filters](https://www.elastic.co/docs/explore-analyze/visualize/custom-visualizations-with-vega)
-
-The FortiGate `date` and `time` fields populate `@timestamp`; when `tz` is present, its offset is applied. Repeated `tz` fields use the first valid offset, and forms such as `UTC-5:00` are normalized to `-0500`. If the log has no timezone, the timestamp is interpreted as UTC. Invalid event times are reported in `error.message`, the original event is preserved, and invalid raw dates are not indexed as dates. Valid original date, time, and `eventtime` values remain available under `criminalip.fortigate.*`. Fleet's final pipeline populates `event.ingested` and handles the `preserve_original_event` tag; failed events automatically retain their raw payload.
 
 ## Data stream reference
 
