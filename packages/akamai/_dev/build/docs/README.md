@@ -2,7 +2,7 @@
 
 The Akamai integration collects events from the Akamai API, specifically reading from the [Akamai SIEM API](https://techdocs.akamai.com/siem-integration/reference/api).
 
->**Breaking change in 4.0.0 — CEL to OpenTelemetry migration**
+> **Breaking change in 4.0.0 — CEL to OpenTelemetry migration**
 
 Starting with version 4.0.0, Akamai SIEM API collection uses the OpenTelemetry receiver instead of CEL and requires Elastic Stack 9.5.0 or later.
 
