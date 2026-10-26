@@ -1744,6 +1744,8 @@ The System `process` data stream provides process statistics. One document is
 provided for each process. 
 Refer to the [Configuration](beats://reference/metricbeat/metricbeat-metricset-system-process.md##_configuration_12) section for more details on how to change the process configuration.
 
+> Note: On macOS, `system.process.memory.rss.bytes` can differ a lot from the memory that `top` and Activity Monitor show. To match the MEM column of `top` and the Memory column of Activity Monitor, use `system.process.memory.footprint`. Elastic Agent 9.6.0 and later send this field.
+
 #### Supported operating systems
 
 - FreeBSD
@@ -1919,6 +1921,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | system.process.io.write_bytes | The number of bytes written to the storage layer. | long | byte | counter |
 | system.process.io.write_char | The number of bytes sent to syscalls for writing. | long | byte | counter |
 | system.process.io.write_ops | The count of write-related syscalls. | long |  | counter |
+| system.process.memory.footprint | The physical memory footprint of the process, the value shown in the MEM column of top and the Memory column of Activity Monitor (supported only on macOS). It is a different metric from rss.bytes: clean file-backed pages count toward the Resident Set Size but not toward the footprint, and compressed memory counts toward the footprint but not toward the Resident Set Size. | long | byte | gauge |
 | system.process.memory.rss.bytes | The Resident Set Size. The amount of memory the process occupied in main memory (RAM). On Windows this represents the current working set size, in bytes. | long | byte | gauge |
 | system.process.memory.rss.pct | The percentage of memory the process occupied in main memory (RAM). | scaled_float | percent | gauge |
 | system.process.memory.share | The shared memory the process uses. | long | byte | gauge |
