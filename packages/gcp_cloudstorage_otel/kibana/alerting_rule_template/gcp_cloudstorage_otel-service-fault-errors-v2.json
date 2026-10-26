@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudstorage_otel-service-fault-errors-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud Storage OTel] Service-fault errors on bucket requests",
+        "description": "Fires when a bucket returns service-side, retryable status codes (UNAVAILABLE, INTERNAL, DEADLINE_EXCEEDED, ABORTED and any code the rule does not recognise as a client fault) above 1% of its requests. These codes have a near-zero baseline, so absolute level is the signal. Client-fault codes and rate limiting are deliberately excluded and covered by separate rules.",
+        "tags": [
+          "observability",
+          "gcp_cloudstorage_otel",
+          "otel"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "30m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "FROM metrics-gcp.cloudstorage.otel-default\n// Scope to Cloud Storage. This data stream is shared with every other GCP service collected by the\n// receiver, so both the resource-type filter and the metric-presence filter are mandatory.\n| WHERE resource.attributes.gcp.resource_type == \"gcs_bucket\"\n    AND `metrics.storage.googleapis.com/api/request_count` IS NOT NULL\n//\n// --- Response-code classification --------------------------------------------------------------\n// Cloud Storage returns canonical status strings (OK, NOT_FOUND, UNAVAILABLE, ...), never numeric\n// HTTP codes. The client-fault list below is the ONLY enumerated list in this rule: anything that\n// is not OK, not a listed client fault and not a throttle is treated as a SERVICE fault. Codes that\n// are new or absent from your estate therefore surface here rather than being silently dropped.\n// Add a code to this list to stop it paging; remove one to make the rule stricter.\n| EVAL is_client_fault = attributes.response_code IN (\n      \"NOT_FOUND\", \"PERMISSION_DENIED\", \"UNAUTHENTICATED\", \"INVALID_ARGUMENT\",\n      \"FAILED_PRECONDITION\", \"OUT_OF_RANGE\", \"ALREADY_EXISTS\", \"CANCELLED\")\n// Rate limiting is a saturation signal with its own rule (gcp_cloudstorage_otel-request-throttling);\n// excluded here so one hot-bucket incident does not page twice.\n| EVAL is_throttle = attributes.response_code == \"RESOURCE_EXHAUSTED\"\n      OR attributes.response_code LIKE \"*RATE_LIMIT*\"\n      OR attributes.response_code LIKE \"*QUOTA*\"\n      OR attributes.response_code LIKE \"*TOO_MANY*\"\n| EVAL is_service_fault = attributes.response_code != \"OK\"\n      AND NOT is_client_fault\n      AND NOT is_throttle\n//\n// --- Aggregation -------------------------------------------------------------------------------\n// request_count is a ~60s delta counter stored as a gauge: SUM it, never apply RATE() or any other\n// counter function. This is the same aggregation shape the availability SLIs use.\n| STATS total_requests         = SUM(`metrics.storage.googleapis.com/api/request_count`),\n        service_fault_requests = SUM(`metrics.storage.googleapis.com/api/request_count`) WHERE is_service_fault,\n        service_fault_codes    = VALUES(attributes.response_code) WHERE is_service_fault,\n        affected_methods       = VALUES(attributes.method) WHERE is_service_fault\n    BY resource.attributes.bucket_name, resource.attributes.location\n| EVAL service_fault_requests = COALESCE(service_fault_requests, 0)",
+        "breach": {
+          "segment": "// Volume floor: stops a near-idle bucket paging on one or two retryable blips.\nWHERE total_requests >= 100 AND service_fault_requests >= 10\n// Cast before dividing: request_count is a long, so `a / b` would be integer division.\n| EVAL service_fault_pct = ROUND(service_fault_requests::DOUBLE / total_requests * 100.0, 3)\n// Service-side faults should sit at ~0. Lower towards 0.1 for buckets on a user-facing critical\n// path; raise to 2-5 for batch workloads with aggressive client-side retry.\n| WHERE service_fault_pct > 1.0\n| SORT service_fault_pct DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.bucket_name",
+          "resource.attributes.location"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudstorage_otel-service-fault-errors-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Service-fault errors on Cloud Storage requests\n\nA bucket is returning status codes that mean **Cloud Storage, not the caller, is the problem**:\n`UNAVAILABLE`, `INTERNAL`, `DEADLINE_EXCEEDED`, `ABORTED`, or any code this rule does not recognise.\nThese are retryable and their healthy baseline is approximately zero, which is why an absolute\nshare threshold is used rather than a change detector.\n\n### Triage\n\n1. **Is it one bucket or all of them?** Re-run the query without the `BY` clause scoping, or sort by\n   bucket. One bucket points at a scoped hot-spot or a bucket-level problem; every bucket at once\n   points at a regional Cloud Storage incident, a network path problem, or a project-level issue.\n   Check the GCP service health dashboard before anything else when the blast radius is estate-wide.\n2. **Which method is affected?** `affected_methods` tells you whether the read path (`ReadObject`),\n   the write path (`WriteObject`, `DeleteObject`) or the metadata path is degraded. A read-path\n   failure is user-facing; a write-path failure risks upstream backpressure and data loss.\n3. **Which codes?** `service_fault_codes` distinguishes a genuine outage (`UNAVAILABLE`, `INTERNAL`)\n   from a client-side timeout budget that is too tight (`DEADLINE_EXCEEDED`) from optimistic\n   concurrency being abandoned under load (`ABORTED`).\n4. **Is the client retrying correctly?** These codes are all retryable. If the application surfaces\n   them to users, the fix is client-side exponential backoff with jitter, not a GCP ticket.\n5. **Correlate with throttling.** If `gcp_cloudstorage_otel-request-throttling` is also active on the same\n   bucket, treat this as a saturation incident and follow that rule's guide instead \u2014 the service\n   faults are a symptom of the bucket shedding load.\n\n### Tuning\n\n- `service_fault_pct > 1.0` is the alert condition. Lower it to `0.1` for buckets on a user-facing\n  critical path; raise it to `2`-`5` for batch pipelines that retry aggressively.\n- `total_requests >= 100` and `service_fault_requests >= 10` are noise floors for low-traffic\n  buckets. Raise them in large estates; lower them if you own a small number of critical buckets.\n- The classification is exclusion-based on purpose: an unfamiliar status code is reported as a\n  service fault. If a code that is really a caller problem starts paging, add it to the\n  `is_client_fault` list.\n\n### Note\n\nThere is no latency metric for Cloud Storage buckets. Rate-limit and retryable errors are the only\nobservable edge of latency degradation, so treat a sustained rise here as evidence that response\ntimes have degraded even though no duration field exists to confirm it."
+          }
+        },
+        {
+          "id": "gcp_cloudstorage_otel-service-fault-errors-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudstorage_otel-ffad2d3a-43f6-482a-a35c-97f6df9e0479"
+          }
+        },
+        {
+          "id": "gcp_cloudstorage_otel-service-fault-errors-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudstorage_otel-61c5320c-19f7-4676-a8ae-5d2d889d99a7"
+          }
+        }
+      ]
+    }
+  }
+}

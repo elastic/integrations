@@ -41,15 +41,17 @@ Open **[GCP OTel] Cloud Storage Overview** and click a bucket in the bucket hex 
 
 ## Alerting Rule Templates
 
+The rule templates are published for the v2 alerting engine, which must be enabled in Kibana. Rules created from them detect conditions only; notifications are configured separately, through alerting v2 action policies.
+
 The rule templates query the same `metrics-gcp.cloudstorage.otel-default` data stream as the dashboards. They are deliberately non-overlapping: authorization failures, other client faults, service faults, and throttling each have their own rule, so one incident pages once and arrives with the runbook that matches its cause.
 
-The rules run on two different clocks, because Cloud Monitoring publishes Cloud Storage metrics on two. Request, error, and byte metrics are roughly 60-second delta counters, so the reliability and traffic rules compare minute-scale slices over windows of 30 minutes to 24 hours. The storage-size and object-count metrics are point-in-time snapshots that Cloud Monitoring recomputes only about once a day, so the capacity rules necessarily use a 14-day window and compare multi-day slices. Expect those two to confirm a trend over days rather than react within hours.
+The rules run on two different clocks, because Cloud Monitoring publishes Cloud Storage metrics on two. Request, error, and byte metrics are roughly 60-second delta counters, so the reliability and traffic rules compare minute-scale slices over windows of 30 minutes to 24 hours. The storage-size and object-count metrics are point-in-time snapshots that Cloud Monitoring recomputes only about once a day, so the capacity rules necessarily use a 14-day window and compare multi-day slices. Expect those two to confirm a trend over days rather than react within hours. Both capacity rules add up a bucket's storage classes hour by hour before comparing, so data that moves between classes under a lifecycle rule or Autoclass is not counted twice.
 
 Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
 
 For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
 
-Alert rule templates require Elastic Stack version 9.2.0 or later.
+Alert rule templates require Elastic Stack version 9.6.0 or later.
 
 **The following alert rule templates are available:**
 
@@ -69,11 +71,9 @@ Alert rule templates require Elastic Stack version 9.2.0 or later.
 
 </details>
 
-
-
 Cloud Storage reports canonical status strings such as `OK`, `NOT_FOUND`, `PERMISSION_DENIED`, and `UNAVAILABLE` rather than numeric HTTP codes, and the rules split them into caller-attributable faults and service faults so the two classes reach different runbooks. The classification is exclusion-based: anything that is not `OK`, not a listed client fault, and not a throttle is treated as a service fault, so a status code that is new or absent from your estate surfaces for investigation instead of being silently dropped.
 
-Every threshold is a starting point, not a recommendation. Each rule carries an investigation guide with a triage walkthrough and a tuning section that names the specific condition to adjust for your estate, whether that is the step-change multiplier, a volume floor, or the comparison window.
+Every threshold is a starting point, not a recommendation. Each rule carries a runbook with a triage walkthrough and a tuning section that names the specific condition to adjust for your estate, whether that is the step-change multiplier, a volume floor, or the comparison window.
 
 > **Note**: Google does not publish per-request latency for the `gcs_bucket` monitored resource, so none of this content measures latency. Rate-limit and retryable service-fault responses are the only observable edge of latency degradation, so treat a sustained rise in either as evidence that response times have degraded.
 
