@@ -98,20 +98,22 @@ pipeline moves detection alerts into `harfanglab.detection`.
 The ingest pipeline:
 
 1. Parses the JSON request body and merges it to the document root.
-2. Restores `event.original` with the unmodified request body.
-3. Derives the canonical ECS fields `host.name` (from `host.hostname`) and `user.name` (from
+2. Derives the canonical ECS fields `host.name` (from `host.hostname`) and `user.name` (from
    `process.user.name`) when the event does not already set them. Elastic Security relies on
    `host.name` and `user.name` for its host/user pivots, detail pages and alert columns.
+3. Moves the fields the agent emits that ECS does not define into the `harfanglab.*` vendor
+   namespace: `harfanglab.detection.*` and `harfanglab.process.parent.parent.*`.
 4. Removes intermediate fields created while parsing.
 5. Drops empty `{}` payloads, which the agent sends to test connectivity.
-6. Reroutes detection alerts (`event.kind: alert`) to the `harfanglab.detection` data stream.
+6. Removes `event.original` unless **Preserve original event** is enabled.
+7. Reroutes detection alerts (`event.kind: alert`) to the `harfanglab.detection` data stream.
 
 ## Detection rule
 
 The integration ships a detection rule, **HarfangLab EDR: strong-confidence detection**, which
 raises a high-severity alert whenever the HarfangLab EDR reports a detection with
-`hlab.detection.confidence: "strong"`. It is a simple custom query rule
-(`hlab.detection.confidence : "strong"`) over `logs-harfanglab.*`, running every 5 minutes.
+`harfanglab.detection.confidence: "strong"`. It is a simple custom query rule
+(`harfanglab.detection.confidence : "strong"`) over `logs-harfanglab.*`, running every 5 minutes.
 (Detections are rerouted to `logs-harfanglab.detection-*`; the rule's index pattern covers both
 data streams.)
 
@@ -124,7 +126,7 @@ i.e. an Elastic deployment with Security enabled). After installing the integrat
 3. Optionally add an action (email, Slack, etc.) to be notified outside the Alerts table, and
    tune the severity, schedule, or query to fit your environment.
 
-The `hlab.detection.confidence` field is mapped as a `keyword` by this integration so the query
+The `harfanglab.detection.confidence` field is mapped as a `keyword` by this integration so the query
 matches exact values.
 
 ## Process tree (Visual Event Analyzer)
@@ -148,9 +150,9 @@ Notes and trade-offs:
 ## Dashboards
 
 - **HarfangLab EDR - Detections** — an overview of detection alerts (`logs-harfanglab.detection-*`):
-  total count and trend over time, with breakdowns by severity (`hlab.detection.level`),
-  confidence (`hlab.detection.confidence`), engine (`hlab.detection.engine.name`), rule
-  (`hlab.detection.title`), host (`host.name`) and user (`user.name`), plus a table listing the
+  total count and trend over time, with breakdowns by severity (`harfanglab.detection.level`),
+  confidence (`harfanglab.detection.confidence`), engine (`harfanglab.detection.engine.name`), rule
+  (`harfanglab.detection.title`), host (`host.name`) and user (`user.name`), plus a table listing the
   individual detections.
 - **HarfangLab EDR - Process activity** — process telemetry from `logs-harfanglab.generic-*`
   (`event.category: process`): volume over time by `event.type`, top hosts, users, executables and

@@ -43,11 +43,34 @@ processors:
       field: event.module
       value: sysmon
       if: ctx.process?.entity_id != null
+  # The agent emits fields that ECS does not define. Move them into the harfanglab
+  # vendor namespace rather than extending ECS objects in place.
+  - rename:
+      tag: rename_hlab_to_vendor_namespace
+      field: hlab
+      target_field: harfanglab
+      ignore_missing: true
+  - rename:
+      tag: rename_process_grandparent_entity_id
+      field: process.parent.parent.entity_id
+      target_field: harfanglab.process.parent.parent.entity_id
+      ignore_missing: true
+  - rename:
+      tag: rename_process_grandparent_command_line
+      field: process.parent.parent.command_line
+      target_field: harfanglab.process.parent.parent.command_line
+      ignore_missing: true
+  - rename:
+      tag: rename_process_grandparent_executable
+      field: process.parent.parent.executable
+      target_field: harfanglab.process.parent.parent.executable
+      ignore_missing: true
   - remove:
       tag: remove_tmp_fields
       field:
         - _original
         - json
+        - process.parent.parent
       ignore_missing: true
   - drop:
       tag: drop_empty_events
