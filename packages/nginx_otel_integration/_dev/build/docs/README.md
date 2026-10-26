@@ -44,6 +44,7 @@ The Elastic Agent (or EDOT Collector) must be able to reach the Nginx `stub_stat
         server_name localhost;
         location /nginx_status {
             stub_status on;
+            access_log off;
             allow 127.0.0.1;
             deny all;
         }
@@ -58,6 +59,27 @@ The Elastic Agent (or EDOT Collector) must be able to reach the Nginx `stub_stat
    - Set **Nginx Status Endpoint** to your `stub_status` URL
    - Confirm the access and error log paths match your host
    - Set **Timezone** on error logs to the Nginx host IANA zone if it is not UTC (error timestamps have no offset)
+
+### Request latency (optional)
+
+The default `combined` log format has no timing information. To collect request and upstream latency, add the following configuration block in the `http` section of your Nginx configuration file (typically `/etc/nginx/nginx.conf`). It defines a log format that appends the timing variables and uses it for the access log:
+
+```
+http {
+    log_format combined_timing '$remote_addr - $remote_user [$time_local] '
+                               '"$request" $status $body_bytes_sent '
+                               '"$http_referer" "$http_user_agent" '
+                               'rt="$request_time" uct="$upstream_connect_time" '
+                               'uht="$upstream_header_time" urt="$upstream_response_time"';
+
+    access_log /var/log/nginx/access.log combined_timing;
+    ...
+}
+```
+
+`log_format` is only allowed in the `http` section. If a `server` or `location` block has its own `access_log` directive, add `combined_timing` to it as well, because it overrides the one in `http`.
+
+Timing values are stored as doubles in seconds. Upstream values are left unset when the log value is `-` (no upstream contacted, for example static files or cache hits). When nginx tried several upstreams, only the last value is kept. `$upstream_connect_time` requires nginx 1.9.1 or later.
 
 ### Verify data
 

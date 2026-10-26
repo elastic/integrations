@@ -78,6 +78,23 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 6. Click on **Save and Continue** to save the integration.
 **Note:** Please make only the threat feed types you have the privilege to access are enabled.
 
+### To collect logs from files (filestream), follow the following steps:
+
+Air-gapped and other offline deployments have no route to the Google Threat Intelligence API. For these, each threat list data stream also offers a **filestream** input that reads threat list files already saved to disk, alongside the REST API input above. Documents are written to the same data streams and mappings, so the packaged dashboards and threat enrichment work the same way regardless of how the data arrived.
+
+**File format.** The filestream input expects **NDJSON**: one IOC object per line, each line a single JSON object with a `data` field. This is not the pretty-printed JSON object with an `iocs` array that the API returns. The files must be plain `.ndjson`. The filestream input cannot read `.zip` or `.tar.gz` archives, and gzip-compressed files (`.gz`) are excluded.
+
+**Producing the files.** Google Threat Intelligence does not write NDJSON files itself, so a collector with API access must create them. Call `GET /api/v3/threat_lists/{threat_list_id}/{hour}` (with the `x-apikey` header) on a host that can reach the API, take each element of the `iocs` array in the response, and write it as one `{"data":{...}}` JSON object per line to a `.ndjson` file named after the list and hour, for example `threat_list_ransomware-2025010112.ndjson`. Then copy the files to the air-gapped host and point the filestream input at them.
+
+**Enabling file collection in Elastic:**
+
+1. In Kibana, go to **Management → Integrations** and open the **Google Threat Intelligence** integration.
+2. Enable the **Collect Google Threat Intelligence events via file** input for each threat list data stream you want to collect from files.
+3. Set **Paths** to a glob that matches the NDJSON files for that data stream, for example `/path/to/threat_lists/*ransomware*.ndjson`. Paths have no default, so a path is required to enable the input.
+4. Click **Save and Continue**.
+
+Each line of an NDJSON file is ingested as its own indicator event.
+
 ## Transforming Data for Up-to-Date Insights
 
 To keep the collected data up to date, **Transforms** are used.

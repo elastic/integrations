@@ -1,0 +1,18 @@
+wait_for_data_timeout: 1m
+input: cel
+service: google_workspace
+vars:
+  jwt_file: "{{SERVICE_LOGS_DIR}}/credentials.json"
+  delegated_account: test@example.com
+  enable_request_tracer: true
+data_stream:
+  vars:
+    directory_api_host: http://{{Hostname}}:{{Port}}
+    batch_size: 3
+    customer: C0forbidden
+    domain: example.com
+    collect_group_membership: true
+    collect_admin_roles: true
+assert:
+  # 2 users plus one error document each for the roles and groups enrichments.
+  hit_count: 4

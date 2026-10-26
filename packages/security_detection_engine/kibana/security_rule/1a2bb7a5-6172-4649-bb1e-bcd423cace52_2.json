@@ -1,0 +1,127 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 1
+            },
+            "group_by": [
+                "user.email",
+                "organization.id"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects three or more ChatGPT Enterprise assistant messages for the same user whose text matches common policy-refusal phrases (cannot assist, cannot help, cannot fulfill, unable to assist, against my guidelines, and similar) within the lookback window. A refusal burst can indicate jailbreak probing, policy-bypass attempts, or automated unsafe prompting intended to evade model safety controls.",
+        "false_positives": [
+            "Approved red-team or prompt-security evaluations that intentionally elicit refusals. Exclude those users or raise the count threshold.",
+            "Long helpful answers that incidentally include phrases such as \"I can't help with X, but I can help with Y.\" Read the sampled messages before treating the alert as a hard refusal campaign."
+        ],
+        "from": "now-60m",
+        "interval": "10m",
+        "investigation_fields": {
+            "field_names": [
+                "user.email",
+                "organization.id",
+                "Esql.event_count",
+                "Esql.conversation_id_count_distinct",
+                "Esql.message_values",
+                "Esql.timestamp_first_seen",
+                "Esql.timestamp_last_seen"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Repeated Assistant Refusals",
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Repeated Assistant Refusals\n\nOne user received three or more assistant replies whose text matches common refusal phrasing in the lookback window.\nThat pattern can indicate jailbreak probing, attempts to elicit disallowed content, or scripted unsafe prompting.\n\nEscalate when the sampled messages are clear hard refusals, nearby prompts look adversarial, or the same user also\ntriggers credential-exposure or unusual Codex MCP activity. Close as a false positive for approved security evaluations\nor partial phrases inside otherwise helpful answers.\n\n#### Possible investigation steps\n\n- Review `Esql.message_values`, `Esql.event_count`, and `Esql.conversation_id_count_distinct` on the alert.\n- Pull surrounding user messages in the same conversation IDs for jailbreak or malware-request themes.\n- Correlate with credential-in-conversation, Codex MCP, share, and download activity from the same `user.email`.\n- Confirm whether the account is used for approved prompt-security testing.\n\n### False positive analysis\n\n- Approved red-team or model-evaluation traffic that intentionally elicits refusals.\n- Soft refusals embedded in longer helpful answers (for example, declining malware assistance while offering defensive\n  guidance).\n\n### Response and remediation\n\n- If probing is unauthorized, restrict the account, review recent conversations, and hunt for successful bypasses after\n  the refusal burst.\n- Use confirmed jailbreak prompts to improve prompt-security controls and user awareness where appropriate.\n",
+        "query": "from logs-openai_chatgpt_enterprise.conversation_message-*\n| where\n    data_stream.dataset == \"openai_chatgpt_enterprise.conversation_message\" and\n    openai_chatgpt_enterprise.conversation_message.message.author.type == \"assistant\" and\n    message is not null and\n    user.email is not null\n| eval Esql.message_text = to_lower(message)\n| where\n    Esql.message_text like \"*i can't assist*\" or\n    Esql.message_text like \"*i can't help*\" or\n    Esql.message_text like \"*i cannot fulfill*\" or\n    Esql.message_text like \"*i cannot help*\" or\n    Esql.message_text like \"*i cannot provide*\" or\n    Esql.message_text like \"*i can't provide*\" or\n    Esql.message_text like \"*i will not provide*\" or\n    Esql.message_text like \"*i won't provide*\" or\n    Esql.message_text like \"*i cannot answer*\" or\n    Esql.message_text like \"*i can't answer*\" or\n    Esql.message_text like \"*unable to assist*\" or\n    Esql.message_text like \"*against my guidelines*\"\n| stats\n    Esql.event_count = count(*),\n    Esql.conversation_id_count_distinct = count_distinct(openai_chatgpt_enterprise.conversation_message.conversation.id),\n    Esql.message_values = values(message),\n    Esql.timestamp_first_seen = min(@timestamp),\n    Esql.timestamp_last_seen = max(@timestamp)\n  by\n    user.email,\n    organization.id\n| where Esql.event_count >= 3\n| keep\n    user.email,\n    organization.id,\n    Esql.event_count,\n    Esql.conversation_id_count_distinct,\n    Esql.message_values,\n    Esql.timestamp_first_seen,\n    Esql.timestamp_last_seen\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": ">=0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            },
+            {
+                "ecs": false,
+                "name": "openai_chatgpt_enterprise.conversation_message.conversation.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "openai_chatgpt_enterprise.conversation_message.message.author.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "organization.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "1a2bb7a5-6172-4649-bb1e-bcd423cace52",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect conversation message compliance logs into\nElasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "high",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Policy Violation",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Mitre Atlas: AML.T0051",
+            "Mitre Atlas: AML.T0054",
+            "Tactic: Defense Impairment"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0112",
+                    "name": "Defense Impairment",
+                    "reference": "https://attack.mitre.org/tactics/TA0112/"
+                },
+                "technique": [
+                    {
+                        "id": "T1685",
+                        "name": "Disable or Modify Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1685/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "1a2bb7a5-6172-4649-bb1e-bcd423cace52_2",
+    "type": "security-rule"
+}

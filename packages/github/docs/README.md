@@ -52,6 +52,16 @@ For Filebeat input documentation, refer to the following pages:
 
 *This integration is not compatible with GitHub Enterprise server.*
 
+#### Routing API request events to a separate data stream
+
+When GitHub audit log streaming has [API Request Events](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise) enabled, `api.request` events are typically much higher in volume than regular audit records. To manage their retention and index lifecycle independently, enable the **Route API request events to a separate data stream** setting on the audit data stream. When enabled, events with `event.action` set to `api.request` are routed to the `github.api_requests` data stream (`logs-github.api_requests-*`) instead of `github.audit`.
+
+Notes:
+ - The setting is available on the streaming inputs only (AWS S3/SQS, Azure Blob Storage, Azure Event Hub and Google Cloud Storage). GitHub does not return `api.request` events through the REST audit log API, so the setting does not apply to the API input.
+ - Enabling the setting only affects new data; existing documents remain in `logs-github.audit-*`. Queries that must span old and new data should target both data streams.
+ - The rerouted documents keep the `github.*` field names, and carry a `route_api_request_events` tag.
+ - Routing on its own does not change retention. To apply a different retention, customize the `logs-github.api_requests@custom` component template (for example, set `index.lifecycle.name` to an ILM policy, or set a data stream lifecycle `data_retention`).
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -135,6 +145,8 @@ For Filebeat input documentation, refer to the following pages:
 | github.request_body | The request body of the API request. GraphQL API request queries regularly exceed the default `ignore_above` limit of 1024, which leaves them unindexed. | keyword |
 | github.request_body.text | Multi-field of `github.request_body`. | match_only_text |
 | github.request_category |  | keyword |
+| github.request_method | The HTTP method of the API request. | keyword |
+| github.route | The API route template of the API request. | keyword |
 | github.ruleset_bypass_actors.actor_id |  | long |
 | github.ruleset_bypass_actors.actor_type |  | keyword |
 | github.ruleset_bypass_actors.bypass_mode |  | keyword |
@@ -201,6 +213,7 @@ For Filebeat input documentation, refer to the following pages:
 | github.secret_type_display_name |  | keyword |
 | github.secrets_updated |  | keyword |
 | github.source_branch |  | keyword |
+| github.status_code | The HTTP response status code of the API request. | long |
 | github.target_branch |  | keyword |
 | github.team | GitHub team name. | keyword |
 | github.token_id |  | keyword |
@@ -286,6 +299,180 @@ An example event for `audit` looks as following:
     }
 }
 ```
+
+### API Request
+
+The API Request data stream receives GitHub `api.request` audit log events rerouted from the audit data stream when the **Route API request events to a separate data stream** setting is enabled on a streaming audit input. It has no inputs of its own.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
+| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
+| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
+| github.active |  | boolean |
+| github.actor_id | The id of the actor who performed the action. | keyword |
+| github.actor_ip | The IP address of the entity performing the action. | ip |
+| github.actor_is_bot |  | boolean |
+| github.actor_location.country_name |  | keyword |
+| github.actor_location.ip |  | ip |
+| github.audit_log_stream_enabled |  | boolean |
+| github.audit_log_stream_id |  | keyword |
+| github.audit_log_stream_sink |  | keyword |
+| github.audit_log_stream_sink_details |  | keyword |
+| github.blocked_user | The username of the account being blocked. | keyword |
+| github.business |  | keyword |
+| github.business_id |  | keyword |
+| github.category | GitHub action category. | keyword |
+| github.changes.billing_plan |  | keyword |
+| github.changes.roles |  | keyword |
+| github.commit_id |  | keyword |
+| github.data.event |  | keyword |
+| github.data.head_branch |  | keyword |
+| github.data.head_sha |  | keyword |
+| github.data.started_at |  | date |
+| github.data.trigger_id |  | keyword |
+| github.data.workflow_id |  | keyword |
+| github.data.workflow_run_id |  | keyword |
+| github.device |  | keyword |
+| github.events |  | keyword |
+| github.events_object |  | object |
+| github.forked_repository |  | keyword |
+| github.hashed_token | SHA-256 hash of the token used for authentication. | keyword |
+| github.hook_id |  | keyword |
+| github.integration | The GitHub App that triggered the event. | keyword |
+| github.login_method |  | keyword |
+| github.logout_reason |  | keyword |
+| github.message |  | keyword |
+| github.multi_repo |  | boolean |
+| github.name |  | keyword |
+| github.new_role |  | keyword |
+| github.number |  | long |
+| github.old_role |  | keyword |
+| github.operation_type |  | keyword |
+| github.org | GitHub organization name. | keyword |
+| github.org_id |  | keyword |
+| github.permission | GitHub user permissions for the event. | keyword |
+| github.programmatic_access_type | Type of authentication used. | keyword |
+| github.public_repo |  | boolean |
+| github.publicly_leaked |  | boolean |
+| github.pull_request_id |  | keyword |
+| github.pull_request_title |  | keyword |
+| github.pull_request_url |  | keyword |
+| github.query_string | The query string of the API request. GraphQL API request queries regularly exceed the default `ignore_above` limit of 1024, which leaves them unindexed. | keyword |
+| github.query_string.text | Multi-field of `github.query_string`. | match_only_text |
+| github.reason |  | keyword |
+| github.repo | GitHub repository name. | keyword |
+| github.repo_id |  | keyword |
+| github.repositories_added |  | keyword |
+| github.repositories_added_names | The name of the repository added to a GitHub App installation. | keyword |
+| github.repositories_removed |  | keyword |
+| github.repositories_removed_names | The name of the repository removed from a GitHub App installation. | keyword |
+| github.repository | The name of the repository. | keyword |
+| github.repository_public | Whether the GitHub repository is publicly visible. | boolean |
+| github.repository_selection | Whether all repositories have been selected or there's a selection involved. | keyword |
+| github.request_body | The request body of the API request. GraphQL API request queries regularly exceed the default `ignore_above` limit of 1024, which leaves them unindexed. | keyword |
+| github.request_body.text | Multi-field of `github.request_body`. | match_only_text |
+| github.request_category |  | keyword |
+| github.request_method | The HTTP method of the API request. | keyword |
+| github.route | The API route template of the API request. | keyword |
+| github.ruleset_bypass_actors.actor_id |  | long |
+| github.ruleset_bypass_actors.actor_type |  | keyword |
+| github.ruleset_bypass_actors.bypass_mode |  | keyword |
+| github.ruleset_bypass_actors.id |  | long |
+| github.ruleset_bypass_actors_added.actor_id |  | long |
+| github.ruleset_bypass_actors_added.actor_type |  | keyword |
+| github.ruleset_bypass_actors_added.bypass_mode |  | keyword |
+| github.ruleset_bypass_actors_added.id |  | long |
+| github.ruleset_bypass_actors_deleted.actor_id |  | long |
+| github.ruleset_bypass_actors_deleted.actor_type |  | keyword |
+| github.ruleset_bypass_actors_deleted.bypass_mode |  | keyword |
+| github.ruleset_bypass_actors_deleted.id |  | long |
+| github.ruleset_bypass_actors_updated.actor_id |  | long |
+| github.ruleset_bypass_actors_updated.actor_type |  | keyword |
+| github.ruleset_bypass_actors_updated.bypass_mode |  | keyword |
+| github.ruleset_bypass_actors_updated.id |  | long |
+| github.ruleset_conditions.id |  | long |
+| github.ruleset_conditions.old_parameters |  | object |
+| github.ruleset_conditions.old_parameters.exclude |  | keyword |
+| github.ruleset_conditions.old_parameters.include |  | keyword |
+| github.ruleset_conditions.old_parameters.repository_ids |  | keyword |
+| github.ruleset_conditions.parameters |  | object |
+| github.ruleset_conditions.parameters.exclude |  | keyword |
+| github.ruleset_conditions.parameters.include |  | keyword |
+| github.ruleset_conditions.parameters.repository_ids |  | keyword |
+| github.ruleset_conditions.target |  | keyword |
+| github.ruleset_conditions_added.id |  | long |
+| github.ruleset_conditions_added.old_parameters |  | object |
+| github.ruleset_conditions_added.old_parameters.exclude |  | keyword |
+| github.ruleset_conditions_added.old_parameters.include |  | keyword |
+| github.ruleset_conditions_added.old_parameters.repository_ids |  | keyword |
+| github.ruleset_conditions_added.parameters |  | object |
+| github.ruleset_conditions_added.parameters.exclude |  | keyword |
+| github.ruleset_conditions_added.parameters.include |  | keyword |
+| github.ruleset_conditions_added.parameters.repository_ids |  | keyword |
+| github.ruleset_conditions_added.target |  | keyword |
+| github.ruleset_conditions_deleted.id |  | long |
+| github.ruleset_conditions_deleted.old_parameters |  | object |
+| github.ruleset_conditions_deleted.old_parameters.exclude |  | keyword |
+| github.ruleset_conditions_deleted.old_parameters.include |  | keyword |
+| github.ruleset_conditions_deleted.old_parameters.repository_ids |  | keyword |
+| github.ruleset_conditions_deleted.parameters |  | object |
+| github.ruleset_conditions_deleted.parameters.exclude |  | keyword |
+| github.ruleset_conditions_deleted.parameters.include |  | keyword |
+| github.ruleset_conditions_deleted.parameters.repository_ids |  | keyword |
+| github.ruleset_conditions_deleted.target |  | keyword |
+| github.ruleset_conditions_updated.id |  | long |
+| github.ruleset_conditions_updated.old_parameters |  | object |
+| github.ruleset_conditions_updated.old_parameters.exclude |  | keyword |
+| github.ruleset_conditions_updated.old_parameters.include |  | keyword |
+| github.ruleset_conditions_updated.old_parameters.repository_ids |  | keyword |
+| github.ruleset_conditions_updated.parameters |  | object |
+| github.ruleset_conditions_updated.parameters.exclude |  | keyword |
+| github.ruleset_conditions_updated.parameters.include |  | keyword |
+| github.ruleset_conditions_updated.parameters.repository_ids |  | keyword |
+| github.ruleset_conditions_updated.target |  | keyword |
+| github.ruleset_enforcement | Enforcement state of the ruleset (active, disabled, evaluate). | keyword |
+| github.ruleset_id | Unique identifier of the ruleset. | keyword |
+| github.ruleset_name | Name of the ruleset. | keyword |
+| github.ruleset_old_enforcement | Previous enforcement state of the ruleset on update (active, disabled, evaluate). | keyword |
+| github.ruleset_old_name | Previous name of the ruleset, emitted on rename. | keyword |
+| github.ruleset_source_type | Source type of the ruleset (Organization, Repository). | keyword |
+| github.secret_type |  | keyword |
+| github.secret_type_display_name |  | keyword |
+| github.secrets_updated |  | keyword |
+| github.source_branch |  | keyword |
+| github.status_code | The HTTP response status code of the API request. | long |
+| github.target_branch |  | keyword |
+| github.team | GitHub team name. | keyword |
+| github.token_id |  | keyword |
+| github.token_scopes | Scopes associated with the token used to perform the action. | keyword |
+| github.topic |  | keyword |
+| github.transport_protocol | The type of protocol (for example, HTTP or SSH) used to transfer Git data. | long |
+| github.transport_protocol_name | A human readable name for the protocol (for example, HTTP or SSH) used to transfer Git data. | keyword |
+| github.user_agent | The user agent of the entity performing the action. | keyword |
+| github.user_id |  | keyword |
+| github.version |  | keyword |
+| github.visibility | The repository visibility, for example `public` or `private`. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
 
 
 ### Code Scanning
@@ -863,6 +1050,12 @@ To use this integration, users must use GitHub Apps or Personal Access Token wit
 - At least `Read-only` permission on Metadata
 If misconfigured, the integration could run successfully without any data being processed. Alternatively, you might encounter an error like `⁠GET: server returned a 404 (Not Found)`.
 
+#### Upgrading to version 2.32.0
+
+Version 2.32.0 recreates the latest-issues transform with destination index `logs-github_latest.dest_issues-2` so the additional Issues API field mappings can take effect. The `logs-github_latest.issues` alias moves to the new index when it is created. The transform rebuilds the latest issue state from retained documents in `logs-github.issues-*`; source documents that have expired cannot be recovered this way.
+
+The previous destination index, `logs-github_latest.dest_issues-1`, is not deleted automatically. After upgrading, verify that the transform has caught up and the alias points to the new index. Before removing the old index, preserve any issue records that are no longer available in the source data stream and take a snapshot if needed. Once the new index contains the records you need, delete only `logs-github_latest.dest_issues-1`. Keeping both destination indices can produce duplicate results and field type conflicts in wildcard queries.
+
 **Exported fields**
 
 | Field | Description | Type | Unit | Metric Type |
@@ -883,6 +1076,7 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.assignee.site_admin |  | boolean |  |  |
 | github.issues.assignee.type |  | keyword |  |  |
 | github.issues.assignee.url |  | keyword |  |  |
+| github.issues.assignee.user_view_type |  | keyword |  |  |
 | github.issues.assignees | Information of users who were assigned the issue. | flattened |  |  |
 | github.issues.author_association |  | keyword |  |  |
 | github.issues.body |  | text |  |  |
@@ -895,6 +1089,7 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.closed_by.site_admin |  | boolean |  |  |
 | github.issues.closed_by.type |  | keyword |  |  |
 | github.issues.closed_by.url |  | keyword |  |  |
+| github.issues.closed_by.user_view_type |  | keyword |  |  |
 | github.issues.comments |  | integer |  |  |
 | github.issues.comments_url |  | keyword |  |  |
 | github.issues.created_at | The time that the issue was created in ISO 8601 format - `YYYY-MM-DDTHH:MM:SSZ`. | date |  |  |
@@ -903,6 +1098,11 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.html_url |  | keyword |  |  |
 | github.issues.id | The id of GitHub issue. | integer |  |  |
 | github.issues.is_pr |  | boolean |  |  |
+| github.issues.issue_dependencies_summary.blocked_by |  | integer |  |  |
+| github.issues.issue_dependencies_summary.blocking |  | integer |  |  |
+| github.issues.issue_dependencies_summary.total_blocked_by |  | integer |  |  |
+| github.issues.issue_dependencies_summary.total_blocking |  | integer |  |  |
+| github.issues.issue_field_values.value |  | keyword |  |  |
 | github.issues.labels.description |  | keyword |  |  |
 | github.issues.labels.integration |  | keyword |  |  |
 | github.issues.labels.name |  | keyword |  |  |
@@ -911,6 +1111,7 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.locked |  | boolean |  |  |
 | github.issues.node_id | The node_id of GitHub issue. | keyword |  |  |
 | github.issues.number |  | integer |  |  |
+| github.issues.pinned_comment.body |  | match_only_text |  |  |
 | github.issues.pull_request.diff_url |  | keyword |  |  |
 | github.issues.pull_request.html_url |  | keyword |  |  |
 | github.issues.pull_request.patch_url |  | keyword |  |  |
@@ -918,6 +1119,9 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.repository_url | The repository containing the GitHub issue. | keyword |  |  |
 | github.issues.state |  | keyword |  |  |
 | github.issues.state_reason |  | keyword |  |  |
+| github.issues.sub_issues_summary.completed |  | integer |  |  |
+| github.issues.sub_issues_summary.percent_completed |  | integer |  |  |
+| github.issues.sub_issues_summary.total |  | integer |  |  |
 | github.issues.time_to_close.sec | The time taken to close an issue in seconds. | long | s | gauge |
 | github.issues.timeline_url |  | keyword |  |  |
 | github.issues.title |  | keyword |  |  |
@@ -931,6 +1135,7 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.user.site_admin |  | boolean |  |  |
 | github.issues.user.type |  | keyword |  |  |
 | github.issues.user.url |  | keyword |  |  |
+| github.issues.user.user_view_type |  | keyword |  |  |
 | github.repository.description | The repository description. | text |  |  |
 | github.repository.fork | Whether the repository is a fork. | boolean |  |  |
 | github.repository.full_name | The full, globally unique, name of the repository. | keyword |  |  |
@@ -962,32 +1167,33 @@ An example event for `issues` looks as following:
 {
     "@timestamp": "2011-04-22T13:33:48.000Z",
     "agent": {
-        "ephemeral_id": "0aa2f45d-e0a7-421c-ade5-45aa21712041",
-        "id": "906bbf2a-d522-4c69-829f-8d0d4d615392",
-        "name": "elastic-agent-18769",
+        "ephemeral_id": "0b2e9d17-5d3a-47aa-af61-77c9a8a9f3c1",
+        "id": "5fa7bb32-e0b8-4f48-be83-56cdb5575267",
+        "name": "elastic-agent-75889",
         "type": "filebeat",
-        "version": "8.19.10"
+        "version": "9.5.5"
     },
     "data_stream": {
         "dataset": "github.issues",
-        "namespace": "88899",
+        "namespace": "78706",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "906bbf2a-d522-4c69-829f-8d0d4d615392",
+        "id": "5fa7bb32-e0b8-4f48-be83-56cdb5575267",
         "snapshot": false,
-        "version": "8.19.10"
+        "version": "9.5.5"
     },
     "event": {
         "action": "opened",
         "agent_id_status": "verified",
         "created": "2011-04-22T13:33:48.000Z",
         "dataset": "github.issues",
-        "ingested": "2026-07-29T03:53:27Z",
+        "ingested": "2026-10-23T08:16:36Z",
         "kind": "event",
+        "module": "github",
         "original": "{\"active_lock_reason\":\"too heated\",\"assignee\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"assignees\":[{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"}],\"author_association\":\"COLLABORATOR\",\"body\":\"I'm having a problem with this.\",\"closed_at\":null,\"closed_by\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"comments\":0,\"comments_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/comments\",\"created_at\":\"2011-04-22T13:33:48Z\",\"events_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/events\",\"html_url\":\"https://github.com/octocat/Hello-World/issues/1347\",\"id\":1,\"labels\":[{\"color\":\"f29513\",\"default\":true,\"description\":\"Something isn't working\",\"id\":208045946,\"name\":\"bug\",\"node_id\":\"MDU6TGFiZWwyMDgwNDU5NDY=\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/labels/bug\"}],\"labels_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/labels{/name}\",\"locked\":true,\"milestone\":{\"closed_at\":\"2013-02-12T13:22:01Z\",\"closed_issues\":8,\"created_at\":\"2011-04-10T20:09:31Z\",\"creator\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"description\":\"Tracking milestone for version 1.0\",\"due_on\":\"2012-10-09T23:39:01Z\",\"html_url\":\"https://github.com/octocat/Hello-World/milestones/v1.0\",\"id\":1002604,\"labels_url\":\"https://api.github.com/repos/octocat/Hello-World/milestones/1/labels\",\"node_id\":\"MDk6TWlsZXN0b25lMTAwMjYwNA==\",\"number\":1,\"open_issues\":4,\"state\":\"open\",\"title\":\"v1.0\",\"updated_at\":\"2014-03-03T18:58:10Z\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/milestones/1\"},\"node_id\":\"MDU6SXNzdWUx\",\"number\":1347,\"pull_request\":{\"diff_url\":\"https://github.com/octocat/Hello-World/pull/1347.diff\",\"html_url\":\"https://github.com/octocat/Hello-World/pull/1347\",\"patch_url\":\"https://github.com/octocat/Hello-World/pull/1347.patch\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/pulls/1347\"},\"repository_url\":\"https://api.github.com/repos/octocat/Hello-World\",\"state\":\"open\",\"state_reason\":\"completed\",\"title\":\"Found a bug\",\"updated_at\":\"2011-04-22T13:33:48Z\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347\",\"user\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"}}",
         "reason": "completed",
         "type": [
@@ -1005,16 +1211,14 @@ An example event for `issues` looks as following:
                 "type": "User",
                 "url": "https://api.github.com/users/octocat"
             },
-            "assignees": [
-                {
-                    "html_url": "https://github.com/octocat",
-                    "id": 1,
-                    "login": "octocat",
-                    "site_admin": false,
-                    "type": "User",
-                    "url": "https://api.github.com/users/octocat"
-                }
-            ],
+            "assignees": {
+                "html_url": "https://github.com/octocat",
+                "id": 1,
+                "login": "octocat",
+                "site_admin": false,
+                "type": "User",
+                "url": "https://api.github.com/users/octocat"
+            },
             "author_association": "COLLABORATOR",
             "body": "I'm having a problem with this.",
             "closed_by": {
@@ -1032,12 +1236,10 @@ An example event for `issues` looks as following:
             "html_url": "https://github.com/octocat/Hello-World/issues/1347",
             "id": 1,
             "is_pr": true,
-            "labels": [
-                {
-                    "description": "Something isn't working",
-                    "name": "bug"
-                }
-            ],
+            "labels": {
+                "description": "Something isn't working",
+                "name": "bug"
+            },
             "labels_url": "https://api.github.com/repos/octocat/Hello-World/issues/1347/labels{/name}",
             "locked": true,
             "node_id": "MDU6SXNzdWUx",
@@ -1074,6 +1276,9 @@ An example event for `issues` looks as following:
     },
     "input": {
         "type": "httpjson"
+    },
+    "labels": {
+        "is_transform_source": "true"
     },
     "related": {
         "user": [
