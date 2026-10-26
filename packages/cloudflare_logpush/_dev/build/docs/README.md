@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, Zero Trust Network Session, and Workers Trace Events logs.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, IPsec Logs, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, Turnstile Events, Zero Trust Network Session, and Workers Trace Events logs.
 
 Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
@@ -54,12 +54,14 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 - `email_security_alerts`: Cloudflare Email Security alerts for phishing, malware, and other email-based threats. See [Email Security Alerts schema](https://developers.cloudflare.com/logs/reference/log-fields/account/email_security_alerts/).
 - `firewall_event`: Zone-level Firewall events for requests mitigated by Cloudflare security products (WAF, Rate Limiting, Firewall Rules, etc.). See [Firewall Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/firewall_events/).
 - `http_request`: HTTP/HTTPS request logs served at the Cloudflare edge. See [HTTP Requests schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/http_requests/).
+- `ipsec`: IPsec tunnel logs (IKE handshake and connection messages). See [IPsec Logs schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/ipsec_logs/).
 - `magic_ids`: Magic Network Monitoring IDS detection logs. See [Magic IDS Detections schema](https://developers.cloudflare.com/logs/reference/log-fields/account/magic_ids_detections/).
 - `nel_report`: Network Error Logging (NEL) reports collected from end-user browsers. See [NEL Reports schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/nel_reports/).
 - `network_analytics`: Network Analytics (Magic Transit / Magic WAN packet-sampled flow) logs. See [Network Analytics Logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/network_analytics_logs/).
 - `page_shield_events`: Page Shield events reporting changes to scripts and connections observed on protected zones. See [Page Shield Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/page_shield_events/).
 - `sinkhole_http`: HTTP traffic captured by Cloudflare sinkholes. See [Sinkhole HTTP logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/sinkhole_http_logs/).
 - `spectrum_event`: Cloudflare Spectrum events for TCP/UDP applications proxied through Cloudflare. See [Spectrum Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/spectrum_events/).
+- `turnstile_events`: Cloudflare Turnstile challenge events (challenge issued, solved, and siteverify results) for widgets embedded on your sites. See [Turnstile Events schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/turnstile_events/).
 - `workers_trace`: Cloudflare Workers Trace Events with execution logs and exceptions for Workers scripts. See [Workers Trace Events schema](https://developers.cloudflare.com/logs/reference/log-fields/account/workers_trace_events/).
 
 ### Supported use cases
@@ -71,6 +73,8 @@ Integrating Cloudflare Logpush with Elastic provides centralized visibility acro
 - Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
 - Auditing administrative activity on the Cloudflare account (`audit`).
 - Troubleshooting DNS and client-side performance issues (`dns`, `dns_firewall`, `nel_report`, `workers_trace`).
+- Monitoring Turnstile bot-challenge activity and siteverify failures (`turnstile_events`).
+- Troubleshooting IPsec tunnel connectivity and handshake issues (`ipsec`).
 
 ## What do I need to use this integration?
 
@@ -87,7 +91,7 @@ To use this integration, you must be able to create and manage [Cloudflare Logpu
 Creating and managing Logpush jobs requires an API token or user role with the `Logs Write` permission (or a role that includes it, such as **Super Administrator**, **Administrator**, or **Log Share** with edit permissions). Refer to [Cloudflare Logpush permissions](https://developers.cloudflare.com/logs/logpush/permissions/) for details.
 
 - **Zone-scoped datasets** (for example, `http_requests`, `firewall_events`, `dns_logs`, `spectrum_events`, `nel_reports`, `page_shield_events`) require a **zone-scoped token**.
-- **Account-scoped datasets** (for example, `audit_logs`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
+- **Account-scoped datasets** (for example, `audit_logs`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `ipsec`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `turnstile_events`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
 - Zero Trust datasets (Access, Gateway, DEX) additionally require `Zero Trust: PII Read`.
 
 **Destination-specific credentials**
@@ -131,6 +135,7 @@ Configure one of the following delivery pipelines before enabling the integratio
   | Gateway HTTP               | gateway_http           |
   | Gateway Network            | gateway_network        |
   | HTTP Request               | http_request           |
+  | IPsec Logs                 | ipsec                  |
   | Magic IDS                  | magic_ids              |
   | NEL Report                 | nel_report             |
   | Network Analytics          | network_analytics_logs |
@@ -138,6 +143,7 @@ Configure one of the following delivery pipelines before enabling the integratio
   | Zero Trust Network Session | network_session        |
   | Sinkhole HTTP              | sinkhole_http          |
   | Spectrum Event             | spectrum_event         |
+  | Turnstile Events           | turnstile_events       |
   | Workers Trace Events       | workers_trace          |
 
 #### Collect data from AWS SQS
@@ -411,6 +417,16 @@ This is the `http_request` dataset.
 
 {{fields "http_request"}}
 
+#### ipsec
+
+This is the `ipsec` dataset.
+
+##### Example
+
+{{event "ipsec"}}
+
+{{fields "ipsec"}}
+
 #### magic_ids
 
 This is the `magic_ids` dataset.
@@ -480,6 +496,16 @@ This is the `spectrum_event` dataset.
 {{event "spectrum_event"}}
 
 {{fields "spectrum_event"}}
+
+#### turnstile_events
+
+This is the `turnstile_events` dataset.
+
+##### Example
+
+{{event "turnstile_events"}}
+
+{{fields "turnstile_events"}}
 
 #### workers_trace
 
