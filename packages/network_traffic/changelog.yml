@@ -4,8 +4,10 @@
     - description: >-
         Remove the `map_to_ecs` option and the original field mappings.
         All data streams now always move Packetbeat's non-ECS root fields:
-        `<protocol>.*`, `method`, `query`, `path` and `resource` go to `network_traffic.<protocol>.*`,
+        protocol objects, `method`, `query`, `path` and `resource` go to `network_traffic.<protocol>` where the protocol writes them,
         `status` goes to `network_traffic.status`, and `type` is dropped (use `network.protocol`).
+        Fields that are also ECS fields, such as `http.*`, `tls.*`, `dns.additionals` and `dns.opt.*`, stay where they are,
+        and HTTP's `method` is dropped (use `http.request.method`).
         Policies that set `map_to_ecs` to `false` produce the new layout after the upgrade.
         Update rules, saved searches, visualisations, ML jobs and custom ingest pipelines that use the old fields.
         The dashboards that are not marked ECS compliant do not show these fields for new data.

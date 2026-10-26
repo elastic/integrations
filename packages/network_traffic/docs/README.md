@@ -33,10 +33,19 @@ Currently, Network Packet Capture supports the following protocols:
 
 Packetbeat writes some fields at the root of the document that are not
 part of ECS. These are moved so that they do not collide with fields from
-other integrations: `<protocol>.*`, `method`, `query`, `path` and `resource`
-go to `network_traffic.<protocol>.*`, and `status` goes to
-`network_traffic.status`. The `type` field is dropped; use `network.protocol`.
-`request`, `response` and `params` are not moved.
+other integrations. For AMQP, Cassandra, DHCPv4, flow, ICMP, Memcached,
+MongoDB, MySQL, NFS, PostgreSQL, Redis, SIP and Thrift, the protocol
+object moves to `network_traffic.<protocol>` (`memcache` becomes
+`network_traffic.memcached`, and the NFS `rpc` object moves into
+`network_traffic.nfs`), and `method`, `query`, `path` and `resource` move
+into it where the protocol writes them. DNS moves only its non-ECS fields
+to `network_traffic.dns`, including `method`, `query` and `resource`;
+`dns.additionals` and `dns.opt.*` stay where they are. For HTTP, `query`
+moves to `network_traffic.http.query`, `method` is dropped (use
+`http.request.method`) and the `http.*` fields stay. TLS keeps its
+fields. In every data stream `status` goes to `network_traffic.status`
+and `type` is dropped; use `network.protocol`. `request`, `response` and
+`params` are not moved.
 
 Version 2.0.0 removed the `map_to_ecs` option and the original field
 mappings, so this always happens. Rules, searches, visualisations, ML jobs and
