@@ -1,0 +1,85 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects ChatGPT Enterprise audit events that delete stored memory. Adversaries may delete memory entries to remove evidence of prior prompts, preferences, or staging instructions after misuse.",
+        "false_positives": [
+            "Users delete memories during privacy cleanup or troubleshooting."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.id",
+                "openai_chatgpt_enterprise.audit_log.action_data.memory_id",
+                "source.ip"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Memory Deleted",
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Memory Deleted\n\nA ChatGPT Enterprise memory entry was deleted. Memory deletion can remove persisted context that would otherwise help explain prior conversations or automated behavior.\n\nEscalate when deletion follows unusual chat activity, credential exposure, or other defense-evasion signals from the same user. Close as a false positive for routine user-driven memory cleanup.\n\n#### Possible investigation steps\n\n- Identify the user and memory identifiers on the alert.\n- Review the user's recent conversation and Codex activity for sensitive content or policy-violating use.\n- Correlate with mass conversation deletion, shares, or downloads nearby.\n- Ask the user whether the deletion was intentional only after reviewing surrounding activity.\n\n### False positive analysis\n\n- Users commonly delete individual memories while managing personalization settings.\n\n### Response and remediation\n\n- Preserve remaining audit history and investigate the actor's recent conversations if the deletion appears tied to concealment.\n",
+        "query": "from logs-openai_chatgpt_enterprise.audit_log-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"openai_chatgpt_enterprise.audit_log\" and\n    event.action == \"delete_memory\"\n| keep\n    _id, _version, _index, @timestamp, event.action, user.id, user.email, source.ip,\n    openai_chatgpt_enterprise.audit_log.action_data.memory_id,\n    openai_chatgpt_enterprise.audit_log.action_data.auth_user_id,\n    openai_chatgpt_enterprise.audit_log.action_privilege, data_stream.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": ">=0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "c54f19db-fdea-4d32-9cc0-8f8b6016416e",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect compliance logs into Elasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Mitre Atlas: AML.T0092",
+            "Tactic: Stealth"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Stealth",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1070",
+                        "name": "Indicator Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1070/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "c54f19db-fdea-4d32-9cc0-8f8b6016416e_2",
+    "type": "security-rule"
+}
