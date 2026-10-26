@@ -258,6 +258,16 @@ processors:
       ignore_missing: true
       if: ctx.destination?.port == null
 
+  - community_id:
+      tag: compute_community_id_fallback
+      target_field: network.community_id
+      ignore_failure: true
+      if: ctx.network?.community_id == null
+      description: >-
+        Falls back to a freshly-computed community ID when the vendor didn't supply one (e.g.
+        community-id logging not enabled on the sensor) -- derived from the 5-tuple above, same
+        as the official `suricata` package's `eve` pipeline.
+
   ###
   # Suricata EVE `flow.*` object -> ECS byte/packet counters + flow start time.
   # `flow.src_ip`/`src_port`/`dest_ip`/`dest_port` are duplicates of the 5-tuple already
@@ -387,6 +397,17 @@ processors:
       target_field: rule.name
       tag: rename_alert_signature_to_rule_name
       ignore_missing: true
+  - set:
+      field: message
+      tag: set_message_from_rule_name
+      value: '{{{rule.name}}}'
+      if: ctx.rule?.name != null
+      description: >-
+        Repopulates `message` (cleared earlier when it was copied to `event.original`) with the
+        alert's signature text, so Discover's default summary line isn't blank. The official
+        `suricata` package instead uses `alert.category` here; `rule.name` is used here instead
+        since the signature text is far more specific (for example "ETPRO HUNTING Generic Pong
+        Keep-Alive Inbound M3" vs. the generic "Potentially Bad Traffic" category bucket).
   - rename:
       field: alert.category
       target_field: rule.category
@@ -440,6 +461,44 @@ processors:
       target_field: threat.technique.name
       tag: rename_metadata_mitre_technique_name
       ignore_missing: true
+  - rename:
+      field: alert.metadata.cvss_v3_base
+      target_field: vulnerability.score.base
+      tag: rename_metadata_cvss_v3_base_to_vulnerability_score_base
+      ignore_missing: true
+  - set:
+      field: vulnerability.score.version
+      value: '3.0'
+      tag: set_vulnerability_score_version_3
+      if: ctx.vulnerability?.score?.base != null
+      description: >-
+        Suricata rule metadata only distinguishes CVSS v2 vs v3 by key name, not an exact
+        point release -- "3.0" is the most specific version this source data supports.
+  - rename:
+      field: alert.metadata.cvss_v2_base
+      target_field: vulnerability.score.base
+      tag: rename_metadata_cvss_v2_base_to_vulnerability_score_base
+      ignore_missing: true
+      description: Only applied when no v3 score was already set above (v3 is preferred when both are present).
+      if: ctx.vulnerability?.score?.base == null
+  - set:
+      field: vulnerability.score.version
+      value: '2.0'
+      tag: set_vulnerability_score_version_2
+      if: ctx.vulnerability?.score?.base != null && ctx.vulnerability?.score?.version == null
+  - remove:
+      field: alert.metadata.cvss_v2_base
+      tag: remove_unused_metadata_cvss_v2_base
+      ignore_missing: true
+      description: >-
+        Discards the v2 score when v3 was already present and took precedence above -- otherwise
+        this would be left as an undeclared leftover field under `alert.metadata`.
+  - convert:
+      field: vulnerability.score.base
+      type: float
+      tag: convert_vulnerability_score_base_to_float
+      ignore_missing: true
+      description: Suricata rule metadata delivers CVSS scores as strings (for example "9.8").
 
   ###
   # ECS categorization (Pattern B — fewer than 5 mappings)
