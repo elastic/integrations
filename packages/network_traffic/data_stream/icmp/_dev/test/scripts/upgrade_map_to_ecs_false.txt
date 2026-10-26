@@ -1,6 +1,13 @@
-# Test that a policy created on the latest released version with the legacy
-# mapping (map_to_ecs: false) upgrades to the version that removes the
-# map_to_ecs option, and that data collected afterwards uses the ECS layout.
+# Test that a policy created on the last release that had the map_to_ecs
+# option (1.34.3) with the legacy mapping (map_to_ecs: false) upgrades to
+# the current version, which removes the option, and that data collected
+# afterwards uses the ECS layout.
+#
+# TODO: Remove this test once upgrades from 1.34.x are no longer a concern,
+# and replace it with a general-purpose upgrade test that installs the
+# latest released version, upgrades to the current one and checks that data
+# collection continues. The pinned version and the legacy-layout assertions
+# below only make sense for the 1.x to 2.0.0 upgrade.
 #
 # This deliberately does not skip when the current changelog entry is a
 # breaking change: crossing that change is what is being tested.
@@ -8,8 +15,6 @@
 [!external_stack] skip 'Skipping external stack test.'
 [!exec:jq] skip 'Skipping test requiring absent jq command'
 [!exec:docker] skip 'Skipping test requiring absent docker command'
-[!env:LATEST_EPR_VERSION] skip 'no EPR release to upgrade from'
-[!is_latest_version] skip 'dev version is not newer than latest EPR release'
 
 # Connect to the running stack and install an agent.
 use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
@@ -19,9 +24,9 @@ install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME 
 # Put it there before the policy exists so the input finds it on start.
 exec docker cp ${PACKAGE_ROOT}/_dev/deploy/docker/pcaps/icmp4_ping.pcap ${AGENT_CONTAINER}:/tmp/service_logs/icmp4_ping.pcap
 
-# Install the released version and create a policy that uses the legacy mapping.
-install_package_from_registry -profile ${CONFIG_PROFILES}/${PROFILE} ${PACKAGE_NAME} ${LATEST_EPR_VERSION}
-add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} -version ${LATEST_EPR_VERSION} test_config.yaml DATA_STREAM_NAME
+# Install the last release that has map_to_ecs and create a policy that uses the legacy mapping.
+install_package_from_registry -profile ${CONFIG_PROFILES}/${PROFILE} ${PACKAGE_NAME} 1.34.3
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} -version 1.34.3 test_config.yaml DATA_STREAM_NAME
 
 # One transaction in the capture. The legacy mapping leaves the protocol
 # fields at the root of the document.
