@@ -64,16 +64,19 @@ sleep 45s
 exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X GET 'https://localhost:9200/'${DATA_STREAM_NAME}'/_stats/indexing'
 cp stdout got_stats.json
 
-exec jq '._all.primaries.indexing.index_failed_due_to_version_conflict' got_stats.json
+# -e fails on a missing counter, so an error response cannot make the two readings match.
+exec jq -e '._all.primaries.indexing.index_failed_due_to_version_conflict' got_stats.json
 cp stdout conflicts_before.txt
+stdout '^[0-9]+$'
 
 sleep 20s
 
 exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X GET 'https://localhost:9200/'${DATA_STREAM_NAME}'/_stats/indexing'
 cp stdout got_stats.json
 
-exec jq '._all.primaries.indexing.index_failed_due_to_version_conflict' got_stats.json
+exec jq -e '._all.primaries.indexing.index_failed_due_to_version_conflict' got_stats.json
 cp stdout conflicts_after.txt
+stdout '^[0-9]+$'
 
 cmp conflicts_before.txt conflicts_after.txt
 
