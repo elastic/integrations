@@ -1,0 +1,249 @@
+rules:
+  # Round 2 — initial search resumed from the persisted cursor (max header_.indexed_at
+  # seen in round 1 = 1739012400). Matched before the round 1 search rule because it is
+  # the more specific body match. Returns one new breach and a fresh scroll id.
+  - path: /sources/v1/noncommunities/search
+    methods: ['POST']
+    request_body: '/.*1739012400.*/'
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "_scroll_id": "scrollRound2",
+            "hits": {
+              "max_score": null,
+              "total": 1,
+              "hits": [
+                {
+                  "_id": "breachRoundTwo0099",
+                  "_type": "_doc",
+                  "_source": {
+                    "fpid": "breachRoundTwo0099",
+                    "basetypes": ["breach"],
+                    "breach_type": "credential",
+                    "title": "Example Round Two Dump",
+                    "source": "Analyst Research",
+                    "source_type": "Credential Stealer",
+                    "created_at": { "date-time": "2025-02-07T00:00:00Z", "timestamp": 1738886400 },
+                    "first_observed_at": { "date-time": "2025-02-08T00:00:00Z", "timestamp": 1738972800 },
+                    "header_": { "indexed_at": 1739016000 },
+                    "total_records": 2500,
+                    "unique_records": 2400,
+                    "new_records": 2400,
+                    "old_records": 100,
+                    "top_domains": ["example.net"],
+                    "top_passwords": ["Spr1ng!2025"]
+                  }
+                }
+              ]
+            },
+            "timed_out": false,
+            "took": 42
+          }
+  # Terminal — the next-interval search once the cursor has advanced to the round 2 max
+  # (window [1739016000 TO now]) returns an empty envelope with NO _scroll_id. The program
+  # emits 0 events and want_more=false, so polling settles deterministically. Must stay
+  # above the round 1 rule, which matches any other search body.
+  - path: /sources/v1/noncommunities/search
+    methods: ['POST']
+    request_body: '/.*1739016000.*/'
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "hits": { "hits": [], "max_score": null, "total": 0 },
+            "timed_out": false,
+            "took": 1
+          }
+  # Round 1 — initial search (first run). The lower bound is now - initial_interval in
+  # epoch seconds, so it is not known ahead of time; this rule matches any search not
+  # matched above. Returns page 1 (two breaches) and a scroll id.
+  - path: /sources/v1/noncommunities/search
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "_scroll_id": "scrollPage1",
+            "hits": {
+              "max_score": null,
+              "total": 4,
+              "hits": [
+                {
+                  "_id": "breachAaBbCcDdEeFf0011",
+                  "_type": "_doc",
+                  "_source": {
+                    "fpid": "breachAaBbCcDdEeFf0011",
+                    "basetypes": ["breach"],
+                    "breach_type": "credential",
+                    "title": "Example Combo List 2025",
+                    "source": "Analyst Research",
+                    "source_type": "Credential Stealer",
+                    "created_at": { "date-time": "2025-01-15T00:00:00Z", "timestamp": 1736899200 },
+                    "first_observed_at": { "date-time": "2025-01-20T00:00:00Z", "timestamp": 1737331200 },
+                    "header_": { "indexed_at": 1739001600 },
+                    "total_records": 15000,
+                    "unique_records": 12000,
+                    "new_records": 500,
+                    "old_records": 11500,
+                    "top_domains": ["example.com", "example.org", "example.net"],
+                    "top_passwords": ["123456", "password", "qwerty"]
+                  }
+                },
+                {
+                  "_id": "breachGgHhIiJjKkLl2233",
+                  "_type": "_doc",
+                  "_source": {
+                    "fpid": "breachGgHhIiJjKkLl2233",
+                    "basetypes": ["breach"],
+                    "breach_type": "credential",
+                    "title": "Example Paste Dump",
+                    "source": "https://paste.example.net/abc123",
+                    "source_type": "Paste",
+                    "created_at": { "date-time": "2025-01-28T00:00:00Z", "timestamp": 1738022400 },
+                    "first_observed_at": { "date-time": "2025-01-29T00:00:00Z", "timestamp": 1738108800 },
+                    "header_": { "indexed_at": 1739005200 },
+                    "total_records": 800,
+                    "unique_records": 790,
+                    "new_records": 790,
+                    "old_records": 10,
+                    "top_domains": ["example.org"],
+                    "top_passwords": ["letmein"]
+                  }
+                }
+              ]
+            },
+            "timed_out": false,
+            "took": 140
+          }
+  # Round 1 — scroll page 2 (resumes scrollPage1). Returns two more breaches and a new
+  # scroll id. These have larger header_.indexed_at values (ascending sort).
+  - path: /sources/v1/noncommunities/scroll
+    methods: ['POST']
+    query_params:
+      scroll: "2m"
+    request_body: '/.*scrollPage1.*/'
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "_scroll_id": "scrollPage2",
+            "hits": {
+              "max_score": null,
+              "total": 4,
+              "hits": [
+                {
+                  "_id": "breachMmNnOoPpQq4455",
+                  "_type": "_doc",
+                  "_source": {
+                    "fpid": "breachMmNnOoPpQq4455",
+                    "basetypes": ["breach"],
+                    "breach_type": "credential",
+                    "title": "Example Stealer Log 2025",
+                    "source": "Analyst Research",
+                    "source_type": "Credential Stealer",
+                    "created_at": { "date-time": "2025-02-01T00:00:00Z", "timestamp": 1738368000 },
+                    "first_observed_at": { "date-time": "2025-02-02T00:00:00Z", "timestamp": 1738454400 },
+                    "header_": { "indexed_at": 1739008800 },
+                    "total_records": 5300,
+                    "unique_records": 5100,
+                    "new_records": 4800,
+                    "old_records": 300,
+                    "top_domains": ["example.com", "example.net"],
+                    "top_passwords": ["Gotham#2025", "qwerty123"]
+                  }
+                },
+                {
+                  "_id": "breachRrSsTtUuVv6677",
+                  "_type": "_doc",
+                  "_source": {
+                    "fpid": "breachRrSsTtUuVv6677",
+                    "basetypes": ["breach"],
+                    "breach_type": "credential",
+                    "title": "Example Phishing Kit Harvest",
+                    "source": "Flashpoint Extracted",
+                    "source_type": "Phishing",
+                    "created_at": { "date-time": "2025-02-03T00:00:00Z", "timestamp": 1738540800 },
+                    "first_observed_at": { "date-time": "2025-02-04T00:00:00Z", "timestamp": 1738627200 },
+                    "header_": { "indexed_at": 1739012400 },
+                    "total_records": 320,
+                    "unique_records": 320,
+                    "new_records": 320,
+                    "old_records": 0,
+                    "top_domains": ["example.org"],
+                    "top_passwords": ["Metrop0lis!"]
+                  }
+                }
+              ]
+            },
+            "timed_out": false,
+            "took": 95
+          }
+  # Round 1 — terminal scroll page (resumes scrollPage2). Empty hits stops pagination.
+  - path: /sources/v1/noncommunities/scroll
+    methods: ['POST']
+    query_params:
+      scroll: "2m"
+    request_body: '/.*scrollPage2.*/'
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "_scroll_id": "scrollPage2",
+            "hits": { "max_score": null, "total": 4, "hits": [] },
+            "timed_out": false,
+            "took": 12
+          }
+  # Round 2 — terminal scroll page (resumes scrollRound2). Empty hits stops pagination.
+  # Also acts as a regression guard: if the cursor were cleared/regressed, round 2 would
+  # re-issue the initial search and re-collect round 1 events, inflating hit_count.
+  - path: /sources/v1/noncommunities/scroll
+    methods: ['POST']
+    query_params:
+      scroll: "2m"
+    request_body: '/.*scrollRound2.*/'
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "_scroll_id": "scrollRound2",
+            "hits": { "max_score": null, "total": 1, "hits": [] },
+            "timed_out": false,
+            "took": 8
+          }
