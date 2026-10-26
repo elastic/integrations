@@ -29,20 +29,23 @@ Currently, Network Packet Capture supports the following protocols:
 -   TLS
 -   SIP/SDP (beta)
 
-### Common protocol options
+### ECS field mapping
 
-The following options are available for all protocols:
+Packetbeat writes some fields at the root of the document that are not
+part of ECS. These are moved so that they do not collide with fields from
+other integrations: `<protocol>.*`, `method`, `query`, `path` and `resource`
+go to `network_traffic.<protocol>.*`, and `status` goes to
+`network_traffic.status`. The `type` field is dropped; use `network.protocol`.
+`request`, `response` and `params` are not moved.
 
-#### ECS field mapping
+Version 2.0.0 removed the `map_to_ecs` option and the original field
+mappings, so this always happens. Rules, searches, visualisations, ML jobs and
+custom ingest pipelines that use the old root fields must use the new
+locations. Documents indexed before the upgrade keep their old layout.
 
-Non-ECS Packetbeat fields that would otherwise be placed at the root of the
-document are always moved to their ECS equivalents or into the
-`network_traffic.<protocol>` field group. This applies to all data streams.
-
-The `map_to_ecs` option that previously controlled this was removed in
-version 2.0.0, along with the original non-ECS field mappings. Rules,
-searches and visualisations that depend on the old root fields must use the
-new field locations.
+The dashboards whose titles do not end in "(ECS compliant)" and the
+saved searches that match them query the old fields. They are kept for data
+collected before 2.0.0 and will not show these fields for new data.
 
 Users who need to retain data collected with the original mappings may need
 to re-index their older documents. Instructions for doing this are available
@@ -53,6 +56,10 @@ in `Stack Management`›`Ingest Pipelines` by searching for
 
 The retirement timeline for the original behavior is available
 [here](https://github.com/elastic/integrations/issues/8185).
+
+### Common protocol options
+
+The following options are available for all protocols:
 
 #### `enabled`
 
@@ -268,7 +275,7 @@ Also see [Common protocol options](#common-protocol-options).
 
 #### `include_authorities`
 
-If this option is enabled, dns.authority fields (authority resource
+If this option is enabled, network_traffic.dns.authorities fields (authority resource
 records) are added to DNS events. The default is false.
 
 #### `include_additionals`
@@ -644,7 +651,7 @@ Elasticsearch so that they can be analyzed and searched.
 
 Network Packet Capture indexes the method, parameters, return value, and exceptions
 of each Thrift-RPC call. You can search by and create statistics based
-on any of these fields. Network Packet Capture automatically fills in the `status`
+on any of these fields. Network Packet Capture automatically fills in the `network_traffic.status`
 column with either `OK` or `Error`, so it’s easy to find the problematic
 RPC calls. A transaction is put into the `Error` state if it returned an
 exception.

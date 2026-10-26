@@ -29,20 +29,23 @@ Currently, Network Packet Capture supports the following protocols:
 -   TLS
 -   SIP/SDP (beta)
 
-### Common protocol options
+### ECS field mapping
 
-The following options are available for all protocols:
+Packetbeat writes some fields at the root of the document that are not
+part of ECS. These are moved so that they do not collide with fields from
+other integrations: `<protocol>.*`, `method`, `query`, `path` and `resource`
+go to `network_traffic.<protocol>.*`, and `status` goes to
+`network_traffic.status`. The `type` field is dropped; use `network.protocol`.
+`request`, `response` and `params` are not moved.
 
-#### ECS field mapping
+Version 2.0.0 removed the `map_to_ecs` option and the original field
+mappings, so this always happens. Rules, searches, visualisations, ML jobs and
+custom ingest pipelines that use the old root fields must use the new
+locations. Documents indexed before the upgrade keep their old layout.
 
-Non-ECS Packetbeat fields that would otherwise be placed at the root of the
-document are always moved to their ECS equivalents or into the
-`network_traffic.<protocol>` field group. This applies to all data streams.
-
-The `map_to_ecs` option that previously controlled this was removed in
-version 2.0.0, along with the original non-ECS field mappings. Rules,
-searches and visualisations that depend on the old root fields must use the
-new field locations.
+The dashboards whose titles do not end in "(ECS compliant)" and the
+saved searches that match them query the old fields. They are kept for data
+collected before 2.0.0 and will not show these fields for new data.
 
 Users who need to retain data collected with the original mappings may need
 to re-index their older documents. Instructions for doing this are available
@@ -53,6 +56,10 @@ in `Stack Management`›`Ingest Pipelines` by searching for
 
 The retirement timeline for the original behavior is available
 [here](https://github.com/elastic/integrations/issues/8185).
+
+### Common protocol options
+
+The following options are available for all protocols:
 
 #### `enabled`
 
@@ -175,11 +182,6 @@ The default value is 10s.
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
-| client.process.args | The command-line of the process that initiated the transaction. | keyword |
-| client.process.executable | Absolute path to the client process executable. | keyword |
-| client.process.name | The name of the process that initiated the transaction. | keyword |
-| client.process.start | The time the client process started. | date |
-| client.process.working_directory | The working directory of the client process. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -262,7 +264,6 @@ The default value is 10s.
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
@@ -274,11 +275,6 @@ The default value is 10s.
 | server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
-| server.process.args | The command-line of the process that served the transaction. | keyword |
-| server.process.executable | Absolute path to the server process executable. | keyword |
-| server.process.name | The name of the process that served the transaction. | keyword |
-| server.process.start | The time the server process started. | date |
-| server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -441,11 +437,6 @@ Fields published for AMQP packets.
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
-| client.process.args | The command-line of the process that initiated the transaction. | keyword |
-| client.process.executable | Absolute path to the client process executable. | keyword |
-| client.process.name | The name of the process that initiated the transaction. | keyword |
-| client.process.start | The time the client process started. | date |
-| client.process.working_directory | The working directory of the client process. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -482,9 +473,6 @@ Fields published for AMQP packets.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
-| flow.id | Internal flow ID based on connection meta data and address. | keyword |
-| flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -566,7 +554,6 @@ Fields published for AMQP packets.
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
@@ -578,11 +565,6 @@ Fields published for AMQP packets.
 | server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
-| server.process.args | The command-line of the process that served the transaction. | keyword |
-| server.process.executable | Absolute path to the server process executable. | keyword |
-| server.process.name | The name of the process that served the transaction. | keyword |
-| server.process.start | The time the server process started. | date |
-| server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -760,11 +742,6 @@ Fields published for Apache Cassandra packets.
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
-| client.process.args | The command-line of the process that initiated the transaction. | keyword |
-| client.process.executable | Absolute path to the client process executable. | keyword |
-| client.process.name | The name of the process that initiated the transaction. | keyword |
-| client.process.start | The time the client process started. | date |
-| client.process.working_directory | The working directory of the client process. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -800,9 +777,6 @@ Fields published for Apache Cassandra packets.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
-| flow.id | Internal flow ID based on connection meta data and address. | keyword |
-| flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -915,7 +889,6 @@ Fields published for Apache Cassandra packets.
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
@@ -927,11 +900,6 @@ Fields published for Apache Cassandra packets.
 | server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
-| server.process.args | The command-line of the process that served the transaction. | keyword |
-| server.process.executable | Absolute path to the server process executable. | keyword |
-| server.process.name | The name of the process that served the transaction. | keyword |
-| server.process.start | The time the server process started. | date |
-| server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -1102,11 +1070,6 @@ Fields published for DHCPv4 packets.
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
-| client.process.args | The command-line of the process that initiated the transaction. | keyword |
-| client.process.executable | Absolute path to the client process executable. | keyword |
-| client.process.name | The name of the process that initiated the transaction. | keyword |
-| client.process.start | The time the client process started. | date |
-| client.process.working_directory | The working directory of the client process. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -1142,9 +1105,6 @@ Fields published for DHCPv4 packets.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
-| flow.id | Internal flow ID based on connection meta data and address. | keyword |
-| flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -1220,7 +1180,6 @@ Fields published for DHCPv4 packets.
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
@@ -1232,11 +1191,6 @@ Fields published for DHCPv4 packets.
 | server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
-| server.process.args | The command-line of the process that served the transaction. | keyword |
-| server.process.executable | Absolute path to the server process executable. | keyword |
-| server.process.name | The name of the process that served the transaction. | keyword |
-| server.process.start | The time the server process started. | date |
-| server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -1380,7 +1334,7 @@ Also see [Common protocol options](#common-protocol-options).
 
 #### `include_authorities`
 
-If this option is enabled, dns.authority fields (authority resource
+If this option is enabled, network_traffic.dns.authorities fields (authority resource
 records) are added to DNS events. The default is false.
 
 #### `include_additionals`
@@ -1405,11 +1359,6 @@ Fields published for DNS packets.
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
-| client.process.args | The command-line of the process that initiated the transaction. | keyword |
-| client.process.executable | Absolute path to the client process executable. | keyword |
-| client.process.name | The name of the process that initiated the transaction. | keyword |
-| client.process.start | The time the client process started. | date |
-| client.process.working_directory | The working directory of the client process. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -1473,9 +1422,6 @@ Fields published for DNS packets.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
-| flow.id | Internal flow ID based on connection meta data and address. | keyword |
-| flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -1544,7 +1490,6 @@ Fields published for DNS packets.
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
@@ -1556,11 +1501,6 @@ Fields published for DNS packets.
 | server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
-| server.process.args | The command-line of the process that served the transaction. | keyword |
-| server.process.executable | Absolute path to the server process executable. | keyword |
-| server.process.name | The name of the process that served the transaction. | keyword |
-| server.process.start | The time the server process started. | date |
-| server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -1921,11 +1861,6 @@ Fields published for HTTP packets.
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
-| client.process.args | The command-line of the process that initiated the transaction. | keyword |
-| client.process.executable | Absolute path to the client process executable. | keyword |
-| client.process.name | The name of the process that initiated the transaction. | keyword |
-| client.process.start | The time the client process started. | date |
-| client.process.working_directory | The working directory of the client process. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -1962,9 +1897,6 @@ Fields published for HTTP packets.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
-| flow.id | Internal flow ID based on connection meta data and address. | keyword |
-| flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -2021,7 +1953,6 @@ Fields published for HTTP packets.
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
@@ -2034,11 +1965,6 @@ Fields published for HTTP packets.
 | server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
-| server.process.args | The command-line of the process that served the transaction. | keyword |
-| server.process.executable | Absolute path to the server process executable. | keyword |
-| server.process.name | The name of the process that served the transaction. | keyword |
-| server.process.start | The time the server process started. | date |
-| server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -2237,11 +2163,6 @@ Fields published for ICMP packets.
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
-| client.process.args | The command-line of the process that initiated the transaction. | keyword |
-| client.process.executable | Absolute path to the client process executable. | keyword |
-| client.process.name | The name of the process that initiated the transaction. | keyword |
-| client.process.start | The time the client process started. | date |
-| client.process.working_directory | The working directory of the client process. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -2277,9 +2198,6 @@ Fields published for ICMP packets.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
-| flow.id | Internal flow ID based on connection meta data and address. | keyword |
-| flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -2329,7 +2247,6 @@ Fields published for ICMP packets.
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
@@ -2341,11 +2258,6 @@ Fields published for ICMP packets.
 | server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
-| server.process.args | The command-line of the process that served the transaction. | keyword |
-| server.process.executable | Absolute path to the server process executable. | keyword |
-| server.process.name | The name of the process that served the transaction. | keyword |
-| server.process.start | The time the server process started. | date |
-| server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -2532,11 +2444,6 @@ Fields published for Memcached packets.
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
-| client.process.args | The command-line of the process that initiated the transaction. | keyword |
-| client.process.executable | Absolute path to the client process executable. | keyword |
-| client.process.name | The name of the process that initiated the transaction. | keyword |
-| client.process.start | The time the client process started. | date |
-| client.process.working_directory | The working directory of the client process. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -2574,9 +2481,6 @@ Fields published for Memcached packets.
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
-| flow.id | Internal flow ID based on connection meta data and address. | keyword |
-| flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -2660,7 +2564,6 @@ Fields published for Memcached packets.
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
@@ -2672,11 +2575,6 @@ Fields published for Memcached packets.
 | server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
-| server.process.args | The command-line of the process that served the transaction. | keyword |
-| server.process.executable | Absolute path to the server process executable. | keyword |
-| server.process.name | The name of the process that served the transaction. | keyword |
-| server.process.start | The time the server process started. | date |
-| server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -2856,11 +2754,6 @@ Fields published for MongoDB packets.
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
-| client.process.args | The command-line of the process that initiated the transaction. | keyword |
-| client.process.executable | Absolute path to the client process executable. | keyword |
-| client.process.name | The name of the process that initiated the transaction. | keyword |
-| client.process.start | The time the client process started. | date |
-| client.process.working_directory | The working directory of the client process. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -2896,9 +2789,6 @@ Fields published for MongoDB packets.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
-| flow.id | Internal flow ID based on connection meta data and address. | keyword |
-| flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -2953,7 +2843,6 @@ Fields published for MongoDB packets.
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
@@ -2965,11 +2854,6 @@ Fields published for MongoDB packets.
 | server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
-| server.process.args | The command-line of the process that served the transaction. | keyword |
-| server.process.executable | Absolute path to the server process executable. | keyword |
-| server.process.name | The name of the process that served the transaction. | keyword |
-| server.process.start | The time the server process started. | date |
-| server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -3137,11 +3021,6 @@ Fields published for MySQL packets.
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
-| client.process.args | The command-line of the process that initiated the transaction. | keyword |
-| client.process.executable | Absolute path to the client process executable. | keyword |
-| client.process.name | The name of the process that initiated the transaction. | keyword |
-| client.process.start | The time the client process started. | date |
-| client.process.working_directory | The working directory of the client process. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -3177,9 +3056,6 @@ Fields published for MySQL packets.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
-| flow.id | Internal flow ID based on connection meta data and address. | keyword |
-| flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -3230,7 +3106,6 @@ Fields published for MySQL packets.
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
@@ -3242,11 +3117,6 @@ Fields published for MySQL packets.
 | server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
-| server.process.args | The command-line of the process that served the transaction. | keyword |
-| server.process.executable | Absolute path to the server process executable. | keyword |
-| server.process.name | The name of the process that served the transaction. | keyword |
-| server.process.start | The time the server process started. | date |
-| server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -3397,11 +3267,6 @@ Fields published for NFS packets.
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
-| client.process.args | The command-line of the process that initiated the transaction. | keyword |
-| client.process.executable | Absolute path to the client process executable. | keyword |
-| client.process.name | The name of the process that initiated the transaction. | keyword |
-| client.process.start | The time the client process started. | date |
-| client.process.working_directory | The working directory of the client process. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -3438,9 +3303,6 @@ Fields published for NFS packets.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
-| flow.id | Internal flow ID based on connection meta data and address. | keyword |
-| flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -3497,7 +3359,6 @@ Fields published for NFS packets.
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
@@ -3509,11 +3370,6 @@ Fields published for NFS packets.
 | server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
-| server.process.args | The command-line of the process that served the transaction. | keyword |
-| server.process.executable | Absolute path to the server process executable. | keyword |
-| server.process.name | The name of the process that served the transaction. | keyword |
-| server.process.start | The time the server process started. | date |
-| server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
@@ -3698,11 +3554,6 @@ Fields published for PostgreSQL packets.
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
-| client.process.args | The command-line of the process that initiated the transaction. | keyword |
-| client.process.executable | Absolute path to the client process executable. | keyword |
-| client.process.name | The name of the process that initiated the transaction. | keyword |
-| client.process.start | The time the client process started. | date |
-| client.process.working_directory | The working directory of the client process. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -3738,9 +3589,6 @@ Fields published for PostgreSQL packets.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
-| flow.id | Internal flow ID based on connection meta data and address. | keyword |
-| flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -3789,7 +3637,6 @@ Fields published for PostgreSQL packets.
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
@@ -3801,11 +3648,6 @@ Fields published for PostgreSQL packets.
 | server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
-| server.process.args | The command-line of the process that served the transaction. | keyword |
-| server.process.executable | Absolute path to the server process executable. | keyword |
-| server.process.name | The name of the process that served the transaction. | keyword |
-| server.process.start | The time the server process started. | date |
-| server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -3961,11 +3803,6 @@ Fields published for Redis packets.
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
-| client.process.args | The command-line of the process that initiated the transaction. | keyword |
-| client.process.executable | Absolute path to the client process executable. | keyword |
-| client.process.name | The name of the process that initiated the transaction. | keyword |
-| client.process.start | The time the client process started. | date |
-| client.process.working_directory | The working directory of the client process. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -4003,9 +3840,6 @@ Fields published for Redis packets.
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
-| flow.id | Internal flow ID based on connection meta data and address. | keyword |
-| flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -4033,6 +3867,7 @@ Fields published for Redis packets.
 | network_traffic.redis.error | If the Redis command has resulted in an error, this field contains the error message returned by the Redis server. | keyword |
 | network_traffic.redis.method | The command/verb/method of the transaction. | keyword |
 | network_traffic.redis.query | The query in a human readable format. | keyword |
+| network_traffic.redis.resource | The logical resource that this transaction refers to. For Redis, this is the key. | keyword |
 | network_traffic.redis.return_value | The return value of the Redis command in a human readable format. | keyword |
 | network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
@@ -4051,7 +3886,6 @@ Fields published for Redis packets.
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
@@ -4063,11 +3897,6 @@ Fields published for Redis packets.
 | server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
-| server.process.args | The command-line of the process that served the transaction. | keyword |
-| server.process.executable | Absolute path to the server process executable. | keyword |
-| server.process.name | The name of the process that served the transaction. | keyword |
-| server.process.start | The time the server process started. | date |
-| server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -4225,11 +4054,6 @@ Fields published for SIP packets.
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
-| client.process.args | The command-line of the process that initiated the transaction. | keyword |
-| client.process.executable | Absolute path to the client process executable. | keyword |
-| client.process.name | The name of the process that initiated the transaction. | keyword |
-| client.process.start | The time the client process started. | date |
-| client.process.working_directory | The working directory of the client process. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -4270,9 +4094,6 @@ Fields published for SIP packets.
 | event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
-| flow.id | Internal flow ID based on connection meta data and address. | keyword |
-| flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -4391,7 +4212,6 @@ Fields published for SIP packets.
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
@@ -4403,11 +4223,6 @@ Fields published for SIP packets.
 | server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
-| server.process.args | The command-line of the process that served the transaction. | keyword |
-| server.process.executable | Absolute path to the server process executable. | keyword |
-| server.process.name | The name of the process that served the transaction. | keyword |
-| server.process.start | The time the server process started. | date |
-| server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -4610,7 +4425,7 @@ Elasticsearch so that they can be analyzed and searched.
 
 Network Packet Capture indexes the method, parameters, return value, and exceptions
 of each Thrift-RPC call. You can search by and create statistics based
-on any of these fields. Network Packet Capture automatically fills in the `status`
+on any of these fields. Network Packet Capture automatically fills in the `network_traffic.status`
 column with either `OK` or `Error`, so it’s easy to find the problematic
 RPC calls. A transaction is put into the `Error` state if it returned an
 exception.
@@ -4715,11 +4530,6 @@ Fields published for Thrift packets.
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
-| client.process.args | The command-line of the process that initiated the transaction. | keyword |
-| client.process.executable | Absolute path to the client process executable. | keyword |
-| client.process.name | The name of the process that initiated the transaction. | keyword |
-| client.process.start | The time the client process started. | date |
-| client.process.working_directory | The working directory of the client process. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -4755,9 +4565,6 @@ Fields published for Thrift packets.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
-| flow.id | Internal flow ID based on connection meta data and address. | keyword |
-| flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -4806,7 +4613,6 @@ Fields published for Thrift packets.
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
@@ -4818,11 +4624,6 @@ Fields published for Thrift packets.
 | server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
-| server.process.args | The command-line of the process that served the transaction. | keyword |
-| server.process.executable | Absolute path to the server process executable. | keyword |
-| server.process.name | The name of the process that served the transaction. | keyword |
-| server.process.start | The time the server process started. | date |
-| server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -5033,11 +4834,6 @@ Fields published for TLS packets.
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
-| client.process.args | The command-line of the process that initiated the transaction. | keyword |
-| client.process.executable | Absolute path to the client process executable. | keyword |
-| client.process.name | The name of the process that initiated the transaction. | keyword |
-| client.process.start | The time the client process started. | date |
-| client.process.working_directory | The working directory of the client process. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -5074,9 +4870,6 @@ Fields published for TLS packets.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
-| flow.id | Internal flow ID based on connection meta data and address. | keyword |
-| flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -5119,7 +4912,6 @@ Fields published for TLS packets.
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
@@ -5132,11 +4924,6 @@ Fields published for TLS packets.
 | server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
-| server.process.args | The command-line of the process that served the transaction. | keyword |
-| server.process.executable | Absolute path to the server process executable. | keyword |
-| server.process.name | The name of the process that served the transaction. | keyword |
-| server.process.start | The time the server process started. | date |
-| server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
