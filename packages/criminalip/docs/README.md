@@ -19,7 +19,7 @@ Use Criminal IP TI Feed indicators to detect matching IPs in ECS-normalized fire
 
 **Primary workflow — firewall TI detection:** prepare firewall logs with common ECS fields, a running collector, a key with Criminal IP TI Feed access, and permissions to install/enable the indicator match rule. Use vendor-specific parsers; this package does not automatically identify arbitrary raw firewall formats on one listener.
 
-Start with **[Logs Criminal IP] Firewall, Threat Intelligence, and Cortex Overview**. Read the traffic, TI alert and optional Cortex sections separately. Installing assets alone does not start collection or enable the rule.
+Start with **[Logs Criminal IP] Firewall Threat Detection and Threat Intelligence**. Review the traffic and TI alert panels. Installing assets alone does not start collection or enable the rule. Separately configured Cortex results are available in Discover.
 
 **Optional standalone lookups:** IP Report needs a running Elastic Agent, an IP Report API key and explicitly configured public IPs, but no firewall or Cortex. Use **[Logs Criminal IP] IP Intelligence Overview** for that path. It is not automatic network monitoring; every periodic lookup consumes API usage.
 
@@ -45,10 +45,10 @@ Installing the integration provides dashboard and rule assets. Each feature stil
 | Firewall events | Event time, source/destination IPs and ports, protocol, raw action, session state, and vendor/product when available | Firewall dashboard panels and Discover |
 | TI Feed | IP indicators, provider, reason, confidence, score, and first/last seen values when supplied | Discover: `logs-criminalip.ti_feed-*` |
 | Indicator match alerts | Firewall events matching a feed indicator, match evidence, and alert workflow status | Elastic Security Alerts and TI dashboard panels |
-| Optional Cortex analysis | Analysis time, IP, classification, summary, inbound/outbound risk, hostname, organization, and ASN when available | Cortex dashboard panels and `criminalip-cortex-results*` in Discover |
+| Optional Cortex analysis | Analysis time, IP, classification, summary, inbound/outbound risk, hostname, organization, and ASN when available | Separately configured `criminalip-cortex-results*` index in Discover |
 | Optional IP Report | Investigated IP, inbound/outbound scores, and available VPN, Tor, proxy, scanner, dark web, hosting, and cloud flags | IP Intelligence Overview and Discover: `logs-criminalip.ip_report-*` |
 
-IP Report collection and Cortex analysis are separate paths. An IP queried by the Agent does not automatically appear in the Cortex panels.
+IP Report collection and Cortex analysis are separate paths. An IP queried by the Agent does not automatically create a Cortex analysis result.
 
 ## How this helps
 
@@ -109,7 +109,7 @@ Configure the vendor's official Elastic integration separately for Palo Alto PAN
 
 `criminalip.fortigate`, `fortinet_fortigate.log`, `panw.panos`, `juniper_srx.log`, `cisco_asa.log`, and `cisco_ftd.log`.
 
-Firewall events need `event.category: network` and source or destination IP fields. Vendor/product labels use `observer.vendor` and `observer.product` when available. Other vendors' inputs are not configured automatically. Cortex is an analysis service shown in a separate dashboard section.
+Firewall events need `event.category: network` and source or destination IP fields. Vendor/product labels use `observer.vendor` and `observer.product` when available. Other vendors' inputs are not configured automatically. Cortex analysis results are delivered to a separately configured Elasticsearch index.
 
 | Firewall | Collector/parser | Dashboard dataset |
 | --- | --- | --- |
@@ -123,16 +123,18 @@ Use `source.ip`, `destination.ip`, available ports and `network.transport` for c
 ### 3. Collect TI Feed indicators and enable alerts
 
 1. Enable **Criminal IP Threat Intelligence Feed** in the Agent policy.
-2. Enter a key with TI Feed access, the feed URL, and the interval. Defaults are `https://dl.criminalip.io/ti/v1/feed/outbound` and `5m`; confirm that they suit your subscription.
-3. Verify indicators in `logs-criminalip.ti_feed-*` with `threat.indicator.ip`.
-   Observation times are normalized to ISO 8601 in `threat.indicator.first_seen` and `threat.indicator.last_seen`. The existing `criminalip.ti_feed.first_seen` and `criminalip.ti_feed.last_seen` fields are retained for compatibility. Feed timestamps without an offset are interpreted as UTC; confirm the source timezone when using a custom feed. Invalid observation dates are omitted and reported in `error.message` while retaining the IP indicator. Updating the package affects new ingestion; previously ignored date fields require separate reprocessing.
-   Numeric confidence is retained in `criminalip.ti_feed.confidence`. The ECS keyword `threat.indicator.confidence` uses the STIX 0–100 bands: 0 = None, greater than 0 and below 30 = Low, 30 to below 70 = Medium, and 70–100 = High. Out-of-range numeric values are retained with the label Not Specified; missing confidence is omitted. Existing indices that mapped ECS confidence as a number require a planned mapping migration/reindex; updating this package does not rewrite historical mappings.
+2. Enter a key with TI Feed access, the feed URL, and the interval. Defaults are `https://dl.criminalip.io/ti/v1/feed/outbound` and `1h`; confirm that they suit your subscription.
+3. Verify collected snapshots in `logs-criminalip.ti_feed-*`. The package also runs a latest transform that keeps one current record per `threat.indicator.ip` in the `logs-criminalip_latest.ti_feed` alias; the indicator match rule queries this deduplicated destination.
+   Observation times are normalized to ISO 8601 in `threat.indicator.first_seen` and `threat.indicator.last_seen`; parsed values are also available under `criminalip.ti_feed`. Feed timestamps without an offset are interpreted as UTC; confirm the source timezone when using a custom feed. Invalid observation dates are omitted and reported in `error.message` while the IP indicator is retained.
+   Numeric confidence is available in `criminalip.ti_feed.confidence`. The ECS keyword `threat.indicator.confidence` uses the STIX 0–100 bands: 0 = None, greater than 0 and below 30 = Low, 30 to below 70 = Medium, and 70–100 = High. Out-of-range numeric values use the label Not Specified; missing confidence is omitted.
 4. In **Security → Rules → Add Elastic rules**, install `Criminal IP Firewall Indicator Match`.
 5. Check collection and rule permissions, then enable the rule.
 
 The rule compares firewall `source.ip` or `destination.ip` with TI Feed `threat.indicator.ip`. It runs every minute, searches the previous six minutes of firewall events using `event.ingested` (falling back to `@timestamp` when `event.ingested` is missing), and searches indicators within the previous 30 days. This allows delayed firewall logs to match based on their ingestion time without changing their original event timestamp. Events without `event.ingested` still depend on their original timestamp being within the search window.
 
-The feed is polled as a snapshot and unchanged indicators are currently republished each interval. At the default five-minute interval this can produce 288 copies per active IP per day. Plan retention and the indicator search window for your feed volume. A latest-indicator destination with refresh and expiry handling is not included; suppressing repeat events alone would let still-active indicators age out of detection.
+The feed is polled as a snapshot and unchanged indicators are republished each interval. At the default one-hour interval this can produce 24 source documents per active IP per day. The latest transform keeps one destination document per IP, refreshes it from each snapshot, and expires destination indicators after 30 days without a newer copy. Source snapshots remain in the source data stream; configure source retention for your volume.
+
+Original API payload preservation is disabled by default for TI Feed and IP Report to reduce duplicate storage. Enable **Preserve original event** when raw response content is needed for investigation.
 
 The feed key is sent as a query parameter required by the provider. Transport and decoding failures emit fixed messages without the request URL or key. Per-request automatic retries are disabled because the Agent retry logger can log query-string credentials before CEL error handling; the next configured polling interval attempts collection again. Do not enable request tracing without reviewing credential redaction.
 
@@ -203,7 +205,7 @@ The analyzer rejects private, reserved, loopback, and other non-public addresses
 
 The result path is:
 
-`TheHive observable → Cortex → Criminal IP API → Elasticsearch summary → Kibana dashboard`
+`TheHive observable → Cortex → Criminal IP API → configured Elasticsearch results index`
 
 The integration does not automatically forward Elastic alerts or TI Feed entries to TheHive. Cortex result delivery does not create firewall match alerts.
 
@@ -216,7 +218,7 @@ The integration does not automatically forward Elastic alerts or TI Feed entries
 
 Default API endpoint: `https://api.criminalip.io/v1/asset/ip/report`.
 
-The primary and additional IPs are queried sequentially each interval. Existing single-IP policies continue to work. Empty additional rows are ignored and identical values after trimming whitespace are queried once per cycle. Failed requests do not discard other results; every request retains its configured value in `criminalip.query_ip`, including HTTP-200 responses containing an application-level failure or no usable IP report.
+The primary and additional IPs are queried sequentially each interval. Empty additional rows are ignored and identical values after trimming whitespace are queried once per cycle. Failed requests do not discard other results; every request retains its configured value in `criminalip.query_ip`, including HTTP-200 responses containing an application-level failure or no usable IP report.
 
 These are fixed lookups, not automatic extraction from logs. The configured IP does not have to be your own. Each distinct IP consumes API usage per cycle: ten IPs at five-minute intervals can make about 2,880 requests per day, before retries or restarts. Large lists take longer to complete; this is not bulk threat-feed import. Use one collecting Agent per configured report input unless duplicated API calls are intentional.
 
@@ -234,11 +236,11 @@ In Discover, select the data view and enter the KQL in the **main search bar**. 
 | TI Feed | `logs-criminalip.ti_feed-*` | `threat.indicator.ip:*` |
 | FortiGate logs | `logs-*` | `event.dataset: "criminalip.fortigate"` |
 | ECS network events | `logs-*` | `event.category: network and (source.ip:* or destination.ip:*)` |
-| Cortex results | `criminalip-cortex-results*` | `event.dataset: "criminalip.cortex" and criminalip.ip: "<ANALYZED_PUBLIC_IP>"` |
+| Cortex results | Separately configured `criminalip-cortex-results*` | `event.dataset: "criminalip.cortex" and criminalip.ip: "<ANALYZED_PUBLIC_IP>"` |
 
 Replace the IP placeholders. For firewall documents, check timestamps, IP fields, category, action, and parsing errors. For alerts, check rule execution results and match evidence in Elastic Security Alerts.
 
-After documents arrive, open the managed dashboard. Cortex panels query the result index directly; a Cortex data view is needed only for Discover.
+After documents arrive, open the managed dashboard for firewall and TI results. Cortex analyzer documents are external to this package; use Discover with a data view matching the index where your analyzer writes its results.
 
 ### Distinguish test evidence from operational validation
 
@@ -303,11 +305,7 @@ The alert panels use the **default Space** alias, `.alerts-security.alerts-defau
 
 ### Cortex results
 
-**Cortex · Latest Results by IP** selects the newest stored document per IP within the chosen period. All attributes come from that same document. **Analyses in Selected Period** counts stored documents in the chosen period, not lifetime queries.
-
-**Cortex · Recent Analysis History** lists individual results in descending analysis time order. A repeated analysis that is successfully delivered adds a document, updates the latest result when it falls in the selected period, and remains in the history.
-
-The latest table shows up to 100 IPs in IP order; history shows the latest 100 records. Both show ten rows per page and analysis time in **UTC**. Unavailable attributes display as `Not Available`. Use Discover for the complete history.
+The package does not include Cortex result panels or a Cortex data stream. The separately distributed analyzer can write results to its configured index; inspect those documents in Discover.
 
 ## Troubleshooting
 

@@ -50,10 +50,6 @@ processors:
       tag: set_threat_indicator_provider
       field: threat.indicator.provider
       value: Criminal IP
-  - set:
-      tag: set_threat_indicator_type
-      field: threat.indicator.type
-      value: ipv4-addr
   - trim:
       tag: trim_report_indicator_ip
       field: _temp.report.ip
@@ -73,6 +69,14 @@ processors:
       field: _temp.report.ip
       target_field: threat.indicator.ip
       ignore_missing: true
+  - script:
+      tag: classify_report_indicator_ip
+      description: Set the ECS indicator type from the validated IP address family.
+      if: 'ctx.threat?.indicator?.ip != null'
+      lang: painless
+      source: >-
+        def ip = ctx.threat.indicator.ip.toString();
+        ctx.threat.indicator.type = ip.indexOf(':') >= 0 ? 'ipv6-addr' : 'ipv4-addr';
   - rename:
       tag: rename_report_status
       field: _temp.report.status

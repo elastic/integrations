@@ -130,13 +130,13 @@ processors:
   - set:
       tag: combine_fortigate_date_time_timezone
       field: _temp.fortigate_time
-      value: '{{{_temp.fortigate_fields.date}}} {{{_temp.fortigate_fields.time}}} {{{_temp.fortigate_fields.tz}}}'
+      value: "{{{_temp.fortigate_fields.date}}} {{{_temp.fortigate_fields.time}}} {{{_temp.fortigate_fields.tz}}}"
       if: 'ctx._temp?.fortigate_fields?.date != null && ctx._temp.fortigate_fields.time != null && ctx._temp.fortigate_fields.tz != null && ctx._temp.fortigate_fields.tz != ""'
 
   - set:
       tag: combine_fortigate_date_time
       field: _temp.fortigate_time
-      value: "{{_temp.fortigate_fields.date}} {{_temp.fortigate_fields.time}}"
+      value: "{{{_temp.fortigate_fields.date}}} {{{_temp.fortigate_fields.time}}}"
       if: 'ctx._temp?.fortigate_fields?.date != null && ctx._temp.fortigate_fields.time != null && (ctx._temp.fortigate_fields.tz == null || ctx._temp.fortigate_fields.tz == "")'
 
   - date:
@@ -422,7 +422,9 @@ processors:
   - script:
       tag: append_related_endpoint_ips
       lang: painless
-      source: |-
+      description: Add distinct source and destination IP addresses, including repeated values, to related.ip.
+      if: 'ctx.source?.ip != null || ctx.destination?.ip != null'
+      source: |
         for (def raw : [ctx.source?.ip, ctx.destination?.ip]) {
           if (raw == null) { continue; }
           if (ctx.related == null) { ctx.related = [:]; }
