@@ -63,6 +63,8 @@ class MockCriminalIP(BaseHTTPRequestHandler):
                 "first_seen": "2026-01-01 00:00:00",
                 "last_seen": "2026-01-01 01:00:00",
             }, {
+                "reason": "Missing IP must not discard the valid indicators",
+            }, None, "invalid feed entry", {"ip": None}, {"ip": ""}, {"ip": "   "}, {
                 "ip": "198.51.100.20",
             }]}})
             return
@@ -109,11 +111,22 @@ def send_syslog(protocol, host, port):
         raise TimeoutError("Timed out waiting for the system-test policy signal")
 
     payload = (fortigate_line() + "\n").encode("utf-8")
+    if protocol == "udp":
+        # The policy signal does not guarantee the UDP input has bound its port.
+        # UDP sendto succeeds even without a receiver, so OSError retries alone
+        # cannot prevent the first datagram from being lost during startup.
+        time.sleep(5)
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as client:
+            for _ in range(10):
+                client.sendto(payload, (host, port))
+                time.sleep(1)
+        print("Sent ten synthetic FortiGate datagrams over UDP", flush=True)
+        return
+
     deadline = time.monotonic() + 20
     while True:
         try:
-            sock_type = socket.SOCK_STREAM if protocol == "tcp" else socket.SOCK_DGRAM
-            with socket.socket(socket.AF_INET, sock_type) as client:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
                 client.settimeout(2)
                 if protocol == "tcp":
                     client.connect((host, port))
@@ -131,10 +144,6 @@ def send_syslog(protocol, host, port):
                     while client.recv(1):
                         pass
                     return
-                else:
-                    client.sendto(payload, (host, port))
-            print(f"Sent one synthetic FortiGate event over {protocol.upper()}", flush=True)
-            return
         except OSError:
             if time.monotonic() >= deadline:
                 raise

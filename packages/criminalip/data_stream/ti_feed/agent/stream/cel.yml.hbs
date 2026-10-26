@@ -29,7 +29,9 @@ program: |
       resp.StatusCode == 200 ? resp.Body.decode_json().as(body,
         type(body) == map && has(body.body) && type(body.body) == map &&
         has(body.body.data) && type(body.body.data) == list ? {
-          "events": body.body.data.map(e, {
+          "events": body.body.data.filter(e,
+            type(e) == map && has(e.ip) && type(e.ip) == string && e.ip.trim_space() != ""
+          ).map(e, {
             "@timestamp": now(),
             "event.kind": "enrichment",
             "event.category": ["threat"],

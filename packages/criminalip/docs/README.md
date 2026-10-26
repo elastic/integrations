@@ -19,9 +19,9 @@ Use Criminal IP TI Feed indicators to detect matching IPs in ECS-normalized fire
 
 **Primary workflow — firewall TI detection:** prepare firewall logs with common ECS fields, a running collector, a key with Criminal IP TI Feed access, and permissions to install/enable the indicator match rule. Use vendor-specific parsers; this package does not automatically identify arbitrary raw firewall formats on one listener.
 
-Start with **[Criminal IP] Firewall, Threat Intelligence, and Cortex Overview**. Read the traffic, TI alert and optional Cortex sections separately. Installing assets alone does not start collection or enable the rule.
+Start with **[Logs Criminal IP] Firewall, Threat Intelligence, and Cortex Overview**. Read the traffic, TI alert and optional Cortex sections separately. Installing assets alone does not start collection or enable the rule.
 
-**Optional standalone lookups:** IP Report needs a running Elastic Agent, an IP Report API key and explicitly configured public IPs, but no firewall or Cortex. Use **[Criminal IP] IP Intelligence Overview** for that path. It is not automatic network monitoring; every periodic lookup consumes API usage.
+**Optional standalone lookups:** IP Report needs a running Elastic Agent, an IP Report API key and explicitly configured public IPs, but no firewall or Cortex. Use **[Logs Criminal IP] IP Intelligence Overview** for that path. It is not automatic network monitoring; every periodic lookup consumes API usage.
 
 | Feature | What you need | Required connection |
 | --- | --- | --- |
@@ -66,7 +66,7 @@ These results support investigation. A match or suspicious classification alone 
 
 Install the supplied package in the target Kibana Space using your organization's custom integration installation process. Then open:
 
-`[Criminal IP] Firewall, Threat Intelligence, and Cortex Overview` for the primary detection/investigation workflow. `[Criminal IP] IP Intelligence Overview` is for optional explicitly configured IP lookups, not observed firewall communications.
+`[Logs Criminal IP] Firewall, Threat Intelligence, and Cortex Overview` for the primary detection/investigation workflow. `[Logs Criminal IP] IP Intelligence Overview` is for optional explicitly configured IP lookups, not observed firewall communications.
 
 For firewall detection, follow **Collect firewall logs**, then **Collect TI Feed indicators and enable alerts** below. Cortex and configured IP lookups can be used independently; configure only the paths you need. Existing dashboard IDs and stored data are retained.
 
@@ -220,7 +220,7 @@ The primary and additional IPs are queried sequentially each interval. Existing 
 
 These are fixed lookups, not automatic extraction from logs. The configured IP does not have to be your own. Each distinct IP consumes API usage per cycle: ten IPs at five-minute intervals can make about 2,880 requests per day, before retries or restarts. Large lists take longer to complete; this is not bulk threat-feed import. Use one collecting Agent per configured report input unless duplicated API calls are intentional.
 
-Open **[Criminal IP] IP Intelligence Overview** for stored report totals, collection times, inbound-risk distribution and history. Latest Results by IP takes all fields from the same newest successful document in the selected period. Repeated lookups remain in history; tables show up to 100 entries with ten rows per page. Missing flags are Not Available, not No. Collection time is not provider observation time, and risk distributions count snapshots rather than unique IPs. Failed collections are excluded from result tables. Use Discover for complete history.
+Open **[Logs Criminal IP] IP Intelligence Overview** for stored report totals, collection times, inbound-risk distribution and history. Latest Results by IP takes all fields from the same newest successful document in the selected period. Repeated lookups remain in history; tables show up to 100 entries with ten rows per page. Missing flags are Not Available, not No. Collection time is not provider observation time, and risk distributions count snapshots rather than unique IPs. Failed collections are excluded from result tables. Use Discover for complete history.
 
 An IP report does not prove that your network communicated with the IP and does not generate a firewall match alert.
 
@@ -251,7 +251,7 @@ After documents arrive, open the managed dashboard. Cortex panels query the resu
 
 ### Validate synthetic events with the packaged test dashboard
 
-Starting with 0.1.0, open **[Criminal IP] Firewall and TI Validation · Synthetic
+Starting with 0.1.0, open **[Logs Criminal IP] Firewall and TI Validation · Synthetic
 Only**. This is a separate managed asset with a stable ID; it does not overwrite
 the production dashboard or existing user-created copies. All firewall summary,
 action, source/vendor, recent-event, alert-summary/trend/investigation panels and
