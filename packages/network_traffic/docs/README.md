@@ -294,32 +294,32 @@ An example event for `flow` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-26T02:58:00.001Z",
+    "@timestamp": "2026-10-26T19:57:55.003Z",
     "agent": {
-        "ephemeral_id": "8d32da1e-b1bb-4542-b068-f266225fdb97",
-        "id": "17073370-e541-43a8-8c8c-549f49c47356",
-        "name": "elastic-agent-73512",
+        "ephemeral_id": "57ba384b-7135-4250-ac75-9eaad0bbb1f1",
+        "id": "f2de9a93-f83b-4fb9-a27b-468fe08d1f70",
+        "name": "elastic-agent-36243",
         "type": "packetbeat",
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "data_stream": {
         "dataset": "network_traffic.flow",
-        "namespace": "31724",
+        "namespace": "46144",
         "type": "logs"
     },
     "destination": {
-        "bytes": 64,
-        "ip": "::1",
-        "packets": 1,
-        "port": 8000
+        "bytes": 92,
+        "ip": "10.0.0.2",
+        "mac": "00-00-00-00-00-02",
+        "packets": 2
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "17073370-e541-43a8-8c8c-549f49c47356",
+        "id": "f2de9a93-f83b-4fb9-a27b-468fe08d1f70",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "event": {
         "action": "network_flow",
@@ -327,12 +327,13 @@ An example event for `flow` looks as following:
         "category": [
             "network"
         ],
-        "duration": 1224296,
-        "end": "2026-10-26T02:57:29.378Z",
-        "ingested": "2026-10-26T02:58:11Z",
+        "dataset": "network_traffic.flow",
+        "duration": 38917420,
+        "end": "2026-10-26T19:57:42.967Z",
+        "ingested": "2026-10-26T19:57:56Z",
         "kind": "event",
         "module": "network_traffic",
-        "start": "2026-10-26T02:57:29.376Z",
+        "start": "2026-10-26T19:57:42.928Z",
         "type": [
             "connection",
             "end"
@@ -341,18 +342,18 @@ An example event for `flow` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-73512",
+        "hostname": "elastic-agent-36243",
         "ip": [
-            "10.89.2.2",
-            "fe80::d4e6:5ff:fe3e:e213",
-            "10.89.0.105",
-            "fe80::a088:f1ff:febc:8531"
+            "10.89.7.2",
+            "fe80::861:10ff:fee1:5cb1",
+            "10.89.0.61",
+            "fe80::a821:a3ff:fec5:572e"
         ],
         "mac": [
-            "A2-88-F1-BC-85-31",
-            "D6-E6-05-3E-E2-13"
+            "0A-61-10-E1-5C-B1",
+            "AA-21-A3-C5-57-2E"
         ],
-        "name": "elastic-agent-73512",
+        "name": "elastic-agent-36243",
         "os": {
             "family": "",
             "kernel": "6.17.0-14-generic",
@@ -363,23 +364,23 @@ An example event for `flow` looks as following:
         }
     },
     "network": {
-        "bytes": 152,
-        "community_id": "1:5y9AkdbV9U8xqD9dhlj6obkubHg=",
-        "packets": 2,
-        "transport": "tcp",
-        "type": "ipv6"
+        "bytes": 184,
+        "community_id": "1:YcMyyWJfhc95EW1GfXt6jlZ3DiQ=",
+        "packets": 4,
+        "transport": "icmp",
+        "type": "ipv4"
     },
     "network_traffic": {
         "flow": {
             "final": true,
-            "id": "QAT///////8A////IP8AAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAUAfeMg"
+            "id": "EQAA////DP////////8BAAEAAAAAAAEAAAAAAAIKAAABCgAAAg"
         }
     },
     "source": {
-        "bytes": 88,
-        "ip": "::1",
-        "packets": 1,
-        "port": 51320
+        "bytes": 92,
+        "ip": "10.0.0.1",
+        "mac": "00-00-00-00-00-01",
+        "packets": 2
     }
 }
 ```
@@ -582,26 +583,25 @@ An example event for `amqp` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-26T03:35:37.571Z",
+    "@timestamp": "2026-10-26T19:53:40.080Z",
     "agent": {
-        "ephemeral_id": "470cece5-8dc7-4933-a261-d7d8fb0a4018",
-        "id": "da2e1e5d-32f5-41cb-9bbb-a1ec47c8e4f3",
-        "name": "elastic-agent-71264",
+        "ephemeral_id": "b3f07955-b80e-4586-9f67-c98c8574f7ab",
+        "id": "8067a01a-3afe-4757-a38c-9c3345e4a060",
+        "name": "elastic-agent-73614",
         "type": "packetbeat",
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "client": {
-        "bytes": 31,
+        "bytes": 33,
         "ip": "127.0.0.1",
-        "port": 58979
+        "port": 34445
     },
     "data_stream": {
         "dataset": "network_traffic.amqp",
-        "namespace": "92131",
+        "namespace": "76978",
         "type": "logs"
     },
     "destination": {
-        "bytes": 12,
         "ip": "127.0.0.1",
         "port": 5672
     },
@@ -609,9 +609,9 @@ An example event for `amqp` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "da2e1e5d-32f5-41cb-9bbb-a1ec47c8e4f3",
+        "id": "8067a01a-3afe-4757-a38c-9c3345e4a060",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "event": {
         "action": "amqp.exchange.declare",
@@ -619,12 +619,11 @@ An example event for `amqp` looks as following:
         "category": [
             "network"
         ],
-        "duration": 1189413,
-        "end": "2026-10-26T03:35:37.572Z",
-        "ingested": "2026-10-26T03:35:50Z",
+        "dataset": "network_traffic.amqp",
+        "ingested": "2026-10-26T19:53:43Z",
         "kind": "event",
         "module": "network_traffic",
-        "start": "2026-10-26T03:35:37.571Z",
+        "start": "2026-10-26T19:53:40.080Z",
         "type": [
             "connection",
             "protocol"
@@ -633,18 +632,18 @@ An example event for `amqp` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-71264",
+        "hostname": "elastic-agent-73614",
         "ip": [
-            "10.89.1.2",
-            "fe80::a8a1:7fff:fe5e:27ab",
-            "10.89.0.242",
-            "fe80::e8ae:cff:fedb:a11d"
+            "10.89.11.2",
+            "fe80::486:94ff:fe0a:c2cf",
+            "10.89.0.40",
+            "fe80::a0bc:45ff:fe10:9f68"
         ],
         "mac": [
-            "AA-A1-7F-5E-27-AB",
-            "EA-AE-0C-DB-A1-1D"
+            "06-86-94-0A-C2-CF",
+            "A2-BC-45-10-9F-68"
         ],
-        "name": "elastic-agent-71264",
+        "name": "elastic-agent-73614",
         "os": {
             "family": "",
             "kernel": "6.17.0-14-generic",
@@ -655,8 +654,8 @@ An example event for `amqp` looks as following:
         }
     },
     "network": {
-        "bytes": 43,
-        "community_id": "1:0ErjQ0x5c2Wi+DGOFGoY+o9hRB8=",
+        "bytes": 33,
+        "community_id": "1:ocT5O96pI2Ji2EIPYIEymNmQXrE=",
         "direction": "ingress",
         "protocol": "amqp",
         "transport": "tcp",
@@ -665,10 +664,10 @@ An example event for `amqp` looks as following:
     "network_traffic": {
         "amqp": {
             "durable": true,
-            "exchange": "logs",
+            "exchange": "titres",
             "exchange-type": "fanout",
             "method": "exchange.declare",
-            "no-wait": false,
+            "no-wait": true,
             "passive": false
         },
         "status": "OK"
@@ -679,14 +678,13 @@ An example event for `amqp` looks as following:
         ]
     },
     "server": {
-        "bytes": 12,
         "ip": "127.0.0.1",
         "port": 5672
     },
     "source": {
-        "bytes": 31,
+        "bytes": 33,
         "ip": "127.0.0.1",
-        "port": 58979
+        "port": 34445
     }
 }
 ```
@@ -917,26 +915,26 @@ An example event for `cassandra` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-26T03:43:35.918Z",
+    "@timestamp": "2026-10-26T19:53:41.843Z",
     "agent": {
-        "ephemeral_id": "01d46850-19d7-44f4-88cd-827ba28f393b",
-        "id": "ec0431e1-366c-4c74-8c26-e0ea62e5abf5",
-        "name": "elastic-agent-79019",
+        "ephemeral_id": "679bc95c-4831-4110-8fd3-cf6e703ba23a",
+        "id": "a49048c8-5e81-47f4-bd16-04f104474778",
+        "name": "elastic-agent-66077",
         "type": "packetbeat",
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "client": {
-        "bytes": 60,
+        "bytes": 9,
         "ip": "127.0.0.1",
-        "port": 52749
+        "port": 60301
     },
     "data_stream": {
         "dataset": "network_traffic.cassandra",
-        "namespace": "68024",
+        "namespace": "41110",
         "type": "logs"
     },
     "destination": {
-        "bytes": 48,
+        "bytes": 61,
         "ip": "127.0.0.1",
         "port": 9042
     },
@@ -944,21 +942,22 @@ An example event for `cassandra` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "ec0431e1-366c-4c74-8c26-e0ea62e5abf5",
+        "id": "a49048c8-5e81-47f4-bd16-04f104474778",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 160697778,
-        "end": "2026-10-26T03:43:36.079Z",
-        "ingested": "2026-10-26T03:43:38Z",
+        "dataset": "network_traffic.cassandra",
+        "duration": 2752639,
+        "end": "2026-10-26T19:53:41.846Z",
+        "ingested": "2026-10-26T19:53:42Z",
         "kind": "event",
         "module": "network_traffic",
-        "start": "2026-10-26T03:43:35.918Z",
+        "start": "2026-10-26T19:53:41.843Z",
         "type": [
             "connection",
             "protocol"
@@ -967,18 +966,18 @@ An example event for `cassandra` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-79019",
+        "hostname": "elastic-agent-66077",
         "ip": [
-            "10.89.5.2",
-            "fe80::18aa:51ff:fe64:f728",
-            "10.89.0.3",
-            "fe80::8073:93ff:fee9:2e9"
+            "10.89.8.2",
+            "fe80::5c7b:caff:fe46:ef29",
+            "10.89.0.37",
+            "fe80::d0bc:fcff:fe84:228a"
         ],
         "mac": [
-            "1A-AA-51-64-F7-28",
-            "82-73-93-E9-02-E9"
+            "5E-7B-CA-46-EF-29",
+            "D2-BC-FC-84-22-8A"
         ],
-        "name": "elastic-agent-79019",
+        "name": "elastic-agent-66077",
         "os": {
             "family": "",
             "kernel": "6.17.0-14-generic",
@@ -989,8 +988,8 @@ An example event for `cassandra` looks as following:
         }
     },
     "network": {
-        "bytes": 108,
-        "community_id": "1:bCORHZnGIk6GWYaE3Kn0DOpQCKE=",
+        "bytes": 70,
+        "community_id": "1:jalWnE5zGxzQ/Kc5hcxxo9qp8E8=",
         "direction": "ingress",
         "protocol": "cassandra",
         "transport": "tcp",
@@ -1001,29 +1000,26 @@ An example event for `cassandra` looks as following:
             "request": {
                 "headers": {
                     "flags": "Default",
-                    "length": 51,
-                    "op": "QUERY",
-                    "stream": "92",
+                    "length": 0,
+                    "op": "OPTIONS",
+                    "stream": "0",
                     "version": "4"
-                },
-                "query": "CREATE INDEX ON users (lname);"
+                }
             },
             "response": {
                 "headers": {
                     "flags": "Default",
-                    "length": 39,
-                    "op": "RESULT",
-                    "stream": "92",
+                    "length": 52,
+                    "op": "SUPPORTED",
+                    "stream": "0",
                     "version": "4"
                 },
-                "result": {
-                    "schema_change": {
-                        "change": "UPDATED",
-                        "keyspace": "mykeyspace",
-                        "object": "users",
-                        "target": "TABLE"
-                    },
-                    "type": "schemaChanged"
+                "supported": {
+                    "COMPRESSION": [
+                        "snappy",
+                        "lz4"
+                    ],
+                    "CQL_VERSION": "3.4.2"
                 }
             }
         },
@@ -1035,14 +1031,14 @@ An example event for `cassandra` looks as following:
         ]
     },
     "server": {
-        "bytes": 48,
+        "bytes": 61,
         "ip": "127.0.0.1",
         "port": 9042
     },
     "source": {
-        "bytes": 60,
+        "bytes": 9,
         "ip": "127.0.0.1",
-        "port": 52749
+        "port": 60301
     }
 }
 ```
@@ -1208,13 +1204,13 @@ An example event for `dhcpv4` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-26T02:56:12.016Z",
+    "@timestamp": "2026-10-26T19:55:46.055Z",
     "agent": {
-        "ephemeral_id": "3b878fc1-57bf-4500-801e-37ebec1dc5fb",
-        "id": "e2fa899f-95ad-4557-bea1-95a86f98300c",
-        "name": "elastic-agent-16603",
+        "ephemeral_id": "8b17119c-fda9-47e9-b62e-4204b9a2bf98",
+        "id": "a98d3fac-bf8e-404c-be32-fb1dfe06c50f",
+        "name": "elastic-agent-61659",
         "type": "packetbeat",
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "client": {
         "bytes": 272,
@@ -1223,7 +1219,7 @@ An example event for `dhcpv4` looks as following:
     },
     "data_stream": {
         "dataset": "network_traffic.dhcpv4",
-        "namespace": "86563",
+        "namespace": "60239",
         "type": "logs"
     },
     "destination": {
@@ -1234,19 +1230,20 @@ An example event for `dhcpv4` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "e2fa899f-95ad-4557-bea1-95a86f98300c",
+        "id": "a98d3fac-bf8e-404c-be32-fb1dfe06c50f",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "ingested": "2026-10-26T02:56:15Z",
+        "dataset": "network_traffic.dhcpv4",
+        "ingested": "2026-10-26T19:55:49Z",
         "kind": "event",
         "module": "network_traffic",
-        "start": "2026-10-26T02:56:12.016Z",
+        "start": "2026-10-26T19:55:46.055Z",
         "type": [
             "connection",
             "protocol"
@@ -1255,18 +1252,18 @@ An example event for `dhcpv4` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-16603",
+        "hostname": "elastic-agent-61659",
         "ip": [
-            "10.89.17.2",
-            "fe80::5480:beff:fe20:495a",
-            "10.89.0.99",
-            "fe80::10e8:b9ff:fec2:11dc"
+            "10.89.5.2",
+            "fe80::dc7f:60ff:fecb:f2b4",
+            "10.89.0.51",
+            "fe80::14bd:96ff:fecb:1176"
         ],
         "mac": [
-            "12-E8-B9-C2-11-DC",
-            "56-80-BE-20-49-5A"
+            "16-BD-96-CB-11-76",
+            "DE-7F-60-CB-F2-B4"
         ],
-        "name": "elastic-agent-16603",
+        "name": "elastic-agent-61659",
         "os": {
             "family": "",
             "kernel": "6.17.0-14-generic",
@@ -1518,27 +1515,27 @@ An example event for `dns` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-26T02:57:31.657Z",
+    "@timestamp": "2026-10-26T19:55:53.718Z",
     "agent": {
-        "ephemeral_id": "e665b88e-704c-475f-89fb-a924ec6b7f41",
-        "id": "dada7fa8-cd5e-4b3c-99ed-682ff2c19b20",
-        "name": "elastic-agent-84974",
+        "ephemeral_id": "4df8d970-2837-4855-80b6-f2c8ddeb2267",
+        "id": "d9901fe6-cb56-43db-8fe5-c5febd7aaa68",
+        "name": "elastic-agent-68689",
         "type": "packetbeat",
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "client": {
-        "bytes": 30,
-        "ip": "1.1.1.2",
-        "port": 1042
+        "bytes": 28,
+        "ip": "192.168.238.68",
+        "port": 53765
     },
     "data_stream": {
         "dataset": "network_traffic.dns",
-        "namespace": "99692",
+        "namespace": "53428",
         "type": "logs"
     },
     "destination": {
-        "bytes": 197,
-        "ip": "1.1.1.1",
+        "bytes": 167,
+        "ip": "8.8.8.8",
         "port": 53
     },
     "dns": {
@@ -1550,69 +1547,43 @@ An example event for `dns` looks as following:
                 "IN"
             ],
             "data": [
-                "training2003p",
-                "training2003p",
-                "1.1.1.1",
-                "training2003p"
-            ],
-            "expire": [
-                86400,
-                86400
-            ],
-            "minimum": [
-                3600,
-                3600
+                "ns-1183.awsdns-19.org",
+                "ns-2007.awsdns-58.co.uk",
+                "ns-66.awsdns-08.com",
+                "ns-835.awsdns-40.net"
             ],
             "name": [
-                "etas.com",
-                "etas.com",
-                "welcome.etas.com",
-                "etas.com"
-            ],
-            "refresh": [
-                60,
-                60
-            ],
-            "retry": [
-                600,
-                600
-            ],
-            "rname": [
-                "hostmaster",
-                "hostmaster"
-            ],
-            "serial": [
-                3,
-                3
+                "elastic.co",
+                "elastic.co",
+                "elastic.co",
+                "elastic.co"
             ],
             "ttl": [
-                3600,
-                3600,
-                3600,
-                3600
+                21599,
+                21599,
+                21599,
+                21599
             ],
             "type": [
-                "SOA",
                 "NS",
-                "A",
-                "SOA"
+                "NS",
+                "NS",
+                "NS"
             ]
         },
         "header_flags": [
+            "RD",
             "RA"
         ],
-        "id": "0",
+        "id": "26187",
         "op_code": "QUERY",
         "question": {
             "class": "IN",
-            "name": "etas.com",
-            "registered_domain": "etas.com",
-            "top_level_domain": "com",
-            "type": "AXFR"
+            "name": "elastic.co",
+            "registered_domain": "elastic.co",
+            "top_level_domain": "co",
+            "type": "NS"
         },
-        "resolved_ip": [
-            "1.1.1.1"
-        ],
         "response_code": "NOERROR",
         "type": "answer"
     },
@@ -1620,21 +1591,22 @@ An example event for `dns` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "dada7fa8-cd5e-4b3c-99ed-682ff2c19b20",
+        "id": "d9901fe6-cb56-43db-8fe5-c5febd7aaa68",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 1534706,
-        "end": "2026-10-26T02:57:31.659Z",
-        "ingested": "2026-10-26T02:57:34Z",
+        "dataset": "network_traffic.dns",
+        "duration": 69679651,
+        "end": "2026-10-26T19:55:53.787Z",
+        "ingested": "2026-10-26T19:55:54Z",
         "kind": "event",
         "module": "network_traffic",
-        "start": "2026-10-26T02:57:31.657Z",
+        "start": "2026-10-26T19:55:53.718Z",
         "type": [
             "connection",
             "protocol"
@@ -1643,18 +1615,18 @@ An example event for `dns` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-84974",
+        "hostname": "elastic-agent-68689",
         "ip": [
-            "10.89.1.2",
-            "fe80::d087:edff:fed6:634f",
-            "10.89.0.100",
-            "fe80::8852:49ff:fe25:4e88"
+            "10.89.9.2",
+            "fe80::84e0:3cff:fe4f:fa28",
+            "10.89.0.48",
+            "fe80::749d:74ff:fe63:56c2"
         ],
         "mac": [
-            "8A-52-49-25-4E-88",
-            "D2-87-ED-D6-63-4F"
+            "76-9D-74-63-56-C2",
+            "86-E0-3C-4F-FA-28"
         ],
-        "name": "elastic-agent-84974",
+        "name": "elastic-agent-68689",
         "os": {
             "family": "",
             "kernel": "6.17.0-14-generic",
@@ -1665,11 +1637,11 @@ An example event for `dns` looks as following:
         }
     },
     "network": {
-        "bytes": 227,
-        "community_id": "1:d2CjEdZBFJgieI3mD5ov3hvYp8I=",
+        "bytes": 195,
+        "community_id": "1:3P4ruI0bVlqxiTAs0WyBhnF74ek=",
         "direction": "unknown",
         "protocol": "dns",
-        "transport": "tcp",
+        "transport": "udp",
         "type": "ipv4"
     },
     "network_traffic": {
@@ -1682,33 +1654,33 @@ An example event for `dns` looks as following:
                 "authoritative": false,
                 "checking_disabled": false,
                 "recursion_available": true,
-                "recursion_desired": false,
+                "recursion_desired": true,
                 "truncated_response": false
             },
             "method": "QUERY",
-            "query": "class IN, type AXFR, etas.com",
+            "query": "class IN, type NS, elastic.co",
             "question": {
-                "etld_plus_one": "etas.com"
+                "etld_plus_one": "elastic.co"
             },
-            "resource": "etas.com"
+            "resource": "elastic.co"
         },
         "status": "OK"
     },
     "related": {
         "ip": [
-            "1.1.1.2",
-            "1.1.1.1"
+            "192.168.238.68",
+            "8.8.8.8"
         ]
     },
     "server": {
-        "bytes": 197,
-        "ip": "1.1.1.1",
+        "bytes": 167,
+        "ip": "8.8.8.8",
         "port": 53
     },
     "source": {
-        "bytes": 30,
-        "ip": "1.1.1.2",
-        "port": 1042
+        "bytes": 28,
+        "ip": "192.168.238.68",
+        "port": 53765
     }
 }
 ```
@@ -1992,13 +1964,13 @@ An example event for `http` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-26T03:27:24.606Z",
+    "@timestamp": "2026-10-26T19:59:47.484Z",
     "agent": {
-        "ephemeral_id": "2b51f7b4-68dd-4019-9173-30226ad261a8",
-        "id": "a4bdfcfa-c585-4b11-80db-714ebb77c240",
-        "name": "elastic-agent-30296",
+        "ephemeral_id": "295da010-8bd7-4c0a-8e22-2df7f6b46bb4",
+        "id": "8def8384-ab52-4314-9baa-6da6c6e7ef1c",
+        "name": "elastic-agent-22227",
         "type": "packetbeat",
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "client": {
         "bytes": 130,
@@ -2007,7 +1979,7 @@ An example event for `http` looks as following:
     },
     "data_stream": {
         "dataset": "network_traffic.http",
-        "namespace": "34625",
+        "namespace": "19649",
         "type": "logs"
     },
     "destination": {
@@ -2020,21 +1992,22 @@ An example event for `http` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "a4bdfcfa-c585-4b11-80db-714ebb77c240",
+        "id": "8def8384-ab52-4314-9baa-6da6c6e7ef1c",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 20842320,
-        "end": "2026-10-26T03:27:24.627Z",
-        "ingested": "2026-10-26T03:27:26Z",
+        "dataset": "network_traffic.http",
+        "duration": 20137248,
+        "end": "2026-10-26T19:59:47.505Z",
+        "ingested": "2026-10-26T19:59:49Z",
         "kind": "event",
         "module": "network_traffic",
-        "start": "2026-10-26T03:27:24.606Z",
+        "start": "2026-10-26T19:59:47.484Z",
         "type": [
             "connection",
             "protocol"
@@ -2043,18 +2016,18 @@ An example event for `http` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-30296",
+        "hostname": "elastic-agent-22227",
         "ip": [
-            "10.89.10.2",
-            "fe80::a478:9bff:fe21:722f",
-            "10.89.0.207",
-            "fe80::98ea:41ff:fec5:d015"
+            "10.89.11.2",
+            "fe80::4880:3cff:fe81:c41a",
+            "10.89.0.72",
+            "fe80::c0e:3bff:fe9b:c239"
         ],
         "mac": [
-            "9A-EA-41-C5-D0-15",
-            "A6-78-9B-21-72-2F"
+            "0E-0E-3B-9B-C2-39",
+            "4A-80-3C-81-C4-1A"
         ],
-        "name": "elastic-agent-30296",
+        "name": "elastic-agent-22227",
         "os": {
             "family": "",
             "kernel": "6.17.0-14-generic",
@@ -2275,46 +2248,47 @@ An example event for `icmp` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-26T03:27:41.640Z",
+    "@timestamp": "2026-10-26T19:59:55.136Z",
     "agent": {
-        "ephemeral_id": "7cc7472a-575b-48d4-a8e9-b9e85924e084",
-        "id": "fb0226a6-2395-43aa-86a9-f479bccb2feb",
-        "name": "elastic-agent-99137",
+        "ephemeral_id": "08195a62-a2aa-4db1-924b-244326a7dae8",
+        "id": "2f651d69-9ccb-4b09-87d3-8bf4252bab42",
+        "name": "elastic-agent-29966",
         "type": "packetbeat",
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "client": {
         "bytes": 4,
-        "ip": "::1"
+        "ip": "10.0.0.1"
     },
     "data_stream": {
         "dataset": "network_traffic.icmp",
-        "namespace": "59071",
+        "namespace": "80970",
         "type": "logs"
     },
     "destination": {
         "bytes": 4,
-        "ip": "::2"
+        "ip": "10.0.0.2"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "fb0226a6-2395-43aa-86a9-f479bccb2feb",
+        "id": "2f651d69-9ccb-4b09-87d3-8bf4252bab42",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 13160685,
-        "end": "2026-10-26T03:27:41.653Z",
-        "ingested": "2026-10-26T03:27:54Z",
+        "dataset": "network_traffic.icmp",
+        "duration": 13290569,
+        "end": "2026-10-26T19:59:55.149Z",
+        "ingested": "2026-10-26T19:59:58Z",
         "kind": "event",
         "module": "network_traffic",
-        "start": "2026-10-26T03:27:41.640Z",
+        "start": "2026-10-26T19:59:55.136Z",
         "type": [
             "connection"
         ]
@@ -2322,18 +2296,18 @@ An example event for `icmp` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-99137",
+        "hostname": "elastic-agent-29966",
         "ip": [
-            "10.89.8.2",
-            "fe80::148f:acff:fedb:69d",
-            "10.89.0.211",
-            "fe80::1077:62ff:fe4b:a72e"
+            "10.89.10.2",
+            "fe80::5c5a:f5ff:fef1:f9f9",
+            "10.89.0.69",
+            "fe80::3458:55ff:fec0:f941"
         ],
         "mac": [
-            "12-77-62-4B-A7-2E",
-            "16-8F-AC-DB-06-9D"
+            "36-58-55-C0-F9-41",
+            "5E-5A-F5-F1-F9-F9"
         ],
-        "name": "elastic-agent-99137",
+        "name": "elastic-agent-29966",
         "os": {
             "family": "",
             "kernel": "6.17.0-14-generic",
@@ -2345,42 +2319,42 @@ An example event for `icmp` looks as following:
     },
     "network": {
         "bytes": 8,
-        "community_id": "1:9UpHcZHFAOl8WqZVOs5YRQ5wDGE=",
-        "direction": "egress",
+        "community_id": "1:YcMyyWJfhc95EW1GfXt6jlZ3DiQ=",
+        "direction": "unknown",
         "protocol": "icmp",
-        "transport": "ipv6-icmp",
-        "type": "ipv6"
+        "transport": "icmp",
+        "type": "ipv4"
     },
     "network_traffic": {
         "icmp": {
-            "path": "::2",
+            "path": "10.0.0.2",
             "request": {
                 "code": 0,
                 "message": "EchoRequest",
-                "type": 128
+                "type": 8
             },
             "response": {
                 "code": 0,
                 "message": "EchoReply",
-                "type": 129
+                "type": 0
             },
-            "version": 6
+            "version": 4
         },
         "status": "OK"
     },
     "related": {
         "ip": [
-            "::1",
-            "::2"
+            "10.0.0.1",
+            "10.0.0.2"
         ]
     },
     "server": {
         "bytes": 4,
-        "ip": "::2"
+        "ip": "10.0.0.2"
     },
     "source": {
         "bytes": 4,
-        "ip": "::1"
+        "ip": "10.0.0.1"
     }
 }
 ```
@@ -2592,13 +2566,13 @@ An example event for `memcached` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-26T03:05:32.150Z",
+    "@timestamp": "2026-10-26T20:04:37.078Z",
     "agent": {
-        "ephemeral_id": "d27cd8f8-00b2-47d7-b0f4-f8d97c82915d",
-        "id": "5b096405-7aae-4cc4-bd59-cfbce347fd49",
-        "name": "elastic-agent-38076",
+        "ephemeral_id": "1f054300-946d-40cf-bc83-e602df8e8a13",
+        "id": "676101d8-c444-4e03-8cb6-031bd133bb63",
+        "name": "elastic-agent-33073",
         "type": "packetbeat",
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "client": {
         "ip": "192.168.188.37",
@@ -2606,7 +2580,7 @@ An example event for `memcached` looks as following:
     },
     "data_stream": {
         "dataset": "network_traffic.memcached",
-        "namespace": "57068",
+        "namespace": "83728",
         "type": "logs"
     },
     "destination": {
@@ -2618,9 +2592,9 @@ An example event for `memcached` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "5b096405-7aae-4cc4-bd59-cfbce347fd49",
+        "id": "676101d8-c444-4e03-8cb6-031bd133bb63",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "event": {
         "action": "memcache.store",
@@ -2628,10 +2602,11 @@ An example event for `memcached` looks as following:
         "category": [
             "network"
         ],
-        "ingested": "2026-10-26T03:05:43Z",
+        "dataset": "network_traffic.memcached",
+        "ingested": "2026-10-26T20:04:58Z",
         "kind": "event",
         "module": "network_traffic",
-        "start": "2026-10-26T03:05:32.150Z",
+        "start": "2026-10-26T20:04:37.078Z",
         "type": [
             "connection",
             "protocol"
@@ -2640,18 +2615,18 @@ An example event for `memcached` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-38076",
+        "hostname": "elastic-agent-33073",
         "ip": [
-            "10.89.10.2",
-            "fe80::5069:1ff:febd:e71a",
-            "10.89.0.141",
-            "fe80::5023:dbff:fe1b:a4db"
+            "10.89.2.2",
+            "fe80::f81a:50ff:fe24:3367",
+            "10.89.0.88",
+            "fe80::a025:49ff:fe52:f1b3"
         ],
         "mac": [
-            "52-23-DB-1B-A4-DB",
-            "52-69-01-BD-E7-1A"
+            "A2-25-49-52-F1-B3",
+            "FA-1A-50-24-33-67"
         ],
-        "name": "elastic-agent-38076",
+        "name": "elastic-agent-33073",
         "os": {
             "family": "",
             "kernel": "6.17.0-14-generic",
@@ -2871,26 +2846,26 @@ An example event for `mongodb` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-26T03:07:53.679Z",
+    "@timestamp": "2026-10-26T20:04:34.031Z",
     "agent": {
-        "ephemeral_id": "8877c1ac-eabd-457c-b924-738e32b3cbad",
-        "id": "4ae0ec85-691b-4f71-b8f9-8389dbd3c811",
-        "name": "elastic-agent-80891",
+        "ephemeral_id": "fefeb014-133d-484a-9241-f15109092636",
+        "id": "95b8c827-29f6-42ae-90e1-0e3ef76bfe2f",
+        "name": "elastic-agent-17616",
         "type": "packetbeat",
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "client": {
-        "bytes": 68,
+        "bytes": 50,
         "ip": "127.0.0.1",
-        "port": 47720
+        "port": 57203
     },
     "data_stream": {
         "dataset": "network_traffic.mongodb",
-        "namespace": "65773",
+        "namespace": "96581",
         "type": "logs"
     },
     "destination": {
-        "bytes": 220,
+        "bytes": 514,
         "ip": "127.0.0.1",
         "port": 27017
     },
@@ -2898,21 +2873,22 @@ An example event for `mongodb` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "4ae0ec85-691b-4f71-b8f9-8389dbd3c811",
+        "id": "95b8c827-29f6-42ae-90e1-0e3ef76bfe2f",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 3770923,
-        "end": "2026-10-26T03:07:53.683Z",
-        "ingested": "2026-10-26T03:07:56Z",
+        "dataset": "network_traffic.mongodb",
+        "duration": 1157491,
+        "end": "2026-10-26T20:04:34.032Z",
+        "ingested": "2026-10-26T20:04:37Z",
         "kind": "event",
         "module": "network_traffic",
-        "start": "2026-10-26T03:07:53.679Z",
+        "start": "2026-10-26T20:04:34.031Z",
         "type": [
             "connection",
             "protocol"
@@ -2921,18 +2897,18 @@ An example event for `mongodb` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-80891",
+        "hostname": "elastic-agent-17616",
         "ip": [
-            "10.89.9.2",
-            "fe80::6881:86ff:fedc:1644",
-            "10.89.0.152",
-            "fe80::e4fb:5bff:fe60:4d3a"
+            "10.89.4.2",
+            "fe80::8f7:f4ff:fe9b:7f39",
+            "10.89.0.95",
+            "fe80::f0fa:54ff:fe6b:bc75"
         ],
         "mac": [
-            "6A-81-86-DC-16-44",
-            "E6-FB-5B-60-4D-3A"
+            "0A-F7-F4-9B-7F-39",
+            "F2-FA-54-6B-BC-75"
         ],
-        "name": "elastic-agent-80891",
+        "name": "elastic-agent-17616",
         "os": {
             "family": "",
             "kernel": "6.17.0-14-generic",
@@ -2943,8 +2919,8 @@ An example event for `mongodb` looks as following:
         }
     },
     "network": {
-        "bytes": 288,
-        "community_id": "1:POqkn4jrbAgEJ/XFixtMtbb4PJo=",
+        "bytes": 564,
+        "community_id": "1:mYSTZ4QZBfvJO05Em9TnPwrae6g=",
         "direction": "ingress",
         "protocol": "mongodb",
         "transport": "tcp",
@@ -2953,13 +2929,13 @@ An example event for `mongodb` looks as following:
     "network_traffic": {
         "mongodb": {
             "cursorId": "0",
-            "fullCollectionName": "test.$cmd",
-            "method": "listCollections",
+            "fullCollectionName": "test.restaurants",
+            "method": "find",
             "numberReturned": 1,
-            "numberToReturn": -1,
+            "numberToReturn": 1,
             "numberToSkip": 0,
-            "query": "test.$cmd.listCollections(null)",
-            "resource": "test.$cmd",
+            "query": "test.restaurants.find(null)",
+            "resource": "test.restaurants",
             "startingFrom": "0"
         },
         "status": "OK"
@@ -2970,14 +2946,14 @@ An example event for `mongodb` looks as following:
         ]
     },
     "server": {
-        "bytes": 220,
+        "bytes": 514,
         "ip": "127.0.0.1",
         "port": 27017
     },
     "source": {
-        "bytes": 68,
+        "bytes": 50,
         "ip": "127.0.0.1",
-        "port": 47720
+        "port": 57203
     }
 }
 ```
@@ -3134,26 +3110,26 @@ An example event for `mysql` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-26T03:08:56.334Z",
+    "@timestamp": "2026-10-26T20:08:02.785Z",
     "agent": {
-        "ephemeral_id": "8d701a69-40a5-48b7-b01e-e7a4a1da2ae9",
-        "id": "d8871b3f-44e6-4bb4-89cc-132ca5c89bad",
-        "name": "elastic-agent-89801",
+        "ephemeral_id": "b3884410-8bcc-4e3f-844a-e991d24bc0d4",
+        "id": "c680c427-4836-40c7-8d36-e52eabac4cab",
+        "name": "elastic-agent-81411",
         "type": "packetbeat",
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "client": {
-        "bytes": 23,
+        "bytes": 47,
         "ip": "127.0.0.1",
-        "port": 41517
+        "port": 51776
     },
     "data_stream": {
         "dataset": "network_traffic.mysql",
-        "namespace": "97683",
+        "namespace": "45593",
         "type": "logs"
     },
     "destination": {
-        "bytes": 3629,
+        "bytes": 11,
         "ip": "127.0.0.1",
         "port": 3306
     },
@@ -3161,21 +3137,22 @@ An example event for `mysql` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "d8871b3f-44e6-4bb4-89cc-132ca5c89bad",
+        "id": "c680c427-4836-40c7-8d36-e52eabac4cab",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 5597891,
-        "end": "2026-10-26T03:08:56.340Z",
-        "ingested": "2026-10-26T03:08:59Z",
+        "dataset": "network_traffic.mysql",
+        "duration": 2351392,
+        "end": "2026-10-26T20:08:02.787Z",
+        "ingested": "2026-10-26T20:08:05Z",
         "kind": "event",
         "module": "network_traffic",
-        "start": "2026-10-26T03:08:56.334Z",
+        "start": "2026-10-26T20:08:02.785Z",
         "type": [
             "connection",
             "protocol"
@@ -3184,18 +3161,18 @@ An example event for `mysql` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-89801",
+        "hostname": "elastic-agent-81411",
         "ip": [
-            "10.89.1.2",
-            "fe80::9ce0:efff:fe22:f2f5",
-            "10.89.0.156",
-            "fe80::8048:5ff:fe38:e4b8"
+            "10.89.3.2",
+            "fe80::bc31:84ff:fed0:b6be",
+            "10.89.0.99",
+            "fe80::24c4:86ff:fe30:e121"
         ],
         "mac": [
-            "82-48-05-38-E4-B8",
-            "9E-E0-EF-22-F2-F5"
+            "26-C4-86-30-E1-21",
+            "BE-31-84-D0-B6-BE"
         ],
-        "name": "elastic-agent-89801",
+        "name": "elastic-agent-81411",
         "os": {
             "family": "",
             "kernel": "6.17.0-14-generic",
@@ -3206,8 +3183,8 @@ An example event for `mysql` looks as following:
         }
     },
     "network": {
-        "bytes": 3652,
-        "community_id": "1:goIcZn7CMIJ6W7Yf8JRV618zzxA=",
+        "bytes": 58,
+        "community_id": "1:Ez0S1nTj56uSTjlB7Ra9Wg8Ua/M=",
         "direction": "ingress",
         "protocol": "mysql",
         "transport": "tcp",
@@ -3217,11 +3194,10 @@ An example event for `mysql` looks as following:
         "mysql": {
             "affected_rows": 0,
             "insert_id": "0",
-            "method": "SELECT",
-            "num_fields": 3,
-            "num_rows": 15,
-            "path": "test.test",
-            "query": "select * from test"
+            "method": "SET",
+            "num_fields": 0,
+            "num_rows": 0,
+            "query": "SET NAMES 'utf8' COLLATE 'utf8_general_ci'"
         },
         "status": "OK"
     },
@@ -3231,14 +3207,14 @@ An example event for `mysql` looks as following:
         ]
     },
     "server": {
-        "bytes": 3629,
+        "bytes": 11,
         "ip": "127.0.0.1",
         "port": 3306
     },
     "source": {
-        "bytes": 23,
+        "bytes": 47,
         "ip": "127.0.0.1",
-        "port": 41517
+        "port": 51776
     }
 }
 ```
@@ -3389,73 +3365,74 @@ An example event for `nfs` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-26T03:09:45.144Z",
+    "@timestamp": "2026-10-26T20:10:12.284Z",
     "agent": {
-        "ephemeral_id": "055b0fdc-7e95-4d8f-bb76-ec59f085289f",
-        "id": "3ee91ec0-6e65-4fbb-b031-3009b2755756",
-        "name": "elastic-agent-86953",
+        "ephemeral_id": "9485bd6e-3c8e-4037-8f8e-fc963d3486b1",
+        "id": "3438d015-92ac-4cc5-8687-4b434785fac6",
+        "name": "elastic-agent-11054",
         "type": "packetbeat",
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "client": {
-        "bytes": 116,
-        "domain": "ani",
-        "ip": "127.0.0.1",
-        "port": 839
+        "bytes": 272,
+        "domain": "netapp20",
+        "ip": "192.168.0.20",
+        "port": 742
     },
     "data_stream": {
         "dataset": "network_traffic.nfs",
-        "namespace": "28208",
+        "namespace": "88575",
         "type": "logs"
     },
     "destination": {
-        "bytes": 32,
-        "ip": "127.0.0.1",
+        "bytes": 112,
+        "ip": "192.168.0.41",
         "port": 2049
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "3ee91ec0-6e65-4fbb-b031-3009b2755756",
+        "id": "3438d015-92ac-4cc5-8687-4b434785fac6",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "event": {
-        "action": "nfs.LOOKUP",
+        "action": "nfs.CLONE",
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 409709287,
-        "end": "2026-10-26T03:09:45.554Z",
-        "ingested": "2026-10-26T03:09:48Z",
+        "dataset": "network_traffic.nfs",
+        "duration": 1191004,
+        "end": "2026-10-26T20:10:12.286Z",
+        "ingested": "2026-10-26T20:10:15Z",
         "kind": "event",
         "module": "network_traffic",
-        "start": "2026-10-26T03:09:45.144Z",
+        "start": "2026-10-26T20:10:12.284Z",
         "type": [
             "connection",
             "protocol"
         ]
     },
     "group": {
-        "id": "0"
+        "id": "1000"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-86953",
+        "hostname": "elastic-agent-11054",
         "ip": [
-            "10.89.7.2",
-            "fe80::2481:e4ff:fed5:c334",
-            "10.89.0.166",
-            "fe80::aca9:d6ff:fec9:9250"
+            "10.89.10.2",
+            "fe80::886e:7aff:fe41:ff84",
+            "10.89.0.117",
+            "fe80::3c3c:dbff:fe62:f66a"
         ],
         "mac": [
-            "26-81-E4-D5-C3-34",
-            "AE-A9-D6-C9-92-50"
+            "3E-3C-DB-62-F6-6A",
+            "8A-6E-7A-41-FF-84"
         ],
-        "name": "elastic-agent-86953",
+        "name": "elastic-agent-11054",
         "os": {
             "family": "",
             "kernel": "6.17.0-14-generic",
@@ -3466,57 +3443,60 @@ An example event for `nfs` looks as following:
         }
     },
     "network": {
-        "bytes": 148,
-        "community_id": "1:K6/2XnLPJVyyA+yaYhZUWMBb0mw=",
-        "direction": "ingress",
-        "protocol": "nfsv3",
+        "bytes": 384,
+        "community_id": "1:Oj8idLoJXeaRZYVCvrOQg/ggjnw=",
+        "direction": "unknown",
+        "protocol": "nfsv4",
         "transport": "tcp",
         "type": "ipv4"
     },
     "network_traffic": {
         "nfs": {
             "host": {
-                "hostname": "ani"
+                "hostname": "netapp20"
             },
-            "opcode": "LOOKUP",
+            "minor_version": 2,
+            "opcode": "CLONE",
             "rpc": {
                 "auth_flavor": "unix",
                 "cred": {
-                    "gid": 0,
-                    "gids": 0,
-                    "machinename": "ani",
-                    "stamp": 4639510,
-                    "uid": 0
+                    "gid": 1000,
+                    "gids": 1000,
+                    "machinename": "netapp20",
+                    "stamp": 4295408,
+                    "uid": 1000
                 },
                 "status": "success",
-                "xid": "a19a75d0"
+                "xid": "592d006f"
             },
-            "status": "NFSERR_NOENT",
-            "version": 3
+            "status": "NFSERR_NOTSUPP",
+            "tag": "",
+            "version": 4
         },
         "status": "OK"
     },
     "related": {
         "hosts": [
-            "ani"
+            "netapp20"
         ],
         "ip": [
-            "127.0.0.1"
+            "192.168.0.20",
+            "192.168.0.41"
         ]
     },
     "server": {
-        "bytes": 32,
-        "ip": "127.0.0.1",
+        "bytes": 112,
+        "ip": "192.168.0.41",
         "port": 2049
     },
     "source": {
-        "bytes": 116,
-        "domain": "ani",
-        "ip": "127.0.0.1",
-        "port": 839
+        "bytes": 272,
+        "domain": "netapp20",
+        "ip": "192.168.0.20",
+        "port": 742
     },
     "user": {
-        "id": "0"
+        "id": "1000"
     }
 }
 ```
@@ -3665,26 +3645,26 @@ An example event for `pgsql` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-26T03:10:44.884Z",
+    "@timestamp": "2026-10-26T20:10:14.675Z",
     "agent": {
-        "ephemeral_id": "407a1d81-3413-43c8-bb26-009fd010b2b6",
-        "id": "35780b5c-1868-4f34-ba17-2e391737ac58",
-        "name": "elastic-agent-88412",
+        "ephemeral_id": "a765b611-6def-4fd6-b7ba-c05079a10647",
+        "id": "33a180cf-e437-4d18-9065-5538f1b69419",
+        "name": "elastic-agent-86519",
         "type": "packetbeat",
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "client": {
         "bytes": 25,
         "ip": "127.0.0.1",
-        "port": 37881
+        "port": 38145
     },
     "data_stream": {
         "dataset": "network_traffic.pgsql",
-        "namespace": "47978",
+        "namespace": "55093",
         "type": "logs"
     },
     "destination": {
-        "bytes": 202,
+        "bytes": 95,
         "ip": "127.0.0.1",
         "port": 5432
     },
@@ -3692,21 +3672,22 @@ An example event for `pgsql` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "35780b5c-1868-4f34-ba17-2e391737ac58",
+        "id": "33a180cf-e437-4d18-9065-5538f1b69419",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 2379739,
-        "end": "2026-10-26T03:10:44.887Z",
-        "ingested": "2026-10-26T03:10:47Z",
+        "dataset": "network_traffic.pgsql",
+        "duration": 39609843,
+        "end": "2026-10-26T20:10:14.715Z",
+        "ingested": "2026-10-26T20:10:15Z",
         "kind": "event",
         "module": "network_traffic",
-        "start": "2026-10-26T03:10:44.884Z",
+        "start": "2026-10-26T20:10:14.675Z",
         "type": [
             "connection",
             "protocol"
@@ -3715,18 +3696,18 @@ An example event for `pgsql` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-88412",
+        "hostname": "elastic-agent-86519",
         "ip": [
-            "10.89.2.2",
-            "fe80::9094:46ff:fe43:e649",
-            "10.89.0.168",
-            "fe80::f48a:67ff:fe23:d6b1"
+            "10.89.4.2",
+            "fe80::281d:71ff:fe6e:971e",
+            "10.89.0.111",
+            "fe80::5c70:9ff:feae:3352"
         ],
         "mac": [
-            "92-94-46-43-E6-49",
-            "F6-8A-67-23-D6-B1"
+            "2A-1D-71-6E-97-1E",
+            "5E-70-09-AE-33-52"
         ],
-        "name": "elastic-agent-88412",
+        "name": "elastic-agent-86519",
         "os": {
             "family": "",
             "kernel": "6.17.0-14-generic",
@@ -3737,8 +3718,8 @@ An example event for `pgsql` looks as following:
         }
     },
     "network": {
-        "bytes": 227,
-        "community_id": "1:bWRv0CI/a87XuiElFcjvxmuWQrY=",
+        "bytes": 120,
+        "community_id": "1:4KyRLD9GrMNl+ekE/JfyJVWzFOk=",
         "direction": "ingress",
         "protocol": "pgsql",
         "transport": "tcp",
@@ -3747,8 +3728,8 @@ An example event for `pgsql` looks as following:
     "network_traffic": {
         "pgsql": {
             "method": "SELECT",
-            "num_fields": 3,
-            "num_rows": 4,
+            "num_fields": 2,
+            "num_rows": 2,
             "query": "select * from test"
         },
         "status": "OK"
@@ -3759,14 +3740,14 @@ An example event for `pgsql` looks as following:
         ]
     },
     "server": {
-        "bytes": 202,
+        "bytes": 95,
         "ip": "127.0.0.1",
         "port": 5432
     },
     "source": {
         "bytes": 25,
         "ip": "127.0.0.1",
-        "port": 37881
+        "port": 38145
     }
 }
 ```
@@ -3914,26 +3895,26 @@ An example event for `redis` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-26T03:11:18.959Z",
+    "@timestamp": "2026-10-26T20:10:13.529Z",
     "agent": {
-        "ephemeral_id": "f9991902-397c-4fc8-b894-143c05f70264",
-        "id": "be529814-00d0-4b9b-96ce-e0d15afcf038",
-        "name": "elastic-agent-57269",
+        "ephemeral_id": "0418b486-0228-4cc8-a5bd-0d8e5ba4e1ca",
+        "id": "6ac61a1a-55ab-4bfa-bab4-aa94f4646ebd",
+        "name": "elastic-agent-16987",
         "type": "packetbeat",
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "client": {
-        "bytes": 33,
+        "bytes": 31,
         "ip": "127.0.0.1",
         "port": 32810
     },
     "data_stream": {
         "dataset": "network_traffic.redis",
-        "namespace": "40610",
+        "namespace": "42493",
         "type": "logs"
     },
     "destination": {
-        "bytes": 12,
+        "bytes": 5,
         "ip": "127.0.0.1",
         "port": 6380
     },
@@ -3941,22 +3922,23 @@ An example event for `redis` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "be529814-00d0-4b9b-96ce-e0d15afcf038",
+        "id": "6ac61a1a-55ab-4bfa-bab4-aa94f4646ebd",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "event": {
-        "action": "redis.lindex",
+        "action": "redis.set",
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 1274945,
-        "end": "2026-10-26T03:11:18.960Z",
-        "ingested": "2026-10-26T03:11:21Z",
+        "dataset": "network_traffic.redis",
+        "duration": 1284469,
+        "end": "2026-10-26T20:10:13.530Z",
+        "ingested": "2026-10-26T20:10:16Z",
         "kind": "event",
         "module": "network_traffic",
-        "start": "2026-10-26T03:11:18.959Z",
+        "start": "2026-10-26T20:10:13.529Z",
         "type": [
             "connection",
             "protocol"
@@ -3965,18 +3947,18 @@ An example event for `redis` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-57269",
+        "hostname": "elastic-agent-16987",
         "ip": [
-            "10.89.7.2",
-            "fe80::247f:67ff:fec5:15c1",
-            "10.89.0.170",
-            "fe80::584d:80ff:feb4:4e3e"
+            "10.89.5.2",
+            "fe80::c00a:1ff:fe03:af64",
+            "10.89.0.112",
+            "fe80::2cc1:feff:fe9b:6d87"
         ],
         "mac": [
-            "26-7F-67-C5-15-C1",
-            "5A-4D-80-B4-4E-3E"
+            "2E-C1-FE-9B-6D-87",
+            "C2-0A-01-03-AF-64"
         ],
-        "name": "elastic-agent-57269",
+        "name": "elastic-agent-16987",
         "os": {
             "family": "",
             "kernel": "6.17.0-14-generic",
@@ -3987,7 +3969,7 @@ An example event for `redis` looks as following:
         }
     },
     "network": {
-        "bytes": 45,
+        "bytes": 36,
         "community_id": "1:GuHlyWpX6bKkMXy19YkvZSNPTS4=",
         "direction": "ingress",
         "protocol": "redis",
@@ -3996,9 +3978,10 @@ An example event for `redis` looks as following:
     },
     "network_traffic": {
         "redis": {
-            "method": "LINDEX",
-            "query": "lindex test 1",
-            "return_value": "hello1"
+            "method": "SET",
+            "query": "set key3 me",
+            "resource": "key3",
+            "return_value": "OK"
         },
         "status": "OK"
     },
@@ -4007,14 +3990,13 @@ An example event for `redis` looks as following:
             "127.0.0.1"
         ]
     },
-    "resource": "test",
     "server": {
-        "bytes": 12,
+        "bytes": 5,
         "ip": "127.0.0.1",
         "port": 6380
     },
     "source": {
-        "bytes": 33,
+        "bytes": 31,
         "ip": "127.0.0.1",
         "port": 32810
     }
@@ -4242,49 +4224,49 @@ An example event for `sip` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-26T03:11:21.757Z",
+    "@timestamp": "2026-10-26T20:10:13.518Z",
     "agent": {
-        "ephemeral_id": "864f93eb-4873-4a31-b1f3-fea889a62b93",
-        "id": "ca7f9272-a40f-4727-839a-500539dbb06b",
-        "name": "elastic-agent-53233",
+        "ephemeral_id": "9408a888-5eb8-4a17-8d56-863cf6a335ec",
+        "id": "9a476385-9958-40f2-be8f-e17f8a2fc8ee",
+        "name": "elastic-agent-54559",
         "type": "packetbeat",
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "client": {
-        "ip": "192.168.1.2",
+        "ip": "10.0.2.20",
         "port": 5060
     },
     "data_stream": {
         "dataset": "network_traffic.sip",
-        "namespace": "67335",
+        "namespace": "47588",
         "type": "logs"
     },
     "destination": {
-        "ip": "212.242.33.35",
+        "ip": "10.0.2.15",
         "port": 5060
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "ca7f9272-a40f-4727-839a-500539dbb06b",
+        "id": "9a476385-9958-40f2-be8f-e17f8a2fc8ee",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "event": {
-        "action": "sip-register",
+        "action": "sip-invite",
         "agent_id_status": "verified",
         "category": [
-            "network",
-            "authentication"
+            "network"
         ],
+        "dataset": "network_traffic.sip",
         "duration": 0,
-        "end": "2026-10-26T03:11:21.757Z",
-        "ingested": "2026-10-26T03:11:24Z",
+        "end": "2026-10-26T20:10:13.518Z",
+        "ingested": "2026-10-26T20:10:16Z",
         "kind": "event",
         "module": "network_traffic",
-        "sequence": 75,
-        "start": "2026-10-26T03:11:21.757Z",
+        "sequence": 1,
+        "start": "2026-10-26T20:10:13.518Z",
         "type": [
             "info",
             "protocol"
@@ -4293,18 +4275,18 @@ An example event for `sip` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-53233",
+        "hostname": "elastic-agent-54559",
         "ip": [
-            "10.89.6.2",
-            "fe80::ac87:a9ff:fe0e:49fc",
-            "10.89.0.171",
-            "fe80::6c3c:5bff:fe3c:8ae6"
+            "10.89.11.2",
+            "fe80::4caa:68ff:fe59:b493",
+            "10.89.0.118",
+            "fe80::8499:51ff:fe75:3018"
         ],
         "mac": [
-            "6E-3C-5B-3C-8A-E6",
-            "AE-87-A9-0E-49-FC"
+            "4E-AA-68-59-B4-93",
+            "86-99-51-75-30-18"
         ],
-        "name": "elastic-agent-53233",
+        "name": "elastic-agent-54559",
         "os": {
             "family": "",
             "kernel": "6.17.0-14-generic",
@@ -4316,7 +4298,7 @@ An example event for `sip` looks as following:
     },
     "network": {
         "application": "sip",
-        "community_id": "1:dOa61R2NaaJsJlcFAiMIiyXX+Kk=",
+        "community_id": "1:xDRQZvk3ErEhBDslXv1c6EKI804=",
         "direction": "unknown",
         "iana_number": "17",
         "protocol": "sip",
@@ -4325,85 +4307,97 @@ An example event for `sip` looks as following:
     },
     "network_traffic": {
         "sip": {
-            "auth": {
-                "realm": "sip.cybercity.dk",
-                "scheme": "Digest",
-                "uri": {
-                    "host": "192.168.1.2",
-                    "original": "sip:192.168.1.2",
-                    "scheme": "sip"
-                }
-            },
-            "call_id": "578222729-4665d775@578222732-4665d772",
+            "call_id": "1-2187@10.0.2.20",
             "contact": {
+                "display_info": "test",
                 "uri": {
-                    "host": "sip.cybercity.dk",
-                    "original": "sip:voi18062@sip.cybercity.dk",
+                    "host": "10.0.2.15",
+                    "original": "sip:test@10.0.2.15:5060",
+                    "port": 5060,
                     "scheme": "sip",
-                    "username": "voi18062"
+                    "username": "test"
                 }
             },
+            "content_length": 123,
+            "content_type": "application/sdp",
             "cseq": {
-                "code": 75,
-                "method": "REGISTER"
+                "code": 1,
+                "method": "INVITE"
             },
             "from": {
-                "tag": "6bac55c",
+                "display_info": "DVI4/8000",
+                "tag": "1",
                 "uri": {
-                    "host": "sip.cybercity.dk",
-                    "original": "sip:voi18062@sip.cybercity.dk",
+                    "host": "10.0.2.20",
+                    "original": "sip:sipp@10.0.2.20:5060",
+                    "port": 5060,
                     "scheme": "sip",
-                    "username": "voi18062"
+                    "username": "sipp"
                 }
             },
             "max_forwards": 70,
-            "method": "REGISTER",
+            "method": "INVITE",
+            "sdp": {
+                "body": {
+                    "original": "v=0\r\no=- 42 42 IN IP4 10.0.2.20\r\ns=-\r\nc=IN IP4 10.0.2.20\r\nt=0 0\r\nm=audio 6000 RTP/AVP 5\r\na=rtpmap:5 DVI4/8000\r\na=recvonly\r\n"
+                },
+                "connection": {
+                    "address": "10.0.2.20",
+                    "info": "IN IP4 10.0.2.20"
+                },
+                "owner": {
+                    "ip": "10.0.2.20",
+                    "session_id": "42",
+                    "version": "42"
+                },
+                "version": "0"
+            },
             "to": {
+                "display_info": "test",
                 "uri": {
-                    "host": "sip.cybercity.dk",
-                    "original": "sip:voi18062@sip.cybercity.dk",
+                    "host": "10.0.2.15",
+                    "original": "sip:test@10.0.2.15:5060",
+                    "port": 5060,
                     "scheme": "sip",
-                    "username": "voi18062"
+                    "username": "test"
                 }
             },
             "type": "request",
             "uri": {
-                "host": "sip.cybercity.dk",
-                "original": "sip:sip.cybercity.dk",
-                "scheme": "sip"
-            },
-            "user_agent": {
-                "original": "Nero SIPPS IP Phone Version 2.0.51.16"
+                "host": "10.0.2.15",
+                "original": "sip:test@10.0.2.15:5060",
+                "port": 5060,
+                "scheme": "sip",
+                "username": "test"
             },
             "version": "2.0",
             "via": {
-                "original": "SIP/2.0/UDP 192.168.1.2;branch=z9hG4bKnp112903503-43a64480192.168.1.2;rport"
+                "original": "SIP/2.0/UDP 10.0.2.20:5060;branch=z9hG4bK-2187-1-0"
             }
         },
         "status": "OK"
     },
     "related": {
         "hosts": [
-            "sip.cybercity.dk"
+            "10.0.2.15",
+            "10.0.2.20"
         ],
         "ip": [
-            "192.168.1.2",
-            "212.242.33.35"
+            "10.0.2.20",
+            "10.0.2.15"
         ],
         "user": [
-            "voi18062"
+            "test",
+            "sipp"
         ]
     },
     "server": {
-        "ip": "212.242.33.35",
+        "ip": "10.0.2.15",
         "port": 5060
     },
     "source": {
-        "ip": "192.168.1.2",
+        "ip": "10.0.2.20",
         "port": 5060
-    },
-    "user": {
-        "name": "voi18062"
     }
 }
 ```
@@ -4641,13 +4635,13 @@ An example event for `thrift` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-26T03:11:24.575Z",
+    "@timestamp": "2026-10-26T20:11:49.740Z",
     "agent": {
-        "ephemeral_id": "391219c7-69e5-4a50-a03d-170902a0cc9e",
-        "id": "a88fdc9d-27c2-4273-b23a-2597ee1496fc",
-        "name": "elastic-agent-59470",
+        "ephemeral_id": "b649613c-49aa-41b9-9cc0-266993a6d6a5",
+        "id": "b463aa2e-3304-437b-8341-dcb75447471e",
+        "name": "elastic-agent-41448",
         "type": "packetbeat",
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "client": {
         "bytes": 25,
@@ -4656,7 +4650,7 @@ An example event for `thrift` looks as following:
     },
     "data_stream": {
         "dataset": "network_traffic.thrift",
-        "namespace": "40340",
+        "namespace": "86565",
         "type": "logs"
     },
     "destination": {
@@ -4668,21 +4662,22 @@ An example event for `thrift` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "a88fdc9d-27c2-4273-b23a-2597ee1496fc",
+        "id": "b463aa2e-3304-437b-8341-dcb75447471e",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 2368414,
-        "end": "2026-10-26T03:11:24.578Z",
-        "ingested": "2026-10-26T03:11:27Z",
+        "dataset": "network_traffic.thrift",
+        "duration": 2309111,
+        "end": "2026-10-26T20:11:49.742Z",
+        "ingested": "2026-10-26T20:11:52Z",
         "kind": "event",
         "module": "network_traffic",
-        "start": "2026-10-26T03:11:24.575Z",
+        "start": "2026-10-26T20:11:49.740Z",
         "type": [
             "connection",
             "protocol"
@@ -4691,18 +4686,18 @@ An example event for `thrift` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-59470",
+        "hostname": "elastic-agent-41448",
         "ip": [
-            "10.89.10.2",
-            "fe80::cae:d9ff:fe58:c5b",
-            "10.89.0.173",
-            "fe80::54ce:6fff:fe69:1fb1"
+            "10.89.3.2",
+            "fe80::445f:4eff:feba:668d",
+            "10.89.0.122",
+            "fe80::8c36:6fff:fe17:1636"
         ],
         "mac": [
-            "0E-AE-D9-58-0C-5B",
-            "56-CE-6F-69-1F-B1"
+            "46-5F-4E-BA-66-8D",
+            "8E-36-6F-17-16-36"
         ],
-        "name": "elastic-agent-59470",
+        "name": "elastic-agent-41448",
         "os": {
             "family": "",
             "kernel": "6.17.0-14-generic",
@@ -5104,13 +5099,13 @@ An example event for `tls` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-26T03:11:24.292Z",
+    "@timestamp": "2026-10-26T20:11:48.696Z",
     "agent": {
-        "ephemeral_id": "f3e16c96-7df3-40a2-b621-aea27400b7a7",
-        "id": "c2d9f975-b6c8-4855-9677-b153bc7e2e6e",
-        "name": "elastic-agent-40045",
+        "ephemeral_id": "c30f32cf-35d1-4c08-b320-c25d3b45cef2",
+        "id": "f813dbd9-0c7b-46df-a8f1-4f37545aa0e2",
+        "name": "elastic-agent-30721",
         "type": "packetbeat",
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "client": {
         "ip": "192.168.1.36",
@@ -5118,7 +5113,7 @@ An example event for `tls` looks as following:
     },
     "data_stream": {
         "dataset": "network_traffic.tls",
-        "namespace": "82851",
+        "namespace": "26547",
         "type": "logs"
     },
     "destination": {
@@ -5130,21 +5125,22 @@ An example event for `tls` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "c2d9f975-b6c8-4855-9677-b153bc7e2e6e",
+        "id": "f813dbd9-0c7b-46df-a8f1-4f37545aa0e2",
         "snapshot": false,
-        "version": "9.1.0"
+        "version": "9.4.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "duration": 16045173,
-        "end": "2026-10-26T03:11:24.308Z",
-        "ingested": "2026-10-26T03:11:27Z",
+        "dataset": "network_traffic.tls",
+        "duration": 15933356,
+        "end": "2026-10-26T20:11:48.712Z",
+        "ingested": "2026-10-26T20:11:51Z",
         "kind": "event",
         "module": "network_traffic",
-        "start": "2026-10-26T03:11:24.292Z",
+        "start": "2026-10-26T20:11:48.696Z",
         "type": [
             "connection",
             "protocol"
@@ -5153,18 +5149,18 @@ An example event for `tls` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "elastic-agent-40045",
+        "hostname": "elastic-agent-30721",
         "ip": [
-            "10.89.12.2",
-            "fe80::dc27:cfff:fece:f864",
-            "10.89.0.175",
-            "fe80::38eb:f5ff:fe4f:381d"
+            "10.89.1.2",
+            "fe80::818:7bff:fe58:c1f8",
+            "10.89.0.121",
+            "fe80::801f:8dff:feda:2fc8"
         ],
         "mac": [
-            "3A-EB-F5-4F-38-1D",
-            "DE-27-CF-CE-F8-64"
+            "0A-18-7B-58-C1-F8",
+            "82-1F-8D-DA-2F-C8"
         ],
-        "name": "elastic-agent-40045",
+        "name": "elastic-agent-30721",
         "os": {
             "family": "",
             "kernel": "6.17.0-14-generic",
