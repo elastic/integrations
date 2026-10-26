@@ -624,11 +624,8 @@ An example event for `external_access_history` looks as following:
             "country_iso_code": "NL",
             "country_name": "Netherlands",
             "location": {
-                "coordinates": [
-                    4.889689916744828,
-                    52.37403995823115
-                ],
-                "type": "Point"
+                "lat": 52.37404,
+                "lon": 4.88969
             },
             "region_iso_code": "NL-NH",
             "region_name": "North Holland"
