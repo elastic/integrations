@@ -1,0 +1,57 @@
+# Failure-path regressions (pipeline tests reject error.message).
+[!external_stack] skip 'Requires a running Elastic stack.'
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-0.json
+! stderr .
+stdout '"original":'
+stdout 'preserve_original_event'
+stdout 'message'
+stdout 'Earlier error <keep & preserve>'
+! stdout '&lt;|&gt;|&amp;'
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-1.json
+! stderr .
+stdout '"original":'
+stdout 'preserve_original_event'
+stdout 'message'
+stdout 'Could not parse FortiGate event time'
+! stdout '&lt;|&gt;|&amp;'
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-2.json
+! stderr .
+stdout '"original":'
+! stdout 'ignored wrapper'
+stdout 'original'
+! stdout '&lt;|&gt;|&amp;'
+
+uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+-- case-0.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "message": "type=traffic msg=\"unterminated <&>",
+  "error": {
+    "message": [
+      "Earlier error <keep & preserve>"
+    ]
+  }
+}
+
+-- case-1.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "message": "date=2026-02-30 time=25:99:99 tz=\"+0000\" type=traffic srcip=192.0.2.10 dstip=198.51.100.20 action=deny"
+}
+
+-- case-2.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "message": "ignored wrapper",
+  "event": {
+    "original": "type=traffic subtype=forward srcip=192.0.2.10 dstip=198.51.100.20 action=deny"
+  }
+}

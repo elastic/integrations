@@ -63,13 +63,13 @@ These results support investigation. A match or suspicious classification alone 
 
 ### 1. Install the integration
 
-Install the supplied package in the target Kibana Space using your organization's custom integration installation process. Then open:
+In Fleet, open **Integrations**, search for **Criminal IP**, and follow the installation and policy configuration steps in the target Kibana Space. During development, if this package is not yet available in the catalog, use your organization's package upload process instead. Then open:
 
 `[Logs Criminal IP] Firewall, Threat Intelligence, and Cortex Overview` for the primary detection/investigation workflow. `[Logs Criminal IP] IP Intelligence Overview` is for optional explicitly configured IP lookups, not observed firewall communications.
 
 For firewall detection, follow **Collect firewall logs**, then **Collect TI Feed indicators and enable alerts** below. Cortex and configured IP lookups can be used independently; configure only the paths you need. Existing dashboard IDs and stored data are retained.
 
-Configure the features you selected below. Uploading a package and completing installation are separate steps; neither starts collection by itself. Open the managed dashboard from the installed assets, since existing custom dashboard copies do not receive its updates automatically.
+Configure the features you selected below. Installing package assets and applying an Agent policy are separate steps; installing assets alone does not start collection. Open the managed dashboard from the installed assets, since existing custom dashboard copies do not receive its updates automatically.
 
 ### 2. Collect firewall logs
 
@@ -124,7 +124,7 @@ Use `source.ip`, `destination.ip`, available ports and `network.transport` for c
 1. Enable **Criminal IP Threat Intelligence Feed** in the Agent policy.
 2. Enter a key with TI Feed access, the feed URL, and the interval. Defaults are `https://dl.criminalip.io/ti/v1/feed/outbound` and `5m`; confirm that they suit your subscription.
 3. Verify indicators in `logs-criminalip.ti_feed-*` with `threat.indicator.ip`.
-   Observation times in `criminalip.ti_feed.first_seen` and `criminalip.ti_feed.last_seen` are normalized to ISO 8601. Feed timestamps without an offset are interpreted as UTC; confirm the source timezone when using a custom feed. Invalid observation dates are omitted and reported in `error.message` while retaining the IP indicator. Updating the package affects new ingestion; previously ignored date fields require separate reprocessing.
+   Observation times are normalized to ISO 8601 in `threat.indicator.first_seen` and `threat.indicator.last_seen`. The existing `criminalip.ti_feed.first_seen` and `criminalip.ti_feed.last_seen` fields are retained for compatibility. Feed timestamps without an offset are interpreted as UTC; confirm the source timezone when using a custom feed. Invalid observation dates are omitted and reported in `error.message` while retaining the IP indicator. Updating the package affects new ingestion; previously ignored date fields require separate reprocessing.
    Numeric confidence is retained in `criminalip.ti_feed.confidence`. The ECS keyword `threat.indicator.confidence` uses the STIX 0–100 bands: 0 = None, greater than 0 and below 30 = Low, 30 to below 70 = Medium, and 70–100 = High. Out-of-range numeric values are retained with the label Not Specified; missing confidence is omitted. Existing indices that mapped ECS confidence as a number require a planned mapping migration/reindex; updating this package does not rewrite historical mappings.
 4. In **Security → Rules → Add Elastic rules**, install `Criminal IP Firewall Indicator Match`.
 5. Check collection and rule permissions, then enable the rule.
@@ -337,4 +337,26 @@ Local validation checks package structure and generated assets. Installation, pe
 - [ECS threat match fields](https://www.elastic.co/docs/reference/ecs/ecs-threat)
 - [Vega dashboard filters](https://www.elastic.co/docs/explore-analyze/visualize/custom-visualizations-with-vega)
 
-The FortiGate `date` and `time` fields populate `@timestamp`; when `tz` is present, its offset is applied. Repeated `tz` fields use the first valid offset, and forms such as `UTC-5:00` are normalized to `-0500`. If the log has no timezone, the timestamp is interpreted as UTC. The original date, time, and `eventtime` remain available under `fortigate.*`, and `event.ingested` records receipt time.
+The FortiGate `date` and `time` fields populate `@timestamp`; when `tz` is present, its offset is applied. Repeated `tz` fields use the first valid offset, and forms such as `UTC-5:00` are normalized to `-0500`. If the log has no timezone, the timestamp is interpreted as UTC. Invalid event times are reported in `error.message`, the original event is preserved, and invalid raw dates are not indexed as dates. Valid original date, time, and `eventtime` values remain available under `fortigate.*`. Fleet's final pipeline populates `event.ingested` and handles the `preserve_original_event` tag; failed events automatically retain their raw payload.
+
+## Data stream reference
+
+### FortiGate
+
+{{event "fortigate"}}
+
+{{fields "fortigate"}}
+
+### TI Feed
+
+{{event "ti_feed"}}
+
+{{fields "ti_feed"}}
+
+### IP Report
+
+{{event "ip_report"}}
+
+{{fields "ip_report"}}
+
+The examples use test data. IDs, timestamps, and namespaces vary by deployment.

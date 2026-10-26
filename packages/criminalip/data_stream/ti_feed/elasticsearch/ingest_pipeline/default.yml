@@ -1,10 +1,38 @@
 ---
-description: Normalize TI Feed observation timestamps and honor original-event preservation.
+description: Normalize TI Feed metadata and retain original events for Fleet final processing.
 processors:
   - dot_expander:
-      tag: expand_feed_confidence
-      field: criminalip.ti_feed.confidence
-      if: "ctx.containsKey('criminalip.ti_feed.confidence')"
+      tag: expand_cel_dotted_fields
+      field: '*'
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: 9.5.0
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: enrichment
+  - append:
+      tag: append_event_category
+      field: event.category
+      value: threat
+      allow_duplicates: false
+  - append:
+      tag: append_event_type
+      field: event.type
+      value: indicator
+      allow_duplicates: false
+  - rename:
+      tag: preserve_feed_message
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: "ctx.event?.original == null"
+  - remove:
+      tag: remove_feed_message
+      field: message
+      ignore_missing: true
+      if: "ctx.event?.original != null"
   - convert:
       tag: convert_feed_confidence
       field: criminalip.ti_feed.confidence
@@ -19,8 +47,14 @@ processors:
             tag: flag_invalid_feed_confidence
             field: error.message
             value: Could not parse TI Feed confidence as a numeric value.
+        - append:
+            tag: preserve_invalid_feed_confidence
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
   - script:
       tag: normalize_feed_confidence
+      description: Convert numeric confidence to the ECS STIX confidence bands while retaining the source value.
       lang: painless
       if: "ctx.criminalip?.ti_feed?.confidence != null"
       source: >-
@@ -33,29 +67,6 @@ processors:
         if (ctx.threat == null) { ctx.threat = [:]; }
         if (ctx.threat.indicator == null) { ctx.threat.indicator = [:]; }
         ctx.threat.indicator.confidence = label;
-  - dot_expander:
-      tag: expand_feed_original
-      field: event.original
-      if: "ctx.containsKey('event.original')"
-  - dot_expander:
-      tag: expand_feed_first_seen
-      field: criminalip.ti_feed.first_seen
-      if: "ctx.containsKey('criminalip.ti_feed.first_seen')"
-  - dot_expander:
-      tag: expand_feed_last_seen
-      field: criminalip.ti_feed.last_seen
-      if: "ctx.containsKey('criminalip.ti_feed.last_seen')"
-  - rename:
-      tag: preserve_feed_message
-      field: message
-      target_field: event.original
-      ignore_missing: true
-      if: "ctx.event?.original == null"
-  - remove:
-      tag: remove_feed_message
-      field: message
-      ignore_missing: true
-      if: "ctx.event?.original != null"
   - date:
       tag: parse_feed_first_seen
       field: criminalip.ti_feed.first_seen
@@ -74,6 +85,11 @@ processors:
             tag: flag_invalid_feed_first_seen
             field: error.message
             value: Could not parse TI Feed first_seen timestamp.
+        - append:
+            tag: preserve_invalid_feed_first_seen
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
   - date:
       tag: parse_feed_last_seen
       field: criminalip.ti_feed.last_seen
@@ -92,26 +108,42 @@ processors:
             tag: flag_invalid_feed_last_seen
             field: error.message
             value: Could not parse TI Feed last_seen timestamp.
-  - remove:
-      tag: remove_unpreserved_feed_original
-      field: event.original
-      ignore_missing: true
-      if: "ctx.tags == null || !ctx.tags.contains('preserve_original_event')"
-on_failure:
+        - append:
+            tag: preserve_invalid_feed_last_seen
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
   - set:
-      tag: set_feed_pipeline_error_outcome
-      field: event.outcome
-      value: failure
+      tag: copy_indicator_first_seen
+      field: threat.indicator.first_seen
+      copy_from: criminalip.ti_feed.first_seen
+      ignore_empty_value: true
+  - set:
+      tag: copy_indicator_last_seen
+      field: threat.indicator.last_seen
+      copy_from: criminalip.ti_feed.last_seen
+      ignore_empty_value: true
+  - append:
+      tag: append_related_indicator_ip
+      field: related.ip
+      value: '{{{threat.indicator.ip}}}'
+      allow_duplicates: false
+      if: 'ctx.threat?.indicator?.ip != null'
+on_failure:
+  - append:
+      tag: append_feed_pipeline_error_message
+      field: error.message
+      value: "Processor '{{{ _ingest.on_failure_processor_type }}}' with tag '{{{ _ingest.on_failure_processor_tag }}}' in pipeline '{{{ _ingest.pipeline }}}' failed: {{{ _ingest.on_failure_message }}}"
   - set:
       tag: set_feed_pipeline_error_kind
       field: event.kind
       value: pipeline_error
+  - append:
+      tag: preserve_failed_feed_original
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - set:
-      tag: set_feed_pipeline_error_message
-      field: error.message
-      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.pipeline }} failed: {{ _ingest.on_failure_message }}"
-  - remove:
-      tag: remove_unpreserved_feed_original_on_failure
-      field: event.original
-      ignore_missing: true
-      if: "ctx.tags == null || !ctx.tags.contains('preserve_original_event')"
+      tag: set_feed_pipeline_error_outcome
+      field: event.outcome
+      value: failure

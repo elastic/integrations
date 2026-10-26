@@ -1,0 +1,54 @@
+# Failure-path regressions (pipeline tests reject error.message).
+[!external_stack] skip 'Requires a running Elastic stack.'
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-0.json
+! stderr .
+stdout 'Criminal IP TI Feed request failed with HTTP status 403'
+! stdout '&lt;|&gt;|&amp;'
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-1.json
+! stderr .
+stdout '"original":'
+stdout 'preserve_original_event'
+stdout 'message'
+stdout 'Could not parse TI Feed confidence'
+stdout 'Could not parse TI Feed first_seen'
+stdout 'Could not parse TI Feed last_seen'
+! stdout '&lt;|&gt;|&amp;'
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-2.json
+! stderr .
+stdout '"original":'
+! stdout '&lt;|&gt;|&amp;'
+
+uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+-- case-0.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "event.outcome": "failure",
+  "error.message": "Criminal IP TI Feed request failed with HTTP status 403",
+  "http.response.status_code": 403
+}
+
+-- case-1.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "message": "{\"ip\":\"192.0.2.10\"}",
+  "threat.indicator.ip": "192.0.2.10",
+  "criminalip.ti_feed.confidence": "invalid",
+  "criminalip.ti_feed.first_seen": "not-a-date",
+  "criminalip.ti_feed.last_seen": "bad-date"
+}
+
+-- case-2.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "message": "{\"ip\":\"198.51.100.20\"}",
+  "threat.indicator.ip": "198.51.100.20",
+  "criminalip.ti_feed.confidence": 120
+}

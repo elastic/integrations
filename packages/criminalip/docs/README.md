@@ -64,13 +64,13 @@ These results support investigation. A match or suspicious classification alone 
 
 ### 1. Install the integration
 
-Install the supplied package in the target Kibana Space using your organization's custom integration installation process. Then open:
+In Fleet, open **Integrations**, search for **Criminal IP**, and follow the installation and policy configuration steps in the target Kibana Space. During development, if this package is not yet available in the catalog, use your organization's package upload process instead. Then open:
 
 `[Logs Criminal IP] Firewall, Threat Intelligence, and Cortex Overview` for the primary detection/investigation workflow. `[Logs Criminal IP] IP Intelligence Overview` is for optional explicitly configured IP lookups, not observed firewall communications.
 
 For firewall detection, follow **Collect firewall logs**, then **Collect TI Feed indicators and enable alerts** below. Cortex and configured IP lookups can be used independently; configure only the paths you need. Existing dashboard IDs and stored data are retained.
 
-Configure the features you selected below. Uploading a package and completing installation are separate steps; neither starts collection by itself. Open the managed dashboard from the installed assets, since existing custom dashboard copies do not receive its updates automatically.
+Configure the features you selected below. Installing package assets and applying an Agent policy are separate steps; installing assets alone does not start collection. Open the managed dashboard from the installed assets, since existing custom dashboard copies do not receive its updates automatically.
 
 ### 2. Collect firewall logs
 
@@ -125,7 +125,7 @@ Use `source.ip`, `destination.ip`, available ports and `network.transport` for c
 1. Enable **Criminal IP Threat Intelligence Feed** in the Agent policy.
 2. Enter a key with TI Feed access, the feed URL, and the interval. Defaults are `https://dl.criminalip.io/ti/v1/feed/outbound` and `5m`; confirm that they suit your subscription.
 3. Verify indicators in `logs-criminalip.ti_feed-*` with `threat.indicator.ip`.
-   Observation times in `criminalip.ti_feed.first_seen` and `criminalip.ti_feed.last_seen` are normalized to ISO 8601. Feed timestamps without an offset are interpreted as UTC; confirm the source timezone when using a custom feed. Invalid observation dates are omitted and reported in `error.message` while retaining the IP indicator. Updating the package affects new ingestion; previously ignored date fields require separate reprocessing.
+   Observation times are normalized to ISO 8601 in `threat.indicator.first_seen` and `threat.indicator.last_seen`. The existing `criminalip.ti_feed.first_seen` and `criminalip.ti_feed.last_seen` fields are retained for compatibility. Feed timestamps without an offset are interpreted as UTC; confirm the source timezone when using a custom feed. Invalid observation dates are omitted and reported in `error.message` while retaining the IP indicator. Updating the package affects new ingestion; previously ignored date fields require separate reprocessing.
    Numeric confidence is retained in `criminalip.ti_feed.confidence`. The ECS keyword `threat.indicator.confidence` uses the STIX 0–100 bands: 0 = None, greater than 0 and below 30 = Low, 30 to below 70 = Medium, and 70–100 = High. Out-of-range numeric values are retained with the label Not Specified; missing confidence is omitted. Existing indices that mapped ECS confidence as a number require a planned mapping migration/reindex; updating this package does not rewrite historical mappings.
 4. In **Security → Rules → Add Elastic rules**, install `Criminal IP Firewall Indicator Match`.
 5. Check collection and rule permissions, then enable the rule.
@@ -338,4 +338,421 @@ Local validation checks package structure and generated assets. Installation, pe
 - [ECS threat match fields](https://www.elastic.co/docs/reference/ecs/ecs-threat)
 - [Vega dashboard filters](https://www.elastic.co/docs/explore-analyze/visualize/custom-visualizations-with-vega)
 
-The FortiGate `date` and `time` fields populate `@timestamp`; when `tz` is present, its offset is applied. Repeated `tz` fields use the first valid offset, and forms such as `UTC-5:00` are normalized to `-0500`. If the log has no timezone, the timestamp is interpreted as UTC. The original date, time, and `eventtime` remain available under `fortigate.*`, and `event.ingested` records receipt time.
+The FortiGate `date` and `time` fields populate `@timestamp`; when `tz` is present, its offset is applied. Repeated `tz` fields use the first valid offset, and forms such as `UTC-5:00` are normalized to `-0500`. If the log has no timezone, the timestamp is interpreted as UTC. Invalid event times are reported in `error.message`, the original event is preserved, and invalid raw dates are not indexed as dates. Valid original date, time, and `eventtime` values remain available under `fortigate.*`. Fleet's final pipeline populates `event.ingested` and handles the `preserve_original_event` tag; failed events automatically retain their raw payload.
+
+## Data stream reference
+
+### FortiGate
+
+An example event for `fortigate` looks as following:
+
+```json
+{
+    "@timestamp": "2026-10-26T02:57:25.000Z",
+    "agent": {
+        "ephemeral_id": "abbba26a-d842-4566-9dd8-ee236c3be02c",
+        "id": "4bf6a3f3-9819-4afd-94e2-7ca605c0d0f1",
+        "name": "elastic-agent-39414",
+        "type": "filebeat",
+        "version": "9.5.3"
+    },
+    "data_stream": {
+        "dataset": "criminalip.fortigate",
+        "namespace": "37152",
+        "type": "logs"
+    },
+    "destination": {
+        "ip": "198.51.100.20",
+        "port": 443
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "4bf6a3f3-9819-4afd-94e2-7ca605c0d0f1",
+        "snapshot": false,
+        "version": "9.5.3"
+    },
+    "event": {
+        "action": "deny",
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "criminalip.fortigate",
+        "ingested": "2026-10-26T02:57:31Z",
+        "kind": "event",
+        "module": "criminalip",
+        "outcome": "failure",
+        "timezone": "+0000",
+        "type": [
+            "denied",
+            "connection"
+        ]
+    },
+    "fortigate": {
+        "date": "2026-10-26T00:00:00.000Z",
+        "subtype": "forward",
+        "time": "02:57:25",
+        "type": "traffic"
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "source": {
+            "address": "172.21.0.1:49073"
+        }
+    },
+    "network": {
+        "iana_number": "6",
+        "transport": "tcp"
+    },
+    "observer": {
+        "product": "FortiGate",
+        "type": "firewall",
+        "vendor": "Fortinet"
+    },
+    "related": {
+        "ip": [
+            "192.0.2.10",
+            "198.51.100.20"
+        ]
+    },
+    "source": {
+        "ip": "192.0.2.10",
+        "port": 45001
+    },
+    "tags": [
+        "forwarded",
+        "synthetic"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
+| agent.name | Custom name of the agent. This is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from. | keyword |
+| agent.type | Type of the agent. The agent type always stays the same and should be given by the agent used. In case of Filebeat the agent would always be Filebeat also if two Filebeat instances are run on the same machine. | keyword |
+| agent.version | Version of the agent. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.port | Port of the destination. | long |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| fortigate.date | Date recorded in the original FortiGate event. | date |
+| fortigate.eventtime | FortiGate event-time epoch value preserved from the original log. | keyword |
+| fortigate.logid | FortiGate event identifier. | keyword |
+| fortigate.policyid | FortiGate policy identifier. | keyword |
+| fortigate.subtype | FortiGate event subtype. | keyword |
+| fortigate.time | Time of day recorded in the original FortiGate event. | keyword |
+| fortigate.type | FortiGate event type preserved from the original key-value log. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
+| input.type | Elastic Agent input type used to collect FortiGate syslog. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.source.address | Network address of the firewall or syslog source. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| observer.product | The product name of the observer. | keyword |
+| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
+| observer.vendor | Vendor name of the observer. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.port | Port of the source. | long |
+| tags | List of keywords used to tag each event. | keyword |
+
+
+### TI Feed
+
+An example event for `ti_feed` looks as following:
+
+```json
+{
+    "@timestamp": "2026-10-26T03:02:14.505Z",
+    "agent": {
+        "ephemeral_id": "c6b1b948-23ca-4bf6-8f36-d98531050dc2",
+        "id": "99d2d5b6-19e3-4d64-b1e6-7b5a82825571",
+        "name": "elastic-agent-48334",
+        "type": "filebeat",
+        "version": "9.5.3"
+    },
+    "criminalip": {
+        "ti_feed": {
+            "confidence": 80,
+            "first_seen": "2026-01-01T00:00:00.000Z",
+            "last_seen": "2026-01-01T01:00:00.000Z",
+            "score": "95"
+        }
+    },
+    "data_stream": {
+        "dataset": "criminalip.ti_feed",
+        "namespace": "35187",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "99d2d5b6-19e3-4d64-b1e6-7b5a82825571",
+        "snapshot": false,
+        "version": "9.5.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "criminalip.ti_feed",
+        "ingested": "2026-10-26T03:02:18Z",
+        "kind": "enrichment",
+        "module": "criminalip",
+        "original": "{\"confidence\":80,\"first_seen\":\"2026-01-01 00:00:00\",\"ip\":\"192.0.2.10\",\"last_seen\":\"2026-01-01 01:00:00\",\"reason\":\"Synthetic integration system-test indicator\",\"score\":95}",
+        "outcome": "success",
+        "type": [
+            "indicator"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "elastic-agent-48334",
+        "ip": [
+            "172.21.0.2",
+            "172.19.0.4"
+        ],
+        "mac": [
+            "06-F5-11-00-AE-8B",
+            "92-91-F8-19-50-D1"
+        ],
+        "name": "elastic-agent-48334",
+        "os": {
+            "family": "",
+            "kernel": "6.18.33.2-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "http": {
+        "response": {
+            "status_code": 200
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "ip": [
+            "192.0.2.10"
+        ]
+    },
+    "tags": [
+        "synthetic",
+        "preserve_original_event"
+    ],
+    "threat": {
+        "indicator": {
+            "confidence": "High",
+            "description": "Synthetic integration system-test indicator",
+            "first_seen": "2026-01-01T00:00:00.000Z",
+            "ip": "192.0.2.10",
+            "last_seen": "2026-01-01T01:00:00.000Z",
+            "provider": "Criminal IP",
+            "type": "ipv4-addr"
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| criminalip.ti_feed.confidence | Original numeric confidence provided by Criminal IP, retained separately from the normalized ECS label. | double |
+| criminalip.ti_feed.first_seen | First observed timestamp from Criminal IP. | date |
+| criminalip.ti_feed.last_seen | Last observed timestamp from Criminal IP. | date |
+| criminalip.ti_feed.score | Criminal IP threat score. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| http.response.status_code | HTTP response status code. | long |
+| input.type | Elastic Agent input type used to collect the threat feed. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| tags | List of keywords used to tag each event. | keyword |
+| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. | keyword |
+| threat.indicator.description | Describes the type of action conducted by the threat. | keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.provider | The name of the indicator's provider. | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
+
+
+### IP Report
+
+An example event for `ip_report` looks as following:
+
+```json
+{
+    "@timestamp": "2026-10-26T02:59:43.237Z",
+    "agent": {
+        "ephemeral_id": "111b4b4d-3032-44fd-8bc9-d3b7b40c306f",
+        "id": "0c779e39-b9e0-4703-aae6-c7aa5bcf8893",
+        "name": "elastic-agent-48550",
+        "type": "filebeat",
+        "version": "9.5.3"
+    },
+    "criminalip": {
+        "issues": {
+            "is_scanner": true
+        },
+        "query_ip": "192.0.2.10",
+        "score": {
+            "inbound": "Critical",
+            "outbound": "Low"
+        },
+        "status": 200
+    },
+    "data_stream": {
+        "dataset": "criminalip.ip_report",
+        "namespace": "44592",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "0c779e39-b9e0-4703-aae6-c7aa5bcf8893",
+        "snapshot": false,
+        "version": "9.5.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "criminalip.ip_report",
+        "ingested": "2026-10-26T02:59:47Z",
+        "kind": "enrichment",
+        "module": "criminalip",
+        "original": "{\"ip\":\"192.0.2.10\",\"issues\":{\"is_scanner\":true},\"score\":{\"inbound\":\"Critical\",\"outbound\":\"Low\"},\"status\":200}",
+        "outcome": "success",
+        "type": [
+            "indicator"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "elastic-agent-48550",
+        "ip": [
+            "172.21.0.2",
+            "172.19.0.4"
+        ],
+        "mac": [
+            "4E-89-B0-3C-D3-52",
+            "DE-B4-5F-69-71-87"
+        ],
+        "name": "elastic-agent-48550",
+        "os": {
+            "family": "",
+            "kernel": "6.18.33.2-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "http": {
+        "response": {
+            "status_code": 200
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "ip": [
+            "192.0.2.10"
+        ]
+    },
+    "tags": [
+        "synthetic",
+        "preserve_original_event"
+    ],
+    "threat": {
+        "indicator": {
+            "ip": "192.0.2.10",
+            "provider": "Criminal IP",
+            "type": "ipv4-addr"
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| criminalip.issues.is_cloud | Whether the IP is identified as cloud. | boolean |
+| criminalip.issues.is_darkweb | Whether the IP is associated with dark web. | boolean |
+| criminalip.issues.is_hosting | Whether the IP is identified as hosting. | boolean |
+| criminalip.issues.is_proxy | Whether the IP is identified as proxy. | boolean |
+| criminalip.issues.is_scanner | Whether the IP is identified as scanner. | boolean |
+| criminalip.issues.is_tor | Whether the IP is identified as Tor. | boolean |
+| criminalip.issues.is_vpn | Whether the IP is identified as VPN. | boolean |
+| criminalip.query_ip | Configured lookup value for each report request, including HTTP and application-level failures; may be malformed input rather than a valid IP. | keyword |
+| criminalip.score.inbound | Criminal IP inbound reputation score. | keyword |
+| criminalip.score.outbound | Criminal IP outbound reputation score. | keyword |
+| criminalip.status | Criminal IP response body status code, distinct from the HTTP status. | long |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| http.response.status_code | HTTP response status code. | long |
+| input.type | Elastic Agent input type used to collect the API response. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| tags | List of keywords used to tag each event. | keyword |
+| threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
+| threat.indicator.provider | The name of the indicator's provider. | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
+
+
+The examples use test data. IDs, timestamps, and namespaces vary by deployment.
