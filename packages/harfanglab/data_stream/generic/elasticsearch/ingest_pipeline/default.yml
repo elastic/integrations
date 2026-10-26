@@ -43,6 +43,22 @@ processors:
       field: event.module
       value: sysmon
       if: ctx.process?.entity_id != null
+  # The agent reports process creation as event.type "creation", which ECS does not
+  # allow for the process category (access, change, end, info, start). Map it to the
+  # ECS value. Only process events are touched: "creation" is a valid event.type for
+  # other categories, such as file.
+  - script:
+      tag: map_process_event_type_creation_to_start
+      lang: painless
+      if: >-
+        ctx.event?.category instanceof List && ctx.event.category.contains('process')
+        && ctx.event?.type instanceof List
+      source: |
+        for (int i = 0; i < ctx.event.type.size(); i++) {
+          if (ctx.event.type[i] == 'creation') {
+            ctx.event.type[i] = 'start';
+          }
+        }
   # The agent emits fields that ECS does not define. Move them into the harfanglab
   # vendor namespace rather than extending ECS objects in place.
   - rename:
