@@ -1,4 +1,27 @@
 # newer versions go on top
+- version: "2.0.0"
+  changes:
+    - description: >-
+        Remove the `map_to_ecs` option and the original non-ECS field mappings.
+        Non-ECS Packetbeat fields are now always moved to `network_traffic.<protocol>` and ECS fields.
+        Policies that set `map_to_ecs` to `false` will produce documents with the new field layout after upgrade;
+        rules, searches and visualisations that use the old root fields must be updated.
+        Existing data can be converted by reindexing through the `compatibility` ingest pipelines.
+        See the package README and https://github.com/elastic/integrations/issues/8185.
+      type: breaking-change
+      link: https://github.com/elastic/integrations/pull/1
+    - description: Require Kibana 9.1.0 or later so that the upgrade flow can show breaking change notices.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/1
+    - description: Normalise `network_traffic.dhcpv4.client_mac` in the DHCPv4 data stream; the processors previously ran against the pre-mapping field name.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/1
+    - description: Reshape `network_traffic.memcached.response.stats` into an object in the Memcached data stream; the processors previously ran against the pre-mapping field name.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/1
+    - description: Use `network.protocol` for the protocols panel in the ECS-compliant overview dashboard.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/1
 - version: "1.34.3"
   changes:
     - description: Transfer package ownership to elastic/security-service-integrations.

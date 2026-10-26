@@ -33,27 +33,25 @@ Currently, Network Packet Capture supports the following protocols:
 
 The following options are available for all protocols:
 
-#### `map_to_ecs`
+#### ECS field mapping
 
-Remap any non-ECS Packetbeat fields in root to their correct ECS fields.
-This will rename fields that are moved so the fields will not be present
-at the root of the document and so any rules that depend on the fields
-will need to be updated.
+Non-ECS Packetbeat fields that would otherwise be placed at the root of the
+document are always moved to their ECS equivalents or into the
+`network_traffic.<protocol>` field group. This applies to all data streams.
 
-The legacy behaviour of this option is to not remap to ECS. This behaviour
-is still the default, but is deprecated and users are encouraged to set
-this option to true.
+The `map_to_ecs` option that previously controlled this was removed in
+version 2.0.0, along with the original non-ECS field mappings. Rules,
+searches and visualisations that depend on the old root fields must use the
+new field locations.
 
-ECS remapping may have an impact on workflows that depend on the identity
-of non-ECS fields, and users should assess their use of these fields before
-making the change. Users who need to retain data collected with the legacy
-mappings may need to re-index their older documents. Instructions for doing
-this are available [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html).
+Users who need to retain data collected with the original mappings may need
+to re-index their older documents. Instructions for doing this are available
+[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html).
 The pipeline used to perform ECS remapping for each data stream can be found
-in `Stack Management`›`Ingest Pipelines` and and searching for
+in `Stack Management`›`Ingest Pipelines` by searching for
 "logs-network_traffic compatibility".
 
-The deprecation and retirement timeline for legacy behavior is available
+The retirement timeline for the original behavior is available
 [here](https://github.com/elastic/integrations/issues/8185).
 
 #### `enabled`
