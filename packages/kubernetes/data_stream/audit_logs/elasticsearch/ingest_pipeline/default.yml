@@ -345,6 +345,12 @@ processors:
       allow_duplicates: false
       if: ctx.kubernetes?.audit?.protoPayload?.authenticationInfo?.principalEmail != null
   - append:
+      tag: append_related_user_id_gke
+      field: related.user
+      value: "{{{kubernetes.audit.protoPayload.authenticationInfo.principalSubject}}}"
+      allow_duplicates: false
+      if: ctx.kubernetes?.audit?.protoPayload?.authenticationInfo?.principalSubject != null
+  - append:
       tag: append_related_source_ip_string
       field: related.ip
       value: "{{{source.ip}}}"
