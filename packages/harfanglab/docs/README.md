@@ -28,8 +28,8 @@ the same `harfanglab.generic` data stream and produce identical documents.
 ### Push mode (`http_endpoint`)
 
 The integration configures the Elastic Agent `http_endpoint` input. The HarfangLab
-solution sends events as JSON in the body of an HTTP request. The raw request body is
-preserved on `event.original`, so the unmodified event is always available.
+solution sends events as JSON in the body of an HTTP request. Enable **Preserve original
+event** to keep the raw request body on `event.original`.
 
 ### Pull mode (`cel`)
 
@@ -37,7 +37,8 @@ The integration configures the Elastic Agent `cel` input to poll
 `<base URL>/api/data/connectors/elastic/pull/` on a fixed interval. Each request returns
 the oldest queued chunk and removes it server-side; an empty response means the queue is
 drained. A single poll keeps requesting until the queue is empty, so a backlog clears
-within one interval. The raw JSON of each event is preserved on `event.original`.
+within one interval. Enable **Preserve original event** to keep the raw JSON of each event
+on `event.original`.
 
 Requests authenticate with a HarfangLab API token sent as `Authorization: Token <value>`.
 The token must belong to a user granted the **elastic pull** permission.
@@ -55,6 +56,7 @@ When adding the integration to an Agent policy, enable the input for your chosen
 | Secret header name | text | `Authorization` | Name of the HTTP request header used to authenticate incoming requests. |
 | Secret header value | password | _(none)_ | Expected value of the secret header. When set, requests without a matching header value are rejected. Leave empty to disable header authentication. |
 | TLS configuration | yaml | _(none)_ | Optional TLS settings. When a server certificate and key are provided, the endpoint serves HTTPS instead of HTTP. Supports client-certificate authentication (mTLS). |
+| Preserve original event | bool | `false` | Keep a raw copy of the received event in `event.original`. |
 
 ### Pull mode settings
 
@@ -64,6 +66,7 @@ When adding the integration to an Agent policy, enable the input for your chosen
 | API token | password | _(none)_ | API token of a HarfangLab user granted the **elastic pull** permission. Provide the token value on its own, without the `Token ` prefix. |
 | Polling interval | text | `1m` | How often to poll for new events. Supports duration units such as `30s`, `1m`, `5m`. |
 | TLS configuration | yaml | _(none)_ | Optional TLS settings for the connection to the HarfangLab API. Use it to trust a private CA or to relax verification in test environments. Leave empty for full verification against the system trust store. |
+| Preserve original event | bool | `false` | Keep a raw copy of the polled event in `event.original`. |
 
 ### Push mode TLS
 

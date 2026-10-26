@@ -7,4 +7,20 @@ ssl: {{ssl}}
 secret.header: {{secret_header_name}}
 secret.value: {{secret_header}}
 {{/if}}
+# Always collected: the ingest pipeline parses each event out of event.original and
+# prunes it again unless the preserve_original_event tag is set.
 preserve_original_event: true
+# Events always describe the remote host the HarfangLab agent runs on, and already
+# carry their own host fields, so agent host metadata must not be added.
+publisher_pipeline.disable_host: true
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

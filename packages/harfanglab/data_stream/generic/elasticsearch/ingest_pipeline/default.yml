@@ -52,6 +52,12 @@ processors:
   - drop:
       tag: drop_empty_events
       if: "ctx.event?.original == null || ctx.event?.original == '{}'"
+  # Must stay after drop_empty_events, which tests event.original.
+  - remove:
+      tag: remove_event_original
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
 on_failure:
   - set:
       tag: set_event_kind_pipeline_error
