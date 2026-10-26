@@ -16,7 +16,7 @@ the same `harfanglab.generic` data stream and produce identical documents.
 
 ## Requirements
 
-- Elastic Stack 9.x (tested on 9.2.x).
+- Elastic Stack 8.19 or later, or 9.1 or later (tested on 9.2.x).
 - An Elastic Agent.
   - For **push mode**, the HarfangLab solution must be able to reach the Elastic Agent's
     HTTP endpoint over the network.
