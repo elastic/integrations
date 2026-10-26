@@ -119,26 +119,28 @@ processors:
           if (ctx.process == null) {
             ctx.put("process", new HashMap());
           }
+          if (ctx.process.command_line == null) {
+            ctx.process.put("command_line", imagePath);
+          }
+          def exe = imagePath.trim();
+          if (exe.startsWith("\"")) {
+            def end = exe.indexOf("\"", 1);
+            exe = end > 0 ? exe.substring(1, end) : exe.substring(1);
+          } else {
+            def idx = exe.toLowerCase().indexOf(".exe ");
+            if (idx > 0) {
+              exe = exe.substring(0, idx + 4);
+            }
+          }
           if (ctx.process.executable == null) {
-            ctx.process.put("executable", imagePath);
+            ctx.process.put("executable", exe);
           }
           if (ctx.process.name == null) {
-            def parts = imagePath.splitOnToken("\\");
-            def filePart = parts[-1];
-            def exeIdx = filePart.toLowerCase().indexOf(".exe ");
-            if (exeIdx > 0) {
-              filePart = filePart.substring(0, exeIdx + 4);
-            }
-            ctx.process.put("name", filePart);
+            def parts = exe.splitOnToken("\\");
+            ctx.process.put("name", parts[-1]);
           }
         }
-        if (ctx.process?.pid == null && ctx.winlog?.process?.pid != null) {
-          if (ctx.process == null) {
-            ctx.put("process", new HashMap());
-          }
-          ctx.process.put("pid", ctx.winlog.process.pid);
-        }
-        if (ctx.user == null && (ctx.winlog?.user?.name != null || ctx.winlog?.user?.domain != null || ctx.winlog?.user?.identifier != null || accountName != null)) {
+        if (ctx.user == null && (ctx.winlog?.user?.name != null || ctx.winlog?.user?.domain != null || ctx.winlog?.user?.identifier != null)) {
           ctx.put("user", new HashMap());
         }
         if (ctx.user?.name == null && ctx.winlog?.user?.name != null && ctx.winlog.user.name != "") {
@@ -150,7 +152,7 @@ processors:
         if (ctx.user?.id == null && ctx.winlog?.user?.identifier != null && ctx.winlog.user.identifier != "") {
           ctx.user.put("id", ctx.winlog.user.identifier.toString());
         }
-        if (ctx.user?.name == null && accountName != null) {
+        if (ctx.user?.name == null && ctx.user?.id == null && ctx.user?.domain == null && accountName != null) {
           if (ctx.user == null) {
             ctx.put("user", new HashMap());
           }
