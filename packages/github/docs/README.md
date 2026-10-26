@@ -1527,6 +1527,7 @@ Refer to [Creating a personal access token (classic)](https://docs.github.com/en
 | github.members.is_hireable | True if the user has indicated they are available for hire. | boolean |
 | github.members.is_site_admin | True if the user is a GitHub site administrator. | boolean |
 | github.members.location | Location listed on the member's GitHub profile. | keyword |
+| github.members.maintained_team_names | Display names of teams where the member is a MAINTAINER. | keyword |
 | github.members.pronouns | Pronouns set on the member's GitHub profile. | keyword |
 | github.members.role | Organization membership role (ADMIN or MEMBER). | keyword |
 | github.members.teams.combined_slug | Combined slug in the form org/team-slug. | keyword |
@@ -1569,26 +1570,26 @@ An example event for `members` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-09-10T18:54:03.258Z",
+    "@timestamp": "2026-10-26T10:55:38.850Z",
     "agent": {
-        "ephemeral_id": "dcbadef4-f927-4e26-b62c-795bfaa8eaab",
-        "id": "eff19031-7405-403d-be1b-d14764521226",
-        "name": "elastic-agent-61254",
+        "ephemeral_id": "bbfe7bfa-8df0-4795-86c0-4d99af33689f",
+        "id": "380e6368-940a-4529-8e8e-52c62443e06f",
+        "name": "elastic-agent-27574",
         "type": "filebeat",
-        "version": "9.4.4"
+        "version": "8.19.10"
     },
     "data_stream": {
         "dataset": "github.members",
-        "namespace": "69529",
+        "namespace": "12419",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "eff19031-7405-403d-be1b-d14764521226",
+        "id": "380e6368-940a-4529-8e8e-52c62443e06f",
         "snapshot": false,
-        "version": "9.4.4"
+        "version": "8.19.10"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1596,9 +1597,8 @@ An example event for `members` looks as following:
             "iam"
         ],
         "dataset": "github.members",
-        "ingested": "2026-09-10T18:54:06Z",
+        "ingested": "2026-10-26T10:55:41Z",
         "kind": "asset",
-        "module": "github",
         "type": [
             "user",
             "info"
@@ -1619,40 +1619,35 @@ An example event for `members` looks as following:
             "is_hireable": true,
             "is_site_admin": false,
             "location": "San Francisco, CA",
+            "maintained_team_names": [
+                "Backend Team"
+            ],
             "pronouns": "she/her",
             "role": "ADMIN",
-            "teams": {
-                "combined_slug": [
-                    "example-org/backend-team",
-                    "example-org/frontend-team"
-                ],
-                "database_id": [
-                    1001,
-                    1002
-                ],
-                "id": [
-                    "T_kgDOAABBCC",
-                    "T_kgDOAADDEE"
-                ],
-                "name": [
-                    "Backend Team",
-                    "Frontend Team"
-                ],
-                "parent_team_id": "",
-                "parent_team_slug": "",
-                "privacy": [
-                    "SECRET",
-                    "VISIBLE"
-                ],
-                "role": [
-                    "MAINTAINER",
-                    "MEMBER"
-                ],
-                "slug": [
-                    "backend-team",
-                    "frontend-team"
-                ]
-            },
+            "teams": [
+                {
+                    "combined_slug": "example-org/backend-team",
+                    "database_id": 1001,
+                    "id": "T_kgDOAABBCC",
+                    "name": "Backend Team",
+                    "parent_team_id": "",
+                    "parent_team_slug": "",
+                    "privacy": "VISIBLE",
+                    "role": "MAINTAINER",
+                    "slug": "backend-team"
+                },
+                {
+                    "combined_slug": "example-org/frontend-team",
+                    "database_id": 1002,
+                    "id": "T_kgDOAADDEE",
+                    "name": "Frontend Team",
+                    "parent_team_id": "",
+                    "parent_team_slug": "",
+                    "privacy": "SECRET",
+                    "role": "MEMBER",
+                    "slug": "frontend-team"
+                }
+            ],
             "twitter_username": "aliceexample",
             "updated_at": "2026-01-01T12:00:00.000Z",
             "url": "https://github.com/alice-example",
@@ -1665,7 +1660,9 @@ An example event for `members` looks as following:
     "related": {
         "user": [
             "alice-example",
-            "Alice Example"
+            "Alice Example",
+            "alice@example.com",
+            "U_kgDOABCDEF"
         ]
     },
     "tags": [
@@ -1676,7 +1673,7 @@ An example event for `members` looks as following:
         "email": "alice@example.com",
         "entity": {
             "id": "U_kgDOABCDEF",
-            "last_seen_timestamp": "2026-09-10T18:54:03.258Z",
+            "last_seen_timestamp": "2026-10-26T10:55:38.850Z",
             "name": "alice-example",
             "relationships": {
                 "administers": {

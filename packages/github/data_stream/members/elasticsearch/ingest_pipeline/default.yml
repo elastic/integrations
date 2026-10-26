@@ -143,14 +143,19 @@ processors:
       tag: build_administers_entity_ids
       description: >-
         Collects GraphQL node IDs of teams where the member is a MAINTAINER into
-        user.entity.relationships.administers.entity.id.
+        user.entity.relationships.administers.entity.id, and their display names
+        into github.members.maintained_team_names.
       lang: painless
       if: ctx.json?.teams instanceof List && ctx.json.teams.size() != 0
       source: |-
         def adminIds = [];
+        def adminNames = [];
         for (def team : ctx.json.teams) {
           if (team?.role == "MAINTAINER" && team?.id != null) {
             adminIds.add(team.id);
+            if (team?.name != null) {
+              adminNames.add(team.name);
+            }
           }
         }
         if (!adminIds.isEmpty()) {
@@ -160,6 +165,11 @@ processors:
           ctx.user.entity.relationships.administers = ctx.user.entity.relationships.administers ?: [:];
           ctx.user.entity.relationships.administers.entity = ctx.user.entity.relationships.administers.entity ?: [:];
           ctx.user.entity.relationships.administers.entity.id = adminIds;
+        }
+        if (!adminNames.isEmpty()) {
+          ctx.github = ctx.github ?: [:];
+          ctx.github.members = ctx.github.members ?: [:];
+          ctx.github.members.maintained_team_names = adminNames;
         }
 
   # Custom fields: github.members.role
