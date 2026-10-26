@@ -419,19 +419,22 @@ processors:
       ignore_missing: true
       ignore_failure: true
 
-  - append:
-      tag: append_related_source_ip
-      field: related.ip
-      value: '{{{source.ip}}}'
-      allow_duplicates: false
-      if: 'ctx.source?.ip != null'
-
-  - append:
-      tag: append_related_destination_ip
-      field: related.ip
-      value: '{{{destination.ip}}}'
-      allow_duplicates: false
-      if: 'ctx.destination?.ip != null'
+  - script:
+      tag: append_related_endpoint_ips
+      lang: painless
+      source: |-
+        for (def raw : [ctx.source?.ip, ctx.destination?.ip]) {
+          if (raw == null) { continue; }
+          if (ctx.related == null) { ctx.related = [:]; }
+          if (ctx.related.ip == null) { ctx.related.ip = []; }
+          else if (!(ctx.related.ip instanceof List)) { ctx.related.ip = [ctx.related.ip]; }
+          def addresses = raw instanceof List ? raw : [raw];
+          for (def address : addresses) {
+            if (address != null && !ctx.related.ip.contains(address)) {
+              ctx.related.ip.add(address);
+            }
+          }
+        }
 
   - remove:
       tag: remove_fortigate_temporary_fields
