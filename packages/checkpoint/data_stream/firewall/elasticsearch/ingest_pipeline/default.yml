@@ -916,11 +916,6 @@ processors:
       formats: ["UNIX", "ISO8601"]
       target_field: event.start
       if: "ctx.checkpoint?.segment_time != null  && ctx.event?.start == null"
-  - rename:
-      tag: rename_checkpoint_last_detection_to_event_end_e77b2d47
-      field: checkpoint.last_detection
-      target_field: event.end
-      ignore_missing: true
   - convert:
       type: float
       tag: convert_risk_score
@@ -1455,6 +1450,12 @@ processors:
       field: checkpoint._temp_unixms
       target_field: "@timestamp"
       ignore_missing: true
+   - date:
+      tag: date_checkpoint_last_detection_to_event_end_e77b2d47
+      field: checkpoint.last_detection
+      formats: ["UNIX", "ISO8601"]
+      target_field: event.end
+      if: "ctx.checkpoint?.last_detection != null"
   - date:
       tag: date_checkpoint_last_hit_time_to_event_end_6aeafa0a
       field: checkpoint.last_hit_time
