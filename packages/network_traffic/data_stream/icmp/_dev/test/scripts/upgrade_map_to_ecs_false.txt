@@ -44,11 +44,17 @@ cp stdout got_docs_after.json
 exec jq '[.hits.hits[]._source | select(has("network_traffic"))] | length' got_docs_after.json
 stdout '^1$'
 
-exec jq '[.hits.hits[]._source | select(has("network_traffic")) | has("icmp")] | any' got_docs_after.json
+exec jq '[.hits.hits[]._source | select(has("network_traffic")) | (has("icmp") or has("type") or has("status"))] | any' got_docs_after.json
 stdout '^false$'
 
-exec jq '[.hits.hits[]._source | select(has("network_traffic")) | .network_traffic.icmp.request.type] | unique[]' got_docs_after.json
-stdout '.'
+exec jq '[.hits.hits[]._source | select(has("network_traffic")) | .network_traffic.icmp.request.type] | .[0]' got_docs_after.json
+stdout '^8$'
+
+exec jq '[.hits.hits[]._source | select(has("network_traffic")) | .network_traffic.status] | .[0]' got_docs_after.json
+stdout '^"OK"$'
+
+exec jq '[.hits.hits[]._source | select(has("network_traffic")) | .event.dataset] | .[0]' got_docs_after.json
+stdout '^"network_traffic.icmp"$'
 
 # Clean up.
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
