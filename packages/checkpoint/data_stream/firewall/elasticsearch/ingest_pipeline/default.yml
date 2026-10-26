@@ -892,23 +892,30 @@ processors:
       field: checkpoint.packet_capture
       target_field: event.url
       ignore_missing: true
-  - rename:
-      tag: rename_checkpoint_start_time_to_event_start_0dad958c
+  - date:
+      tag: date_checkpoint_start_time_to_event_start_0dad958c
       field: checkpoint.start_time
+      formats: ["UNIX", "ISO8601"]
       target_field: event.start
-      ignore_missing: true
-  - rename:
-      tag: rename_checkpoint_first_detection_to_event_start_1174b06e
+      if: "ctx.checkpoint?.start_time != null"
+  - date:
+      tag: date_checkpoint_first_detection_to_event_start_1174b06e
       field: checkpoint.first_detection
+      formats: ["UNIX", "ISO8601"]
       target_field: event.start
-      ignore_missing: true
-      if: ctx.event?.start == null
+      if: "ctx.checkpoint?.first_detection != null && ctx.event?.start == null"
   - date:
       tag: date_checkpoint_creation_time_to_event_start_f2bceb79
       field: checkpoint.creation_time
       formats: ["UNIX", "ISO8601"]
       target_field: event.start
-      if: "ctx.checkpoint?.creation_time != null"
+      if: "ctx.checkpoint?.creation_time != null && ctx.event?.start == null"
+  - date:
+      tag: date_checkpoint_segment_time_to_event_start
+      field: checkpoint.segment_time
+      formats: ["UNIX", "ISO8601"]
+      target_field: event.start
+      if: "ctx.checkpoint?.segment_time != null  && ctx.event?.start == null"
   - rename:
       tag: rename_checkpoint_last_detection_to_event_end_e77b2d47
       field: checkpoint.last_detection
@@ -1471,13 +1478,6 @@ processors:
       formats: ["UNIX"]
       target_field: event.end
       if: "ctx.checkpoint?.packet_capture_time != null"
-  - date:
-      tag: date_checkpoint_degment_time_to_event_end
-      field: checkpoint.segment_time
-      formats: ["UNIX"]
-      target_field: event.end
-      if: "ctx.checkpoint?.segment_time != null"
-
   - date:
       tag: convert_login_timestamp
       field: checkpoint.login_timestamp
