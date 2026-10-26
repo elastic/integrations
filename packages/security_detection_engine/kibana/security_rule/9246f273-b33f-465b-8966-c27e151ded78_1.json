@@ -1,0 +1,86 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects ChatGPT Enterprise audit events where a conversation is shared. Sharing can expose prompts, completions, and attached files outside the original conversation participants and may be used to exfiltrate sensitive content.",
+        "false_positives": [
+            "Users intentionally share conversations for collaboration within the organization."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.id",
+                "openai_chatgpt_enterprise.audit_log.action_data.conversation_id",
+                "openai_chatgpt_enterprise.audit_log.action_data.shared_conversation_id",
+                "source.ip"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Conversation Shared",
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Conversation Shared\n\nA conversation was shared. Sharing can expose prompts, responses, and attached context beyond the original participants.\n\nEscalate when the audience is external or overly broad, the conversation contains sensitive data, or sharing coincides with downloads or mass deletion. Close as a false positive for expected collaboration inside the organization.\n\n#### Possible investigation steps\n\n- Identify the user, conversation, and share-related fields on the alert.\n- Determine the intended audience and whether it matches workspace sharing policy.\n- Review nearby message content, file downloads, or additional shares from the same user.\n- Check whether the conversation includes credentials, proprietary code, or customer data.\n\n### False positive analysis\n\n- Users intentionally share conversations for collaboration within the organization when that sharing path is approved.\n\n### Response and remediation\n\n- Revoke unauthorized shares and review other sharing activity by the same actor.\n- If sensitive content was exposed, follow your data-incident process for the recipients and channel used.\n",
+        "query": "from logs-openai_chatgpt_enterprise.audit_log-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"openai_chatgpt_enterprise.audit_log\" and\n    event.action == \"conversation_share\"\n| keep\n    _id, _version, _index, @timestamp, event.action, user.id, user.email, source.ip,\n    openai_chatgpt_enterprise.audit_log.action_data.conversation_id,\n    openai_chatgpt_enterprise.audit_log.action_data.shared_conversation_id,\n    openai_chatgpt_enterprise.audit_log.action_data.already_exists,\n    openai_chatgpt_enterprise.audit_log.action_privilege, data_stream.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": ">=0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "9246f273-b33f-465b-8966-c27e151ded78",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect compliance logs into Elasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Exfiltration",
+            "Mitre Atlas: AML.T0025"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1567",
+                        "name": "Exfiltration Over Web Service",
+                        "reference": "https://attack.mitre.org/techniques/T1567/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "9246f273-b33f-465b-8966-c27e151ded78_1",
+    "type": "security-rule"
+}
