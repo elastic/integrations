@@ -1429,29 +1429,11 @@ processors:
       target_field: event.end
       if: "ctx.checkpoint?.last_hit_time != null"
   - date:
-      tag: date_checkpoint_packet_capture_time_to_event_end
-      field: checkpoint.packet_capture_time
-      formats: ["UNIX"]
+      tag: date_checkpoint_lastupdatetime_to_event_end_869e28e8
+      field: checkpoint.lastupdatetime
+      formats: ["UNIX", "ISO8601"]
       target_field: event.end
       if: "ctx.checkpoint?.packet_capture_time != null"
-  - date:
-      tag: date_checkpoint_segment_time_to_event_end
-      field: checkpoint.segment_time
-      formats: ["UNIX"]
-      target_field: event.end
-      if: "ctx.checkpoint?.segment_time != null"
-  - set:
-      tag: preserve_timestamp_if_lastupdatetime
-      field: event.start
-      copy_from: "@timestamp"
-      override: true
-      if: "ctx.checkpoint?.lastupdatetime != null"
-  - date:
-      tag: set_timestamp_from_lastupdatetime
-      field: checkpoint.lastupdatetime
-      formats: ["UNIX","ISO8601"]
-      target_field: "@timestamp"
-      if: "ctx.checkpoint?.lastupdatetime != null"
   - date:
       tag: date_checkpoint_creation_time_to_event_start_f2bceb79
       field: checkpoint.creation_time
