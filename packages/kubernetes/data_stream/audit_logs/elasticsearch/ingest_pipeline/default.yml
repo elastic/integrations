@@ -186,6 +186,20 @@ processors:
       ignore_empty_value: true
       override: false
   - set:
+      tag: set_user_email_from_gke
+      if: ctx.kubernetes?.audit?.protoPayload?.authenticationInfo?.principalEmail instanceof String && ctx.kubernetes.audit.protoPayload.authenticationInfo.principalEmail.contains('@')
+      field: user.email
+      copy_from: kubernetes.audit.protoPayload.authenticationInfo.principalEmail
+      ignore_empty_value: true
+      override: false
+  - set:
+      tag: set_user_id_from_gke
+      if: ctx.kubernetes?.audit?.protoPayload?.authenticationInfo?.principalSubject != null
+      field: user.id
+      copy_from: kubernetes.audit.protoPayload.authenticationInfo.principalSubject
+      ignore_empty_value: true
+      override: false
+  - set:
       tag: set_user_agent_original_from_gke
       if: ctx.kubernetes?.audit?.protoPayload?.requestMetadata?.callerSuppliedUserAgent != null
       field: user_agent.original
