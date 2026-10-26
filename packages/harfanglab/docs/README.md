@@ -61,7 +61,7 @@ When adding the integration to an Agent policy, enable the input for your chosen
 | Setting | Type | Default | Description |
 | --- | --- | --- | --- |
 | HarfangLab base URL | text | _(none)_ | Base URL of the HarfangLab instance (for example `https://edr.example.com`). A trailing slash is stripped automatically. The fixed pull endpoint path is appended. |
-| API token | password | _(none)_ | API token of a HarfangLab user granted the **elastic pull** permission. A leading `Token ` prefix is stripped automatically. |
+| API token | password | _(none)_ | API token of a HarfangLab user granted the **elastic pull** permission. Provide the token value on its own, without the `Token ` prefix. |
 | Polling interval | text | `1m` | How often to poll for new events. Supports duration units such as `30s`, `1m`, `5m`. |
 | TLS configuration | yaml | _(none)_ | Optional TLS settings for the connection to the HarfangLab API. Use it to trust a private CA or to relax verification in test environments. Leave empty for full verification against the system trust store. |
 

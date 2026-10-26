@@ -1,4 +1,3 @@
-config_version: 2
 interval: {{interval}}
 resource.url: {{url}}
 {{#if ssl}}
@@ -10,26 +9,31 @@ redact:
   fields:
     - token
 program: |
-  (state.url.endsWith("/") ? state.url.substring(0, size(state.url) - 1) : state.url).as(base_url,
-    string(state.token).as(raw_token,
-      (raw_token.startsWith("Token ") ? raw_token.substring(6, size(raw_token)) : raw_token).as(token,
-        get_request(base_url + "/api/data/connectors/elastic/pull/").with({
-          "Header": {
-            "Authorization": ["Token " + token],
-          },
-        }).do_request().as(resp,
-          (
-            (resp.StatusCode == 200 && size(resp.Body) > 0) ?
-              bytes(resp.Body).decode_json().map(e, {"event": {"original": e.encode_json()}})
-            :
-              []
-          ).as(events, {
-            "url": state.url,
-            "token": state.token,
-            "events": events,
-            "want_more": size(events) > 0,
+  state.with(
+    get_request(state.url.trim_right("/") + "/api/data/connectors/elastic/pull/").with({
+      "Header": {
+        "Authorization": ["Token " + state.token],
+      },
+    }).do_request().as(resp,
+      {
+        "events": (resp.StatusCode == 200 && size(resp.Body) > 0) ?
+          resp.Body.decode_json().map(e, {"event": {"original": e.encode_json()}})
+        : resp.StatusCode != 200 ?
+          dyn({
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": resp.Status,
+              "message": "GET " + state.url.trim_right("/") + "/api/data/connectors/elastic/pull/: " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  resp.Status + " (" + string(resp.StatusCode) + ")"
+              )
+            }
           })
-        )
-      )
+        :
+          [],
+        "want_more": true, // This will be ignored if the events field has no elements.
+      }
     )
   )
