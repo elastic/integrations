@@ -283,6 +283,17 @@ processors:
       ignore_missing: true
       ignore_failure: true
 
+  - append:
+      tag: append_event_type_denied
+      field: event.type
+      value: denied
+      allow_duplicates: false
+      if: >-
+        (ctx.fortigate?.type == "traffic" || ctx.fortigate?.type == "utm") &&
+        (ctx.event?.action == "deny" || ctx.event?.action == "block" || ctx.event?.action == "blocked" ||
+        ctx._temp?.fortigate_fields?.utmaction == "block" ||
+        (ctx._temp?.fortigate_fields?.utmaction instanceof List && ctx._temp.fortigate_fields.utmaction.contains("block")))
+
   - remove:
       tag: remove_temporary_fortigate_fields
       field: _temp.fortigate_fields
@@ -337,11 +348,12 @@ processors:
       field: observer.type
       value: firewall
 
-  - set:
-      tag: set_event_type_connection
+  - append:
+      tag: append_event_type_connection
       field: event.type
       value:
         - connection
+      allow_duplicates: false
       if: 'ctx.fortigate?.type == "traffic"'
 
   - set:
