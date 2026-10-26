@@ -1,4 +1,4 @@
-<img width="1093" height="503" alt="image" src="https://github.com/user-attachments/assets/c47ab648-6d7a-4bcb-878c-ea86257ec76f" /># Akamai Integration
+# Akamai Integration
 
 The Akamai integration collects events from the Akamai API, specifically reading from the [Akamai SIEM API](https://techdocs.akamai.com/siem-integration/reference/api).
 
