@@ -147,10 +147,12 @@ processors:
   - script:
       tag: decode_html_entities_in_indicator_url
       lang: painless
-      description: Decodes HTML entities (&amp;, &lt;, &gt;, &quot;, &#39;) in the extracted indicator URL.
+      description: Decodes STIX pattern escapes (\' and \\) and HTML entities (&amp;, &lt;, &gt;, &quot;, &#39;) in the extracted indicator URL.
       if: ctx.threat?.indicator?.url?.original != null
       source: |
         ctx.threat.indicator.url.original = ctx.threat.indicator.url.original
+          .replace("\\'", "'")
+          .replace("\\\\", "\\")
           .replace('&lt;', '<')
           .replace('&gt;', '>')
           .replace('&quot;', '"')
