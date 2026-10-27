@@ -502,24 +502,24 @@ An example event for `admin_actions` looks as following:
 {
     "@timestamp": "2025-08-19T06:20:28.982Z",
     "agent": {
-        "ephemeral_id": "0c181bf7-edd6-4155-9c9e-c7614a7f1fdc",
-        "id": "49af89eb-a85d-4a4f-9c26-8d61dc0be442",
-        "name": "elastic-agent-88704",
+        "ephemeral_id": "d567beb9-0a6f-46ce-aa2b-e425d2f1f48e",
+        "id": "72481dac-d84f-4927-b608-ea9be61fd8bc",
+        "name": "elastic-agent-53762",
         "type": "filebeat",
-        "version": "8.18.8"
+        "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "island_browser.admin_actions",
-        "namespace": "85495",
+        "namespace": "20483",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "49af89eb-a85d-4a4f-9c26-8d61dc0be442",
+        "id": "72481dac-d84f-4927-b608-ea9be61fd8bc",
         "snapshot": false,
-        "version": "8.18.8"
+        "version": "9.5.3"
     },
     "event": {
         "action": "Create",
@@ -527,8 +527,9 @@ An example event for `admin_actions` looks as following:
         "created": "2025-08-19T06:20:28.983Z",
         "dataset": "island_browser.admin_actions",
         "id": "ac93aaca-e464-4c8c-bdda-84bc227bb8c7",
-        "ingested": "2026-01-29T05:44:58Z",
+        "ingested": "2026-10-27T17:31:49Z",
         "kind": "event",
+        "module": "island_browser",
         "original": "{\"actionDomain\":\"SystemSettings\",\"actionType\":\"Create\",\"createdDate\":\"2025-08-19T06:20:28.983078Z\",\"email\":\"clark.kent@example.com\",\"entityId\":\"fdaa9918-3f19-4596-8e9f-7bbec4ec5880\",\"entityName\":\"Generic SIEM Integration\",\"entityType\":\"SIEMConnector\",\"id\":\"ac93aaca-e464-4c8c-bdda-84bc227bb8c7\",\"sourceIp\":\"89.160.20.128\",\"tenantId\":\"elastic-testing\",\"timestamp\":\"2025-08-19T06:20:28.982451Z\",\"updatedDate\":\"2025-08-19T06:20:28.983078Z\",\"userId\":\"auth0|1e396c45-b365-4207-ae78-b35b10c06aaf\"}"
     },
     "input": {
@@ -551,6 +552,10 @@ An example event for `admin_actions` looks as following:
             "user_id": "auth0|1e396c45-b365-4207-ae78-b35b10c06aaf"
         }
     },
+    "observer": {
+        "product": "Island Enterprise Browser",
+        "vendor": "Island"
+    },
     "organization": {
         "id": "elastic-testing"
     },
@@ -570,8 +575,11 @@ An example event for `admin_actions` looks as following:
             "country_iso_code": "SE",
             "country_name": "Sweden",
             "location": {
-                "lat": 58.4167,
-                "lon": 15.6167
+                "coordinates": [
+                    15.61669997870922,
+                    58.416699967347085
+                ],
+                "type": "Point"
             },
             "region_iso_code": "SE-E",
             "region_name": "Östergötland County"
@@ -600,15 +608,15 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2025-09-09T13:29:38.000Z",
     "agent": {
-        "ephemeral_id": "c47c8fe8-1c04-44de-8c4f-0151a17ec928",
-        "id": "caf0149d-fb8e-45cc-991f-f2c6f4aa0524",
-        "name": "elastic-agent-29545",
+        "ephemeral_id": "f1e0f4bd-3e38-4cb3-9956-9e4d76ac8663",
+        "id": "0a3bc78d-0773-44fb-8add-3181a1429a0d",
+        "name": "elastic-agent-27405",
         "type": "filebeat",
-        "version": "8.18.5"
+        "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "island_browser.audit",
-        "namespace": "65876",
+        "namespace": "36413",
         "type": "logs"
     },
     "device": {
@@ -618,17 +626,18 @@ An example event for `audit` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "caf0149d-fb8e-45cc-991f-f2c6f4aa0524",
+        "id": "0a3bc78d-0773-44fb-8add-3181a1429a0d",
         "snapshot": false,
-        "version": "8.18.5"
+        "version": "9.5.3"
     },
     "event": {
         "agent_id_status": "verified",
         "created": "2025-09-09T09:24:36.278Z",
         "dataset": "island_browser.audit",
         "id": "0554e3ab-618a-4171-a5d7-33555ac4476b",
-        "ingested": "2025-09-16T13:22:29Z",
+        "ingested": "2026-10-27T17:32:35Z",
         "kind": "event",
+        "module": "island_browser",
         "original": "{\"clientEventId\":\"d14e7489-e627-4cf8-bf89-daeb6c4b6a55\",\"compatibilityMode\":\"None\",\"country\":\"India\",\"countryCode\":\"IN\",\"createdDate\":\"2025-09-09T09:24:36.278692Z\",\"details\":\"{\\n  \\\"navigation_details\\\": {\\n    \\\"referrer\\\": \\\"https://google.com\\\",\\n    \\\"user_agent\\\": \\\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36\\\"\\n  },\\n  \\\"policy_version_details\\\": {\\n    \\\"application_access_policy_version\\\": \\\"1\\\",\\n    \\\"browser_access_policy_version\\\": \\\"1\\\",\\n    \\\"browser_policy_version\\\": \\\"1\\\",\\n    \\\"dlp_policy_version\\\": \\\"1\\\",\\n    \\\"pam_policy_version\\\": \\\"1\\\"\\n  }\\n}\",\"deviceId\":\"7748cf6a-1a23-4572-b5ee-129962616b25\",\"devicePostureMatchingDetails\":\"Device meets all security requirements\",\"domainOrTenant\":\"example.com\",\"email\":\"john.doe@example.com\",\"frameId\":67890,\"frameUrl\":\"https://example.com/iframe\",\"id\":\"0554e3ab-618a-4171-a5d7-33555ac4476b\",\"incognito\":false,\"isIslandPrivateAccess\":false,\"keystrokes\":\"example search query\",\"machineId\":\"iNUa5F_2xgH0L51ZW5_YCFI7b7U\",\"machineName\":\"ub22-50-6-126.manage.local\",\"matchedDevicePosture\":\"Compliant\",\"matchedUserGroup\":\"Standard Users\",\"origin\":\"Island\",\"osPlatform\":\"Linux\",\"osUserName\":\"serviceuser\",\"processedDate\":\"2025-09-09T13:29:39.123456Z\",\"publicIp\":\"89.160.20.112\",\"region\":\"Asia\",\"ruleId\":\"rule-12345\",\"ruleName\":\"Standard Navigation Policy\",\"saasApplicationCategory\":\"Productivity\",\"saasApplicationId\":\"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\"saasApplicationName\":\"Microsoft 365\",\"screenshotFileName\":\"screenshot_20250909_132938.png\",\"shortTopLevelUrl\":\"example.com\",\"sourceIp\":\"10.50.6.126\",\"submittedUrl\":\"https://example.com/page\",\"tabId\":935959881,\"tenantId\":\"elastic-testing\",\"timestamp\":\"2025-09-09T13:29:38.000Z\",\"topLevelUrl\":\"https://example.com\",\"type\":\"Navigation\",\"updatedDate\":\"2025-09-09T09:24:36.278693Z\",\"urlWebCategories\":[\"Business\",\"Technology\"],\"urlWebReputation\":85,\"userId\":\"auth0|cbbf1398-e567-4e6f-8929-5a786ffc2486\",\"userName\":\"John Doe\",\"verdict\":\"Allowed\",\"verdictReason\":\"Navigation allowed by policy\",\"websiteTopLevelUrl\":\"https://example.com\",\"windowId\":12345}"
     },
     "file": {
@@ -712,6 +721,10 @@ An example event for `audit` looks as following:
             "window_id": "12345"
         }
     },
+    "observer": {
+        "product": "Island Enterprise Browser",
+        "vendor": "Island"
+    },
     "organization": {
         "id": "elastic-testing"
     },
@@ -746,8 +759,11 @@ An example event for `audit` looks as following:
             "country_iso_code": "SE",
             "country_name": "Sweden",
             "location": {
-                "lat": 58.4167,
-                "lon": 15.6167
+                "coordinates": [
+                    15.61669997870922,
+                    58.416699967347085
+                ],
+                "type": "Point"
             },
             "region_iso_code": "SE-E",
             "region_name": "Östergötland County"
@@ -841,7 +857,6 @@ An example event for `system_event` looks as following:
     },
     "related": {
         "hosts": [
-            "connector-example-01",
             "connector-01.example.com"
         ],
         "ip": [
@@ -865,34 +880,35 @@ An example event for `compromised_credential` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-09-15T06:38:06.177Z",
+    "@timestamp": "2026-10-27T17:36:30.000Z",
     "agent": {
-        "ephemeral_id": "1bc13c0a-9d03-40d6-8e50-5e78294c111e",
-        "id": "ad1d3c39-3a1c-4004-91f0-aa1d27fd6242",
-        "name": "elastic-agent-26694",
+        "ephemeral_id": "271f5162-e498-4824-8128-79c976997c2f",
+        "id": "c17ebfa5-08ec-488d-b15a-1ed978cd262d",
+        "name": "elastic-agent-86841",
         "type": "filebeat",
-        "version": "8.18.5"
+        "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "island_browser.compromised_credential",
-        "namespace": "40655",
+        "namespace": "71718",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "ad1d3c39-3a1c-4004-91f0-aa1d27fd6242",
+        "id": "c17ebfa5-08ec-488d-b15a-1ed978cd262d",
         "snapshot": false,
-        "version": "8.18.5"
+        "version": "9.5.3"
     },
     "event": {
         "agent_id_status": "verified",
         "created": "2024-09-21T09:46:00.000Z",
         "dataset": "island_browser.compromised_credential",
         "id": "cc-10364-ae99d-20364",
-        "ingested": "2025-09-15T06:38:09Z",
+        "ingested": "2026-10-27T17:36:33Z",
         "kind": "event",
+        "module": "island_browser",
         "original": "{\"breachSource\":\"Ransomware Attack - April 2025\",\"compromisedDate\":\"2024-09-13T00:00:00Z\",\"createdDate\":\"2024-09-21T09:46:00Z\",\"email\":\"john.doe364@enterprise.io\",\"id\":\"cc-10364-ae99d-20364\",\"impactedDomain\":\"enterprise.io\",\"status\":\"Unresolved\",\"tenantId\":\"tenant-005-tech\",\"updatedDate\":\"2024-09-21T14:40:00Z\",\"username\":\"john.doe364\"}"
     },
     "input": {
@@ -911,6 +927,13 @@ An example event for `compromised_credential` looks as following:
             "updated_date": "2024-09-21T14:40:00.000Z",
             "username": "john.doe364"
         }
+    },
+    "labels": {
+        "is_transform_source": "true"
+    },
+    "observer": {
+        "product": "Island Enterprise Browser",
+        "vendor": "Island"
     },
     "organization": {
         "id": "tenant-005-tech"
@@ -944,17 +967,17 @@ An example event for `device` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-02-09T10:24:46.642Z",
+    "@timestamp": "2026-10-27T17:37:22.044Z",
     "agent": {
-        "ephemeral_id": "558993e6-d167-44d3-9a9e-93b7b5a192ab",
-        "id": "4ec57e22-e711-492b-87b6-eed1ae2c21e6",
-        "name": "elastic-agent-53014",
+        "ephemeral_id": "8449b107-1a38-48b8-ae8b-fe5660825be3",
+        "id": "252ab869-9709-4b4d-ac22-14a8e03954bf",
+        "name": "elastic-agent-94181",
         "type": "filebeat",
-        "version": "8.18.8"
+        "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "island_browser.device",
-        "namespace": "44095",
+        "namespace": "56230",
         "type": "logs"
     },
     "device": {
@@ -967,9 +990,9 @@ An example event for `device` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "4ec57e22-e711-492b-87b6-eed1ae2c21e6",
+        "id": "252ab869-9709-4b4d-ac22-14a8e03954bf",
         "snapshot": false,
-        "version": "8.18.8"
+        "version": "9.5.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -979,8 +1002,9 @@ An example event for `device` looks as following:
         "created": "2025-08-21T08:38:14.478Z",
         "dataset": "island_browser.device",
         "id": "7748cf6a-1a23-4572-b5ee-129962616b25",
-        "ingested": "2026-02-09T10:24:49Z",
+        "ingested": "2026-10-27T17:37:26Z",
         "kind": "asset",
+        "module": "island_browser",
         "original": "{\"architecture\":\"x86_64\",\"authMethod\":\"TenantToken\",\"browserName\":\"Island\",\"browserUpdateStatus\":\"UpToDate\",\"browserVersion\":\"1.72.30\",\"chassisType\":\"Laptop\",\"chromiumVersion\":\"139.0.7258.128\",\"country\":\"India\",\"countryCode\":\"IN\",\"cpuModel\":\"Intel(R) Xeon(R) Gold 5220R CPU @ 2.20GHz\",\"createdDate\":\"2025-08-21T08:38:14.478259Z\",\"deviceType\":\"Laptop\",\"diskEncrypted\":false,\"email\":\"john.doe@example.com\",\"extensionVersion\":\"1.12546.6\",\"externalIpAddress\":\"89.160.20.112\",\"id\":\"7748cf6a-1a23-4572-b5ee-129962616b25\",\"internalIpAddress\":\"10.50.6.126\",\"isArchived\":false,\"isDefaultBrowser\":false,\"isVirtualMachine\":true,\"islandPlatform\":\"Browser\",\"lastSeen\":\"2025-08-31T04:19:55.342111Z\",\"macAddresses\":\"00:50:56:81:c9:17 | 02:42:7e:fe:2e:0b | 00:50:56:81:82:be\",\"machineId\":\"iNUa5F_2xgA1L51ZX5_YCXX7b7Z\",\"machineModel\":\"VMware Virtual Platform\",\"machineName\":\"ub22-50-6-126.manage.local\",\"manufacturer\":\"VMware, Inc.\",\"osCodeName\":\"Ubuntu 22.04.5 LTS\",\"osDomain\":\"\",\"osFirewallEnabled\":true,\"osPlatform\":\"Linux\",\"osScreenLockEnabled\":true,\"osUserName\":\"serviceuser\",\"osVersion\":\"22.04\",\"policyUpdateTime\":\"2025-07-08T14:17:18.527794Z\",\"ramSize\":16,\"serialNumber\":\"\",\"status\":\"Active\",\"storageCapacity\":48,\"syncEnabled\":true,\"tenantId\":\"elastic-testing\",\"updatedDate\":\"2025-08-31T04:19:55.345783Z\",\"userId\":\"auth0|cbbf1398-e567-4e6f-8929-5a786ffc2486\",\"userName\":\"John Doe\",\"windowsLicenseStatus\":\"Unlicensed\"}",
         "type": [
             "info"
@@ -994,8 +1018,11 @@ An example event for `device` looks as following:
             "country_iso_code": "SE",
             "country_name": "Sweden",
             "location": {
-                "lat": 58.4167,
-                "lon": 15.6167
+                "coordinates": [
+                    15.61669997870922,
+                    58.416699967347085
+                ],
+                "type": "Point"
             },
             "region_iso_code": "SE-E",
             "region_name": "Östergötland County"
@@ -1068,6 +1095,13 @@ An example event for `device` looks as following:
             "windows_license_status": "Unlicensed"
         }
     },
+    "labels": {
+        "is_transform_source": "true"
+    },
+    "observer": {
+        "product": "Island Enterprise Browser",
+        "vendor": "Island"
+    },
     "organization": {
         "id": "elastic-testing"
     },
@@ -1112,26 +1146,26 @@ An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-09-10T08:13:15.704Z",
+    "@timestamp": "2026-10-27T17:38:12.157Z",
     "agent": {
-        "ephemeral_id": "a5e6d1ff-3024-4cd8-9dda-7550c7058387",
-        "id": "2aac32f5-2967-4646-9ad6-57e343544d85",
-        "name": "elastic-agent-15932",
+        "ephemeral_id": "53840c03-92ad-4007-b220-c099a4ced8cc",
+        "id": "24c84a2f-4984-4d21-8cc5-0833b61615b1",
+        "name": "elastic-agent-67652",
         "type": "filebeat",
-        "version": "8.18.5"
+        "version": "9.5.3"
     },
     "data_stream": {
         "dataset": "island_browser.user",
-        "namespace": "13484",
+        "namespace": "46236",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "2aac32f5-2967-4646-9ad6-57e343544d85",
+        "id": "24c84a2f-4984-4d21-8cc5-0833b61615b1",
         "snapshot": false,
-        "version": "8.18.5"
+        "version": "9.5.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1141,8 +1175,9 @@ An example event for `user` looks as following:
         "created": "2025-08-15T10:30:00.000Z",
         "dataset": "island_browser.user",
         "id": "f3d9a7c8-42b1-4f19-9b51-8a3c56e6d912",
-        "ingested": "2025-09-10T08:13:18Z",
+        "ingested": "2026-10-27T17:38:16Z",
         "kind": "event",
+        "module": "island_browser",
         "original": "{\"allowedTenantsIds\":[\"acme-tenant-001\",\"partner-tenant-002\"],\"claims\":{},\"connectionName\":\"AzureAD\",\"createdDate\":\"2025-08-15T10:30:00Z\",\"email\":\"john.doe@example.com\",\"emailVerified\":true,\"expirationDate\":null,\"firstName\":\"John\",\"groups\":[\"Admins\",\"Security\"],\"id\":\"f3d9a7c8-42b1-4f19-9b51-8a3c56e6d912\",\"invitationDate\":\"2025-08-10T09:00:00Z\",\"lastLogin\":\"2025-08-18T14:40:10Z\",\"lastName\":\"Doe\",\"lastSeen\":\"2025-08-18T14:41:55Z\",\"scimId\":null,\"tenantId\":\"acme-tenant-001\",\"updatedDate\":\"2025-08-18T14:45:00Z\",\"userId\":\"user-12345\",\"userSource\":\"Email\",\"userStatus\":\"Active\",\"userType\":\"Management\"}",
         "type": [
             "user"
@@ -1178,6 +1213,13 @@ An example event for `user` looks as following:
             "user_status": "Active",
             "user_type": "Management"
         }
+    },
+    "labels": {
+        "is_transform_source": "true"
+    },
+    "observer": {
+        "product": "Island Enterprise Browser",
+        "vendor": "Island"
     },
     "organization": {
         "id": "acme-tenant-001"
