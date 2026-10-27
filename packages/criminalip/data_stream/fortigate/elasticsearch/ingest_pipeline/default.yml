@@ -183,6 +183,83 @@ processors:
       ignore_missing: true
       ignore_failure: true
 
+  - script:
+      tag: prepare_endpoint_ip_validation
+      lang: painless
+      description: Prepare individual endpoint addresses for validation while preserving repeated values.
+      if: 'ctx.source?.ip != null || ctx.destination?.ip != null'
+      source: |-
+        if (ctx._temp == null) { ctx._temp = [:]; }
+        for (def side : ['source', 'destination']) {
+          if (ctx[side]?.ip == null) { continue; }
+          def raw = ctx[side].ip;
+          def addresses = raw instanceof List ? raw : [raw];
+          List candidates = [];
+          for (def address : addresses) {
+            if (address != null) { candidates.add(['value': address]); }
+          }
+          ctx._temp[side + '_ip_was_list'] = raw instanceof List;
+          ctx._temp[side + '_ip_candidates'] = candidates;
+        }
+
+  - foreach:
+      tag: validate_source_ip_addresses
+      field: _temp.source_ip_candidates
+      ignore_missing: true
+      processor:
+        convert:
+          field: _ingest._value.value
+          type: ip
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Invalid FortiGate source IP: {{{ _ingest.on_failure_message }}}'
+            - append:
+                field: tags
+                value: preserve_original_event
+                allow_duplicates: false
+            - remove:
+                field: _ingest._value.value
+                ignore_missing: true
+
+  - foreach:
+      tag: validate_destination_ip_addresses
+      field: _temp.destination_ip_candidates
+      ignore_missing: true
+      processor:
+        convert:
+          field: _ingest._value.value
+          type: ip
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Invalid FortiGate destination IP: {{{ _ingest.on_failure_message }}}'
+            - append:
+                field: tags
+                value: preserve_original_event
+                allow_duplicates: false
+            - remove:
+                field: _ingest._value.value
+                ignore_missing: true
+
+  - script:
+      tag: retain_valid_endpoint_ips
+      lang: painless
+      description: Remove invalid endpoint values while retaining valid scalar and repeated addresses.
+      if: 'ctx._temp?.source_ip_candidates != null || ctx._temp?.destination_ip_candidates != null'
+      source: |-
+        for (def side : ['source', 'destination']) {
+          def candidates = ctx._temp[side + '_ip_candidates'];
+          if (candidates == null) { continue; }
+          List valid = [];
+          for (def candidate : candidates) {
+            if (candidate.containsKey('value') && candidate.value != null) { valid.add(candidate.value); }
+          }
+          if (valid.isEmpty()) { ctx[side].remove('ip'); }
+          else if (ctx._temp[side + '_ip_was_list'] == true) { ctx[side].ip = valid; }
+          else { ctx[side].ip = valid[0]; }
+        }
+
   - rename:
       tag: rename_source_port
       field: _temp.fortigate_fields.srcport

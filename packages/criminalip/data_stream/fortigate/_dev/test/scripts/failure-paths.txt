@@ -25,6 +25,33 @@ stdout '"original":'
 stdout 'original'
 ! stdout '&lt;|&gt;|&amp;'
 
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-3.json
+! stderr .
+stdout 'FortiGate source port is not a valid integer.'
+stdout 'FortiGate destination port is not a valid integer.'
+stdout 'preserve_original_event'
+! stdout '"port":'
+! stdout 'pipeline_error'
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-4.json
+! stderr .
+stdout 'Invalid FortiGate source IP:'
+stdout 'Invalid FortiGate destination IP:'
+stdout 'preserve_original_event'
+! stdout '"ip":'
+! stdout 'pipeline_error'
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-5.json
+! stderr .
+stdout 'Invalid FortiGate source IP:'
+stdout 'Invalid FortiGate destination IP:'
+stdout '"related":'
+stdout '"ip":\s*\[\s*"192\.0\.2\.10",\s*"192\.0\.2\.10"\s*\]'
+stdout '"ip":\s*\[\s*"2001:db8::20",\s*"198\.51\.100\.20"\s*\]'
+stdout '"ip":\s*\[\s*"192\.0\.2\.10",\s*"2001:db8::20",\s*"198\.51\.100\.20"\s*\]'
+stdout 'preserve_original_event'
+! stdout 'pipeline_error'
+
 uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
 ! stderr .
 
@@ -52,4 +79,22 @@ uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
   "event": {
     "original": "type=traffic subtype=forward srcip=192.0.2.10 dstip=198.51.100.20 action=deny"
   }
+}
+
+-- case-3.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "message": "type=traffic subtype=forward srcip=192.0.2.10 srcport=abc dstip=198.51.100.20 dstport=https proto=6 action=deny"
+}
+
+-- case-4.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "message": "type=traffic subtype=forward srcip=not-an-ip srcport=45001 dstip=999.0.0.1 dstport=443 proto=6 action=deny"
+}
+
+-- case-5.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "message": "type=traffic subtype=forward srcip=192.0.2.10 srcip=not-an-ip srcip=192.0.2.10 dstip=2001:db8::20 dstip=invalid dstip=198.51.100.20 action=deny"
 }
