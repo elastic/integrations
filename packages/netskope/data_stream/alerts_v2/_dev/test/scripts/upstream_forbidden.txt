@@ -1,0 +1,86 @@
+# A 403 on one alert type must not stall the types behind it. uba returns 403
+# and policy then returns two records. The 4xx branch emits one error document
+# and continues.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} netskope-error-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 20s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+exec jq -r '[.hits.hits[]._source.error.code | select(. != null)] | .[]' got_docs.json
+stdout '^403$'
+
+exec jq '[.hits.hits[]._source | select(.event.id != null)] | length' got_docs.json
+stdout '^2$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down netskope-error-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://netskope-error-mock:8090
+  api_token: test-token
+  iterator_index: elastic-test
+data_stream:
+  vars:
+    interval: 10m
+    initial_interval: 24h
+    alert_types:
+      - uba
+      - policy
+    preserve_original_event: false
+    enable_request_tracer: false
+-- netskope-error-mock/docker-compose.yml --
+version: "2.3"
+services:
+  netskope-error-mock:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    hostname: netskope-error-mock
+    ports:
+      - 8090
+    environment:
+      PORT: "8090"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/config.yml
+-- netskope-error-mock/config.yml --
+rules:
+  - path: /api/v2/events/dataexport/alerts/policy
+    methods: ["GET"]
+    query_params:
+      operation: next
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: '{"ok":1,"wait_time":0,"result":[]}'
+  - path: /api/v2/events/dataexport/alerts/uba
+    methods: ["GET"]
+    responses:
+      - status_code: 403
+        headers:
+          Content-Type:
+            - application/json
+        body: '{"ok":0,"error":"forbidden"}'
+  - path: /api/v2/events/dataexport/alerts/policy
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"ok":1,"wait_time":0,"result":[{"_id":"5182808a2a99fc688d4a8057","access_method":"Client","action":"alert","activity":"Upload","alert":"yes","alert_name":"Example Policy Alert","alert_type":"policy","app":"Dropbox","appcategory":"Cloud Storage","device":"Windows Device","dstip":"81.2.69.142","hostname":"host-1.example.local","policy":"Example File Policy","srcip":"89.160.20.112","timestamp":1722282889,"traffic_type":"CloudApp","type":"nspolicy","url":"https://www.dropbox.com/example","user":"user@example.com","userip":"216.160.83.56"},{"_id":"5182808a2a99fc688d4a8157","access_method":"API Connector","action":"block","activity":"Download","alert":"yes","alert_name":"Example Policy Alert 2","alert_type":"policy","app":"Microsoft OneDrive","appcategory":"Cloud Storage","device":"Mac Device","dstip":"81.2.69.144","hostname":"host-2.example.local","policy":"Example Block Policy","srcip":"89.160.20.128","timestamp":1722282890,"traffic_type":"CloudApp","type":"nspolicy","url":"https://onedrive.live.com/example","user":"user2@example.com","userip":"67.43.156.0"}]}
