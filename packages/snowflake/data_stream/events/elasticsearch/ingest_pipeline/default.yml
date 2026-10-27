@@ -54,6 +54,8 @@ processors:
       tag: fingerprint_document_id
       fields:
         - json.TIMESTAMP
+        - json.START_TIMESTAMP
+        - json.OBSERVED_TIMESTAMP
         - json.RECORD_TYPE
         - json.VALUE
         - json.RESOURCE_ATTRIBUTES
@@ -522,20 +524,50 @@ processors:
         snowflake.events.record_attributes object into a flattened catch-all.
       if: ctx.snowflake?.events?.record_attributes instanceof Map
       source: |-
-        def known = [
-          'architecture', 'authorization', 'code', 'component', 'counter', 'db',
-          'destination', 'exception', 'execution', 'group', 'id', 'log', 'logtag',
-          'name', 'snow', 'source', 'storage', 'target', 'thread', 'tree', 'type',
-          'version'
+        void walk(Map src, String prefix, Map custom, List leaves) {
+          def keys = new ArrayList(src.keySet());
+          for (def key : keys) {
+            def path = prefix == '' ? key.toString() : prefix + '.' + key;
+            def val = src[key];
+            def leaf = leaves.contains(path);
+            def prefixMatch = false;
+            if (!leaf) {
+              def needle = path + '.';
+              for (def documented : leaves) {
+                if (documented == path || documented.startsWith(needle)) {
+                  prefixMatch = true;
+                  break;
+                }
+              }
+            }
+            if (leaf) {
+              if (val instanceof Map) {
+                custom[path] = src.remove(key);
+              }
+            } else if (prefixMatch && val instanceof Map) {
+              walk(val, path, custom, leaves);
+              if (val.size() == 0) {
+                src.remove(key);
+              }
+            } else {
+              custom[path] = src.remove(key);
+            }
+          }
+        }
+        def leaves = [
+          'architecture', 'authorization.issue', 'code.namespace', 'code.filepath',
+          'code.function', 'code.lineno', 'component', 'counter',
+          'db.query.executable.names', 'db.query.table.names', 'db.query.text',
+          'db.query.view.names', 'destination.id', 'destination.name',
+          'exception.escaped', 'exception.message', 'exception.stacktrace',
+          'exception.type', 'execution.node', 'group.id', 'id', 'log.file.path',
+          'log.iostream', 'logtag', 'name', 'snow.input.rows', 'snow.output.rows',
+          'snow.snapshot.id', 'source.id', 'source.name', 'storage.type',
+          'target.uri', 'thread.id', 'thread.name', 'tree.level', 'type', 'version'
         ];
         def attrs = ctx.snowflake.events.record_attributes;
         def custom = [:];
-        def keys = new ArrayList(attrs.keySet());
-        for (def key : keys) {
-          if (!known.contains(key)) {
-            custom[key] = attrs.remove(key);
-          }
-        }
+        walk(attrs, '', custom, leaves);
         if (custom.size() > 0) {
           ctx.snowflake.events.custom_attributes = custom;
         }

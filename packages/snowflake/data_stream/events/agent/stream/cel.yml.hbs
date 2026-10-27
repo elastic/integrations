@@ -44,8 +44,9 @@ redact:
   fields:
     - token
 program: |-
-  // Event table rows have no unique id. Tie-break is TIMESTAMP + RECORD_TYPE + VALUE + ROW_KEY.
-  // ROW_KEY is an MD5 of TRACE, RESOURCE_ATTRIBUTES, SCOPE, RECORD, and RECORD_ATTRIBUTES.
+  // Event table rows have no unique id. Tie-break is TIMESTAMP + RECORD_TYPE + ROW_KEY.
+  // ROW_KEY is an MD5 of the remaining columns, including VALUE, so VARIANT cell formatting
+  // cannot stall the cursor. The source subquery keeps RECORD_TYPE = 'LOG'.
   // Statements are submitted synchronously. HTTP 202 (still running) is polled by handle.
   // fetch_partition: GET only when want_more and a handle exist. A full statement continues via POST.
   state.event_table.matches("^[A-Za-z_][A-Za-z0-9_$]*(\\.[A-Za-z_][A-Za-z0-9_$]*){0,2}$") ?
@@ -53,7 +54,6 @@ program: |-
       "fetch_partition": state.?want_more.orValue(false) && string(state.?cursor.handle.orValue("")) != "",
       "last_timestamp": state.?cursor.last_timestamp.orValue(""),
       "last_record_type": state.?cursor.last_record_type.orValue(""),
-      "last_value": state.?cursor.last_value.orValue(""),
       "last_row_key": state.?cursor.last_row_key.orValue(""),
       "apply_lag": state.?cursor.apply_lag.orValue(false),
     }.as(page,
@@ -78,7 +78,6 @@ program: |-
           (now - duration(state.initial_interval)).format("2006-01-02 15:04:05.000000000 -0700"),
         "last_timestamp": page.last_timestamp,
         "last_record_type": page.last_record_type,
-        "last_value": page.last_value,
         "last_row_key": page.last_row_key,
         "apply_lag": page.apply_lag,
         "request_url": page.fetch_partition ?
@@ -104,7 +103,7 @@ program: |-
               ?"Body": (req.http_method == "POST") ?
                 optional.of(
                   {
-                    "statement": "SELECT TIMESTAMP, START_TIMESTAMP, OBSERVED_TIMESTAMP, TRACE, " + "RESOURCE_ATTRIBUTES, SCOPE, RECORD_TYPE, RECORD, " + "RECORD_ATTRIBUTES, VALUE, ROW_KEY " + "FROM (" + "SELECT TIMESTAMP, START_TIMESTAMP, OBSERVED_TIMESTAMP, TRACE, " + "RESOURCE_ATTRIBUTES, SCOPE, RECORD_TYPE, RECORD, " + "RECORD_ATTRIBUTES, VALUE, " + "MD5(CONCAT_WS('|', COALESCE(TO_VARCHAR(TRACE), ''), COALESCE(TO_VARCHAR(RESOURCE_ATTRIBUTES), ''), COALESCE(TO_VARCHAR(SCOPE), ''), COALESCE(TO_VARCHAR(RECORD), ''), COALESCE(TO_VARCHAR(RECORD_ATTRIBUTES), ''))) AS ROW_KEY " + "FROM " + state.event_table + ") " + "WHERE TIMESTAMP > ? OR (TIMESTAMP = ? AND (COALESCE(RECORD_TYPE, '') > ? OR (COALESCE(RECORD_TYPE, '') = ? AND (COALESCE(TO_VARCHAR(VALUE), '') > ? OR (COALESCE(TO_VARCHAR(VALUE), '') = ? AND ROW_KEY > ?))))) " + "ORDER BY TIMESTAMP ASC, COALESCE(RECORD_TYPE, '') ASC, COALESCE(TO_VARCHAR(VALUE), '') ASC, ROW_KEY ASC " + "LIMIT " + string(state.batch_size),
+                    "statement": "SELECT TIMESTAMP, START_TIMESTAMP, OBSERVED_TIMESTAMP, TRACE, " + "RESOURCE_ATTRIBUTES, SCOPE, RECORD_TYPE, RECORD, " + "RECORD_ATTRIBUTES, VALUE, ROW_KEY " + "FROM (" + "SELECT TIMESTAMP, START_TIMESTAMP, OBSERVED_TIMESTAMP, TRACE, " + "RESOURCE_ATTRIBUTES, SCOPE, RECORD_TYPE, RECORD, " + "RECORD_ATTRIBUTES, VALUE, " + "MD5(CONCAT_WS('|', COALESCE(TO_VARCHAR(TRACE), ''), COALESCE(TO_VARCHAR(RESOURCE_ATTRIBUTES), ''), COALESCE(TO_VARCHAR(SCOPE), ''), COALESCE(TO_VARCHAR(RECORD), ''), COALESCE(TO_VARCHAR(RECORD_ATTRIBUTES), ''), COALESCE(TO_VARCHAR(VALUE), ''), COALESCE(TO_VARCHAR(START_TIMESTAMP), ''), COALESCE(TO_VARCHAR(OBSERVED_TIMESTAMP), ''))) AS ROW_KEY " + "FROM " + state.event_table + " " + "WHERE RECORD_TYPE = 'LOG') " + "WHERE TIMESTAMP > ? OR (TIMESTAMP = ? AND (COALESCE(RECORD_TYPE, '') > ? OR (COALESCE(RECORD_TYPE, '') = ? AND ROW_KEY > ?))) " + "ORDER BY TIMESTAMP ASC, COALESCE(RECORD_TYPE, '') ASC, ROW_KEY ASC " + "LIMIT " + string(state.batch_size),
                     "warehouse": state.warehouse,
                     "role": state.role,
                     "bindings": {
@@ -125,14 +124,6 @@ program: |-
                         "value": req.last_record_type,
                       },
                       "5": {
-                        "type": "TEXT",
-                        "value": req.last_value,
-                      },
-                      "6": {
-                        "type": "TEXT",
-                        "value": req.last_value,
-                      },
-                      "7": {
                         "type": "TEXT",
                         "value": req.last_row_key,
                       },
@@ -167,7 +158,6 @@ program: |-
                     "cursor": {
                       "last_timestamp": req.last_timestamp,
                       "last_record_type": req.last_record_type,
-                      "last_value": req.last_value,
                       "last_row_key": req.last_row_key,
                       "apply_lag": req.apply_lag,
                       "handle": string(body.statementHandle),
@@ -231,16 +221,6 @@ program: |-
                           )
                         :
                           req.last_record_type,
-                        // VALUE is VARIANT and may be JSON null; string(null) is not defined.
-                        "last_value": (size(result.rows) > 0) ?
-                          (
-                            (result.names.zip(result.rows[int(size(result.rows) - 1)]).?VALUE.orValue(null) == null) ?
-                              ""
-                            :
-                              string(result.names.zip(result.rows[int(size(result.rows) - 1)]).VALUE)
-                          )
-                        :
-                          req.last_value,
                         "last_row_key": (size(result.rows) > 0) ?
                           (
                             (result.names.zip(result.rows[int(size(result.rows) - 1)]).?ROW_KEY.orValue(null) == null) ?
@@ -290,7 +270,6 @@ program: |-
                 "cursor": {
                   "last_timestamp": req.last_timestamp,
                   "last_record_type": req.last_record_type,
-                  "last_value": req.last_value,
                   "last_row_key": req.last_row_key,
                   "apply_lag": req.apply_lag,
                 },

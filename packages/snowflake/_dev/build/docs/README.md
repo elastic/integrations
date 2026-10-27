@@ -19,7 +19,7 @@ Grants keep separate watermarks for `CREATED_ON` and `DELETED_ON`.
 The Snowflake integration collects the following logs:
 
 * **query_history**: Completed statements from `SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY` (SQL text, user, role, warehouse, status, bytes, and timing).
-* **events**: Handler **log messages** (`RECORD_TYPE` `LOG`) from the account event table (default `SNOWFLAKE.TELEMETRY.EVENTS`). Rows with `SPAN`, `SPAN_EVENT`, `METRIC`, or `EVENT` are dropped during ingest and are not stored in Elasticsearch.
+* **events**: Handler **log messages** (`RECORD_TYPE` `LOG`) from the account event table (default `SNOWFLAKE.TELEMETRY.EVENTS`). The collector filters `RECORD_TYPE = 'LOG'`; remaining `SPAN`, `SPAN_EVENT`, `METRIC`, or `EVENT` rows are dropped during ingest.
 * **external_access_history**: Outbound network calls from UDF and procedure handlers in `SNOWFLAKE.ACCOUNT_USAGE.EXTERNAL_ACCESS_HISTORY`, joined to `QUERY_HISTORY` for event time.
 * **access_history**: Objects and columns read or written by each query from `SNOWFLAKE.ACCOUNT_USAGE.ACCESS_HISTORY` (direct and base objects accessed, objects modified, DDL operations, policies referenced). Enterprise Edition or later.
 * **data_transfer_history**: Hourly byte-count windows of data moved between clouds and regions from `SNOWFLAKE.ACCOUNT_USAGE.DATA_TRANSFER_HISTORY`, by transfer type.
@@ -142,7 +142,7 @@ The `query_history` data stream provides completed SQL statement events from
 
 #### events
 
-The `events` data stream collects handler **log messages** from the account event table (default `SNOWFLAKE.TELEMETRY.EVENTS`). Only rows with `RECORD_TYPE` `LOG` are ingested; `SPAN`, `SPAN_EVENT`, `METRIC`, and `EVENT` rows are dropped by the ingest pipeline. Confirm the table name with `SHOW PARAMETERS LIKE 'EVENT_TABLE' IN ACCOUNT`.
+The `events` data stream collects handler **log messages** from the account event table (default `SNOWFLAKE.TELEMETRY.EVENTS`). The collector filters `RECORD_TYPE = 'LOG'`; remaining `SPAN`, `SPAN_EVENT`, `METRIC`, or `EVENT` rows are dropped by the ingest pipeline. Confirm the table name with `SHOW PARAMETERS LIKE 'EVENT_TABLE' IN ACCOUNT`.
 
 ##### events fields
 

@@ -2511,7 +2511,9 @@ rules:
             ]
           }
           `}}
-  # events keyset regression: empty page after the sub-millisecond continuation (16:00:00.123002000)
+  # events keyset regression: lag-window resume after the tied/sub-millisecond pages
+  # Must precede the 16:00:00.123002000 empty-page rule: apply_lag still binds last_timestamp
+  # as 16:00:00.123002000 in binding 2, while binding 1 carries the 15:45 watermark.
   - path: /api/v2/statements
     methods: ['POST']
     query_params:
@@ -2521,7 +2523,7 @@ rules:
         - 'Bearer test-snowflake-pat'
       X-Snowflake-Authorization-Token-Type:
         - 'PROGRAMMATIC_ACCESS_TOKEN'
-    request_body: '/.*(TIEBREAK.*2020-07-01 16:00:00\.123002000.*LIMIT 2"|2020-07-01 16:00:00\.123002000.*TIEBREAK.*LIMIT 2").*/'
+    request_body: '/.*(TIEBREAK.*2020-07-01 15:45:00|2020-07-01 15:45:00.*TIEBREAK).*/'
     responses:
       - status_code: 200
         headers:
@@ -2569,7 +2571,9 @@ rules:
         - 'Bearer test-snowflake-pat'
       X-Snowflake-Authorization-Token-Type:
         - 'PROGRAMMATIC_ACCESS_TOKEN'
-    request_body: '/.*(TIEBREAK.*2020-07-01 16:00:00\.123001000.*LIMIT 2"|2020-07-01 16:00:00\.123001000.*TIEBREAK.*LIMIT 2").*/'
+    # encode_json escapes '>' as \u003e, so do not require a literal '>'.
+    # Both key orders are accepted because bindings are emitted before statement.
+    request_body: '/.*(2020-07-01 16:00:00\.123001000.*bbb222bbb222bbb222bbb222bbb222bb.*TIEBREAK.*ROW_KEY.{1,10}\?.*ROW_KEY ASC.*LIMIT 2"|TIEBREAK.*ROW_KEY.{1,10}\?.*ROW_KEY ASC.*LIMIT 2".*2020-07-01 16:00:00\.123001000.*bbb222bbb222bbb222bbb222bbb222bb).*/'
     responses:
       - status_code: 200
         headers:
@@ -2610,7 +2614,7 @@ rules:
             ]
           }
           `}}
-  # events keyset regression: lag-window resume after the tied/sub-millisecond pages
+  # events keyset regression: empty page after the sub-millisecond continuation (16:00:00.123002000)
   - path: /api/v2/statements
     methods: ['POST']
     query_params:
@@ -2620,7 +2624,7 @@ rules:
         - 'Bearer test-snowflake-pat'
       X-Snowflake-Authorization-Token-Type:
         - 'PROGRAMMATIC_ACCESS_TOKEN'
-    request_body: '/.*(TIEBREAK.*2020-07-01 15:45:00|2020-07-01 15:45:00.*TIEBREAK).*/'
+    request_body: '/.*(TIEBREAK.*2020-07-01 16:00:00\.123002000.*LIMIT 2"|2020-07-01 16:00:00\.123002000.*TIEBREAK.*LIMIT 2").*/'
     responses:
       - status_code: 200
         headers:
@@ -2705,7 +2709,7 @@ rules:
             },
             "data": [
               ["2020-07-01 16:00:00.123001000 +0000", null, "2020-07-01 16:00:00.123001000 +0000", null, "{\"db.user\":\"alice.johnson\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592d1\",\"snow.session.id\":1275605667861}","{\"name\":\"com.sample.MyClass\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.function\":\"handler\"}", "tied handler log", "aaa111aaa111aaa111aaa111aaa111aa"],
-              ["2020-07-01 16:00:00.123001000 +0000", null, "2020-07-01 16:00:00.123001000 +0000", null, "{\"db.user\":\"bob.smith\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592d2\",\"snow.session.id\":1275605667862}","{\"name\":\"com.sample.MyClass\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.function\":\"handler\"}", "tied handler log", "bbb222bbb222bbb222bbb222bbb222bb"]
+              ["2020-07-01 16:00:00.123001000 +0000", "2020-07-01 16:00:00.123000000 +0000", "2020-07-01 16:00:00.123001500 +0000", null, "{\"db.user\":\"bob.smith\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592d2\",\"snow.session.id\":1275605667862}","{\"name\":\"com.sample.MyClass\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.function\":\"handler\"}", "tied handler log", "bbb222bbb222bbb222bbb222bbb222bb"]
             ]
           }
           `}}
@@ -2755,6 +2759,58 @@ rules:
               ]
             },
             "data": []
+          }
+          `}}
+  # events — round 2 cursor resume (watermark = last TIMESTAMP minus lag_time 15m)
+  # Must precede the 12:00:00 empty-page rule: apply_lag still binds last_timestamp
+  # as 12:00:00.000 in binding 2, while binding 1 carries the 11:45 watermark.
+  # Distinguish from QUERY_HISTORY via TELEMETRY.EVENTS / RECORD_TYPE / RESOURCE_ATTRIBUTES.
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: /.*(TELEMETRY\.EVENTS|RECORD_TYPE|RESOURCE_ATTRIBUTES).*(2020-07-01 11:45:00)|(2020-07-01 11:45:00).*(TELEMETRY\.EVENTS|RECORD_TYPE|RESOURCE_ATTRIBUTES).*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06d8-0000-df4f-0000-0070000b7a0f",
+            "createdOn": 1593613800123,
+            "statementStatusUrl": "/api/v2/statements/019c06d8-0000-df4f-0000-0070000b7a0f",
+            "resultSetMetaData": {
+              "numRows": 1,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
+                {"name": "START_TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
+                {"name": "OBSERVED_TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
+                {"name": "TRACE", "type": "object", "nullable": true},
+                {"name": "RESOURCE_ATTRIBUTES", "type": "object", "nullable": true},
+                {"name": "SCOPE", "type": "object", "nullable": true},
+                {"name": "RECORD_TYPE", "type": "text", "nullable": true},
+                {"name": "RECORD", "type": "object", "nullable": true},
+                {"name": "RECORD_ATTRIBUTES", "type": "object", "nullable": true},
+                {"name": "VALUE", "type": "variant", "nullable": true}
+              ],
+              "partitionInfo": [
+                {"rowCount": 1, "uncompressedSize": 380}
+              ]
+            },
+            "data": [
+              ["2020-07-01 14:30:00.000 +0000", null, "2020-07-01 14:30:00.000 +0000", null, "{\"db.user\":\"alice.johnson\",\"snow.database.name\":\"EXAMPLE_DB\",\"snow.executable.name\":\"EXAMPLE_HANDLER\",\"snow.executable.type\":\"FUNCTION\",\"snow.owner.name\":\"EXAMPLE_ROLE\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592c6\",\"snow.schema.name\":\"PUBLIC\",\"snow.session.id\":1275605667854,\"snow.warehouse.name\":\"EXAMPLE_WH\",\"telemetry.sdk.language\":\"python\"}", "{\"name\":\"com.sample.MyClass\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.function\":\"handler\"}", "Example follow-up handler log"]
+            ]
           }
           `}}
   # events continuation: empty keyset after last LIMIT 2 page (12:00)
@@ -2852,58 +2908,8 @@ rules:
               ]
             },
             "data": [
-              ["2020-07-01 10:00:00.000 +0000", "2020-07-01 09:00:00.000 +0000", null, "{\"trace_id\":\"89a1d5c12b3e4f678a9b0c1d2e3f4a5b\",\"span_id\":\"1d2e3f4a5b67890c\"}", "{\"db.user\":\"alice.johnson\",\"snow.database.name\":\"EXAMPLE_DB\",\"snow.executable.name\":\"EXAMPLE_HANDLER\",\"snow.executable.type\":\"FUNCTION\",\"snow.owner.name\":\"EXAMPLE_ROLE\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592c4\",\"snow.schema.name\":\"PUBLIC\",\"snow.session.id\":1275605667852,\"snow.warehouse.name\":\"EXAMPLE_WH\",\"telemetry.sdk.language\":\"python\"}", "{\"name\":\"example.metrics\"}", "METRIC", "{\"metric\":{\"name\":\"example.handler.invocations\",\"type\":\"Sum\",\"unit\":\"1\"}}", null, "1"],
-              ["2020-07-01 12:00:00.000 +0000", null, null, "{\"trace_id\":\"89a1d5c12b3e4f678a9b0c1d2e3f4a5b\",\"span_id\":\"0c1d2e3f4a5b6789\"}", "{\"db.user\":\"alice.johnson\",\"snow.database.name\":\"EXAMPLE_DB\",\"snow.executable.name\":\"EXAMPLE_HANDLER\",\"snow.executable.type\":\"FUNCTION\",\"snow.owner.name\":\"EXAMPLE_ROLE\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592c5\",\"snow.schema.name\":\"PUBLIC\",\"snow.session.id\":1275605667853,\"snow.warehouse.name\":\"EXAMPLE_WH\",\"telemetry.sdk.language\":\"python\"}", "{\"name\":\"example.handler\"}", "SPAN_EVENT", "{\"name\":\"handler.complete\"}", "{\"db.query.text\":\"SELECT 1\"}", null]
-            ]
-          }
-          `}}
-  # events — round 2 cursor resume (watermark = last TIMESTAMP minus lag_time 15m)
-  # Distinguish from QUERY_HISTORY via TELEMETRY.EVENTS / RECORD_TYPE / RESOURCE_ATTRIBUTES.
-  - path: /api/v2/statements
-    methods: ['POST']
-    query_params:
-      requestId: "{requestId:.*}"
-    request_headers:
-      Authorization:
-        - 'Bearer test-snowflake-pat'
-      X-Snowflake-Authorization-Token-Type:
-        - 'PROGRAMMATIC_ACCESS_TOKEN'
-    request_body: /.*(TELEMETRY\.EVENTS|RECORD_TYPE|RESOURCE_ATTRIBUTES).*(2020-07-01 11:45:00)|(2020-07-01 11:45:00).*(TELEMETRY\.EVENTS|RECORD_TYPE|RESOURCE_ATTRIBUTES).*/
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - application/json
-        body: |-
-          {{ minify_json `
-          {
-            "code": "090001",
-            "sqlState": "00000",
-            "message": "Statement executed successfully.",
-            "statementHandle": "019c06d8-0000-df4f-0000-0070000b7a0f",
-            "createdOn": 1593613800123,
-            "statementStatusUrl": "/api/v2/statements/019c06d8-0000-df4f-0000-0070000b7a0f",
-            "resultSetMetaData": {
-              "numRows": 1,
-              "format": "jsonv2",
-              "rowType": [
-                {"name": "TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
-                {"name": "START_TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
-                {"name": "OBSERVED_TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
-                {"name": "TRACE", "type": "object", "nullable": true},
-                {"name": "RESOURCE_ATTRIBUTES", "type": "object", "nullable": true},
-                {"name": "SCOPE", "type": "object", "nullable": true},
-                {"name": "RECORD_TYPE", "type": "text", "nullable": true},
-                {"name": "RECORD", "type": "object", "nullable": true},
-                {"name": "RECORD_ATTRIBUTES", "type": "object", "nullable": true},
-                {"name": "VALUE", "type": "variant", "nullable": true}
-              ],
-              "partitionInfo": [
-                {"rowCount": 1, "uncompressedSize": 380}
-              ]
-            },
-            "data": [
-              ["2020-07-01 14:30:00.000 +0000", null, "2020-07-01 14:30:00.000 +0000", null, "{\"db.user\":\"alice.johnson\",\"snow.database.name\":\"EXAMPLE_DB\",\"snow.executable.name\":\"EXAMPLE_HANDLER\",\"snow.executable.type\":\"FUNCTION\",\"snow.owner.name\":\"EXAMPLE_ROLE\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592c6\",\"snow.schema.name\":\"PUBLIC\",\"snow.session.id\":1275605667854,\"snow.warehouse.name\":\"EXAMPLE_WH\",\"telemetry.sdk.language\":\"python\"}", "{\"name\":\"com.sample.MyClass\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.function\":\"handler\"}", "Example follow-up handler log"]
+              ["2020-07-01 10:00:00.000 +0000", "2020-07-01 09:00:00.000 +0000", null, "{\"trace_id\":\"89a1d5c12b3e4f678a9b0c1d2e3f4a5b\",\"span_id\":\"1d2e3f4a5b67890c\"}", "{\"db.user\":\"alice.johnson\",\"snow.database.name\":\"EXAMPLE_DB\",\"snow.executable.name\":\"EXAMPLE_HANDLER\",\"snow.executable.type\":\"FUNCTION\",\"snow.owner.name\":\"EXAMPLE_ROLE\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592c4\",\"snow.schema.name\":\"PUBLIC\",\"snow.session.id\":1275605667852,\"snow.warehouse.name\":\"EXAMPLE_WH\",\"telemetry.sdk.language\":\"python\"}", "{\"name\":\"example.metrics\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.function\":\"handler\"}", "Example handler log from metric context"],
+              ["2020-07-01 12:00:00.000 +0000", null, null, "{\"trace_id\":\"89a1d5c12b3e4f678a9b0c1d2e3f4a5b\",\"span_id\":\"0c1d2e3f4a5b6789\"}", "{\"db.user\":\"alice.johnson\",\"snow.database.name\":\"EXAMPLE_DB\",\"snow.executable.name\":\"EXAMPLE_HANDLER\",\"snow.executable.type\":\"FUNCTION\",\"snow.owner.name\":\"EXAMPLE_ROLE\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592c5\",\"snow.schema.name\":\"PUBLIC\",\"snow.session.id\":1275605667853,\"snow.warehouse.name\":\"EXAMPLE_WH\",\"telemetry.sdk.language\":\"python\"}", "{\"name\":\"example.handler\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.function\":\"handler\"}", "Example handler log from span event"]
             ]
           }
           `}}
@@ -3000,7 +3006,7 @@ rules:
             },
             "data": [
               ["2020-07-01 08:00:00.000 +0000", null, "2020-07-01 08:00:00.000 +0000", null, "{\"db.user\":\"alice.johnson\",\"snow.database.id\":13,\"snow.database.name\":\"EXAMPLE_DB\",\"snow.executable.id\":197,\"snow.executable.name\":\"EXAMPLE_HANDLER\",\"snow.executable.type\":\"FUNCTION\",\"snow.owner.id\":2,\"snow.owner.name\":\"EXAMPLE_ROLE\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592c2\",\"snow.schema.id\":16,\"snow.schema.name\":\"PUBLIC\",\"snow.session.id\":1275605667850,\"snow.session.role.primary.id\":2,\"snow.session.role.primary.name\":\"EXAMPLE_ROLE\",\"snow.user.id\":25,\"snow.warehouse.id\":5,\"snow.warehouse.name\":\"EXAMPLE_WH\",\"telemetry.sdk.language\":\"python\"}", "{\"name\":\"com.sample.MyClass\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.filepath\":\"main.py\",\"code.function\":\"handler\",\"code.lineno\":42,\"code.namespace\":\"example.module\",\"thread.id\":1,\"thread.name\":\"main\"}", "Example handler log message"],
-              ["2020-07-01 09:00:00.000 +0000", "2020-07-01 08:59:50.000 +0000", null, "{\"trace_id\":\"89a1d5c12b3e4f678a9b0c1d2e3f4a5b\",\"span_id\":\"0c1d2e3f4a5b6789\"}", "{\"db.user\":\"alice.johnson\",\"snow.database.name\":\"EXAMPLE_DB\",\"snow.executable.name\":\"EXAMPLE_HANDLER\",\"snow.executable.type\":\"FUNCTION\",\"snow.owner.name\":\"EXAMPLE_ROLE\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592c3\",\"snow.schema.name\":\"PUBLIC\",\"snow.session.id\":1275605667851,\"snow.warehouse.name\":\"EXAMPLE_WH\",\"telemetry.sdk.language\":\"python\"}", "{\"name\":\"example.handler\"}", "SPAN", "{\"name\":\"example.handler\",\"kind\":\"SPAN_KIND_INTERNAL\",\"status\":{\"code\":\"STATUS_CODE_UNSET\"}}", null, null]
+              ["2020-07-01 09:00:00.000 +0000", "2020-07-01 08:59:50.000 +0000", null, "{\"trace_id\":\"89a1d5c12b3e4f678a9b0c1d2e3f4a5b\",\"span_id\":\"0c1d2e3f4a5b6789\"}", "{\"db.user\":\"alice.johnson\",\"snow.database.name\":\"EXAMPLE_DB\",\"snow.executable.name\":\"EXAMPLE_HANDLER\",\"snow.executable.type\":\"FUNCTION\",\"snow.owner.name\":\"EXAMPLE_ROLE\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592c3\",\"snow.schema.name\":\"PUBLIC\",\"snow.session.id\":1275605667851,\"snow.warehouse.name\":\"EXAMPLE_WH\",\"telemetry.sdk.language\":\"python\"}", "{\"name\":\"example.handler\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.function\":\"handler\"}", "Example handler log from traced span"]
             ]
           }
           `}}
@@ -3049,8 +3055,8 @@ rules:
           {{ minify_json `
           {
             "data": [
-              ["2020-07-01 10:00:00.000 +0000", "2020-07-01 09:00:00.000 +0000", null, "{\"trace_id\":\"89a1d5c12b3e4f678a9b0c1d2e3f4a5b\",\"span_id\":\"1d2e3f4a5b67890c\"}", "{\"db.user\":\"alice.johnson\",\"snow.database.name\":\"EXAMPLE_DB\",\"snow.executable.name\":\"EXAMPLE_HANDLER\",\"snow.executable.type\":\"FUNCTION\",\"snow.owner.name\":\"EXAMPLE_ROLE\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592c4\",\"snow.schema.name\":\"PUBLIC\",\"snow.session.id\":1275605667852,\"snow.warehouse.name\":\"EXAMPLE_WH\",\"telemetry.sdk.language\":\"python\"}", "{\"name\":\"example.metrics\"}", "METRIC", "{\"metric\":{\"name\":\"example.handler.invocations\",\"type\":\"Sum\",\"unit\":\"1\"}}", null, "1"],
-              ["2020-07-01 12:00:00.000 +0000", null, null, "{\"trace_id\":\"89a1d5c12b3e4f678a9b0c1d2e3f4a5b\",\"span_id\":\"0c1d2e3f4a5b6789\"}", "{\"db.user\":\"alice.johnson\",\"snow.database.name\":\"EXAMPLE_DB\",\"snow.executable.name\":\"EXAMPLE_HANDLER\",\"snow.executable.type\":\"FUNCTION\",\"snow.owner.name\":\"EXAMPLE_ROLE\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592c5\",\"snow.schema.name\":\"PUBLIC\",\"snow.session.id\":1275605667853,\"snow.warehouse.name\":\"EXAMPLE_WH\",\"telemetry.sdk.language\":\"python\"}", "{\"name\":\"example.handler\"}", "SPAN_EVENT", "{\"name\":\"handler.complete\"}", "{\"db.query.text\":\"SELECT 1\"}", null]
+              ["2020-07-01 10:00:00.000 +0000", "2020-07-01 09:00:00.000 +0000", null, "{\"trace_id\":\"89a1d5c12b3e4f678a9b0c1d2e3f4a5b\",\"span_id\":\"1d2e3f4a5b67890c\"}", "{\"db.user\":\"alice.johnson\",\"snow.database.name\":\"EXAMPLE_DB\",\"snow.executable.name\":\"EXAMPLE_HANDLER\",\"snow.executable.type\":\"FUNCTION\",\"snow.owner.name\":\"EXAMPLE_ROLE\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592c4\",\"snow.schema.name\":\"PUBLIC\",\"snow.session.id\":1275605667852,\"snow.warehouse.name\":\"EXAMPLE_WH\",\"telemetry.sdk.language\":\"python\"}", "{\"name\":\"example.metrics\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.function\":\"handler\"}", "Example handler log from metric context"],
+              ["2020-07-01 12:00:00.000 +0000", null, null, "{\"trace_id\":\"89a1d5c12b3e4f678a9b0c1d2e3f4a5b\",\"span_id\":\"0c1d2e3f4a5b6789\"}", "{\"db.user\":\"alice.johnson\",\"snow.database.name\":\"EXAMPLE_DB\",\"snow.executable.name\":\"EXAMPLE_HANDLER\",\"snow.executable.type\":\"FUNCTION\",\"snow.owner.name\":\"EXAMPLE_ROLE\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592c5\",\"snow.schema.name\":\"PUBLIC\",\"snow.session.id\":1275605667853,\"snow.warehouse.name\":\"EXAMPLE_WH\",\"telemetry.sdk.language\":\"python\"}", "{\"name\":\"example.handler\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.function\":\"handler\"}", "Example handler log from span event"]
             ]
           }
           `}}
@@ -3118,7 +3124,7 @@ rules:
             },
             "data": [
               ["2020-07-01 08:00:00.000 +0000", null, "2020-07-01 08:00:00.000 +0000", null, "{\"db.user\":\"alice.johnson\",\"snow.database.id\":13,\"snow.database.name\":\"EXAMPLE_DB\",\"snow.executable.id\":197,\"snow.executable.name\":\"EXAMPLE_HANDLER\",\"snow.executable.type\":\"FUNCTION\",\"snow.owner.id\":2,\"snow.owner.name\":\"EXAMPLE_ROLE\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592c2\",\"snow.schema.id\":16,\"snow.schema.name\":\"PUBLIC\",\"snow.session.id\":1275605667850,\"snow.session.role.primary.id\":2,\"snow.session.role.primary.name\":\"EXAMPLE_ROLE\",\"snow.user.id\":25,\"snow.warehouse.id\":5,\"snow.warehouse.name\":\"EXAMPLE_WH\",\"telemetry.sdk.language\":\"python\"}", "{\"name\":\"com.sample.MyClass\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.filepath\":\"main.py\",\"code.function\":\"handler\",\"code.lineno\":42,\"code.namespace\":\"example.module\",\"thread.id\":1,\"thread.name\":\"main\"}", "Example handler log message"],
-              ["2020-07-01 09:00:00.000 +0000", "2020-07-01 08:59:50.000 +0000", null, "{\"trace_id\":\"89a1d5c12b3e4f678a9b0c1d2e3f4a5b\",\"span_id\":\"0c1d2e3f4a5b6789\"}", "{\"db.user\":\"alice.johnson\",\"snow.database.name\":\"EXAMPLE_DB\",\"snow.executable.name\":\"EXAMPLE_HANDLER\",\"snow.executable.type\":\"FUNCTION\",\"snow.owner.name\":\"EXAMPLE_ROLE\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592c3\",\"snow.schema.name\":\"PUBLIC\",\"snow.session.id\":1275605667851,\"snow.warehouse.name\":\"EXAMPLE_WH\",\"telemetry.sdk.language\":\"python\"}", "{\"name\":\"example.handler\"}", "SPAN", "{\"name\":\"example.handler\",\"kind\":\"SPAN_KIND_INTERNAL\",\"status\":{\"code\":\"STATUS_CODE_UNSET\"}}", null, null]
+              ["2020-07-01 09:00:00.000 +0000", "2020-07-01 08:59:50.000 +0000", null, "{\"trace_id\":\"89a1d5c12b3e4f678a9b0c1d2e3f4a5b\",\"span_id\":\"0c1d2e3f4a5b6789\"}", "{\"db.user\":\"alice.johnson\",\"snow.database.name\":\"EXAMPLE_DB\",\"snow.executable.name\":\"EXAMPLE_HANDLER\",\"snow.executable.type\":\"FUNCTION\",\"snow.owner.name\":\"EXAMPLE_ROLE\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592c3\",\"snow.schema.name\":\"PUBLIC\",\"snow.session.id\":1275605667851,\"snow.warehouse.name\":\"EXAMPLE_WH\",\"telemetry.sdk.language\":\"python\"}", "{\"name\":\"example.handler\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.function\":\"handler\"}", "Example handler log from traced span"]
             ]
           }
           `}}
