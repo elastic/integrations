@@ -410,14 +410,40 @@ processors:
       field: source.port
       type: long
       ignore_missing: true
-      ignore_failure: true
+      on_failure:
+        - remove:
+            tag: remove_invalid_source_port
+            field: source.port
+            ignore_missing: true
+        - append:
+            tag: flag_invalid_source_port
+            field: error.message
+            value: FortiGate source port is not a valid integer.
+        - append:
+            tag: preserve_invalid_source_port_original
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
 
   - convert:
       tag: convert_destination_port
       field: destination.port
       type: long
       ignore_missing: true
-      ignore_failure: true
+      on_failure:
+        - remove:
+            tag: remove_invalid_destination_port
+            field: destination.port
+            ignore_missing: true
+        - append:
+            tag: flag_invalid_destination_port
+            field: error.message
+            value: FortiGate destination port is not a valid integer.
+        - append:
+            tag: preserve_invalid_destination_port_original
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
 
   - script:
       tag: append_related_endpoint_ips
