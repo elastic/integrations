@@ -198,9 +198,10 @@ processors:
       lang: painless
       tag: replace_nul_in_attribute_keys
       description: >-
-        Replace NUL (U+0000) characters in the keys of the flattened attributes objects with an
-        underscore, at any depth, because Elasticsearch rejects NUL in flattened keys. If the
-        replaced key already exists, the existing key is kept; event.original retains the raw event.
+        Replace NUL (U+0000) characters in the keys of the flattened attributes objects with
+        underscores, at any depth, because Elasticsearch rejects NUL in flattened keys. If the
+        replaced key already exists, up to five underscores per NUL are tried; existing keys are
+        never overwritten, and event.original retains the raw event.
       if: ctx.atlassian_cloud?.audit != null
       source: |-
         void cleanKeys(def node, String nul) {
@@ -215,9 +216,14 @@ processors:
             Collections.sort(keys);
             for (String key : keys) {
               def value = map.remove(key);
-              String renamed = key.replace(nul, '_');
-              if (!map.containsKey(renamed)) {
-                map.put(renamed, value);
+              String underscores = '';
+              for (int n = 1; n <= 5; n++) {
+                underscores += '_';
+                String renamed = key.replace(nul, underscores);
+                if (!map.containsKey(renamed)) {
+                  map.put(renamed, value);
+                  break;
+                }
               }
             }
             for (def value : map.values()) {
@@ -233,9 +239,6 @@ processors:
         def audit = ctx.atlassian_cloud.audit;
         for (String name : ['context', 'container']) {
           def items = audit[name];
-          if (items instanceof Map) {
-            items = [items];
-          }
           if (items instanceof List) {
             for (def item : items) {
               if (item instanceof Map) {
