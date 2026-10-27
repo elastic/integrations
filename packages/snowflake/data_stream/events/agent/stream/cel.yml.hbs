@@ -44,8 +44,8 @@ redact:
   fields:
     - token
 program: |-
-  // Event table rows have no unique id. Tie-break is TIMESTAMP + RECORD_TYPE + VALUE;
-  // rows that share all three can be skipped or duplicated. TRACE is often null.
+  // Event table rows have no unique id. Tie-break is TIMESTAMP + RECORD_TYPE + VALUE + ROW_KEY.
+  // ROW_KEY is an MD5 of TRACE, RESOURCE_ATTRIBUTES, SCOPE, RECORD, and RECORD_ATTRIBUTES.
   // Statements are submitted synchronously. HTTP 202 (still running) is polled by handle.
   // fetch_partition: GET only when want_more and a handle exist. A full statement continues via POST.
   state.event_table.matches("^[A-Za-z_][A-Za-z0-9_$]*(\\.[A-Za-z_][A-Za-z0-9_$]*){0,2}$") ?
@@ -54,6 +54,7 @@ program: |-
       "last_timestamp": state.?cursor.last_timestamp.orValue(""),
       "last_record_type": state.?cursor.last_record_type.orValue(""),
       "last_value": state.?cursor.last_value.orValue(""),
+      "last_row_key": state.?cursor.last_row_key.orValue(""),
       "apply_lag": state.?cursor.apply_lag.orValue(false),
     }.as(page,
       {
@@ -62,15 +63,23 @@ program: |-
         "watermark": (page.last_timestamp != "") ?
           (
             page.apply_lag ?
-              (page.last_timestamp.parse_time("2006-01-02 15:04:05.000 -0700") - duration(state.lag_time)).format("2006-01-02 15:04:05.000 -0700")
+              (
+                (
+                  (size(page.last_timestamp) >= 35) ?
+                    page.last_timestamp.parse_time("2006-01-02 15:04:05.000000000 Z0700")
+                  :
+                    page.last_timestamp.parse_time("2006-01-02 15:04:05.000 Z0700")
+                ) - duration(state.lag_time)
+              ).format("2006-01-02 15:04:05.000000000 -0700")
             :
               page.last_timestamp
           )
         :
-          (now - duration(state.initial_interval)).format("2006-01-02 15:04:05.000 -0700"),
+          (now - duration(state.initial_interval)).format("2006-01-02 15:04:05.000000000 -0700"),
         "last_timestamp": page.last_timestamp,
         "last_record_type": page.last_record_type,
         "last_value": page.last_value,
+        "last_row_key": page.last_row_key,
         "apply_lag": page.apply_lag,
         "request_url": page.fetch_partition ?
           (
@@ -95,7 +104,7 @@ program: |-
               ?"Body": (req.http_method == "POST") ?
                 optional.of(
                   {
-                    "statement": "SELECT TIMESTAMP, START_TIMESTAMP, OBSERVED_TIMESTAMP, TRACE, " + "RESOURCE_ATTRIBUTES, SCOPE, RECORD_TYPE, RECORD, " + "RECORD_ATTRIBUTES, VALUE " + "FROM " + state.event_table + " " + "WHERE TIMESTAMP > ? OR (TIMESTAMP = ? AND (COALESCE(RECORD_TYPE, '') > ? OR (COALESCE(RECORD_TYPE, '') = ? AND COALESCE(TO_VARCHAR(VALUE), '') > ?))) " + "ORDER BY TIMESTAMP ASC, COALESCE(RECORD_TYPE, '') ASC, COALESCE(TO_VARCHAR(VALUE), '') ASC " + "LIMIT " + string(state.batch_size),
+                    "statement": "SELECT TIMESTAMP, START_TIMESTAMP, OBSERVED_TIMESTAMP, TRACE, " + "RESOURCE_ATTRIBUTES, SCOPE, RECORD_TYPE, RECORD, " + "RECORD_ATTRIBUTES, VALUE, ROW_KEY " + "FROM (" + "SELECT TIMESTAMP, START_TIMESTAMP, OBSERVED_TIMESTAMP, TRACE, " + "RESOURCE_ATTRIBUTES, SCOPE, RECORD_TYPE, RECORD, " + "RECORD_ATTRIBUTES, VALUE, " + "MD5(CONCAT_WS('|', COALESCE(TO_VARCHAR(TRACE), ''), COALESCE(TO_VARCHAR(RESOURCE_ATTRIBUTES), ''), COALESCE(TO_VARCHAR(SCOPE), ''), COALESCE(TO_VARCHAR(RECORD), ''), COALESCE(TO_VARCHAR(RECORD_ATTRIBUTES), ''))) AS ROW_KEY " + "FROM " + state.event_table + ") " + "WHERE TIMESTAMP > ? OR (TIMESTAMP = ? AND (COALESCE(RECORD_TYPE, '') > ? OR (COALESCE(RECORD_TYPE, '') = ? AND (COALESCE(TO_VARCHAR(VALUE), '') > ? OR (COALESCE(TO_VARCHAR(VALUE), '') = ? AND ROW_KEY > ?))))) " + "ORDER BY TIMESTAMP ASC, COALESCE(RECORD_TYPE, '') ASC, COALESCE(TO_VARCHAR(VALUE), '') ASC, ROW_KEY ASC " + "LIMIT " + string(state.batch_size),
                     "warehouse": state.warehouse,
                     "role": state.role,
                     "bindings": {
@@ -119,11 +128,19 @@ program: |-
                         "type": "TEXT",
                         "value": req.last_value,
                       },
+                      "6": {
+                        "type": "TEXT",
+                        "value": req.last_value,
+                      },
+                      "7": {
+                        "type": "TEXT",
+                        "value": req.last_row_key,
+                      },
                     },
                     "parameters": {
                       "TIMEZONE": "UTC",
-                      "TIMESTAMP_LTZ_OUTPUT_FORMAT": "YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM",
-                      "TIMESTAMP_NTZ_OUTPUT_FORMAT": "YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM",
+                      "TIMESTAMP_LTZ_OUTPUT_FORMAT": "YYYY-MM-DD HH24:MI:SS.FF9 TZHTZM",
+                      "TIMESTAMP_NTZ_OUTPUT_FORMAT": "YYYY-MM-DD HH24:MI:SS.FF9 TZHTZM",
                     },
                   }.encode_json()
                 )
@@ -151,6 +168,7 @@ program: |-
                       "last_timestamp": req.last_timestamp,
                       "last_record_type": req.last_record_type,
                       "last_value": req.last_value,
+                      "last_row_key": req.last_row_key,
                       "apply_lag": req.apply_lag,
                       "handle": string(body.statementHandle),
                       "next_partition": 0,
@@ -223,6 +241,15 @@ program: |-
                           )
                         :
                           req.last_value,
+                        "last_row_key": (size(result.rows) > 0) ?
+                          (
+                            (result.names.zip(result.rows[int(size(result.rows) - 1)]).?ROW_KEY.orValue(null) == null) ?
+                              ""
+                            :
+                              string(result.names.zip(result.rows[int(size(result.rows) - 1)]).ROW_KEY)
+                          )
+                        :
+                          req.last_row_key,
                         "apply_lag": !(req.cur_partition + 1 < result.partition_count) &&
                         !(size(result.rows) >= int(state.batch_size) || result.rows_in_statement >= int(state.batch_size)),
                       }.with(
@@ -264,6 +291,7 @@ program: |-
                   "last_timestamp": req.last_timestamp,
                   "last_record_type": req.last_record_type,
                   "last_value": req.last_value,
+                  "last_row_key": req.last_row_key,
                   "apply_lag": req.apply_lag,
                 },
                 "want_more": false,

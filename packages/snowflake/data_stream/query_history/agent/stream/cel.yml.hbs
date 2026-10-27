@@ -58,12 +58,19 @@ program: |-
       "watermark": (page.last_timestamp != "") ?
         (
           page.apply_lag ?
-            (page.last_timestamp.parse_time("2006-01-02 15:04:05.000 -0700") - duration(state.lag_time)).format("2006-01-02 15:04:05.000 -0700")
+            (
+              (
+                (size(page.last_timestamp) >= 35) ?
+                  page.last_timestamp.parse_time("2006-01-02 15:04:05.000000000 Z0700")
+                :
+                  page.last_timestamp.parse_time("2006-01-02 15:04:05.000 Z0700")
+              ) - duration(state.lag_time)
+            ).format("2006-01-02 15:04:05.000000000 -0700")
           :
             page.last_timestamp
         )
       :
-        (now - duration(state.initial_interval)).format("2006-01-02 15:04:05.000 -0700"),
+        (now - duration(state.initial_interval)).format("2006-01-02 15:04:05.000000000 -0700"),
       "last_timestamp": page.last_timestamp,
       "last_query_id": page.last_query_id,
       "apply_lag": page.apply_lag,
@@ -109,7 +116,7 @@ program: |-
                   },
                   "parameters": {
                     "TIMEZONE": "UTC",
-                    "TIMESTAMP_LTZ_OUTPUT_FORMAT": "YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM",
+                    "TIMESTAMP_LTZ_OUTPUT_FORMAT": "YYYY-MM-DD HH24:MI:SS.FF9 TZHTZM",
                   },
                 }.encode_json()
               )

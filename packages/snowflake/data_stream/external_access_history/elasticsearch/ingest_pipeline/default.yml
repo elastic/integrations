@@ -56,6 +56,8 @@ processors:
       target_field: '@timestamp'
       tag: date_end_time
       formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSSSS Z
+        - yyyy-MM-dd HH:mm:ss.SSSSSSSSS XX
         - yyyy-MM-dd HH:mm:ss.SSS Z
         - yyyy-MM-dd HH:mm:ss.SSS XX
         - yyyy-MM-dd HH:mm:ss Z
@@ -80,6 +82,8 @@ processors:
       target_field: event.start
       tag: date_start_time
       formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSSSS Z
+        - yyyy-MM-dd HH:mm:ss.SSSSSSSSS XX
         - yyyy-MM-dd HH:mm:ss.SSS Z
         - yyyy-MM-dd HH:mm:ss.SSS XX
         - yyyy-MM-dd HH:mm:ss Z
@@ -125,26 +129,33 @@ processors:
       ignore_missing: true
       tag: trim_hostnames
       if: ctx.snowflake?.external_access_history?.hostnames instanceof String
-  - set:
-      field: destination.domain
-      tag: set_destination_domain
-      copy_from: snowflake.external_access_history.hostnames
-      ignore_empty_value: true
-      if: >-
-        ctx.snowflake?.external_access_history?.hostnames instanceof String &&
-        ctx.snowflake.external_access_history.hostnames != '' &&
-        !ctx.snowflake.external_access_history.hostnames.contains(',') &&
-        !ctx.snowflake.external_access_history.hostnames.contains(' ')
-  - set:
-      field: host.name
-      tag: set_host_name
-      copy_from: snowflake.external_access_history.hostnames
-      ignore_empty_value: true
-      if: >-
-        ctx.snowflake?.external_access_history?.hostnames instanceof String &&
-        ctx.snowflake.external_access_history.hostnames != '' &&
-        !ctx.snowflake.external_access_history.hostnames.contains(',') &&
-        !ctx.snowflake.external_access_history.hostnames.contains(' ')
+  - script:
+      tag: split_hostnames
+      lang: painless
+      description: >-
+        Split HOSTNAMES into destination.domain and related.hosts. A single hostname
+        is mapped to destination.domain. Multi-value lists keep the raw vendor field.
+      if: ctx.snowflake?.external_access_history?.hostnames instanceof String && ctx.snowflake.external_access_history.hostnames != ''
+      source: |-
+        def raw = ctx.snowflake.external_access_history.hostnames;
+        def parts = new ArrayList();
+        for (def part : /[,\s]+/.split(raw)) {
+          if (part != '') {
+            parts.add(part);
+          }
+        }
+        if (parts.size() == 0) {
+          return;
+        }
+        ctx.destination = ctx.destination ?: [:];
+        ctx.destination.domain = parts[0];
+        ctx.related = ctx.related ?: [:];
+        ctx.related.hosts = ctx.related.hosts ?: [];
+        for (def host : parts) {
+          if (!ctx.related.hosts.contains(host)) {
+            ctx.related.hosts.add(host);
+          }
+        }
   - rename:
       field: json.SOURCE_CLOUD
       target_field: snowflake.external_access_history.source_cloud
@@ -308,10 +319,10 @@ processors:
       if: ctx.user?.name != null
   - append:
       field: related.hosts
-      tag: append_hostname_to_related
-      value: '{{{host.name}}}'
+      tag: append_destination_domain_to_related
+      value: '{{{destination.domain}}}'
       allow_duplicates: false
-      if: ctx.host?.name != null
+      if: ctx.destination?.domain != null && (ctx.related?.hosts == null || !ctx.related.hosts.contains(ctx.destination.domain))
 
   - set:
       field: event.kind
@@ -361,13 +372,19 @@ processors:
   - remove:
       field:
         - snowflake.external_access_history.query_id
-        - snowflake.external_access_history.hostnames
         - snowflake.external_access_history.source_cloud
         - snowflake.external_access_history.source_region
         - snowflake.external_access_history.target_cloud
         - snowflake.external_access_history.target_region
       ignore_missing: true
       tag: remove_duplicate_vendor_fields_mapped_to_ecs
+  - remove:
+      field: snowflake.external_access_history.hostnames
+      ignore_missing: true
+      tag: remove_mapped_hostname
+      if: >-
+        ctx.destination?.domain != null &&
+        ctx.snowflake?.external_access_history?.hostnames == ctx.destination.domain
 
   - remove:
       field: json

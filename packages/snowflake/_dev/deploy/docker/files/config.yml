@@ -2076,7 +2076,7 @@ rules:
         - 'Bearer test-snowflake-pat'
       X-Snowflake-Authorization-Token-Type:
         - 'PROGRAMMATIC_ACCESS_TOKEN'
-    request_body: '/.*(QUERY_HISTORY.*2020-06-15 12:00:00\.000.*LIMIT 2"|QUERY_HISTORY.*LIMIT 2".*2020-06-15 12:00:00\.000).*/'
+    request_body: '/.*(2020-06-15 12:00:00\.000.*QUERY_HISTORY.*LIMIT 2"|QUERY_HISTORY.*LIMIT 2".*2020-06-15 12:00:00\.000).*/'
     responses:
       - status_code: 200
         headers:
@@ -2511,6 +2511,252 @@ rules:
             ]
           }
           `}}
+  # events keyset regression: empty page after the sub-millisecond continuation (16:00:00.123002000)
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: '/.*(TIEBREAK.*2020-07-01 16:00:00\.123002000.*LIMIT 2"|2020-07-01 16:00:00\.123002000.*TIEBREAK.*LIMIT 2").*/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06d8-0000-df4f-0000-0070000b7b31",
+            "createdOn": 1593619200999,
+            "statementStatusUrl": "/api/v2/statements/019c06d8-0000-df4f-0000-0070000b7b31",
+            "resultSetMetaData": {
+              "numRows": 0,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
+                {"name": "START_TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
+                {"name": "OBSERVED_TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
+                {"name": "TRACE", "type": "object", "nullable": true},
+                {"name": "RESOURCE_ATTRIBUTES", "type": "object", "nullable": true},
+                {"name": "SCOPE", "type": "object", "nullable": true},
+                {"name": "RECORD_TYPE", "type": "text", "nullable": true},
+                {"name": "RECORD", "type": "object", "nullable": true},
+                {"name": "RECORD_ATTRIBUTES", "type": "object", "nullable": true},
+                {"name": "VALUE", "type": "variant", "nullable": true},
+                {"name": "ROW_KEY", "type": "text", "nullable": false}
+              ],
+              "partitionInfo": [
+                {"rowCount": 0, "uncompressedSize": 0}
+              ]
+            },
+            "data": []
+          }
+          `}}
+  # events keyset regression: continuation after the first tied LIMIT 2 page
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: '/.*(TIEBREAK.*2020-07-01 16:00:00\.123001000.*LIMIT 2"|2020-07-01 16:00:00\.123001000.*TIEBREAK.*LIMIT 2").*/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06d8-0000-df4f-0000-0070000b7b30",
+            "createdOn": 1593619200888,
+            "statementStatusUrl": "/api/v2/statements/019c06d8-0000-df4f-0000-0070000b7b30",
+            "resultSetMetaData": {
+              "numRows": 2,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
+                {"name": "START_TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
+                {"name": "OBSERVED_TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
+                {"name": "TRACE", "type": "object", "nullable": true},
+                {"name": "RESOURCE_ATTRIBUTES", "type": "object", "nullable": true},
+                {"name": "SCOPE", "type": "object", "nullable": true},
+                {"name": "RECORD_TYPE", "type": "text", "nullable": true},
+                {"name": "RECORD", "type": "object", "nullable": true},
+                {"name": "RECORD_ATTRIBUTES", "type": "object", "nullable": true},
+                {"name": "VALUE", "type": "variant", "nullable": true},
+                {"name": "ROW_KEY", "type": "text", "nullable": false}
+              ],
+              "partitionInfo": [
+                {"rowCount": 2, "uncompressedSize": 400}
+              ]
+            },
+            "data": [
+              ["2020-07-01 16:00:00.123001000 +0000", null, "2020-07-01 16:00:00.123001000 +0000", null, "{\"db.user\":\"carol.davis\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592d3\",\"snow.session.id\":1275605667863}","{\"name\":\"com.sample.MyClass\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.function\":\"handler\"}", "tied handler log", "ccc333ccc333ccc333ccc333ccc333cc"],
+              ["2020-07-01 16:00:00.123002000 +0000", null, "2020-07-01 16:00:00.123002000 +0000", null, "{\"db.user\":\"dave.wilson\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592d4\",\"snow.session.id\":1275605667864}","{\"name\":\"com.sample.MyClass\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.function\":\"handler\"}", "later handler log", "ddd444ddd444ddd444ddd444ddd444dd"]
+            ]
+          }
+          `}}
+  # events keyset regression: lag-window resume after the tied/sub-millisecond pages
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: '/.*(TIEBREAK.*2020-07-01 15:45:00|2020-07-01 15:45:00.*TIEBREAK).*/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06d8-0000-df4f-0000-0070000b7b32",
+            "createdOn": 1593619200666,
+            "statementStatusUrl": "/api/v2/statements/019c06d8-0000-df4f-0000-0070000b7b32",
+            "resultSetMetaData": {
+              "numRows": 0,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
+                {"name": "START_TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
+                {"name": "OBSERVED_TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
+                {"name": "TRACE", "type": "object", "nullable": true},
+                {"name": "RESOURCE_ATTRIBUTES", "type": "object", "nullable": true},
+                {"name": "SCOPE", "type": "object", "nullable": true},
+                {"name": "RECORD_TYPE", "type": "text", "nullable": true},
+                {"name": "RECORD", "type": "object", "nullable": true},
+                {"name": "RECORD_ATTRIBUTES", "type": "object", "nullable": true},
+                {"name": "VALUE", "type": "variant", "nullable": true},
+                {"name": "ROW_KEY", "type": "text", "nullable": false}
+              ],
+              "partitionInfo": [
+                {"rowCount": 0, "uncompressedSize": 0}
+              ]
+            },
+            "data": []
+          }
+          `}}
+  # events keyset regression: first LIMIT 2 page of a tied TIMESTAMP/RECORD_TYPE/VALUE group
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: '/.*(TIEBREAK.*LIMIT 2").*/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06d8-0000-df4f-0000-0070000b7b2f",
+            "createdOn": 1593619200777,
+            "statementStatusUrl": "/api/v2/statements/019c06d8-0000-df4f-0000-0070000b7b2f",
+            "resultSetMetaData": {
+              "numRows": 2,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
+                {"name": "START_TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
+                {"name": "OBSERVED_TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
+                {"name": "TRACE", "type": "object", "nullable": true},
+                {"name": "RESOURCE_ATTRIBUTES", "type": "object", "nullable": true},
+                {"name": "SCOPE", "type": "object", "nullable": true},
+                {"name": "RECORD_TYPE", "type": "text", "nullable": true},
+                {"name": "RECORD", "type": "object", "nullable": true},
+                {"name": "RECORD_ATTRIBUTES", "type": "object", "nullable": true},
+                {"name": "VALUE", "type": "variant", "nullable": true},
+                {"name": "ROW_KEY", "type": "text", "nullable": false}
+              ],
+              "partitionInfo": [
+                {"rowCount": 2, "uncompressedSize": 400}
+              ]
+            },
+            "data": [
+              ["2020-07-01 16:00:00.123001000 +0000", null, "2020-07-01 16:00:00.123001000 +0000", null, "{\"db.user\":\"alice.johnson\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592d1\",\"snow.session.id\":1275605667861}","{\"name\":\"com.sample.MyClass\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.function\":\"handler\"}", "tied handler log", "aaa111aaa111aaa111aaa111aaa111aa"],
+              ["2020-07-01 16:00:00.123001000 +0000", null, "2020-07-01 16:00:00.123001000 +0000", null, "{\"db.user\":\"bob.smith\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592d2\",\"snow.session.id\":1275605667862}","{\"name\":\"com.sample.MyClass\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.function\":\"handler\"}", "tied handler log", "bbb222bbb222bbb222bbb222bbb222bb"]
+            ]
+          }
+          `}}
+  # events keyset regression: any later TIEBREAK poll
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: '/.*TIEBREAK.*/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06d8-0000-df4f-0000-0070000b7b33",
+            "createdOn": 1593619200555,
+            "statementStatusUrl": "/api/v2/statements/019c06d8-0000-df4f-0000-0070000b7b33",
+            "resultSetMetaData": {
+              "numRows": 0,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
+                {"name": "START_TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
+                {"name": "OBSERVED_TIMESTAMP", "type": "timestamp_ntz", "nullable": true},
+                {"name": "TRACE", "type": "object", "nullable": true},
+                {"name": "RESOURCE_ATTRIBUTES", "type": "object", "nullable": true},
+                {"name": "SCOPE", "type": "object", "nullable": true},
+                {"name": "RECORD_TYPE", "type": "text", "nullable": true},
+                {"name": "RECORD", "type": "object", "nullable": true},
+                {"name": "RECORD_ATTRIBUTES", "type": "object", "nullable": true},
+                {"name": "VALUE", "type": "variant", "nullable": true},
+                {"name": "ROW_KEY", "type": "text", "nullable": false}
+              ],
+              "partitionInfo": [
+                {"rowCount": 0, "uncompressedSize": 0}
+              ]
+            },
+            "data": []
+          }
+          `}}
   # events continuation: empty keyset after last LIMIT 2 page (12:00)
   - path: /api/v2/statements
     methods: ['POST']
@@ -2521,7 +2767,7 @@ rules:
         - 'Bearer test-snowflake-pat'
       X-Snowflake-Authorization-Token-Type:
         - 'PROGRAMMATIC_ACCESS_TOKEN'
-    request_body: '/.*((TELEMETRY\.EVENTS|RECORD_TYPE|RESOURCE_ATTRIBUTES).*2020-07-01 12:00:00\.000.*LIMIT 2"|(TELEMETRY\.EVENTS|RECORD_TYPE|RESOURCE_ATTRIBUTES).*LIMIT 2".*2020-07-01 12:00:00\.000).*/'
+    request_body: '/.*(2020-07-01 12:00:00\.000.*(TELEMETRY\.EVENTS|RECORD_TYPE|RESOURCE_ATTRIBUTES).*LIMIT 2"|(TELEMETRY\.EVENTS|RECORD_TYPE|RESOURCE_ATTRIBUTES).*LIMIT 2".*2020-07-01 12:00:00\.000).*/'
     responses:
       - status_code: 200
         headers:
@@ -2886,7 +3132,7 @@ rules:
         - 'Bearer test-snowflake-pat'
       X-Snowflake-Authorization-Token-Type:
         - 'PROGRAMMATIC_ACCESS_TOKEN'
-    request_body: '/.*(EXTERNAL_ACCESS_HISTORY.*2020-08-01 15:00:00\.000.*LIMIT 2"|EXTERNAL_ACCESS_HISTORY.*LIMIT 2".*2020-08-01 15:00:00\.000).*/'
+    request_body: '/.*(2020-08-01 15:00:00\.000.*EXTERNAL_ACCESS_HISTORY.*LIMIT 2"|EXTERNAL_ACCESS_HISTORY.*LIMIT 2".*2020-08-01 15:00:00\.000).*/'
     responses:
       - status_code: 200
         headers:

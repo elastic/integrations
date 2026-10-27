@@ -42,13 +42,25 @@ processors:
       tag: parse_json
       if: ctx.event?.original != null
 
-  # Event table rows have no unique id. Fingerprint the keyset used by the collector.
+  - drop:
+      tag: drop_non_log_record_types
+      description: >-
+        The events data stream only supports LOG rows from the Snowflake event table.
+        SPAN, SPAN_EVENT, METRIC, and EVENT rows are dropped.
+      if: ctx.json?.RECORD_TYPE != 'LOG'
+
+  # Event table rows have no unique id. Fingerprint the collector keyset plus remaining source columns.
   - fingerprint:
       tag: fingerprint_document_id
       fields:
         - json.TIMESTAMP
         - json.RECORD_TYPE
         - json.VALUE
+        - json.RESOURCE_ATTRIBUTES
+        - json.SCOPE
+        - json.RECORD
+        - json.RECORD_ATTRIBUTES
+        - json.TRACE
       target_field: _id
       ignore_missing: true
 
@@ -90,6 +102,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - json:
       field: json.VALUE
+      target_field: json.value_object
       tag: parse_value_object
       if: ctx.json?.VALUE instanceof String && ctx.json.VALUE.startsWith('{') && ctx.json.VALUE.endsWith('}')
       on_failure:
@@ -98,6 +111,16 @@ processors:
             tag: mark_value_parse_failed
             value: true
             override: true
+  - set:
+      field: json.VALUE
+      tag: promote_openflow_value
+      copy_from: json.value_object
+      override: true
+      if: ctx.json?.value_object instanceof Map && ctx.json.value_object.formattedMessage != null
+  - remove:
+      field: json.value_object
+      ignore_missing: true
+      tag: remove_value_object
 
   - dot_expander:
       field: '*'
@@ -123,6 +146,8 @@ processors:
       target_field: '@timestamp'
       tag: date_timestamp
       formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSSSS Z
+        - yyyy-MM-dd HH:mm:ss.SSSSSSSSS XX
         - yyyy-MM-dd HH:mm:ss.SSS Z
         - yyyy-MM-dd HH:mm:ss.SSS XX
         - yyyy-MM-dd HH:mm:ss Z
@@ -141,6 +166,8 @@ processors:
       target_field: event.start
       tag: date_start_timestamp
       formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSSSS Z
+        - yyyy-MM-dd HH:mm:ss.SSSSSSSSS XX
         - yyyy-MM-dd HH:mm:ss.SSS Z
         - yyyy-MM-dd HH:mm:ss.SSS XX
         - yyyy-MM-dd HH:mm:ss Z
@@ -159,6 +186,8 @@ processors:
       target_field: event.created
       tag: date_observed_timestamp
       formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSSSS Z
+        - yyyy-MM-dd HH:mm:ss.SSSSSSSSS XX
         - yyyy-MM-dd HH:mm:ss.SSS Z
         - yyyy-MM-dd HH:mm:ss.SSS XX
         - yyyy-MM-dd HH:mm:ss Z
@@ -178,12 +207,6 @@ processors:
       target_field: snowflake.events.record_type
       ignore_missing: true
       tag: rename_record_type
-  - drop:
-      tag: drop_non_log_record_types
-      description: >-
-        The events data stream only supports LOG rows from the Snowflake event table.
-        SPAN, SPAN_EVENT, METRIC, and EVENT rows are dropped.
-      if: ctx.snowflake?.events?.record_type != 'LOG'
   - set:
       field: event.action
       tag: set_event_action
@@ -490,6 +513,32 @@ processors:
         - snowflake.events.runtime_log.level
       ignore_missing: true
       tag: remove_duplicate_vendor_fields_mapped_to_ecs
+
+  - script:
+      tag: move_custom_record_attributes
+      lang: painless
+      description: >-
+        Move handler-defined RECORD_ATTRIBUTES keys out of the documented
+        snowflake.events.record_attributes object into a flattened catch-all.
+      if: ctx.snowflake?.events?.record_attributes instanceof Map
+      source: |-
+        def known = [
+          'architecture', 'authorization', 'code', 'component', 'counter', 'db',
+          'destination', 'exception', 'execution', 'group', 'id', 'log', 'logtag',
+          'name', 'snow', 'source', 'storage', 'target', 'thread', 'tree', 'type',
+          'version'
+        ];
+        def attrs = ctx.snowflake.events.record_attributes;
+        def custom = [:];
+        def keys = new ArrayList(attrs.keySet());
+        for (def key : keys) {
+          if (!known.contains(key)) {
+            custom[key] = attrs.remove(key);
+          }
+        }
+        if (custom.size() > 0) {
+          ctx.snowflake.events.custom_attributes = custom;
+        }
 
   - remove:
       field: json

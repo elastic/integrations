@@ -47,6 +47,8 @@ processors:
       target_field: '@timestamp'
       tag: date_end_time
       formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSSSS Z
+        - yyyy-MM-dd HH:mm:ss.SSSSSSSSS XX
         - yyyy-MM-dd HH:mm:ss.SSS Z
         - yyyy-MM-dd HH:mm:ss.SSS XX
         - yyyy-MM-dd HH:mm:ss Z
@@ -71,6 +73,8 @@ processors:
       target_field: event.start
       tag: date_start_time
       formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSSSS Z
+        - yyyy-MM-dd HH:mm:ss.SSSSSSSSS XX
         - yyyy-MM-dd HH:mm:ss.SSS Z
         - yyyy-MM-dd HH:mm:ss.SSS XX
         - yyyy-MM-dd HH:mm:ss Z
@@ -204,7 +208,7 @@ processors:
       lang: painless
       tag: set_event_duration
       description: Convert TOTAL_ELAPSED_TIME from milliseconds to nanoseconds for event.duration.
-      if: ctx.json?.TOTAL_ELAPSED_TIME != null
+      if: ctx.json?.TOTAL_ELAPSED_TIME instanceof Number
       params:
         ms_to_ns: 1000000
       source: |-

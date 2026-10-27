@@ -52,7 +52,7 @@ Elastic Agent is required to stream data from the SQL API and ship the data to E
 1. Create a role and a `TYPE=SERVICE` user, and grant the role to the user.
 2. Grant `USAGE` on a warehouse that can auto-resume.
 3. Grant the SNOWFLAKE database roles and application roles the data streams need (or `IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE`):
-   * `SNOWFLAKE.GOVERNANCE_VIEWER` for `query_history` and `access_history`
+   * `SNOWFLAKE.GOVERNANCE_VIEWER` for `query_history`, `access_history`, and `external_access_history` (the external access collector joins `QUERY_HISTORY`)
    * `SNOWFLAKE.USAGE_VIEWER` for `external_access_history` and `data_transfer_history`
    * `SNOWFLAKE.OBJECT_VIEWER` for `stages`
    * `SNOWFLAKE.SECURITY_VIEWER` (or imported privileges) for `login_history`, `sessions`, and `grants_to_users`

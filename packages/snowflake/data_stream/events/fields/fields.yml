@@ -12,10 +12,9 @@
     - name: session_id
       type: keyword
       description: Session identifier copied from RESOURCE_ATTRIBUTES snow.session.id. ECS has no session.id.
-    - name: value
-      type: double
-      description: Numeric VALUE for METRIC rows. Log messages and string EVENT values are mapped to message.
-      metric_type: gauge
+    - name: custom_attributes
+      type: flattened
+      description: Handler-defined RECORD_ATTRIBUTES keys that are not part of the documented Snowflake or Openflow attribute set.
     - name: resource_attributes
       type: group
       description: >
@@ -220,75 +219,11 @@
                 - name: language
                   type: keyword
                   description: Handler or SDK language (telemetry.sdk.language). Snowflake uses java, scala, python, javascript, and sql.
-    - name: record
-      type: group
-      description: RECORD object. Fixed keys for the row RECORD_TYPE.
-      fields:
-        - name: aggregation_temporality
-          type: keyword
-          description: Openflow metric aggregation temporality. cumulative for strictly increasing metrics.
-        - name: dropped_attributes_count
-          type: long
-          description: Span attributes dropped after the recorded maximum was reached.
-        - name: is_monotonic
-          type: boolean
-          description: Openflow flag for cumulative metrics that only increase.
-        - name: kind
-          type: keyword
-          description: Span kind. SPAN_KIND_SERVER for SQL traces, otherwise SPAN_KIND_INTERNAL.
-        - name: metric
-          type: group
-          fields:
-            - name: name
-              type: keyword
-              description: Metric name, such as process.memory.usage or an Openflow metric name.
-            - name: type
-              type: keyword
-              description: OpenTelemetry metric type label when present in handler telemetry.
-            - name: unit
-              type: keyword
-              description: Metric unit, such as bytes, nanosecond, or millisecond.
-        - name: metric_type
-          type: keyword
-          description: OpenTelemetry metric point type, such as sum or gauge.
-        - name: name
-          type: keyword
-          description: Span name, span event name, or EVENT name such as iceberg_auto_refresh_snapshot_lifecycle.
-        - name: parent_span_id
-          type: keyword
-          description: Span id of the caller when this span was invoked from another procedure or UDF.
-        - name: severity_number
-          type: long
-          description: Numeric severity for Snowflake Native App lifecycle events.
-        - name: snow
-          type: group
-          fields:
-            - name: process
-              type: group
-              fields:
-                - name: memory
-                  type: group
-                  fields:
-                    - name: usage
-                      type: group
-                      fields:
-                        - name: max
-                          type: keyword
-                          description: Maximum memory in bytes used during the span (snow.process.memory.usage.max).
-        - name: status
-          type: group
-          description: Span status. Snowflake stores this as an object even though some column docs call it a string.
-          fields:
-            - name: code
-              type: keyword
-              description: Span status code, such as STATUS_CODE_UNSET, STATUS_CODE_OK, or STATUS_CODE_ERROR.
-        - name: value_type
-          type: keyword
-          description: Data type of the metric VALUE, such as DOUBLE or INT.
     - name: record_attributes
       type: group
       description: >
-        RECORD_ATTRIBUTES. Documented keys for logs, spans, Iceberg events, and Openflow telemetry. Handler-defined keys remain on this object when present.
+        RECORD_ATTRIBUTES. Documented keys for logs and Openflow telemetry.
+        Handler-defined keys are moved to snowflake.events.custom_attributes.
 
       fields:
         - name: architecture
@@ -461,43 +396,6 @@
         - name: version
           type: keyword
           description: Operating system version from Openflow CPU metrics.
-    - name: event_value
-      type: group
-      description: Structured VALUE object for EVENT rows, including Iceberg automated refresh and Native App lifecycle.
-      fields:
-        - name: action
-          type: keyword
-          description: Privilege action during Native App install or upgrade. GRANTED or REVOKED.
-        - name: error_message
-          type: wildcard
-          description: Iceberg automated refresh error message when snapshot_state is errored.
-        - name: health_status
-          type: keyword
-          description: Native App health status. OK, PAUSED, or FAILED.
-        - name: metadata_file_location
-          type: keyword
-          description: Iceberg metadata file location. Null when automated refresh failed.
-        - name: privileges
-          type: keyword
-          description: Privileges granted or revoked during Native App install or upgrade.
-        - name: snapshot_state
-          type: keyword
-          description: Iceberg automated refresh state. started, completed, or errored.
-        - name: target_upgrade_patch
-          type: keyword
-          description: Patch level of the Native App version that is running or pending upgrade.
-        - name: target_upgrade_version
-          type: keyword
-          description: Native App version that is running or pending upgrade.
-        - name: upgrade_attempt
-          type: keyword
-          description: Whether an upgrade was attempted for the Native App.
-        - name: upgrade_failure_reason
-          type: wildcard
-          description: Reason a Native App upgrade failed, when present.
-        - name: upgrade_state
-          type: keyword
-          description: Current state of a Native App background install or upgrade.
     - name: runtime_log
       type: group
       description: Openflow runtime log JSON parsed from the VALUE column.
