@@ -404,3 +404,38 @@ rules:
               }
             ]
           }
+  # Some servers (e.g. ThreatQ) return next on the last page, together with
+  # more: false. There is deliberately no rule for a request with next set,
+  # so following next results in a 404 and an extra error document.
+  - path: /taxii2/root/collections/7c1d2f3a-5b8e-4d6a-9c0f-3e2a1b4d5c6e/objects/
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - 'Bearer abcd1234'
+    query_params:
+      next: null
+    responses:
+      - status_code: 200
+        headers:
+          X-TAXII-Date-Added-Last: "2024-05-15T09:12:16.432Z"
+          Content-Type: "application/taxii+json;version=2.1"
+        body: |-
+          {
+            "objects": [
+              {
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--5d0b6a41-2f0e-4a1c-8d7b-9a3c1e6f2b84",
+                "created": "2024-05-15T09:12:16.432Z",
+                "modified": "2024-05-15T09:12:16.432Z",
+                "name": "more-false.example.com",
+                "description": "Indicator on a last page that reports next with more set to false.",
+                "pattern": "[domain-name:value = 'more-false.example.com']",
+                "pattern_type": "stix",
+                "pattern_version": "2.1",
+                "valid_from": "2024-05-15T09:12:16.432Z"
+              }
+            ],
+            "next": 1000,
+            "more": false
+          }
