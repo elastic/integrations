@@ -2066,6 +2066,70 @@ rules:
               ["2020-06-15 08:30:00.000 +0000", "2020-06-15 09:00:00.000 +0000", "SECURITYADMIN", "USER", "bob.smith", "ACCOUNTADMIN"]
             ]
           }
+  # query_history — round 2 cursor resume (watermark = last END_TIME minus lag_time 45m)
+  # Must precede the 12:00:00 empty-page rule: apply_lag still binds last_timestamp
+  # as 12:00:00.000 in binding 2, while binding 1 carries the 11:15 watermark.
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: /.*(FROM SNOWFLAKE\.ACCOUNT_USAGE\.QUERY_HISTORY.*2020-06-15 11:15:00|2020-06-15 11:15:00.*FROM SNOWFLAKE\.ACCOUNT_USAGE\.QUERY_HISTORY).*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06d7-0000-df4f-0000-0070000a590f",
+            "createdOn": 1592185800123,
+            "statementStatusUrl": "/api/v2/statements/019c06d7-0000-df4f-0000-0070000a590f",
+            "resultSetMetaData": {
+              "numRows": 1,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "QUERY_ID", "type": "text", "nullable": false},
+                {"name": "QUERY_TEXT", "type": "text", "nullable": true},
+                {"name": "DATABASE_NAME", "type": "text", "nullable": true},
+                {"name": "SCHEMA_NAME", "type": "text", "nullable": true},
+                {"name": "QUERY_TYPE", "type": "text", "nullable": true},
+                {"name": "SESSION_ID", "type": "fixed", "nullable": true},
+                {"name": "AUTHN_EVENT_ID", "type": "fixed", "nullable": true},
+                {"name": "USER_NAME", "type": "text", "nullable": true},
+                {"name": "ROLE_NAME", "type": "text", "nullable": true},
+                {"name": "WAREHOUSE_NAME", "type": "text", "nullable": true},
+                {"name": "EXECUTION_STATUS", "type": "text", "nullable": true},
+                {"name": "ERROR_CODE", "type": "text", "nullable": true},
+                {"name": "ERROR_MESSAGE", "type": "text", "nullable": true},
+                {"name": "START_TIME", "type": "timestamp_ltz", "nullable": true},
+                {"name": "END_TIME", "type": "timestamp_ltz", "nullable": true},
+                {"name": "TOTAL_ELAPSED_TIME", "type": "fixed", "nullable": true},
+                {"name": "BYTES_SCANNED", "type": "fixed", "nullable": true},
+                {"name": "ROWS_UNLOADED", "type": "fixed", "nullable": true},
+                {"name": "OUTBOUND_DATA_TRANSFER_BYTES", "type": "fixed", "nullable": true},
+                {"name": "INBOUND_DATA_TRANSFER_BYTES", "type": "fixed", "nullable": true},
+                {"name": "QUERY_HASH", "type": "text", "nullable": true},
+                {"name": "USER_TYPE", "type": "text", "nullable": true},
+                {"name": "AGENT_TYPE", "type": "text", "nullable": true}
+              ],
+              "partitionInfo": [
+                {"rowCount": 1, "uncompressedSize": 420}
+              ]
+            },
+            "data": [
+              ["01b2c3d4-e5f6-7890-abcd-ef1234567895", "SELECT id FROM example_db.public.orders LIMIT 10", "EXAMPLE_DB", "PUBLIC", "SELECT", "9876543210006", "1234567890006", "EXAMPLE_USER", "ANALYST", "EXAMPLE_WH", "SUCCESS", null, null, "2020-06-15 14:29:59.750 +0000", "2020-06-15 14:30:00.000 +0000", "250", "1024", "0", "0", "0", "55555555555555555555555555555555", "PERSON", null]
+            ]
+          }
+          `}}
   # query_history continuation: empty keyset after last LIMIT 2 page (12:00)
   - path: /api/v2/statements
     methods: ['POST']
@@ -2190,68 +2254,6 @@ rules:
               ["01b2c3d4-e5f6-7890-abcd-ef1234567892", "SELECT COUNT(*) FROM example_db.public.orders", "EXAMPLE_DB", "PUBLIC", "SELECT", "9876543210003", "1234567890003", "carol.davis", "ANALYST", "EXAMPLE_WH", "success", null, null, "2020-06-15 09:59:59.800 +0000", "2020-06-15 10:00:00.000 +0000", "200", "4096", "0", "0", "0", "22222222222222222222222222222222", "PERSON", null],
               ["01b2c3d4-e5f6-7890-abcd-ef1234567893", "SELECT id FROM example_db.public.customers", "EXAMPLE_DB", "PUBLIC", "SELECT", "9876543210004", "1234567890004", "dave.wilson", "SYSADMIN", "EXAMPLE_WH", "incident", "000603", "Execution of query canceled due to server shutdown.", "2020-06-15 10:59:50.000 +0000", "2020-06-15 11:00:00.000 +0000", "10000", "0", "0", "0", "0", "33333333333333333333333333333333", "PERSON", null],
               ["01b2c3d4-e5f6-7890-abcd-ef1234567894", "GRANT SELECT ON example_db.public.customers TO ROLE ANALYST", "EXAMPLE_DB", "PUBLIC", "GRANT", "9876543210005", "1234567890005", "eve.martinez", "SECURITYADMIN", "EXAMPLE_WH", "success", null, null, "2020-06-15 11:59:59.000 +0000", "2020-06-15 12:00:00.000 +0000", "95", "0", "0", "0", "0", "44444444444444444444444444444444", "PERSON", null]
-            ]
-          }
-          `}}
-  # query_history — round 2 cursor resume (watermark = last END_TIME minus lag_time 45m)
-  - path: /api/v2/statements
-    methods: ['POST']
-    query_params:
-      requestId: "{requestId:.*}"
-    request_headers:
-      Authorization:
-        - 'Bearer test-snowflake-pat'
-      X-Snowflake-Authorization-Token-Type:
-        - 'PROGRAMMATIC_ACCESS_TOKEN'
-    request_body: /.*(FROM SNOWFLAKE\.ACCOUNT_USAGE\.QUERY_HISTORY.*2020-06-15 11:15:00|2020-06-15 11:15:00.*FROM SNOWFLAKE\.ACCOUNT_USAGE\.QUERY_HISTORY).*/
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - application/json
-        body: |-
-          {{ minify_json `
-          {
-            "code": "090001",
-            "sqlState": "00000",
-            "message": "Statement executed successfully.",
-            "statementHandle": "019c06d7-0000-df4f-0000-0070000a590f",
-            "createdOn": 1592185800123,
-            "statementStatusUrl": "/api/v2/statements/019c06d7-0000-df4f-0000-0070000a590f",
-            "resultSetMetaData": {
-              "numRows": 1,
-              "format": "jsonv2",
-              "rowType": [
-                {"name": "QUERY_ID", "type": "text", "nullable": false},
-                {"name": "QUERY_TEXT", "type": "text", "nullable": true},
-                {"name": "DATABASE_NAME", "type": "text", "nullable": true},
-                {"name": "SCHEMA_NAME", "type": "text", "nullable": true},
-                {"name": "QUERY_TYPE", "type": "text", "nullable": true},
-                {"name": "SESSION_ID", "type": "fixed", "nullable": true},
-                {"name": "AUTHN_EVENT_ID", "type": "fixed", "nullable": true},
-                {"name": "USER_NAME", "type": "text", "nullable": true},
-                {"name": "ROLE_NAME", "type": "text", "nullable": true},
-                {"name": "WAREHOUSE_NAME", "type": "text", "nullable": true},
-                {"name": "EXECUTION_STATUS", "type": "text", "nullable": true},
-                {"name": "ERROR_CODE", "type": "text", "nullable": true},
-                {"name": "ERROR_MESSAGE", "type": "text", "nullable": true},
-                {"name": "START_TIME", "type": "timestamp_ltz", "nullable": true},
-                {"name": "END_TIME", "type": "timestamp_ltz", "nullable": true},
-                {"name": "TOTAL_ELAPSED_TIME", "type": "fixed", "nullable": true},
-                {"name": "BYTES_SCANNED", "type": "fixed", "nullable": true},
-                {"name": "ROWS_UNLOADED", "type": "fixed", "nullable": true},
-                {"name": "OUTBOUND_DATA_TRANSFER_BYTES", "type": "fixed", "nullable": true},
-                {"name": "INBOUND_DATA_TRANSFER_BYTES", "type": "fixed", "nullable": true},
-                {"name": "QUERY_HASH", "type": "text", "nullable": true},
-                {"name": "USER_TYPE", "type": "text", "nullable": true},
-                {"name": "AGENT_TYPE", "type": "text", "nullable": true}
-              ],
-              "partitionInfo": [
-                {"rowCount": 1, "uncompressedSize": 420}
-              ]
-            },
-            "data": [
-              ["01b2c3d4-e5f6-7890-abcd-ef1234567895", "SELECT id FROM example_db.public.orders LIMIT 10", "EXAMPLE_DB", "PUBLIC", "SELECT", "9876543210006", "1234567890006", "EXAMPLE_USER", "ANALYST", "EXAMPLE_WH", "SUCCESS", null, null, "2020-06-15 14:29:59.750 +0000", "2020-06-15 14:30:00.000 +0000", "250", "1024", "0", "0", "0", "55555555555555555555555555555555", "PERSON", null]
             ]
           }
           `}}
@@ -2610,11 +2612,12 @@ rules:
             },
             "data": [
               ["2020-07-01 16:00:00.123001000 +0000", null, "2020-07-01 16:00:00.123001000 +0000", null, "{\"db.user\":\"carol.davis\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592d3\",\"snow.session.id\":1275605667863}","{\"name\":\"com.sample.MyClass\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.function\":\"handler\"}", "tied handler log", "ccc333ccc333ccc333ccc333ccc333cc"],
-              ["2020-07-01 16:00:00.123002000 +0000", null, "2020-07-01 16:00:00.123002000 +0000", null, "{\"db.user\":\"dave.wilson\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592d4\",\"snow.session.id\":1275605667864}","{\"name\":\"com.sample.MyClass\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.function\":\"handler\"}", "later handler log", "ddd444ddd444ddd444ddd444ddd444dd"]
+              ["2020-07-01 16:00:00.123002000 Z", null, "2020-07-01 16:00:00.123002000 Z", null, "{\"db.user\":\"dave.wilson\",\"snow.query.id\":\"01ab0f07-0000-15c8-0000-0129000592d4\",\"snow.session.id\":1275605667864}","{\"name\":\"com.sample.MyClass\"}", "LOG", "{\"severity_text\":\"INFO\"}", "{\"code.function\":\"handler\"}", "later handler log", "ddd444ddd444ddd444ddd444ddd444dd"]
             ]
           }
           `}}
-  # events keyset regression: empty page after the sub-millisecond continuation (16:00:00.123002000)
+  # events keyset regression: empty page after the sub-millisecond continuation (16:00:00.123002000 Z)
+  # The last continuation TIMESTAMP uses a Z suffix so lag-window parsing covers FF9-with-Z.
   - path: /api/v2/statements
     methods: ['POST']
     query_params:
@@ -3128,6 +3131,61 @@ rules:
             ]
           }
           `}}
+  # external_access_history — round 2 cursor resume (watermark = last END_TIME minus lag_time 3h)
+  # Must precede the 15:00:00 empty-page rule: apply_lag still binds last_timestamp
+  # as 15:00:00.000 in binding 2, while binding 1 carries the 12:00 watermark.
+  # Match EXTERNAL_ACCESS_HISTORY so this does not steal query_history (FROM QUERY_HISTORY) traffic.
+  - path: /api/v2/statements
+    methods: ['POST']
+    query_params:
+      requestId: "{requestId:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer test-snowflake-pat'
+      X-Snowflake-Authorization-Token-Type:
+        - 'PROGRAMMATIC_ACCESS_TOKEN'
+    request_body: /.*(EXTERNAL_ACCESS_HISTORY.*2020-08-01 12:00:00|2020-08-01 12:00:00.*EXTERNAL_ACCESS_HISTORY).*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "code": "090001",
+            "sqlState": "00000",
+            "message": "Statement executed successfully.",
+            "statementHandle": "019c06d9-0000-df4f-0000-0070000c8b0f",
+            "createdOn": 1596290400123,
+            "statementStatusUrl": "/api/v2/statements/019c06d9-0000-df4f-0000-0070000c8b0f",
+            "resultSetMetaData": {
+              "numRows": 1,
+              "format": "jsonv2",
+              "rowType": [
+                {"name": "QUERY_ID", "type": "text", "nullable": true},
+                {"name": "HOSTNAMES", "type": "text", "nullable": true},
+                {"name": "STATUS", "type": "text", "nullable": true},
+                {"name": "IP", "type": "text", "nullable": true},
+                {"name": "SOURCE_CLOUD", "type": "text", "nullable": true},
+                {"name": "SOURCE_REGION", "type": "text", "nullable": true},
+                {"name": "TARGET_CLOUD", "type": "text", "nullable": true},
+                {"name": "TARGET_REGION", "type": "text", "nullable": true},
+                {"name": "SENT_BYTES", "type": "fixed", "nullable": true},
+                {"name": "RECEIVED_BYTES", "type": "fixed", "nullable": true},
+                {"name": "START_TIME", "type": "timestamp_ltz", "nullable": true},
+                {"name": "END_TIME", "type": "timestamp_ltz", "nullable": true},
+                {"name": "USER_NAME", "type": "text", "nullable": true}
+              ],
+              "partitionInfo": [
+                {"rowCount": 1, "uncompressedSize": 280}
+              ]
+            },
+            "data": [
+              ["01b2c3d4-e5f6-7890-abcd-ef1234567ea4", "api.example.com", "Success", "198.51.100.50", "aws", "us-west-2", "internet", "internet", "512", "1024", "2020-08-01 15:59:59.000 +0000", "2020-08-01 16:00:00.000 +0000", "alice.johnson"]
+            ]
+          }
+          `}}
   # external_access_history continuation: empty keyset after last LIMIT 2 page (15:00)
   - path: /api/v2/statements
     methods: ['POST']
@@ -3231,59 +3289,6 @@ rules:
             "data": [
               ["01b2c3d4-e5f6-7890-abcd-ef1234567ea2", "files.example.com", "Success", "198.51.100.43", "gcp", "us-central1", "aws", "us-east-1", "4096", "16384", "2020-08-01 11:59:50.000 +0000", "2020-08-01 12:00:00.000 +0000", "carol.davis"],
               ["01b2c3d4-e5f6-7890-abcd-ef1234567ea3", "webhook.example.org", "Success", "192.0.2.30", "azure", "eastus", "internet", "internet", "256", "512", "2020-08-01 14:59:59.000 +0000", "2020-08-01 15:00:00.000 +0000", "dave.wilson"]
-            ]
-          }
-          `}}
-  # external_access_history — round 2 cursor resume (watermark = last END_TIME minus lag_time 3h)
-  # Match EXTERNAL_ACCESS_HISTORY so this does not steal query_history (FROM QUERY_HISTORY) traffic.
-  - path: /api/v2/statements
-    methods: ['POST']
-    query_params:
-      requestId: "{requestId:.*}"
-    request_headers:
-      Authorization:
-        - 'Bearer test-snowflake-pat'
-      X-Snowflake-Authorization-Token-Type:
-        - 'PROGRAMMATIC_ACCESS_TOKEN'
-    request_body: /.*(EXTERNAL_ACCESS_HISTORY.*2020-08-01 12:00:00|2020-08-01 12:00:00.*EXTERNAL_ACCESS_HISTORY).*/
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - application/json
-        body: |-
-          {{ minify_json `
-          {
-            "code": "090001",
-            "sqlState": "00000",
-            "message": "Statement executed successfully.",
-            "statementHandle": "019c06d9-0000-df4f-0000-0070000c8b0f",
-            "createdOn": 1596290400123,
-            "statementStatusUrl": "/api/v2/statements/019c06d9-0000-df4f-0000-0070000c8b0f",
-            "resultSetMetaData": {
-              "numRows": 1,
-              "format": "jsonv2",
-              "rowType": [
-                {"name": "QUERY_ID", "type": "text", "nullable": true},
-                {"name": "HOSTNAMES", "type": "text", "nullable": true},
-                {"name": "STATUS", "type": "text", "nullable": true},
-                {"name": "IP", "type": "text", "nullable": true},
-                {"name": "SOURCE_CLOUD", "type": "text", "nullable": true},
-                {"name": "SOURCE_REGION", "type": "text", "nullable": true},
-                {"name": "TARGET_CLOUD", "type": "text", "nullable": true},
-                {"name": "TARGET_REGION", "type": "text", "nullable": true},
-                {"name": "SENT_BYTES", "type": "fixed", "nullable": true},
-                {"name": "RECEIVED_BYTES", "type": "fixed", "nullable": true},
-                {"name": "START_TIME", "type": "timestamp_ltz", "nullable": true},
-                {"name": "END_TIME", "type": "timestamp_ltz", "nullable": true},
-                {"name": "USER_NAME", "type": "text", "nullable": true}
-              ],
-              "partitionInfo": [
-                {"rowCount": 1, "uncompressedSize": 280}
-              ]
-            },
-            "data": [
-              ["01b2c3d4-e5f6-7890-abcd-ef1234567ea4", "api.example.com", "Success", "198.51.100.50", "aws", "us-west-2", "internet", "internet", "512", "1024", "2020-08-01 15:59:59.000 +0000", "2020-08-01 16:00:00.000 +0000", "alice.johnson"]
             ]
           }
           `}}

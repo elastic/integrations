@@ -102,6 +102,17 @@ processors:
             field: error.message
             tag: append_parse_record_attributes_failure
             value: '{{{_ingest.on_failure_message}}}'
+  # SQL API returns VARIANT strings as JSON text, including surrounding quotes.
+  - json:
+      field: json.VALUE
+      tag: unwrap_variant_string
+      if: ctx.json?.VALUE instanceof String && ctx.json.VALUE.length() >= 2 && ctx.json.VALUE.startsWith('"') && ctx.json.VALUE.endsWith('"')
+      on_failure:
+        - set:
+            field: json.value_unwrap_failed
+            tag: mark_value_unwrap_failed
+            value: true
+            override: true
   - json:
       field: json.VALUE
       target_field: json.value_object

@@ -19,7 +19,7 @@ Grants keep separate watermarks for `CREATED_ON` and `DELETED_ON`.
 The Snowflake integration collects the following logs:
 
 * **query_history**: Completed statements from `SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY` (SQL text, user, role, warehouse, status, bytes, and timing).
-* **events**: Handler **log messages** (`RECORD_TYPE` `LOG`) from the account event table (default `SNOWFLAKE.TELEMETRY.EVENTS`). The collector filters `RECORD_TYPE = 'LOG'`; remaining `SPAN`, `SPAN_EVENT`, `METRIC`, or `EVENT` rows are dropped during ingest.
+* **events**: Handler **log messages** (`RECORD_TYPE` `LOG`) from the account event table (default `SNOWFLAKE.TELEMETRY.EVENTS_VIEW`). The collector filters `RECORD_TYPE = 'LOG'`; remaining `SPAN`, `SPAN_EVENT`, `METRIC`, or `EVENT` rows are dropped during ingest.
 * **external_access_history**: Outbound network calls from UDF and procedure handlers in `SNOWFLAKE.ACCOUNT_USAGE.EXTERNAL_ACCESS_HISTORY`, joined to `QUERY_HISTORY` for event time.
 * **access_history**: Objects and columns read or written by each query from `SNOWFLAKE.ACCOUNT_USAGE.ACCESS_HISTORY` (direct and base objects accessed, objects modified, DDL operations, policies referenced). Enterprise Edition or later.
 * **data_transfer_history**: Hourly byte-count windows of data moved between clouds and regions from `SNOWFLAKE.ACCOUNT_USAGE.DATA_TRANSFER_HISTORY`, by transfer type.
@@ -56,7 +56,7 @@ Elastic Agent is required to stream data from the SQL API and ship the data to E
    * `SNOWFLAKE.USAGE_VIEWER` for `external_access_history` and `data_transfer_history`
    * `SNOWFLAKE.OBJECT_VIEWER` for `stages`
    * `SNOWFLAKE.SECURITY_VIEWER` (or imported privileges) for `login_history`, `sessions`, and `grants_to_users`
-   * Application role `SNOWFLAKE.EVENTS_VIEWER` (or `SELECT` on a custom event table) for `events`
+   * Application role `SNOWFLAKE.EVENTS_VIEWER` for the default `SNOWFLAKE.TELEMETRY.EVENTS_VIEW`. For a custom event table, grant `USAGE` on its database and schema and `SELECT` on the table.
 4. Create a programmatic access token for the service user.
 5. If a network policy is enabled, allow the Elastic Agent egress IP (or PrivateLink endpoint).
 
@@ -142,7 +142,7 @@ The `query_history` data stream provides completed SQL statement events from
 
 #### events
 
-The `events` data stream collects handler **log messages** from the account event table (default `SNOWFLAKE.TELEMETRY.EVENTS`). The collector filters `RECORD_TYPE = 'LOG'`; remaining `SPAN`, `SPAN_EVENT`, `METRIC`, or `EVENT` rows are dropped by the ingest pipeline. Confirm the table name with `SHOW PARAMETERS LIKE 'EVENT_TABLE' IN ACCOUNT`.
+The `events` data stream collects handler **log messages** from the account event table (default `SNOWFLAKE.TELEMETRY.EVENTS_VIEW`). The collector filters `RECORD_TYPE = 'LOG'`; remaining `SPAN`, `SPAN_EVENT`, `METRIC`, or `EVENT` rows are dropped by the ingest pipeline. Confirm a custom table name with `SHOW PARAMETERS LIKE 'EVENT_TABLE' IN ACCOUNT`.
 
 ##### events fields
 
