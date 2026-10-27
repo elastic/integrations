@@ -681,6 +681,25 @@ processors:
       description: >-
         `stamus.extra_info` is confirmed-live to always be explicit JSON `null`; strip it rather
         than indexing a null keyword value.
+  - set:
+      field: user_agent.original
+      tag: set_user_agent_original_from_http
+      value: '{{{json.http.http_user_agent}}}'
+      ignore_empty_value: true
+      if: ctx.json?.http?.http_user_agent != null
+      description: User agent string embedded on file-identification and sightings alerts.
+  - user_agent:
+      field: user_agent.original
+      tag: parse_user_agent
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.http.request_headers
+      target_field: http.request_headers
+      tag: rename_http_request_headers
+      ignore_missing: true
+      description: Request headers embedded on file-identification and sightings alerts.
+
   - remove:
       field: json
       tag: remove_json_temp

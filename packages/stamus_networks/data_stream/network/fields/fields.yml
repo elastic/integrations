@@ -1,0 +1,993 @@
+- name: dns.question.domain
+  type: keyword
+  description: Domain portion written by the registered_domain processor for the DNS question name.
+- name: tls.client.ja4
+  type: keyword
+  description: JA4 TLS client fingerprint. Not an ECS field in the 9.5.0 schema used by this package.
+- name: flow_id
+  type: keyword
+  description: Suricata flow identifier. Opaque correlation key, stored as keyword. The collector parses it with decode_json_string_numbers() so values above 2^53 keep their digits.
+- name: stamus_infrequent
+  type: boolean
+  description: Stamus flag marking events that the sensor classified as infrequent.
+- name: hostname_info
+  type: group
+  description: Stamus DNS, SNI, or Host-header hostname enrichment. host is also appended to related.hosts.
+  fields:
+    - name: host
+      type: keyword
+      description: Hostname observed for this event.
+    - name: domain
+      type: keyword
+      description: Domain portion of the hostname.
+    - name: domain_without_tld
+      type: keyword
+      description: Domain with the top-level domain removed.
+    - name: subdomain
+      type: keyword
+      description: Subdomain portion of the hostname, if any.
+    - name: tld
+      type: keyword
+      description: Top-level domain.
+    - name: url
+      type: keyword
+      description: URL context associated with the hostname enrichment.
+- name: metadata
+  type: group
+  description: Cross-cutting Stamus flowbits enrichment at the event root.
+  fields:
+    - name: flowbits
+      type: keyword
+      description: Suricata flowbits set or checked for this event.
+- name: fileinfo
+  type: group
+  description: File-transfer metadata kept alongside the ECS file.* fields.
+  fields:
+    - name: state
+      type: keyword
+      description: File transfer state, for example CLOSED.
+    - name: stored
+      type: boolean
+      description: Whether the sensor stored the file content.
+    - name: gaps
+      type: boolean
+      description: Whether the captured file content had gaps.
+    - name: tx_id
+      type: long
+      description: Transaction id of the file within the flow.
+- name: snmp
+  type: group
+  description: SNMP fields observed on live Clear NDR events.
+  fields:
+    - name: version
+      type: long
+      description: SNMP version number.
+    - name: pdu_type
+      type: keyword
+      description: SNMP PDU type, for example get_request.
+    - name: usm
+      type: keyword
+      description: SNMPv3 User-based Security Model user name.
+- name: krb5
+  type: group
+  description: Kerberos fields observed on live Clear NDR events.
+  fields:
+    - name: msg_type
+      type: keyword
+      description: Kerberos message type.
+    - name: cname
+      type: keyword
+      description: Client principal name.
+    - name: realm
+      type: keyword
+      description: Kerberos realm.
+    - name: sname
+      type: keyword
+      description: Service principal name.
+    - name: encryption
+      type: keyword
+      description: Encryption type name.
+    - name: error_code
+      type: keyword
+      description: Kerberos error code name.
+    - name: weak_encryption
+      type: boolean
+      description: Whether the encryption type is considered weak.
+- name: anomaly
+  type: group
+  description: Suricata anomaly event fields observed on live Clear NDR events.
+  fields:
+    - name: type
+      type: keyword
+      description: Anomaly type.
+    - name: event
+      type: keyword
+      description: Anomaly event name.
+    - name: layer
+      type: keyword
+      description: Protocol layer that reported the anomaly.
+- name: smb
+  type: group
+  description: SMB fields observed on live Clear NDR events.
+  fields:
+    - name: dialect
+      type: keyword
+      description: SMB dialect string.
+    - name: command
+      type: keyword
+      description: SMB command name.
+    - name: status
+      type: keyword
+      description: SMB status name.
+    - name: status_code
+      type: keyword
+      description: SMB status code.
+    - name: share
+      type: keyword
+      description: SMB share name.
+    - name: named_pipe
+      type: keyword
+      description: SMB named pipe.
+    - name: session_id
+      type: long
+      description: SMB session id.
+- name: smb_insights
+  type: group
+  description: Stamus SMB insight summary observed on live Clear NDR events.
+  fields:
+    - name: first_seen
+      type: date
+      description: First time this SMB insight was observed.
+    - name: last_seen
+      type: date
+      description: Last time this SMB insight was observed.
+    - name: events
+      type: long
+      description: Number of SMB events summarized.
+    - name: flags
+      type: flattened
+      description: SMB insight boolean flags.
+    - name: trackers
+      type: flattened
+      description: SMB command and status trackers.
+- name: quic
+  type: group
+  description: QUIC fields observed on live Clear NDR events.
+  fields:
+    - name: version
+      type: keyword
+      description: QUIC version string.
+- name: dhcp
+  type: group
+  description: DHCP fields observed on live Clear NDR events.
+  fields:
+    - name: type
+      type: keyword
+      description: DHCP message type name.
+    - name: client_mac
+      type: keyword
+      description: Client hardware address.
+    - name: assigned_ip
+      type: ip
+      description: Address the server assigned.
+    - name: client_ip
+      type: ip
+      description: Client IP address from the DHCP message.
+    - name: hostname
+      type: keyword
+      description: Hostname requested or offered.
+    - name: params
+      type: keyword
+      description: Requested DHCP parameter names.
+- name: dcerpc
+  type: group
+  description: DCERPC fields observed on live Clear NDR events.
+  fields:
+    - name: request
+      type: keyword
+      description: DCERPC request type.
+    - name: response
+      type: keyword
+      description: DCERPC response type.
+    - name: call_id
+      type: long
+      description: DCERPC call id.
+    - name: interfaces
+      type: group
+      description: DCERPC interfaces named in the bind.
+      fields:
+        - name: ack_result
+          type: long
+          description: Interface acknowledgement result.
+        - name: uuid
+          type: keyword
+          description: Interface UUID.
+        - name: version
+          type: keyword
+          description: Interface version.
+- name: ssh
+  type: group
+  description: SSH client and server banners.
+  fields:
+    - name: client
+      type: group
+      description: SSH client banner.
+      fields:
+        - name: proto_version
+          type: keyword
+          description: SSH protocol version advertised by the client.
+        - name: software_version
+          type: keyword
+          description: SSH software version advertised by the client.
+    - name: server
+      type: group
+      description: SSH server banner.
+      fields:
+        - name: proto_version
+          type: keyword
+          description: SSH protocol version advertised by the server.
+        - name: software_version
+          type: keyword
+          description: SSH software version advertised by the server.
+- name: rdp
+  type: group
+  description: RDP fields. client and server_supports are flattened because live documents only sometimes include them.
+  fields:
+    - name: client
+      type: flattened
+      description: RDP client object.
+    - name: cookie
+      type: keyword
+      description: RDP cookie.
+    - name: protocol
+      type: keyword
+      description: RDP protocol negotiation result.
+    - name: server_supports
+      type: flattened
+      description: RDP server capability flags.
+    - name: tx_id
+      type: long
+      description: RDP transaction id.
+    - name: event_type
+      type: keyword
+      description: RDP event type, for example connect_response.
+- name: mqtt
+  type: group
+  description: MQTT control packets. connect, connack, subscribe, and suback are flattened. publish keeps the fields seen on live events.
+  fields:
+    - name: connect
+      type: flattened
+      description: MQTT CONNECT packet.
+    - name: connack
+      type: flattened
+      description: MQTT CONNACK packet.
+    - name: publish
+      type: group
+      description: MQTT PUBLISH packet fields observed on live events.
+      fields:
+        - name: dup
+          type: boolean
+          description: MQTT DUP flag.
+        - name: qos
+          type: long
+          description: MQTT QoS level.
+        - name: retain
+          type: boolean
+          description: MQTT RETAIN flag.
+        - name: message
+          type: keyword
+          description: MQTT PUBLISH payload text.
+        - name: topic
+          type: keyword
+          description: MQTT topic.
+    - name: subscribe
+      type: flattened
+      description: MQTT SUBSCRIBE packet.
+    - name: suback
+      type: flattened
+      description: MQTT SUBACK packet.
+- name: sip
+  type: group
+  description: SIP fields observed on live Clear NDR events.
+  fields:
+    - name: method
+      type: keyword
+      description: SIP method.
+    - name: request_line
+      type: keyword
+      description: SIP request line.
+    - name: uri
+      type: keyword
+      description: SIP request URI.
+    - name: version
+      type: keyword
+      description: SIP version.
+- name: tftp
+  type: group
+  description: TFTP fields. packet is part of the EVE object and is present on some transfers.
+  fields:
+    - name: file
+      type: keyword
+      description: TFTP filename.
+    - name: mode
+      type: keyword
+      description: TFTP transfer mode.
+    - name: packet
+      type: keyword
+      description: TFTP packet type.
+- name: smtp
+  type: group
+  description: SMTP fields from the Suricata EVE schema. from and rcpt are also copied to ECS email.*.
+  fields:
+    - name: rcpt_to
+      type: keyword
+      description: SMTP RCPT TO recipients.
+    - name: mail_from
+      type: keyword
+      description: SMTP MAIL FROM address.
+    - name: helo
+      type: keyword
+      description: SMTP HELO or EHLO name.
+- name: email.status
+  type: keyword
+  description: Suricata EVE email.status. Used for SMTP and POP3 events. POP3 has no pop3 object.
+- name: ftp
+  type: group
+  description: FTP command channel fields, plus the filename carried by ftp_data events.
+  fields:
+    - name: command
+      type: keyword
+      description: FTP command.
+    - name: command_data
+      type: keyword
+      description: Argument of the FTP command.
+    - name: reply
+      type: keyword
+      description: FTP reply lines.
+    - name: reply_received
+      type: keyword
+      description: Whether the FTP reply was received.
+    - name: completion_code
+      type: keyword
+      description: FTP completion codes.
+    - name: mode
+      type: keyword
+      description: FTP transfer mode.
+    - name: filename
+      type: keyword
+      description: Filename transferred on the ftp_data channel.
+- name: ike
+  type: group
+  description: >-
+    IKE fields from the Suricata EVE schema. event_type ike and ikev2 both use this object. role is the schema field; there is no direction field.
+  fields:
+    - name: version_major
+      type: long
+      description: IKE major version.
+    - name: version_minor
+      type: long
+      description: IKE minor version.
+    - name: init_spi
+      type: keyword
+      description: Initiator SPI.
+    - name: resp_spi
+      type: keyword
+      description: Responder SPI.
+    - name: exchange_type
+      type: long
+      description: IKE exchange type number.
+    - name: role
+      type: keyword
+      description: IKEv2 role, initiator or responder.
+    - name: ikev1
+      type: group
+      description: IKEv1 proposal object from the EVE schema.
+      fields:
+        - name: client
+          type: group
+          description: IKEv1 client key-exchange material.
+          fields:
+            - name: proposals
+              type: group
+              description: IKEv1 client proposals from the EVE schema.
+              fields:
+                - name: alg_auth
+                  type: keyword
+                  description: IKE proposal authentication algorithm.
+                - name: alg_auth_raw
+                  type: long
+                  description: Numeric IKE proposal authentication algorithm.
+                - name: alg_dh
+                  type: keyword
+                  description: IKE proposal Diffie-Hellman group.
+                - name: alg_dh_raw
+                  type: long
+                  description: Numeric IKE proposal Diffie-Hellman group.
+                - name: alg_enc
+                  type: keyword
+                  description: IKE proposal encryption algorithm.
+                - name: alg_enc_raw
+                  type: long
+                  description: Numeric IKE proposal encryption algorithm.
+                - name: alg_hash
+                  type: keyword
+                  description: IKE proposal hash algorithm.
+                - name: alg_hash_raw
+                  type: long
+                  description: Numeric IKE proposal hash algorithm.
+                - name: sa_key_length
+                  type: keyword
+                  description: IKE proposal SA key length.
+                - name: sa_key_length_raw
+                  type: long
+                  description: Numeric IKE proposal SA key length.
+                - name: sa_life_duration
+                  type: keyword
+                  description: IKE proposal SA lifetime.
+                - name: sa_life_duration_raw
+                  type: long
+                  description: Numeric IKE proposal SA lifetime.
+                - name: sa_life_type
+                  type: keyword
+                  description: IKE proposal SA lifetime type.
+                - name: sa_life_type_raw
+                  type: long
+                  description: Numeric IKE proposal SA lifetime type.
+    - name: ikev2
+      type: group
+      description: IKEv2 notify and error counters from the EVE schema.
+      fields:
+        - name: errors
+          type: long
+          description: Count of IKEv2 error notifies.
+        - name: notify
+          type: keyword
+          description: IKEv2 notify type names.
+- name: rfb
+  type: group
+  description: >-
+    RFB fields from the EVE schema. network.protocol stays rdp, matching the Suricata package. framebuffer.name is the desktop name.
+  fields:
+    - name: authentication
+      type: group
+      description: RFB authentication result.
+      fields:
+        - name: security_type
+          type: long
+          description: RFB security type number.
+        - name: security_result
+          type: keyword
+          description: RFB authentication result.
+    - name: framebuffer
+      type: group
+      description: RFB framebuffer description.
+      fields:
+        - name: name
+          type: keyword
+          description: RFB desktop name.
+- name: nfs
+  type: group
+  description: NFS procedure and filename from the EVE schema.
+  fields:
+    - name: procedure
+      type: keyword
+      description: NFS procedure name.
+    - name: filename
+      type: keyword
+      description: NFS filename.
+- name: dnp3
+  type: group
+  description: DNP3 application function code from the EVE schema.
+  fields:
+    - name: application
+      type: group
+      description: DNP3 application layer.
+      fields:
+        - name: function_code
+          type: long
+          description: DNP3 application function code.
+- name: pgsql
+  type: group
+  description: PostgreSQL request and response objects from the EVE schema, stored flattened.
+  fields:
+    - name: request
+      type: flattened
+      description: PostgreSQL request object.
+    - name: response
+      type: flattened
+      description: PostgreSQL response object.
+- name: modbus
+  type: group
+  description: Modbus function code and transaction id from the EVE schema.
+  fields:
+    - name: request
+      type: group
+      description: Modbus request.
+      fields:
+        - name: function_code
+          type: keyword
+          description: Modbus function code name.
+        - name: transaction_id
+          type: long
+          description: Modbus transaction id.
+- name: bittorrent_dht
+  type: group
+  description: BitTorrent DHT transaction id from the EVE schema.
+  fields:
+    - name: transaction_id
+      type: keyword
+      description: BitTorrent DHT transaction id.
+- name: arp
+  type: group
+  description: ARP opcode and hardware addresses from Suricata's ARP EVE object.
+  fields:
+    - name: opcode
+      type: keyword
+      description: ARP opcode.
+    - name: src_mac
+      type: keyword
+      description: ARP sender hardware address.
+    - name: dest_mac
+      type: keyword
+      description: ARP target hardware address.
+    - name: src_ip
+      type: ip
+      description: ARP sender protocol address.
+    - name: dest_ip
+      type: ip
+      description: ARP target protocol address.
+    - name: hw_type
+      type: long
+      description: ARP hardware type.
+    - name: proto_type
+      type: long
+      description: ARP protocol type.
+- name: netflow
+  type: group
+  description: Netflow tuple counters from the EVE schema. The 5-tuple is mapped to ECS source and destination.
+  fields:
+    - name: age
+      type: long
+      description: Flow age in seconds.
+    - name: bytes
+      type: long
+      description: Flow byte count.
+    - name: pkts
+      type: long
+      description: Flow packet count.
+    - name: start
+      type: date
+      description: Flow start time.
+    - name: end
+      type: date
+      description: Flow end time.
+    - name: min_ttl
+      type: long
+      description: Minimum TTL observed on the flow.
+    - name: max_ttl
+      type: long
+      description: Maximum TTL observed on the flow.
+- name: stats
+  type: group
+  description: Suricata EVE stats group.
+  fields:
+    - name: capture
+      type: group
+      description: Suricata EVE stats group.
+      fields:
+        - name: kernel_packets
+          type: long
+          description: Suricata EVE stats counter.
+        - name: kernel_drops
+          type: long
+          description: Suricata EVE stats counter.
+        - name: kernel_ifdrops
+          type: long
+          description: Suricata EVE stats counter.
+    - name: uptime
+      type: long
+      description: Suricata EVE stats counter.
+    - name: detect
+      type: group
+      description: Suricata EVE stats group.
+      fields:
+        - name: alert
+          type: long
+          description: Suricata EVE stats counter.
+    - name: http
+      type: group
+      description: Suricata EVE stats group.
+      fields:
+        - name: memcap
+          type: long
+          description: Suricata EVE stats counter.
+        - name: memuse
+          type: long
+          description: Suricata EVE stats counter.
+    - name: file_store
+      type: group
+      description: Suricata EVE stats group.
+      fields:
+        - name: open_files
+          type: long
+          description: Suricata EVE stats counter.
+    - name: defrag
+      type: group
+      description: Suricata EVE stats group.
+      fields:
+        - name: max_frag_hits
+          type: long
+          description: Suricata EVE stats counter.
+        - name: ipv4
+          type: group
+          description: Suricata EVE stats group.
+          fields:
+            - name: timeouts
+              type: long
+              description: Suricata EVE stats counter.
+            - name: fragments
+              type: long
+              description: Suricata EVE stats counter.
+            - name: reassembled
+              type: long
+              description: Suricata EVE stats counter.
+        - name: ipv6
+          type: group
+          description: Suricata EVE stats group.
+          fields:
+            - name: timeouts
+              type: long
+              description: Suricata EVE stats counter.
+            - name: fragments
+              type: long
+              description: Suricata EVE stats counter.
+            - name: reassembled
+              type: long
+              description: Suricata EVE stats counter.
+    - name: flow
+      type: group
+      description: Suricata EVE stats group.
+      fields:
+        - name: tcp_reuse
+          type: long
+          description: Suricata EVE stats counter.
+        - name: udp
+          type: long
+          description: Suricata EVE stats counter.
+        - name: memcap
+          type: long
+          description: Suricata EVE stats counter.
+        - name: emerg_mode_entered
+          type: long
+          description: Suricata EVE stats counter.
+        - name: emerg_mode_over
+          type: long
+          description: Suricata EVE stats counter.
+        - name: tcp
+          type: long
+          description: Suricata EVE stats counter.
+        - name: icmpv6
+          type: long
+          description: Suricata EVE stats counter.
+        - name: icmpv4
+          type: long
+          description: Suricata EVE stats counter.
+        - name: spare
+          type: long
+          description: Suricata EVE stats counter.
+        - name: memuse
+          type: long
+          description: Suricata EVE stats counter.
+    - name: tcp
+      type: group
+      description: Suricata EVE stats group.
+      fields:
+        - name: pseudo_failed
+          type: long
+          description: Suricata EVE stats counter.
+        - name: ssn_memcap_drop
+          type: long
+          description: Suricata EVE stats counter.
+        - name: insert_data_overlap_fail
+          type: long
+          description: Suricata EVE stats counter.
+        - name: sessions
+          type: long
+          description: Suricata EVE stats counter.
+        - name: pseudo
+          type: long
+          description: Suricata EVE stats counter.
+        - name: synack
+          type: long
+          description: Suricata EVE stats counter.
+        - name: insert_data_normal_fail
+          type: long
+          description: Suricata EVE stats counter.
+        - name: syn
+          type: long
+          description: Suricata EVE stats counter.
+        - name: memuse
+          type: long
+          description: Suricata EVE stats counter.
+        - name: invalid_checksum
+          type: long
+          description: Suricata EVE stats counter.
+        - name: segment_memcap_drop
+          type: long
+          description: Suricata EVE stats counter.
+        - name: overlap
+          type: long
+          description: Suricata EVE stats counter.
+        - name: insert_list_fail
+          type: long
+          description: Suricata EVE stats counter.
+        - name: rst
+          type: long
+          description: Suricata EVE stats counter.
+        - name: stream_depth_reached
+          type: long
+          description: Suricata EVE stats counter.
+        - name: reassembly_memuse
+          type: long
+          description: Suricata EVE stats counter.
+        - name: reassembly_gap
+          type: long
+          description: Suricata EVE stats counter.
+        - name: overlap_diff_data
+          type: long
+          description: Suricata EVE stats counter.
+        - name: no_flow
+          type: long
+          description: Suricata EVE stats counter.
+    - name: decoder
+      type: group
+      description: Suricata EVE stats group.
+      fields:
+        - name: avg_pkt_size
+          type: long
+          description: Suricata EVE stats counter.
+        - name: bytes
+          type: long
+          description: Suricata EVE stats counter.
+        - name: tcp
+          type: long
+          description: Suricata EVE stats counter.
+        - name: raw
+          type: long
+          description: Suricata EVE stats counter.
+        - name: ppp
+          type: long
+          description: Suricata EVE stats counter.
+        - name: vlan_qinq
+          type: long
+          description: Suricata EVE stats counter.
+        - name: "null"
+          type: long
+          description: Suricata EVE stats counter.
+        - name: ltnull
+          type: group
+          description: Suricata EVE stats group.
+          fields:
+            - name: unsupported_type
+              type: long
+              description: Suricata EVE stats counter.
+            - name: pkt_too_small
+              type: long
+              description: Suricata EVE stats counter.
+        - name: invalid
+          type: long
+          description: Suricata EVE stats counter.
+        - name: gre
+          type: long
+          description: Suricata EVE stats counter.
+        - name: ipv4
+          type: long
+          description: Suricata EVE stats counter.
+        - name: ipv6
+          type: long
+          description: Suricata EVE stats counter.
+        - name: pkts
+          type: long
+          description: Suricata EVE stats counter.
+        - name: ipv6_in_ipv6
+          type: long
+          description: Suricata EVE stats counter.
+        - name: ipraw
+          type: group
+          description: Suricata EVE stats group.
+          fields:
+            - name: invalid_ip_version
+              type: long
+              description: Suricata EVE stats counter.
+        - name: pppoe
+          type: long
+          description: Suricata EVE stats counter.
+        - name: udp
+          type: long
+          description: Suricata EVE stats counter.
+        - name: dce
+          type: group
+          description: Suricata EVE stats group.
+          fields:
+            - name: pkt_too_small
+              type: long
+              description: Suricata EVE stats counter.
+        - name: vlan
+          type: long
+          description: Suricata EVE stats counter.
+        - name: sctp
+          type: long
+          description: Suricata EVE stats counter.
+        - name: max_pkt_size
+          type: long
+          description: Suricata EVE stats counter.
+        - name: teredo
+          type: long
+          description: Suricata EVE stats counter.
+        - name: mpls
+          type: long
+          description: Suricata EVE stats counter.
+        - name: sll
+          type: long
+          description: Suricata EVE stats counter.
+        - name: icmpv6
+          type: long
+          description: Suricata EVE stats counter.
+        - name: icmpv4
+          type: long
+          description: Suricata EVE stats counter.
+        - name: erspan
+          type: long
+          description: Suricata EVE stats counter.
+        - name: ethernet
+          type: long
+          description: Suricata EVE stats counter.
+        - name: ipv4_in_ipv6
+          type: long
+          description: Suricata EVE stats counter.
+        - name: ieee8021ah
+          type: long
+          description: Suricata EVE stats counter.
+    - name: dns
+      type: group
+      description: Suricata EVE stats group.
+      fields:
+        - name: memcap_global
+          type: long
+          description: Suricata EVE stats counter.
+        - name: memcap_state
+          type: long
+          description: Suricata EVE stats counter.
+        - name: memuse
+          type: long
+          description: Suricata EVE stats counter.
+    - name: flow_mgr
+      type: group
+      description: Suricata EVE stats group.
+      fields:
+        - name: rows_busy
+          type: long
+          description: Suricata EVE stats counter.
+        - name: flows_timeout
+          type: long
+          description: Suricata EVE stats counter.
+        - name: flows_notimeout
+          type: long
+          description: Suricata EVE stats counter.
+        - name: rows_skipped
+          type: long
+          description: Suricata EVE stats counter.
+        - name: closed_pruned
+          type: long
+          description: Suricata EVE stats counter.
+        - name: new_pruned
+          type: long
+          description: Suricata EVE stats counter.
+        - name: flows_removed
+          type: long
+          description: Suricata EVE stats counter.
+        - name: bypassed_pruned
+          type: long
+          description: Suricata EVE stats counter.
+        - name: est_pruned
+          type: long
+          description: Suricata EVE stats counter.
+        - name: flows_timeout_inuse
+          type: long
+          description: Suricata EVE stats counter.
+        - name: flows_checked
+          type: long
+          description: Suricata EVE stats counter.
+        - name: rows_maxlen
+          type: long
+          description: Suricata EVE stats counter.
+        - name: rows_checked
+          type: long
+          description: Suricata EVE stats counter.
+        - name: rows_empty
+          type: long
+          description: Suricata EVE stats counter.
+    - name: app_layer
+      type: group
+      description: Suricata EVE stats group.
+      fields:
+        - name: flow
+          type: group
+          description: Suricata EVE stats group.
+          fields:
+            - name: tls
+              type: long
+              description: Suricata EVE stats counter.
+            - name: ftp
+              type: long
+              description: Suricata EVE stats counter.
+            - name: http
+              type: long
+              description: Suricata EVE stats counter.
+            - name: failed_udp
+              type: long
+              description: Suricata EVE stats counter.
+            - name: dns_udp
+              type: long
+              description: Suricata EVE stats counter.
+            - name: dns_tcp
+              type: long
+              description: Suricata EVE stats counter.
+            - name: smtp
+              type: long
+              description: Suricata EVE stats counter.
+            - name: failed_tcp
+              type: long
+              description: Suricata EVE stats counter.
+            - name: msn
+              type: long
+              description: Suricata EVE stats counter.
+            - name: ssh
+              type: long
+              description: Suricata EVE stats counter.
+            - name: imap
+              type: long
+              description: Suricata EVE stats counter.
+            - name: dcerpc_udp
+              type: long
+              description: Suricata EVE stats counter.
+            - name: dcerpc_tcp
+              type: long
+              description: Suricata EVE stats counter.
+            - name: smb
+              type: long
+              description: Suricata EVE stats counter.
+        - name: tx
+          type: group
+          description: Suricata EVE stats group.
+          fields:
+            - name: tls
+              type: long
+              description: Suricata EVE stats counter.
+            - name: ftp
+              type: long
+              description: Suricata EVE stats counter.
+            - name: http
+              type: long
+              description: Suricata EVE stats counter.
+            - name: dns_udp
+              type: long
+              description: Suricata EVE stats counter.
+            - name: dns_tcp
+              type: long
+              description: Suricata EVE stats counter.
+            - name: smtp
+              type: long
+              description: Suricata EVE stats counter.
+            - name: ssh
+              type: long
+              description: Suricata EVE stats counter.
+            - name: dcerpc_udp
+              type: long
+              description: Suricata EVE stats counter.
+            - name: dcerpc_tcp
+              type: long
+              description: Suricata EVE stats counter.
+            - name: smb
+              type: long
+              description: Suricata EVE stats counter.

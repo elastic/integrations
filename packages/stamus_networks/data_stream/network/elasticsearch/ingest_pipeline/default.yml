@@ -1,0 +1,1256 @@
+---
+description: >-
+  Pipeline for Stamus Networks Clear NDR protocol and network logs collected from
+  events_tail. The raw EVE JSON is parsed into json.*, ECS fields are promoted, and
+  json is removed. Protocol objects keep only the fields declared for this data stream.
+  postproc_metrix, tunnel.*, ether.*, pkt_src, in_iface, and app_proto_tc are not mapped.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Stamus Networks
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Clear NDR
+
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: Removes Agentless metadata fields that can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: Collector error with no event body.
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      if: ctx.event?.original != null
+
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_json
+            value: '{{{_ingest.on_failure_message}}}'
+
+  - date:
+      field: json.timestamp
+      target_field: '@timestamp'
+      tag: parse_timestamp
+      formats:
+        - ISO8601
+      if: ctx.json?.timestamp != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_timestamp
+            value: '{{{_ingest.on_failure_message}}}'
+
+  - lowercase:
+      tag: lowercase_event_type
+      field: json.event_type
+      ignore_missing: true
+
+  - script:
+      tag: script_event_type_params
+      lang: painless
+      ignore_failure: true
+      params:
+
+        alert:
+          kind: alert
+          category:
+            - network
+            - intrusion_detection
+        dns:
+          type:
+            - protocol
+          network_protocol: dns
+        flow:
+          type:
+            - connection
+        ftp:
+          type:
+            - protocol
+          network_protocol: ftp
+        ftp_data:
+          type:
+            - protocol
+          network_protocol: ftp
+        http:
+          category:
+            - network
+            - web
+          type:
+            - access
+            - protocol
+          network_protocol: http
+        http2:
+          category:
+            - network
+            - web
+          type:
+            - access
+            - protocol
+          network_protocol: http
+        ikev2:
+          type:
+            - protocol
+          network_protocol: ikev2
+        krb5:
+          type:
+            - protocol
+          network_protocol: krb5
+        mqtt:
+          type:
+            - protocol
+          network_protocol: mqtt
+        smb:
+          type:
+            - protocol
+          network_protocol: smb
+        smtp:
+          type:
+            - protocol
+          network_protocol: smtp
+        snmp:
+          type:
+            - protocol
+          network_protocol: snmp
+        ssh:
+          type:
+            - protocol
+          network_protocol: ssh
+        stats:
+          kind: metric
+        tftp:
+          type:
+            - protocol
+          network_protocol: tftp
+        tls:
+          type:
+            - protocol
+          network_protocol: tls
+        rdp:
+          type:
+            - protocol
+          network_protocol: rdp
+        rfb:
+          type:
+            - protocol
+          network_protocol: rdp
+        fileinfo:
+          category:
+            - network
+            - file
+          type:
+            - info
+        anomaly:
+          type:
+            - info
+        dhcp:
+          type:
+            - protocol
+          network_protocol: dhcp
+        quic:
+          type:
+            - protocol
+          network_protocol: quic
+        dcerpc:
+          type:
+            - protocol
+          network_protocol: dcerpc
+        sip:
+          type:
+            - protocol
+          network_protocol: sip
+        nfs:
+          type:
+            - protocol
+          network_protocol: nfs
+        dnp3:
+          type:
+            - protocol
+          network_protocol: dnp3
+        pgsql:
+          type:
+            - protocol
+          network_protocol: pgsql
+        modbus:
+          type:
+            - protocol
+          network_protocol: modbus
+        bittorrent_dht:
+          type:
+            - protocol
+          network_protocol: bittorrent_dht
+        arp:
+          type:
+            - protocol
+          network_protocol: arp
+        pop3:
+          type:
+            - protocol
+          network_protocol: pop3
+        ike:
+          type:
+            - protocol
+          network_protocol: ike
+        smb_insights:
+          type:
+            - info
+          network_protocol: smb
+        netflow:
+          type:
+            - connection
+
+      source: |
+        ctx.event.kind = 'event';
+        ctx.event.category = ['network'];
+        if (ctx.json == null || ctx.json.event_type == null) {
+            return;
+        }
+        def type_params = params.get(ctx.json.event_type);
+        if (type_params == null) {
+            return;
+        }
+        for (def entry : type_params.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+            if ('network_protocol' == k) {
+                if (ctx.network == null) {
+                    ctx.network = new HashMap();
+                }
+                ctx.network.protocol = v;
+            } else if (v instanceof List) {
+                ctx.event[k] = new ArrayList(v);
+            } else {
+                ctx.event[k] = v;
+            }
+        }
+
+  - set:
+      tag: set_network_protocol_ftp_data
+      if: ctx.network?.protocol == null && ctx.json?.app_proto == "ftp-data"
+      field: network.protocol
+      value: ftp
+  - set:
+      tag: set_network_protocol_from_app_proto
+      if: >-
+        ctx.network?.protocol == null && ctx.json?.app_proto != null &&
+        ctx.json.app_proto != "failed" && ctx.json.app_proto != "template" &&
+        ctx.json.app_proto != "template-rust" && ctx.json.app_proto != "ftp-data"
+      field: network.protocol
+      copy_from: json.app_proto
+      ignore_failure: true
+  - lowercase:
+      tag: lowercase_network_protocol
+      field: network.protocol
+      ignore_missing: true
+
+  - rename:
+      field: json.flow_id
+      target_field: flow_id
+      ignore_missing: true
+      tag: rename_flow_id
+  - rename:
+      field: json.community_id
+      target_field: network.community_id
+      ignore_missing: true
+      tag: rename_community_id
+  - rename:
+      field: json.proto
+      target_field: network.transport
+      ignore_missing: true
+      tag: rename_proto
+  - lowercase:
+      tag: lowercase_network_transport
+      field: network.transport
+      ignore_missing: true
+  - rename:
+      field: json.hostname_info
+      target_field: hostname_info
+      ignore_missing: true
+      tag: rename_hostname_info
+  - rename:
+      field: json.metadata.flowbits
+      target_field: metadata.flowbits
+      ignore_missing: true
+      tag: rename_flowbits
+  - rename:
+      field: json.stamus_infrequent
+      target_field: stamus_infrequent
+      ignore_missing: true
+      tag: rename_stamus_infrequent
+  - rename:
+      field: json.fileinfo.filename
+      target_field: file.name
+      ignore_missing: true
+      tag: rename_fileinfo_filename
+  - rename:
+      field: json.fileinfo.mimetype
+      target_field: file.mime_type
+      ignore_missing: true
+      tag: rename_fileinfo_mimetype
+  - rename:
+      field: json.fileinfo.sha256
+      target_field: file.hash.sha256
+      ignore_missing: true
+      tag: rename_fileinfo_sha256
+  - rename:
+      field: json.fileinfo.size
+      target_field: file.size
+      ignore_missing: true
+      tag: rename_fileinfo_size
+  - rename:
+      field: json.fileinfo.state
+      target_field: fileinfo.state
+      ignore_missing: true
+      tag: rename_fileinfo_state
+  - rename:
+      field: json.fileinfo.stored
+      target_field: fileinfo.stored
+      ignore_missing: true
+      tag: rename_fileinfo_stored
+  - rename:
+      field: json.fileinfo.gaps
+      target_field: fileinfo.gaps
+      ignore_missing: true
+      tag: rename_fileinfo_gaps
+  - rename:
+      field: json.fileinfo.tx_id
+      target_field: fileinfo.tx_id
+      ignore_missing: true
+      tag: rename_fileinfo_tx_id
+  - rename:
+      field: json.snmp.version
+      target_field: snmp.version
+      ignore_missing: true
+      tag: rename_snmp_version
+  - rename:
+      field: json.snmp.pdu_type
+      target_field: snmp.pdu_type
+      ignore_missing: true
+      tag: rename_snmp_pdu_type
+  - rename:
+      field: json.snmp.usm
+      target_field: snmp.usm
+      ignore_missing: true
+      tag: rename_snmp_usm
+  - rename:
+      field: json.krb5.msg_type
+      target_field: krb5.msg_type
+      ignore_missing: true
+      tag: rename_krb5_msg_type
+  - rename:
+      field: json.krb5.cname
+      target_field: krb5.cname
+      ignore_missing: true
+      tag: rename_krb5_cname
+  - rename:
+      field: json.krb5.realm
+      target_field: krb5.realm
+      ignore_missing: true
+      tag: rename_krb5_realm
+  - rename:
+      field: json.krb5.sname
+      target_field: krb5.sname
+      ignore_missing: true
+      tag: rename_krb5_sname
+  - rename:
+      field: json.krb5.encryption
+      target_field: krb5.encryption
+      ignore_missing: true
+      tag: rename_krb5_encryption
+  - rename:
+      field: json.krb5.error_code
+      target_field: krb5.error_code
+      ignore_missing: true
+      tag: rename_krb5_error_code
+  - rename:
+      field: json.krb5.weak_encryption
+      target_field: krb5.weak_encryption
+      ignore_missing: true
+      tag: rename_krb5_weak_encryption
+  - rename:
+      field: json.anomaly.type
+      target_field: anomaly.type
+      ignore_missing: true
+      tag: rename_anomaly_type
+  - rename:
+      field: json.anomaly.event
+      target_field: anomaly.event
+      ignore_missing: true
+      tag: rename_anomaly_event
+  - rename:
+      field: json.anomaly.layer
+      target_field: anomaly.layer
+      ignore_missing: true
+      tag: rename_anomaly_layer
+  - rename:
+      field: json.smb.dialect
+      target_field: smb.dialect
+      ignore_missing: true
+      tag: rename_smb_dialect
+  - rename:
+      field: json.smb.command
+      target_field: smb.command
+      ignore_missing: true
+      tag: rename_smb_command
+  - rename:
+      field: json.smb.status
+      target_field: smb.status
+      ignore_missing: true
+      tag: rename_smb_status
+  - rename:
+      field: json.smb.status_code
+      target_field: smb.status_code
+      ignore_missing: true
+      tag: rename_smb_status_code
+  - rename:
+      field: json.smb.share
+      target_field: smb.share
+      ignore_missing: true
+      tag: rename_smb_share
+  - rename:
+      field: json.smb.named_pipe
+      target_field: smb.named_pipe
+      ignore_missing: true
+      tag: rename_smb_named_pipe
+  - rename:
+      field: json.smb.session_id
+      target_field: smb.session_id
+      ignore_missing: true
+      tag: rename_smb_session_id
+  - rename:
+      field: json.smb_insights.events
+      target_field: smb_insights.events
+      ignore_missing: true
+      tag: rename_smb_insights_events
+  - rename:
+      field: json.smb_insights.flags
+      target_field: smb_insights.flags
+      ignore_missing: true
+      tag: rename_smb_insights_flags
+  - rename:
+      field: json.smb_insights.trackers
+      target_field: smb_insights.trackers
+      ignore_missing: true
+      tag: rename_smb_insights_trackers
+  - rename:
+      field: json.quic.version
+      target_field: quic.version
+      ignore_missing: true
+      tag: rename_quic_version
+  - rename:
+      field: json.dhcp.type
+      target_field: dhcp.type
+      ignore_missing: true
+      tag: rename_dhcp_type
+  - rename:
+      field: json.dhcp.client_mac
+      target_field: dhcp.client_mac
+      ignore_missing: true
+      tag: rename_dhcp_client_mac
+  - rename:
+      field: json.dhcp.assigned_ip
+      target_field: dhcp.assigned_ip
+      ignore_missing: true
+      tag: rename_dhcp_assigned_ip
+  - rename:
+      field: json.dhcp.client_ip
+      target_field: dhcp.client_ip
+      ignore_missing: true
+      tag: rename_dhcp_client_ip
+  - rename:
+      field: json.dhcp.hostname
+      target_field: dhcp.hostname
+      ignore_missing: true
+      tag: rename_dhcp_hostname
+  - rename:
+      field: json.dhcp.params
+      target_field: dhcp.params
+      ignore_missing: true
+      tag: rename_dhcp_params
+  - rename:
+      field: json.dcerpc.request
+      target_field: dcerpc.request
+      ignore_missing: true
+      tag: rename_dcerpc_request
+  - rename:
+      field: json.dcerpc.response
+      target_field: dcerpc.response
+      ignore_missing: true
+      tag: rename_dcerpc_response
+  - rename:
+      field: json.dcerpc.call_id
+      target_field: dcerpc.call_id
+      ignore_missing: true
+      tag: rename_dcerpc_call_id
+  - rename:
+      field: json.dcerpc.interfaces
+      target_field: dcerpc.interfaces
+      ignore_missing: true
+      tag: rename_dcerpc_interfaces
+  - rename:
+      field: json.ssh.client
+      target_field: ssh.client
+      ignore_missing: true
+      tag: rename_ssh_client
+  - rename:
+      field: json.ssh.server
+      target_field: ssh.server
+      ignore_missing: true
+      tag: rename_ssh_server
+  - rename:
+      field: json.rdp.client
+      target_field: rdp.client
+      ignore_missing: true
+      tag: rename_rdp_client
+  - rename:
+      field: json.rdp.cookie
+      target_field: rdp.cookie
+      ignore_missing: true
+      tag: rename_rdp_cookie
+  - rename:
+      field: json.rdp.protocol
+      target_field: rdp.protocol
+      ignore_missing: true
+      tag: rename_rdp_protocol
+  - rename:
+      field: json.rdp.server_supports
+      target_field: rdp.server_supports
+      ignore_missing: true
+      tag: rename_rdp_server_supports
+  - rename:
+      field: json.rdp.tx_id
+      target_field: rdp.tx_id
+      ignore_missing: true
+      tag: rename_rdp_tx_id
+  - rename:
+      field: json.rdp.event_type
+      target_field: rdp.event_type
+      ignore_missing: true
+      tag: rename_rdp_event_type
+  - rename:
+      field: json.mqtt.connect
+      target_field: mqtt.connect
+      ignore_missing: true
+      tag: rename_mqtt_connect
+  - rename:
+      field: json.mqtt.connack
+      target_field: mqtt.connack
+      ignore_missing: true
+      tag: rename_mqtt_connack
+  - rename:
+      field: json.mqtt.publish.dup
+      target_field: mqtt.publish.dup
+      ignore_missing: true
+      tag: rename_mqtt_publish_dup
+  - rename:
+      field: json.mqtt.publish.qos
+      target_field: mqtt.publish.qos
+      ignore_missing: true
+      tag: rename_mqtt_publish_qos
+  - rename:
+      field: json.mqtt.publish.retain
+      target_field: mqtt.publish.retain
+      ignore_missing: true
+      tag: rename_mqtt_publish_retain
+  - rename:
+      field: json.mqtt.publish.message
+      target_field: mqtt.publish.message
+      ignore_missing: true
+      tag: rename_mqtt_publish_message
+  - rename:
+      field: json.mqtt.publish.topic
+      target_field: mqtt.publish.topic
+      ignore_missing: true
+      tag: rename_mqtt_publish_topic
+  - rename:
+      field: json.mqtt.subscribe
+      target_field: mqtt.subscribe
+      ignore_missing: true
+      tag: rename_mqtt_subscribe
+  - rename:
+      field: json.mqtt.suback
+      target_field: mqtt.suback
+      ignore_missing: true
+      tag: rename_mqtt_suback
+  - rename:
+      field: json.sip.method
+      target_field: sip.method
+      ignore_missing: true
+      tag: rename_sip_method
+  - rename:
+      field: json.sip.request_line
+      target_field: sip.request_line
+      ignore_missing: true
+      tag: rename_sip_request_line
+  - rename:
+      field: json.sip.uri
+      target_field: sip.uri
+      ignore_missing: true
+      tag: rename_sip_uri
+  - rename:
+      field: json.sip.version
+      target_field: sip.version
+      ignore_missing: true
+      tag: rename_sip_version
+  - rename:
+      field: json.tftp.file
+      target_field: tftp.file
+      ignore_missing: true
+      tag: rename_tftp_file
+  - rename:
+      field: json.tftp.mode
+      target_field: tftp.mode
+      ignore_missing: true
+      tag: rename_tftp_mode
+  - rename:
+      field: json.tftp.packet
+      target_field: tftp.packet
+      ignore_missing: true
+      tag: rename_tftp_packet
+  - rename:
+      field: json.smtp.rcpt_to
+      target_field: smtp.rcpt_to
+      ignore_missing: true
+      tag: rename_smtp_rcpt_to
+  - rename:
+      field: json.smtp.mail_from
+      target_field: smtp.mail_from
+      ignore_missing: true
+      tag: rename_smtp_mail_from
+  - rename:
+      field: json.smtp.helo
+      target_field: smtp.helo
+      ignore_missing: true
+      tag: rename_smtp_helo
+  - rename:
+      field: json.email.status
+      target_field: email.status
+      ignore_missing: true
+      tag: rename_email_status
+  - rename:
+      field: json.ftp.command
+      target_field: ftp.command
+      ignore_missing: true
+      tag: rename_ftp_command
+  - rename:
+      field: json.ftp.command_data
+      target_field: ftp.command_data
+      ignore_missing: true
+      tag: rename_ftp_command_data
+  - rename:
+      field: json.ftp.reply
+      target_field: ftp.reply
+      ignore_missing: true
+      tag: rename_ftp_reply
+  - rename:
+      field: json.ftp.reply_received
+      target_field: ftp.reply_received
+      ignore_missing: true
+      tag: rename_ftp_reply_received
+  - rename:
+      field: json.ftp.completion_code
+      target_field: ftp.completion_code
+      ignore_missing: true
+      tag: rename_ftp_completion_code
+  - rename:
+      field: json.ftp.mode
+      target_field: ftp.mode
+      ignore_missing: true
+      tag: rename_ftp_mode
+  - rename:
+      field: json.ftp_data.command
+      target_field: ftp.command
+      ignore_missing: true
+      tag: rename_ftp_data_command
+      if: ctx.ftp?.command == null
+  - rename:
+      field: json.ftp_data.filename
+      target_field: ftp.filename
+      ignore_missing: true
+      tag: rename_ftp_data_filename
+  - rename:
+      field: json.ike.version_major
+      target_field: ike.version_major
+      ignore_missing: true
+      tag: rename_ike_version_major
+  - rename:
+      field: json.ike.version_minor
+      target_field: ike.version_minor
+      ignore_missing: true
+      tag: rename_ike_version_minor
+  - rename:
+      field: json.ike.init_spi
+      target_field: ike.init_spi
+      ignore_missing: true
+      tag: rename_ike_init_spi
+  - rename:
+      field: json.ike.resp_spi
+      target_field: ike.resp_spi
+      ignore_missing: true
+      tag: rename_ike_resp_spi
+  - rename:
+      field: json.ike.exchange_type
+      target_field: ike.exchange_type
+      ignore_missing: true
+      tag: rename_ike_exchange_type
+  - rename:
+      field: json.ike.role
+      target_field: ike.role
+      ignore_missing: true
+      tag: rename_ike_role
+  - rename:
+      field: json.ike.ikev1.client.proposals
+      target_field: ike.ikev1.client.proposals
+      ignore_missing: true
+      tag: rename_ike_proposals
+  - rename:
+      field: json.ike.ikev2.errors
+      target_field: ike.ikev2.errors
+      ignore_missing: true
+      tag: rename_ikev2_errors
+  - rename:
+      field: json.ike.ikev2.notify
+      target_field: ike.ikev2.notify
+      ignore_missing: true
+      tag: rename_ikev2_notify
+  - rename:
+      field: json.rfb.authentication.security_type
+      target_field: rfb.authentication.security_type
+      ignore_missing: true
+      tag: rename_rfb_security_type
+  - rename:
+      field: json.rfb.authentication.security_result
+      target_field: rfb.authentication.security_result
+      ignore_missing: true
+      tag: rename_rfb_security_result
+  - rename:
+      field: json.rfb.framebuffer.name
+      target_field: rfb.framebuffer.name
+      ignore_missing: true
+      tag: rename_rfb_desktop_name
+  - rename:
+      field: json.nfs.procedure
+      target_field: nfs.procedure
+      ignore_missing: true
+      tag: rename_nfs_procedure
+  - rename:
+      field: json.nfs.filename
+      target_field: nfs.filename
+      ignore_missing: true
+      tag: rename_nfs_filename
+  - rename:
+      field: json.dnp3.application.function_code
+      target_field: dnp3.application.function_code
+      ignore_missing: true
+      tag: rename_dnp3_function_code
+  - rename:
+      field: json.pgsql.request
+      target_field: pgsql.request
+      ignore_missing: true
+      tag: rename_pgsql_request
+  - rename:
+      field: json.pgsql.response
+      target_field: pgsql.response
+      ignore_missing: true
+      tag: rename_pgsql_response
+  - rename:
+      field: json.modbus.request.function_code
+      target_field: modbus.request.function_code
+      ignore_missing: true
+      tag: rename_modbus_function_code
+  - rename:
+      field: json.modbus.request.transaction_id
+      target_field: modbus.request.transaction_id
+      ignore_missing: true
+      tag: rename_modbus_transaction_id
+  - rename:
+      field: json.bittorrent_dht.transaction_id
+      target_field: bittorrent_dht.transaction_id
+      ignore_missing: true
+      tag: rename_bittorrent_dht_transaction_id
+  - rename:
+      field: json.arp.opcode
+      target_field: arp.opcode
+      ignore_missing: true
+      tag: rename_arp_opcode
+  - rename:
+      field: json.arp.src_mac
+      target_field: arp.src_mac
+      ignore_missing: true
+      tag: rename_arp_src_mac
+  - rename:
+      field: json.arp.dest_mac
+      target_field: arp.dest_mac
+      ignore_missing: true
+      tag: rename_arp_dest_mac
+  - rename:
+      field: json.arp.src_ip
+      target_field: arp.src_ip
+      ignore_missing: true
+      tag: rename_arp_src_ip
+  - rename:
+      field: json.arp.dest_ip
+      target_field: arp.dest_ip
+      ignore_missing: true
+      tag: rename_arp_dest_ip
+  - rename:
+      field: json.arp.hw_type
+      target_field: arp.hw_type
+      ignore_missing: true
+      tag: rename_arp_hw_type
+  - rename:
+      field: json.arp.proto_type
+      target_field: arp.proto_type
+      ignore_missing: true
+      tag: rename_arp_proto_type
+  - rename:
+      field: json.netflow.age
+      target_field: netflow.age
+      ignore_missing: true
+      tag: rename_netflow_age
+  - rename:
+      field: json.netflow.bytes
+      target_field: netflow.bytes
+      ignore_missing: true
+      tag: rename_netflow_bytes
+  - rename:
+      field: json.netflow.pkts
+      target_field: netflow.pkts
+      ignore_missing: true
+      tag: rename_netflow_pkts
+  - rename:
+      field: json.netflow.min_ttl
+      target_field: netflow.min_ttl
+      ignore_missing: true
+      tag: rename_netflow_min_ttl
+  - rename:
+      field: json.netflow.max_ttl
+      target_field: netflow.max_ttl
+      ignore_missing: true
+      tag: rename_netflow_max_ttl
+
+  - convert:
+      field: flow_id
+      type: string
+      tag: convert_flow_id_to_string
+      ignore_missing: true
+      description: flow_id is an opaque correlation key, mapped as keyword.
+
+  - rename:
+      field: json.src_ip
+      target_field: source.ip
+      tag: rename_src_ip
+      ignore_missing: true
+      if: ctx.source?.ip == null
+  - rename:
+      field: json.src_port
+      target_field: source.port
+      tag: rename_src_port
+      ignore_missing: true
+      if: ctx.source?.port == null
+  - rename:
+      field: json.dest_ip
+      target_field: destination.ip
+      tag: rename_dest_ip
+      ignore_missing: true
+      if: ctx.destination?.ip == null
+  - rename:
+      field: json.dest_port
+      target_field: destination.port
+      tag: rename_dest_port
+      ignore_missing: true
+      if: ctx.destination?.port == null
+
+  - community_id:
+      tag: compute_community_id_fallback
+      target_field: network.community_id
+      ignore_failure: true
+      if: ctx.network?.community_id == null
+
+  - set:
+      field: json._flow_orientation_flipped
+      value: true
+      tag: set_flow_orientation_flipped
+      if: ctx.source?.ip != null && ctx.json?.flow?.src_ip != null && ctx.source.ip != ctx.json.flow.src_ip
+      description: True when source.ip is not the flow's own src_ip, so byte and packet counters are swapped.
+  - rename:
+      field: json.flow.bytes_toserver
+      target_field: source.bytes
+      ignore_missing: true
+      tag: rename_flow_bytes_toserver_normal
+      if: ctx.json?._flow_orientation_flipped != true
+  - rename:
+      field: json.flow.bytes_toserver
+      target_field: destination.bytes
+      ignore_missing: true
+      tag: rename_flow_bytes_toserver_flipped
+      if: ctx.json?._flow_orientation_flipped == true
+  - rename:
+      field: json.flow.bytes_toclient
+      target_field: destination.bytes
+      ignore_missing: true
+      tag: rename_flow_bytes_toclient_normal
+      if: ctx.json?._flow_orientation_flipped != true
+  - rename:
+      field: json.flow.bytes_toclient
+      target_field: source.bytes
+      ignore_missing: true
+      tag: rename_flow_bytes_toclient_flipped
+      if: ctx.json?._flow_orientation_flipped == true
+  - rename:
+      field: json.flow.pkts_toserver
+      target_field: source.packets
+      ignore_missing: true
+      tag: rename_flow_pkts_toserver_normal
+      if: ctx.json?._flow_orientation_flipped != true
+  - rename:
+      field: json.flow.pkts_toserver
+      target_field: destination.packets
+      ignore_missing: true
+      tag: rename_flow_pkts_toserver_flipped
+      if: ctx.json?._flow_orientation_flipped == true
+  - rename:
+      field: json.flow.pkts_toclient
+      target_field: destination.packets
+      ignore_missing: true
+      tag: rename_flow_pkts_toclient_normal
+      if: ctx.json?._flow_orientation_flipped != true
+  - rename:
+      field: json.flow.pkts_toclient
+      target_field: source.packets
+      ignore_missing: true
+      tag: rename_flow_pkts_toclient_flipped
+      if: ctx.json?._flow_orientation_flipped == true
+
+  - date:
+      field: json.flow.start
+      target_field: event.start
+      tag: parse_flow_start
+      formats:
+        - ISO8601
+      if: ctx.json?.flow?.start != null
+      ignore_failure: true
+  - date:
+      field: json.flow.end
+      target_field: event.end
+      tag: parse_flow_end
+      formats:
+        - ISO8601
+      if: ctx.json?.flow?.end != null
+      ignore_failure: true
+  - date:
+      field: json.smb_insights.first_seen
+      target_field: smb_insights.first_seen
+      tag: parse_smb_insights_first_seen
+      formats:
+        - ISO8601
+      if: ctx.json?.smb_insights?.first_seen != null
+      ignore_failure: true
+  - date:
+      field: json.smb_insights.last_seen
+      target_field: smb_insights.last_seen
+      tag: parse_smb_insights_last_seen
+      formats:
+        - ISO8601
+      if: ctx.json?.smb_insights?.last_seen != null
+      ignore_failure: true
+  - date:
+      field: json.netflow.start
+      target_field: netflow.start
+      tag: parse_netflow_start
+      formats:
+        - ISO8601
+      if: ctx.json?.netflow?.start != null
+      ignore_failure: true
+  - date:
+      field: json.netflow.end
+      target_field: netflow.end
+      tag: parse_netflow_end
+      formats:
+        - ISO8601
+      if: ctx.json?.netflow?.end != null
+      ignore_failure: true
+
+  - append:
+      tag: append_event_type_flow_start
+      if: ctx.json?.flow?.state == "new"
+      field: event.type
+      value: start
+      allow_duplicates: false
+  - append:
+      tag: append_event_type_flow_end
+      if: ctx.json?.flow?.state == "closed"
+      field: event.type
+      value: end
+      allow_duplicates: false
+
+  - set:
+      tag: set_http_outcome_success
+      if: >-
+        (ctx.json?.event_type == "http" || ctx.json?.event_type == "http2") &&
+        ctx.json?.http?.status != null && ctx.json.http.status < 400
+      field: event.outcome
+      value: success
+  - set:
+      tag: set_http_outcome_failure
+      if: >-
+        (ctx.json?.event_type == "http" || ctx.json?.event_type == "http2") &&
+        ctx.json?.http?.status != null && ctx.json.http.status >= 400
+      field: event.outcome
+      value: failure
+  - set:
+      tag: set_http_request_method
+      if: ctx.json?.event_type == "http" || ctx.json?.event_type == "http2"
+      field: http.request.method
+      copy_from: json.http.http_method
+      ignore_failure: true
+  - rename:
+      tag: rename_http_status
+      if: ctx.json?.event_type == "http" || ctx.json?.event_type == "http2"
+      field: json.http.status
+      target_field: http.response.status_code
+      ignore_missing: true
+  - rename:
+      tag: rename_http_length
+      if: ctx.json?.event_type == "http" || ctx.json?.event_type == "http2"
+      field: json.http.length
+      target_field: http.response.body.bytes
+      ignore_missing: true
+  - set:
+      tag: set_destination_domain_from_http_hostname
+      if: >-
+        (ctx.json?.event_type == "http" || ctx.json?.event_type == "http2") &&
+        ctx.json?.http?.hostname != null && ctx.destination?.domain == null
+      field: destination.domain
+      copy_from: json.http.hostname
+      ignore_failure: true
+  - set:
+      tag: set_url_domain
+      if: >-
+        (ctx.json?.event_type == "http" || ctx.json?.event_type == "http2") &&
+        ctx.destination?.domain != null
+      field: url.domain
+      copy_from: destination.domain
+      ignore_failure: true
+  - grok:
+      tag: grok_http_url
+      if: ctx.json?.event_type == "http" || ctx.json?.event_type == "http2"
+      field: json.http.url
+      patterns:
+        - '^%{PATH:url.path}(?:\?%{QUERY:url.query})?(?:#%{ANY:url.fragment})?$'
+      ignore_missing: true
+      ignore_failure: true
+      pattern_definitions:
+        PATH: '[^?#]*'
+        QUERY: '[^#]*'
+        ANY: '.*'
+  - rename:
+      tag: rename_http_url_original
+      if: ctx.json?.event_type == "http" || ctx.json?.event_type == "http2"
+      field: json.http.url
+      target_field: url.original
+      ignore_missing: true
+
+  - append:
+      tag: append_email_from_address
+      if: ctx.smtp?.mail_from != null
+      field: email.from.address
+      value: '{{{smtp.mail_from}}}'
+      allow_duplicates: false
+  - set:
+      tag: set_email_to_address
+      if: ctx.smtp?.rcpt_to != null
+      field: email.to.address
+      copy_from: smtp.rcpt_to
+      ignore_failure: true
+
+  - registered_domain:
+      tag: registered_domain_dns_rrname
+      field: json.dns.rrname
+      target_field: dns.question
+      ignore_missing: true
+      if: ctx.json?.dns?.rrname != null
+  - pipeline:
+      tag: pipeline_dns
+      if: ctx.network?.protocol == "dns" && ctx.json?.dns != null
+      name: '{{ IngestPipeline "dns" }}'
+  - pipeline:
+      tag: pipeline_tls
+      if: ctx.json?.tls != null
+      name: '{{ IngestPipeline "tls" }}'
+
+  - append:
+      field: related.hash
+      tag: append_related_hash_sha256
+      value: '{{file.hash.sha256}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha256 != null
+  - append:
+      field: related.ip
+      tag: append_related_ip_source
+      value: '{{source.ip}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.ip
+      tag: append_related_ip_destination
+      value: '{{destination.ip}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - append:
+      field: related.ip
+      tag: append_related_ip_dhcp_assigned
+      value: '{{dhcp.assigned_ip}}'
+      allow_duplicates: false
+      if: ctx.dhcp?.assigned_ip != null
+  - append:
+      field: related.ip
+      tag: append_related_ip_dhcp_client
+      value: '{{dhcp.client_ip}}'
+      allow_duplicates: false
+      if: ctx.dhcp?.client_ip != null
+  - append:
+      field: related.ip
+      tag: append_related_ip_arp_src
+      value: '{{arp.src_ip}}'
+      allow_duplicates: false
+      if: ctx.arp?.src_ip != null
+  - append:
+      field: related.ip
+      tag: append_related_ip_arp_dest
+      value: '{{arp.dest_ip}}'
+      allow_duplicates: false
+      if: ctx.arp?.dest_ip != null
+  - append:
+      field: related.hosts
+      tag: append_related_hosts_hostname_info
+      value: '{{hostname_info.host}}'
+      allow_duplicates: false
+      if: ctx.hostname_info?.host != null
+  - append:
+      field: related.hosts
+      tag: append_related_hosts_destination_domain
+      value: '{{destination.domain}}'
+      allow_duplicates: false
+      if: ctx.destination?.domain != null
+  - append:
+      field: related.hosts
+      tag: append_related_hosts_dns_question
+      value: '{{dns.question.name}}'
+      allow_duplicates: false
+      if: ctx.dns?.question?.name != null
+  - append:
+      field: related.hosts
+      tag: append_related_hosts_dhcp_hostname
+      value: '{{dhcp.hostname}}'
+      allow_duplicates: false
+      if: ctx.dhcp?.hostname != null
+
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geoip_source_ip
+      if: ctx.source?.ip != null
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      tag: geoip_destination_ip
+      if: ctx.destination?.ip != null
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      tag: geoip_asn_source_ip
+      if: ctx.source?.ip != null
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      tag: geoip_asn_destination_ip
+      if: ctx.destination?.ip != null
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      tag: rename_source_asn
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      tag: rename_source_as_org
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      tag: rename_destination_asn
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      tag: rename_destination_as_org
+      ignore_missing: true
+
+  - remove:
+      field: json
+      tag: remove_json_temp
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_pipeline_error
+      value: preserve_original_event
+      allow_duplicates: false

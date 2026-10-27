@@ -3,9 +3,9 @@
 
 ## Overview
 
-The Stamus Networks integration for Elastic enables collection of IDS/IPS alerts, Declaration of
-Compromise (DoC) and Declaration of Policy Violation (DoPV) correlation records, and host
-inventory data from [Stamus Networks Clear NDR](https://www.stamus-networks.com/) (formerly
+The Stamus Networks integration for Elastic enables collection of IDS/IPS alerts, protocol and
+network logs, Declaration of Compromise (DoC) and Declaration of Policy Violation (DoPV)
+correlation records, and host inventory data from [Stamus Networks Clear NDR](https://www.stamus-networks.com/) (formerly
 branded "Stamus Security Platform") — a Network Detection and Response (NDR) / Network Security
 Monitoring (NSM) platform built on [Suricata](https://suricata.io/), the open-source IDS/IPS/NSM
 engine. Data is collected from the Clear NDR Central Server (CNCS) REST API.
@@ -21,9 +21,11 @@ Stamus Tier 3 license; the `alerts` data stream otherwise works with the lower T
 
 This integration polls the CNCS REST API on a configurable interval using the `cel` input. The
 `alerts` data stream retrieves Suricata IDS/IPS alert events and Stamus DoC/DoPV correlation
-records with a persisted time-range cursor (`from_date`/`to_date`). The `host_insights` data
-stream retrieves the full host inventory on every poll cycle, since the API does not expose an
-incremental ("updated since") filter for that endpoint.
+records with a persisted time-range cursor (`from_date`/`to_date`). The `network` data stream
+uses the same `events_tail` endpoint and cursor, walking an ordered list of protocol event types
+(fileinfo, then DNS, HTTP, TLS, flow, and the remaining Suricata EVE types) inside each window.
+The `host_insights` data stream retrieves the full host inventory on every poll cycle, since the
+API does not expose an incremental ("updated since") filter for that endpoint.
 
 Geolocation and ASN fields (`source.geo`, `destination.geo`, `source.as`, `destination.as`) on the
 `alerts` data stream are derived by this integration's ingest pipeline using Elasticsearch's
@@ -39,6 +41,11 @@ The Stamus Networks integration collects the following data streams:
   stamus`) when present, plus Sightings (newly discovered asset attributes), Outlier Alert
   (`stamus_novel`), and File Identification classification tags that decorate alert/stamus
   documents.
+* **network**: Suricata protocol and network logs from the same `events_tail` API, in one data
+  stream rather than one stream per event type. DNS and flow are high volume. Shorten
+  **Initial lookback** (`initial_interval`, default 24h) on first install so the first poll does
+  not pull a full day of those logs. Event types with no sample in the reference cluster are still
+  collected and mapped from the Suricata EVE schema.
 * **host_insights**: a continuously-updated per-host inventory/profile object (hostnames, users,
   roles, services, TLS/SSH/HTTP client fingerprints). This is an entity/inventory data stream, not
   a timestamped event stream.
@@ -88,8 +95,10 @@ Add the **Stamus Networks** integration in Fleet and configure:
   (no trailing `/rest/`).
 * **API Token** — the token generated above.
 
-Both the `alerts` and `host_insights` data streams share these two settings. Each data stream also
-exposes its own **Interval** (polling frequency) setting — for `host_insights`, keep this
+The `alerts`, `network`, and `host_insights` data streams share these two settings. Each data
+stream also exposes its own **Interval** (polling frequency) and, for `alerts` and `network`, an
+**Initial lookback**. DNS and flow logs on the `network` stream are high volume: shorten
+**Initial lookback** on first install (the default is 24h). For `host_insights`, keep the interval
 conservative relative to the size of your host inventory, since every poll cycle performs a full
 re-read of all hosts (see Performance and scaling, below).
 
@@ -97,7 +106,7 @@ re-read of all hosts (see Performance and scaling, below).
 
 After enabling the integration, generate or wait for Suricata alert traffic on your monitored
 network, then check **Discover** in Kibana for documents in the
-`logs-stamus_networks.alerts-*` and `logs-stamus_networks.host_insights-*` data streams.
+`logs-stamus_networks.alerts-*`, `logs-stamus_networks.network-*`, and `logs-stamus_networks.host_insights-*` data streams.
 
 ## Troubleshooting
 
@@ -110,6 +119,11 @@ network, then check **Discover** in Kibana for documents in the
 - `flow_id` precision: `flow_id` is delivered by the API as a large integer (commonly >= 2^53 in production) and is mapped as `keyword` since it is used only as an opaque correlation key, never as a metric. The CEL program parses the raw API response with `decode_json_string_numbers()`, which decodes every JSON number (not just `flow_id`) using its exact original textual form instead of float64, and re-emits it the same way through `encode_json()`; `flow_id` therefore round-trips through this integration with no precision loss, even above 2^53. (An earlier version of this program instead rewrote `flow_id` to a quoted JSON string before a plain `decode_json()` call, via a CEL `regexp:` stream-config block; that mechanism caused Elastic Agent to silently fail to schedule a component for this input — confirmed on Elastic Agent 9.5.5, with no errors logged anywhere — and was removed. `decode_json_string_numbers()` requires no stream-config changes, so it does not reintroduce that failure mode.)
 
 ## Performance and scaling
+
+The `network` data stream reads every protocol phase in each time window. DNS and flow dominate
+volume. On first install, shorten **Initial lookback** from the default 24h so the first cursor
+does not request a full day of those events. After the cursor has caught up, the polling interval
+(default 5m) is the steady-state load.
 
 The `host_insights` data stream performs a full inventory read on every poll cycle, since the
 Stamus REST API does not expose an incremental ("updated since") filter for the host insights
@@ -138,7 +152,7 @@ For more information on architectures that can be used for scaling this integrat
 ### API usage
 
 These APIs are used with this integration:
-* `GET /rest/rules/es/events_tail/` — alert and stamus (Declaration of Compromise/Policy Violation) events for the `alerts` data stream.
+* `GET /rest/rules/es/events_tail/` — alert and stamus (Declaration of Compromise/Policy Violation) events for the `alerts` data stream, and protocol/network logs for the `network` data stream.
 * `GET /rest/appliances/host_id/` — host inventory profiles for the `host_insights` data stream.
 
 See the [REST API documentation](https://docs.stamus-networks.com/42.2.0/developer-corner/rest-api.html) for authentication, pagination, and filtering details.
@@ -167,6 +181,29 @@ Sightings, Outlier Alert, and File Identification classification tags.
 ##### alerts sample event
 
 {{ event "alerts" }}
+
+#### network
+
+The `network` data stream collects Suricata protocol and network logs from
+`GET /rest/rules/es/events_tail/`. One CEL input walks a fixed phase list. Live event types are
+collected first (fileinfo, dns, http, tls, flow, snmp, krb5, anomaly, smb, smb_insights, quic,
+dhcp, dcerpc, ssh, rdp, mqtt, sip, tftp), then event types that had no sample in the reference
+cluster but are still requested (smtp, pop3, ftp, ftp_data, http2, nfs, ike, ikev2, dnp3, rfb,
+bittorrent_dht, pgsql, modbus, arp, netflow, stats). An empty first page ends that phase. After
+the last phase, the time window advances.
+
+DNS and flow are high volume. Shorten `initial_interval` on first install.
+
+A transport error or HTTP error keeps the cursor on the current phase and page. The next poll
+retries that request. The stream does not skip a protocol phase after an error.
+
+##### network fields
+
+{{ fields "network" }}
+
+##### network sample event
+
+{{ event "network" }}
 
 #### host_insights
 
