@@ -14,7 +14,7 @@
       },
       "metadata": {
         "name": "[GCP Cloud SQL MySQL OTel] Instance metrics not reporting",
-        "description": "Alerts when a Cloud SQL for MySQL instance that reported metrics in the last 2 hours has sent no Cloud SQL metric for at least 20 minutes, about four times the normal 3-5 minute delivery delay. The other rules can't evaluate an instance that has no data, so this rule is what catches a stopped collector, failing Cloud Monitoring API access or a deleted instance. The alert recovers when data resumes, or after 2 hours of silence, once the instance leaves the window. One missing data point never triggers it.",
+        "description": "Alerts when a Cloud SQL for MySQL instance that reported metrics in the last 2 hours has sent no Cloud SQL metric (MySQL metrics, database/up or database/instance_state) for at least 20 minutes, about four times the normal 3-5 minute delivery delay. The other rules can't evaluate an instance that has no data, so this rule is what catches a stopped collector, failing Cloud Monitoring API access or a deleted instance. The alert recovers when data resumes, or after 2 hours of silence, once the instance leaves the window. One missing data point never triggers it.",
         "tags": [
           "observability",
           "gcp",
@@ -28,9 +28,9 @@
       },
       "time_field": "@timestamp",
       "query": {
-        "base": "TS metrics-gcp.cloudsql_mysql.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\"\n// Newest sample of any Cloud SQL metric per instance, plus the MySQL marker\n| STATS last_sample = MAX(`@timestamp`),\n        marker = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/queries`))\n  BY database_id",
+        "base": "TS metrics-gcp.cloudsql_mysql.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\"\n// Per instance and minute: samples of the MySQL marker, database/up and database/instance_state. up and\n// instance_state keep arriving when an outage or a stop by the owner ends the MySQL metrics, and those cases\n// belong to the \"Instance not serving\" rule.\n| STATS marker = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/queries`)),\n        up_samples = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/up`)),\n        state_samples = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/instance_state`))\n  BY `@timestamp` = TBUCKET(1 minute), database_id\n// Newest minute with any of these samples\n| STATS last_sample = MAX(`@timestamp`) WHERE marker > 0 OR up_samples > 0 OR state_samples > 0,\n        marker = SUM(marker)\n  BY database_id",
         "breach": {
-          "segment": "WHERE marker > 0\n| EVAL minutes_since_last_sample = DATE_DIFF(\"minute\", last_sample, NOW())\n// Threshold: 20 minutes, about four times the normal 3-5 minute Cloud Monitoring delivery delay.\n// Raise it if the receiver collection_interval is longer than 5 minutes.\n| WHERE minutes_since_last_sample >= 20\n| SORT minutes_since_last_sample DESC, database_id ASC\n| LIMIT 100\n| KEEP database_id, last_sample, minutes_since_last_sample"
+          "segment": "WHERE marker > 0\n| EVAL minutes_since_last_sample = DATE_DIFF(\"minute\", last_sample, NOW())\n// Threshold: 20 minutes, about four times the normal 3-5 minute Cloud Monitoring delivery delay.\n// Raise it if the receiver collection_interval is longer than 5 minutes.\n| WHERE minutes_since_last_sample >= 20\n| SORT minutes_since_last_sample DESC, database_id ASC\n// Up to 1000 breaching instances per run (the ES|QL default row limit); raise it for larger fleets\n| LIMIT 1000\n| KEEP database_id, last_sample, minutes_since_last_sample"
         }
       },
       "state_transition": {
