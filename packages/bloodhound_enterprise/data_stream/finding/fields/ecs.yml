@@ -1,0 +1,98 @@
+- description: |-
+    ECS version this event conforms to. `ecs.version` is a required field and must exist in all events.
+    When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events.
+  name: ecs.version
+  type: keyword
+- description: Error message.
+  name: error.message
+  type: match_only_text
+- description: Unique ID to describe the event.
+  name: event.id
+  type: keyword
+- description: |-
+    This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy.
+    `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events.
+    The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not.
+  name: event.kind
+  type: keyword
+- description: |-
+    The action captured by the event.
+    This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer.
+  name: event.action
+  type: keyword
+- description: |-
+    `event.created` contains the date/time when the event was first read by an agent, or by your pipeline.
+    This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event.
+    In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source.
+    In case the two timestamps are identical, `@timestamp` should be used.
+  name: event.created
+  type: date
+- description: |-
+    URL linking to an external system to continue investigation of this event.
+    This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field.
+  name: event.url
+  type: keyword
+- description: |-
+    Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex.
+    This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`.
+  doc_values: false
+  index: false
+  name: event.original
+  type: keyword
+- description: |-
+    Original log level of the log event.
+    If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity).
+    Some examples are `warn`, `err`, `i`, `informational`.
+  name: log.level
+  type: keyword
+- description: |-
+    For log events the message field contains the log message, optimized for viewing in a log viewer.
+    For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event.
+    If multiple messages exist, they can be combined into one message.
+  name: message
+  type: match_only_text
+- description: |-
+    Reference URL to additional information about the rule used to generate this event.
+    The URL can point to the vendor's documentation about the rule. If that's not available, it can also be a link to a more general page describing this type of alert.
+  name: rule.reference
+  type: keyword
+- description: |-
+    The domain name of the source system.
+    This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment.
+  name: source.domain
+  type: keyword
+- description: Short name or login of the user.
+  multi_fields:
+    - name: text
+      type: match_only_text
+  name: user.name
+  type: keyword
+- description: Unique identifier of the user.
+  name: user.id
+  type: keyword
+- description: |-
+    Name of the directory the user is a member of.
+    For example, an LDAP or Active Directory domain name.
+  name: user.domain
+  type: keyword
+- description: Operating system name, including the version or code name.
+  multi_fields:
+    - name: text
+      type: match_only_text
+  name: host.os.full
+  type: keyword
+- description: List of keywords used to tag each event.
+  name: tags
+  type: keyword
+- description: Short name or login of the user.
+  multi_fields:
+    - name: text
+      type: match_only_text
+  name: destination.user.name
+  type: keyword
+- description: Unique identifier of the user.
+  name: destination.user.id
+  type: keyword
+- description: All the user names or other user identifiers seen on the event.
+  name: related.user
+  type: keyword

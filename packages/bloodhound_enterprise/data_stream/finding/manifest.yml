@@ -1,0 +1,51 @@
+title: "BloodHound Attack Path Findings"
+type: logs
+dataset: bloodhound_enterprise.finding
+streams:
+  - input: cel
+    title: "BloodHound Attack Path Findings"
+    description: "Collects BloodHound Enterprise attack-path finding instances."
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: select
+        title: "Polling Interval"
+        description: How often the agent asks BloodHound Enterprise for findings. This timer does not create alerts or cases.
+        required: true
+        show_user: true
+        default: 1h
+        secret: false
+        options:
+          - text: 5 minutes
+            value: 5m
+          - text: 1 hour
+            value: 1h
+          - text: 2 hours
+            value: 2h
+          - text: 6 hours
+            value: 6h
+          - text: 12 hours
+            value: 12h
+          - text: 24 hours
+            value: 24h
+      - name: tags
+        type: text
+        title: "Tags"
+        multi: true
+        secret: false
+        show_user: false
+        default:
+          - forwarded
+          - bloodhound_enterprise-finding
+      - name: processors
+        type: yaml
+        title: "Processors"
+        description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed."
+        required: false
+        show_user: false
+elasticsearch:
+  dynamic_dataset: true
+  dynamic_namespace: true
+  index_template:
+    mappings:
+      subobjects: false
