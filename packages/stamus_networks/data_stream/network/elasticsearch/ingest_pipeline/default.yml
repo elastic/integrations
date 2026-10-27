@@ -160,7 +160,7 @@ processors:
         rfb:
           type:
             - protocol
-          network_protocol: rdp
+          network_protocol: rfb
         fileinfo:
           category:
             - network
@@ -1226,6 +1226,12 @@ processors:
       tag: rename_destination_as_org
       ignore_missing: true
 
+  - rename:
+      field: json.stats
+      target_field: stats
+      tag: rename_stats
+      ignore_missing: true
+      if: ctx.json?.event_type == 'stats'
   - remove:
       field: json
       tag: remove_json_temp
