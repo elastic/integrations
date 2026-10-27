@@ -165,6 +165,15 @@ See the [REST API documentation](https://docs.stamus-networks.com/42.2.0/develop
 - [Host Insights concepts](https://docs.stamus-networks.com/42.2.0/concepts/host-insights.html)
 - [Outlier Alerts concepts](https://docs.stamus-networks.com/42.2.0/concepts/alert-outliers.html)
 
+### Dashboards
+
+The package ships four dashboards, linked to each other:
+
+- **[Logs Stamus Networks] Alerts Overview** covers signature alerts and Stamus correlation records: volume over time, severity, signatures, categories, talkers, and Declaration of Compromise families.
+- **[Logs Stamus Networks] Events Overview** covers protocol and network logs: protocols, transport, talkers, DNS names, HTTP methods, TLS server names, and files.
+- **[Logs Stamus Networks] Host Insights** covers the host inventory: roles, usernames, services, client protocols, JA4 fingerprints, and SSH or HTTP client software.
+- **[Logs Stamus Networks] SMB Insights** covers SMB commands, status, shares, dialects, named pipes, and SMB insight summaries.
+
 ### Data streams
 
 #### alerts

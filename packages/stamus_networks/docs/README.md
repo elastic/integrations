@@ -191,6 +191,15 @@ See the [REST API documentation](https://docs.stamus-networks.com/42.2.0/develop
 - [Host Insights concepts](https://docs.stamus-networks.com/42.2.0/concepts/host-insights.html)
 - [Outlier Alerts concepts](https://docs.stamus-networks.com/42.2.0/concepts/alert-outliers.html)
 
+### Dashboards
+
+The package ships four dashboards, linked to each other:
+
+- **[Logs Stamus Networks] Alerts Overview** covers signature alerts and Stamus correlation records: volume over time, severity, signatures, categories, talkers, and Declaration of Compromise families.
+- **[Logs Stamus Networks] Events Overview** covers protocol and network logs: protocols, transport, talkers, DNS names, HTTP methods, TLS server names, and files.
+- **[Logs Stamus Networks] Host Insights** covers the host inventory: roles, usernames, services, client protocols, JA4 fingerprints, and SSH or HTTP client software.
+- **[Logs Stamus Networks] SMB Insights** covers SMB commands, status, shares, dialects, named pipes, and SMB insight summaries.
+
 ### Data streams
 
 #### alerts
@@ -240,6 +249,8 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.packets | Packets sent from the destination to the source. | long |
 | destination.port | Port of the destination. | long |
@@ -295,6 +306,8 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | rule.version | The version / revision of the rule being used for analysis. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
@@ -499,6 +512,8 @@ retries that request. The stream does not skip a protocol phase after an error.
 | dcerpc.response | DCERPC response type. | keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.packets | Packets sent from the destination to the source. | long |
 | destination.port | Port of the destination. | long |
@@ -659,6 +674,8 @@ retries that request. The stream does not skip a protocol phase after an error.
 | snmp.usm | SNMPv3 User-based Security Model user name. | keyword |
 | snmp.version | SNMP version number. | long |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
