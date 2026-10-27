@@ -28,7 +28,7 @@ The package assets are already installed on the destination project. There is no
 
 This integration does not use Elastic Agent. Do not add it to an agent policy.
 
-In Kibana on the destination project, open **Dashboards** and then **[Audit] Command Center**. Generate audit activity, such as signing in to Kibana or editing a dashboard, and confirm the panels populate.
+In Kibana on the destination project, open **Dashboards** and then **[Audit] Command Center**. Generate audit activity on the source project, such as signing in to Kibana or editing a dashboard, then confirm the panels on the destination populate.
 
 This integration installs:
 
