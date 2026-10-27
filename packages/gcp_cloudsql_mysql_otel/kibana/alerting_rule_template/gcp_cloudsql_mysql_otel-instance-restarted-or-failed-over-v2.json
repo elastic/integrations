@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_mysql_otel-instance-restarted-or-failed-over-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL MySQL OTel] Instance restarted or failed over",
+        "description": "Alerts when a Cloud SQL for MySQL instance restarted or failed over within the last 15 minutes. That means an automatic failover request was recorded, or a minute with less than 55 seconds of uptime (database/uptime; 59-61 s is collection jitter) was followed by a full minute, so the instance went down and came back. Restarts while the instance reported MAINTENANCE are treated as planned and ignored. Ongoing outages are covered by the 'Instance not serving' rule. The alert stays active while the event is inside the window, then recovers. The 15-minute window and 5-minute schedule make sure each event is evaluated at least once, despite the 3-5 minute delivery delay.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "mysql"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_mysql.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\"\n// Per instance and minute: seconds of uptime (about 60 when up the whole minute), auto-failover requests,\n// whether the instance was in MAINTENANCE, and the MySQL marker. MIN/MAX collapse duplicate points.\n| STATS uptime_s = MIN(MIN_OVER_TIME(`metrics.cloudsql.googleapis.com/database/uptime`)),\n        failovers = MAX(MAX_OVER_TIME(`metrics.cloudsql.googleapis.com/database/auto_failover_request_count`)),\n        maintenance = MAX(MAX_OVER_TIME(`metrics.cloudsql.googleapis.com/database/instance_state`)) WHERE state == \"MAINTENANCE\",\n        marker = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/queries`))\n  BY `@timestamp` = TBUCKET(1 minute), database_id\n| STATS partial_uptime_minutes = COUNT(uptime_s) WHERE uptime_s > 0 AND uptime_s < 55,\n        zero_uptime_minutes = COUNT(uptime_s) WHERE uptime_s == 0,\n        latest_uptime_s = LAST(uptime_s, CASE(uptime_s IS NOT NULL, `@timestamp`, NULL)),\n        failover_requests = SUM(failovers),\n        maintenance_minutes = COUNT(maintenance) WHERE maintenance == 1,\n        marker = SUM(marker)\n  BY database_id",
+        "breach": {
+          "segment": "WHERE marker > 0\n| EVAL failover_requests = COALESCE(failover_requests, 0)\n// Breach: an auto-failover request, or a minute with less than 55 s of uptime (0-54 s; 59-61 s is\n// collection jitter) followed by a full minute, i.e. the instance went down and came back.\n// Ongoing outages (latest minute still short) are left to the \"Instance not serving\" rule.\n// Restarts while the instance reported MAINTENANCE are planned: remove \"AND maintenance_minutes == 0\" to alert on them too.\n| WHERE failover_requests > 0\n     OR (partial_uptime_minutes + zero_uptime_minutes > 0 AND latest_uptime_s >= 55 AND maintenance_minutes == 0)\n| EVAL event_type = CASE(failover_requests > 0, \"auto failover\", \"restart\")\n| SORT database_id ASC\n| LIMIT 100\n| KEEP database_id, event_type, partial_uptime_minutes, zero_uptime_minutes, latest_uptime_s, failover_requests"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_mysql_otel-instance-restarted-or-failed-over-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL MySQL instance restarted or failed over\n\nThe instance had downtime and is serving again. `event_type` is `auto failover` when Cloud SQL recorded an automatic failover request (HA instances), otherwise `restart`. `zero_uptime_minutes` and `partial_uptime_minutes` show how long it was down.\n\n### Triage\n1. Open **[GCP OTel] Cloud SQL MySQL Instance Detail**. Check *Lowest uptime per minute* for the restart and *Memory usage vs quota* just before it: memory climbing to the quota points to an out-of-memory restart.\n2. Check the Cloud SQL error log and operations list in the Google Cloud console for a crash, OOM kill, flag change, tier change or failover.\n3. After a failover, the standby is rebuilt, and the instance runs without HA protection until `available_for_failover` returns above 0.\n4. Expect a cold InnoDB buffer pool after a restart: a lower buffer pool hit ratio, more disk reads and slower queries for a while.\n5. Check the clients for a reconnect storm (*Connections near the max_connections limit*, *Failed connection surge*).\n\n### Common causes\nOut-of-memory (too many connections or an oversized buffer pool for the tier), a MySQL crash, an instance or flag change that needs a restart, a zonal failure that triggers an HA failover.\n\n### Tuning\nRemove `AND maintenance_minutes == 0` to also alert on restarts during maintenance. Restarts and failovers are always worth recording, so suppress notifications instead of raising thresholds."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-instance-restarted-or-failed-over-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-244a7e1a-2f13-4f93-b534-20a10a5158a7"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-instance-restarted-or-failed-over-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-deda1e6a-80e7-49cd-ba2e-fff6be787503"
+          }
+        }
+      ]
+    }
+  }
+}

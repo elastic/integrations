@@ -1,0 +1,67 @@
+{
+  "id": "gcp_cloudsql_mysql_otel-innodb-lock-failures-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL MySQL OTel] InnoDB deadlocks and lock wait timeouts",
+        "description": "Alerts when statements on a Cloud SQL for MySQL instance fail on row locks at an average of at least 1 per minute over the last 15 minutes. Failures are deadlocks (database/mysql/innodb/deadlocks_count, where a transaction was rolled back) plus lock wait timeouts (lock_timeout_count, where a statement gave up after innodb_lock_wait_timeout). Rates are per reported minute, so gaps and duplicate points don't skew them. Each failure is an application error unless the client retries.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "mysql"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_mysql.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\"\n// One-minute delta counts: deadlocks (transaction rolled back) and lock wait timeouts (statement failed after\n// innodb_lock_wait_timeout). Both metrics are MySQL-only, so the rule is MySQL-scoped.\n| STATS deadlocks = SUM(SUM_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/innodb/deadlocks_count`)),\n        deadlock_samples = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/innodb/deadlocks_count`)),\n        lock_timeouts = SUM(SUM_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/innodb/lock_timeout_count`)),\n        lock_timeout_samples = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/innodb/lock_timeout_count`))\n  BY database_id",
+        "breach": {
+          "segment": "// At least 5 one-minute samples in the window\nWHERE COALESCE(deadlock_samples, 0) >= 5 OR COALESCE(lock_timeout_samples, 0) >= 5\n// Per-minute rates: summed deltas divided by the minutes actually reported (robust to gaps and duplicate points)\n| EVAL deadlocks_per_min = CASE(deadlock_samples > 0, TO_DOUBLE(deadlocks) / deadlock_samples, 0.0),\n       lock_timeouts_per_min = CASE(lock_timeout_samples > 0, TO_DOUBLE(lock_timeouts) / lock_timeout_samples, 0.0)\n| EVAL lock_failures_per_min = deadlocks_per_min + lock_timeouts_per_min\n// Threshold: on average at least 1 failed statement per minute across the window\n| WHERE lock_failures_per_min >= 1.0\n| EVAL lock_failures_per_min = ROUND(lock_failures_per_min, 2),\n       deadlocks_per_min = ROUND(deadlocks_per_min, 2),\n       lock_timeouts_per_min = ROUND(lock_timeouts_per_min, 2)\n| SORT lock_failures_per_min DESC, database_id ASC\n| LIMIT 100\n| KEEP database_id, lock_failures_per_min, deadlocks_per_min, lock_timeouts_per_min"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_mysql_otel-innodb-lock-failures-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL MySQL InnoDB deadlocks and lock wait timeouts\n\nStatements are failing on row locks. A deadlock rolls back one transaction; a lock wait timeout fails the statement after `innodb_lock_wait_timeout` (50 seconds by default).\n\n### Triage\n1. Open **[GCP OTel] Cloud SQL MySQL Instance Detail** and check *Deadlocks over time* and *Row lock waits and lock timeouts*. Note when the failures started and whether a deployment or batch job started at the same time.\n2. On the instance, run `SHOW ENGINE INNODB STATUS` (*LATEST DETECTED DEADLOCK* section). Query `sys.innodb_lock_waits` and `information_schema.innodb_trx` to find the blocking and long-running transactions.\n3. Lock timeouts usually mean one long transaction holds locks that others wait for: an idle open transaction, a slow batch update or a stuck session.\n\n### Actions\nKill the blocking session if it's safe to do so. Long-term fixes are in the application: keep transactions short, access rows in a consistent order, index the columns used to look up locked rows, and retry deadlocked transactions.\n\n### Tuning\nChange `lock_failures_per_min >= 1.0` to adjust the threshold. Applications that retry deadlocks by design can tolerate a higher deadlock rate."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-innodb-lock-failures-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-deda1e6a-80e7-49cd-ba2e-fff6be787503"
+          }
+        }
+      ]
+    }
+  }
+}

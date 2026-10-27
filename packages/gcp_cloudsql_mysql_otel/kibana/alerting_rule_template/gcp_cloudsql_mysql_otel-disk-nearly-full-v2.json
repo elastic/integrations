@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_mysql_otel-disk-nearly-full-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL MySQL OTel] Disk nearly full",
+        "description": "Alerts when a Cloud SQL for MySQL instance has used at least 90% of its data disk (database/disk/bytes_used over database/disk/quota) in every observed minute of the last 10 minutes, with at least 3 minutes observed. Google recommends keeping at least 20% free. A full disk stops writes and replication and can take the instance offline. With automatic storage increase, the quota grows in permanent steps and the alert recovers once usage falls below 90% of the new quota. disk_used_pct is the latest value, computed like the Max disk % panel.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "mysql"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "10m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_mysql.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\"\n// Per instance and minute: data disk bytes used, the disk quota and the MySQL marker.\n// MAX collapses duplicate points; the quota grows when automatic storage increase triggers.\n| STATS used = MAX(MAX_OVER_TIME(`metrics.cloudsql.googleapis.com/database/disk/bytes_used`)),\n        quota = MAX(MAX_OVER_TIME(`metrics.cloudsql.googleapis.com/database/disk/quota`)),\n        marker = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/queries`))\n  BY `@timestamp` = TBUCKET(1 minute), database_id\n| EVAL minute_ratio = CASE(quota > 0, TO_DOUBLE(used) / TO_DOUBLE(quota), NULL)\n// Latest bytes used and quota (ignoring minutes where the metric is missing) and the lowest per-minute ratio\n| STATS bytes_used = LAST(used, CASE(used IS NOT NULL, `@timestamp`, NULL)),\n        quota = LAST(quota, CASE(quota IS NOT NULL, `@timestamp`, NULL)),\n        lowest_ratio = MIN(minute_ratio),\n        observed_minutes = COUNT(minute_ratio),\n        marker = SUM(marker)\n  BY database_id",
+        "breach": {
+          "segment": "// MySQL instances with at least 3 observed minutes, so one late sample does not decide\nWHERE marker > 0 AND quota > 0 AND observed_minutes >= 3\n// Threshold: every observed minute at or above 90% of the disk quota (Google recommends keeping at least 20% free)\n| WHERE lowest_ratio >= 0.9\n| EVAL disk_used_pct = ROUND(TO_DOUBLE(bytes_used) * 100.0 / TO_DOUBLE(quota), 1),\n       free_gib = ROUND(TO_DOUBLE(quota - bytes_used) / 1073741824.0, 1),\n       quota_gib = ROUND(TO_DOUBLE(quota) / 1073741824.0, 1)\n| SORT disk_used_pct DESC, database_id ASC\n| LIMIT 100\n| KEEP database_id, disk_used_pct, free_gib, quota_gib, observed_minutes"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_mysql_otel-disk-nearly-full-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL MySQL disk nearly full\n\nThe data disk is at least 90% used. Data, binary logs, temporary files, undo and redo logs all share this disk.\n\n### Triage\n1. Open **[GCP OTel] Cloud SQL MySQL Instance Detail**, then *Disk usage vs quota*. A steady climb gives you time-to-full. A step means temporary files or a bulk load.\n2. Check whether automatic storage increase is enabled. Without it, the instance stops accepting writes when the disk is full.\n3. Look for the usual causes: binary log growth from write-heavy workloads (binary logs are kept for about 7 days for point-in-time recovery), large on-disk temporary tables (*Temporary tables created on disk*), long-running transactions that hold undo, and table growth.\n\n### Actions\n- Increase the disk size, or enable automatic storage increase. Disks can't shrink afterwards.\n- Reduce binary log retention or point-in-time recovery retention if appropriate. Drop or archive unused data, and rebuild fragmented tables.\n- Kill runaway queries that create large temporary tables.\n\n### Tuning\nChange `lowest_ratio >= 0.9` to adjust the threshold. Use a lower value, such as 0.8, for an earlier warning on instances without automatic storage increase."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-disk-nearly-full-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-244a7e1a-2f13-4f93-b534-20a10a5158a7"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-disk-nearly-full-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-deda1e6a-80e7-49cd-ba2e-fff6be787503"
+          }
+        }
+      ]
+    }
+  }
+}

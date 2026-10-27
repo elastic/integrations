@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_mysql_otel-high-cpu-utilization-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL MySQL OTel] High CPU utilization",
+        "description": "Alerts when the average CPU utilization of a Cloud SQL for MySQL instance over the last 15 minutes is at least 90% of its reserved vCPUs (the sample-weighted mean of database/cpu/utilization, with at least 5 samples). At this level, statements queue for CPU and query latency rises. Values above 100% are possible. The 15-minute average absorbs short spikes and allows for the 3-5 minute delivery delay.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "mysql"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_mysql.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\"\n// Sample-weighted mean and peak of CPU utilization (fraction of reserved vCPUs, can exceed 1.0), plus the MySQL marker\n| STATS cpu_total = SUM(SUM_OVER_TIME(`metrics.cloudsql.googleapis.com/database/cpu/utilization`)),\n        cpu_samples = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/cpu/utilization`)),\n        cpu_peak = MAX(MAX_OVER_TIME(`metrics.cloudsql.googleapis.com/database/cpu/utilization`)),\n        marker = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/queries`))\n  BY database_id",
+        "breach": {
+          "segment": "// MySQL instances with at least 5 samples in the window\nWHERE marker > 0 AND cpu_samples >= 5\n| EVAL avg_cpu = cpu_total / cpu_samples\n// Threshold: average at or above 90% of reserved CPU across the window\n| WHERE avg_cpu >= 0.9\n| EVAL avg_cpu_pct = ROUND(avg_cpu * 100, 1),\n       peak_cpu_pct = ROUND(cpu_peak * 100, 1)\n| SORT avg_cpu_pct DESC, database_id ASC\n| LIMIT 100\n| KEEP database_id, avg_cpu_pct, peak_cpu_pct, cpu_samples"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_mysql_otel-high-cpu-utilization-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL MySQL high CPU utilization\n\nThe instance has averaged at least 90% of its reserved vCPUs for about 15 minutes, so queries are competing for CPU.\n\n### Triage\n1. Open **[GCP OTel] Cloud SQL MySQL Instance Detail**. Compare *CPU utilization vs reserved cores* with *Queries per second*, *Slow query ratio*, *Threads connected, running and cached* and *InnoDB pages read and written per second*.\n2. CPU rising with queries/s means a traffic increase. CPU rising with flat traffic but more page reads or slow queries means a query plan change or missing index, usually a full scan.\n3. Threads running well above the reserved cores confirms CPU queueing.\n4. Find the expensive statements with Query Insights in the Google Cloud console, or with `performance_schema` and `sys.statement_analysis`.\n\n### Actions\nFix or kill the offending queries, add indexes, move read traffic to read replicas, or scale the instance to a larger tier.\n\n### Tuning\nChange `avg_cpu >= 0.9` to adjust the threshold, and the rule's time window to change how long the load must last."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-high-cpu-utilization-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-244a7e1a-2f13-4f93-b534-20a10a5158a7"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-high-cpu-utilization-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-deda1e6a-80e7-49cd-ba2e-fff6be787503"
+          }
+        }
+      ]
+    }
+  }
+}

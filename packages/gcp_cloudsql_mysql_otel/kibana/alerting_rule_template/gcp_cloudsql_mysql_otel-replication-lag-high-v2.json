@@ -1,0 +1,67 @@
+{
+  "id": "gcp_cloudsql_mysql_otel-replication-lag-high-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL MySQL OTel] High replication lag on read replica",
+        "description": "Alerts when a Cloud SQL for MySQL read replica has been at least 300 seconds (5 minutes) behind its primary (database/replication/replica_lag) in every observed minute of the last 10 minutes, with at least 3 minutes observed. Replica reads are stale, and promoting the replica would lose recent transactions. network_lag_s is the binary log transport delay and apply_lag_s is the rest, which is spent applying changes on the replica. Negative lag means replication is inactive, which the 'Replication broken on read replica' rule covers. Set the threshold to your read-staleness or recovery point objective.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "mysql"
+        ]
+      },
+      "schedule": {
+        "every": "2m",
+        "lookback": "10m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_mysql.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\"\n// Per replica and minute: total replication lag, its network (binlog transport) part and the MySQL marker\n| STATS lag = MAX(MAX_OVER_TIME(`metrics.cloudsql.googleapis.com/database/replication/replica_lag`)),\n        net = MAX(MAX_OVER_TIME(`metrics.cloudsql.googleapis.com/database/replication/network_lag`)),\n        marker = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/queries`))\n  BY `@timestamp` = TBUCKET(1 minute), database_id\n// Latest lag values (ignoring minutes where the metric is missing) and the lowest per-minute lag\n| STATS replica_lag_s = LAST(lag, CASE(lag IS NOT NULL, `@timestamp`, NULL)),\n        network_lag_s = LAST(net, CASE(net IS NOT NULL, `@timestamp`, NULL)),\n        lowest_lag_s = MIN(lag),\n        observed_minutes = COUNT(lag),\n        marker = SUM(marker)\n  BY database_id",
+        "breach": {
+          "segment": "// MySQL replicas with at least 3 observed minutes. Negative lag (replication inactive) never matches\n// here; the \"Replication broken\" rule covers it.\nWHERE marker > 0 AND observed_minutes >= 3\n// Threshold: every observed minute at or above 300 s (5 minutes) behind the primary\n| WHERE lowest_lag_s >= 300\n// Apply (SQL thread) lag is roughly total lag minus network lag\n| EVAL apply_lag_s = ROUND(replica_lag_s - COALESCE(network_lag_s, 0), 0),\n       replica_lag_s = ROUND(replica_lag_s, 0)\n| SORT replica_lag_s DESC, database_id ASC\n| LIMIT 100\n| KEEP database_id, replica_lag_s, network_lag_s, apply_lag_s, observed_minutes"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_mysql_otel-replication-lag-high-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL MySQL replication lag high\n\nThe replica has been at least 5 minutes behind its primary for the whole window.\n\n### Triage\n1. Open **[GCP OTel] Cloud SQL MySQL Instance Detail** for the replica and compare *Replica lag* with *Replication network lag*.\n2. **apply_lag_s high, network_lag_s low**: the SQL (apply) thread is the bottleneck. Typical causes are an undersized replica (check its CPU and disk I/O), large transactions or batch jobs on the primary, tables without primary keys, and DDL.\n3. **network_lag_s high**: binary log transport is slow, typically for cross-region replicas or an overloaded primary.\n4. Check whether the lag is still growing. Steady growth means the replica can't keep up at the current write rate.\n\n### Actions\nScale the replica's tier, enable parallel replication (`replica_parallel_workers`), split large transactions, add primary keys, and route latency-sensitive reads to the primary until the replica catches up.\n\n### Tuning\nChange `lowest_lag_s >= 300` to adjust the threshold. DR replicas often need a tighter threshold and read-scaling replicas a looser one."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-replication-lag-high-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-deda1e6a-80e7-49cd-ba2e-fff6be787503"
+          }
+        }
+      ]
+    }
+  }
+}

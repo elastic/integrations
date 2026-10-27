@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_mysql_otel-instance-not-serving-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL MySQL OTel] Instance not serving",
+        "description": "Alerts when a Cloud SQL for MySQL instance is not serving: its latest reported state is MAINTENANCE, FAILED, SUSPENDED or UNKNOWN_STATE, or it is RUNNING but database/up is 0, and it was down in at least 3 observed minutes of the 10-minute window. Instances stopped by their owner (RUNNABLE) or being created (PENDING_CREATE) are ignored. The 10-minute window allows for the 3-5 minute Cloud Monitoring delivery delay, and the 3-minute persistence leaves short restarts and failovers to the 'Instance restarted or failed over' rule. One alert per instance (database_id); outage_type separates planned maintenance from unplanned outages.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "mysql"
+        ]
+      },
+      "schedule": {
+        "every": "1m",
+        "lookback": "10m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_mysql.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\"\n// Per instance and minute: the state whose one-hot instance_state series is 1, database/up,\n// and the MySQL marker (database/mysql/* is emitted only by MySQL instances)\n| STATS state_now = MAX(state) WHERE `metrics.cloudsql.googleapis.com/database/instance_state` == 1,\n        up_now = MAX(MAX_OVER_TIME(`metrics.cloudsql.googleapis.com/database/up`)),\n        marker = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/queries`))\n  BY `@timestamp` = TBUCKET(1 minute), database_id\n// A minute counts as down when the instance reported up = 0 or a state other than RUNNING\n| EVAL down_minute = CASE(up_now == 0 OR state_now != \"RUNNING\", 1, 0)\n// Latest observed state and up value per instance, ignoring minutes where the metric is missing\n| STATS current_state = LAST(state_now, CASE(state_now IS NOT NULL, `@timestamp`, NULL)),\n        up_latest = LAST(up_now, CASE(up_now IS NOT NULL, `@timestamp`, NULL)),\n        down_minutes = SUM(down_minute),\n        last_sample = MAX(`@timestamp`),\n        marker = SUM(marker)\n  BY database_id",
+        "breach": {
+          "segment": "WHERE marker > 0\n// Deliberate states that are not outages: RUNNABLE = stopped by the owner, PENDING_CREATE = being provisioned.\n// Remove a state from this list to alert on it as well, or add \"MAINTENANCE\" to ignore planned maintenance.\n| WHERE COALESCE(current_state, \"\") NOT IN (\"RUNNABLE\", \"PENDING_CREATE\")\n// Breach: latest state is not RUNNING (MAINTENANCE, FAILED, SUSPENDED, UNKNOWN_STATE), or RUNNING but up = 0\n| WHERE current_state != \"RUNNING\" OR up_latest == 0\n// Persistence: at least 3 observed down minutes in the window, so a single blip is left to the restart rule\n| WHERE down_minutes >= 3\n| EVAL outage_type = CASE(\n    current_state == \"MAINTENANCE\", \"planned maintenance\",\n    current_state IS NULL OR current_state == \"RUNNING\", \"not accepting connections\",\n    \"unplanned\")\n| SORT database_id ASC\n| LIMIT 100\n| KEEP database_id, current_state, up_latest, outage_type, down_minutes, last_sample"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_mysql_otel-instance-not-serving-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL MySQL instance not serving\n\nThe instance isn't accepting connections. `outage_type` shows which case applies:\n\n- **planned maintenance**: state MAINTENANCE. A Google-scheduled maintenance restart is taking longer than a few minutes.\n- **unplanned**: state FAILED, SUSPENDED (usually a billing or organization policy problem) or UNKNOWN_STATE.\n- **not accepting connections**: state RUNNING (or not reported) but `database/up` is 0, so the MySQL server is down or restarting.\n\n### Triage\n1. Open **[GCP OTel] Cloud SQL MySQL Instance Detail** for the instance. Check *Instance state over time*, *Lowest uptime per minute* and the connection panels to see when serving stopped.\n2. In the Google Cloud console, check the instance's operations and Cloud SQL error logs (`gcloud sql operations list --instance=<instance>`) and its maintenance schedule.\n3. SUSPENDED: check the billing account and organization policies. FAILED or UNKNOWN_STATE: open a Google Cloud support case and consider promoting a replica or restoring from backup.\n4. HA instances: check whether an automatic failover is running (see the *Instance restarted or failed over* rule).\n5. Check client error rates. Applications must reconnect after recovery, which can cause a connection surge.\n\n### Tuning\n- Add `\"MAINTENANCE\"` to the excluded states to stop alerting on planned maintenance, or remove `\"RUNNABLE\"` to alert when an owner stops an instance.\n- `down_minutes >= 3` sets how many observed down minutes are needed before alerting.\n- If an instance stops sending data altogether, this rule can't see it. The *Instance metrics not reporting* rule covers that case."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-instance-not-serving-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-244a7e1a-2f13-4f93-b534-20a10a5158a7"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-instance-not-serving-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-deda1e6a-80e7-49cd-ba2e-fff6be787503"
+          }
+        }
+      ]
+    }
+  }
+}

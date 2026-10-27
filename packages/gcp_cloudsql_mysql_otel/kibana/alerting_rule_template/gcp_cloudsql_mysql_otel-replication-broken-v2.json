@@ -1,0 +1,67 @@
+{
+  "id": "gcp_cloudsql_mysql_otel-replication-broken-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL MySQL OTel] Replication broken on read replica",
+        "description": "Alerts when replication on a Cloud SQL for MySQL read replica is stopped. That means the latest replication I/O thread state is No or Connecting, the SQL thread state is No, or replication lag is negative (replication inactive), and the same signal was broken in at least 3 observed minutes of the last 10 minutes. Brief I/O reconnects during primary restarts are ignored. last_io_errno and last_sql_errno are reported for diagnosis but don't trigger the alert on their own, because a stopped thread already shows as No or Connecting. A broken replica serves increasingly stale data and is unsafe to promote. Only instances that report replication series are evaluated.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "mysql"
+        ]
+      },
+      "schedule": {
+        "every": "2m",
+        "lookback": "10m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_mysql.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\"\n// Per replica and minute: the active replication I/O and SQL thread states (one-hot series = 1),\n// replication lag (negative = replication inactive), the last thread error numbers and the MySQL marker\n| STATS io = MAX(state) WHERE `metrics.cloudsql.googleapis.com/database/mysql/replication/slave_io_running_state` == 1,\n        sq = MAX(state) WHERE `metrics.cloudsql.googleapis.com/database/mysql/replication/slave_sql_running_state` == 1,\n        lag = MIN(MIN_OVER_TIME(`metrics.cloudsql.googleapis.com/database/replication/replica_lag`)),\n        ioe = MAX(MAX_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/replication/last_io_errno`)),\n        sqe = MAX(MAX_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/replication/last_sql_errno`)),\n        marker = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/queries`))\n  BY `@timestamp` = TBUCKET(1 minute), database_id\n// Latest value of each signal (ignoring minutes where it is missing) and the number of broken minutes per signal\n| STATS io_thread = LAST(io, CASE(io IS NOT NULL, `@timestamp`, NULL)),\n        sql_thread = LAST(sq, CASE(sq IS NOT NULL, `@timestamp`, NULL)),\n        replica_lag_s = LAST(lag, CASE(lag IS NOT NULL, `@timestamp`, NULL)),\n        last_io_errno = LAST(ioe, CASE(ioe IS NOT NULL, `@timestamp`, NULL)),\n        last_sql_errno = LAST(sqe, CASE(sqe IS NOT NULL, `@timestamp`, NULL)),\n        io_down_minutes = COUNT(io) WHERE io IN (\"No\", \"Connecting\"),\n        sql_down_minutes = COUNT(sq) WHERE sq == \"No\",\n        inactive_minutes = COUNT(lag) WHERE lag < 0,\n        marker = SUM(marker)\n  BY database_id",
+        "breach": {
+          "segment": "// Replicas only: instances that report replication thread states or lag\nWHERE marker > 0 AND (io_thread IS NOT NULL OR sql_thread IS NOT NULL OR replica_lag_s IS NOT NULL)\n// Breach: a thread is currently stopped (I/O No or Connecting, SQL No) or lag is negative, and that signal\n// was broken in at least 3 observed minutes of the window (brief reconnects during primary restarts are ignored)\n| WHERE (io_thread IN (\"No\", \"Connecting\") AND io_down_minutes >= 3)\n     OR (sql_thread == \"No\" AND sql_down_minutes >= 3)\n     OR (replica_lag_s < 0 AND inactive_minutes >= 3)\n| SORT database_id ASC\n| LIMIT 100\n| KEEP database_id, io_thread, sql_thread, replica_lag_s, last_io_errno, last_sql_errno, io_down_minutes, sql_down_minutes, inactive_minutes"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_mysql_otel-replication-broken-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL MySQL replication broken\n\nThe replica isn't applying changes from its primary. Reads from it are stale, and it isn't safe to promote.\n\n### Triage\n1. Open **[GCP OTel] Cloud SQL MySQL Instance Detail** for the replica and check the *Replication status* table and the *Replica lag* panel.\n2. **I/O thread No or Connecting**: the replica can't fetch binary logs. Check that the primary is up (*Instance not serving*), the network path between regions, and the replication user. `last_io_errno` identifies the error (for example 2003 or 2005 for connectivity, or 1236 when the binary log the replica needs was purged on the primary).\n3. **SQL thread No**: applying a transaction failed. Check `last_sql_errno`, for example 1062 (duplicate key) or 1032 (row not found), which usually mean the replica's data drifted from the primary's.\n4. **Negative lag**: replication is disabled or stopped. Check whether someone ran `gcloud sql instances patch <replica> --no-enable-database-replication` or stopped replication during maintenance.\n5. Check the replica's disk (*Disk nearly full*): a full replica disk also stops replication.\n\n### Actions\nRestart replication once the cause is fixed. When data drifted, or the primary purged the binary logs the replica needs, recreate the replica from the primary.\n\n### Tuning\n`*_down_minutes >= 3` and `inactive_minutes >= 3` set how many observed broken minutes are needed."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-replication-broken-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-deda1e6a-80e7-49cd-ba2e-fff6be787503"
+          }
+        }
+      ]
+    }
+  }
+}
