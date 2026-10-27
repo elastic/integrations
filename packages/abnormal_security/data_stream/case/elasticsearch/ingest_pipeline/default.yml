@@ -36,6 +36,7 @@ processors:
         - json.firstObserved
         - json.customerVisibleTime
         - json.caseId
+        - json.last_modified
       tag: fingerprint_case_76835dd4
       target_field: _id
       ignore_missing: true
@@ -126,6 +127,18 @@ processors:
       tag: set_event_start_from_case_first_observed_74ef7d69
       copy_from: abnormal_security.case.first_observed
       ignore_empty_value: true
+  - date:
+      field: json.last_modified
+      tag: date_last_modified_36ee4d50
+      target_field: abnormal_security.case.last_modified
+      formats:
+        - ISO8601
+      if: ctx.json?.last_modified != null && ctx.json.last_modified != ''
+      on_failure:
+        - append:
+            tag: append_error_message_6a71556e
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.caseId
       tag: convert_caseId_c9b03973
