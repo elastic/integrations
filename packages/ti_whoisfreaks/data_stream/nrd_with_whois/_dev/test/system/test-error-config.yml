@@ -1,0 +1,17 @@
+wait_for_data_timeout: 1m
+input: cel
+service: ti_whoisfreaks
+vars:
+  # The mock answers this key with 503 Service Unavailable on the stream endpoints.
+  api_key: error_api_key
+data_stream:
+  vars:
+    url: "http://{{Hostname}}:{{Port}}/v3.3/stream/domainer"
+    status_url: "http://{{Hostname}}:{{Port}}/v3.4/status"
+    page_limit: 2
+    # Long interval: the retriable error keeps the cursor and stops paging, so
+    # exactly one error event is expected in the test window.
+    interval: 1h
+    enable_request_tracer: true
+assert:
+  hit_count: 1
