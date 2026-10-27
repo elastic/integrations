@@ -22,7 +22,7 @@ You add the integration once for each AWS service you want to monitor.
 
 This integration can be deployed in two ways:
 
-- **Elastic Managed** (default): Elastic manages the collector for you, with no infrastructure to run. This is the recommended option for most users.
+- **Elastic Managed** (default): Elastic manages the collector for you, with no infrastructure to run. This is the recommended option for most users. Elastic Managed deployments can authenticate with [Identity Federation](#authentication), so no AWS credentials are stored in Elastic.
 - **Elastic Agent**: Run the collector on your own Elastic Agent.
 
 ## Supported services
@@ -46,9 +46,11 @@ Each service collects a set of statistics chosen to suit that service's metrics 
 ## Requirements
 
 - An AWS account with the services you want to monitor.
-- AWS credentials with permission to read CloudWatch metrics. At minimum, the credentials must allow:
+- An AWS identity with permission to read CloudWatch metrics. At minimum, it must allow:
   - `cloudwatch:ListMetrics`
   - `cloudwatch:GetMetricData`
+
+  With Identity Federation, the CloudFormation template grants these permissions to the IAM role it creates.
 - The AWS region your resources run in.
 
 ## Configuration
@@ -58,9 +60,11 @@ Each service collects a set of statistics chosen to suit that service's metrics 
 | Setting | Description |
 |---|---|
 | AWS Region | The AWS region to collect metrics from (for example, `us-east-1`). |
+| Setup Access | How the collector authenticates to AWS: Identity Federation (Elastic Managed only), direct or temporary access keys, or an assumed role. See [Authentication](#authentication). |
 | AWS Access Key ID | The access key used to authenticate to AWS. |
 | AWS Secret Access Key | The secret key paired with the access key. |
 | AWS Session Token | Required only when using temporary (STS) credentials. |
+| AWS Role ARN | The IAM role to assume. With Identity Federation, Kibana fills it in from the CloudFormation stack output. |
 
 ### Collection settings
 
@@ -99,13 +103,14 @@ If you need to reduce cost, you can lower the **Autodiscover Limit** in the inte
 
 ## Authentication
 
-The integration supports the following ways to authenticate to AWS:
+Select how the collector authenticates to AWS under **Setup Access** when you add the integration:
 
-- **Access keys**: Provide an access key ID and secret access key.
-- **Temporary credentials**: Provide an access key ID, secret access key, and session token.
-- **IAM role assumption**: Provide a Role ARN (and optionally an External ID) under the advanced settings to assume a role.
+- **Identity Federation** (Elastic Managed only): No AWS credentials are stored in Elastic. Kibana opens a pre-filled CloudFormation template that creates an IAM role in your AWS account. The role trusts the workload identity issuer of your Elastic Cloud organization and can only be assumed by the deployment or project it was created for, and it is granted the CloudWatch read permissions listed under [Requirements](#requirements). Paste the Role ARN from the stack outputs into the integration; the Elastic Managed collector then obtains short-lived credentials for the role on every collection cycle.
+- **Direct Access Keys**: Provide an access key ID and secret access key.
+- **Temporary Access Keys**: Provide an access key ID, secret access key, and session token.
+- **Assume Role**: Provide a Role ARN (and optionally an External ID under the advanced settings) that the collector assumes with the credentials available on its host.
 
-Use credentials scoped to read-only CloudWatch access wherever possible.
+Use an identity scoped to read-only CloudWatch access wherever possible.
 
 ## Metrics reference
 
@@ -125,6 +130,7 @@ For the complete list of metrics available in each namespace, see the [Amazon Cl
 1. Double-check the access key ID and secret access key.
 2. If using temporary credentials, make sure the session token is set and current.
 3. If assuming a role, verify the Role ARN and, if required, the External ID.
+4. If using Identity Federation, confirm the CloudFormation stack was created from the link in this deployment or project. A role created for another deployment or project cannot be assumed, because its trust policy is bound to the Elastic resource that created it.
 
 ## Further reading
 

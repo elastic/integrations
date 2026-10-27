@@ -1,7 +1,7 @@
-format_version: 3.5.0
+format_version: 3.6.4
 name: aws_cloudwatch_input_otel
 title: "AWS CloudWatch (OpenTelemetry)"
-version: 0.7.0
+version: 0.8.0
 source:
   license: "Elastic-2.0"
 description: "Collect AWS CloudWatch metrics for selected AWS services (EC2, RDS, SQS, ELB — Application, Classic, Network, Gateway — Lambda, Fargate) using the OpenTelemetry Collector awscloudwatch receiver."
@@ -13,7 +13,9 @@ categories:
   - opentelemetry
 conditions:
   kibana:
-    version: "^9.5.0"
+    # The Identity Federation option authenticates through the awsidentityfederation
+    # extension, which ships in the EDOT Collector of Elastic Agent 9.7.0.
+    version: "^9.7.0"
   elastic:
     subscription: "basic"
 icons:
@@ -21,7 +23,12 @@ icons:
     title: AWS CloudWatch OpenTelemetry logo
     size: 32x32
     type: image/svg+xml
-
+provider_permissions:
+  - provider: aws
+    description: CloudWatch read access for metric discovery and retrieval.
+    permissions:
+      - name: cloudwatch:ListMetrics
+      - name: cloudwatch:GetMetricData
 # --- Package-level (shared) variables ---
 # Defined once here and inherited by every policy template below — credentials,
 # region, and receiver tunables are not duplicated per service.
@@ -67,6 +74,39 @@ vars:
     required: false
     show_user: false
     secret: true
+  - name: supports_identity_federation
+    type: bool
+    title: Supports Identity Federation
+    description: Set by Kibana when the Identity Federation option is selected. The collector then assumes the Role ARN through the Elastic workload identity flow instead of using access keys.
+    multi: false
+    required: false
+    show_user: false
+# Credential setup options. The selected option decides which of the variables above
+# are shown and required; Identity Federation is only offered for Elastic Managed
+# deployments, where Kibana fills in role_arn and supports_identity_federation.
+var_groups:
+  - name: credential_type
+    required: true
+    title: Setup Access
+    selector_title: Preferred method
+    options:
+      - name: identity_federation
+        title: Identity Federation
+        vars: [role_arn, supports_identity_federation]
+        hide_in_deployment_modes: [default]
+        provider: aws
+        iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-federated-identity-wii-aws-9.6.0.yml&param_ElasticOrganizationId=ORGANIZATION_ID&param_ElasticCloudProvider=CLOUD_PROVIDER&param_ElasticCloudRegion=CLOUD_REGION&param_ElasticCloudEnvironment=CLOUD_ENVIRONMENT&param_ElasticResourceType=RESOURCE_TYPE&param_ElasticResourceId=RESOURCE_ID
+      - name: direct_access_key
+        title: Direct Access Keys
+        vars: [access_key_id, secret_access_key]
+      - name: temporary_access_key
+        title: Temporary Access Keys
+        vars: [access_key_id, secret_access_key, session_token]
+        hide_in_deployment_modes: [agentless]
+      - name: assume_role
+        title: Assume Role
+        vars: [role_arn]
+        hide_in_deployment_modes: [agentless]
 # Adding a new service is a manifest-only change.
 policy_templates:
   - name: aws.ec2
@@ -138,7 +178,6 @@ policy_templates:
           - Maximum
         required: true
         show_user: false
-
   - name: aws.lambda
     type: metrics
     title: AWS Lambda OpenTelemetry Metrics
@@ -198,7 +237,6 @@ policy_templates:
           - Sum
         required: true
         show_user: false
-
   - name: aws.rds
     type: metrics
     title: AWS RDS OpenTelemetry Metrics
@@ -257,7 +295,6 @@ policy_templates:
           - Maximum
         required: true
         show_user: false
-
   - name: aws.sqs
     type: metrics
     title: AWS SQS OpenTelemetry Metrics
@@ -316,7 +353,6 @@ policy_templates:
           - Sum
         required: true
         show_user: false
-
   - name: aws.elb
     type: metrics
     title: AWS Application Load Balancer (ALB) OpenTelemetry Metrics
@@ -376,7 +412,6 @@ policy_templates:
           - Sum
         required: true
         show_user: false
-
   - name: aws.elb_classic
     type: metrics
     title: AWS Classic Load Balancer (CLB) OpenTelemetry Metrics
@@ -436,7 +471,6 @@ policy_templates:
           - Sum
         required: true
         show_user: false
-
   - name: aws.elb_network
     type: metrics
     title: AWS Network Load Balancer (NLB) OpenTelemetry Metrics
@@ -461,8 +495,7 @@ policy_templates:
         type: integer
         title: Autodiscover Limit
         description: >-
-          Maximum number of metrics to enumerate for this namespace.
-          NLB can have 200+ metric/dimension combinations — set this higher than the default if metrics are missing.
+          Maximum number of metrics to enumerate for this namespace. NLB can have 200+ metric/dimension combinations — set this higher than the default if metrics are missing.
         default: 10000
         required: false
         show_user: false
@@ -498,7 +531,6 @@ policy_templates:
           - Sum
         required: true
         show_user: false
-
   - name: aws.elb_gateway
     type: metrics
     title: AWS Gateway Load Balancer (GWLB) OpenTelemetry Metrics
@@ -558,7 +590,6 @@ policy_templates:
           - Sum
         required: true
         show_user: false
-
   - name: aws.ecs
     type: metrics
     title: AWS ECS OpenTelemetry Metrics
@@ -618,7 +649,6 @@ policy_templates:
           - Sum
         required: true
         show_user: false
-
 owner:
   github: elastic/obs-signals-integrations-team
   type: elastic

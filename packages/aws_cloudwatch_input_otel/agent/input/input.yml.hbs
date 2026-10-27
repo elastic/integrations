@@ -1,3 +1,13 @@
+{{#if supports_identity_federation}}
+# Identity Federation (Elastic Managed): the agentless controller injects the
+# workload-identity-issuer endpoint and the per-deployment client certificate into the
+# pod; the extension exchanges the issued JWT for the customer role with
+# sts:AssumeRoleWithWebIdentity.
+extensions:
+  awsidentityfederation:
+    role_arn: {{role_arn}}
+    sts_region: {{region}}
+{{else}}
 extensions:
   awscredentialsprovider:
 {{#if access_key_id}}
@@ -15,10 +25,15 @@ extensions:
       external_id: {{external_id}}
 {{/if}}
 {{/if}}
+{{/if}}
 
 receivers:
   awscloudwatch:
+{{#if supports_identity_federation}}
+    credentials_provider: awsidentityfederation
+{{else}}
     credentials_provider: awscredentialsprovider
+{{/if}}
     region: {{region}}
     metrics:
       collection_interval: {{collection_interval}}
@@ -66,7 +81,11 @@ processors:
     override: false
 
 service:
+{{#if supports_identity_federation}}
+  extensions: [awsidentityfederation]
+{{else}}
   extensions: [awscredentialsprovider]
+{{/if}}
   pipelines:
     metrics:
       receivers: [awscloudwatch]
