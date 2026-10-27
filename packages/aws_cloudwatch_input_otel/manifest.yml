@@ -13,8 +13,7 @@ categories:
   - opentelemetry
 conditions:
   kibana:
-    # The Identity Federation option authenticates through the awsidentityfederation
-    # extension, which ships in the EDOT Collector of Elastic Agent 9.7.0.
+    # Identity Federation needs the awsidentityfederation extension of Elastic Agent 9.7.0.
     version: "^9.7.0"
   elastic:
     subscription: "basic"
@@ -77,13 +76,10 @@ vars:
   - name: supports_identity_federation
     type: bool
     title: Supports Identity Federation
-    description: Set by Kibana when the Identity Federation option is selected. The collector then assumes the Role ARN through the Elastic workload identity flow instead of using access keys.
+    description: Set by Kibana when the Identity Federation option is selected.
     multi: false
     required: false
     show_user: false
-# Credential setup options. The selected option decides which of the variables above
-# are shown and required; Identity Federation is only offered for Elastic Managed
-# deployments, where Kibana fills in role_arn and supports_identity_federation.
 var_groups:
   - name: credential_type
     required: true
