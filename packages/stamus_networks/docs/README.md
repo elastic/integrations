@@ -850,11 +850,8 @@ An example event for `network` looks as following:
             "country_iso_code": "US",
             "country_name": "United States",
             "location": {
-                "coordinates": [
-                    -115.13722007162869,
-                    36.17496999911964
-                ],
-                "type": "Point"
+                "lat": 36.17496999911964,
+                "lon": -115.13722007162869
             },
             "region_iso_code": "US-NV",
             "region_name": "Nevada"
@@ -915,11 +912,8 @@ An example event for `network` looks as following:
             "country_iso_code": "US",
             "country_name": "United States",
             "location": {
-                "coordinates": [
-                    -115.13722007162869,
-                    36.17496999911964
-                ],
-                "type": "Point"
+                "lat": 36.17496999911964,
+                "lon": -115.13722007162869
             },
             "region_iso_code": "US-NV",
             "region_name": "Nevada"
