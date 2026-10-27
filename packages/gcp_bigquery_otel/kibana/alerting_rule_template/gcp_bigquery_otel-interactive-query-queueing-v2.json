@@ -1,0 +1,71 @@
+{
+  "id": "gcp_bigquery_otel-interactive-query-queueing-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP BigQuery OTel] Interactive queries queueing",
+        "description": "Alerts when interactive-priority query jobs are pending (queued) in at least 10 one-minute samples in the last 30 minutes for a project and location. Batch-priority queueing is excluded; see the batch backlog rule. One alert per project and location.",
+        "tags": [
+          "observability",
+          "gcp",
+          "bigquery",
+          "otel",
+          "latency",
+          "queueing",
+          "jobs"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "30m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.bigquery.otel-*\n// Interactive-priority query jobs waiting in PENDING state (batch priority is designed to wait; see the backlog rule)\n| WHERE resource.attributes.gcp.resource_type == \"bigquery_project\"\n  AND attributes.state == \"pending\"\n  AND attributes.job_type == \"query\"\n  AND attributes.priority == \"interactive\"\n// Stage 1: one value per minute per logical series (MAX collapses fragmented TSIDs of the same series)\n| STATS pending = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/job/num_in_flight`))\n    BY @timestamp = TBUCKET(1 minute), resource.attributes.project_id, resource.attributes.location\n| WHERE pending IS NOT NULL\n// Customise: a minute counts as queued when >= 1 interactive query is pending\n| STATS queued_minutes = COUNT(*) WHERE pending >= 1,\n        reported_minutes = COUNT(*),\n        peak_pending_jobs = MAX(pending),\n        avg_pending_jobs = ROUND(AVG(pending), 1)\n    BY resource.attributes.project_id, resource.attributes.location",
+        "breach": {
+          "segment": "// Customise: alert when interactive queries were queued in >= 10 one-minute samples in the window.\n// job/num_in_flight publishes up to ~12 minutes late, so a 30-minute window holds ~18 visible minutes.\n// Minutes without a published sample are not counted as healthy or queued.\nWHERE queued_minutes >= 10\n| SORT queued_minutes DESC, peak_pending_jobs DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.location"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_bigquery_otel-interactive-query-queueing-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## BigQuery interactive queries queueing\n\nInteractive-priority queries are waiting in `PENDING` state. Users and BI tools wait longer for results. This is the closest latency signal available, because the query execution time distribution is not collected.\n\n### Condition\n- Per minute: `job/num_in_flight` for `state == \"pending\"`, `job_type == \"query\"`, and `priority == \"interactive\"` (`bigquery_project` resource).\n- Alert when >= 1 job is pending in >= 10 one-minute samples within the 30-minute look-back. `job/num_in_flight` publishes up to ~12 minutes late, so about 18 minutes are visible. Unpublished minutes are not counted as either healthy or queued.\n\n### Triage\n1. Open the [GCP OTel] BigQuery dashboard and filter to the project and location. Check queue depth by priority, slots allocated, and queries in flight.\n2. Capacity model: check the reservation saturation alert or panel for the reservation the project is assigned to.\n3. On-demand: check whether the project is near its on-demand slot cap or has hit its interactive query concurrency limit.\n4. Look for a burst of new queries, such as a BI dashboard refresh storm or a newly deployed scheduler.\n\n### Remediation\n- Add capacity (reservation baseline or autoscale max), reduce concurrency at the source, or move non-urgent work to batch priority.\n\n### Tuning\n- `pending >= 1`: minimum queue depth for a minute to count. Increase it for projects where short queueing is normal.\n- `queued_minutes >= 10`: persistence. Keep this below the visible minutes (~18 for a 30-minute look-back) or extend the look-back.\n\n### Notes\n- Data: `metrics-gcp.bigquery.otel-*` (OTel `googlecloudmonitoring` receiver). Dashboard: [GCP OTel] BigQuery.\n- GCP publishes BigQuery metrics with a delay, so the look-back is longer than the condition and the newest minutes are never treated as zero.\n- The query returns at most 50 breaching rows; each returned row is one alert. Thresholds are marked `// Customise:` in the query."
+          }
+        },
+        {
+          "id": "gcp_bigquery_otel-interactive-query-queueing-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_bigquery_otel-600aa5b2-b9c4-4a6f-88a6-065d465b968d"
+          }
+        }
+      ]
+    }
+  }
+}

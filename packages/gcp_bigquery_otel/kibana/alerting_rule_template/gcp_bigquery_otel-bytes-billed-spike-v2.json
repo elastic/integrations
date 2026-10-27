@@ -1,0 +1,69 @@
+{
+  "id": "gcp_bigquery_otel-bytes-billed-spike-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP BigQuery OTel] Query bytes billed spike",
+        "description": "Alerts when a project's query bytes billed in the last full hour (ending 5 minutes ago) are at least 3 times the larger of its hourly average over the previous day and the same hour yesterday, and at least 1 TiB. Uses the low-latency query/statement_scanned_bytes_billed metric. One alert per project.",
+        "tags": [
+          "observability",
+          "gcp",
+          "bigquery",
+          "otel",
+          "cost",
+          "bytes-billed"
+        ]
+      },
+      "schedule": {
+        "every": "15m",
+        "lookback": "26h"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.bigquery.otel-*\n// Lowest-latency cost signal: statement_scanned_bytes_billed (DELTA, ~3 minute publish delay).\n// Capacity (Editions) projects are billed for slots, not bytes, and normally report ~0 here.\n| WHERE resource.attributes.gcp.resource_type == \"bigquery_project\"\n// Stage 1: bytes billed per project per minute. DELTA amounts are additive, so SUM is exact\n// across fragmented TSIDs, locations, priorities and statement types.\n// `heartbeat` references query/count and job/num_in_flight, which GCP reports every minute (as 0 when idle),\n// so a row exists for every published minute even when nothing was billed (billed is then null -> 0).\n| STATS billed = SUM(SUM_OVER_TIME(`metrics.bigquery.googleapis.com/query/statement_scanned_bytes_billed`)),\n        heartbeat = SUM(COUNT_OVER_TIME(`metrics.bigquery.googleapis.com/query/count`)) + SUM(COUNT_OVER_TIME(`metrics.bigquery.googleapis.com/job/num_in_flight`))\n    BY @timestamp = TBUCKET(1 minute), resource.attributes.project_id\n| EVAL billed = COALESCE(billed, 0)\n// Split the 26-hour rule window into comparison periods (relative to rule execution time):\n//   recent    = the last full hour, ending 5 minutes ago (skips not-yet-published minutes)\n//   yesterday = the same hour 24 hours earlier (absorbs daily scheduled jobs)\n//   baseline  = everything before the recent hour (hourly average)\n| EVAL period = CASE(\n    @timestamp >= NOW() - 65 minutes AND @timestamp < NOW() - 5 minutes, \"recent\",\n    @timestamp >= NOW() - 5 minutes, \"unpublished\",\n    \"baseline\")\n| EVAL same_hour_yesterday = @timestamp >= NOW() - 1505 minutes AND @timestamp < NOW() - 1445 minutes\n| STATS recent_bytes_billed = SUM(billed) WHERE period == \"recent\",\n        baseline_bytes_billed = SUM(billed) WHERE period == \"baseline\",\n        yesterday_bytes_billed = SUM(billed) WHERE same_hour_yesterday,\n        first_seen = MIN(@timestamp),\n        // heartbeat must stay referenced (here and in the WHERE below), otherwise ES|QL prunes it\n        // and silently drops the minutes without billing\n        published_minutes = COUNT(heartbeat)\n    BY resource.attributes.project_id",
+        "breach": {
+          "segment": "// Require ~a full day of history so a newly onboarded project is not compared with an empty baseline\nWHERE first_seen <= NOW() - 25 hours AND published_minutes >= 60\n| EVAL baseline_minutes = DATE_DIFF(\"minute\", first_seen, NOW() - 65 minutes)\n| EVAL baseline_hourly_bytes = COALESCE(baseline_bytes_billed, 0) * 60.0 / baseline_minutes,\n       yesterday_bytes_billed = COALESCE(yesterday_bytes_billed, 0),\n       recent_bytes_billed = COALESCE(recent_bytes_billed, 0)\n| EVAL reference_bytes = GREATEST(baseline_hourly_bytes, yesterday_bytes_billed)\n// Customise: minimum spend worth alerting on (default 1 TiB billed in the hour)\n| WHERE recent_bytes_billed >= 1099511627776\n// Customise: spike multiplier versus the larger of the 24h hourly average and the same hour yesterday\n| WHERE recent_bytes_billed >= 3 * reference_bytes\n| EVAL recent_tib_billed = ROUND(recent_bytes_billed / 1099511627776.0, 2),\n       reference_tib_billed = ROUND(reference_bytes / 1099511627776.0, 2),\n       spike_ratio = CASE(reference_bytes > 0, ROUND(recent_bytes_billed / reference_bytes, 1), NULL)\n| KEEP resource.attributes.project_id, recent_tib_billed, reference_tib_billed, spike_ratio, recent_bytes_billed, baseline_hourly_bytes, yesterday_bytes_billed, published_minutes\n| SORT recent_bytes_billed DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_bigquery_otel-bytes-billed-spike-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## BigQuery query bytes billed spike\n\nA project billed far more bytes in the last hour than its recent norm. On-demand compute cost is proportional to bytes billed, so this is a cost incident. Common causes are a runaway or looping scheduled query, a missing partition filter, `SELECT *` on large tables, or a new BI tool that bypasses the cache.\n\n### Condition\n- `query/statement_scanned_bytes_billed` (DELTA, ~3-minute delay), summed per project.\n- Recent: the 60 minutes ending 5 minutes before the rule runs. Reference: the larger of (a) the hourly average from the start of the look-back up to the recent hour and (b) the same 60 minutes 24 hours earlier, which absorbs daily scheduled jobs.\n- Alert when recent >= 3 x reference and recent >= 1 TiB.\n- The project must have published data for at least 25 hours. Minutes with published metrics but no billing count as 0. The newest 5 minutes are excluded.\n- Capacity (Editions) projects are billed for slots and report about 0 bytes billed, so they do not match.\n\n### Triage\n1. Open the [GCP OTel] BigQuery dashboard. Check bytes billed by statement type and query executions by caching mode.\n2. A flat query count with a jump in bytes means more expensive queries. A higher query count means more queries. A falling cache-hit share means BI dashboards stopped hitting the cache.\n3. Find the top jobs by `total_bytes_billed` in `INFORMATION_SCHEMA.JOBS_BY_PROJECT` for the last hour.\n\n### Tuning\n- `1099511627776` (1 TiB): minimum hourly spend worth alerting on.\n- `3 * reference_bytes`: spike multiplier.\n- The 26-hour look-back must cover the same-hour-yesterday period (`NOW() - 1505 minutes`). If you change the look-back, change the offsets in the query too.\n\n### Notes\n- Data: `metrics-gcp.bigquery.otel-*` (OTel `googlecloudmonitoring` receiver). Dashboard: [GCP OTel] BigQuery.\n- GCP publishes BigQuery metrics with a delay, so the look-back is longer than the condition and the newest minutes are never treated as zero.\n- The query returns at most 50 breaching rows; each returned row is one alert. Thresholds are marked `// Customise:` in the query."
+          }
+        },
+        {
+          "id": "gcp_bigquery_otel-bytes-billed-spike-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_bigquery_otel-600aa5b2-b9c4-4a6f-88a6-065d465b968d"
+          }
+        }
+      ]
+    }
+  }
+}

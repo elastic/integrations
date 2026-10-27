@@ -1,0 +1,70 @@
+{
+  "id": "gcp_bigquery_otel-on-demand-slot-cap-saturation-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP BigQuery OTel] On-demand project near slot cap",
+        "description": "Alerts when on-demand query slot usage in a project is at or above 90% of a configurable per-project cap (default 2,000 slots) for at least 15 one-minute samples in the last 30 minutes. Only usage without a reservation label is counted. One alert per project.",
+        "tags": [
+          "observability",
+          "gcp",
+          "bigquery",
+          "otel",
+          "saturation",
+          "slots",
+          "on-demand"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "30m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.bigquery.otel-*\n// slots/allocated is dual-reported on `global`; keep the bigquery_project copy only\n| WHERE resource.attributes.gcp.resource_type == \"bigquery_project\"\n  AND `metrics.bigquery.googleapis.com/slots/allocated` IS NOT NULL\n// Stage 1: one value per minute per logical series (MAX collapses fragmented TSIDs of the same series)\n| STATS slots = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/slots/allocated`))\n    BY @timestamp = TBUCKET(1 minute), resource.attributes.project_id, resource.attributes.location, attributes.reservation, attributes.job_type\n// Stage 2: on-demand query slots per project per minute.\n// On-demand usage has no reservation label; reserved usage is bounded by its reservation (see the reservation saturation rule).\n// Minutes where the project reported slot data but no on-demand usage count as 0 on-demand slots.\n| STATS on_demand_slots = SUM(slots) WHERE (attributes.reservation IS NULL OR attributes.reservation == \"\") AND attributes.job_type == \"query\"\n    BY @timestamp, resource.attributes.project_id\n| EVAL on_demand_slots = COALESCE(on_demand_slots, 0)\n// Customise: on-demand per-project slot cap (GCP documents ~2,000 burstable slots per project; check your quota)\n| EVAL slot_cap = 2000\n| EVAL cap_pct = on_demand_slots * 100.0 / slot_cap\n// Customise: a minute counts as saturated at >= 90% of the cap\n| STATS saturated_minutes = COUNT(*) WHERE cap_pct >= 90.0,\n        observed_minutes = COUNT(*),\n        avg_on_demand_slots = ROUND(AVG(on_demand_slots), 1),\n        peak_on_demand_slots = MAX(on_demand_slots),\n        slot_cap = MAX(slot_cap)\n    BY resource.attributes.project_id",
+        "breach": {
+          "segment": "// Customise: alert when at/near the cap for >= 15 one-minute samples in the window.\n// Slot metrics are sparse (absent while idle) and publish up to ~7 minutes late, so count\n// saturated minutes rather than a share of reported minutes.\nWHERE saturated_minutes >= 15\n| SORT saturated_minutes DESC, peak_on_demand_slots DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_bigquery_otel-on-demand-slot-cap-saturation-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## BigQuery on-demand project near slot cap\n\nAn on-demand project is using about as many slots as its on-demand cap allows for a sustained period. Additional work slows down or queues because no reservation capacity bounds or protects it.\n\n### Condition\n- Per minute: `slots/allocated` for `job_type == \"query\"` with no `reservation` label, summed over the project's locations (`bigquery_project` resource only, so the `global` duplicate is excluded).\n- Alert when that value is >= 90% of `slot_cap` (default 2,000) in >= 15 one-minute samples within the 30-minute look-back.\n- Slot series are absent while the project is idle and publish ~7 minutes late. The rule counts saturated minutes, not a share of reported minutes.\n\n### Triage\n1. Open the [GCP OTel] BigQuery dashboard and filter to the project. Check slots by job type, queries in flight, and pending jobs.\n2. Identify the queries consuming slots (`INFORMATION_SCHEMA.JOBS_TIMELINE_BY_PROJECT`).\n3. Check whether interactive queries are queueing for the same project.\n\n### Remediation\n- Spread or reschedule heavy workloads, optimise expensive queries, or move the project to an Editions reservation if it needs guaranteed capacity.\n\n### Tuning\n- `slot_cap`: set this to the cap that applies to your project and region. GCP documents about 2,000 burstable slots per on-demand project. Set it higher if you observe sustained bursts above that value.\n- `cap_pct >= 90.0` and `saturated_minutes >= 15` control sensitivity.\n\n### Notes\n- Data: `metrics-gcp.bigquery.otel-*` (OTel `googlecloudmonitoring` receiver). Dashboard: [GCP OTel] BigQuery.\n- GCP publishes BigQuery metrics with a delay, so the look-back is longer than the condition and the newest minutes are never treated as zero.\n- The query returns at most 50 breaching rows; each returned row is one alert. Thresholds are marked `// Customise:` in the query."
+          }
+        },
+        {
+          "id": "gcp_bigquery_otel-on-demand-slot-cap-saturation-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_bigquery_otel-600aa5b2-b9c4-4a6f-88a6-065d465b968d"
+          }
+        }
+      ]
+    }
+  }
+}
