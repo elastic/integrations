@@ -111,7 +111,23 @@ processors:
       field: source.address
       target_field: source.ip
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        # source.address may legitimately be a hostname. Only remove object
+        # values, which are incompatible with the ECS keyword mapping.
+        - append:
+            tag: append_source_address_convert_error
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+            if: ctx.source?.address instanceof Map
+        - remove:
+            tag: remove_invalid_source_address
+            field: source.address
+            if: ctx.source?.address instanceof Map
   - convert:
       tag: convert_suricata_eve_src_port_to_source_port_2ba6a53f
       field: suricata.eve.src_port
