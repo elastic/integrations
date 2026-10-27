@@ -1054,7 +1054,9 @@ An example event for `phishingurl` looks as following:
     },
     "eset": {
         "id": "indicator--f8bac022-878c-4c24-ab77-e275e04470b8",
-        "labels": "phishing-activity",
+        "labels": [
+            "phishing-activity"
+        ],
         "valid_until": "2025-08-22T11:52:31.000Z"
     },
     "event": {
@@ -1066,7 +1068,7 @@ An example event for `phishingurl` looks as following:
         "ingested": "2026-08-01T20:55:01Z",
         "kind": "enrichment",
         "module": "ti_eset",
-        "original": "{\"confidence\":85,\"created\":\"2025-08-20T11:52:31.000Z\",\"created_by_ref\":\"identity--55f6ea5e-51ac-4344-bc8c-4170950d210f\",\"description\":\"Host is known source of phishing or other fraudulent content.\",\"id\":\"indicator--f8bac022-878c-4c24-ab77-e275e04470b8\",\"labels\":[\"phishing-activity\"],\"modified\":\"2025-08-20T11:52:31.000Z\",\"name\":\"Phishing\",\"object_marking_refs\":[\"marking-definition--f88d31f6-486f-44da-b317-01333bde0b82\"],\"pattern\":\"[url:value = 'http://track-supportdhl.com']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"spec_version\":\"2.1\",\"type\":\"indicator\",\"valid_from\":\"2025-08-20T11:52:31Z\",\"valid_until\":\"2025-08-22T11:52:31Z\"}",
+        "original": "{\"confidence\":85,\"created\":\"2025-08-20T11:52:31.000Z\",\"created_by_ref\":\"identity--55f6ea5e-51ac-4344-bc8c-4170950d210f\",\"description\":\"Host is known source of phishing or other fraudulent content.\",\"id\":\"indicator--f8bac022-878c-4c24-ab77-e275e04470b8\",\"labels\":[\"phishing-activity\"],\"modified\":\"2025-08-20T11:52:31.000Z\",\"name\":\"Phishing\",\"object_marking_refs\":[\"marking-definition--f88d31f6-486f-44da-b317-01333bde0b82\"],\"pattern\":\"[url:value = 'http://example.com']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"spec_version\":\"2.1\",\"type\":\"indicator\",\"valid_from\":\"2025-08-20T11:52:31Z\",\"valid_until\":\"2025-08-22T11:52:31Z\"}",
         "type": [
             "indicator"
         ]
@@ -1095,7 +1097,7 @@ An example event for `phishingurl` looks as following:
             "provider": "eset",
             "type": "url",
             "url": {
-                "original": "http://track-supportdhl.com"
+                "original": "http://example.com"
             }
         }
     }
@@ -1353,7 +1355,9 @@ An example event for `scamurl` looks as following:
     },
     "eset": {
         "id": "indicator--7f3d4281-daf8-4d28-bd4a-4124518adf48",
-        "labels": "unwanted-activity",
+        "labels": [
+            "unwanted-activity"
+        ],
         "valid_until": "2025-08-27T18:20:09.000Z"
     },
     "event": {
@@ -1365,7 +1369,7 @@ An example event for `scamurl` looks as following:
         "ingested": "2026-08-01T21:11:25Z",
         "kind": "enrichment",
         "module": "ti_eset",
-        "original": "{\"confidence\":85,\"created\":\"2025-08-25T18:20:09.000Z\",\"created_by_ref\":\"identity--55f6ea5e-51ac-4344-bc8c-4170950d210f\",\"description\":\"Host is known source of active fraudulent content.\",\"id\":\"indicator--7f3d4281-daf8-4d28-bd4a-4124518adf48\",\"labels\":[\"unwanted-activity\"],\"modified\":\"2025-08-25T18:20:09.000Z\",\"name\":\"Unwanted\",\"object_marking_refs\":[\"marking-definition--f88d31f6-486f-44da-b317-01333bde0b82\"],\"pattern\":\"[url:value = 'https://nautubone-gel.online/satin-al-tr/core-scripts/dr-dtime.js?v=12']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"spec_version\":\"2.1\",\"type\":\"indicator\",\"valid_from\":\"2025-08-25T18:20:09Z\",\"valid_until\":\"2025-08-27T18:20:09Z\"}",
+        "original": "{\"confidence\":85,\"created\":\"2025-08-25T18:20:09.000Z\",\"created_by_ref\":\"identity--55f6ea5e-51ac-4344-bc8c-4170950d210f\",\"description\":\"Host is known source of active fraudulent content.\",\"id\":\"indicator--7f3d4281-daf8-4d28-bd4a-4124518adf48\",\"labels\":[\"unwanted-activity\"],\"modified\":\"2025-08-25T18:20:09.000Z\",\"name\":\"Unwanted\",\"object_marking_refs\":[\"marking-definition--f88d31f6-486f-44da-b317-01333bde0b82\"],\"pattern\":\"[url:value = 'https://example.com/examplepath']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"spec_version\":\"2.1\",\"type\":\"indicator\",\"valid_from\":\"2025-08-25T18:20:09Z\",\"valid_until\":\"2025-08-27T18:20:09Z\"}",
         "type": [
             "indicator"
         ]
@@ -1394,7 +1398,7 @@ An example event for `scamurl` looks as following:
             "provider": "eset",
             "type": "url",
             "url": {
-                "original": "https://nautubone-gel.online/satin-al-tr/core-scripts/dr-dtime.js?v=12"
+                "original": "https://example.com/examplepath"
             }
         }
     }
@@ -1448,7 +1452,9 @@ An example event for `smishing` looks as following:
     },
     "eset": {
         "id": "indicator--056018a4-f5b5-49f5-a2a2-9df6b8160d0b",
-        "labels": "phishing-activity",
+        "labels": [
+            "phishing-activity"
+        ],
         "valid_until": "2024-03-20T22:35:07.000Z"
     },
     "event": {
@@ -1460,7 +1466,7 @@ An example event for `smishing` looks as following:
         "ingested": "2026-08-01T21:19:32Z",
         "kind": "enrichment",
         "module": "ti_eset",
-        "original": "{\"created\":\"2024-03-18T22:35:07.000Z\",\"description\":\"Host is known source of phishing or other fraudulent content.\",\"id\":\"indicator--056018a4-f5b5-49f5-a2a2-9df6b8160d0b\",\"labels\":[\"phishing-activity\"],\"modified\":\"2024-03-18T22:35:07.000Z\",\"name\":\"Phishing\",\"pattern\":\"[url:value='gb-nuhuty.top']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"spec_version\":\"2.1\",\"type\":\"indicator\",\"valid_from\":\"2024-03-18T22:35:07Z\",\"valid_until\":\"2024-03-20T22:35:07Z\"}",
+        "original": "{\"created\":\"2024-03-18T22:35:07.000Z\",\"description\":\"Host is known source of phishing or other fraudulent content.\",\"id\":\"indicator--056018a4-f5b5-49f5-a2a2-9df6b8160d0b\",\"labels\":[\"phishing-activity\"],\"modified\":\"2024-03-18T22:35:07.000Z\",\"name\":\"Phishing\",\"pattern\":\"[url:value='example.com']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"spec_version\":\"2.1\",\"type\":\"indicator\",\"valid_from\":\"2024-03-18T22:35:07Z\",\"valid_until\":\"2024-03-20T22:35:07Z\"}",
         "type": [
             "indicator"
         ]
@@ -1489,7 +1495,7 @@ An example event for `smishing` looks as following:
             "provider": "eset",
             "type": "url",
             "url": {
-                "original": "gb-nuhuty.top"
+                "original": "example.com"
             }
         }
     }
