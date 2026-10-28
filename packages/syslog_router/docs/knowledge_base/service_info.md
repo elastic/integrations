@@ -224,7 +224,7 @@ Additional processors such as `decode_cef` or `syslog` can be added in the `then
 
 1. Navigate to **Analytics → Discover**.
 2. Select the `logs-*` data view.
-3. Search for the test event using KQL: `data_stream.dataset : "cisco_asa.log"`.
+3. Search for the test event using KQL. For the Cisco ASA test message in this example, use `data_stream.dataset : "cisco_asa.log"`.
 4. Verify the event was routed to the correct data stream and parsed by the target integration's pipeline.
 
 ### 3. Check unmatched events
