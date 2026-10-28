@@ -119,6 +119,9 @@ Use either SQS notifications or direct bucket polling for a given input, not bot
 | akamai.siem.user_risk.status | Status code indicating any errors that might have occurred when calculating the risk score. | long |
 | akamai.siem.user_risk.trust | Indicators that were trusted. For example, the value ugp indicates that the user’s country or area is trusted. | flattened |
 | akamai.siem.user_risk.uuid | Unique identifier of the user whose risk data is being provided. | keyword |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 object key. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
