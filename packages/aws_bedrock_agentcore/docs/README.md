@@ -776,6 +776,9 @@ An example event for `code_interpreter_application` looks as following:
 | aws.bedrock_agentcore.code_interpreter.tool.name | Code Interpreter tool name from the request payload. | keyword |
 | aws.bedrock_agentcore.operation_name | Normalized name of the AgentCore operation performed. | keyword |
 | aws.bedrock_agentcore.provider_name | Name of the AI provider or platform. | keyword |
+| aws.cloudwatch.ingestion_time | Time the event was ingested by CloudWatch Logs. | date |
+| aws.cloudwatch.log_group | The CloudWatch log group the event belongs to, as a name or an ARN depending on how the input was configured. | keyword |
+| aws.cloudwatch.log_stream | Name of the CloudWatch log stream the event was read from. | keyword |
 | aws.cloudwatch.message | CloudWatch log message. | text |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |

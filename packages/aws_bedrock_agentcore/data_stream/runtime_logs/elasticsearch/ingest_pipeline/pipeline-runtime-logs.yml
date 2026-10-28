@@ -122,8 +122,8 @@ processors:
       field: event.original
       description: Parse the service-written audit line for InvokeAgentRuntimeCommand (`[<epoch-ms>] awsRequestId=<uuid> command=<shell command>`). Non-matching lines stay raw.
       patterns:
-        - '^\[%{INT:_tmp.audit_epoch_ms}\] awsRequestId=%{UUID:aws.bedrock_agentcore.runtime_logs.request_id} command=%{GREEDYDATA:process.command_line}$'
-        - '^%{GREEDYDATA}$'
+        - '^\[%{INT:_tmp.audit_epoch_ms}\] awsRequestId=%{UUID:aws.bedrock_agentcore.runtime_logs.request_id} command=(?<process.command_line>[\s\S]*)$'
+        - '^(?<message>[\s\S]*)$'
       if: ctx._tmp?.json == null && ctx.event?.original != null && ctx.event.original.startsWith('[')
 
   - date:
@@ -170,9 +170,9 @@ processors:
       field: event.original
       description: Parse legacy SDK text lines (`<ts> - <logger> - <LEVEL> - [rid:..] [sid:..] <msg>`) and OTel auto-instrumentation text lines (`<ts> <LEVEL> [<logger>] [<file:line>] [trace_id=..] - <msg>`). Non-matching lines stay raw.
       patterns:
-        - '^%{TIMESTAMP_ISO8601:_tmp.ts} - %{DATA:log.logger} - %{LOGLEVEL:log.level} - \[rid:%{DATA:aws.bedrock_agentcore.runtime_logs.request_id}\] \[sid:%{DATA:_tmp.text_session_id}\] %{GREEDYDATA:message}$'
-        - '^%{TIMESTAMP_ISO8601:_tmp.ts} %{LOGLEVEL:log.level} \[%{DATA:log.logger}\] \[%{DATA:aws.bedrock_agentcore.runtime_logs.location}\] \[trace_id=%{NOTSPACE:_tmp.trace_id} span_id=%{NOTSPACE:_tmp.span_id}%{DATA}\] - %{GREEDYDATA:message}$'
-        - '^%{GREEDYDATA}$'
+        - '^%{TIMESTAMP_ISO8601:_tmp.ts} - %{DATA:log.logger} - %{LOGLEVEL:log.level} - \[rid:%{DATA:aws.bedrock_agentcore.runtime_logs.request_id}\] \[sid:%{DATA:_tmp.text_session_id}\] (?<message>[\s\S]*)$'
+        - '^%{TIMESTAMP_ISO8601:_tmp.ts} %{LOGLEVEL:log.level} \[%{DATA:log.logger}\] \[%{DATA:aws.bedrock_agentcore.runtime_logs.location}\] \[trace_id=%{NOTSPACE:_tmp.trace_id} span_id=%{NOTSPACE:_tmp.span_id}%{DATA}\] - (?<message>[\s\S]*)$'
+        - '^(?<message>[\s\S]*)$'
       if: ctx._tmp?.json == null && ctx.event?.original != null && !ctx.event.original.startsWith('{') && !ctx.event.original.startsWith('[')
 
   - date:
