@@ -16,7 +16,7 @@ This integration collects syslog events (raw log lines) and does not parse them 
 - **Routing mechanism**: Each event is matched against ordered regex patterns on the `message` field. When a match is found, the `_conf.dataset` field is set (e.g. `cisco_asa.log`, `fortinet_fortigate.log`). The `routing_rules.yml` then reroutes the event to the target data stream `{_conf.dataset}`.
 - **Ingest pipeline**: Minimal — sets `ecs.version` and handles errors. Actual parsing is performed by the target integration's ingest pipeline.
 
-Events that do not match any pattern, such as custom logs, would remain in the `syslog_router.log` data stream. We recommend against relying on unmatched events in production. The best practice in such cases is to create a custom integration (for example, with Automatic Import) and route to it.
+Events that do not match any pattern, such as custom logs, would remain in the `syslog_router.log` data stream. We recommend against relying on unmatched events in production. The best practice in such cases is to create a custom integration (for example, with [Automatic Import](https://www.elastic.co/docs/solutions/security/get-started/automatic-import)) and route to it.
 
 ### Inputs
 

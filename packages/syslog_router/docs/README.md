@@ -39,7 +39,7 @@ Due to subtle differences in how devices emit syslog events, the default pattern
 
 The integration receives syslog events through TCP, UDP, or filestream inputs. You deploy Elastic Agent on a host that is configured as a syslog receiver or has access to the log files. The integration evaluates each incoming event against an ordered list of regex patterns defined in the reroute configuration. When a pattern matches the `message` field, the integration sets the `_conf.dataset` field to the target integration's data stream name (for example, `cisco_asa.log`). The integration's routing rules then reroute the event to that target data stream, where the target integration's ingest pipeline handles the actual parsing.
 
-Events that do not match any pattern remain in the `syslog_router.log` data stream. We recommend you create a custom integration (for example, with Automatic Import) and route to it if you need to handle unmatched events in production.
+Events that do not match any pattern remain in the `syslog_router.log` data stream. We recommend you create a custom integration (for example, with [Automatic Import](https://www.elastic.co/docs/solutions/security/get-started/automatic-import)) and route to it if you need to handle unmatched events in production.
 
 ## What data does this integration collect?
 
