@@ -1,0 +1,156 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 24
+            },
+            "group_by": [
+                "user.email",
+                "source.ip"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects an unusually high volume of Claude file uploads from the same user email and source IP within a rolling 24-hour period. Sustained upload activity can indicate staging of sensitive documents in Claude chats for later retrieval, automated ingestion of data into LLM workflows, or abuse of organizational Claude access to move files into the cloud service.",
+        "false_positives": [
+            "Developers, analysts, or knowledge workers bulk-uploading documents during migrations, evaluations, or large project onboarding can exceed the daily threshold from a single workstation or VPN egress."
+        ],
+        "from": "now-24h",
+        "interval": "1h",
+        "investigation_fields": {
+            "field_names": [
+                "user.email",
+                "source.ip",
+                "Esql.event_count",
+                "Esql.event_id_values",
+                "Esql.file_name_values",
+                "Esql.anthropic_audit_claude_file_id_values",
+                "Esql.anthropic_audit_claude_chat_id_values",
+                "Esql.anthropic_audit_claude_project_id_values",
+                "Esql.user_agent_original_values",
+                "Esql.anthropic_audit_actor_type_values",
+                "Esql.timestamp_first_seen",
+                "Esql.timestamp_last_seen"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Anthropic High File Upload Activity",
+        "note": "## Triage and analysis\n\n### Investigating Anthropic High File Upload Activity\n\nOne `user.email` + `source.ip` pair uploaded a large volume of Claude files in 24 hours \u2014 possible staging for later\nretrieval, automated ingestion, or abuse of org Claude access.\n\nUnauthorized / escalate when filenames look sensitive, uploads target shared/sensitive projects, UA looks automated\n(curl/python vs browser), or artifact sharing / exports follow. Close as FP for documented migrations, RAG pilots, or\nbatch attach jobs with expected project IDs.\n\n#### Possible investigation steps\n\n- Start with `Esql.event_count`, `Esql.file_name_values`, and chat/project ID lists \u2014 sensitive names or shared\n  project IDs raise priority.\n- Triage `user_agent` on raw uploads: browser-like vs scripting clients. Scripting UAs with many distinct file IDs\n  look more like automation than interactive work.\n- Pivot raw `logs-anthropic.audit-*` for individual `anthropic.audit.claude_file_id` / filenames and whether\n  `claude_file_viewed` or chat activity matches the upload volume.\n- Correlate with artifact sharing, data exports, or compliance key creation from the same user.\n\n### False positive analysis\n\n- Document migrations and RAG indexing from one seat commonly exceed the threshold.\n\n### Response and remediation\n\n- On unauthorized staging: revoke sessions, review uploaded names/file IDs for sensitive content, and tighten project\n  sharing or upload policy for the actor.\n",
+        "query": "from logs-anthropic.audit-*\n| where\n    data_stream.dataset == \"anthropic.audit\" and\n    event.action == \"claude_file_uploaded\" and\n    event.outcome == \"success\" and\n    user.email is not null and\n    source.ip is not null\n| stats\n    Esql.event_count = count(*),\n    Esql.event_id_values = values(event.id),\n    Esql.file_name_values = values(file.name),\n    Esql.anthropic_audit_claude_file_id_values = values(anthropic.audit.claude_file_id),\n    Esql.anthropic_audit_claude_chat_id_values = values(anthropic.audit.claude_chat_id),\n    Esql.anthropic_audit_claude_project_id_values = values(anthropic.audit.claude_project_id),\n    Esql.user_agent_original_values = values(user_agent.original),\n    Esql.anthropic_audit_actor_type_values = values(anthropic.audit.actor.type),\n    Esql.timestamp_first_seen = min(@timestamp),\n    Esql.timestamp_last_seen = max(@timestamp)\n  by user.email, source.ip\n| where Esql.event_count >= 100\n| keep user.email, source.ip, Esql.*\n",
+        "references": [
+            "https://platform.claude.com/docs/en/api/compliance/activities/list"
+        ],
+        "related_integrations": [
+            {
+                "package": "anthropic",
+                "version": ">=1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "anthropic.audit.actor.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "anthropic.audit.claude_chat_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "anthropic.audit.claude_file_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "anthropic.audit.claude_project_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "58295a79-5dde-4fc9-a967-2dbe39fb8bc7",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: Anthropic",
+            "Data Source: Anthropic Audit Logs",
+            "Use Case: Threat Detection",
+            "Use Case: UEBA",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Exfiltration"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1567",
+                        "name": "Exfiltration Over Web Service",
+                        "reference": "https://attack.mitre.org/techniques/T1567/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "58295a79-5dde-4fc9-a967-2dbe39fb8bc7_1",
+    "type": "security-rule"
+}

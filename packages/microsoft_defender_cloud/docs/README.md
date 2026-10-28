@@ -38,6 +38,27 @@ Configure the Microsoft Defender for Cloud on Azure subscription. For more detai
 
 - [Configure continuous export to stream security events to your Azure Event Hub](https://learn.microsoft.com/en-us/azure/defender-for-cloud/continuous-export).
 
+##### Proxy Support
+
+When the Elastic Agent must reach Azure Event Hubs through an HTTP/HTTPS proxy, set the **Event Hubs transport protocol** to **AMQP-over-WebSockets**. This routes Event Hub traffic over HTTPS (port 443) instead of AMQP (port 5671), which allows the proxy to handle it. Selecting AMQP-over-WebSockets automatically sets the processor version to v2.
+
+**Requirements:**
+
+- Elastic Agent 8.19.10, 9.1.10, 9.2.4, or later.
+- Set `HTTPS_PROXY` and, if needed, `NO_PROXY` in the Elastic Agent process environment (for example, a systemd drop-in file or container environment variable). These variables apply to the entire agent process, not just this integration. Use `NO_PROXY` to exclude traffic that should bypass the proxy.
+
+**Proxy allowlist:** the proxy must allow HTTPS (port 443) connections to:
+
+- `*.servicebus.windows.net` — Event Hub traffic. Sovereign clouds use a different suffix (for example, `*.servicebus.usgovcloudapi.net` for Azure Government).
+- `*.blob.core.windows.net` — checkpoint storage. Sovereign clouds use the storage suffix derived from **Authority Host** (for example, `*.blob.core.usgovcloudapi.net` for Azure Government).
+- The authority host (default `login.microsoftonline.com`) — required for client secret authentication.
+
+**TLS-intercepting proxies:** if the proxy performs TLS interception, the corporate CA certificate must be present in the system trust store on the agent host.
+
+**Sovereign clouds:** users on Azure Government, Azure China, or Azure Germany must set the **Authority Host** to the correct login endpoint. Processor v2 derives the storage endpoint suffix from this setting. The **Resource Manager Endpoint** setting is used only by processor v1 and is ignored by v2.
+
+**Note on processor version:** selecting AMQP-over-WebSockets moves the processor from v1 to v2 if the agent was previously running v1. Existing checkpoints are migrated automatically. However, switching back to v1 afterwards resumes from stale v1 checkpoints and may cause duplicate events.
+
 #### 2. Collecting Data from Microsoft Defender for Endpoint API
 
 To allow the integration to ingest data from the Microsoft Defender API, you need to create a new application on your Azure domain. The procedure to create an application is found on the [Create a new Azure Application](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/exposed-apis-create-app-webapp) documentation page.
@@ -682,6 +703,19 @@ This integration dataset uses the following APIs:
 - `Assessments`: [Azure REST API](https://learn.microsoft.com/en-us/rest/api/defenderforcloud-composite/assessments/list?view=rest-defenderforcloud-composite-latest&tabs=HTTP).
 - `Sub Assessments`: [Azure REST API](https://learn.microsoft.com/en-us/rest/api/defenderforcloud-composite/sub-assessments/list?view=rest-defenderforcloud-composite-latest&tabs=HTTP).
 
-#### ILM Policy
+#### Data retention
 
-To facilitate assessment data, source data stream-backed indices `.ds-logs-microsoft_defender_cloud.assessment-*` is allowed to contain duplicates from each polling interval (24 hours). ILM policy `logs-microsoft_defender_cloud.assessment-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `7 days` from ingested date.
+The data streams below collect a full snapshot of Microsoft Defender for Cloud assessments on every polling interval, so their backing indices hold one copy of each record per interval. The default polling interval is 24 hours.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-microsoft_defender_cloud.assessment-*` | `logs-microsoft_defender_cloud.assessment-default_policy`: roll over after 7d, delete 7d after rollover | delete 7d after rollover |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-microsoft_defender_cloud.assessment-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.

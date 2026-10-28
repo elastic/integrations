@@ -121,6 +121,9 @@
     - name: dns
       type: group
       fields:
+        - name: action
+          type: keyword
+          description: Decision BIND logged for the query under the security category, for example `denied` or `approved`.
         - name: after_query
           type: text
         - name: answers_policy
@@ -129,10 +132,39 @@
           type: text
         - name: category
           type: text
+        - name: ecs_client_subnet
+          type: group
+          description: EDNS Client Subnet (ECS) option, as defined in RFC 7871, reported on a query log line. Not related to the Elastic Common Schema.
+          fields:
+            - name: ip
+              type: ip
+              description: Client subnet address carried in the EDNS Client Subnet option.
+            - name: prefix_length
+              type: long
+              description: Source prefix length of the EDNS Client Subnet option, in bits.
+            - name: scope_prefix_length
+              type: long
+              description: Scope prefix length of the EDNS Client Subnet option, in bits.
         - name: failed_message
           type: text
+        - name: failure_reason
+          type: keyword
+          description: Reason BIND reported for a failed query, verbatim. Usually a DNS RCODE such as `REFUSED`, but can be an internal result such as `timed out` or `failure`.
         - name: message
           type: text
+        - name: query_context
+          type: keyword
+          description: Source BIND answered the query from when logging a security decision, for example `cache`.
+        - name: transfer
+          type: group
+          description: Details of a zone transfer reported under the xfer-in category.
+          fields:
+            - name: stage
+              type: keyword
+              description: Stage of the zone transfer that BIND reported a failure in, for example `failed` in `failed while receiving responses`.
+            - name: status
+              type: keyword
+              description: Status BIND reported for the zone transfer, verbatim, for example `success`, `completed`, `IXFR failed` or `REFUSED`.
         - name: view_name
           type: text
         - name: version

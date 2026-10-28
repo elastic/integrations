@@ -38,6 +38,10 @@
         - name: arn
           type: keyword
           description: The Amazon Resource Name (ARN) of the principal that made the call.
+        - name: principal_id
+          type: keyword
+          description: >-
+            The unique identifier of the principal that made the call, as reported by CloudTrail in `userIdentity.principalId`. Only set for AWS service actors, whose principal ID is not stored in `user.id`.
         - name: access_key_id
           type: keyword
           description: The access key ID that was used to sign the request.
@@ -95,7 +99,7 @@
                   type: flattened
                   description: >-
                     The application ID and user ID as reported by the provider (for example,
-                    www.amazon.com:app_id and www.amazon.com:user_id for Login with Amazon).
+                    `www.amazon.com:app_id` and `www.amazon.com:user_id` for Login with Amazon).
             - name: assumed_root
               type: boolean
               description: >-
@@ -375,6 +379,9 @@
     - name: target
       type: group
       fields:
+        - name: id
+          type: keyword
+          description: "Bare EC2 instance ID (`i-...`) of the compute instance targeted by the event, matching the host id used by Cloud Asset Inventory."
         - name: entity
           type: group
           fields:

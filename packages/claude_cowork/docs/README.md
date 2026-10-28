@@ -67,12 +67,12 @@ export OTEL_RESOURCE_ATTRIBUTES="data_stream.dataset=claude_cowork.events.otel"
 
 ### Option B: Elastic Agent OTLP receiver
 
-The Elastic Agent exposes an OTLP HTTP receiver on port 4318. Configure Cowork to send events to the agent:
+The Elastic Agent exposes an OTLP HTTP receiver on the configured HTTP endpoint (default port: 4319 for claude_cowork). Configure Cowork to send events to the agent:
 
 ```bash
 export OTEL_LOGS_EXPORTER=otlp
 export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-export OTEL_EXPORTER_OTLP_ENDPOINT="http://<agent-host>:4318"
+export OTEL_EXPORTER_OTLP_ENDPOINT="http://<agent-host>:4319"
 export OTEL_RESOURCE_ATTRIBUTES="data_stream.dataset=claude_cowork.events.otel"
 ```
 
@@ -89,7 +89,7 @@ After deploying, run a Claude Cowork session and confirm events appear in the `l
 ### No events arriving
 
 - Verify the Cowork instance has OTLP export configured.
-- Check that the OTLP endpoint is reachable from the Cowork host (`curl -v http://<agent-host>:4318/v1/logs`).
+- Check that the OTLP endpoint is reachable from the Cowork host (`curl -v http://<agent-host>:<port>/v1/logs`, where `<port>` matches the HTTP Endpoint configured in the integration policy, default `4319`).
 - Confirm the Elastic Agent is running and the integration policy is assigned.
 
 ### Pipeline errors

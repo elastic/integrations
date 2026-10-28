@@ -1,0 +1,53 @@
+{
+  "id": "temporal_otel-action-rate-limit",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when a namespace's total action consumption approaches 80% of its provisioned action limit. Each workflow event (task dispatch, signal, timer fire, etc.) consumes one action. When the limit is reached, Temporal Cloud throttles new events, causing task queues to back up and workflows to slow down or time out. At 80% utilisation there is insufficient headroom to absorb traffic spikes.",
+    "name": "[Temporal OTel] Namespace Approaching Action Rate Limit",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "temporal",
+      "temporal-cloud"
+    ],
+    "schedule": {
+      "interval": "15m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Namespace Approaching Action Rate Limit\n\nThis alert fires when a namespace is consuming 80% or more of its Temporal Cloud action limit. The `action_limit` (actions/second) is a per-namespace quota. When consumed, Temporal Cloud throttles new workflow events — task dispatch is delayed, backlogs grow, and workflows may time out.\n\n### What Counts as an Action?\n\nEvery workflow event costs one action. High-action workloads include:\n- Workflows that signal frequently\n- High-throughput workflows with many activity steps\n- Workflows with frequent timer-based polling (use `continue_as_new` to limit history size)\n- Schedules firing at high frequency\n\n### Triage Steps\n\n1. **Check if throttling is already active** using `total_action_throttled_count`:\n   ```esql\n   TS metrics-temporal.cloud_metrics.otel-*\n   | STATS throttled = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_total_action_count))\n       BY attributes.temporal_namespace\n   | WHERE throttled IS NOT NULL\n   ```\n   If this field has data, throttling is occurring now — escalate immediately.\n\n2. **Identify the workload driving action consumption**:\n   - Break down `billable_action_count` by `attributes.action_type` and `attributes.temporal_workflow_type` to find the most action-intensive workflow types.\n   - Look for runaway workflows that are scheduling excessive activities or signals.\n\n3. **Check for spikes vs sustained growth**:\n   - A brief spike (e.g., a scheduled batch job) may not require intervention if utilisation drops quickly.\n   - Sustained growth toward the limit requires either workload reduction or a quota increase request.\n\n4. **Request a limit increase**:\n   - Contact Temporal Cloud support to request a higher `action_limit` if the growth is legitimate business traffic.\n   - Temporal Cloud limits can often be raised with a support request — plan ahead before hitting 100%.\n\n5. **Optimise high-action workflows**:\n   - Replace timer-polling patterns with external triggers (signals or child workflows).\n   - Use `continue_as_new` on long-running workflows to reset history and reduce per-workflow overhead.\n   - Batch activities to reduce the number of individual workflow events.\n\n6. **Monitor the on-demand envelope**: The `action_on_demand_envelope_limit` provides burst headroom above the base limit. If `total_action_count` is exceeding `action_limit` but below `action_on_demand_envelope_limit`, you have temporary burst capacity — but this will eventually throttle.\n\n### Thresholds\n\n- **80% utilisation**: Warning. Investigate and plan for capacity growth.\n- **90%+ utilisation**: Critical. Throttling imminent. Take action immediately.\n- **100%**: Throttling is active. `total_action_throttled_count` will be non-zero. Workflows are degraded."
+      },
+      "dashboards": [
+        {
+          "id": "temporal_otel-5e3e5a3c-5eaf-4556-af1e-72a001264380"
+        }
+      ]
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-temporal.cloud_metrics.otel-*\n// total_action_count is a rate (actions/s); action_limit is the provisioned cap (actions/s)\n// action_limit only counts is_background=false actions (Temporal Cloud OpenMetrics)\n// MAX ensures the limit value is the current provisioned limit\n| STATS avg_actions = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_total_action_count)) WHERE attributes.is_background == \"false\",\n        action_limit = MAX(AVG_OVER_TIME(metrics.temporal_cloud_v1_action_limit))\n    BY attributes.temporal_namespace\n// Exclude namespaces with no limit data\n| WHERE action_limit > 0\n// Compute utilisation percentage\n| EVAL utilization_pct = ROUND(avg_actions / action_limit * 100.0, 2)\n// Alert at 80% to provide headroom before throttling begins\n| WHERE utilization_pct > 80\n| SORT utilization_pct DESC\n| LIMIT 10"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.temporal_namespace",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

@@ -1,0 +1,13 @@
+services:
+  nginx:
+    image: nginx:1.27.5
+    ports:
+      - 80
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  logfile:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"

@@ -1,0 +1,53 @@
+{
+  "id": "temporal_otel-activity-task-timeout",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when activity task timeouts are elevated, broken down by timeout_type. StartToClose timeouts indicate workers are exceeding their per-attempt execution time limit (slow external calls or overloaded workers). Heartbeat timeouts indicate workers stopped reporting progress mid-execution — the worker process likely crashed or hung. Both types may be retried, but persistent rates signal systemic problems.",
+    "name": "[Temporal OTel] Activity Task Timeout Rate Elevated",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "temporal",
+      "temporal-cloud"
+    ],
+    "schedule": {
+      "interval": "15m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Activity Task Timeout Rate Elevated\n\nActivity task timeouts (`activity_task_timeout_count`) are per-attempt timeouts — the task may be retried by Temporal if the activity's retry policy allows it. The `timeout_type` dimension is critical for diagnosis.\n\n### Timeout Types Explained\n\n| `timeout_type` | Meaning | Likely Cause |\n|---|---|---|\n| `StartToClose` | The worker accepted the task but took too long to complete it | Slow external dependency (API, DB), CPU-bound activity, or worker overload |\n| `Heartbeat` | The worker stopped sending heartbeats before completing | Worker process crashed or hung mid-activity |\n| `ScheduleToStart` | No worker picked up the task within the schedule-to-start timeout | Worker capacity issue (similar to backlog alert); workers available but overwhelmed |\n\n### Triage: Heartbeat Timeouts\n\nHeartbeat timeouts are the most urgent — they indicate workers are crashing or hanging:\n\n1. Check worker process health and system resource utilisation (CPU, memory, file descriptors).\n2. Look for OOM kills in container/pod logs.\n3. Check if the heartbeat interval in the activity code is shorter than the `heartbeatTimeout` configured in the workflow — they must be.\n4. Correlate with `activity_task_fail_count` — crashes will also produce failures.\n\n### Triage: StartToClose Timeouts\n\n1. **Identify the task queue** from the alert. The affected workers call specific external systems.\n2. **Check external dependencies**: Database connection pool exhaustion, slow API calls, rate limiting from downstream services.\n3. **Check worker resource usage**: CPU saturation causes tasks to take longer than normal.\n4. **Review the `startToCloseTimeout` configuration**: If external dependency SLAs have changed, the timeout value may need adjustment.\n5. **Monitor `activity_task_fail_count`**: If timeouts transition to failures, the retry budget is being consumed.\n\n### Triage: ScheduleToStart Timeouts\n\n1. This is effectively a backlog signal — check `approximate_backlog_count` for the same task queue.\n2. Insufficient workers are polling the queue.\n3. Scale the worker fleet.\n\n### Threshold Guidance\n\n- `timeout_rate > 0.05` per second: Alert threshold (~3 timeouts per minute).\n- In healthy systems, activity task timeouts should be near zero — any sustained rate warrants investigation.\n- If `timeout_rate` is high but `activity_task_fail_count` is low, retries are absorbing the failures — still investigate the root cause before retry budget is exhausted."
+      },
+      "dashboards": [
+        {
+          "id": "temporal_otel-5e3e5a3c-5eaf-4556-af1e-72a001264380"
+        }
+      ]
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-temporal.cloud_metrics.otel-*\n// activity_task_timeout_count counts per-attempt timeouts by timeout_type\n// These may be retried; persistent rates indicate systemic issues\n| STATS timeout_rate = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_activity_task_timeout_count))\n    BY attributes.temporal_namespace, attributes.temporal_task_queue, attributes.timeout_type\n// Alert threshold: 0.05/s (~3 per minute); tune for your workload\n| WHERE timeout_rate > 0.05\n| SORT timeout_rate DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.temporal_task_queue",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
