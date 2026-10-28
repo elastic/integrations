@@ -1,0 +1,401 @@
+---
+description: Pipeline for Amazon Bedrock AgentCore Code Interpreter application logs
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '8.11.0'
+
+  - rename:
+      tag: rename_message_to_event_original
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+
+  - remove:
+      tag: remove_message
+      field: message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  # Each CloudWatch log event is one JSON record (vended APPLICATION_LOGS envelope).
+  - json:
+      tag: parse_json_event_original
+      field: event.original
+      target_field: aws.bedrock_agentcore.code_interpreter
+      if: ctx.event?.original != null
+
+  - date:
+      tag: date_event_timestamp
+      field: aws.bedrock_agentcore.code_interpreter.event_timestamp
+      target_field: '@timestamp'
+      formats:
+        - UNIX_MS
+      if: ctx.aws?.bedrock_agentcore?.code_interpreter?.event_timestamp != null
+      on_failure:
+        - append:
+            tag: append_date_event_timestamp_failure
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+
+  - rename:
+      tag: rename_account_id
+      field: aws.bedrock_agentcore.code_interpreter.account_id
+      target_field: cloud.account.id
+      ignore_missing: true
+
+  - rename:
+      tag: rename_traceId
+      field: aws.bedrock_agentcore.code_interpreter.traceId
+      target_field: trace.id
+      ignore_missing: true
+
+  - rename:
+      tag: rename_trace_id_fallback
+      field: aws.bedrock_agentcore.code_interpreter.trace_id
+      target_field: trace.id
+      ignore_missing: true
+      if: ctx.trace?.id == null
+
+  - rename:
+      tag: rename_spanId
+      field: aws.bedrock_agentcore.code_interpreter.spanId
+      target_field: span.id
+      ignore_missing: true
+
+  - rename:
+      tag: rename_span_id_fallback
+      field: aws.bedrock_agentcore.code_interpreter.span_id
+      target_field: span.id
+      ignore_missing: true
+      if: ctx.span?.id == null
+
+  - rename:
+      tag: rename_severity_text_to_log_level
+      field: aws.bedrock_agentcore.code_interpreter.severityText
+      target_field: log.level
+      ignore_missing: true
+
+  - rename:
+      tag: rename_severity_number
+      field: aws.bedrock_agentcore.code_interpreter.severityNumber
+      target_field: aws.bedrock_agentcore.code_interpreter.severity_number
+      ignore_missing: true
+
+  - rename:
+      tag: rename_tool_session_id
+      field: aws.bedrock_agentcore.code_interpreter.tool_session_id
+      target_field: aws.bedrock_agentcore.code_interpreter.session_id
+      ignore_missing: true
+
+  - dot_expander:
+      tag: dot_expander_resource_attributes
+      field: '*'
+      path: aws.bedrock_agentcore.code_interpreter.resource.attributes
+      if: ctx.aws?.bedrock_agentcore?.code_interpreter?.resource?.attributes != null
+      ignore_failure: true
+
+  - dot_expander:
+      tag: dot_expander_attributes
+      field: '*'
+      path: aws.bedrock_agentcore.code_interpreter.attributes
+      if: ctx.aws?.bedrock_agentcore?.code_interpreter?.attributes != null
+      ignore_failure: true
+
+  - rename:
+      tag: rename_otel_service_name
+      field: aws.bedrock_agentcore.code_interpreter.resource.attributes.service.name
+      target_field: service.name
+      ignore_missing: true
+
+  - rename:
+      tag: rename_otel_aws_resource_type
+      field: aws.bedrock_agentcore.code_interpreter.attributes.aws.resource.type
+      target_field: aws.bedrock_agentcore.code_interpreter.resource_type
+      ignore_missing: true
+
+  - dissect:
+      tag: dissect_code_interpreter_id
+      field: aws.bedrock_agentcore.code_interpreter.resource_arn
+      pattern: '%{}/%{aws.bedrock_agentcore.code_interpreter.code_interpreter_id}'
+      description: Extract the Code Interpreter identifier from the resource ARN path.
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.aws?.bedrock_agentcore?.code_interpreter?.resource_arn != null
+
+  # --- request payload (InvokeCodeInterpreter request) ---
+  - rename:
+      tag: rename_tool_name
+      field: aws.bedrock_agentcore.code_interpreter.body.request_payload.name
+      target_field: aws.bedrock_agentcore.code_interpreter.tool.name
+      ignore_missing: true
+
+  - rename:
+      tag: rename_command_to_process_command_line
+      field: aws.bedrock_agentcore.code_interpreter.body.request_payload.arguments.command
+      target_field: process.command_line
+      ignore_missing: true
+
+  - rename:
+      tag: rename_arguments_code
+      field: aws.bedrock_agentcore.code_interpreter.body.request_payload.arguments.code
+      target_field: aws.bedrock_agentcore.code_interpreter.request_payload.code
+      ignore_missing: true
+
+  - rename:
+      tag: rename_arguments_language
+      field: aws.bedrock_agentcore.code_interpreter.body.request_payload.arguments.language
+      target_field: aws.bedrock_agentcore.code_interpreter.request_payload.language
+      ignore_missing: true
+
+  - rename:
+      tag: rename_arguments_runtime
+      field: aws.bedrock_agentcore.code_interpreter.body.request_payload.arguments.runtime
+      target_field: aws.bedrock_agentcore.code_interpreter.request_payload.runtime
+      ignore_missing: true
+
+  - rename:
+      tag: rename_arguments_clear_context
+      field: aws.bedrock_agentcore.code_interpreter.body.request_payload.arguments.clearContext
+      target_field: aws.bedrock_agentcore.code_interpreter.request_payload.clear_context
+      ignore_missing: true
+
+  - rename:
+      tag: rename_arguments_path_to_file_path
+      field: aws.bedrock_agentcore.code_interpreter.body.request_payload.arguments.path
+      target_field: file.path
+      ignore_missing: true
+
+  - rename:
+      tag: rename_arguments_paths
+      field: aws.bedrock_agentcore.code_interpreter.body.request_payload.arguments.paths
+      target_field: aws.bedrock_agentcore.code_interpreter.request_payload.paths
+      ignore_missing: true
+
+  - rename:
+      tag: rename_arguments_directory_path
+      field: aws.bedrock_agentcore.code_interpreter.body.request_payload.arguments.directoryPath
+      target_field: aws.bedrock_agentcore.code_interpreter.request_payload.directory_path
+      ignore_missing: true
+
+  - rename:
+      tag: rename_arguments_content
+      field: aws.bedrock_agentcore.code_interpreter.body.request_payload.arguments.content
+      target_field: aws.bedrock_agentcore.code_interpreter.request_payload.content
+      ignore_missing: true
+
+  - rename:
+      tag: rename_arguments_task_id
+      field: aws.bedrock_agentcore.code_interpreter.body.request_payload.arguments.taskId
+      target_field: aws.bedrock_agentcore.code_interpreter.task.id
+      ignore_missing: true
+
+  # --- response payload (CodeInterpreterResult) ---
+  - rename:
+      tag: rename_response_stdout
+      field: aws.bedrock_agentcore.code_interpreter.body.response_payload.structuredContent.stdout
+      target_field: aws.bedrock_agentcore.code_interpreter.response_payload.stdout
+      ignore_missing: true
+
+  - rename:
+      tag: rename_response_stderr
+      field: aws.bedrock_agentcore.code_interpreter.body.response_payload.structuredContent.stderr
+      target_field: aws.bedrock_agentcore.code_interpreter.response_payload.stderr
+      ignore_missing: true
+
+  - rename:
+      tag: rename_exit_code_to_process_exit_code
+      field: aws.bedrock_agentcore.code_interpreter.body.response_payload.structuredContent.exitCode
+      target_field: process.exit_code
+      ignore_missing: true
+
+  - rename:
+      tag: rename_response_execution_time
+      field: aws.bedrock_agentcore.code_interpreter.body.response_payload.structuredContent.executionTime
+      target_field: aws.bedrock_agentcore.code_interpreter.response_payload.execution_time
+      ignore_missing: true
+
+  - rename:
+      tag: rename_response_task_id
+      field: aws.bedrock_agentcore.code_interpreter.body.response_payload.structuredContent.taskId
+      target_field: aws.bedrock_agentcore.code_interpreter.task.id
+      ignore_missing: true
+      if: ctx.aws?.bedrock_agentcore?.code_interpreter?.task?.id == null
+
+  - rename:
+      tag: rename_response_task_status
+      field: aws.bedrock_agentcore.code_interpreter.body.response_payload.structuredContent.taskStatus
+      target_field: aws.bedrock_agentcore.code_interpreter.task.status
+      ignore_missing: true
+
+  - rename:
+      tag: rename_response_content
+      field: aws.bedrock_agentcore.code_interpreter.body.response_payload.content
+      target_field: aws.bedrock_agentcore.code_interpreter.response_payload.content
+      ignore_missing: true
+
+  # --- ECS categorization ---
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+
+  - set:
+      tag: set_event_outcome_success
+      field: event.outcome
+      value: success
+      if: ctx.aws?.bedrock_agentcore?.code_interpreter?.body?.response_payload?.isError == false
+
+  - set:
+      tag: set_event_outcome_failure
+      field: event.outcome
+      value: failure
+      if: ctx.aws?.bedrock_agentcore?.code_interpreter?.body?.response_payload?.isError == true
+
+  - script:
+      tag: set_ecs_categorization
+      description: Map Code Interpreter tool name to ECS categorization fields and event.action.
+      lang: painless
+      if: ctx.aws?.bedrock_agentcore?.code_interpreter?.tool?.name != null
+      params:
+        executeCode:
+          action: execute-code
+          category: [process]
+          type: [start]
+        executeCommand:
+          action: execute-command
+          category: [process]
+          type: [start]
+        startCommandExecution:
+          action: start-command-execution
+          category: [process]
+          type: [start]
+        readFiles:
+          action: read-files
+          category: [file]
+          type: [access]
+        listFiles:
+          action: list-files
+          category: [file]
+          type: [access]
+        writeFiles:
+          action: write-files
+          category: [file]
+          type: [creation]
+        removeFiles:
+          action: remove-files
+          category: [file]
+          type: [deletion]
+        getTask:
+          action: get-task
+          category: [process]
+          type: [info]
+        stopTask:
+          action: stop-task
+          category: [process]
+          type: [end]
+      source: |-
+        def mapping = params[ctx.aws.bedrock_agentcore.code_interpreter.tool.name];
+        if (mapping == null) {
+          return;
+        }
+        if (ctx.event == null) {
+          ctx.event = new HashMap();
+        }
+        ctx.event.action = mapping.action;
+        ctx.event.category = mapping.category;
+        ctx.event.type = mapping.type;
+
+  # --- static package metadata ---
+  - set:
+      tag: set_cloud_provider
+      field: cloud.provider
+      value: aws
+
+  - set:
+      tag: set_cloud_service_name
+      field: cloud.service.name
+      value: bedrock-agentcore
+
+  - set:
+      tag: set_provider_name
+      field: aws.bedrock_agentcore.provider_name
+      value: aws_bedrock_agentcore
+
+  - set:
+      tag: set_operation_name
+      field: aws.bedrock_agentcore.operation_name
+      value: invoke_code_interpreter
+
+  # --- cleanup ---
+  - remove:
+      tag: remove_consumed_fields
+      field:
+        - aws.bedrock_agentcore.code_interpreter.event_timestamp
+        - aws.bedrock_agentcore.code_interpreter.timeUnixNano
+        - aws.bedrock_agentcore.code_interpreter.trace_id
+        - aws.bedrock_agentcore.code_interpreter.span_id
+        - aws.bedrock_agentcore.code_interpreter.resource
+        - aws.bedrock_agentcore.code_interpreter.attributes
+        - aws.bedrock_agentcore.code_interpreter.body
+      ignore_missing: true
+
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values_153dfbd1
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
