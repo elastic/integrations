@@ -174,7 +174,6 @@ processors:
       field_split: ',\s*(?=[A-Z]+=)'
       value_split: '='
       trim_value: ' '
-      strip_brackets: true
       include_keys:
         - CN
         - O
@@ -207,7 +206,15 @@ processors:
           }
           List values = value instanceof List ? value : [value];
           for (def v : values) {
-            if (!(v instanceof String) || v.isEmpty()) {
+            if (!(v instanceof String)) {
+              continue;
+            }
+            String s = v;
+            // Quoted values are enclosed in double quotes, with embedded quotes doubled.
+            if (s.length() > 1 && s.startsWith('"') && s.endsWith('"')) {
+              s = s.substring(1, s.length() - 1).replace('""', '"');
+            }
+            if (s.isEmpty()) {
               continue;
             }
             if (ctx.file == null) {
@@ -220,8 +227,8 @@ processors:
               ctx.file.x509.subject = [:];
             }
             List target = ctx.file.x509.subject.computeIfAbsent(entry.getValue(), k -> new ArrayList());
-            if (!target.contains(v)) {
-              target.add(v);
+            if (!target.contains(s)) {
+              target.add(s);
             }
           }
         }
