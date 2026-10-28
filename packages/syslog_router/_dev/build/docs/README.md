@@ -35,7 +35,7 @@ This integration supports routing events to the following 22 pre-configured inte
 | Sophos XG                       | `sophos.xg`                      | `device="SFW"`                                          |
 | Stormshield                     | `stormshield.log`                | `id=firewall time="`                                    |
 
-Due to subtle differences in how devices emit syslog events, the default patterns might not work in all cases. Some integrations that support syslog are not listed here because their patterns would be too complex or could overlap with other integrations, which might cause false matches. You may need to create custom patterns for those cases.
+Due to subtle differences in how devices emit syslog events, the default patterns might not work in all cases. Some integrations that support syslog are not listed here because their patterns would be too complex or could overlap with other integrations, which might cause false matches. You might need to create custom patterns for those cases.
 
 ### How it works
 
@@ -205,7 +205,7 @@ Additional processors such as `decode_cef` or `syslog` can be added in the `then
 
 To ensure your deployment is working correctly, follow these steps:
 
-1. Verify the agent is receiving data by checking the Elastic Agent logs for the configured input (TCP/UDP) to confirm it is listening. You can send a test syslog message from the agent host to itself to confirm the port is open:
+1. Verify the agent is receiving data by checking the Elastic Agent logs for the configured input (TCP/UDP) to confirm it is listening. You can send a test syslog message from the agent host to itself to confirm the port is open. This example is a Cisco ASA message, so it's only parsed if you installed the Cisco ASA integration assets:
 
    ```bash
    echo 'Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-4-106023: Deny tcp src outside:192.168.19.254/80 dst inside:172.31.98.44/8277 by access-group "inbound" [0x0, 0x0]' | nc localhost 9514
