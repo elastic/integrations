@@ -43,18 +43,18 @@ This integration installs:
 
 The package installs the rule templates with its other assets. Add a rule from the Elastic Cloud integration **Assets** tab before it alerts.
 
-Each rule reads `logs-elastic_cloud.serverless_audit.otel-*`. The identity is the email, otherwise the API key name, otherwise the user name. A Cloud API key stays distinct by realm. Platform accounts (`elastic/kibana`, `elastic/fleet-server`, `elastic.maintenance`, `autoscaling`, and `elasticsearch-controller`) are excluded.
+Each rule reads `logs-elastic_cloud.serverless_audit.otel-*`. A sign-in success is an Elasticsearch `authentication_success` or a Kibana `user_login`. The identity is the email, otherwise the API key name, otherwise the user name. A Cloud API key stays distinct by realm. Platform accounts (`elastic/kibana`, `elastic/fleet-server`, `elastic.maintenance`, `autoscaling`, and `elasticsearch-controller`) are excluded.
 
 - **[Elastic Cloud] Password guessing**: one identity fails to sign in at least 15 times in 10 minutes.
 - **[Elastic Cloud] Password spray**: one client IP fails against at least 10 identities in 15 minutes.
 - **[Elastic Cloud] Credential stuffing**: at least 30 failures, 10 identities, and 5 public IPs in 10 minutes.
 - **[Elastic Cloud] Successful sign-in after repeated failures**: at least 5 failures, then a success, in 30 minutes.
-- **[Elastic Cloud] Impossible travel**: two geolocated sign-ins at least 500 km apart, faster than 800 km/h, within 6 hours.
+- **[Elastic Cloud] Impossible travel**: two geolocated sign-ins at least 500 km apart, faster than 800 km/h or at the same moment, within 6 hours.
 - **[Elastic Cloud] Sign-in from a new country**: a known identity uses a country it has not used in the last 7 days.
 - **[Elastic Cloud] First-seen identity sign-in**: the first sign-in in 7 days. This rule stays quiet until the audit stream is at least 24 hours old.
 - **[Elastic Cloud] Credential used from many places**: two countries in one hour, or an API key used from 3 public IPs.
 
-Private and carrier-NAT addresses are left out of the location rules, because those addresses do not geolocate.
+Private, link-local, and carrier-NAT addresses are left out of the location rules, because those addresses do not geolocate.
 
 ## Troubleshooting
 

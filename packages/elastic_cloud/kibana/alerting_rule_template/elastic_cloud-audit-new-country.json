@@ -12,7 +12,7 @@
       "audit"
     ],
     "schedule": {
-      "interval": "1h"
+      "interval": "15m"
     },
     "alertDelay": {
       "active": 1
@@ -38,7 +38,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-elastic_cloud.serverless_audit.otel-*\n| WHERE event.action == \"authentication_success\"\n| WHERE authentication.type IS NULL OR authentication.type != \"internal\"\n| WHERE client.ip IS NOT NULL AND NOT CIDR_MATCH(client.ip, \"10.0.0.0/8\", \"172.16.0.0/12\", \"192.168.0.0/16\", \"127.0.0.0/8\", \"100.64.0.0/10\")\n| EVAL actor = COALESCE(user.email, api_key.name, user.name)\n| WHERE actor IS NOT NULL\n| EVAL actor_kind = CASE(user.domain == \"_cloud_api_key\", \"cloud_api_key\", user.email IS NOT NULL, \"user\", api_key.name IS NOT NULL OR authentication.type == \"api_key\", \"api_key\", \"principal\")\n| WHERE actor NOT IN (\"elastic.maintenance\", \"autoscaling\", \"elasticsearch-controller\", \"elastic/fleet-server\", \"elastic/kibana\")\n| WHERE client.geo.country_iso_code IS NOT NULL\n| EVAL recent = @timestamp >= NOW() - 1 hour\n| STATS baseline_countries = COUNT_DISTINCT(client.geo.country_iso_code) WHERE NOT recent, all_countries = COUNT_DISTINCT(client.geo.country_iso_code), recent_successes = COUNT(*) WHERE recent BY actor, actor_kind\n| WHERE recent_successes > 0 AND baseline_countries > 0 AND all_countries > baseline_countries\n| SORT recent_successes DESC\n| LIMIT 100"
+        "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-elastic_cloud.serverless_audit.otel-*\n| WHERE event.action == \"authentication_success\" OR (event.action == \"user_login\" AND (event.outcome IS NULL OR event.outcome == \"success\"))\n| WHERE authentication.type IS NULL OR authentication.type != \"internal\"\n| WHERE client.ip IS NOT NULL AND NOT CIDR_MATCH(client.ip, \"10.0.0.0/8\", \"172.16.0.0/12\", \"192.168.0.0/16\", \"127.0.0.0/8\", \"169.254.0.0/16\", \"100.64.0.0/10\", \"fc00::/7\", \"fe80::/10\", \"::1/128\")\n| EVAL actor = COALESCE(user.email, api_key.name, user.name)\n| WHERE actor IS NOT NULL\n| EVAL actor_kind = CASE(user.domain == \"_cloud_api_key\", \"cloud_api_key\", user.email IS NOT NULL, \"user\", api_key.name IS NOT NULL OR authentication.type == \"api_key\", \"api_key\", \"principal\")\n| WHERE actor NOT IN (\"elastic.maintenance\", \"autoscaling\", \"elasticsearch-controller\", \"elastic/fleet-server\", \"elastic/kibana\")\n| WHERE client.geo.country_iso_code IS NOT NULL\n| EVAL recent = @timestamp >= NOW() - 1 hour\n| STATS baseline_countries = COUNT_DISTINCT(client.geo.country_iso_code) WHERE NOT recent, all_countries = COUNT_DISTINCT(client.geo.country_iso_code), recent_successes = COUNT(*) WHERE recent BY actor, actor_kind\n| WHERE recent_successes > 0 AND baseline_countries > 0 AND all_countries > baseline_countries\n| SORT recent_successes DESC\n| LIMIT 100"
       },
       "size": 0,
       "threshold": [
