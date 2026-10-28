@@ -35,6 +35,7 @@ To use this integration you will need:
 
 * **Azure App Registration**: You need to set up an Azure App Registration to allow the Agent to access the Azure APIs. The App Registration requires a role to access the billing information. The required role is different depending on the subscription, department, or billing account scope. Check the [Setup section](#setup) for more details.
 * **Elasticsearch and Kibana**: You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, the [Native Azure Integration](https://azuremarketplace.microsoft.com/en/marketplace/apps/elastic.ec-azure-pp?tab=overview), or self-manage the Elastic Stack on your hardware.
+* **Elastic Agent 9.6.0 or later**: The agent stamps every billing row with the ID of the fetch it belongs to and the scope it was queried for, which the [deduplication transforms](#deduplication-and-transforms) rely on.
 * **Payment method**: Azure Billing Metrics integration queries are charged based on the number of standard API calls. One integration makes two calls every 24 hours in the standard configuration.
 
 ## Setup
@@ -271,10 +272,12 @@ This also makes a longer `Billing Usage Lookback` safe: with `72h`, every fetch 
 three days and picks up Azure's late revisions, and the transforms replace each day with the
 newest snapshot instead of adding the re-read rows to the total.
 
-**Agents older than 9.6.** Their rows carry neither a fetch ID nor the queried scope. The
-transforms then group rows by the agent process (`agent.ephemeral_id`) and the minute in which
-they were created, which is best effort: a fetch whose rows cross a minute boundary is split and
-only its later part counts, and two fetches of one process inside the same minute are summed.
+**Documents collected before Elastic Agent 9.6.** The transforms also read the history that
+older agents collected, and those rows carry neither a fetch ID nor the queried scope. The usage
+transforms then group them by the agent process (`agent.ephemeral_id`) and the minute in which
+they were created, which cannot guarantee correct deduplication: a fetch whose rows cross a minute
+boundary is split and only its later part counts, and two fetches of one process inside the same
+minute are summed.
 Their forecasts are keyed on the configured `Subscription ID`, so several such policies that
 query different scopes with the same subscription ID need different Fleet namespaces to be kept
 apart. Upgrade the agents to get exact deduplication.
