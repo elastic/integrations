@@ -218,7 +218,7 @@ Additional processors such as `decode_cef` or `syslog` can be added in the `then
 ### 1. Verify the agent is receiving data
 
 1. Check the Elastic Agent logs for the configured input (TCP/UDP) to confirm it is listening.
-2. Send a test syslog message to the agent host on the configured port (for example, `echo 'Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-4-106023: Deny tcp src outside:192.168.19.254/80 dst inside:172.31.98.44/8277 by access-group "inbound" [0x0, 0x0]' | nc localhost 9514`). The example is a Cisco ASA message, so it's only parsed if the Cisco ASA integration assets are installed.
+2. Send a test syslog message to the agent host on the configured port. If you have the Cisco ASA integration installed, you can use this one: `echo 'Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-4-106023: Deny tcp src outside:192.168.19.254/80 dst inside:172.31.98.44/8277 by access-group "inbound" [0x0, 0x0]' | nc localhost 9514`.
 
 ### 2. Check data in Kibana
 

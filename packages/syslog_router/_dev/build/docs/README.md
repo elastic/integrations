@@ -205,7 +205,7 @@ Additional processors such as `decode_cef` or `syslog` can be added in the `then
 
 To ensure your deployment is working correctly, follow these steps:
 
-1. Verify the agent is receiving data by checking the Elastic Agent logs for the configured input (TCP/UDP) to confirm it is listening. You can send a test syslog message from the agent host to itself to confirm the port is open. This example is a Cisco ASA message, so it's only parsed if you installed the Cisco ASA integration assets:
+1. Verify the agent is receiving data by checking the Elastic Agent logs for the configured input (TCP/UDP) to confirm it is listening. If you have the Cisco ASA integration installed, you can use this test message, sent from the agent host to itself, to confirm the port is open:
 
    ```bash
    echo 'Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-4-106023: Deny tcp src outside:192.168.19.254/80 dst inside:172.31.98.44/8277 by access-group "inbound" [0x0, 0x0]' | nc localhost 9514
