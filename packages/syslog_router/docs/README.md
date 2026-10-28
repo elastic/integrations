@@ -119,7 +119,7 @@ After your devices are ready to send data, you can set up the integration in Kib
 2. Search for **Syslog Router** and select it.
 3. Click **Add Syslog Router**.
 4. Enable and configure the inputs you need:
-    - **TCP input**: Set the **Listen Address** and **Listen Port**. The default `localhost:9514` only accepts connections from the agent host, so use, for example, `0.0.0.0` to listen on all interfaces. You can also configure SSL settings if your devices support encrypted syslog.
+    - **TCP input**: Set the **Listen Address** and **Listen Port**. The default `localhost:9514` only accepts connections from the agent host, so use the address of the interface that receives syslog from your devices, or `0.0.0.0` to listen on all interfaces. Anyone who can reach the port can send events, so restrict it to your devices, for example with a host firewall. You can also configure SSL settings if your devices support encrypted syslog.
     - **UDP input**: Set the **Listen Address** and **Listen Port**. The same `localhost:9514` default applies.
     - **Filestream input**: Specify the **Paths** to the syslog files on the host if the agent is reading from local logs.
 5. Review the **Reroute configuration** section. You'll find a list of patterns used to match incoming logs to specific integrations. You can modify these YAML patterns to match the specific log formats in your environment. The Sophos XG block contains example values for the firewall host name (`_conf.default`) and the serial number to host name mappings (`_conf.mappings`). Replace them with your own devices or remove them.
@@ -254,11 +254,11 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
-To optimize the performance and scaling of the Syslog Router, you should follow these best practices:
+To optimize the performance and scaling of the Syslog Router, follow these best practices:
 
-- Pattern ordering: You should place stricter and more specific patterns before broader ones to avoid false matches. You'll also get better performance if you place your highest-traffic integrations at the top of your configuration to reduce the number of regex evaluations performed for each event.
-- Regex complexity: You should keep your patterns as straightforward as possible. Avoid using broad patterns like `.*` because they can cause excessive backtracking and increase CPU usage on the Elastic Agent host.
-- Transport selection: You can use UDP for higher throughput with lower overhead, but you should use TCP when you need more reliable delivery. When you use TCP, you can tune advanced settings like `max_connections` and `max_message_size` in the custom TCP options to match your environment's requirements.
+- Pattern ordering: Place stricter and more specific patterns before broader ones to avoid false matches. You'll also get better performance if you place your highest-traffic integrations at the top of your configuration to reduce the number of regex evaluations performed for each event.
+- Regex complexity: Keep your patterns as straightforward as possible. Avoid using broad patterns like `.*` because they can cause excessive backtracking and increase CPU usage on the Elastic Agent host.
+- Transport selection: Use UDP for higher throughput with lower overhead, and TCP when you need more reliable delivery. When you use TCP, you can tune advanced settings like `max_connections` and `max_message_size` in the custom TCP options to match your environment's requirements.
 - Agent scaling: For high-throughput environments, you can deploy multiple Elastic Agents behind a network load balancer to distribute the ingestion load across multiple instances.
 - Routing efficiency: This integration routes all events through the `syslog_router.log` data stream. Because the rerouting rules happen at the Elasticsearch level rather than the agent level, you won't experience data duplication at rest, which keeps your storage and processing usage efficient.
 - Input buffers: When you use the UDP input in high-traffic environments, you can increase the `read_buffer` size in the custom UDP options to help prevent packet loss during bursts of network traffic.
