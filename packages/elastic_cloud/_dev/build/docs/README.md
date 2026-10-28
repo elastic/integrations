@@ -42,7 +42,7 @@ This integration installs:
 
 The package installs the rule templates with its other assets. Add a rule from the Elastic Cloud integration **Assets** tab before it alerts.
 
-Each rule reads `logs-elastic_cloud.serverless_audit.otel-*`. The identity is the email, otherwise the API key name, otherwise the user name. A Cloud API key stays distinct by realm. Platform accounts (`elastic/kibana`, `elastic/fleet-server`, `elastic.maintenance`, `autoscaling`, and `elasticsearch-controller`) are excluded. `realm_authentication_failed` is left out, so one sign-in attempt counts once.
+Each rule reads `logs-elastic_cloud.serverless_audit.otel-*`. The identity is the email, otherwise the API key name, otherwise the user name. A Cloud API key stays distinct by realm. Platform accounts (`elastic/kibana`, `elastic/fleet-server`, `elastic.maintenance`, `autoscaling`, and `elasticsearch-controller`) are excluded.
 
 - **[Elastic Cloud] Password guessing**: one identity fails to sign in at least 15 times in 10 minutes.
 - **[Elastic Cloud] Password spray**: one client IP fails against at least 10 identities in 15 minutes.
