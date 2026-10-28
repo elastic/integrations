@@ -15,6 +15,8 @@ import (
 	"github.com/elastic/integrations/dev/codeowners"
 )
 
+const defaultPackagesPath = "packages"
+
 type CheckOptions struct {
 	Serverless        bool
 	ServerlessProject string
@@ -23,6 +25,10 @@ type CheckOptions struct {
 	Subscription      string
 	BuildURL          string
 	CodeownersPath    string
+	// PackagesPath is the path to the folder with the packages, relative to the root of the repository.
+	// The owners of the packages are found using the name of the package in its manifest or the name
+	// of its folder. Defaults to "packages".
+	PackagesPath string
 
 	MaxPreviousLinks int
 	MaxTestsReported int
@@ -36,6 +42,9 @@ func Check(ctx context.Context, resultsPath string, options CheckOptions) error 
 		// set default value for the GitHub CODEOWNERS file
 		options.CodeownersPath = codeowners.DefaultCodeownersPath
 	}
+	if options.PackagesPath == "" {
+		options.PackagesPath = defaultPackagesPath
+	}
 
 	if options.DryRun {
 		fmt.Println("DRY_RUN mode enabled")
@@ -47,6 +56,34 @@ func Check(ctx context.Context, resultsPath string, options CheckOptions) error 
 		return err
 	}
 
+	// Failures are reported even if their owners cannot be found, the problems with the
+	// owners are returned once all the failures have been reported.
+	reportErr := reportPackageErrors(ctx, resultsPath, options, packageErrors)
+	return errors.Join(reportErr, ownersProblems(packageErrors))
+}
+
+// ownersProblems returns the distinct errors found looking for the owners of the packages.
+func ownersProblems(packageErrors []*packageError) error {
+	var problems error
+	seen := map[string]struct{}{}
+	for _, pError := range packageErrors {
+		if pError.ownersErr == nil {
+			continue
+		}
+		msg := pError.ownersErr.Error()
+		if _, found := seen[msg]; found {
+			continue
+		}
+		seen[msg] = struct{}{}
+		problems = errors.Join(problems, pError.ownersErr)
+	}
+	if problems == nil {
+		return nil
+	}
+	return fmt.Errorf("failures reported without owners: %w", problems)
+}
+
+func reportPackageErrors(ctx context.Context, resultsPath string, options CheckOptions, packageErrors []*packageError) error {
 	ghCli := newGhCli(githubOptions{
 		DryRun: options.DryRun,
 	})
@@ -102,8 +139,16 @@ func Check(ctx context.Context, resultsPath string, options CheckOptions) error 
 }
 
 func errorsFromTests(resultsPath string, options CheckOptions) ([]*packageError, error) {
+	// Failures are still reported, without owners, if the resolver cannot be created,
+	// and the error is returned at the end.
+	var resolverErr error
+	resolver, err := newOwnersResolver(options.CodeownersPath, options.PackagesPath)
+	if err != nil {
+		resolverErr = fmt.Errorf("failed to create resolver of package owners: %w", err)
+	}
+
 	var packageErrors []*packageError
-	err := filepath.Walk(resultsPath, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(resultsPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -127,7 +172,10 @@ func errorsFromTests(resultsPath string, options CheckOptions) ([]*packageError,
 				Subscription:      options.Subscription,
 				BuildURL:          options.BuildURL,
 				TestCase:          c,
-				CodeownersPath:    options.CodeownersPath,
+				OwnersResolver:    resolver,
+				OwnersError:       resolverErr,
+				// A package without owners must not avoid reporting the rest of failures.
+				AllowMissingOwners: true,
 			})
 			if err != nil {
 				return fmt.Errorf("failed to create package error: %w", err)

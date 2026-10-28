@@ -1,0 +1,50 @@
+{
+    "attributes": {
+        "description": "Which identities operate in which Kibana spaces, across all Kibana traffic. Spaces are shown by id (the /s/\u003cid\u003e in the URL): the audit stream records no space display name. One row per identity: Spaces is how many distinct spaces they touched, named alphabetically in Space list on up to three lines - a longer list ends in “…”, and expanding the row (the expand control at its left) shows all of it. Identities above 1 are the ones worth understanding. Events counts events recorded in a space, so the column can add up to slightly less than all Kibana events: a sign-in (user_login) belongs to no space. An Identity shown as “_4KEO… · Cloud API key” is an organization-level Elastic Cloud API key: the audit stream records it only by its opaque 20-character id, shown here by its first five characters; it has no name and no owner email.",
+        "tabs": [
+            {
+                "attributes": {
+                    "chartInterval": "auto",
+                    "columns": [
+                        "Identity",
+                        "Spaces",
+                        "Events",
+                        "Space list"
+                    ],
+                    "controlGroupJson": "{}",
+                    "grid": {
+                        "columns": {
+                            "Events": {
+                                "width": 90
+                            },
+                            "Identity": {
+                                "width": 220
+                            },
+                            "Spaces": {
+                                "width": 80
+                            }
+                        }
+                    },
+                    "hideChart": true,
+                    "isTextBasedQuery": true,
+                    "kibanaSavedObjectMeta": {
+                        "searchSourceJSON": "{\"query\":{\"esql\":\"SET unmapped_fields=\\\"nullify\\\"; FROM logs-elastic_cloud.serverless_audit.otel-* | WHERE kibana.space.id IS NOT NULL | EVAL actor = COALESCE(user.email, api_key.name, user.name, \\\"\u003canonymous\u003e\\\") | STATS events = COUNT(*), spaces = COUNT_DISTINCT(kibana.space.id), space_list = VALUES(kibana.space.id) BY actor | SORT spaces DESC, events DESC | EVAL space_list = REPLACE(MV_CONCAT(MV_SORT(space_list), \\\", \\\"), \\\"-\\\", \\\"-⁠\\\") | EVAL actor = CASE((LENGTH(actor) == 20 AND actor RLIKE \\\"[-_A-Za-z0-9]{20}\\\" AND NOT actor RLIKE \\\"[0-9]{20}\\\"), CONCAT(LEFT(actor, 5), \\\"… · Cloud API key\\\"), actor) | RENAME actor AS Identity, spaces AS Spaces, space_list AS `Space list`, events AS Events\"},\"index\":{\"id\":\"cloud-audit-adhoc-dv\",\"title\":\"logs-elastic_cloud.serverless_audit.otel-*\",\"timeFieldName\":\"@timestamp\",\"sourceFilters\":[],\"type\":\"esql\",\"fieldFormats\":{},\"runtimeFieldMap\":{},\"allowNoIndex\":false,\"name\":\"logs-elastic_cloud.serverless_audit.otel-*\",\"allowHidden\":false},\"filter\":[],\"highlightAll\":true,\"version\":true}"
+                    },
+                    "rowHeight": 3,
+                    "sort": [],
+                    "timeRestore": false,
+                    "usesAdHocDataView": true
+                },
+                "id": "aa5a9231-fdbd-59a6-a835-c24458bfc373",
+                "label": "Results"
+            }
+        ],
+        "title": "[Audit] Cross-space Kibana activity"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-10-15T20:20:09.492Z",
+    "id": "elastic_cloud-cloud-audit-search-08-cross-space-activity",
+    "references": [],
+    "type": "search",
+    "typeMigrationVersion": "10.18.0"
+}

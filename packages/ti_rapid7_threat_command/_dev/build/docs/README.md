@@ -116,24 +116,6 @@ The threat landscape is always evolving and therefore the IOCs need to update to
 
 The ingested indicators from the integration are expired after the duration configured by `IOC Expiration Duration` integration setting. This setting is `required` property and must be set by the users. Refer [IOC Expiration Duration](#ioc-expiration-duration) section for more details.
 
-<<<<<<< HEAD
-The [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) named `logs-ti_rapid7_threat_command.latest_ioc-default-*` is created to faciliate only active IOCs be available to the end users. This transform creates destination indices named `logs-ti_rapid7_threat_command_latest.dest_ioc-*` which only contains active and unexpired IOCs. This latest destination index also has an alias named `logs-ti_rapid7_threat_command_latest.ioc`. When querying for active indicators or setting up indicator match rules, only use the latest destination indices or the alias to avoid false positives from expired IOCs. 
-
-Dashboards are also pointing to the latest destination indices containing only active indicators. 
-
-An [ILM Policy](#ilm-policy) is added to avoid unbounded growth on source datastream `.ds-logs-ti_rapid7_threat_command.ioc-*` indices.
-
-#### ILM Policy
-Due to the addition of [fleet-managed transforms](#removal-of-custom-transforms), ILM policy is also added to `IOC`, `Alert`, and `Vulnerability` datasets so that source datastream-backed indices `.ds-logs-ti_rapid7_threat_command.ioc-*`, `.ds-logs-ti_rapid7_threat_command.alert-*`, `.ds-logs-ti_rapid7_threat_command.vulnerability-*` doesn't lead to unbounded growth. This means data in these source indices will be deleted based on the ILM policy, which defaults to `5 days` from ingested date.
-
-| Source datastream-backed indices                              | Policy Name                                                    | Default Retention |
-| --------------------------------------------------------------| ---------------------------------------------------------------|-------------------|
-| `.ds-logs-ti_rapid7_threat_command.ioc-*`                     | logs-ti_rapid7_threat_command.ioc-default_policy               |    5 days         |
-| `.ds-logs-ti_rapid7_threat_command.alert-*`                   | logs-ti_rapid7_threat_command.alert-default_policy             |    5 days         |
-| `.ds-logs-ti_rapid7_threat_command.vulnerability-*`           | logs-ti_rapid7_threat_command.vulnerability-default_policy     |    5 days         |
-
-The ILM policies can be modified as per user needs.
-=======
 The [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) named `logs-ti_rapid7_threat_command.latest_ioc-default-*` is created to facilitate only active IOCs be available to the end users. This transform creates destination indices named `logs-ti_rapid7_threat_command_latest.dest_ioc-*` which only contains active and unexpired IOCs. This latest destination index also has an alias named `logs-ti_rapid7_threat_command_latest.ioc`. When querying for active indicators or setting up indicator match rules, only use the latest destination indices or the alias to avoid false positives from expired IOCs. 
 
 Dashboards are also pointing to the latest destination indices containing only active indicators. 
@@ -156,7 +138,6 @@ To keep data for a different period:
 
 - Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
 - Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-ti_rapid7_threat_command.ioc-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
->>>>>>> b29e16fa9e4606c09d857e3b5419a8577c488bd6
 
 ### Detection rules
 

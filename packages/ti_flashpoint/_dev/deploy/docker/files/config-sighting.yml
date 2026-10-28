@@ -1,0 +1,338 @@
+rules:
+  # Round 2 — initial search resumed from the persisted cursor (max header_.indexed_at
+  # seen in round 1 = 1739012400). Matched before the round 1 search rule because it is
+  # the more specific body match. Returns one new sighting and a fresh scroll id.
+  - path: /sources/v1/noncommunities/search
+    methods: ['POST']
+    request_body: '/.*1739012400.*/'
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "_scroll_id": "scrollRound2",
+            "hits": {
+              "max_score": null,
+              "total": 1,
+              "hits": [
+                {
+                  "_id": "rTwoAaAaAaAaAaAaAaAaAa",
+                  "_type": "_doc",
+                  "_source": {
+                    "fpid": "rTwoAaAaAaAaAaAaAaAaAa",
+                    "basetypes": ["credential-sighting"],
+                    "username": "newuser@example.net",
+                    "email": "newuser@example.net",
+                    "domain": "example.net",
+                    "password": "Spr1ng!2025",
+                    "is_fresh": true,
+                    "times_seen": 1,
+                    "affected_domain": "example.net",
+                    "body": "newuser@example.net:Spr1ng!2025",
+                    "header_": { "indexed_at": 1739016000 },
+                    "last_observed_at": { "date-time": "2025-02-08T12:00:00Z", "timestamp": 1739016000 },
+                    "breach": {
+                      "fpid": "breachRoundTwo0099",
+                      "basetypes": ["breach"],
+                      "breach_type": "credential",
+                      "title": "Example Round Two Dump",
+                      "source": "Analyst Research",
+                      "source_type": "Credential Stealer"
+                    }
+                  }
+                }
+              ]
+            },
+            "timed_out": false,
+            "took": 42
+          }
+  # Terminal — the next-interval search once the cursor has advanced to the round 2 max
+  # (window [1739016000 TO now]) returns an empty envelope with NO _scroll_id. The program
+  # emits 0 events and want_more=false, so polling settles deterministically. Must stay
+  # above the round 1 rule, which matches any other search body.
+  - path: /sources/v1/noncommunities/search
+    methods: ['POST']
+    request_body: '/.*1739016000.*/'
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "hits": { "hits": [], "max_score": null, "total": 0 },
+            "timed_out": false,
+            "took": 1
+          }
+  # Round 1 — initial search (first run). The lower bound is now - initial_interval in
+  # epoch seconds, so it is not known ahead of time; this rule matches any search not
+  # matched above. Returns page 1 (two sightings) and a scroll id.
+  - path: /sources/v1/noncommunities/search
+    methods: ['POST']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "_scroll_id": "scrollPage1",
+            "hits": {
+              "max_score": null,
+              "total": 4,
+              "hits": [
+                {
+                  "_id": "aBcDeFgHiJkLmNoPqRsTuV",
+                  "_type": "_doc",
+                  "_source": {
+                    "fpid": "aBcDeFgHiJkLmNoPqRsTuV",
+                    "basetypes": ["credential-sighting"],
+                    "username": "jdoe@example.com",
+                    "email": "jdoe@example.com",
+                    "domain": "example.com",
+                    "password": "P@ssw0rd123",
+                    "is_fresh": true,
+                    "times_seen": 1,
+                    "affected_url": "https://sso.example.com/login",
+                    "affected_domain": "example.com",
+                    "body": "jdoe@example.com:P@ssw0rd123",
+                    "header_": { "indexed_at": 1739001600 },
+                    "last_observed_at": { "date-time": "2025-02-01T12:00:00Z", "timestamp": 1738411200 },
+                    "password_complexity": {
+                      "length": 11,
+                      "has_lowercase": true,
+                      "has_uppercase": true,
+                      "has_number": true,
+                      "has_symbol": true,
+                      "probable_hash_algorithms": []
+                    },
+                    "breach": {
+                      "fpid": "breachAaBbCcDdEeFf0011",
+                      "basetypes": ["breach"],
+                      "breach_type": "credential",
+                      "title": "Example Combo List 2025",
+                      "source": "Analyst Research",
+                      "source_type": "Credential Stealer",
+                      "created_at": { "date-time": "2025-01-15T00:00:00Z", "timestamp": 1736899200 },
+                      "first_observed_at": { "date-time": "2025-01-20T00:00:00Z", "timestamp": 1737331200 }
+                    },
+                    "infected_host_attributes": {
+                      "fpid": "hostZzYyXxWw9988",
+                      "host_id": "DESKTOP-EXAMPLE01",
+                      "ip": "203.0.113.45",
+                      "ipv4": "203.0.113.45",
+                      "malware": {
+                        "family": "ExampleStealer",
+                        "version": "1.2",
+                        "scanned_at": { "date-time": "2025-01-10T08:30:00Z" }
+                      },
+                      "location": {
+                        "city_name": "Exampleville",
+                        "country_name": "Exampleland",
+                        "continent_name": "North America",
+                        "latitude": 30.2672,
+                        "longitude": -97.7431,
+                        "location": { "lat": 30.2672, "lon": -97.7431 },
+                        "subdivision_1_name": "Example State",
+                        "accuracy_radius": 50
+                      },
+                      "isp": {
+                        "isp": "Example ISP",
+                        "organization": "Example ISP LLC",
+                        "connection_type": "Cable/DSL",
+                        "autonomous_system_number": 64500,
+                        "autonomous_system_organization": "EXAMPLE-AS"
+                      },
+                      "machine": {
+                        "os": "Windows 10",
+                        "architecture": "x64",
+                        "language": ["en-US"],
+                        "user": "jdoe"
+                      }
+                    },
+                    "cookies": [
+                      {
+                        "key": "auth-token-example",
+                        "value": "I0gOkgC7KJlnrZXPPQYwGGEd1ZmeMhpQxo9example",
+                        "affected_domain": "example.com",
+                        "path": "/login",
+                        "allow_subdomains": true
+                      }
+                    ]
+                  }
+                },
+                {
+                  "_id": "wXyZ0123456789AbCdEfGh",
+                  "_type": "_doc",
+                  "_source": {
+                    "fpid": "wXyZ0123456789AbCdEfGh",
+                    "basetypes": ["credential-sighting"],
+                    "username": "asmith@example.org",
+                    "email": "asmith@example.org",
+                    "domain": "example.org",
+                    "password": "hunter2!",
+                    "is_fresh": false,
+                    "times_seen": 3,
+                    "affected_domain": "example.org",
+                    "body": "asmith@example.org:hunter2!",
+                    "header_": { "indexed_at": 1739005200 },
+                    "last_observed_at": { "date-time": "2025-02-01T13:00:00Z", "timestamp": 1738414800 },
+                    "password_complexity": {
+                      "length": 8,
+                      "has_lowercase": true,
+                      "has_uppercase": false,
+                      "has_number": true,
+                      "has_symbol": true,
+                      "probable_hash_algorithms": []
+                    },
+                    "breach": {
+                      "fpid": "breachGgHhIiJjKkLl2233",
+                      "basetypes": ["breach"],
+                      "breach_type": "credential",
+                      "title": "Example Paste Dump",
+                      "source": "https://paste.example.net/abc123",
+                      "source_type": "Paste",
+                      "created_at": { "date-time": "2025-01-28T00:00:00Z", "timestamp": 1738022400 },
+                      "first_observed_at": { "date-time": "2025-01-29T00:00:00Z", "timestamp": 1738108800 }
+                    }
+                  }
+                }
+              ]
+            },
+            "timed_out": false,
+            "took": 140
+          }
+  # Round 1 — scroll page 2 (resumes scrollPage1). Returns two more sightings and a new
+  # scroll id. These have larger header_.indexed_at values (ascending sort).
+  - path: /sources/v1/noncommunities/scroll
+    methods: ['POST']
+    query_params:
+      scroll: "2m"
+    request_body: '/.*scrollPage1.*/'
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "_scroll_id": "scrollPage2",
+            "hits": {
+              "max_score": null,
+              "total": 4,
+              "hits": [
+                {
+                  "_id": "pG2mNoPqRsTuVwXyZ01234",
+                  "_type": "_doc",
+                  "_source": {
+                    "fpid": "pG2mNoPqRsTuVwXyZ01234",
+                    "basetypes": ["credential-sighting"],
+                    "username": "bwayne@example.com",
+                    "email": "bwayne@example.com",
+                    "domain": "example.com",
+                    "password": "Gotham#2025",
+                    "is_fresh": true,
+                    "times_seen": 2,
+                    "affected_domain": "example.com",
+                    "body": "bwayne@example.com:Gotham#2025",
+                    "header_": { "indexed_at": 1739008800 },
+                    "last_observed_at": { "date-time": "2025-02-01T14:00:00Z", "timestamp": 1738418400 },
+                    "breach": {
+                      "fpid": "breachMmNnOoPpQq4455",
+                      "basetypes": ["breach"],
+                      "breach_type": "credential",
+                      "title": "Example Stealer Log 2025",
+                      "source": "Analyst Research",
+                      "source_type": "Credential Stealer"
+                    }
+                  }
+                },
+                {
+                  "_id": "pG3qRsTuVwXyZ0123456789",
+                  "_type": "_doc",
+                  "_source": {
+                    "fpid": "pG3qRsTuVwXyZ0123456789",
+                    "basetypes": ["credential-sighting"],
+                    "username": "ckent@example.org",
+                    "email": "ckent@example.org",
+                    "domain": "example.org",
+                    "password": "Metrop0lis!",
+                    "is_fresh": false,
+                    "times_seen": 5,
+                    "affected_domain": "example.org",
+                    "body": "ckent@example.org:Metrop0lis!",
+                    "header_": { "indexed_at": 1739012400 },
+                    "last_observed_at": { "date-time": "2025-02-01T15:00:00Z", "timestamp": 1738422000 },
+                    "breach": {
+                      "fpid": "breachRrSsTtUuVv6677",
+                      "basetypes": ["breach"],
+                      "breach_type": "credential",
+                      "title": "Example Combo List 2025",
+                      "source": "Analyst Research",
+                      "source_type": "Credential Stealer"
+                    }
+                  }
+                }
+              ]
+            },
+            "timed_out": false,
+            "took": 95
+          }
+  # Round 1 — terminal scroll page (resumes scrollPage2). Empty hits stops pagination.
+  - path: /sources/v1/noncommunities/scroll
+    methods: ['POST']
+    query_params:
+      scroll: "2m"
+    request_body: '/.*scrollPage2.*/'
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "_scroll_id": "scrollPage2",
+            "hits": { "max_score": null, "total": 4, "hits": [] },
+            "timed_out": false,
+            "took": 12
+          }
+  # Round 2 — terminal scroll page (resumes scrollRound2). Empty hits stops pagination.
+  # Also acts as a regression guard: if the cursor were cleared/regressed, round 2 would
+  # re-issue the initial search and re-collect round 1 events, inflating hit_count.
+  - path: /sources/v1/noncommunities/scroll
+    methods: ['POST']
+    query_params:
+      scroll: "2m"
+    request_body: '/.*scrollRound2.*/'
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "_scroll_id": "scrollRound2",
+            "hits": { "max_score": null, "total": 1, "hits": [] },
+            "timed_out": false,
+            "took": 8
+          }
