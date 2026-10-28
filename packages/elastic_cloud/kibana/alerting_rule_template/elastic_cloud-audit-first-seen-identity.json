@@ -1,0 +1,60 @@
+{
+  "id": "elastic_cloud-audit-first-seen-identity",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Elastic Cloud] First-seen identity sign-in",
+    "description": "An identity authenticates for the first time in 7 days, after the stream has at least a day of history.",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "security",
+      "elastic-cloud",
+      "audit"
+    ],
+    "schedule": {
+      "interval": "1h"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "elastic_cloud-audit-identity-access"
+        },
+        {
+          "id": "elastic_cloud-audit-security-anomalies"
+        },
+        {
+          "id": "elastic_cloud-audit-actor-360"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## First-seen identity\n\nThe identity's earliest sign-in in the 7 day window is in the last hour. The rule stays quiet until the audit stream itself is at least 24 hours old, so a new install does not alert on every identity.\n\n### Triage\n1. Open **[Audit] Identity 360** for this identity.\n2. An identity that was idle for 7 days and then returned also matches.\n\n### Tuning\nWiden the rule window to lengthen the baseline."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-elastic_cloud.serverless_audit.otel-*\n// History is the whole stream, not only sign-ins, so platform traffic can satisfy the 24 hour guard.\n| INLINE STATS oldest = MIN(@timestamp)\n| WHERE oldest <= NOW() - 24 hours\n| WHERE event.action == \"authentication_success\"\n| WHERE authentication.type IS NULL OR authentication.type != \"internal\"\n| EVAL actor = COALESCE(user.email, api_key.name, user.name)\n| WHERE actor IS NOT NULL\n| EVAL actor_kind = CASE(user.domain == \"_cloud_api_key\", \"cloud_api_key\", user.email IS NOT NULL, \"user\", api_key.name IS NOT NULL OR authentication.type == \"api_key\", \"api_key\", \"principal\")\n| WHERE actor NOT IN (\"elastic.maintenance\", \"autoscaling\", \"elasticsearch-controller\", \"elastic/fleet-server\", \"elastic/kibana\")\n| STATS first_seen = MIN(@timestamp), successes = COUNT(*) BY actor, actor_kind\n| WHERE first_seen >= NOW() - 1 hour\n| SORT first_seen DESC\n| LIMIT 100"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 7,
+      "timeWindowUnit": "d",
+      "groupBy": "row",
+      "termField": "actor",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

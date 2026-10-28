@@ -36,6 +36,7 @@ This integration installs:
 - An ingest pipeline for the `elastic_cloud.serverless_audit` data stream
 - Field mappings for the GeoIP enrichment of `client.ip`
 - The **[Audit]** dashboards, saved searches, and visualizations
+- Alerting rules for failed sign-ins, a sign-in after repeated failures, impossible travel, a new country, a first-seen identity, and a credential used from many places
 
 ## Troubleshooting
 

@@ -1,0 +1,57 @@
+{
+  "id": "elastic_cloud-audit-impossible-travel",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Elastic Cloud] Impossible travel",
+    "description": "One identity authenticates from two places more than 500 km apart at more than 800 km/h.",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "security",
+      "elastic-cloud",
+      "audit"
+    ],
+    "schedule": {
+      "interval": "15m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "elastic_cloud-audit-geo-network"
+        },
+        {
+          "id": "elastic_cloud-audit-actor-360"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Impossible travel\n\nThe earliest and latest geolocated sign-ins for one identity in 6 hours are at least 500 km apart and imply a speed above 800 km/h. Private and carrier-NAT addresses are left out because they do not geolocate.\n\n### Triage\n1. Open **[Audit] Geo & Network** and compare the two ends of the trip.\n2. A VPN that exits in another country can match.\n\n### Tuning\nThe distance floor is 500 km and the speed floor is 800 km/h."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-elastic_cloud.serverless_audit.otel-*\n| WHERE event.action == \"authentication_success\"\n| WHERE authentication.type IS NULL OR authentication.type != \"internal\"\n| WHERE client.ip IS NOT NULL AND NOT CIDR_MATCH(client.ip, \"10.0.0.0/8\", \"172.16.0.0/12\", \"192.168.0.0/16\", \"127.0.0.0/8\", \"100.64.0.0/10\")\n| EVAL actor = COALESCE(user.email, api_key.name, user.name)\n| WHERE actor IS NOT NULL\n| EVAL actor_kind = CASE(user.domain == \"_cloud_api_key\", \"cloud_api_key\", user.email IS NOT NULL, \"user\", api_key.name IS NOT NULL OR authentication.type == \"api_key\", \"api_key\", \"principal\")\n| WHERE actor NOT IN (\"elastic.maintenance\", \"autoscaling\", \"elasticsearch-controller\", \"elastic/fleet-server\", \"elastic/kibana\")\n| WHERE client.geo.location IS NOT NULL\n| EVAL lon = ST_X(client.geo.location), lat = ST_Y(client.geo.location)\n| STATS start_lon = EARLIEST(lon), start_lat = EARLIEST(lat), end_lon = LATEST(lon), end_lat = LATEST(lat), first_seen = MIN(@timestamp), last_seen = MAX(@timestamp), countries = COUNT_DISTINCT(client.geo.country_iso_code) BY actor, actor_kind\n| EVAL lat1 = start_lat * PI() / 180, lat2 = end_lat * PI() / 180\n| EVAL dlat = (end_lat - start_lat) * PI() / 180, dlon = (end_lon - start_lon) * PI() / 180\n| EVAL h = POW(SIN(dlat / 2), 2) + COS(lat1) * COS(lat2) * POW(SIN(dlon / 2), 2)\n| EVAL distance_km = 6371 * 2 * ATAN2(SQRT(h), SQRT(1 - h))\n| EVAL elapsed_seconds = DATE_DIFF(\"seconds\", first_seen, last_seen)\n| WHERE elapsed_seconds >= 1 AND distance_km >= 500 AND distance_km / (TO_DOUBLE(elapsed_seconds) / 3600.0) > 800\n| KEEP actor, actor_kind, distance_km, elapsed_seconds, countries, first_seen, last_seen\n| SORT distance_km DESC\n| LIMIT 100"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 6,
+      "timeWindowUnit": "h",
+      "groupBy": "row",
+      "termField": "actor",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

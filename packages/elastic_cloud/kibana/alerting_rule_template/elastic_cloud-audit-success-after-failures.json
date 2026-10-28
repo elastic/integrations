@@ -1,0 +1,57 @@
+{
+  "id": "elastic_cloud-audit-success-after-failures",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Elastic Cloud] Successful sign-in after repeated failures",
+    "description": "An identity fails at least 5 times and then authenticates in the same 30 minutes.",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "security",
+      "elastic-cloud",
+      "audit"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "elastic_cloud-audit-identity-access"
+        },
+        {
+          "id": "elastic_cloud-audit-security-anomalies"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Successful sign-in after repeated failures\n\nThe identity failed at least 5 times and then authenticated, with the success after the first failure.\n\n### Triage\n1. Confirm the success source on **[Audit] Identity & Access**.\n2. A person mistyping a password and then succeeding can match. Check the failure count and the source IP.\n\n### Tuning\nRaise the failure count from 5 to ignore ordinary mistypes."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-elastic_cloud.serverless_audit.otel-*\n| WHERE event.action IN (\"authentication_failed\", \"authentication_success\")\n| WHERE authentication.type IS NULL OR authentication.type != \"internal\"\n| EVAL actor = COALESCE(user.email, api_key.name, user.name)\n| WHERE actor IS NOT NULL\n| EVAL actor_kind = CASE(user.domain == \"_cloud_api_key\", \"cloud_api_key\", user.email IS NOT NULL, \"user\", api_key.name IS NOT NULL OR authentication.type == \"api_key\", \"api_key\", \"principal\")\n| WHERE actor NOT IN (\"elastic.maintenance\", \"autoscaling\", \"elasticsearch-controller\", \"elastic/fleet-server\", \"elastic/kibana\")\n| STATS failures = COUNT(*) WHERE event.action == \"authentication_failed\", successes = COUNT(*) WHERE event.action == \"authentication_success\", first_failure = MIN(@timestamp) WHERE event.action == \"authentication_failed\", last_success = MAX(@timestamp) WHERE event.action == \"authentication_success\" BY actor, actor_kind\n| WHERE failures >= 5 AND successes >= 1 AND last_success > first_failure\n| SORT failures DESC\n| LIMIT 100"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 30,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "actor",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

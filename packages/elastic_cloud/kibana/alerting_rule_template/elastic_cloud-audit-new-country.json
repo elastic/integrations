@@ -1,0 +1,57 @@
+{
+  "id": "elastic_cloud-audit-new-country",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Elastic Cloud] Sign-in from a new country",
+    "description": "A known identity authenticates from a country it has not used in the last 7 days.",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "security",
+      "elastic-cloud",
+      "audit"
+    ],
+    "schedule": {
+      "interval": "1h"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "elastic_cloud-audit-geo-network"
+        },
+        {
+          "id": "elastic_cloud-audit-actor-360"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Sign-in from a new country\n\nThe identity already had a geolocated sign-in in this 7 day window, and a sign-in in the last hour used a country that was not in that earlier baseline. A brand-new identity is left to the first-seen rule.\n\n### Triage\n1. Open **[Audit] Geo & Network** for this identity.\n2. Travel and a new VPN exit both match. Compare with the impossible-travel rule.\n\n### Tuning\nThe recent slice is 1 hour inside a 7 day rule window."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-elastic_cloud.serverless_audit.otel-*\n| WHERE event.action == \"authentication_success\"\n| WHERE authentication.type IS NULL OR authentication.type != \"internal\"\n| WHERE client.ip IS NOT NULL AND NOT CIDR_MATCH(client.ip, \"10.0.0.0/8\", \"172.16.0.0/12\", \"192.168.0.0/16\", \"127.0.0.0/8\", \"100.64.0.0/10\")\n| EVAL actor = COALESCE(user.email, api_key.name, user.name)\n| WHERE actor IS NOT NULL\n| EVAL actor_kind = CASE(user.domain == \"_cloud_api_key\", \"cloud_api_key\", user.email IS NOT NULL, \"user\", api_key.name IS NOT NULL OR authentication.type == \"api_key\", \"api_key\", \"principal\")\n| WHERE actor NOT IN (\"elastic.maintenance\", \"autoscaling\", \"elasticsearch-controller\", \"elastic/fleet-server\", \"elastic/kibana\")\n| WHERE client.geo.country_iso_code IS NOT NULL\n| EVAL recent = @timestamp >= NOW() - 1 hour\n| STATS baseline_countries = COUNT_DISTINCT(client.geo.country_iso_code) WHERE NOT recent, all_countries = COUNT_DISTINCT(client.geo.country_iso_code), recent_successes = COUNT(*) WHERE recent BY actor, actor_kind\n| WHERE recent_successes > 0 AND baseline_countries > 0 AND all_countries > baseline_countries\n| SORT recent_successes DESC\n| LIMIT 100"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 7,
+      "timeWindowUnit": "d",
+      "groupBy": "row",
+      "termField": "actor",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
