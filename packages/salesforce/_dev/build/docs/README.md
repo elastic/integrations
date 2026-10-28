@@ -133,7 +133,7 @@ For step-by-step instructions on how to set up an integration, see {{ url "getti
 6. Optional tuning:
    - Set an initial interval to backfill historical data.
    - Adjust the collection interval per source.
-   - Optionally filter EventLogFile by log file interval (for example, hourly). If your org doesn't have the Event Monitoring add-on, its `EventLogFile` object has no `Interval` field, so leave `EventLogFile Interval` blank for the `login` and `logout` data streams to collect daily log files.
+   - Optionally filter EventLogFile by log file interval (for example, hourly). If your org doesn't have the Event Monitoring add-on, its `EventLogFile` object has no `Interval` field, so leave `EventLogFile Interval` blank for the `login` and `logout` data streams. With Event Monitoring, a blank value does not filter by interval and can also collect Hourly log files, so set it to `Daily` to collect only daily log files.
    - In Advanced options, adjust the request timeout if Salesforce responses are slow.
 
 ### Configuration
