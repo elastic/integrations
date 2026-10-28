@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `postgresql.deadlocks > 0` per database. Concurrency issues in the application.",
     "name": "[PostgreSQL OTel] Deadlocks detected",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,6 +20,19 @@
       "enabled": true,
       "lookBackWindow": 4,
       "statusChangeThreshold": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-locks"
+        },
+        {
+          "id": "postgresql_otel-workload"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## PostgreSQL deadlocks detected\n\n### What fired\n`postgresql.deadlocks` increased during the window.\n\n### Why it matters\nDeadlocks abort a transaction to break a cycle. Sustained deadlocks point to inconsistent access order.\n\n### Triage\n1. Inspect server log for deadlock details.\n2. Look at application access patterns.\n\n### Remediation\n- Fix access ordering.\n\n### Tuning\n- Fires on any non-zero count.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

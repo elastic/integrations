@@ -1,0 +1,125 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies deletion of the AWS account password policy via DeleteAccountPasswordPolicy. The account password policy enforces minimum password requirements (length, complexity, rotation, and reuse) for all IAM users in the account. Deleting it removes those requirements account-wide, weakening authentication and easing follow-on credential-based attacks. This is an account-level change that legitimately occurs only during deliberate administration, so its deletion by an unexpected principal warrants review.",
+        "false_positives": [
+            "Identity and platform teams or infrastructure-as-code may delete or replace the account password policy during governance changes. Verify the principal in `aws.cloudtrail.user_identity.arn` against approved change records, and confirm whether a replacement policy was applied shortly after. Known administration roles and automation can be excluded after validation."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "aws.cloudtrail.user_identity.session_context.session_issuer.arn",
+                "aws.cloudtrail.request_parameters",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS IAM Account Password Policy Deleted",
+        "note": "## Triage and analysis\n\n### Investigating AWS IAM Account Password Policy Deleted\n\nThe account password policy is an account-wide control that sets minimum password length, character complexity, maximum age, and reuse-prevention for all IAM users. `DeleteAccountPasswordPolicy` removes it entirely, reverting the account to no enforced password requirements \u2014 which weakens authentication and can facilitate credential attacks or mask weak credentials created later. Because this is a single, account-level, high-impact change, it should be deliberate and rare.\n\n### Possible investigation steps\n\n- Identify the actor in `aws.cloudtrail.user_identity.arn`, `aws.cloudtrail.user_identity.type`, and `aws.cloudtrail.user_identity.session_context.session_issuer.arn`, and review `source.ip` / `user_agent.original`.\n- Determine whether a replacement policy was set shortly after (`UpdateAccountPasswordPolicy`) or whether the account was left with no policy.\n- Confirm whether the change aligns with an approved governance change.\n- Correlate with recent activity by the same principal, such as creation of IAM users or login profiles, or other defense-evasion actions (CloudTrail/logging changes) that may indicate a broader effort to weaken controls.\n\n### False positive analysis\n\n- Approved governance or infrastructure-as-code may delete/replace the policy. Confirm the change is expected and exclude known administration roles or automation on `aws.cloudtrail.user_identity.arn` after validation.\n- Note: AWS GuardDuty also surfaces account password policy changes via `Stealth:IAMUser/PasswordPolicyChange`; correlate if GuardDuty is enabled.\n\n### Response and remediation\n\n- If the deletion is unauthorized, restore an appropriate account password policy (`UpdateAccountPasswordPolicy`) that meets your organization's standards, and review any IAM users or login profiles created while no policy was enforced.\n- Rotate or restrict credentials for the principal if compromise is suspected, and constrain `iam:DeleteAccountPasswordPolicy` and `iam:UpdateAccountPasswordPolicy` to a small set of trusted administrators.\n\n",
+        "query": "data_stream.dataset: \"aws.cloudtrail\"\n    and event.provider: \"iam.amazonaws.com\"\n    and event.action: \"DeleteAccountPasswordPolicy\"\n    and event.outcome: \"success\"\n    and not aws.cloudtrail.user_identity.type: \"AWSService\"\n    and not user_agent.original: (*terraform* or *pulumi* or *ansible*)\n    and not aws.cloudtrail.user_identity.arn: (*terraform* or *pulumi* or *ansible*)\n    and not source.address: (\"cloudformation.amazonaws.com\" or \"servicecatalog.amazonaws.com\")\n",
+        "references": [
+            "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_passwords_account-policy.html",
+            "https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeleteAccountPasswordPolicy.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^6.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.arn",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.address",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "283f6c2a-9811-4239-9a40-52b066c67f99",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS IAM",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1556",
+                        "name": "Modify Authentication Process",
+                        "reference": "https://attack.mitre.org/techniques/T1556/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "283f6c2a-9811-4239-9a40-52b066c67f99_1",
+    "type": "security-rule"
+}

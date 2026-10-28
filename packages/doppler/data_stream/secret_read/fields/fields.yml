@@ -1,0 +1,56 @@
+- name: doppler.actor.kind
+  type: keyword
+  description: |-
+    Principal type of the actor that performed the action: `user`, `apiToken`,
+    `serviceAccount`, or `bot`. Preserved from the vendor payload when `doppler.user`
+    is renamed to `doppler.actor`. Use it to distinguish human from non-human
+    (token/service-account/bot) activity in detections.
+- name: doppler.actor.token_type.id
+  type: keyword
+  description: Identifier of the API token type, when the actor is an API token.
+- name: doppler.actor.token_type.name
+  type: keyword
+  description: Name of the API token type, when the actor is an API token.
+- name: doppler.actor.bot_type
+  type: keyword
+  description: Bot type, when the actor is a Doppler bot.
+- name: doppler.workplace.id
+  type: keyword
+  description: Identifier of the Doppler workplace (tenant) the event belongs to.
+- name: doppler.workplace.name
+  type: keyword
+  description: Name of the Doppler workplace (tenant) the event belongs to.
+- name: doppler.secret_read.method
+  type: keyword
+  description: |-
+    Access channel used to read the secrets: `API`, `CLI`, or `Dashboard`.
+- name: doppler.secret_read.secret_count
+  type: long
+  description: |-
+    Number of secrets read in this event (count of well-formed entries, including
+    any duplicates across projects/environments). Primary field for bulk-read detections.
+- name: doppler.secret_read.secret_names
+  type: keyword
+  description: |-
+    Distinct names of the secrets that were read. Multi-valued; use `MV_EXPAND` in
+    ES|QL to pivot on individual secrets.
+- name: doppler.secret_read.projects
+  type: keyword
+  description: |-
+    Distinct projects whose secrets were read. Multi-valued; a high cardinality in
+    one event indicates a cross-project read.
+- name: doppler.secret_read.environments
+  type: keyword
+  description: Distinct environments whose secrets were read. Multi-valued.
+- name: doppler.secret_read.configs
+  type: keyword
+  description: Distinct configs whose secrets were read. Multi-valued.
+- name: doppler.secret_read.secrets
+  type: flattened
+  description: |-
+    The expanded list of secrets that were read. Each entry has `project`,
+    `environment`, `config`, `name`, `version`, and (for inherited values) an
+    `inherited_from` reference of `{project, environment, config}`. Vendor sends
+    abbreviated keys (`p`, `e`, `c`, `s`, `v`, `r`) which the pipeline expands. As a
+    `flattened` field this is for investigation; prefer the sidecar arrays above for
+    ES|QL detections.

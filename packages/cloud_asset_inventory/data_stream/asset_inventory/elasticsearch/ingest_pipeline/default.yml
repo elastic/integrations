@@ -1,0 +1,23 @@
+---
+description: |
+  Default pipeline for cloud_asset_inventory.asset_inventory.
+  Moves the legacy `entity.attributes` bag (emitted by pre-rename cloudbeat) to `entity.Details`.
+  `entity.attributes.*` collides with the Entity Store's reserved typed leaves and breaks generic
+  entity extraction; `entity.Details` is a safe flattened home. Once cloudbeat emits `entity.Details`
+  directly, this rename is a no-op (`ignore_missing`).
+processors:
+  - rename:
+      field: entity.attributes
+      target_field: entity.Details
+      ignore_missing: true
+      tag: rename_entity_attributes_to_details
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

@@ -1,0 +1,15 @@
+wait_for_data_timeout: 1m
+input: cel
+service: xm_cyber
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  api_key: mock-api-key
+data_stream:
+  vars:
+    interval: 24h
+    page_size: 2
+    preserve_original_event: true
+# Full-fetch every interval: each cycle returns 3 records (2 from page 1 + 1 from
+# nextLink page 2). Multiple cycles run within wait_for_data_timeout, so use min_count.
+assert:
+  min_count: 3

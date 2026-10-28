@@ -1,0 +1,19 @@
+input: cel
+service: cel
+data_stream:
+  vars:
+    url: http://{{Hostname}}:{{Port}}/v1/feeds/download/full?targetFormat=ECSV1&mode=url
+    api_token: test-token
+    interval: 1m
+    http_client_timeout: 5m
+    preserve_original_event: true
+wait_for_data_timeout: 90s
+# Exercises the preserve_original_event=true path end-to-end: the CEL input adds
+# the `preserve_original_event` tag inside each event, and the ingest pipeline
+# copies the raw line into event.original. Asserting event.original is present
+# guards the full agent -> pipeline path (the pipeline test only covers the
+# pipeline in isolation, with the tag injected directly).
+assert:
+  hit_count: 11
+  fields_present:
+    - event.original

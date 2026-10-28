@@ -1,0 +1,47 @@
+{
+  "attributes": {
+    "name": "[Traefik OTel] Service latency under 200 ms 99.5% rolling 30 days",
+    "description": "This SLO tracks the request latency of Traefik proxy at the service level via OTel metrics, ensuring that 99.5% of requests complete within 200 milliseconds over a rolling period of 30 days. A breach indicates backend slowness, resource contention, or network issues affecting user experience.",
+    "indicator": {
+      "type": "sli.histogram.custom",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"traefik.otel\"",
+        "good": {
+          "field": "traefik_service_request_duration_seconds",
+          "aggregation": "range",
+          "from": 0,
+          "to": 0.2
+        },
+        "total": {
+          "field": "traefik_service_request_duration_seconds",
+          "aggregation": "value_count"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995
+    },
+    "tags": [
+      "traefik",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.host.name"
+    ],
+    "artifacts": {
+      "dashboards": [
+        { "id": "traefik_otel-overview" },
+        { "id": "traefik_otel-services" }
+      ]
+    }
+  },
+  "id": "traefik_otel-service-latency-under-200ms-99.5-Rolling30Days",
+  "type": "slo_template"
+}

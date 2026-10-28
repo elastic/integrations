@@ -47,6 +47,22 @@ Before using any AWS integration you will need:
 
 For more details about these requirements, refer to the [AWS integration documentation](https://docs.elastic.co/integrations/aws#requirements).
 
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/docs/reference/fleet/install-elastic-agents). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to collect data from AWS and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
+### Agentless deployment
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html)
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+> **Note:** Agentless deployment is currently supported for Lambda metrics only. Log collection is not available via agentless and requires a traditional Elastic Agent deployment.
+
 ## Setup
 
 Use this integration if you only need to collect data from the AWS Lambda service.
@@ -328,6 +344,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | aws.lambda.tracing.xray_trace_id | The X-Ray trace ID for the Lambda function invocation. | keyword |
 | aws.lambda.users |  | flattened |
 | aws.lambda.version | The version of the Lambda function. | keyword |
+| aws.lambda.xray_trace_id | The X-Ray trace ID for the Lambda function invocation, extracted from Powertools-style logs. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

@@ -1,0 +1,48 @@
+- name: contrast_security
+  type: group
+  description: Contrast Security ADR vendor-specific fields not covered by ECS.
+  fields:
+    - name: event_type
+      type: keyword
+      description: Contrast event type discriminator (e.g. contrast_security_incidentalert).
+    - name: status
+      type: keyword
+      description: Incident lifecycle status as reported by Contrast (e.g. OPEN, CLOSED).
+    - name: related_rules
+      type: keyword
+      description: Contrast rule names involved in the incident.
+    - name: recommended_actions
+      type: text
+      description: Contrast remediation guidance for the incident, as templated runbook text.
+    - name: http_source_ip
+      type: group
+      description: Source IP addresses observed in the incident, with block status and hit count.
+      fields:
+        - name: ipAddress
+          type: ip
+          description: Source IP address observed in the incident.
+        - name: blocked
+          type: boolean
+          description: Whether Contrast blocked traffic from this source IP.
+        - name: count
+          type: keyword
+          description: Number of attack events observed from this source IP.
+    - name: servers
+      type: group
+      description: Application servers affected by the incident.
+      fields:
+        - name: hostname
+          type: keyword
+          description: Hostname of the affected server.
+        - name: environment
+          type: keyword
+          description: Deployment environment of the affected server.
+        - name: id
+          type: keyword
+          description: Contrast server identifier.
+        - name: operatingSystem
+          type: keyword
+          description: Operating system of the affected server.
+    - name: issue_ids
+      type: keyword
+      description: Contrast issue identifiers associated with the incident.

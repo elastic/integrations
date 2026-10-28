@@ -127,19 +127,27 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      description: Copy source.address to either source.ip or source.domain
+      tag: convert_source_address
       field: source.address
+      target_field: source.ip
       type: ip
       ignore_missing: true
       on_failure:
-        - append:
-            field: related.hosts
-            value: '{{{source.address}}}'
-            allow_duplicates: false
+        - set:
+            field: source.domain
+            copy_from: source.address
+            ignore_empty_value: true
   - append:
       field: related.ip
-      value: '{{{source.address}}}'
+      value: '{{{source.ip}}}'
       allow_duplicates: false
-      if : "ctx.related?.hosts == null"
+      if: ctx.source?.ip != null
+  - append:
+      field: related.hosts
+      value: '{{{source.domain}}}'
+      allow_duplicates: false
+      if: ctx.source?.domain != null
   - rename:
       field: response.lastNotified
       target_field: mongodb_atlas.alert.last_notified.time

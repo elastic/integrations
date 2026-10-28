@@ -9,6 +9,9 @@ ignore_older: {{ignore_older}}
 {{#if language}}
 language: {{language}}
 {{/if}}
+{{#if preserve_original_event}}
+include_xml: true
+{{/if}}
 tags:
 {{#each tags as |tag i|}}
   - {{tag}}
@@ -19,9 +22,36 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-include_xml: true
-{{#if processors.length}}
 processors:
+- add_fields:
+    target: event
+    fields:
+      module: system
+- decode_xml:
+    when:
+      and:
+        - has_fields:
+            - winlog.event_data.TaskContent
+        - equals:
+            winlog.provider_name: Microsoft-Windows-Security-Auditing
+    field: winlog.event_data.TaskContent
+    target_field: winlog._tmp.scheduled_task.task_content
+    to_lower: true
+    ignore_missing: true
+    ignore_failure: true
+- decode_xml:
+    when:
+      and:
+        - has_fields:
+            - winlog.event_data.TaskContentNew
+        - equals:
+            winlog.provider_name: Microsoft-Windows-Security-Auditing
+    field: winlog.event_data.TaskContentNew
+    target_field: winlog._tmp.scheduled_task.task_content_new
+    to_lower: true
+    ignore_missing: true
+    ignore_failure: true
+{{#if processors.length}}
 {{processors}}
 {{/if}}
 {{custom}}

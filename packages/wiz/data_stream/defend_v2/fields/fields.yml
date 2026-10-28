@@ -1,0 +1,303 @@
+- name: wiz.defend_v2
+  type: group
+  fields:
+    - name: id
+      type: keyword
+      description: The unique identifier of the detection.
+    - name: type
+      type: keyword
+      description: The detection type.
+    - name: origins
+      type: keyword
+      description: The data sources that contributed to the detection.
+    - name: severity
+      type: keyword
+      description: "The severity of the detection. Possible values: CRITICAL, HIGH, MEDIUM, LOW, INFORMATIONAL."
+    - name: description
+      type: text
+      description: A Markdown-formatted description of the detection.
+    - name: created_at
+      type: date
+      description: The timestamp when the detection was created.
+    - name: updated_at
+      type: date
+      description: The timestamp when the detection was last updated.
+    - name: actors
+      type: group
+      description: The identities (users or service accounts) associated with the detection.
+      fields:
+        - name: id
+          type: keyword
+          description: The unique identifier of the actor.
+        - name: name
+          type: keyword
+          description: The name of the actor.
+        - name: external_id
+          type: keyword
+          description: The cloud provider's identifier for the actor.
+        - name: provider_unique_id
+          type: keyword
+          description: The globally unique identifier for the actor as assigned by the cloud provider.
+        - name: type
+          type: keyword
+          description: The type of actor.
+    - name: resources
+      type: group
+      description: The cloud resources associated with the detection.
+      fields:
+        - name: id
+          type: keyword
+          description: The unique identifier of the resource.
+        - name: name
+          type: keyword
+          description: The name of the resource.
+        - name: external_id
+          type: keyword
+          description: The cloud provider's identifier for the resource.
+        - name: provider_unique_id
+          type: keyword
+          description: The globally unique identifier for the resource as assigned by the cloud provider.
+        - name: type
+          type: keyword
+          description: The type of resource.
+    - name: cloud_accounts
+      type: group
+      description: The cloud accounts associated with the detection.
+      fields:
+        - name: id
+          type: keyword
+          description: The unique identifier of the cloud account.
+        - name: name
+          type: keyword
+          description: The name of the cloud account.
+        - name: external_id
+          type: keyword
+          description: The cloud provider's identifier for the account.
+        - name: cloud_provider
+          type: keyword
+          description: The cloud provider of the account.
+    - name: cloud_organizations
+      type: group
+      description: The cloud organizations associated with the detection.
+      fields:
+        - name: id
+          type: keyword
+          description: The unique identifier of the cloud organization.
+        - name: name
+          type: keyword
+          description: The name of the cloud organization.
+        - name: external_id
+          type: keyword
+          description: The cloud provider's identifier for the organization.
+        - name: cloud_provider
+          type: keyword
+          description: The cloud provider of the organization.
+    - name: primary_resource
+      type: group
+      description: The main resource affected by the detection.
+      fields:
+        - name: id
+          type: keyword
+          description: The unique identifier of the primary resource.
+        - name: name
+          type: keyword
+          description: The name of the primary resource.
+        - name: type
+          type: keyword
+          description: The type of the primary resource.
+        - name: external_id
+          type: keyword
+          description: The cloud provider's identifier for the primary resource.
+        - name: region
+          type: keyword
+          description: The cloud region where the primary resource is located.
+    - name: issue
+      type: group
+      description: The Wiz issue linked to this detection.
+      fields:
+        - name: id
+          type: keyword
+          description: The unique identifier of the linked issue.
+    - name: primary_actor
+      type: group
+      description: The main identity associated with the detection.
+      fields:
+        - name: id
+          type: keyword
+          description: The unique identifier of the primary actor.
+        - name: name
+          type: keyword
+          description: The name of the primary actor.
+        - name: type
+          type: keyword
+          description: The type of the primary actor.
+        - name: native_type
+          type: keyword
+          description: The actor type as defined by the cloud provider.
+        - name: email
+          type: keyword
+          description: The email address of the primary actor.
+        - name: user_agent
+          type: keyword
+          description: The user agent string associated with the actor's actions.
+        - name: mfa
+          type: boolean
+          description: Whether the actor authenticated with multi-factor authentication.
+        - name: federated
+          type: boolean
+          description: Whether the actor authenticated via a federated identity provider.
+        - name: friendly_name
+          type: keyword
+          description: A human-readable display name for the actor.
+        - name: access_key_id
+          type: keyword
+          description: The access key ID used by the actor, if applicable.
+        - name: external_id
+          type: keyword
+          description: The cloud provider's identifier for the actor.
+        - name: provider_unique_id
+          type: keyword
+          description: The globally unique identifier for the actor as assigned by the cloud provider.
+        - name: has_high_privileges
+          type: boolean
+          description: Whether the actor has high-privilege access.
+        - name: has_admin_privileges
+          type: boolean
+          description: Whether the actor has administrator-level access.
+        - name: has_high_kubernetes_privileges
+          type: boolean
+          description: Whether the actor has high-privilege access in Kubernetes.
+        - name: has_admin_kubernetes_privileges
+          type: boolean
+          description: Whether the actor has administrator-level access in Kubernetes.
+        - name: inactive_in_last_90_days
+          type: boolean
+          description: Whether the actor has been inactive for the last 90 days.
+        - name: acting_as
+          type: group
+          description: The identity the primary actor assumed when performing the detected actions.
+          fields:
+            - name: id
+              type: keyword
+              description: The unique identifier of the assumed identity.
+            - name: name
+              type: keyword
+              description: The name of the assumed identity.
+            - name: type
+              type: keyword
+              description: The type of the assumed identity.
+            - name: friendly_name
+              type: keyword
+              description: A human-readable display name for the assumed identity.
+            - name: access_key_id
+              type: keyword
+              description: The access key ID associated with the assumed identity.
+            - name: external_id
+              type: keyword
+              description: The cloud provider's identifier for the assumed identity.
+            - name: provider_unique_id
+              type: keyword
+              description: The globally unique identifier for the assumed identity as assigned by the cloud provider.
+        - name: cloud_account
+          type: group
+          description: The cloud account the primary actor belongs to.
+          fields:
+            - name: id
+              type: keyword
+              description: The unique identifier of the cloud account.
+            - name: external_id
+              type: keyword
+              description: The cloud provider's identifier for the account.
+            - name: name
+              type: keyword
+              description: The name of the cloud account.
+            - name: cloud_provider
+              type: keyword
+              description: The cloud provider of the account.
+    - name: triggering_events
+      type: group
+      description: The events that triggered the detection.
+      fields:
+        - name: total_count
+          type: long
+          description: The total number of triggering events.
+        - name: nodes
+          type: group
+          description: A list of triggering events.
+          fields:
+            - name: id
+              type: keyword
+              description: The unique identifier of the event.
+            - name: description
+              type: text
+              description: A description of the event.
+            - name: actor_ip
+              type: ip
+              description: The IP address of the actor that triggered the event.
+            - name: timestamp
+              type: date
+              description: The timestamp when the event occurred.
+            - name: raw_audit_log_record
+              type: flattened
+              description: The raw audit log data associated with the event. The structure varies by event source.
+            - name: command_line
+              type: keyword
+              description: The command line executed during the event, if applicable.
+            - name: runtime_program
+              type: group
+              description: The runtime program that executed the command.
+              fields:
+                - name: name
+                  type: keyword
+                  description: The name of the runtime program.
+            - name: parent_runtime_program
+              type: group
+              description: The parent process of the runtime program.
+              fields:
+                - name: name
+                  type: keyword
+                  description: The name of the parent runtime program.
+    - name: rule_match
+      type: group
+      description: The threat detection rule that matched and triggered this detection.
+      fields:
+        - name: rule
+          type: group
+          description: The matched rule.
+          fields:
+            - name: id
+              type: keyword
+              description: The unique identifier of the rule.
+            - name: name
+              type: keyword
+              description: The name of the rule.
+            - name: builtin
+              type: boolean
+              description: Whether the rule is a built-in Wiz rule or a custom rule.
+            - name: security_sub_categories
+              type: group
+              description: The security sub-categories the rule is mapped to.
+              fields:
+                - name: id
+                  type: keyword
+                  description: The unique identifier of the sub-category.
+                - name: title
+                  type: keyword
+                  description: The title of the sub-category.
+                - name: category
+                  type: group
+                  description: The parent category of the sub-category.
+                  fields:
+                    - name: id
+                      type: keyword
+                      description: The unique identifier of the category.
+                    - name: name
+                      type: keyword
+                      description: The name of the category.
+                    - name: framework
+                      type: group
+                      description: The security framework the category belongs to.
+                      fields:
+                        - name: id
+                          type: keyword
+                          description: The unique identifier of the framework.

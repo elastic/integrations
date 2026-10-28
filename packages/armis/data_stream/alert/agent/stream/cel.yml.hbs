@@ -81,7 +81,7 @@ program: |
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
             resp.Body.decode_json().as(body, {
-              "events" : body.?data.results.orValue([]).map(e,
+              "events" : body.?data.results.orValue([]).as(r, r != null ? r : []).map(e,
                 {
                   "message": e.encode_json()
                 }
@@ -89,7 +89,7 @@ program: |
               "is_token_valid": true,
               "offset":body.?data.next.orValue(null),
               "cursor": {
-                ?"last_timestamp": (has(body.?data.results) && size(body.data.results) > 0) ?
+                ?"last_timestamp": (has(body.?data.results) && body.data.results != null && size(body.data.results) > 0) ?
                   (has(state.?cursor.last_timestamp) ?
                     optional.of(
                       max([

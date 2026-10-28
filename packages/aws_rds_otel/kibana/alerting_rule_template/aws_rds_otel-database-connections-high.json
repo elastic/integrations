@@ -1,0 +1,48 @@
+{
+  "id": "aws_rds_otel-database-connections-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when average database connections exceed a threshold. Uses the Average statistic per AWS recommended alarms. CloudWatch does not publish max_connections — set the threshold against your engine limit and normal baseline.",
+    "name": "[AWS RDS OTel] Database connections high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_rds",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Database Connections High\n\n### Triage\n1. Compare average connections to the engine `max_connections` setting (not in CloudWatch).\n2. Check for connection leaks — idle sessions accumulating over time.\n3. Review application deploys or traffic spikes that increased connection demand.\n4. Inspect `FreeableMemory` — each connection consumes memory.\n\n### Mitigation\n- Enable connection pooling (PgBouncer, RDS Proxy, application pool).\n- Fix connection leaks in application code.\n- Increase `max_connections` only if memory allows; prefer pooling first."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.rds.otel-*\n| WHERE Namespace == \"AWS/RDS\"\n    AND MetricName == \"DatabaseConnections\"\n    AND stat == \"Average\"\n| STATS avg_connections = AVG(`metrics.amazonaws.com/AWS/RDS/DatabaseConnections`)\n    BY DBInstanceIdentifier, cloud.region\n// Average connection count — set relative to max_connections and baseline (default: 100)\n| WHERE avg_connections > 100\n| SORT avg_connections DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "DBInstanceIdentifier",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

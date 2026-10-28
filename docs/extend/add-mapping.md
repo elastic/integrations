@@ -57,7 +57,7 @@ You can rely on the [ecs@mappings](https://github.com/elastic/elasticsearch/blob
 * If your integration supports older versions (<8.13.0):
 You can import ECS mappings dynamically by setting `import_mappings: true` in the ECS section of the `_dev/build/build.yml` file in the root of the package directory. This introduces a [dynamic mapping](https://github.com/elastic/elastic-package/blob/f439b96a74c27c5adfc3e7810ad584204bfaf85d/internal/builder/_static/ecs_mappings.yaml) with most of the ECS definitions. Using this method means that, just like the previous approach, ECS fields don’t need to be defined in your integration, they are dynamically integrated into the package at build time. Explicitly defined ECS fields can be used and will also overwrite this mechanism.
 
-    An example of the aformentioned `build.yml` file for this method:
+    An example of the aforementioned `build.yml` file for this method:
 
     ```yaml
     dependencies:

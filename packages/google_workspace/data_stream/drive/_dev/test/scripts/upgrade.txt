@@ -1,0 +1,200 @@
+# Test that upgrading from 3.9.1 (declarative httpjson) to ${CURRENT_VERSION}
+# (run_as_cel) preserves the drive stream cursor and continues incremental
+# collection.
+#
+# 3.9.1 is hardcoded as the last release before the run_as_cel migration, not
+# ${PREVIOUS_VERSION}, which would drift on every package bump.
+#
+# Phase 1 (3.9.1, declarative httpjson): collect 2 activities with id.time
+# 2024-01-15T10:06:00.000Z and 2024-01-15T10:01:00.000Z. The API returns the
+# newest first, so the cursor advances to 2024-01-15T10:06:00.000Z.
+#
+# After upgrade_package_latest, the phase 2 mock only returns the new activity
+# when startTime is the preserved httpjson cursor (2024-01-15T10:06*). A reset
+# to initial_interval uses a 2026-* lookback, which falls through to a response
+# with no items.
+#
+# Expected outcome when the cursor is preserved: 3 documents with the unique
+# qualifiers 1, 2 and 3, and only the last tagged run_as_cel. Expected failure
+# when the cursor resets: the count stays at 2.
+#
+# The service account key is for testing only. It is generated for each run by
+# the creds container, because the host may not have openssl, is only trusted
+# by the mock server and protects nothing. No key is stored in the repository.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+[breaking_change] skip 'Cannot upgrade across breaking change.'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Generate the test-only service account key, leaving creds/key.pem. docker_up
+# returns once the container is running, so wait for it to exit and check that
+# it succeeded; docker_wait_exit does not fail on a non-zero exit code.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} creds
+docker_wait_exit -timeout 2m creds
+stdout 'creds exited with 0'
+exec jq -R -s '{input: "httpjson", vars: {delegated_account: "test@example.com", api_host: "http://gw-mock:8080", initial_interval: "1h", enable_request_tracer: false, jwt_json: ({type: "service_account", project_id: "upgrade-test", private_key_id: "0000", private_key: ., client_email: "foo@bar.com", client_id: "1", token_uri: "http://gw-mock:8080/token"} | tojson)}, data_stream: {vars: {interval: "30s", lag_time: "3m", preserve_original_event: false}}}' creds/key.pem
+cp stdout test_config.yaml
+docker_down creds
+
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} gw-mock
+
+install_package_from_registry -profile ${CONFIG_PROFILES}/${PROFILE} ${PACKAGE_NAME} 3.9.1
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} -version 3.9.1 test_config.yaml DATA_STREAM_NAME
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs_pre_upgrade.json
+
+exec jq '[.hits.hits[]._source.event.id | select(. != null)] | sort | join(",")' got_docs_pre_upgrade.json
+stdout '"1,2"'
+
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+upgrade_package_latest -profile ${CONFIG_PROFILES}/${PROFILE}
+stdout 'upgraded package '${PACKAGE_NAME}
+
+docker_down gw-mock
+cp gw-mock/config-phase2.yml gw-mock/config.yml
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} gw-mock
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs_post_upgrade.json
+
+exec jq '[.hits.hits[]._source.event.id | select(. != null)] | unique | sort | join(",")' got_docs_post_upgrade.json
+stdout '"1,2,3"'
+
+exec jq '[.hits.hits[]._source | select(.event.id != null)] | length' got_docs_post_upgrade.json
+stdout '^3$'
+
+# Only the document collected after the upgrade comes from the CEL program.
+exec jq '[.hits.hits[]._source | select(.tags != null and (.tags | index("run_as_cel") != null)) | .event.id] | join(",")' got_docs_post_upgrade.json
+stdout '"3"'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down gw-mock
+
+-- creds/docker-compose.yml --
+# Generates a TEST-ONLY RSA key for the mock Google service account. The key is
+# created fresh for each run, is trusted only by the mock server and protects
+# nothing. It is made world-readable so that the host user can read it when the
+# container runs as root.
+version: '2.3'
+services:
+  creds:
+    image: alpine:3.20
+    volumes:
+      - .:/out
+    command:
+      - /bin/sh
+      - -c
+      - |
+        apk add --no-cache openssl &&
+        openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out /out/key.pem &&
+        chmod 644 /out/key.pem
+-- gw-mock/docker-compose.yml --
+version: '2.3'
+services:
+  gw-mock:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: gw-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- gw-mock/config.yml --
+rules:
+  - path: /token
+    methods: [POST]
+    query_params:
+      grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
+      assertion: "{assertion:.*}"
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token":"1/fFAGRNJru1FTz70BzhT3Zg","expires_in":3920,"token_type":"Bearer","scope":"https://www.googleapis.com/auth/admin.reports.audit.readonly"}
+  - path: /admin/reports/v1/activity/users/all/applications/drive
+    methods: [GET]
+    query_params:
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"kind":"admin#reports#activities","items":[{"kind":"admin#reports#activity","id":{"time":"2024-01-15T10:06:00.000Z","uniqueQualifier":"2","applicationName":"drive","customerId":"C03az79cb"},"actor":{"callerType":"USER","email":"foo@bar.com","profileId":"1"},"ownerDomain":"example.com","ipAddress":"192.0.2.10","events":[{"type":"access","name":"view","parameters":[{"name":"doc_id","value":"1234"},{"name":"primary_event","boolValue":true}]}]},{"kind":"admin#reports#activity","id":{"time":"2024-01-15T10:01:00.000Z","uniqueQualifier":"1","applicationName":"drive","customerId":"C03az79cb"},"actor":{"callerType":"USER","email":"foo@bar.com","profileId":"1"},"ownerDomain":"example.com","ipAddress":"192.0.2.10","events":[{"type":"access","name":"view","parameters":[{"name":"doc_id","value":"1234"},{"name":"primary_event","boolValue":true}]}]}]}
+-- gw-mock/config-phase2.yml --
+rules:
+  - path: /token
+    methods: [POST]
+    query_params:
+      grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
+      assertion: "{assertion:.*}"
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token":"1/fFAGRNJru1FTz70BzhT3Zg","expires_in":3920,"token_type":"Bearer","scope":"https://www.googleapis.com/auth/admin.reports.audit.readonly"}
+  # Cursor preserved: startTime is the httpjson cursor from phase 1.
+  - path: /admin/reports/v1/activity/users/all/applications/drive
+    methods: [GET]
+    query_params:
+      startTime: "{startTime:2024-01-15T10:06.*}"
+      endTime: "{endTime:.*}"
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"kind":"admin#reports#activities","items":[{"kind":"admin#reports#activity","id":{"time":"2024-01-15T10:59:00.000Z","uniqueQualifier":"3","applicationName":"drive","customerId":"C03az79cb"},"actor":{"callerType":"USER","email":"foo@bar.com","profileId":"1"},"ownerDomain":"example.com","ipAddress":"192.0.2.10","events":[{"type":"access","name":"view","parameters":[{"name":"doc_id","value":"1234"},{"name":"primary_event","boolValue":true}]}]}]}
+  # Any other startTime, including a reset to initial_interval and every poll
+  # after the new activity, has nothing to return.
+  - path: /admin/reports/v1/activity/users/all/applications/drive
+    methods: [GET]
+    query_params:
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"kind":"admin#reports#activities"}

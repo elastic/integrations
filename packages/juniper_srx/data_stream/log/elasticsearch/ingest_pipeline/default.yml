@@ -24,7 +24,7 @@ processors:
       # 3. SRX System structured-brief and unstructured log patterns (further parsing done in system.yml)
       - '^%{SYSLOG_PREFIX}?%{CUSTOM_DATE:_temp_.raw_date}\s%{SYSLOGHOST:syslog_hostname}\s%{GREEDYDATA:_temp_.unparsed.message}$'
       pattern_definitions:
-        SYSLOG_PREFIX: '<%{POSINT:syslog_pri}>(?:\d{1,3}\s)'
+        SYSLOG_PREFIX: '<%{POSINT:syslog_pri}>(?:\d{1,3})?%{SPACE}'
         CUSTOM_DATE: "%{TIMESTAMP_ISO8601}|(%{MONTH}%{SPACE}%{MONTHDAY}%{SPACE}%{TIME})"
         JUNIPER_TRAFFIC_PROCESS: "RT_FLOW|RT_UTM|RT_IDP|RT_IDS|RT_AAMW|RT_SECINTEL"
 
@@ -220,6 +220,15 @@ processors:
       tag: rename_juniper_srx_interface_name_to_observer_ingress_interface_name_4023c7b6
       field: juniper.srx.interface_name
       target_field: observer.ingress.interface.name
+      ignore_missing: true
+  # interface-index is the Junos internal IFD index. It is a different numbering space from the
+  # SNMP ifIndex that SNMP_TRAP_LINK_UP/DOWN report as snmp-interface-index, so the two are not
+  # merged into one field; snmp_interface_index stays in the vendor namespace.
+  # Interface up/down notifications carry no flow direction, so it sits under ingress alongside the interface name.
+  - rename:
+      tag: rename_juniper_srx_interface_index_to_observer_ingress_interface_id
+      field: juniper.srx.interface_index
+      target_field: observer.ingress.interface.id
       ignore_missing: true
   - rename:
       tag: rename_juniper_srx_source_zone_name_to_observer_ingress_zone_ebc8c681

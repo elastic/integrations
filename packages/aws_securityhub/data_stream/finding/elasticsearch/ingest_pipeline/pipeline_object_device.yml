@@ -3,17 +3,18 @@ description: Pipeline for processing Device object.
 # Device object docs: https://schema.ocsf.io/1.5.0/objects/device
 processors:
   - foreach:
+      tag: foreach_aws_securityhub_finding_device_agent_list_f9062e12
       field: aws_securityhub.finding.device.agent_list
       if: ctx.aws_securityhub?.finding?.device?.agent_list instanceof List
       processor:
         convert:
           field: _ingest._value.type_id
-          tag: convert_device_agent_list_type_id_to_string
+          tag: convert_device_agent_list_type_id_to_string_b38c1715
           type: string
           ignore_missing: true
   - date:
       field: aws_securityhub.finding.device.boot_time_dt
-      tag: date_device_boot_time_dt
+      tag: date_device_boot_time_dt_748c9b94
       target_field: aws_securityhub.finding.device.boot_time_dt
       formats:
         - ISO8601
@@ -22,39 +23,45 @@ processors:
       if: ctx.aws_securityhub?.finding?.device?.boot_time_dt != null && ctx.aws_securityhub.finding.device.boot_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_boot_time_dt_2def1d61
             field: aws_securityhub.finding.device.boot_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_0bd0ede3
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: aws_securityhub.finding.device.boot_time
-      tag: date_device_boot_time
+      tag: date_device_boot_time_ebdf0a57
       target_field: aws_securityhub.finding.device.boot_time
       formats:
         - UNIX_MS
       if: ctx.aws_securityhub?.finding?.device?.boot_time != null && ctx.aws_securityhub.finding.device.boot_time != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_boot_time_0de407fd
             field: aws_securityhub.finding.device.boot_time
             ignore_missing: true
         - append:
+            tag: append_error_message_74c0f2f6
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.container.size
-      tag: convert_finding_device_container_size_to_long
+      tag: convert_finding_device_container_size_to_long_0ce3f6a6
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_container_size_6dfc9845
             field: aws_securityhub.finding.device.container.size
         - append:
+            tag: append_error_message_bdefe17a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: aws_securityhub.finding.device.created_time_dt
-      tag: date_device_created_time_dt
+      tag: date_device_created_time_dt_18f90dd0
       target_field: aws_securityhub.finding.device.created_time_dt
       formats:
         - ISO8601
@@ -63,28 +70,32 @@ processors:
       if: ctx.aws_securityhub?.finding?.device?.created_time_dt != null && ctx.aws_securityhub.finding.device.created_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_created_time_dt_de70fb51
             field: aws_securityhub.finding.device.created_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_aaf66be9
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: aws_securityhub.finding.device.created_time
-      tag: date_device_created_time
+      tag: date_device_created_time_9d15828a
       target_field: aws_securityhub.finding.device.created_time
       formats:
         - UNIX_MS
       if: ctx.aws_securityhub?.finding?.device?.created_time != null && ctx.aws_securityhub.finding.device.created_time != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_created_time_96665f61
             field: aws_securityhub.finding.device.created_time
             ignore_missing: true
         - append:
+            tag: append_error_message_01f89738
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: aws_securityhub.finding.device.first_seen_time_dt
-      tag: date_device_first_seen_time_dt
+      tag: date_device_first_seen_time_dt_8b85660f
       target_field: aws_securityhub.finding.device.first_seen_time_dt
       formats:
         - ISO8601
@@ -93,205 +104,237 @@ processors:
       if: ctx.aws_securityhub?.finding?.device?.first_seen_time_dt != null && ctx.aws_securityhub.finding.device.first_seen_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_first_seen_time_dt_e349e4f5
             field: aws_securityhub.finding.device.first_seen_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_207c682f
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: aws_securityhub.finding.device.first_seen_time
-      tag: date_device_first_seen_time
+      tag: date_device_first_seen_time_9ba54df1
       target_field: aws_securityhub.finding.device.first_seen_time
       formats:
         - UNIX_MS
       if: ctx.aws_securityhub?.finding?.device?.first_seen_time != null && ctx.aws_securityhub.finding.device.first_seen_time != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_first_seen_time_c6cb2c05
             field: aws_securityhub.finding.device.first_seen_time
             ignore_missing: true
         - append:
+            tag: append_error_message_f9a2fe32
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.hw_info.cpu_architecture_id
-      tag: convert_device_hw_info_cpu_architecture_id_to_string
+      tag: convert_device_hw_info_cpu_architecture_id_to_string_37d07fdc
       type: string
       ignore_missing: true
   - convert:
       field: aws_securityhub.finding.device.hw_info.cpu_bits
-      tag: convert_device_hw_info_cpu_bits_to_long
+      tag: convert_device_hw_info_cpu_bits_to_long_6669e730
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_hw_info_cpu_bits_0bff0b24
             field: aws_securityhub.finding.device.hw_info.cpu_bits
             ignore_missing: true
         - append:
+            tag: append_error_message_b64f2d38
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.hw_info.cpu_cores
-      tag: convert_device_hw_info_cpu_cores_to_long
+      tag: convert_device_hw_info_cpu_cores_to_long_8b127603
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_hw_info_cpu_cores_6b68df48
             field: aws_securityhub.finding.device.hw_info.cpu_cores
             ignore_missing: true
         - append:
+            tag: append_error_message_e868eb80
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.hw_info.cpu_count
-      tag: convert_device_hw_info_cpu_count_to_long
+      tag: convert_device_hw_info_cpu_count_to_long_0c984ef3
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_hw_info_cpu_count_63dfa69e
             field: aws_securityhub.finding.device.hw_info.cpu_count
             ignore_missing: true
         - append:
+            tag: append_error_message_449f9961
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.hw_info.cpu_speed
-      tag: convert_device_hw_info_cpu_speed_to_long
+      tag: convert_device_hw_info_cpu_speed_to_long_3fff0c20
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_hw_info_cpu_speed_3aef167e
             field: aws_securityhub.finding.device.hw_info.cpu_speed
             ignore_missing: true
         - append:
+            tag: append_error_message_046b2d3d
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.hw_info.ram_size
-      tag: convert_device_hw_info_ram_size_to_long
+      tag: convert_device_hw_info_ram_size_to_long_178eb107
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_hw_info_ram_size_53d666e6
             field: aws_securityhub.finding.device.hw_info.ram_size
             ignore_missing: true
         - append:
+            tag: append_error_message_2828c4a7
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field: aws_securityhub.finding.device.ip
-      tag: remove_empty_device_ip
+      tag: remove_empty_device_ip_22cf9224
       if: ctx.aws_securityhub?.finding?.device?.ip == '' || ctx.aws_securityhub?.finding?.device?.ip == '-'
   - convert:
       field: aws_securityhub.finding.device.ip
-      tag: convert_device_ip_to_ip
+      tag: convert_device_ip_to_ip_037f3ff0
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_ip_07955299
             field: aws_securityhub.finding.device.ip
             ignore_missing: true
         - append:
+            tag: append_error_message_a4602cc3
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.is_backed_up
-      tag: convert_device_is_backed_up_to_boolean
+      tag: convert_device_is_backed_up_to_boolean_6869101a
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_is_backed_up_7460cb51
             field: aws_securityhub.finding.device.is_backed_up
             ignore_missing: true
         - append:
+            tag: append_error_message_c4508f0b
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.is_compliant
-      tag: convert_device_is_compliant_to_boolean
+      tag: convert_device_is_compliant_to_boolean_bafc9104
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_is_compliant_1ad77a53
             field: aws_securityhub.finding.device.is_compliant
             ignore_missing: true
         - append:
+            tag: append_error_message_fda22a74
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.is_managed
-      tag: convert_device_is_managed_to_boolean
+      tag: convert_device_is_managed_to_boolean_7ada5e44
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_is_managed_5f06b957
             field: aws_securityhub.finding.device.is_managed
             ignore_missing: true
         - append:
+            tag: append_error_message_e4c4f10c
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.is_mobile_account_active
-      tag: convert_device_is_mobile_account_active_to_boolean
+      tag: convert_device_is_mobile_account_active_to_boolean_b041c127
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_is_mobile_account_active_9cbda0db
             field: aws_securityhub.finding.device.is_mobile_account_active
             ignore_missing: true
         - append:
+            tag: append_error_message_ad2710bc
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.is_personal
-      tag: convert_device_is_personal_to_boolean
+      tag: convert_device_is_personal_to_boolean_5387f4b4
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_is_personal_c399404f
             field: aws_securityhub.finding.device.is_personal
             ignore_missing: true
         - append:
+            tag: append_error_message_9b63e2ef
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.is_shared
-      tag: convert_device_is_shared_to_boolean
+      tag: convert_device_is_shared_to_boolean_f88e9cff
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_is_shared_3e662701
             field: aws_securityhub.finding.device.is_shared
             ignore_missing: true
         - append:
+            tag: append_error_message_bde92a7c
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.is_supervised
-      tag: convert_device_is_supervised_to_boolean
+      tag: convert_device_is_supervised_to_boolean_78aa2319
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_is_supervised_d40a229b
             field: aws_securityhub.finding.device.is_supervised
             ignore_missing: true
         - append:
+            tag: append_error_message_95706a01
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.is_trusted
-      tag: convert_device_is_trusted_to_boolean
+      tag: convert_device_is_trusted_to_boolean_63153bcf
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_is_trusted_81e9c1e3
             field: aws_securityhub.finding.device.is_trusted
             ignore_missing: true
         - append:
+            tag: append_error_message_e32f7b76
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: aws_securityhub.finding.device.last_seen_time_dt
-      tag: date_device_last_seen_time_dt
+      tag: date_device_last_seen_time_dt_72c86dfe
       target_field: aws_securityhub.finding.device.last_seen_time_dt
       formats:
         - ISO8601
@@ -300,99 +343,113 @@ processors:
       if: ctx.aws_securityhub?.finding?.device?.last_seen_time_dt != null && ctx.aws_securityhub.finding.device.last_seen_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_last_seen_time_dt_949a865b
             field: aws_securityhub.finding.device.last_seen_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_976b03e1
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: aws_securityhub.finding.device.last_seen_time
-      tag: date_device_last_seen_time
+      tag: date_device_last_seen_time_fd1e1d94
       target_field: aws_securityhub.finding.device.last_seen_time
       formats:
         - UNIX_MS
       if: ctx.aws_securityhub?.finding?.device?.last_seen_time != null && ctx.aws_securityhub.finding.device.last_seen_time != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_last_seen_time_d50c1beb
             field: aws_securityhub.finding.device.last_seen_time
             ignore_missing: true
         - append:
+            tag: append_error_message_6e78e5d4
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.location.is_on_premises
-      tag: convert_device_location_is_on_premises_to_boolean
+      tag: convert_device_location_is_on_premises_to_boolean_9ad3209d
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_location_is_on_premises_36d34278
             field: aws_securityhub.finding.device.location.is_on_premises
             ignore_missing: true
         - append:
+            tag: append_error_message_86aaf8cb
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.location.lat
-      tag: convert_device_location_lat_to_double
+      tag: convert_device_location_lat_to_double_3068d7a0
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_location_lat_8ea55e40
             field: aws_securityhub.finding.device.location.lat
             ignore_missing: true
         - append:
+            tag: append_error_message_ae185245
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.location.long
-      tag: convert_device_location_long_to_double
+      tag: convert_device_location_long_to_double_3adb7fc1
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_location_long_2885084e
             field: aws_securityhub.finding.device.location.long
             ignore_missing: true
         - append:
+            tag: append_error_message_db1f79ae
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: aws_securityhub.finding.device.location.value.lat
       copy_from: aws_securityhub.finding.device.location.lat
-      tag: set_device_location_value_lat
+      tag: set_device_location_value_lat_a15ffc15
       ignore_empty_value: true
   - set:
       field: aws_securityhub.finding.device.location.value.lon
       copy_from: aws_securityhub.finding.device.location.long
-      tag: set_device_location_value_lon
+      tag: set_device_location_value_lon_15150b10
       ignore_empty_value: true
   - gsub:
       field: aws_securityhub.finding.device.mac
       pattern: '[:.]'
       replacement: '-'
-      tag: gsub_device_mac
+      tag: gsub_device_mac_81946941
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_mac_0bfeba91
             field: aws_securityhub.finding.device.mac
             ignore_missing: true
         - append:
+            tag: append_error_message_05c4b6db
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uppercase:
       field: aws_securityhub.finding.device.mac
-      tag: uppercase_device_mac
+      tag: uppercase_device_mac_0ddd5db4
       ignore_missing: true
       if: ctx.aws_securityhub?.finding?.device?.mac != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_mac_ecef4f38
             field: aws_securityhub.finding.device.mac
             ignore_missing: true
         - append:
+            tag: append_error_message_0b90d902
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: aws_securityhub.finding.device.modified_time_dt
-      tag: date_device_modified_time_dt
+      tag: date_device_modified_time_dt_7ad7ae3e
       target_field: aws_securityhub.finding.device.modified_time_dt
       formats:
         - ISO8601
@@ -401,54 +458,64 @@ processors:
       if: ctx.aws_securityhub?.finding?.device?.modified_time_dt != null && ctx.aws_securityhub.finding.device.modified_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_modified_time_dt_b8fe8fa0
             field: aws_securityhub.finding.device.modified_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_42df26d5
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: aws_securityhub.finding.device.modified_time
-      tag: date_device_modified_time
+      tag: date_device_modified_time_3e02b033
       target_field: aws_securityhub.finding.device.modified_time
       formats:
         - UNIX_MS
       if: ctx.aws_securityhub?.finding?.device?.modified_time != null && ctx.aws_securityhub.finding.device.modified_time != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_modified_time_74d70e04
             field: aws_securityhub.finding.device.modified_time
             ignore_missing: true
         - append:
+            tag: append_error_message_98dade48
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.namespace_pid
-      tag: convert_device_namespace_pid_to_long
+      tag: convert_device_namespace_pid_to_long_ad4264c9
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_namespace_pid_ec8ecfeb
             field: aws_securityhub.finding.device.namespace_pid
             ignore_missing: true
         - append:
+            tag: append_error_message_461b9c87
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_aws_securityhub_finding_device_network_interfaces_2e8ed360
       field: aws_securityhub.finding.device.network_interfaces
       if: ctx.aws_securityhub?.finding?.device?.network_interfaces instanceof List
       processor:
         convert:
           field: _ingest._value.ip
-          tag: convert_device_network_interfaces_ip_to_ip
+          tag: convert_device_network_interfaces_ip_to_ip_852b9b95
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_ip_be669385
                 field: _ingest._value.ip
                 ignore_missing: true
             - append:
+                tag: append_error_message_fc0fcaaa
                 field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_aws_securityhub_finding_device_network_interfaces_e094a9c0
       field: aws_securityhub.finding.device.network_interfaces
       if: ctx.aws_securityhub?.finding?.device?.network_interfaces instanceof List
       processor:
@@ -456,140 +523,159 @@ processors:
           field: _ingest._value.mac
           pattern: '[:.]'
           replacement: '-'
-          tag: gsub_device_network_interfaces_mac
+          tag: gsub_device_network_interfaces_mac_7192241f
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_mac_706ecfeb
                 field: _ingest._value.mac
                 ignore_missing: true
             - append:
+                tag: append_error_message_da3fa10d
                 field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_aws_securityhub_finding_device_network_interfaces_812a41ff
       field: aws_securityhub.finding.device.network_interfaces
       if: ctx.aws_securityhub?.finding?.device?.network_interfaces instanceof List
       processor:
         uppercase:
           field: _ingest._value.mac
-          tag: uppercase_device_network_interfaces_mac
+          tag: uppercase_device_network_interfaces_mac_919dd629
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_mac_e86f9aaa
                 field: _ingest._value.mac
                 ignore_missing: true
             - append:
+                tag: append_error_message_dc2baaf6
                 field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_aws_securityhub_finding_device_network_interfaces_1a678ac9
       field: aws_securityhub.finding.device.network_interfaces
       if: ctx.aws_securityhub?.finding?.device?.network_interfaces instanceof List
       processor:
         convert:
           field: _ingest._value.type_id
-          tag: convert_device_network_interfaces_type_id_to_string
+          tag: convert_device_network_interfaces_type_id_to_string_66b18261
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_aws_securityhub_finding_device_network_interfaces_10620945
       field: aws_securityhub.finding.device.network_interfaces
       if: ctx.aws_securityhub?.finding?.device?.network_interfaces instanceof List
       processor:
         convert:
           field: _ingest._value.subnet_prefix
-          tag: convert_device_network_interfaces_subnet_prefix_to_long
+          tag: convert_device_network_interfaces_subnet_prefix_to_long_651080e0
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_subnet_prefix_4a9b06c5
                 field: _ingest._value.subnet_prefix
                 ignore_missing: true
             - append:
+                tag: append_error_message_d73f2edd
                 field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.os.cpu_bits
-      tag: convert_device_os_cpu_bits_to_long
+      tag: convert_device_os_cpu_bits_to_long_b2a3247a
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_os_cpu_bits_23628c62
             field: aws_securityhub.finding.device.os.cpu_bits
             ignore_missing: true
         - append:
+            tag: append_error_message_e47ed148
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.os.sp_ver
-      tag: convert_device_os_sp_ver_to_string
+      tag: convert_device_os_sp_ver_to_string_a0d961c1
       type: string
       ignore_missing: true
   - convert:
       field: aws_securityhub.finding.device.os.type_id
-      tag: convert_device_os_type_id_to_string
+      tag: convert_device_os_type_id_to_string_01978576
       type: string
       ignore_missing: true
   - convert:
       field: aws_securityhub.finding.device.owner.has_mfa
-      tag: convert_device_owner.has_mfa_to_boolean
+      tag: convert_device_owner.has_mfa_to_boolean_8d5de12f
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_owner_has_mfa_73f09ef9
             field: aws_securityhub.finding.device.owner.has_mfa
             ignore_missing: true
         - append:
+            tag: append_error_message_31528448
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.owner.risk_level_id
-      tag: convert_device_owner_risk_level_id_to_string
+      tag: convert_device_owner_risk_level_id_to_string_cd40032f
       type: string
       ignore_missing: true
   - convert:
       field: aws_securityhub.finding.device.owner.risk_score
-      tag: convert_device_owner_risk_score_to_long
+      tag: convert_device_owner_risk_score_to_long_274b7a08
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_owner_risk_score_f121429c
             field: aws_securityhub.finding.device.owner.risk_score
             ignore_missing: true
         - append:
+            tag: append_error_message_40148eee
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.risk_level_id
-      tag: convert_device_risk_level_id_to_string
+      tag: convert_device_risk_level_id_to_string_5117e227
       type: string
       ignore_missing: true
   - convert:
       field: aws_securityhub.finding.device.risk_score
-      tag: convert_device_risk_score_to_long
+      tag: convert_device_risk_score_to_long_49ca10c6
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_device_risk_score_c69a1067
             field: aws_securityhub.finding.device.risk_score
             ignore_missing: true
         - append:
+            tag: append_error_message_81ae0ad8
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: aws_securityhub.finding.device.type_id
-      tag: convert_device_type_id_to_string
+      tag: convert_device_type_id_to_string_bab4e9d4
       type: string
       ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

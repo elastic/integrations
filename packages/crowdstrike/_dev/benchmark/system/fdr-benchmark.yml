@@ -1,0 +1,26 @@
+---
+description: Benchmark 1000 fdr events ingested
+input: aws-s3
+deployer: tf
+data_stream:
+  name: fdr
+  vars:
+    access_key_id: "{{AWS_ACCESS_KEY_ID}}"
+    secret_access_key: "{{AWS_SECRET_ACCESS_KEY}}"
+    session_token: "{{AWS_SESSION_TOKEN}}"
+    queue_url: "{{TF_OUTPUT_queue_url}}"
+    preserve_original_event: true
+    enable_deduplication: true
+warmup_time_period: 2s
+corpora:
+  input_service:
+    name: crowdstrike
+  generator:
+    total_events: 1000
+    template:
+      path: ./fdr-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./fdr-benchmark/config.yml
+    fields:
+      path: ./fdr-benchmark/fields.yml

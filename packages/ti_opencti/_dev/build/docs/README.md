@@ -4,6 +4,11 @@ The OpenCTI integration allows you to ingest data from the [OpenCTI](https://fil
 
 Use this integration to get indicator data from OpenCTI. You can monitor and explore the ingested data on the OpenCTI dashboard or in Kibana's Discover tab. Indicator match rules in {{ url "security" "Elastic Security" }} can then use the ingested indicator data to generate alerts about detected threats.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Data streams
 
 The OpenCTI integration collects one type of data stream: indicator.
@@ -89,9 +94,9 @@ All filters work together using AND logic at the top level. Within each multi-va
 
 The OpenCTI integration supports running on multiple Elastic Agents for high availability. When multiple agents fetch the same indicators:
 
-- **Automatic Deduplication**: The integration uses a fingerprint-based document ID to prevent duplicates. Each indicator gets a consistent ID based on its `standard_id` and `modified` timestamp.
+- **Automatic Deduplication**: The integration uses a fingerprint-based document ID to prevent duplicates. Each indicator version gets a consistent ID based on its `standard_id`, `modified` and `updated_at` timestamps.
 - **No Manual Configuration Needed**: Deduplication works automatically - just deploy the integration to multiple agents.
-- **Update Handling**: When an indicator is updated in OpenCTI, the new version replaces the old one in Elasticsearch.
+- **Update Handling**: When an indicator is updated in OpenCTI, a new document is indexed alongside the previous version in `logs-ti_opencti.indicator-*`. The `latest_ioc` transform keeps only the most recent version per indicator in `logs-ti_opencti_latest.indicator`, which is the index detection rules and dashboards should query.
 
 #### Best Practices for HA Setup
 
@@ -135,7 +140,24 @@ The dashboards show only active indicators, except the Ingestion dashboard, whic
 
 Indicators that are never expired or revoked will not be removed from the indices of the latest indicators. If accumulation of indicators is a problem there, it can be managed upstream in OpenCTI, or by manually deleting indicators from those indices.
 
-To prevent unbounded growth of the source data stream `logs-ti_opencti.indicator-*`, it has an index lifecycle management (ILM) policy that deletes records 5 days after ingestion.
+See [Data retention](#data-retention) for how long the source data stream `logs-ti_opencti.indicator-*` keeps records.
+
+#### Data retention
+
+Threat indicators are re-collected across polling intervals, and the latest transform keeps the active, deduplicated view in its destination index. The source data streams therefore hold repeated copies of the same indicators.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-ti_opencti.indicator-*` | none, so the default `logs` policy applies (no deletion) | delete 5d after rollover |
+
+On self-managed and Elastic Cloud Hosted deployments this version of the package does not attach an ILM policy to the source data stream, so the default `logs` policy applies and documents are not deleted. The data stream lifecycle shipped with the package is not used there. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: no package policy is attached to `logs-ti_opencti.indicator-*`, so the default `logs` policy applies. To set a retention, create an ILM policy and add `index.lifecycle.name: <policy name>` to the `logs-ti_opencti.indicator@custom` component template. Fleet keeps `@custom` templates across package upgrades, and the change applies from the next rollover.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-ti_opencti.indicator-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
 
 #### Example
 
@@ -159,6 +181,7 @@ Timestamps are mapped as follows:
 | -           | event.ingested                | Time the event arrived in the central data store |
 | created     | event.created                 | Time of the indicator's creation |
 | modified    | threat.indicator.modified_at  | Time of the indicator's last modification |
+| updated_at  | opencti.indicator.updated_at  | Time the indicator record was last updated in the OpenCTI platform, including UI edits, enrichment and scoring changes |
 | valid_from  | opencti.indicator.valid_from  | Time from which this indicator is considered a valid indicator of the behaviors it is related to or represents |
 | valid_until | opencti.indicator.valid_until | Time at which this indicator should no longer be considered a valid indicator of the behaviors it is related to or represents |
 | -           | opencti.indicator.invalid_or_revoked_from | The earliest time at which an indicator reaches its `valid_until` time or is marked as revoked |

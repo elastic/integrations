@@ -8,6 +8,7 @@ processors:
 
   - remove:
       field: event.action
+      tag: remove_event_action
       if: ctx.event?.action != "started" && ctx.event?.action != "completed"
       ignore_missing: true
 
@@ -26,11 +27,13 @@ processors:
   - rename:
       field: okta_domain
       target_field: host.name
+      tag: rename_okta_domain
       ignore_missing: true
       on_failure:
         - rename:
             field: okta_domain
             target_field: okta.okta_domain
+            tag: rename_okta_domain_fallback
             ignore_failure: true
 
   - script:
@@ -58,17 +61,21 @@ processors:
       if: ctx.error?.message != null
   - append:
       field: tags
+      tag: append_preserve_original_event_tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: pipeline_error
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: pipeline_error_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: pipeline_error_preserve_original_event
       field: tags
       value: preserve_original_event
       allow_duplicates: false

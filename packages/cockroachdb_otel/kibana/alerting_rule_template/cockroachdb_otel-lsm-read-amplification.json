@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `rocksdb_read_amplification` on a store exceeds 50, indicating each logical read is costing many physical reads. This is a strong signal of an unhealthy LSM tree.",
     "name": "[CockroachDB OTel] LSM read amplification high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cockroachdb_otel-storage"
+        },
+        {
+          "id": "cockroachdb_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## CockroachDB LSM read amplification high\n\n### What fired\n`rocksdb_read_amplification` on one or more stores exceeded 50 over the evaluation window. In a healthy cluster this metric should sit in the single digits.\n\n### Why it matters\nRead amplification is the average number of physical disk reads required per logical read. Elevated values mean the LSM tree is bloated (usually L0/L6 imbalance) and all reads are paying the cost. Sustained values above 50 are documented as \"unhealthy LSM\".\n\n### Triage\n1. On the Storage dashboard, correlate with `storage_l0_sublevels`, `storage_l0_num_files`, `rocksdb_compactions` rate, and `admission_io_overload`.\n2. Check disk health: `sys_host_disk_iopsinprogress`, provider IOPS metrics.\n3. Verify compactions aren't CPU-starved (`sys_cpu_combined_percent_normalized`, `sys_runnable_goroutines_per_cpu`).\n\n### Remediation\n- Throttle writes until compactions recover.\n- Provision more IOPS or CPU if compactions cannot keep up with steady-state load.\n- As a last resort, consider a manual compaction (advanced \u2014 coordinate with support).\n\n### Tuning\n- `> 50` for 15 minutes is the documented unhealthy-LSM signal. Lower for early warning or raise if your workload tolerates higher amplification.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND rocksdb_read_amplification IS NOT NULL\n  AND rocksdb_read_amplification > 50\n// > 50 for sustained period indicates unhealthy LSM\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NOT NULL\n| STATS amplification = MAX(rocksdb_read_amplification) BY attributes.node_id, host.name\n| SORT amplification DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

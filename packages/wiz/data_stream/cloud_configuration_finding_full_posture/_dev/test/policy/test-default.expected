@@ -1,0 +1,166 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: wiz
+      name: test-default-wiz
+      streams:
+        - auth.oauth2:
+            client.id: test-client-id
+            client.secret: ${SECRET_0}
+            endpoint_params:
+                audience: wiz-api
+                grant_type: client_credentials
+            token_url: https://auth.app.wiz.io/oauth/token
+          config_version: 2
+          data_stream:
+            dataset: wiz.cloud_configuration_finding_full_posture
+          interval: 24h
+          max_executions: 1000
+          program: |
+            state.with(
+              request(
+                "POST",
+                state.url.trim_right("/").trim_suffix("/graphql") + "/graphql",
+                {
+                  "query": state.query,
+                  "variables": {
+                    "first": state.batch_size,
+                    "after": state.?end_cursor.value.orValue(null),
+                    "filterBy": {
+                      "includeDeleted": false,
+                      "status": ["OPEN", "RESOLVED"]
+                    }
+                  }
+                }.encode_json()
+              ).with({
+                "Header": {
+                  "Content-Type": ["application/json"],
+                  "User-Agent": [useragent],
+                },
+              }).do_request().as(resp, resp.StatusCode == 200 ?
+                resp.Body.decode_json().as(body, body.?data.configurationFindings.nodes.orValue(null) != null ?
+                  {
+                    "events": body.data.configurationFindings.nodes.map(e, {
+                      "message": e.encode_json(),
+                    }),
+                    "end_cursor": {
+                      ?"value": body.?data.configurationFindings.pageInfo.hasNextPage.orValue(false) ?
+                          body.?data.configurationFindings.pageInfo.endCursor
+                        :
+                          optional.none()
+                    },
+                    "want_more": body.?data.configurationFindings.pageInfo.hasNextPage.orValue(false),
+                  }
+                :
+                  {
+                    "events": [],
+                    "want_more": false,
+                  }
+                )
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": string(resp.Status),
+                      "message": "POST " + state.url.trim_right("/").trim_suffix("/graphql") + "/graphql:" + (
+                        size(resp.Body) != 0 ?
+                          string(resp.Body)
+                        :
+                          string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                      ),
+                    },
+                  },
+                  "want_more": false,
+                }
+              )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields: null
+          resource.rate_limit.limit: 0.5
+          resource.retry.max_attempts: 10
+          resource.ssl: null
+          resource.timeout: 30s
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://api.example.app.wiz.io
+          state:
+            batch_size: 500
+            query: |-
+                query CloudConfigurationFindingsPage($filterBy: ConfigurationFindingFilters $first: Int $after: String $orderBy: ConfigurationFindingOrder){
+                   configurationFindings(filterBy: $filterBy first: $first after: $after orderBy: $orderBy) {
+                     nodes {
+                      id
+                      name
+                      analyzedAt
+                      updatedAt
+                      severity
+                      result
+                      remediation
+                      status
+                      resource {
+                        id
+                        providerId
+                        name
+                        nativeType
+                        type
+                        region
+                        cloudPlatform
+                        subscription {
+                          id
+                          name
+                          externalId
+                          cloudProvider
+                        }
+                        tags {
+                          key
+                          value
+                        }
+                      }
+                      rule {
+                        id
+                        shortId
+                        name
+                        description
+                        remediationInstructions
+                      }
+                      evidence {
+                        currentValue
+                        expectedValue
+                        configurationPath
+                        cloudConfigurationLink
+                      }
+                    }
+                    pageInfo {
+                      hasNextPage
+                      endCursor
+                    }
+                  }
+                }
+            want_more: false
+          tags:
+            - forwarded
+            - wiz-cloud_configuration_finding_full_posture
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-wiz.cloud_configuration_finding_full_posture-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

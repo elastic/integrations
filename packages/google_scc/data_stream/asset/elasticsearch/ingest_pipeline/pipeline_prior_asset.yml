@@ -3,124 +3,137 @@ processors:
   - rename:
       field: json.priorAsset.osInventory.osInfo.architecture
       target_field: google_scc.asset.prior.os_inventory.os_info.architecture
-      tag: rename_priorAsset_osInventory_osInfo_architecture
+      tag: rename_priorAsset_osInventory_osInfo_architecture_7fbf0269
       ignore_missing: true
   - rename:
       field: json.priorAsset.osInventory.osInfo.hostname
       target_field: google_scc.asset.prior.os_inventory.os_info.hostname
-      tag: rename_priorAsset_osInventory_osInfo_hostname
+      tag: rename_priorAsset_osInventory_osInfo_hostname_c6eda92b
       ignore_missing: true
   - rename:
       field: json.priorAsset.name
       target_field: google_scc.asset.prior.name
-      tag: rename_priorAsset_name
+      tag: rename_priorAsset_name_16e056cb
       ignore_missing: true
   - rename:
       field: json.priorAsset.osInventory.osInfo.shortName
       target_field: google_scc.asset.prior.os_inventory.os_info.short_name
-      tag: rename_priorAsset_osInventory_osInfo_shortName
+      tag: rename_priorAsset_osInventory_osInfo_shortName_d01aa36c
       ignore_missing: true
   - rename:
       field: json.priorAsset.osInventory.osInfo.longName
       target_field: google_scc.asset.prior.os_inventory.os_info.long_name
-      tag: rename_priorAsset_osInventory_osInfo_longName
+      tag: rename_priorAsset_osInventory_osInfo_longName_3405dc64
       ignore_missing: true
   - rename:
       field: json.priorAsset.osInventory.osInfo.kernelVersion
       target_field: google_scc.asset.prior.os_inventory.os_info.kernel.version
-      tag: rename_priorAsset_osInventory_osInfo_kernelVersion
+      tag: rename_priorAsset_osInventory_osInfo_kernelVersion_eff43e41
       ignore_missing: true
   - rename:
       field: json.priorAsset.osInventory.osInfo.version
       target_field: google_scc.asset.prior.os_inventory.os_info.version
-      tag: rename_priorAsset_osInventory_osInfo_version
+      tag: rename_priorAsset_osInventory_osInfo_version_cb6bf73b
       ignore_missing: true
   - rename:
       field: json.priorAsset.assetType
       target_field: google_scc.asset.prior.type
-      tag: rename_priorAsset_assetType
+      tag: rename_priorAsset_assetType_be6252e6
       ignore_missing: true
   - rename:
       field: json.priorAsset.accessLevel.basic.combiningFunction
       target_field: json.priorAsset.accessLevel.basic.combining_function
-      tag: rename_priorAsset_accessLevel_basic_combiningFunction
+      tag: rename_priorAsset_accessLevel_basic_combiningFunction_5e68f4a1
       ignore_missing: true
   - rename:
       field: json.priorAsset.accessLevel.custom.expr.expression
       target_field: json.priorAsset.accessLevel.custom.expr.text
-      tag: rename_priorAsset_accessLevel_custom_expr_expression
+      tag: rename_priorAsset_accessLevel_custom_expr_expression_04119b0f
       ignore_missing: true
   - rename:
       field: json.priorAsset.accessLevel.custom.expr
       target_field: json.priorAsset.accessLevel.custom.expression
-      tag: rename_priorAsset_accessLevel_custom_expr
+      tag: rename_priorAsset_accessLevel_custom_expr_e0f5b376
       ignore_missing: true
   - foreach:
+      tag: foreach_json_priorAsset_accessLevel_basic_conditions_2ff3ce4b
       field: json.priorAsset.accessLevel.basic.conditions
       if: ctx.json?.priorAsset?.accessLevel?.basic?.conditions instanceof List
       ignore_failure: true
       processor:
         foreach:
+          tag: foreach_ingest_value_devicePolicy_osConstraints_6727d797
           field: _ingest._value.devicePolicy.osConstraints
           ignore_failure: true
           processor:
             convert:
               field: _ingest._value.requireVerifiedChromeOs
-              tag: convert_requireVerifiedChromeOs_to_boolean
+              tag: convert_requireVerifiedChromeOs_to_boolean_cd6029a1
               type: boolean
               ignore_missing: true
               on_failure:
                   - remove:
+                      tag: remove_ingest_value_devicePolicy_requireCorpOwned_3c9ed54e
                       field: _ingest._value.devicePolicy.requireCorpOwned
                   - append:
+                      tag: append_error_message_e07fd777
                       field: error.message
                       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_priorAsset_accessLevel_basic_conditions_762cdc06
       field: json.priorAsset.accessLevel.basic.conditions
       if: ctx.json?.priorAsset?.accessLevel?.basic?.conditions instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.devicePolicy.requireScreenlock
-          tag: convert_devicePolicy_requireScreenlock_to_boolean
+          tag: convert_devicePolicy_requireScreenlock_to_boolean_6be6d173
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_devicePolicy_requireScreenlock_efc63eb7
                 field: _ingest._value.devicePolicy.requireScreenlock
             - append:
+                tag: append_error_message_7bafa3b1
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_priorAsset_accessLevel_basic_conditions_91cf05ad
       field: json.priorAsset.accessLevel.basic.conditions
       if: ctx.json?.priorAsset?.accessLevel?.basic?.conditions instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.devicePolicy.requireAdminApproval
-          tag: convert_devicePolicy_requireAdminApproval_to_boolean
+          tag: convert_devicePolicy_requireAdminApproval_to_boolean_bfb13e5e
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_devicePolicy_requireAdminApproval_44d2c929
                 field: _ingest._value.devicePolicy.requireAdminApproval
             - append:
+                tag: append_error_message_12faa146
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_priorAsset_accessLevel_basic_conditions_0931381d
       field: json.priorAsset.accessLevel.basic.conditions
       if: ctx.json?.priorAsset?.accessLevel?.basic?.conditions instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.negate
-          tag: convert_negate_to_boolean
+          tag: convert_negate_to_boolean_f94a5121
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_negate_6fcd30d8
                 field: _ingest._value.negate
             - append:
+                tag: append_error_message_75bceb0e
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -141,7 +154,7 @@ processors:
         "requireAdminApproval": "require_admin_approval"
         "requireCorpOwned": "require_corp_owned"
         "ipSubnetworks": "sub_networks"
-      tag: painless_to_rename_fields_under_accessLevel_basic_conditions_object
+      tag: painless_to_rename_fields_under_accessLevel_basic_conditions_object_f1af0275
       source: |
         def renameKeys(Map json, Map keyMap) {
           def updatedJson = new HashMap();
@@ -188,17 +201,17 @@ processors:
   - rename:
       field: json.priorAsset.accessLevel
       target_field: google_scc.asset.prior.access_level
-      tag: rename_priorAsset_accessLevel
+      tag: rename_priorAsset_accessLevel_55df9b12
       ignore_missing: true
   - rename:
       field: json.priorAsset.accessPolicy
       target_field: google_scc.asset.prior.access_policy
-      tag: rename_priorAsset_accessPolicy
+      tag: rename_priorAsset_accessPolicy_a3b4024f
       ignore_missing: true
   - rename:
       field: json.priorAsset.ancestors
       target_field: google_scc.asset.prior.ancestors
-      tag: rename_priorAsset_ancestors
+      tag: rename_priorAsset_ancestors_2fb9bee0
       ignore_missing: true
   - script:
       lang: painless
@@ -209,7 +222,7 @@ processors:
         "auditLogConfigs": "audit_log_configs"
         "logType": "log_type"
         "exemptedMembers": "exemted_members"
-      tag: painless_to_rename_fields_under_iamPolicy_auditConfigs_object
+      tag: painless_to_rename_fields_under_iamPolicy_auditConfigs_object_6b290515
       source: |
         def renameKeys(Map json, Map keyMap) {
           def updatedJson = new HashMap();
@@ -255,80 +268,92 @@ processors:
         ctx.json.priorAsset.iamPolicy.put('audit_configs',audit_configs);
   - convert:
       field: json.priorAsset.iamPolicy.version
-      tag: convert_priorAsset_iamPolicy_version
+      tag: convert_priorAsset_iamPolicy_version_da2b29ed
       if: ctx.json?.priorAsset?.iamPolicy?.version != ''
       type: string
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_fc94d1d8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.priorAsset.iamPolicy
       target_field: google_scc.asset.prior.iam_policy
-      tag: rename_priorAsset_iamPolicy
+      tag: rename_priorAsset_iamPolicy_30ce34f1
       ignore_missing: true
   - foreach:
+      tag: foreach_json_priorAsset_orgPolicy_c13761ab
       field: json.priorAsset.orgPolicy
       if: ctx.json?.priorAsset?.orgPolicy instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.version
-          tag: convert_priorAsset_orgPolicy_version
+          tag: convert_priorAsset_orgPolicy_version_ce5a2635
           type: string
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_version_abb4cf8b
                 field: _ingest._value.version
             - append:
+                tag: append_error_message_a46e2bb8
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_priorAsset_orgPolicy_d569adbd
       field: json.priorAsset.orgPolicy
       if: ctx.json?.priorAsset?.orgPolicy instanceof List
       ignore_failure: true
       processor:
         date:
           field: _ingest._value.updateTime
-          target_field:  _ingest._value.updateTime
-          tag: date_updateTime
+          target_field: _ingest._value.updateTime
+          tag: date_updateTime_229124a7
           formats:
             - ISO8601
           on_failure:
             - remove:
-                field:  _ingest._value.updateTime
+                tag: remove_ingest_value_updateTime_6948563b
+                field: _ingest._value.updateTime
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_priorAsset_orgPolicy_dba394d2
       field: json.priorAsset.orgPolicy
       if: ctx.json?.priorAsset?.orgPolicy instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.listPolicy.inheritFromParent
-          tag: convert_orgPolicy_listPolicy_inheritFromParent_to_boolean
+          tag: convert_orgPolicy_listPolicy_inheritFromParent_to_boolean_d2f1e206
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_listPolicy_inheritFromParent_7aca91a0
                 field: _ingest._value.listPolicy.inheritFromParent
             - append:
+                tag: append_error_message_c88b72f9
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_priorAsset_orgPolicy_5533a06c
       field: json.priorAsset.orgPolicy
       if: ctx.json?.priorAsset?.orgPolicy instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.booleanPolicy.enforced
-          tag: convert_orgPolicy_booleanPolicy_enforced_to_boolean
+          tag: convert_orgPolicy_booleanPolicy_enforced_to_boolean_901fe5c3
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_inbooleanPolicy_enforcedheritFromParent_6452dc27
                 field: _ingest._value.inbooleanPolicy.enforcedheritFromParent
             - append:
+                tag: append_error_message_a6b87c14
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -346,7 +371,7 @@ processors:
         "updateTime": "update_time"
         "inheritFromParent": "inherit_from_parent"
         "booleanPolicy": "boolean_policy"
-      tag: painless_to_rename_fields_under_orgPolicy_object
+      tag: painless_to_rename_fields_under_orgPolicy_object_48be0bb5
       source: |
         def renameKeys(Map json, Map keyMap) {
           def updatedJson = new HashMap();
@@ -393,68 +418,69 @@ processors:
   - rename:
       field: json.priorAsset.osInventory.name
       target_field: google_scc.asset.prior.os_inventory.name
-      tag: rename_priorAsset_osInventory_name
+      tag: rename_priorAsset_osInventory_name_f985910b
       ignore_missing: true
   - rename:
       field: json.priorAsset.osInventory.osInfo.kernelRelease
       target_field: google_scc.asset.prior.os_inventory.os_info.kernel.release
-      tag: rename_priorAsset_osInventory_osInfo_kernelRelease
+      tag: rename_priorAsset_osInventory_osInfo_kernelRelease_9e598c6c
       ignore_missing: true
   - rename:
       field: json.priorAsset.osInventory.osInfo.osconfigAgentVersion
       target_field: google_scc.asset.prior.os_inventory.os_info.os_config_agent_version
-      tag: rename_priorAsset_osInventory_osInfo_osconfigAgentVersion
+      tag: rename_priorAsset_osInventory_osInfo_osconfigAgentVersion_14fdb493
       ignore_missing: true
   - date:
       field: json.priorAsset.osInventory.updateTime
       target_field: google_scc.asset.prior.os_inventory.update_time
-      tag: date_priorAsset_osInventory_updateTime
+      tag: date_priorAsset_osInventory_updateTime_3afdd1cc
       formats:
         - ISO8601
       if: ctx.json?.priorAsset?.osInventory?.updateTime != null && ctx.json.priorAsset.osInventory.updateTime != ''
       on_failure:
         - append:
+            tag: append_error_message_247da014
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.priorAsset.relatedAsset.ancestors
       target_field: google_scc.asset.prior.related_asset.ancestors
-      tag: rename_priorAsset_relatedAsset_ancestors
+      tag: rename_priorAsset_relatedAsset_ancestors_4475eb7a
       ignore_missing: true
   - rename:
       field: json.priorAsset.relatedAsset.asset
       target_field: google_scc.asset.prior.related_asset.name
-      tag: rename_priorAsset_relatedAsset_asset
+      tag: rename_priorAsset_relatedAsset_asset_866b5a5e
       ignore_missing: true
   - rename:
       field: json.priorAsset.relatedAsset.relationshipType
       target_field: google_scc.asset.prior.related_asset.relationship_type
-      tag: rename_priorAsset_relatedAsset_relationshipType
+      tag: rename_priorAsset_relatedAsset_relationshipType_e0f09ba4
       ignore_missing: true
   - rename:
       field: json.priorAsset.relatedAsset.assetType
       target_field: google_scc.asset.prior.related_asset.type
-      tag: rename_priorAsset_relatedAsset_assetType
+      tag: rename_priorAsset_relatedAsset_assetType_dcf4f123
       ignore_missing: true
   - rename:
       field: json.priorAsset.relatedAssets.relationshipAttributes.action
       target_field: json.priorAsset.relatedAssets.relationship_attributes.action
-      tag: rename_priorAsset_relatedAssets_relationshipAttributes_action
+      tag: rename_priorAsset_relatedAssets_relationshipAttributes_action_7611f839
       ignore_missing: true
   - rename:
       field: json.priorAsset.relatedAssets.relationshipAttributes.sourceResourceType
       target_field: json.priorAsset.relatedAssets.relationship_attributes.source_resource_type
-      tag: rename_priorAsset_relatedAssets_relationshipAttributes_sourceResourceType
+      tag: rename_priorAsset_relatedAssets_relationshipAttributes_sourceResourceType_5eed6053
       ignore_missing: true
   - rename:
       field: json.priorAsset.relatedAssets.relationshipAttributes.targetResourceType
       target_field: json.priorAsset.relatedAssets.relationship_attributes.target_resource_type
-      tag: rename_priorAsset_relatedAssets_relationshipAttributes_targetResourceType
+      tag: rename_priorAsset_relatedAssets_relationshipAttributes_targetResourceType_f6fdcd4a
       ignore_missing: true
   - rename:
       field: json.priorAsset.relatedAssets.relationshipAttributes.type
       target_field: json.priorAsset.relatedAssets.relationship_attributes.type
-      tag: rename_priorAsset_relatedAssets_relationshipAttributes_type
+      tag: rename_priorAsset_relatedAssets_relationshipAttributes_type_3748c5aa
       ignore_missing: true
   - script:
       lang: painless
@@ -464,7 +490,7 @@ processors:
         "assetType": "type"
         "asset": "name"
         "relationshipType": "relationship_type"
-      tag: painless_to_rename_fields_under_relatedAssets_assets_object
+      tag: painless_to_rename_fields_under_relatedAssets_assets_object_c2dc77c4
       source: |
         def renameKeys(Map json, Map keyMap) {
           def updatedJson = new HashMap();
@@ -510,109 +536,112 @@ processors:
   - rename:
       field: json.priorAsset.relatedAssets
       target_field: google_scc.asset.prior.related_assets
-      tag: rename_priorAsset_relatedAssets
+      tag: rename_priorAsset_relatedAssets_34e22604
       ignore_missing: true
   - rename:
       field: json.priorAsset.resource.discoveryDocumentUri
       target_field: google_scc.asset.prior.resource.discovery.document_uri
-      tag: rename_priorAsset_resource_discoveryDocumentUri
+      tag: rename_priorAsset_resource_discoveryDocumentUri_a8d1a252
       ignore_missing: true
   - rename:
       field: json.priorAsset.resource.discoveryName
       target_field: google_scc.asset.prior.resource.discovery.name
-      tag: rename_priorAsset_resource_discoveryName
+      tag: rename_priorAsset_resource_discoveryName_2a1f33dc
       ignore_missing: true
   - rename:
       field: json.priorAsset.resource.location
       target_field: google_scc.asset.prior.resource.location
-      tag: rename_priorAsset_resource_location
+      tag: rename_priorAsset_resource_location_5edc394e
       ignore_missing: true
   - rename:
       field: json.priorAsset.resource.parent
       target_field: google_scc.asset.prior.resource.parent
-      tag: rename_priorAsset_resource_parent
+      tag: rename_priorAsset_resource_parent_63e7db9e
       ignore_missing: true
   - rename:
       field: json.priorAsset.resource.resourceUrl
       target_field: google_scc.asset.prior.resource.url
-      tag: rename_priorAsset_resource_resourceUrl
+      tag: rename_priorAsset_resource_resourceUrl_af648a6b
       ignore_missing: true
   - rename:
       field: json.priorAsset.resource.version
       target_field: google_scc.asset.prior.resource.version
-      tag: rename_priorAsset_resource_version
+      tag: rename_priorAsset_resource_version_6f2d736f
       ignore_missing: true
   - rename:
       field: json.priorAsset.resource.data
       target_field: google_scc.asset.prior.resource.data
-      tag: rename_priorAsset_resource_data
+      tag: rename_priorAsset_resource_data_e236d0f2
       ignore_missing: true
   - rename:
       field: json.priorAsset.servicePerimeter.spec.accessLevels
       target_field: json.priorAsset.servicePerimeter.spec.access_levels
-      tag: rename_priorAsset_servicePerimeter_spec_accessLevels
+      tag: rename_priorAsset_servicePerimeter_spec_accessLevels_75d719eb
       ignore_missing: true
   - rename:
       field: json.priorAsset.servicePerimeter.spec.restrictedServices
       target_field: json.priorAsset.servicePerimeter.spec.restricted_services
-      tag: rename_priorAsset_servicePerimeter_spec_restrictedServices
+      tag: rename_priorAsset_servicePerimeter_spec_restrictedServices_84759eb8
       ignore_missing: true
   - rename:
       field: json.priorAsset.servicePerimeter.spec.vpcAccessibleServices.allowedServices
       target_field: json.priorAsset.servicePerimeter.spec.vpc_accessible_services.allowed_services
-      tag: rename_priorAsset_servicePerimeter_spec_vpcAccessibleServices_allowedServices
+      tag: rename_priorAsset_servicePerimeter_spec_vpcAccessibleServices_allowedServices_df5507e3
       ignore_missing: true
   - convert:
       field: json.priorAsset.servicePerimeter.spec.vpcAccessibleServices.enableRestriction
       target_field: json.priorAsset.servicePerimeter.spec.vpc_accessible_services.enable_restriction
-      tag: convert_priorAsset_servicePerimeter_spec_vpcAccessibleServices_enableRestriction_to_boolean
+      tag: convert_priorAsset_servicePerimeter_spec_vpcAccessibleServices_enableRestriction_to_boolean_18d60ae2
       type: boolean
       ignore_missing: true
       if: ctx.json?.priorAsset?.servicePerimeter?.spec?.vpcAccessibleServices?.enableRestriction != ''
       on_failure:
         - append:
+            tag: append_error_message_41382738
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.priorAsset.servicePerimeter.status.restrictedServices
       target_field: json.priorAsset.servicePerimeter.status.restricted_services
-      tag: rename_priorAsset_servicePerimeter_status_restrictedServices
+      tag: rename_priorAsset_servicePerimeter_status_restrictedServices_ee40273f
       ignore_missing: true
   - rename:
       field: json.priorAsset.servicePerimeter.status.vpcAccessibleServices.allowedServices
       target_field: json.priorAsset.servicePerimeter.status.vpc_accessible_services.allowed_services
-      tag: rename_priorAsset_servicePerimeter_status_vpcAccessibleServices_allowedServices
+      tag: rename_priorAsset_servicePerimeter_status_vpcAccessibleServices_allowedServices_aa2f5e71
       ignore_missing: true
   - convert:
       field: json.priorAsset.servicePerimeter.status.vpcAccessibleServices.enableRestriction
       target_field: json.priorAsset.servicePerimeter.status.vpc_accessible_services.enable_restriction
-      tag: convert_priorAsset_servicePerimeter_status_vpcAccessibleServices_enableRestriction_to_boolean
+      tag: convert_priorAsset_servicePerimeter_status_vpcAccessibleServices_enableRestriction_to_boolean_64d1deeb
       type: boolean
       ignore_missing: true
       if: ctx.json?.priorAsset?.servicePerimeter?.status?.vpcAccessibleServices?.enableRestriction != ''
       on_failure:
         - append:
+            tag: append_error_message_b8ef5338
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.priorAsset.servicePerimeter.status.accessLevels
       target_field: json.priorAsset.servicePerimeter.status.access_levels
-      tag: rename_priorAsset_servicePerimeter_status_accessLevels
+      tag: rename_priorAsset_servicePerimeter_status_accessLevels_18f23929
       ignore_missing: true
   - rename:
       field: json.priorAsset.servicePerimeter.perimeterType
       target_field: json.priorAsset.servicePerimeter.type
-      tag: rename_priorAsset_servicePerimeter_perimeterType
+      tag: rename_priorAsset_servicePerimeter_perimeterType_4f28b9f5
       ignore_missing: true
   - convert:
       field: json.priorAsset.servicePerimeter.useExplicitDryRunSpec
       target_field: json.priorAsset.servicePerimeter.use_explicit_dry_run_spec
-      tag: convert_priorAsset_servicePerimeter_useExplicitDryRunSpec_to_boolean
+      tag: convert_priorAsset_servicePerimeter_useExplicitDryRunSpec_to_boolean_12fed3f7
       type: boolean
       ignore_missing: true
       if: ctx.json?.priorAsset?.servicePerimeter?.useExplicitDryRunSpec != ''
       on_failure:
         - append:
+            tag: append_error_message_2773a0d7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -627,7 +656,7 @@ processors:
         "egressTo": "egress_to"
         "methodSelectors": "method_selectors"
         "serviceName": "service_name"
-      tag: painless_to_rename_fields_under_servicePerimeter_status_egressPolicies_object
+      tag: painless_to_rename_fields_under_servicePerimeter_status_egressPolicies_object_4807313c
       source: |
         def renameKeys(Map json, Map keyMap) {
           def updatedJson = new HashMap();
@@ -683,7 +712,7 @@ processors:
         "egressTo": "egress_to"
         "methodSelectors": "method_selectors"
         "serviceName": "service_name"
-      tag: painless_to_rename_fields_under_servicePerimeter_spec_egressPolicies_object
+      tag: painless_to_rename_fields_under_servicePerimeter_spec_egressPolicies_object_e6ec939c
       source: |
         def renameKeys(Map json, Map keyMap) {
           def updatedJson = new HashMap();
@@ -739,7 +768,7 @@ processors:
         "ingressTo": "ingress_to"
         "methodSelectors": "method_selectors"
         "serviceName": "service_name"
-      tag: painless_to_rename_fields_under_servicePerimeter_spec_ingressPolicies_object
+      tag: painless_to_rename_fields_under_servicePerimeter_spec_ingressPolicies_object_31025dea
       source: |
         def renameKeys(Map json, Map keyMap) {
           def updatedJson = new HashMap();
@@ -795,7 +824,7 @@ processors:
         "ingressTo": "ingress_to"
         "methodSelectors": "method_selectors"
         "serviceName": "service_name"
-      tag: painless_to_rename_fields_under_servicePerimeter_status_ingressPolicies_object
+      tag: painless_to_rename_fields_under_servicePerimeter_status_ingressPolicies_object_a9365bf6
       source: |
         def renameKeys(Map json, Map keyMap) {
           def updatedJson = new HashMap();
@@ -842,17 +871,18 @@ processors:
   - rename:
       field: json.priorAsset.servicePerimeter
       target_field: google_scc.asset.prior.service_perimeter
-      tag: rename_priorAsset_servicePerimeter
+      tag: rename_priorAsset_servicePerimeter_bb434028
       ignore_missing: true
   - date:
       field: json.priorAsset.updateTime
       target_field: google_scc.asset.prior.update_time
-      tag: date_priorAsset_updateTime
+      tag: date_priorAsset_updateTime_3d6fc5fb
       formats:
         - ISO8601
       if: ctx.json?.priorAsset?.updateTime != null && ctx.json.priorAsset.updateTime != ''
       on_failure:
         - append:
+            tag: append_error_message_79bb411d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -860,12 +890,19 @@ processors:
         - google_scc.asset.prior.service_perimeter.spec.vpcAccessibleServices.enableRestriction
         - google_scc.asset.prior.service_perimeter.status.vpcAccessibleServices.enableRestriction
         - google_scc.asset.prior.service_perimeter.useExplicitDryRunSpec
-      tag: remove_converted_fields
+      tag: remove_converted_fields_5367e2fc
       ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_027aa91a
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

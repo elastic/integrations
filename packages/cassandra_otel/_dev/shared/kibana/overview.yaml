@@ -1,0 +1,421 @@
+dashboards:
+- id: cassandra_otel-overview
+  name: '[Cassandra OTel] Overview'
+  description: >-
+    Overview of Apache Cassandra cluster health from OTel JMX metrics:
+    client request latency, throughput, errors, compaction, and storage.
+  time_range:
+    from: now-1h
+    to: now
+  filters:
+  - field: data_stream.dataset
+    equals: cassandra.otel
+  controls:
+  - type: options
+    label: Node
+    data_view: metrics-*
+    field: server.address
+  panels:
+      # Navigation
+  - size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: cassandra_otel-overview
+
+      # Description
+  - markdown:
+      content: |-
+        ## [Cassandra OTel] Overview
+
+        This dashboard monitors Apache Cassandra cluster health from JMX metrics:
+        - Client request latency (p50, p99) by operation and node
+        - Request throughput and error rates by operation and status
+        - Compaction health (pending vs completed tasks)
+        - Storage load and hints per node
+    size: {w: 16, h: 12}
+
+      # KPI Metrics
+  - title: Total Request Rate
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-cassandra.otel-default
+      - WHERE cassandra.client.request.count IS NOT NULL
+      - STATS total_rate = SUM(RATE(cassandra.client.request.count))
+      primary:
+        field: total_rate
+        label: Requests/sec
+        format:
+          type: number
+          decimals: 1
+          suffix: /sec
+
+  - title: Error Rate
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-cassandra.otel-default
+      - WHERE cassandra.client.request.count IS NOT NULL OR cassandra.client.request.error.count IS NOT NULL
+      - STATS total_req = SUM(RATE(cassandra.client.request.count)), total_err = SUM(RATE(cassandra.client.request.error.count))
+      - EVAL error_rate = CASE(total_req > 0, total_err / total_req, 0)
+      primary:
+        field: error_rate
+        label: Error %
+        format:
+          type: percent
+          decimals: 2
+
+  - title: Pending Compaction Tasks
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-cassandra.otel-default
+      - WHERE cassandra.compaction.tasks.pending IS NOT NULL
+      - STATS pending = MAX(LAST_OVER_TIME(cassandra.compaction.tasks.pending))
+      primary:
+        field: pending
+        label: Pending
+        format:
+          type: number
+          decimals: 0
+
+  - title: Read p99 Latency
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-cassandra.otel-default
+      - WHERE `cassandra.client.request.read.latency.99p` IS NOT NULL
+      - STATS p99_us = MAX(AVG_OVER_TIME(`cassandra.client.request.read.latency.99p`))
+      - EVAL p99_ms = p99_us / 1000
+      primary:
+        field: p99_ms
+        label: Read p99 (ms)
+        format:
+          type: number
+          decimals: 2
+          suffix: " ms"
+
+      # Latency
+  - markdown:
+      content: '## Latency'
+    size: {w: 48, h: 3}
+
+  - title: Read Latency (p99) by Node
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-cassandra.otel-default
+      - WHERE `cassandra.client.request.read.latency.99p` IS NOT NULL
+      - STATS p99_us = MAX(AVG_OVER_TIME(`cassandra.client.request.read.latency.99p`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, 
+        ?_tend), server.address
+      - EVAL p99_ms = p99_us / 1000
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: p99_ms
+        label: p99 (ms)
+        format:
+          type: number
+          decimals: 2
+      breakdown:
+        field: server.address
+
+  - title: Write Latency (p99) by Node
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-cassandra.otel-default
+      - WHERE `cassandra.client.request.write.latency.99p` IS NOT NULL
+      - STATS p99_us = MAX(AVG_OVER_TIME(`cassandra.client.request.write.latency.99p`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, 
+        ?_tend), server.address
+      - EVAL p99_ms = p99_us / 1000
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: p99_ms
+        label: p99 (ms)
+        format:
+          type: number
+          decimals: 2
+      breakdown:
+        field: server.address
+
+  - title: Latency by Operation (p99)
+    size: {w: 48, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-cassandra.otel-default
+      - >-
+        FORK
+        ( WHERE `cassandra.client.request.read.latency.99p` IS NOT NULL
+        | STATS p99_us = MAX(AVG_OVER_TIME(`cassandra.client.request.read.latency.99p`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
+        server.address
+        | EVAL op = "Read" )
+        ( WHERE `cassandra.client.request.write.latency.99p` IS NOT NULL
+        | STATS p99_us = MAX(AVG_OVER_TIME(`cassandra.client.request.write.latency.99p`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
+        server.address
+        | EVAL op = "Write" )
+        ( WHERE `cassandra.client.request.range_slice.latency.99p` IS NOT NULL
+        | STATS p99_us = MAX(AVG_OVER_TIME(`cassandra.client.request.range_slice.latency.99p`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart,
+        ?_tend), server.address
+        | EVAL op = "RangeSlice" )
+      - STATS p99_us = AVG(p99_us) BY time_bucket, server.address, op
+      - EVAL p99_ms = p99_us / 1000
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: p99_ms
+        label: p99 (ms)
+        format:
+          type: number
+          decimals: 2
+      breakdown:
+        field: op
+
+      # Traffic
+  - markdown:
+      content: '## Traffic'
+    size: {w: 48, h: 3}
+
+  - title: Request Rate by Node
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      query:
+      - TS metrics-cassandra.otel-default
+      - WHERE cassandra.client.request.count IS NOT NULL
+      - STATS request_rate = SUM(RATE(cassandra.client.request.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        server.address
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: request_rate
+        label: Requests/sec
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: server.address
+
+  - title: Request Rate by Operation
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      query:
+      - TS metrics-cassandra.otel-default
+      - WHERE cassandra.client.request.count IS NOT NULL
+      - STATS request_rate = SUM(RATE(cassandra.client.request.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        attributes.operation
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: request_rate
+        label: Requests/sec
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: attributes.operation
+
+      # Errors
+  - markdown:
+      content: '## Errors'
+    size: {w: 48, h: 3}
+
+  - title: Error Rate by Status
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      query:
+      - TS metrics-cassandra.otel-default
+      - WHERE cassandra.client.request.error.count IS NOT NULL
+      - STATS error_rate = SUM(RATE(cassandra.client.request.error.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        attributes.status
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: error_rate
+        label: Errors/sec
+        format:
+          type: number
+          decimals: 2
+      breakdown:
+        field: attributes.status
+      color:
+        palette: eui_amsterdam_color_blind
+        assignments:
+        - value: Timeout
+          color: '#d6bf57'
+        - value: Unavailable
+          color: '#e7664c'
+        - value: Failure
+          color: '#bd271e'
+
+  - title: Errors by Operation and Status
+    size: {w: 24, h: 12}
+    esql:
+      type: pie
+      query:
+      - TS metrics-cassandra.otel-default
+      - WHERE cassandra.client.request.error.count IS NOT NULL
+      - STATS error_count = SUM(INCREASE(cassandra.client.request.error.count)) BY attributes.operation, attributes.status
+      - 'EVAL op_status = CONCAT(attributes.operation, " - ", COALESCE(attributes.status, "unknown"))'
+      - STATS error_count = SUM(error_count) BY op_status
+      - SORT error_count DESC
+      - LIMIT 10
+      metrics:
+      - field: error_count
+      breakdowns:
+      - field: op_status
+        label: Operation - Status
+      appearance:
+        donut: small
+        categories: {}
+        values:
+          format: percent
+  - markdown:
+      content: '## Compaction & Storage'
+    size: {w: 48, h: 3}
+
+  - title: Compaction Pending by Node
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-cassandra.otel-default
+      - WHERE cassandra.compaction.tasks.pending IS NOT NULL
+      - STATS pending = MAX(LAST_OVER_TIME(cassandra.compaction.tasks.pending)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        server.address
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: pending
+        label: Pending Tasks
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: server.address
+
+  - title: Compaction Completed Rate by Node
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-cassandra.otel-default
+      - WHERE cassandra.compaction.tasks.completed IS NOT NULL
+      - STATS completed_rate = SUM(RATE(cassandra.compaction.tasks.completed)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        server.address
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: completed_rate
+        label: Completed/sec
+        format:
+          type: number
+          decimals: 2
+      breakdown:
+        field: server.address
+
+  - title: Storage Load by Node
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-cassandra.otel-default
+      - WHERE cassandra.storage.load.count IS NOT NULL
+      - STATS load_bytes = MAX(LAST_OVER_TIME(cassandra.storage.load.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        server.address
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: load_bytes
+        label: Storage (bytes)
+        format:
+          type: bytes
+          decimals: 2
+      breakdown:
+        field: server.address
+
+  - title: Hints In-Progress by Node
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-cassandra.otel-default
+      - WHERE cassandra.storage.total_hints.in_progress.count IS NOT NULL
+      - STATS hints_in_progress = MAX(LAST_OVER_TIME(cassandra.storage.total_hints.in_progress.count)) BY time_bucket = BUCKET(@timestamp, 
+        20, ?_tstart, ?_tend), server.address
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: hints_in_progress
+        label: Hints In-Progress
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: server.address
+
+      # Detail
+  - markdown:
+      content: '## Detail'
+    size: {w: 48, h: 3}
+
+  - title: Request Rate by Node and Operation
+    size: {w: 48, h: 15}
+    esql:
+      type: datatable
+      query:
+      - TS metrics-cassandra.otel-default
+      - WHERE cassandra.client.request.count IS NOT NULL
+      - STATS request_rate = SUM(RATE(cassandra.client.request.count)) BY server.address, attributes.operation
+      - SORT request_rate DESC
+      - LIMIT 100
+      breakdowns:
+      - field: server.address
+        label: Node
+      - field: attributes.operation
+        label: Operation
+      metrics:
+      - field: request_rate
+        label: Requests/sec
+        format:
+          type: number
+          decimals: 2
+      paging:
+        enabled: true
+        page_size: 15

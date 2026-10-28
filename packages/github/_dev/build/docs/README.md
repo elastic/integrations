@@ -1,6 +1,11 @@
 # GitHub Integration
 
-The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest) and Azure Eventhub. It can also retrieve global advisories (reviewed or unreviewed) from the GitHub Security Advisories database. 
+The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest) and Azure Eventhub. It can also retrieve global advisories (reviewed or unreviewed) from the GitHub Security Advisories database, and collect an inventory of organization members for entity analytics.
+
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ## What do I need to use this integration?
 
@@ -47,9 +52,25 @@ For Filebeat input documentation, refer to the following pages:
 
 *This integration is not compatible with GitHub Enterprise server.*
 
+#### Routing API request events to a separate data stream
+
+When GitHub audit log streaming has [API Request Events](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise) enabled, `api.request` events are typically much higher in volume than regular audit records. To manage their retention and index lifecycle independently, enable the **Route API request events to a separate data stream** setting on the audit data stream. When enabled, events with `event.action` set to `api.request` are routed to the `github.api_requests` data stream (`logs-github.api_requests-*`) instead of `github.audit`.
+
+Notes:
+ - The setting is available on the streaming inputs only (AWS S3/SQS, Azure Blob Storage, Azure Event Hub and Google Cloud Storage). GitHub does not return `api.request` events through the REST audit log API, so the setting does not apply to the API input.
+ - Enabling the setting only affects new data; existing documents remain in `logs-github.audit-*`. Queries that must span old and new data should target both data streams.
+ - The rerouted documents keep the `github.*` field names, and carry a `route_api_request_events` tag.
+ - Routing on its own does not change retention. To apply a different retention, customize the `logs-github.api_requests@custom` component template (for example, set `index.lifecycle.name` to an ILM policy, or set a data stream lifecycle `data_retention`).
+
 {{fields "audit"}}
 
 {{event "audit"}}
+
+### API Request
+
+The API Request data stream receives GitHub `api.request` audit log events rerouted from the audit data stream when the **Route API request events to a separate data stream** setting is enabled on a streaming audit input. It has no inputs of its own.
+
+{{fields "api_requests"}}
 
 
 ### Code Scanning
@@ -100,6 +121,12 @@ To use this integration, users must use GitHub Apps or Personal Access Token wit
 - At least `Read-only` permission on Metadata
 If misconfigured, the integration could run successfully without any data being processed. Alternatively, you might encounter an error like `⁠GET: server returned a 404 (Not Found)`.
 
+#### Upgrading to version 2.32.0
+
+Version 2.32.0 recreates the latest-issues transform with destination index `logs-github_latest.dest_issues-2` so the additional Issues API field mappings can take effect. The `logs-github_latest.issues` alias moves to the new index when it is created. The transform rebuilds the latest issue state from retained documents in `logs-github.issues-*`; source documents that have expired cannot be recovered this way.
+
+The previous destination index, `logs-github_latest.dest_issues-1`, is not deleted automatically. After upgrading, verify that the transform has caught up and the alias points to the new index. Before removing the old index, preserve any issue records that are no longer available in the source data stream and take a snapshot if needed. Once the new index contains the records you need, delete only `logs-github_latest.dest_issues-1`. Keeping both destination indices can produce duplicate results and field type conflicts in wildcard queries.
+
 {{fields "issues"}}
 
 {{event "issues"}}
@@ -108,8 +135,45 @@ If misconfigured, the integration could run successfully without any data being 
 
 The GitHub Security Advisories datastream lets you retrieve reviewed and unreviewed global security advisories from the GitHub advisory database. Check [Working with security advisories](https://docs.github.com/en/code-security/security-advisories) for more details.
 
-To use this integration, you must [create a fine-grained personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token) (GitHub App user access tokens, GitHub App installation access tokens, Fine-grained personal access tokens). This fine-grained token does not require any permissions. 
+To use this integration, you may [create a fine-grained personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token) (GitHub App user access tokens, GitHub App installation access tokens, Fine-grained personal access tokens). This fine-grained token does not require any permissions. Authentication is not required when accessing data from public repositories, so you can leave the API key field blank in that case.
 
 {{fields "security_advisories"}}
 
 {{event "security_advisories"}}
+
+### Members
+
+The GitHub Members data stream collects a snapshot of all organization members and their security-relevant attributes using the [GitHub GraphQL API](https://docs.github.com/en/graphql). Each collection cycle produces one document per member, making this an entity inventory stream suited for identity analytics, entity risk scoring, and SIEM identity graphs.
+
+Data collected per member includes: organization role (MEMBER or ADMIN), two-factor authentication enrollment status (optional, see below), full profile attributes (name, email, company, location, bio), and team memberships including the member's role within each team (MAINTAINER or MEMBER).
+
+The data stream issues two GraphQL queries per collection cycle against `POST https://api.github.com/graphql`:
+
+1. **`organization.membersWithRole`** — paginated list of all org members with their role and 2FA status.
+2. **`organization.teams`** (with nested `team.members`) — paginated list of all teams and their members, used to populate team membership and entity relationship fields.
+
+**Authentication:** This data stream requires a **Classic Personal Access Token (PAT)**. Fine-grained PATs do not support the `admin:org` scope or the `membersWithRole` GraphQL query reliably and cannot be used.
+
+The required scopes depend on which fields you want to collect:
+
+| Scope | Required? | Data unlocked |
+|---|---|---|
+| `read:org` | **Required** | Member roster (`role`, member list) and team memberships |
+| `read:user` | **Required** | Profile fields: `name`, `email`, `company`, `location`, `bio`, `pronouns`, `avatarUrl`, `websiteUrl`, `twitterUsername`, `createdAt`, `updatedAt`, and boolean flags (`isSiteAdmin`, `isEmployee`, `isHireable`, etc.) |
+| `admin:org` | Optional | `hasTwoFactorEnabled` MFA status. The token holder must also be an **organization owner**. Without this scope the field is omitted rather than set to `false`. Enable the **Collect MFA Status** option in the integration config alongside this scope. |
+
+To generate a Classic PAT: navigate to **GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)**, select the scopes above, then paste the generated token into the **Personal Access Token** field of the integration.
+
+**SAML SSO organizations:** If the organization enforces SAML single sign-on, the token must be explicitly authorized for the organization after creation. On the token list page, click **Configure SSO** next to the token, then click **Authorize** next to the organization name. Without this step the API returns a SAML enforcement error regardless of which scopes are selected.
+
+Refer to [Creating a personal access token (classic)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic) and [Scopes for OAuth apps](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps) for more details.
+
+**Note:** GitHub App bot accounts (login ending in `[bot]`) are excluded by default. Enable the **Include Bot Accounts** option to include them.
+
+**Note:** The `billing_manager` organization role is only available via the REST API (`GET /orgs/{org}/memberships/{username}`) and is not returned by the GraphQL `membersWithRole` query. Members with this role appear with role `MEMBER` in this data stream.
+
+**Note:** For GitHub Enterprise Server, override the **API URL** setting to point to your GHES instance (e.g. `https://github.example.com/api`). This data stream appends `/graphql` to the API URL, and GHES serves GraphQL at `<HOSTNAME>/api/graphql` — the `/api/v3` prefix used by the REST-based data streams does not apply here.
+
+{{fields "members"}}
+
+{{event "members"}}

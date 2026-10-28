@@ -2,26 +2,31 @@
 description: Pipeline for Jamf Compliance Reporter aue_accept audit logs.
 processors:
   - rename:
+      tag: rename_json_path_to_jamf_compliance_reporter_log_path_dcaf10e2
       field: json.path
       target_field: jamf_compliance_reporter.log.path
       ignore_missing: true
   - convert:
+      tag: convert_json_socket_unix_family_to_json_inet_family_a3c3ec3c
       field: json.socket_unix.family
       target_field: json.inet_family
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_socket_unix_path_to_jamf_compliance_reporter_log_socket_unix_path_2702e3a9
       field: json.socket_unix.path
       target_field: jamf_compliance_reporter.log.socket.unix.path
       ignore_missing: true
   - convert:
+      tag: convert_json_arguments_fd_to_jamf_compliance_reporter_log_arguments_fd_5367d19d
       field: json.arguments.fd
       target_field: jamf_compliance_reporter.log.arguments.fd
       type: string
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_dynamically_map_socket_address_families_bf7d3e4d
       description: Dynamically map Socket Address Families.
       lang: painless
       if: ctx.json?.inet_family != null
@@ -57,11 +62,22 @@ processors:
         map.put('25', 'pseudo_AF_PIP');
         ctx.jamf_compliance_reporter.log.socket.unix.family = map.get(ctx.json.inet_family);
   - pipeline:
+      tag: pipeline_identity_object_8cb224f5
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

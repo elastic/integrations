@@ -8,10 +8,10 @@ Users of [Cloudflare](https://www.cloudflare.com/en-au/learning/what-is-cloudfla
 
 >  Note: Authenticating with API Key (Auth Key) using `X-AUTH-EMAIL` and `X-AUTH-KEY` is considered to be a legacy feature with several limitations that makes it less secure than API token (Auth Token). See [here](https://developers.cloudflare.com/fundamentals/api/get-started/keys/#limitations) for more information on API Key limitations.
 
-## Agentless Enabled Integration
+## Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ## Configuration
 
@@ -23,6 +23,8 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 4. Click on **Add Cloudflare** button to add Cloudflare integration.
 
 ### Configure Cloudflare Audit logs
+
+Collect Audit logs with the **Collect Cloudflare Audit logs via API** input. The **Audit logs** option in the **Collect Cloudflare Logpull logs via API** input is **DEPRECATED** since version `2.31.0` and will be removed in a future release; it supports only Auth Email and Auth Key authentication. If you use it, deactivate it and enable Audit logs in the **Collect Cloudflare Audit logs via API** input instead.
 
 The integration can retrieve Cloudflare audit logs using -
 

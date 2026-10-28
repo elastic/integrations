@@ -163,17 +163,22 @@ processors:
       field: event.category
       value: [network]
       tag: 'set_network_into_event_category'
-      if: ctx.cisco_nexus?.log?.interface?.name != null || ctx.cisco_nexus?.log?.network?.ingress_interface != null || ctx.cisco_nexus?.log?.network?.egress_interface != null || ['L2FM_MAC_MOVE2','L3_VPC_UNEQUAL_WEIGHT','AAA_ACCOUNTING_MESSAGE','DUP_HOSTS','NF_PARITY_ERROR','EXCESSIVE_PARITY_ERROR'].contains(ctx.event?.code.toUpperCase()) || ctx.message.toLowerCase().contains('kex_exchange_identification')
+      if: ctx.cisco_nexus?.log?.interface?.name != null || ctx.cisco_nexus?.log?.network?.ingress_interface != null || ctx.cisco_nexus?.log?.network?.egress_interface != null || ['L2FM_MAC_MOVE2','L3_VPC_UNEQUAL_WEIGHT','AAA_ACCOUNTING_MESSAGE','DUP_HOSTS','NF_PARITY_ERROR','EXCESSIVE_PARITY_ERROR','DETECT_MULTIPLE_PEERS','TACACS_WARNING','SYSLOG_SL_MSG_WARNING'].contains(ctx.event?.code.toUpperCase()) || ctx.message.toLowerCase().contains('kex_exchange_identification')
   - set:
       field: event.type
       value: [info]
       tag: 'set_info_into_event_type'
-      if: ctx.cisco_nexus?.log?.interface?.name != null || ctx.cisco_nexus?.log?.network?.ingress_interface != null || ctx.cisco_nexus?.log?.network?.egress_interface != null || ['VSHD_SYSLOG_CONFIG_I','L2FM_MAC_MOVE2','L3_VPC_UNEQUAL_WEIGHT','AAA_ACCOUNTING_MESSAGE','DUP_HOSTS','NF_PARITY_ERROR','EXCESSIVE_PARITY_ERROR'].contains(ctx.event?.code.toUpperCase())
+      if: ctx.cisco_nexus?.log?.interface?.name != null || ctx.cisco_nexus?.log?.network?.ingress_interface != null || ctx.cisco_nexus?.log?.network?.egress_interface != null || ['VSHD_SYSLOG_CONFIG_I','L2FM_MAC_MOVE2','L3_VPC_UNEQUAL_WEIGHT','AAA_ACCOUNTING_MESSAGE','DUP_HOSTS','NF_PARITY_ERROR','EXCESSIVE_PARITY_ERROR','DETECT_MULTIPLE_PEERS','TACACS_WARNING','SYSLOG_SL_MSG_WARNING'].contains(ctx.event?.code.toUpperCase())
   - set:
       field: event.category
       value: [configuration]
       tag: 'set_configuration_into_event_category'
-      if: ctx.event?.code == 'VSHD_SYSLOG_CONFIG_I'
+      if: "['VSHD_SYSLOG_CONFIG_I','CFGWRITE_STARTED','CFGWRITE_DONE'].contains(ctx.event?.code)"
+  - set:
+      field: event.type
+      value: [info]
+      tag: 'set_info_into_event_type_for_config'
+      if: "['CFGWRITE_STARTED','CFGWRITE_DONE'].contains(ctx.event?.code)"
   - set:
       field: event.category
       value: [authentication]
@@ -184,6 +189,36 @@ processors:
       value: [end]
       tag: 'set_end_into_event_type'
       if: ctx.event?.code == 'LOGIN_SUCCESS' || (ctx.event?.code == 'SYSTEM_MSG' && (ctx.message.toLowerCase().contains('authentication failed') || ctx.message.toLowerCase().contains('authentication failure') || ctx.message.toLowerCase().contains('login failed')))
+  - set:
+      field: event.category
+      value: [authentication]
+      tag: 'set_authentication_into_event_category_for_logout'
+      if: "['LOGOUT','LOGOUT_C6K'].contains(ctx.event?.code)"
+  - set:
+      field: event.type
+      value: [end]
+      tag: 'set_end_into_event_type_for_logout'
+      if: "['LOGOUT','LOGOUT_C6K'].contains(ctx.event?.code)"
+  - set:
+      field: event.category
+      value: [iam, process]
+      tag: 'set_iam_process_into_event_category_for_sudo'
+      if: ctx.event?.code == 'SYSTEM_MSG' && ctx.cisco_nexus?.log?.command != null
+  - set:
+      field: event.type
+      value: [start]
+      tag: 'set_start_into_event_type_for_sudo'
+      if: ctx.event?.code == 'SYSTEM_MSG' && ctx.cisco_nexus?.log?.command != null
+  - set:
+      field: event.category
+      value: [host]
+      tag: 'set_host_into_event_category_for_user_kern'
+      if: ctx.event?.code == 'SYSTEM_MSG' && ctx.event?.category == null && (ctx.cisco_nexus?.log?.facility == 'USER' || ctx.cisco_nexus?.log?.facility == 'KERN')
+  - set:
+      field: event.type
+      value: [info]
+      tag: 'set_info_into_event_type_for_user_kern'
+      if: ctx.event?.code == 'SYSTEM_MSG' && ctx.event?.type == null && (ctx.cisco_nexus?.log?.facility == 'USER' || ctx.cisco_nexus?.log?.facility == 'KERN')
   - set:
       field: event.type
       value: [connection]
@@ -199,6 +234,264 @@ processors:
       value: success
       tag: 'set_success_into_event_outcome'
       if: ctx.message.toLowerCase().contains('successful') || ctx.message.toLowerCase().contains('success') || ctx.event?.code == 'IF_ADMIN_UP'
+  # Structural outcome processors — set only where keywords don't already apply
+  - set:
+      field: event.outcome
+      value: failure
+      tag: 'set_failure_outcome_if_down_admin_down'
+      if: ctx.event?.code == 'IF_DOWN_ADMIN_DOWN' && ctx.event?.outcome == null
+  - set:
+      field: event.outcome
+      value: failure
+      tag: 'set_failure_outcome_parity_error'
+      if: "['EXCESSIVE_PARITY_ERROR','NF_PARITY_ERROR'].contains(ctx.event?.code) && ctx.event?.outcome == null"
+  - set:
+      field: event.outcome
+      value: failure
+      tag: 'set_failure_outcome_inval_ip'
+      if: ctx.event?.code == 'INVAL_IP' && ctx.event?.outcome == null
+  - set:
+      field: event.outcome
+      value: failure
+      tag: 'set_failure_outcome_mismatch'
+      if: "['DUPLEX_MISMATCH','NATIVE_VLAN_MISMATCH'].contains(ctx.event?.code) && ctx.event?.outcome == null"
+  - set:
+      field: event.outcome
+      value: failure
+      tag: 'set_failure_outcome_vpc_mismatch'
+      if: ctx.event?.code == 'L3_VPC_UNEQUAL_WEIGHT' && ctx.event?.outcome == null
+  - set:
+      field: event.outcome
+      value: failure
+      tag: 'set_failure_outcome_dup_hosts'
+      if: ctx.event?.code == 'DUP_HOSTS' && ctx.event?.outcome == null
+  - set:
+      field: event.outcome
+      value: failure
+      tag: 'set_failure_outcome_tacacs_warning'
+      if: ctx.event?.code == 'TACACS_WARNING' && ctx.event?.outcome == null
+  - set:
+      field: event.outcome
+      value: failure
+      tag: 'set_failure_outcome_kern_hw_error'
+      if: ctx.event?.code == 'SYSTEM_MSG' && ctx.cisco_nexus?.log?.facility == 'KERN' && ctx.event?.outcome == null
+  - set:
+      field: event.outcome
+      value: failure
+      tag: 'set_failure_outcome_kex_exchange'
+      if: ctx.event?.code == 'SYSTEM_MSG' && ctx.event?.outcome == null && ctx.message != null && ctx.message.toLowerCase().contains('kex_exchange_identification')
+  - set:
+      field: event.outcome
+      value: success
+      tag: 'set_success_outcome_if_up'
+      if: ctx.event?.code == 'IF_UP' && ctx.event?.outcome == null
+  - set:
+      field: event.outcome
+      value: success
+      tag: 'set_success_outcome_logout'
+      if: "['LOGOUT','LOGOUT_C6K'].contains(ctx.event?.code) && ctx.event?.outcome == null"
+  - set:
+      field: event.outcome
+      value: success
+      tag: 'set_success_outcome_config_changed'
+      if: ctx.event?.code == 'VSHD_SYSLOG_CONFIG_I' && ctx.event?.outcome == null
+  - set:
+      field: event.outcome
+      value: success
+      tag: 'set_success_outcome_aaa_accounting'
+      if: ctx.event?.code == 'AAA_ACCOUNTING_MESSAGE' && ctx.event?.outcome == null
+  - set:
+      field: event.outcome
+      value: failure
+      tag: 'set_failure_outcome_sudo_denied'
+      if: ctx.event?.code == 'SYSTEM_MSG' && ctx.cisco_nexus?.log?.command != null && ctx.message.toLowerCase().contains('command not allowed')
+  - set:
+      field: event.outcome
+      value: success
+      tag: 'set_success_outcome_sudo_command'
+      if: ctx.event?.code == 'SYSTEM_MSG' && ctx.cisco_nexus?.log?.command != null && ctx.event?.outcome == null
+  - set:
+      field: event.outcome
+      value: unknown
+      tag: 'set_unknown_outcome_cfgwrite_started'
+      if: ctx.event?.code == 'CFGWRITE_STARTED' && ctx.event?.outcome == null
+  - set:
+      field: event.outcome
+      value: success
+      tag: 'set_success_outcome_cfgwrite_done'
+      if: ctx.event?.code == 'CFGWRITE_DONE' && ctx.event?.outcome == null
+  - set:
+      field: event.outcome
+      value: unknown
+      tag: 'set_unknown_outcome_detect_multiple_peers'
+      if: ctx.event?.code == 'DETECT_MULTIPLE_PEERS' && ctx.event?.outcome == null
+  # UPDOWN state-based outcome
+  - set:
+      field: event.outcome
+      value: success
+      tag: 'set_success_outcome_updown_up'
+      if: ctx.event?.code == 'UPDOWN' && ctx.event?.outcome == null && (ctx.cisco_nexus?.log?.line_protocol_state == 'up' || ctx.cisco_nexus?.log?.state == 'up')
+  - set:
+      field: event.outcome
+      value: failure
+      tag: 'set_failure_outcome_updown_down'
+      if: ctx.event?.code == 'UPDOWN' && ctx.event?.outcome == null && (ctx.cisco_nexus?.log?.line_protocol_state == 'down' || ctx.cisco_nexus?.log?.state == 'down')
+  # event.action processors
+  - set:
+      field: event.action
+      value: interface-down
+      tag: 'set_event_action_interface_down'
+      if: ctx.event?.code == 'IF_DOWN_ADMIN_DOWN'
+  - set:
+      field: event.action
+      value: interface-up
+      tag: 'set_event_action_interface_up'
+      if: "['IF_ADMIN_UP','IF_UP'].contains(ctx.event?.code)"
+  - set:
+      field: event.action
+      value: interface-speed-changed
+      tag: 'set_event_action_speed'
+      if: ctx.event?.code == 'SPEED'
+  - set:
+      field: event.action
+      value: interface-duplex-changed
+      tag: 'set_event_action_duplex'
+      if: ctx.event?.code == 'IF_DUPLEX'
+  - set:
+      field: event.action
+      value: interface-flow-control-changed
+      tag: 'set_event_action_flow_control'
+      if: "['IF_RX_FLOW_CONTROL','IF_TX_FLOW_CONTROL'].contains(ctx.event?.code)"
+  - set:
+      field: event.action
+      value: transceiver-warning
+      tag: 'set_event_action_xcvr_warning'
+      if: ctx.event?.code == 'IF_XCVR_WARNING'
+  - set:
+      field: event.action
+      value: interface-state-changed
+      tag: 'set_event_action_updown'
+      if: ctx.event?.code == 'UPDOWN'
+  - set:
+      field: event.action
+      value: interface-state-changed
+      tag: 'set_event_action_lineproto'
+      if: ctx.event?.code == 'LINEPROTO'
+  - set:
+      field: event.action
+      value: configuration-changed
+      tag: 'set_event_action_config_changed'
+      if: ctx.event?.code == 'VSHD_SYSLOG_CONFIG_I'
+  - set:
+      field: event.action
+      value: config-write-started
+      tag: 'set_event_action_cfgwrite_started'
+      if: ctx.event?.code == 'CFGWRITE_STARTED'
+  - set:
+      field: event.action
+      value: config-write-completed
+      tag: 'set_event_action_cfgwrite_done'
+      if: ctx.event?.code == 'CFGWRITE_DONE'
+  - set:
+      field: event.action
+      value: logged-in
+      tag: 'set_event_action_login_success'
+      if: ctx.event?.code == 'LOGIN_SUCCESS'
+  - set:
+      field: event.action
+      value: logged-out
+      tag: 'set_event_action_logout'
+      if: "['LOGOUT','LOGOUT_C6K'].contains(ctx.event?.code)"
+  - set:
+      field: event.action
+      value: multiple-peers-detected
+      tag: 'set_event_action_multiple_peers'
+      if: ctx.event?.code == 'DETECT_MULTIPLE_PEERS'
+  - set:
+      field: event.action
+      value: invalid-packet-received
+      tag: 'set_event_action_inval_ip'
+      if: ctx.event?.code == 'INVAL_IP'
+  - set:
+      field: event.action
+      value: arp-warning
+      tag: 'set_event_action_arp_warning'
+      if: ctx.event?.code == 'SYSLOG_SL_MSG_WARNING'
+  - set:
+      field: event.action
+      value: mac-address-moved
+      tag: 'set_event_action_mac_move'
+      if: ctx.event?.code == 'L2FM_MAC_MOVE2'
+  - set:
+      field: event.action
+      value: hardware-error
+      tag: 'set_event_action_hw_error'
+      if: "['EXCESSIVE_PARITY_ERROR','NF_PARITY_ERROR'].contains(ctx.event?.code)"
+  - set:
+      field: event.action
+      value: duplex-mismatch-detected
+      tag: 'set_event_action_duplex_mismatch'
+      if: ctx.event?.code == 'DUPLEX_MISMATCH'
+  - set:
+      field: event.action
+      value: vlan-mismatch-detected
+      tag: 'set_event_action_vlan_mismatch'
+      if: ctx.event?.code == 'NATIVE_VLAN_MISMATCH'
+  - set:
+      field: event.action
+      value: vpc-config-mismatch
+      tag: 'set_event_action_vpc_mismatch'
+      if: ctx.event?.code == 'L3_VPC_UNEQUAL_WEIGHT'
+  - set:
+      field: event.action
+      value: session-recorded
+      tag: 'set_event_action_aaa_accounting'
+      if: ctx.event?.code == 'AAA_ACCOUNTING_MESSAGE'
+  - set:
+      field: event.action
+      value: tacacs-lookup-failed
+      tag: 'set_event_action_tacacs_warning'
+      if: ctx.event?.code == 'TACACS_WARNING'
+  - set:
+      field: event.action
+      value: duplicate-host-detected
+      tag: 'set_event_action_dup_hosts'
+      if: ctx.event?.code == 'DUP_HOSTS'
+  - set:
+      field: event.action
+      value: transceiver-threshold-violated
+      tag: 'set_event_action_threshold_violation'
+      if: ctx.event?.code == 'THRESHOLD_VIOLATION'
+  - set:
+      field: event.action
+      value: command-denied
+      tag: 'set_event_action_command_denied'
+      if: ctx.event?.code == 'SYSTEM_MSG' && ctx.cisco_nexus?.log?.command != null && ctx.message.toLowerCase().contains('command not allowed')
+  - set:
+      field: event.action
+      value: command-executed
+      tag: 'set_event_action_command_executed'
+      if: ctx.event?.code == 'SYSTEM_MSG' && ctx.cisco_nexus?.log?.command != null && ctx.event?.action == null
+  - set:
+      field: event.action
+      value: authentication-failure
+      tag: 'set_event_action_auth_failure'
+      if: ctx.event?.code == 'SYSTEM_MSG' && ctx.event?.action == null && ctx.message != null && (ctx.message.toLowerCase().contains('authentication') || ctx.message.toLowerCase().contains('login failed'))
+  - set:
+      field: event.action
+      value: connection-failed
+      tag: 'set_event_action_connection_failed'
+      if: ctx.event?.code == 'SYSTEM_MSG' && ctx.event?.action == null && ctx.message != null && ctx.message.toLowerCase().contains('kex_exchange_identification')
+  - set:
+      field: event.action
+      value: hardware-error
+      tag: 'set_event_action_kern_hw_error'
+      if: ctx.event?.code == 'SYSTEM_MSG' && ctx.event?.action == null && ctx.cisco_nexus?.log?.facility == 'KERN'
+  - set:
+      field: event.action
+      value: system-message
+      tag: 'set_event_action_system_message'
+      if: ctx.event?.code == 'SYSTEM_MSG' && ctx.event?.action == null
   - append:
       field: related.ip
       if: ctx.source?.ip != null

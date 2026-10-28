@@ -1,0 +1,57 @@
+---
+description: Pipeline for setting data_stream values and consolidating query profile fields
+processors:
+- set:
+    field: data_stream.type
+    value: "logs"
+    ignore_empty_value: true
+    override: true
+- set:
+    field: data_stream.dataset
+    value: "osquery_manager.query_profile"
+    ignore_empty_value: true
+    override: true
+- set:
+    field: agent_id
+    copy_from: "agent.id"
+    ignore_empty_value: true
+    override: true
+# Consolidate the query identity into a single, aggregatable query.name across every
+# profile source (scheduled, rrule, live). osquerybeat emits the scheduled/RRULE query
+# name in osquery_profile.query_name; promote it to query.name and backfill live
+# profiles from the saved query id and finally the raw SQL so "top by query" works
+# uniformly. override:false preserves any value already present, so the preference
+# order is: existing name > osquery_profile.query_name > saved query id > raw SQL.
+# osquery_profile.query_name is kept so the original scheduled name and its source
+# remain available.
+- set:
+    field: query.name
+    copy_from: osquery_profile.query_name
+    ignore_empty_value: true
+    override: false
+- set:
+    field: query.name
+    copy_from: action_data.saved_query_id
+    ignore_empty_value: true
+    override: false
+# The raw-SQL fallback is truncated to stay within query.name's ignore_above limit
+# (1024), so long ad-hoc SQL remains indexed and visible in aggregations instead of
+# silently dropping out. The full SQL is still available in action_data.query and
+# osquery_profile.query.
+- script:
+    description: Fall back to the raw SQL for ad-hoc live queries, truncated to remain aggregatable.
+    lang: painless
+    if: ctx.query?.name == null && ctx.action_data?.query instanceof String && !ctx.action_data.query.isEmpty()
+    source: |
+      String sql = ctx.action_data.query;
+      if (sql.length() > 1024) {
+        sql = sql.substring(0, 1023) + "…";
+      }
+      if (!(ctx.query instanceof Map)) {
+        ctx.query = new HashMap();
+      }
+      ctx.query.name = sql;
+# Drop the redundant top-level discriminator; data_stream.dataset already identifies profile documents.
+- remove:
+    field: type
+    ignore_missing: true

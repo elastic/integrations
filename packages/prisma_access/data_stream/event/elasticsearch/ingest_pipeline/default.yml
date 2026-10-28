@@ -6,16 +6,23 @@ processors:
       tag: script_to_drop_null_values_fields
       lang: painless
       source: |-
-        boolean drop(Object o) {
-          if (o == "null" || o == "Null" || o == "NULL") {
-            return true;
-          } else if (o instanceof Map) {
-            ((Map) o).values().removeIf(v -> drop(v));
-            return (((Map) o).size() == 0);
-          } else if (o instanceof List) {
-            ((List) o).removeIf(v -> drop(v));
-            return (((List) o).length == 0);
+        boolean drop(def object) {
+          if (object == null) return true;
+
+          if (object instanceof String) {
+            return object.equalsIgnoreCase("null");
           }
+
+          if (object instanceof Map) {
+            object.values().removeIf(v -> drop(v));
+            return object.isEmpty();
+          }
+
+          if (object instanceof List) {
+            object.removeIf(v -> drop(v));
+            return object.isEmpty();
+          }
+
           return false;
         }
         drop(ctx);
@@ -49,21 +56,343 @@ processors:
   # Normalize CEF extension field names that contain hyphens to the
   # camelCase form used by the rest of this pipeline. This used to happen
   # the agent-side before decode_cef accepted hyphens (elastic/beats#40348).
-  - rename:
-      field: cef.extensions.PanOSX-Forwarded-ForIP
-      tag: rename_cef_PanOSX-Forwarded-ForIP
-      target_field: cef.extensions.PanOSXForwardedForIP
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSX-Forwarded-For
-      tag: rename_cef_PanOSX-Forwarded-For
-      target_field: cef.extensions.PanOSXForwardedFor
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSplit-tunnelconfiguration
-      tag: rename_cef_PanOSSplit-tunnelconfiguration
-      target_field: cef.extensions.PanOSSplitTunnelconfiguration
-      ignore_missing: true
+  # One pass over the extension keys that are present in the event, instead of one unconditional
+  # rename processor per known key (299 of them). Same behaviour as the renames it replaces:
+  # a target that already exists, or a parent of the target that is not an object, raises an error.
+  - script:
+      tag: hoisted_cef_extension_renames
+      description: Moves cef.extensions.<key> to its prisma_access.event field for all keys present in the event.
+      lang: painless
+      source: |-
+        Map ext = ctx.cef?.extensions;
+        if (ext == null || ext.isEmpty()) {
+          return;
+        }
+        Map m = params.m;
+        // iterate over a copy of the keys: the loop removes entries from ext
+        for (String k : new ArrayList(ext.keySet())) {
+          List path = m.get(k);
+          if (path == null) {
+            continue;
+          }
+          Map cur = ctx;
+          int n = path.size() - 1;
+          for (int i = 0; i < n; i++) {
+            Object nx = cur.get(path.get(i));
+            if (nx == null) {
+              nx = new HashMap();
+              cur.put(path.get(i), nx);
+            } else if (!(nx instanceof Map)) {
+              throw new IllegalArgumentException("cannot move [" + k + "] to [" + String.join('.', path) + "]: parent [" + path.get(i) + "] is not an object");
+            }
+            cur = (Map) nx;
+          }
+          if (cur.containsKey(path.get(n))) {
+            throw new IllegalArgumentException("cannot move [" + k + "] to [" + String.join('.', path) + "]: field already exists");
+          }
+          cur.put(path.get(n), ext.remove(k));
+        }
+      params:
+        m:
+          PanOSX-Forwarded-ForIP: [cef, extensions, PanOSXForwardedForIP]
+          PanOSX-Forwarded-For: [cef, extensions, PanOSXForwardedFor]
+          PanOSSplit-tunnelconfiguration: [cef, extensions, PanOSSplitTunnelconfiguration]
+          PanOSAccessPointName: [prisma_access, event, access_point_name]
+          PanOSAgentContentVersion: [prisma_access, event, agent, content_version]
+          PanOSAgentDataCollectionStatus: [prisma_access, event, agent, data_collection_status]
+          PanOSAgentID: [prisma_access, event, agent, id]
+          PanOSAgentIsolationStatus: [prisma_access, event, agent, isolation_status]
+          PanOSAgentStatus: [prisma_access, event, agent, status]
+          PanOSAgentTimeZoneOffset: [prisma_access, event, agent, timezone_offset]
+          PanOSAgentVersion: [prisma_access, event, agent, version]
+          PanOSApplianceOrCloud: [prisma_access, event, appliance_or_cloud]
+          PanOSApplicationCategory: [prisma_access, event, application, category]
+          PanOSApplicationCharacteristics: [prisma_access, event, application, characteristics]
+          PanOSApplicationContainer: [prisma_access, event, application, container]
+          PanOSApplicationRisk: [prisma_access, event, application, risk]
+          PanOSApplicationSubcategory: [prisma_access, event, application, subcategory]
+          PanOSApplicationTechnology: [prisma_access, event, application, technology]
+          PanOSAssocationEndReason: [prisma_access, event, assocation_end_reason]
+          PanOSAttemptedGateways: [prisma_access, event, attempted_gateways]
+          PanOSAuthCacheServiceRegion: [prisma_access, event, auth, cache_service_region]
+          PanOSAuthMethod: [prisma_access, event, auth, method]
+          deviceCustomString1Label: [prisma_access, event, label, cs1]
+          PanOSAuthenticatedUserDomain: [prisma_access, event, authenticated, user, domain]
+          PanOSAuthenticatedUserName: [prisma_access, event, authenticated, user, name]
+          PanOSAuthenticatedUserUUID: [prisma_access, event, authenticated, user, uuid]
+          PanOSAuthenticationDescription: [prisma_access, event, authentication, description]
+          deviceCustomString4Label: [prisma_access, event, label, cs4]
+          PanOSAuthenticationProtocol: [prisma_access, event, authentication, protocol]
+          PanOSCertificateFlags: [prisma_access, event, certificate, flags]
+          PanOSCertificateSerial: [prisma_access, event, certificate, serial]
+          PanOSCertificateVersion: [prisma_access, event, certificate, version]
+          PanOSChainStatus: [prisma_access, event, chain_status]
+          deviceCustomString5Label: [prisma_access, event, label, cs5]
+          PanOSClientTypeName: [prisma_access, event, client, type, name]
+          PanOSCloudHostname: [prisma_access, event, cloud, hostname]
+          PanOSCloudReportID: [prisma_access, event, cloud, report_id]
+          PanOSCommonName: [prisma_access, event, common, name, value]
+          PanOSConnectionError: [prisma_access, event, connection, error, value]
+          PanOSConnectionMethod: [prisma_access, event, connection, method]
+          PanOSContainerID: [prisma_access, event, container, id]
+          PanOSContainerName: [prisma_access, event, container, name, value]
+          PanOSContainerNameSpace: [prisma_access, event, container, name, space]
+          PanOSContentVersion: [prisma_access, event, content_version]
+          PanOSCortexDataLakeTenantID: [prisma_access, event, cortex_data_lake_tenant_id]
+          PanOSCpadding: [prisma_access, event, cpadding]
+          PanOSCrashHistory: [prisma_access, event, crash_history]
+          PanOSDebugLogFile: [prisma_access, event, debug_log_file]
+          PanOSDescription: [prisma_access, event, description]
+          deviceCustomIPv6Address2Label: [prisma_access, event, label, c6a2]
+          deviceCustomIPv6Address3Label: [prisma_access, event, label, c6a3]
+          PanOSDestinationDeviceCategory: [prisma_access, event, destination, device, category]
+          PanOSDestinationDeviceClass: [prisma_access, event, destination, device, class]
+          PanOSDestinationDeviceHost: [prisma_access, event, destination, device, host]
+          PanOSDestinationDeviceMac: [prisma_access, event, destination, device, mac]
+          PanOSDestinationDeviceModel: [prisma_access, event, destination, device, model]
+          PanOSDestinationDeviceOS: [prisma_access, event, destination, device, os, type]
+          PanOSDestinationDeviceOSFamily: [prisma_access, event, destination, device, os, family]
+          PanOSDestinationDeviceOSVersion: [prisma_access, event, destination, device, os, version]
+          PanOSDestinationDeviceProfile: [prisma_access, event, destination, device, profile]
+          PanOSDestinationDeviceVendor: [prisma_access, event, destination, device, vendor]
+          PanOSDestinationDynamicAddressGroup: [prisma_access, event, destination, dynamic_address_group]
+          PanOSDestinationEDL: [prisma_access, event, destination, edl]
+          destinationHostName: [prisma_access, event, destination, host_name]
+          PanOSDestinationLocation: [prisma_access, event, destination, location]
+          destinationNtDomain: [prisma_access, event, destination, nt_domain]
+          destinationServiceName: [prisma_access, event, destination, service_name]
+          PanOSDestinationUserDomain: [prisma_access, event, pan_os, destination, user, domain]
+          destinationUserId: [prisma_access, event, destination, user, id]
+          PanOSDestinationUserUUID: [prisma_access, event, destination, user, uuid]
+          PanOSDestinationUUID: [prisma_access, event, destination, uuid]
+          deviceAction: [prisma_access, event, device, action]
+          deviceEventCategory: [prisma_access, event, device, event, category]
+          deviceExternalId: [prisma_access, event, device, external_id]
+          PanOSDeviceGroup: [prisma_access, event, device, group]
+          deviceHostName: [prisma_access, event, device, host_name]
+          deviceInboundInterface: [prisma_access, event, device, inbound_interface]
+          deviceCustomIPv6Address1Label: [prisma_access, event, label, c6a1]
+          PanOSDeviceName: [prisma_access, event, device, name]
+          deviceOutboundInterface: [prisma_access, event, device, outbound_interface]
+          PanOSDeviceSN: [prisma_access, event, device, sn]
+          deviceTimeZone: [prisma_access, event, device, time_zone]
+          PanOSDiamAppID: [prisma_access, event, diam, app_id]
+          PanOSDiamAvpCode: [prisma_access, event, diam, avp_code]
+          PanOSDiameterCommandCode: [prisma_access, event, diameter_command_code]
+          flexString2: [prisma_access, event, direction_of_attack]
+          flexString2Label: [prisma_access, event, label, flex_string]
+          PanOSDisableHistory: [prisma_access, event, disable_history]
+          PanOSDLPVersionFlag: [prisma_access, event, dlp_version_flag]
+          PanOSDNSCategory: [prisma_access, event, dns, category]
+          PanOSDNSResponseCode: [prisma_access, event, dns, response, code]
+          PanOSDNSSecuityVersion: [prisma_access, event, dns, secuity_version]
+          PanOSDomain: [prisma_access, event, domain, value]
+          PanOSDynamicUserGroup: [prisma_access, event, dynamic_user_group, value]
+          PanOSDynamicUserGroupName: [prisma_access, event, dynamic_user_group, name]
+          PanOSEllipticCurve: [prisma_access, event, elliptic_curve]
+          PanOSEmailSubject: [prisma_access, event, email_subject]
+          PanOSEndpointAssociationID: [prisma_access, event, endpoint, association_id]
+          PanOSEndpointCPUArchitecture: [prisma_access, event, endpoint, cpu_architecture]
+          PanOSEndpointDeviceDomain: [prisma_access, event, endpoint, device, domain]
+          PanOSEndpointDeviceName: [prisma_access, event, endpoint, device, name]
+          deviceCustomString2Label: [prisma_access, event, label, cs2]
+          PanOSEndpointOSVersion: [prisma_access, event, endpoint, os, version]
+          PanOSEndpointSerialNumber: [prisma_access, event, endpoint, serial_number]
+          PanOSEndpointSN: [prisma_access, event, endpoint, sn]
+          PanOSEndpointUserDomain: [prisma_access, event, endpoint, user, domain]
+          PanOSEndpointUserName: [prisma_access, event, endpoint, user, name]
+          PanOSEndpointUserUUID: [prisma_access, event, endpoint, user, uuid]
+          PanOSErrorDetails: [prisma_access, event, error, details]
+          PanOSErrorIndex: [prisma_access, event, error, index]
+          PanOSErrorMessage: [prisma_access, event, error, message]
+          PanOSErrorStage: [prisma_access, event, error, stage]
+          PanOSEventCode: [prisma_access, event, data, code]
+          PanOSEventDescription: [prisma_access, event, data, description]
+          PanOSEventDetails: [prisma_access, event, data, details]
+          PanOSEventID: [prisma_access, event, data, id]
+          eventOutcome: [prisma_access, event, data, outcome]
+          PanOSEventResult: [prisma_access, event, data, result]
+          externalId: [prisma_access, event, external_id]
+          PanOSFallbacktoSSLReason: [prisma_access, event, fallback_to_ssl_reason]
+          PanOSFileHash: [prisma_access, event, file, hash]
+          fileId: [prisma_access, event, file, id]
+          filePath: [prisma_access, event, file, name]
+          PanOSFileType: [prisma_access, event, file, type]
+          PanOSFileURL: [prisma_access, event, file, url]
+          filename: [prisma_access, event, filename]
+          PanOSFingerprint: [prisma_access, event, fingerprint]
+          FlowType: [prisma_access, event, flow_type]
+          PanOSGateway: [prisma_access, event, gateway, value]
+          PanOSGatewayAuthentication: [prisma_access, event, gateway, authentication]
+          PanOSGatewayConfigurationName: [prisma_access, event, gateway, configuration_name]
+          PanOSGatewayPriority: [prisma_access, event, gateway, priority]
+          PanOSGatewaySelectionType: [prisma_access, event, gateway, selection_type]
+          PanOSGatewayStatus: [prisma_access, event, gateway, status]
+          PanOSGlobalProtectClientVersion: [prisma_access, event, global_protect, client_version]
+          PanOSGlobalProtectGatewayLocation: [prisma_access, event, global_protect, gateway_location]
+          PanOSGlobalProtectMemoryUsage: [prisma_access, event, global_protect, memory_usage]
+          PanOSGlobalProtectVersion: [prisma_access, event, global_protect, version]
+          PanOSGPHostID: [prisma_access, event, gp_host_id]
+          PanOSHASessionOwner: [prisma_access, event, ha_session_owner]
+          PanOSHipMatchType: [prisma_access, event, hip_match_type]
+          PanOSHostID: [prisma_access, event, host_id]
+          PanOSHTTPHeaders: [prisma_access, event, http, headers]
+          PanOSHTTPMethod: [prisma_access, event, http, method]
+          PanOSHTTPRefererFQDN: [prisma_access, event, http, referer, fqdn]
+          PanOSHTTPRefererProtocol: [prisma_access, event, http, referer, protocol]
+          PanOSHTTPRefererURLPath: [prisma_access, event, http, referer, url_path]
+          PanOSIMEI: [prisma_access, event, imei]
+          PanOSIMSI: [prisma_access, event, imsi]
+          PanOSInboundInterface: [prisma_access, event, inbound_interface, value]
+          PanOSInboundInterfaceDetailsType: [prisma_access, event, inbound_interface, details, type]
+          PanOSInlineMLVerdict: [prisma_access, event, inline_ml_verdict]
+          PanOSIPSubnetRange: [prisma_access, event, ip_subnet_range]
+          PanOSIPSecFailureReason: [prisma_access, event, ipsec, failure_reason]
+          PanOSIssuerCommonName: [prisma_access, event, issuer, common_name]
+          PanOSJustification: [prisma_access, event, justification]
+          PanOSLinkSwitches: [prisma_access, event, link, switches]
+          PanOSLocale: [prisma_access, event, locale]
+          PanOSLocation: [prisma_access, event, location]
+          deviceCustomString6Label: [prisma_access, event, label, cs6]
+          PanOSLogSource: [prisma_access, event, log, source, value]
+          LogSourceGroupID: [prisma_access, event, log, source, group_id]
+          PanOSLogSourceTimeZoneOffset: [prisma_access, event, log, source, timezone_offset]
+          PanOSLogSubtype: [prisma_access, event, log, subtype]
+          PanOSLoggingServiceID: [prisma_access, event, logging_service_id]
+          PanOSMapAppCode: [prisma_access, event, map_app_code]
+          PanOSMappingDataSourceSubType: [prisma_access, event, mapping, data_source, subtype]
+          message: [prisma_access, event, message]
+          PanOSMFAVendor: [prisma_access, event, mfa, vendor]
+          PanOSMobileAreaCode: [prisma_access, event, mobile, area_code]
+          PanOSMobileBaseStationCode: [prisma_access, event, mobile, base_station_code]
+          PanOSMobileCountryCode: [prisma_access, event, mobile, country_code]
+          PanOSMobileNetworkCode: [prisma_access, event, mobile, network_code]
+          PanOSMobileSubscriberISDN: [prisma_access, event, mobile, subscriber_isdn]
+          PanOSNSSAINetworkSliceDifferentiator: [prisma_access, event, nssai_network_slice, differentiator]
+          PanOSNSSAINetworkSliceType: [prisma_access, event, nssai_network_slice, type]
+          PanOSOperatingSystem: [prisma_access, event, operating_system]
+          PanOSOutboundInterfaceDetailsType: [prisma_access, event, outbound_interface_details, type]
+          PanOSPacket: [prisma_access, event, packet, value]
+          PanOSPadding: [prisma_access, event, padding]
+          PanOSPadding3: [prisma_access, event, padding3]
+          PanOSPanoramaSN: [prisma_access, event, panorama_sn]
+          PanOSParentSessionID: [prisma_access, event, parent, session_id]
+          PanOSPartialHash: [prisma_access, event, partial_hash]
+          PanOSPayloadProtocolID: [prisma_access, event, payload_protocol_id]
+          PlatformType: [prisma_access, event, platform_type]
+          PanOSPolicyName: [prisma_access, event, policy_name]
+          PanOSPortal: [prisma_access, event, portal, value]
+          PanOSPortalAuthentication: [prisma_access, event, portal, authentication]
+          PanOSPortalConfigurationName: [prisma_access, event, portal, configuration_name]
+          PanOSPortalStatus: [prisma_access, event, portal, status]
+          PanOSProfileName: [prisma_access, event, profile, name]
+          ProfileToken: [prisma_access, event, profile, token]
+          ProjectName: [prisma_access, event, project_name]
+          transportProtocol: [prisma_access, event, transport_protocol]
+          PanOSProtocolDataUnitsessionID: [prisma_access, event, protocol_data_unitsession_id]
+          PanOSProxyType: [prisma_access, event, proxy, type]
+          PanOSQuarantineReason: [prisma_access, event, quarantine_reason]
+          PanOSRadioAccessTechnology: [prisma_access, event, radio_access_technology]
+          Reason: [prisma_access, event, reason]
+          PanOSReasonForDataFilteringAction: [prisma_access, event, reason_for_data_filtering_action]
+          PanOSRecipientEmail: [prisma_access, event, recipient_email]
+          PanOSRecordType: [prisma_access, event, record_type]
+          PanOSReferer: [prisma_access, event, referer]
+          PanOSReportID: [prisma_access, event, report_id]
+          requestClientApplication: [prisma_access, event, request, client_application]
+          requestContext: [prisma_access, event, request, context]
+          requestMethod: [prisma_access, event, request, method]
+          requestUrl: [prisma_access, event, request, url]
+          PanOSRootCommonName: [prisma_access, event, root, common_name]
+          PanOSRootStatus: [prisma_access, event, root, status]
+          PanOSRuleMatched: [prisma_access, event, rule, matched]
+          PanOSRuleMatchedUUID: [prisma_access, event, rule, matched_uuid]
+          PanOSRuleUUID: [prisma_access, event, rule, uuid]
+          PanOSSccpCallingGt: [prisma_access, event, sccp_calling, gt]
+          PanOSSctpCauseCode: [prisma_access, event, sctp, cause_code]
+          PanOSSctpChunkType: [prisma_access, event, sctp, chunk_type]
+          PanOSSCTPEventType: [prisma_access, event, sctp, event_type]
+          PanOSSctpFilter: [prisma_access, event, sctp, filter]
+          PanOSSDWANCluster: [prisma_access, event, sdwan, cluster, name]
+          PanOSSDWANClusterType: [prisma_access, event, sdwan, cluster, type]
+          PanOSSDWANDeviceType: [prisma_access, event, sdwan, device_type]
+          PanOSSDWANPolicyName: [prisma_access, event, sdwan, policy_name]
+          PanOSSDWANSite: [prisma_access, event, sdwan, site]
+          PanOSSenderEmail: [prisma_access, event, sender_email]
+          PanOSServerNameIndication: [prisma_access, event, server, name_indication]
+          PanOSServerPerformance: [prisma_access, event, server, perfomance]
+          PanOSSessionEndReason: [prisma_access, event, session, end_reason]
+          PanOSSessionTracker: [prisma_access, event, session, tracker]
+          PanOSSeverity: [prisma_access, event, severity]
+          PanOSSigFlags: [prisma_access, event, sig_flags]
+          PanOSSource: [prisma_access, event, source, value]
+          PanOSSourceDeviceCategory: [prisma_access, event, source, device, category]
+          PanOSSourceDeviceClass: [prisma_access, event, source, device, class]
+          PanOSSourceDeviceHost: [prisma_access, event, source, device, host]
+          PanOSSourceDeviceMac: [prisma_access, event, source, device, mac]
+          PanOSSourceDeviceModel: [prisma_access, event, source, device, model]
+          PanOSSourceDeviceOS: [prisma_access, event, source, device, os, type]
+          PanOSSourceDeviceOSFamily: [prisma_access, event, source, device, os, family]
+          PanOSSourceDeviceOSVersion: [prisma_access, event, source, device, os, version]
+          PanOSSourceDeviceProfile: [prisma_access, event, source, device, profile]
+          PanOSSourceDeviceVendor: [prisma_access, event, source, device, vendor]
+          PanOSSourceDynamicAddressGroup: [prisma_access, event, source, dynamic_address_group]
+          PanOSSourceEDL: [prisma_access, event, source, edl]
+          sourceHostName: [prisma_access, event, source, host_name]
+          PanOSSourceLocation: [prisma_access, event, source, location]
+          sourceNtDomain: [prisma_access, event, source, nt_domain]
+          PanOSSourceRegion: [prisma_access, event, source, region]
+          sourceServiceName: [prisma_access, event, source, service_name]
+          PanOSSourceUserDomain: [prisma_access, event, pan_os, source, user, domain]
+          sourceUserId: [prisma_access, event, source, user, id]
+          suser0: [prisma_access, event, s_user_0]
+          duser0: [prisma_access, event, d_user_0]
+          PanOSSourceUserUUID: [prisma_access, event, source, user, uuid]
+          PanOSSourceUUID: [prisma_access, event, source, uuid]
+          PanOSSSLFailureReason: [prisma_access, event, ssl, failure_reason]
+          PanOSStage: [prisma_access, event, stage]
+          PanOSStreamID: [prisma_access, event, stream_id]
+          PanOSTag: [prisma_access, event, tag, value]
+          PanOSTagName: [prisma_access, event, tag, name]
+          PanOSTemplate: [prisma_access, event, template]
+          PanOSTenantID: [prisma_access, event, tenant_id]
+          PanOSThreatCategory: [prisma_access, event, threat, category]
+          PanOSThreatID: [prisma_access, event, threat, id]
+          PanOSThreatNameFirewall: [prisma_access, event, threat, name_firewall]
+          PanOSTLSAuth: [prisma_access, event, tls, auth]
+          PanOSTLSEncryptionAlgorithm: [prisma_access, event, tls, encryption_algorithm]
+          PanOSTLSKeyExchange: [prisma_access, event, tls, key_exchange]
+          PanOSTLSVersion: [prisma_access, event, tls, version]
+          PanOSTpadding: [prisma_access, event, tpadding]
+          PanOSTunnelCauseCode: [prisma_access, event, tunnel, cause_code]
+          PanOSTunnelEndpointID1: [prisma_access, event, tunnel, endpoint, id1]
+          PanOSTunnelEndpointID2: [prisma_access, event, tunnel, endpoint, id2]
+          PanOSTunnelEventCode: [prisma_access, event, tunnel, event, code]
+          PanOSTunnelEventType: [prisma_access, event, tunnel, event, type]
+          PanOSTunnelInspectionRule: [prisma_access, event, tunnel, inspection_rule]
+          PanOSTunnelInterface: [prisma_access, event, tunnel, interface]
+          PanOSTunnelMessageType: [prisma_access, event, tunnel, message_type]
+          PanOSTunnelRemoteIMSIID: [prisma_access, event, tunnel, remote, imsi_id]
+          PanOSTunnelType: [prisma_access, event, tunnel, type]
+          PanOSTunneledApplication: [prisma_access, event, tunneled_application]
+          PanOSType: [prisma_access, event, type]
+          PanOSUGFlags: [prisma_access, event, ug_flags]
+          PanOSURL: [prisma_access, event, url, value]
+          PanOSURLCategoryList: [prisma_access, event, url, category, list]
+          PanOSURLDomain: [prisma_access, event, url, domain]
+          PanOSUserAgentString: [prisma_access, event, user, agent_string]
+          PanOSUserComment: [prisma_access, event, user, comment]
+          PanOSUserGroupFound: [prisma_access, event, user, group_found]
+          PanOSUserIdentifiedBySource: [prisma_access, event, user, identified_by_source]
+          PanOSUsername: [prisma_access, event, username]
+          PanOSUUID: [prisma_access, event, uuid]
+          PanOSVerdict: [prisma_access, event, verdict]
+          PanOSVerificationTag1: [prisma_access, event, verification, tag1]
+          PanOSVerificationTag2: [prisma_access, event, verification, tag2]
+          deviceCustomString3Label: [prisma_access, event, label, cs3]
+          PanOSVirtualSystem: [prisma_access, event, virtual, system, value]
+          PanOSVirtualSystemName: [prisma_access, event, virtual, system, name]
+          PanOSVpadding: [prisma_access, event, vpadding]
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -135,46 +464,6 @@ processors:
       value: protocol
       tag: append_event_type_protocol
       if: ctx.cef?.device?.event_class_id == 'SCTP'
-  - rename:
-      field: cef.extensions.PanOSAccessPointName
-      tag: rename_extension_PanOSAccessPointName
-      target_field: prisma_access.event.access_point_name
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSAgentContentVersion
-      tag: rename_extension_PanOSAgentContentVersion
-      target_field: prisma_access.event.agent.content_version
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSAgentDataCollectionStatus
-      tag: rename_extension_PanOSAgentDataCollectionStatus
-      target_field: prisma_access.event.agent.data_collection_status
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSAgentID
-      tag: rename_extension_PanOSAgentID
-      target_field: prisma_access.event.agent.id
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSAgentIsolationStatus
-      tag: rename_extension_PanOSAgentIsolationStatus
-      target_field: prisma_access.event.agent.isolation_status
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSAgentStatus
-      tag: rename_extension_PanOSAgentStatus
-      target_field: prisma_access.event.agent.status
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSAgentTimeZoneOffset
-      tag: rename_extension_PanOSAgentTimeZoneOffset
-      target_field: prisma_access.event.agent.timezone_offset
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSAgentVersion
-      tag: rename_extension_PanOSAgentVersion
-      target_field: prisma_access.event.agent.version
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSAppTampered
       tag: convert_extension_PanOSAppTampered_to_boolean
@@ -185,26 +474,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSApplianceOrCloud
-      tag: rename_extension_PanOSApplianceOrCloud
-      target_field: prisma_access.event.appliance_or_cloud
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSApplicationCategory
-      tag: rename_extension_PanOSApplicationCategory
-      target_field: prisma_access.event.application.category
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSApplicationCharacteristics
-      tag: rename_extension_PanOSApplicationCharacteristics
-      target_field: prisma_access.event.application.characteristics
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSApplicationContainer
-      tag: rename_extension_PanOSApplicationContainer
-      target_field: prisma_access.event.application.container
-      ignore_missing: true
   - rename:
       field: cef.extensions.PanOSApplication
       tag: rename_extension_PanOSApplication
@@ -226,41 +495,11 @@ processors:
       field: network.application
       tag: lowercase_network_application
       ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSApplicationRisk
-      tag: rename_extension_PanOSApplicationRisk
-      target_field: prisma_access.event.application.risk
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSApplicationSubcategory
-      tag: rename_extension_PanOSApplicationSubcategory
-      target_field: prisma_access.event.application.subcategory
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSApplicationTechnology
-      tag: rename_extension_PanOSApplicationTechnology
-      target_field: prisma_access.event.application.technology
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSAssocationEndReason
-      tag: rename_extension_PanOSAssocationEndReason
-      target_field: prisma_access.event.assocation_end_reason
-      ignore_missing: true
   - set:
       field: event.reason
       tag: set_event_reason_from_event_assocation_end_reason
       copy_from: prisma_access.event.assocation_end_reason
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSAttemptedGateways
-      tag: rename_extension_PanOSAttemptedGateways
-      target_field: prisma_access.event.attempted_gateways
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSAuthCacheServiceRegion
-      tag: rename_extension_PanOSAuthCacheServiceRegion
-      target_field: prisma_access.event.auth.cache_service_region
-      ignore_missing: true
   - convert:
       field: cef.extensions.deviceCustomNumber1
       tag: convert_extension_deviceCustomNumber1_to_long
@@ -273,25 +512,10 @@ processors:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
-      field: cef.extensions.PanOSAuthMethod
-      tag: rename_extension_PanOSAuthMethod
-      target_field: prisma_access.event.auth.method
-      ignore_missing: true
-  - rename:
       field: cef.extensions.deviceCustomString1
       tag: rename_extension_deviceCustomString1
       target_field: prisma_access.event.auth.server_profile
       if: ctx.cef?.device?.event_class_id == 'AUTH'
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.deviceCustomString1Label
-      tag: rename_extension_deviceCustomString1Label
-      target_field: prisma_access.event.label.cs1
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSAuthenticatedUserDomain
-      tag: rename_extension_PanOSAuthenticatedUserDomain
-      target_field: prisma_access.event.authenticated.user.domain
       ignore_missing: true
   - set:
       field: user.domain
@@ -304,11 +528,6 @@ processors:
       value: "{{{prisma_access.event.authenticated.user.domain}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.authenticated?.user?.domain != null
-  - rename:
-      field: cef.extensions.PanOSAuthenticatedUserName
-      tag: rename_extension_PanOSAuthenticatedUserName
-      target_field: prisma_access.event.authenticated.user.name
-      ignore_missing: true
   - append:
       field: related.user
       tag: append_event_authenticated_user_name_into_related_user
@@ -320,11 +539,6 @@ processors:
       tag: set_user_name_from_event_authenticated_user_name
       copy_from: prisma_access.event.authenticated.user.name
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSAuthenticatedUserUUID
-      tag: rename_extension_PanOSAuthenticatedUserUUID
-      target_field: prisma_access.event.authenticated.user.uuid
-      ignore_missing: true
   - append:
       field: related.user
       tag: append_event_authenticated_user_uuid_into_related_user
@@ -337,25 +551,10 @@ processors:
       copy_from: prisma_access.event.authenticated.user.uuid
       ignore_empty_value: true
   - rename:
-      field: cef.extensions.PanOSAuthenticationDescription
-      tag: rename_extension_PanOSAuthenticationDescription
-      target_field: prisma_access.event.authentication.description
-      ignore_missing: true
-  - rename:
       field: cef.extensions.deviceCustomString4
       tag: rename_extension_deviceCustomString4
       target_field: prisma_access.event.authentication.policy
       if: ctx.cef?.device?.event_class_id == 'AUTH'
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.deviceCustomString4Label
-      tag: rename_extension_deviceCustomString4Label
-      target_field: prisma_access.event.label.cs4
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSAuthenticationProtocol
-      tag: rename_extension_PanOSAuthenticationProtocol
-      target_field: prisma_access.event.authentication.protocol
       ignore_missing: true
   - convert:
       field: cef.extensions.baseEventCount
@@ -438,16 +637,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSCertificateFlags
-      tag: rename_extension_PanOSCertificateFlags
-      target_field: prisma_access.event.certificate.flags
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSCertificateSerial
-      tag: rename_extension_PanOSCertificateSerial
-      target_field: prisma_access.event.certificate.serial
-      ignore_missing: true
   - set:
       field: tls.client.x509.serial_number
       tag: set_tls_client_x509_serial_number_from_event_certificate_serial
@@ -463,21 +652,11 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSCertificateVersion
-      tag: rename_extension_PanOSCertificateVersion
-      target_field: prisma_access.event.certificate.version
-      ignore_missing: true
   - set:
       field: tls.client.x509.version_number
       tag: set_tls_client_x509_version_number_from_event_certificate_version
       copy_from: prisma_access.event.certificate.version
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSChainStatus
-      tag: rename_extension_PanOSChainStatus
-      target_field: prisma_access.event.chain_status
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSChunksReceived
       tag: convert_extension_PanOSChunksReceived_to_long
@@ -514,11 +693,6 @@ processors:
       target_field: prisma_access.event.client.type.value
       if: ctx.cef?.device?.event_class_id == 'AUTH'
       ignore_missing: true
-  - rename:
-      field: cef.extensions.deviceCustomString5Label
-      tag: rename_extension_deviceCustomString5Label
-      target_field: prisma_access.event.label.cs5
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSClientToFirewall
       tag: convert_extension_PanOSClientToFirewall_to_boolean
@@ -531,16 +705,6 @@ processors:
             tag: rename_extension_PanOSClientToFirewall
             target_field: prisma_access.event.client.to_firewall_str
             ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSClientTypeName
-      tag: rename_extension_PanOSClientTypeName
-      target_field: prisma_access.event.client.type.name
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSCloudHostname
-      tag: rename_extension_PanOSCloudHostname
-      target_field: prisma_access.event.cloud.hostname
-      ignore_missing: true
   - append:
       field: cloud.instance.name
       tag: append_event_cloud_hostname_into_cloud_instance_name
@@ -553,16 +717,6 @@ processors:
       value: "{{{prisma_access.event.cloud.hostname}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.cloud?.hostname != null
-  - rename:
-      field: cef.extensions.PanOSCloudReportID
-      tag: rename_extension_PanOSCloudReportID
-      target_field: prisma_access.event.cloud.report_id
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSCommonName
-      tag: rename_extension_PanOSCommonName
-      target_field: prisma_access.event.common.name.value
-      ignore_missing: true
   - append:
       field: tls.client.x509.subject.common_name
       tag: append_prisma_access_event_common_name_into_tls_client_x509_subject_common_name
@@ -600,57 +754,22 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSConnectionError
-      tag: rename_extension_PanOSConnectionError
-      target_field: prisma_access.event.connection.error.value
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSConnectionErrorID
       tag: convert_extension_PanOSConnectionErrorID_to_string
       target_field: prisma_access.event.connection.error.id
       type: string
       ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSConnectionMethod
-      tag: rename_extension_PanOSConnectionMethod
-      target_field: prisma_access.event.connection.method
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSContainerID
-      tag: rename_extension_PanOSContainerID
-      target_field: prisma_access.event.container.id
-      ignore_missing: true
   - set:
       field: container.id
       tag: set_container_id_from_event_container_id
       copy_from: prisma_access.event.container.id
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSContainerName
-      tag: rename_extension_PanOSContainerName
-      target_field: prisma_access.event.container.name.value
-      ignore_missing: true
   - set:
       field: container.name
       tag: set_container_name_from_event_container_name
       copy_from: prisma_access.event.container.name.value
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSContainerNameSpace
-      tag: rename_extension_PanOSContainerNameSpace
-      target_field: prisma_access.event.container.name.space
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSContentVersion
-      tag: rename_extension_PanOSContentVersion
-      target_field: prisma_access.event.content_version
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSCortexDataLakeTenantID
-      tag: rename_extension_PanOSCortexDataLakeTenantID
-      target_field: prisma_access.event.cortex_data_lake_tenant_id
-      ignore_missing: true
   - append:
       field: cloud.account.id
       tag: append_prisma_access_event_cortex_data_lake_tenant_id_into_cloud_account_id
@@ -667,11 +786,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSCpadding
-      tag: rename_extension_PanOSCpadding
-      target_field: prisma_access.event.cpadding
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSCPUUsage
       tag: convert_extension_PanOSCPUUsage_to_double
@@ -694,27 +808,12 @@ processors:
         }
         ctx.host.cpu = new HashMap();
         ctx.host.cpu.usage = Math.round(ctx.prisma_access?.event?.cpu_usage *10) / 1000.0;
-  - rename:
-      field: cef.extensions.PanOSCrashHistory
-      tag: rename_extension_PanOSCrashHistory
-      target_field: prisma_access.event.crash_history
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSDebugLogFile
-      tag: rename_extension_PanOSDebugLogFile
-      target_field: prisma_access.event.debug_log_file
-      ignore_missing: true
   - append:
       field: file.name
       tag: append_prisma_access_event_debug_log_file_into_file_name
       value: "{{{prisma_access.event.debug_log_file}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.debug_log_file != null
-  - rename:
-      field: cef.extensions.PanOSDescription
-      tag: rename_extension_PanOSDescription
-      target_field: prisma_access.event.description
-      ignore_missing: true
   - set:
       field: message
       tag: set_message_from_event_description
@@ -743,11 +842,6 @@ processors:
       value: "{{{prisma_access.event.destination.address.value}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.destination?.address?.value != null
-  - rename:
-      field: cef.extensions.deviceCustomIPv6Address2Label
-      tag: rename_extension_deviceCustomIPv6Address2Label
-      target_field: prisma_access.event.label.c6a2
-      ignore_missing: true
   - convert:
       field: cef.extensions.deviceCustomIPv6Address2
       tag: convert_extension_deviceCustomIPv6Address2_to_ip
@@ -775,11 +869,6 @@ processors:
       value: "{{{prisma_access.event.source.address.v6}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.source?.address?.v6 != null
-  - rename:
-      field: cef.extensions.deviceCustomIPv6Address3Label
-      tag: rename_extension_deviceCustomIPv6Address3Label
-      target_field: prisma_access.event.label.c6a3
-      ignore_missing: true
   - convert:
       field: cef.extensions.deviceCustomIPv6Address3
       tag: convert_extension_deviceCustomIPv6Address3_to_ip
@@ -807,21 +896,6 @@ processors:
       value: "{{{prisma_access.event.destination.address.v6}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.destination?.address?.v6 != null
-  - rename:
-      field: cef.extensions.PanOSDestinationDeviceCategory
-      tag: rename_extension_PanOSDestinationDeviceCategory
-      target_field: prisma_access.event.destination.device.category
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSDestinationDeviceClass
-      tag: rename_extension_PanOSDestinationDeviceClass
-      target_field: prisma_access.event.destination.device.class
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSDestinationDeviceHost
-      tag: rename_extension_PanOSDestinationDeviceHost
-      target_field: prisma_access.event.destination.device.host
-      ignore_missing: true
   - append:
       field: destination.domain
       tag: append_prisma_access_event_destination_device_host_into_destination_domain
@@ -834,11 +908,6 @@ processors:
       value: "{{{prisma_access.event.destination.device.host}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.destination?.device?.host != null
-  - rename:
-      field: cef.extensions.PanOSDestinationDeviceMac
-      tag: rename_extension_PanOSDestinationDeviceMac
-      target_field: prisma_access.event.destination.device.mac
-      ignore_missing: true
   - set:
       field: destination.mac
       tag: set_destination_mac_from_event_destination_device_mac
@@ -863,57 +932,12 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: cef.extensions.PanOSDestinationDeviceModel
-      tag: rename_extension_PanOSDestinationDeviceModel
-      target_field: prisma_access.event.destination.device.model
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSDestinationDeviceOS
-      tag: rename_extension_PanOSDestinationDeviceOS
-      target_field: prisma_access.event.destination.device.os.type
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSDestinationDeviceOSFamily
-      tag: rename_extension_PanOSDestinationDeviceOSFamily
-      target_field: prisma_access.event.destination.device.os.family
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSDestinationDeviceOSVersion
-      tag: rename_extension_PanOSDestinationDeviceOSVersion
-      target_field: prisma_access.event.destination.device.os.version
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSDestinationDeviceProfile
-      tag: rename_extension_PanOSDestinationDeviceProfile
-      target_field: prisma_access.event.destination.device.profile
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSDestinationDeviceVendor
-      tag: rename_extension_PanOSDestinationDeviceVendor
-      target_field: prisma_access.event.destination.device.vendor
-      ignore_missing: true
   - append:
       field: destination.as.organization.name
       tag: append_prisma_access_event_destination_device_vendor_into_destination_as_organization_name
       value: "{{{prisma_access.event.destination.device.vendor}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.destination?.device?.vendor != null
-  - rename:
-      field: cef.extensions.PanOSDestinationDynamicAddressGroup
-      tag: rename_extension_PanOSDestinationDynamicAddressGroup
-      target_field: prisma_access.event.destination.dynamic_address_group
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSDestinationEDL
-      tag: rename_extension_PanOSDestinationEDL
-      target_field: prisma_access.event.destination.edl
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.destinationHostName
-      tag: rename_extension_destinationHostName
-      target_field: prisma_access.event.destination.host_name
-      ignore_missing: true
   - append:
       field: host.name
       tag: append_prisma_access_event_destination_host_name_into_host_name
@@ -926,16 +950,6 @@ processors:
       value: "{{{prisma_access.event.destination.host_name}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.destination?.host_name != null
-  - rename:
-      field: cef.extensions.PanOSDestinationLocation
-      tag: rename_extension_PanOSDestinationLocation
-      target_field: prisma_access.event.destination.location
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.destinationNtDomain
-      tag: rename_extension_destinationNtDomain
-      target_field: prisma_access.event.destination.nt_domain
-      ignore_missing: true
   - append:
       field: destination.user.domain
       tag: append_prisma_access_event_destination_nt_domain_into_destination_user_domain
@@ -957,11 +971,6 @@ processors:
       tag: set_destination_port_from_event_destination_port
       copy_from: prisma_access.event.destination.port
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.destinationServiceName
-      tag: rename_extension_destinationServiceName
-      target_field: prisma_access.event.destination.service_name
-      ignore_missing: true
   - convert:
       field: cef.extensions.destinationTranslatedAddress
       tag: convert_extension_destinationTranslatedAddress_to_ip
@@ -1071,22 +1080,12 @@ processors:
       value: "{{{prisma_access.event.pan_os_data.destination.user.name}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.pan_os_data?.destination?.user?.name != null
-  - rename:
-      field: cef.extensions.PanOSDestinationUserDomain
-      tag: rename_extension_PanOSDestinationUserDomain
-      target_field: prisma_access.event.pan_os.destination.user.domain
-      ignore_missing: true
   - append:
       field: destination.user.domain
       tag: append_prisma_access_event_pan_os_destination_user_domain_into_destination_user_domain
       value: "{{{prisma_access.event.pan_os.destination.user.domain}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.pan_os?.destination?.user?.domain != null
-  - rename:
-      field: cef.extensions.destinationUserId
-      tag: rename_extension_destinationUserId
-      target_field: prisma_access.event.destination.user.id
-      ignore_missing: true
   - append:
       field: destination.user.id
       tag: append_prisma_access_event_destination_user_id_into_destination_user_id
@@ -1135,11 +1134,6 @@ processors:
       value: "{{{prisma_access.event.destination.user.name}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.destination?.user?.name != null
-  - rename:
-      field: cef.extensions.PanOSDestinationUserUUID
-      tag: rename_extension_PanOSDestinationUserUUID
-      target_field: prisma_access.event.destination.user.uuid
-      ignore_missing: true
   - append:
       field: destination.user.id
       tag: append_prisma_access_event_destination_user_uuid_into_destination_user_id
@@ -1152,32 +1146,17 @@ processors:
       value: "{{{prisma_access.event.destination.user.uuid}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.destination?.user?.uuid != null
-  - rename:
-      field: cef.extensions.PanOSDestinationUUID
-      tag: rename_extension_PanOSDestinationUUID
-      target_field: prisma_access.event.destination.uuid
-      ignore_missing: true
   - append:
       field: related.hosts
       tag: append_event_destination_uuid_into_related_hosts
       value: "{{{prisma_access.event.destination.uuid}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.destination?.uuid != null
-  - rename:
-      field: cef.extensions.deviceAction
-      tag: rename_extension_deviceAction
-      target_field: prisma_access.event.device.action
-      ignore_missing: true
   - set:
       field: event.action
       tag: set_event_action_from_event_device_action
       copy_from: prisma_access.event.device.action
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.deviceEventCategory
-      tag: rename_extension_deviceEventCategory
-      target_field: prisma_access.event.device.event.category
-      ignore_missing: true
   - rename:
       field: cef.extensions.Device Event Class ID
       tag: rename_extension_Device Event Class ID
@@ -1193,27 +1172,12 @@ processors:
       tag: rename_extension_DeviceEventClassId
       target_field: prisma_access.event.device.event.class_id
       ignore_missing: true
-  - rename:
-      field: cef.extensions.deviceExternalId
-      tag: rename_extension_deviceExternalId
-      target_field: prisma_access.event.device.external_id
-      ignore_missing: true
   - append:
       field: observer.serial_number
       tag: append_observer_serial_number_from_event_device_external_id
       value: "{{{prisma_access.event.device.external_id}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.device?.external_id != null
-  - rename:
-      field: cef.extensions.PanOSDeviceGroup
-      tag: rename_extension_PanOSDeviceGroup
-      target_field: prisma_access.event.device.group
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.deviceHostName
-      tag: rename_extension_deviceHostName
-      target_field: prisma_access.event.device.host_name
-      ignore_missing: true
   - set:
       field: observer.hostname
       tag: set_observer_hostname_from_event_device_host_name
@@ -1225,21 +1189,11 @@ processors:
       value: "{{{prisma_access.event.device.host_name}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.device?.host_name != null
-  - rename:
-      field: cef.extensions.deviceInboundInterface
-      tag: rename_extension_deviceInboundInterface
-      target_field: prisma_access.event.device.inbound_interface
-      ignore_missing: true
   - set:
       field: observer.ingress.interface.name
       tag: set_observer_ingress_interface_name_from_event_device_inbound_interface
       copy_from: prisma_access.event.device.inbound_interface
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.deviceCustomIPv6Address1Label
-      tag: rename_extension_deviceCustomIPv6Address1Label
-      target_field: prisma_access.event.label.c6a1
-      ignore_missing: true
   - convert:
       field: cef.extensions.deviceCustomIPv6Address1
       tag: convert_extension_deviceCustomIPv6Address1_to_ip
@@ -1261,11 +1215,6 @@ processors:
       value: "{{{prisma_access.event.device.ipv6_address}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.device?.ipv6_address != null
-  - rename:
-      field: cef.extensions.PanOSDeviceName
-      tag: rename_extension_PanOSDeviceName
-      target_field: prisma_access.event.device.name
-      ignore_missing: true
   - set:
       field: observer.hostname
       tag: set_observer_hostname_from_event_device_name
@@ -1277,32 +1226,17 @@ processors:
       value: "{{{prisma_access.event.device.name}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.device?.name != null
-  - rename:
-      field: cef.extensions.deviceOutboundInterface
-      tag: rename_extension_deviceOutboundInterface
-      target_field: prisma_access.event.device.outbound_interface
-      ignore_missing: true
   - set:
       field: observer.egress.interface.name
       tag: set_observer_egress_interface_name_from_event_device_outbound_interface
       copy_from: prisma_access.event.device.outbound_interface
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSDeviceSN
-      tag: rename_extension_PanOSDeviceSN
-      target_field: prisma_access.event.device.sn
-      ignore_missing: true
   - append:
       field: observer.serial_number
       tag: append_observer_serial_number_from_event_device_sn
       value: "{{{prisma_access.event.device.sn}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.device?.sn != null
-  - rename:
-      field: cef.extensions.deviceTimeZone
-      tag: rename_extension_deviceTimeZone
-      target_field: prisma_access.event.device.time_zone
-      ignore_missing: true
   - set:
       field: event.timezone
       tag: set_event_timezone_from_event_device_time_zone
@@ -1363,41 +1297,11 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSDiamAppID
-      tag: rename_extension_PanOSDiamAppID
-      target_field: prisma_access.event.diam.app_id
-      ignore_missing: true
   - set:
       field: network.iana_number
       tag: set_network_iana_number_from_event_diam_app_id
       copy_from: prisma_access.event.diam.app_id
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSDiamAvpCode
-      tag: rename_extension_PanOSDiamAvpCode
-      target_field: prisma_access.event.diam.avp_code
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSDiameterCommandCode
-      tag: rename_extension_PanOSDiameterCommandCode
-      target_field: prisma_access.event.diameter_command_code
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.flexString2
-      tag: rename_extension_flexString2
-      target_field: prisma_access.event.direction_of_attack
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.flexString2Label
-      tag: rename_extension_flexString2Label
-      target_field: prisma_access.event.label.flex_string
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSDisableHistory
-      tag: rename_extension_PanOSDisableHistory
-      target_field: prisma_access.event.disable_history
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSDiskAvailable
       tag: convert_extension_PanOSDiskAvailable_to_double
@@ -1409,11 +1313,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSDLPVersionFlag
-      tag: rename_extension_PanOSDLPVersionFlag
-      target_field: prisma_access.event.dlp_version_flag
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSDLSAstatus
       tag: convert_extension_PanOSDLSAstatus_to_boolean
@@ -1424,11 +1323,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSDNSCategory
-      tag: rename_extension_PanOSDNSCategory
-      target_field: prisma_access.event.dns.category
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSDNSReachable
       tag: convert_extension_PanOSDNSReachable_to_boolean
@@ -1539,26 +1433,11 @@ processors:
       value: "{{{prisma_access.event.dns.response.value}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.dns?.response?.value != null && !(ctx.prisma_access.event.dns.response.value instanceof List)
-  - rename:
-      field: cef.extensions.PanOSDNSResponseCode
-      tag: rename_extension_PanOSDNSResponseCode
-      target_field: prisma_access.event.dns.response.code
-      ignore_missing: true
   - set:
       field: dns.response_code
       tag: set_dns_response_code_from_event_dns_response_code
       copy_from: prisma_access.event.dns.response.code
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSDNSSecuityVersion
-      tag: rename_extension_PanOSDNSSecuityVersion
-      target_field: prisma_access.event.dns.secuity_version
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSDomain
-      tag: rename_extension_PanOSDomain
-      target_field: prisma_access.event.domain.value
-      ignore_missing: true
   - append:
       field: related.hosts
       tag: append_event_domain_into_related_hosts
@@ -1586,43 +1465,23 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSDynamicUserGroup
-      tag: rename_extension_PanOSDynamicUserGroup
-      target_field: prisma_access.event.dynamic_user_group.value
-      ignore_missing: true
   - append:
       field: user.group.name
       tag: append_user_group_name_from_event_dynamic_user_group_value
       value: "{{{prisma_access.event.dynamic_user_group.value}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.dynamic_user_group?.value != null
-  - rename:
-      field: cef.extensions.PanOSDynamicUserGroupName
-      tag: rename_extension_PanOSDynamicUserGroupName
-      target_field: prisma_access.event.dynamic_user_group.name
-      ignore_missing: true
   - append:
       field: user.group.name
       tag: append_user_group_name_from_event_dynamic_user_group_name
       value: "{{{prisma_access.event.dynamic_user_group.name}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.dynamic_user_group?.name != null
-  - rename:
-      field: cef.extensions.PanOSEllipticCurve
-      tag: rename_extension_PanOSEllipticCurve
-      target_field: prisma_access.event.elliptic_curve
-      ignore_missing: true
   - set:
       field: tls.curve
       tag: set_tls_curve_from_event_elliptic_curve
       copy_from: prisma_access.event.elliptic_curve
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSEmailSubject
-      tag: rename_extension_PanOSEmailSubject
-      target_field: prisma_access.event.email_subject
-      ignore_missing: true
   - set:
       field: email.subject
       tag: set_email_subject_from_event_email_subject
@@ -1645,26 +1504,11 @@ processors:
       tag: set_event_end_from_event_end_time
       copy_from: prisma_access.event.end_time
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSEndpointAssociationID
-      tag: rename_extension_PanOSEndpointAssociationID
-      target_field: prisma_access.event.endpoint.association_id
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSEndpointCPUArchitecture
-      tag: rename_extension_PanOSEndpointCPUArchitecture
-      target_field: prisma_access.event.endpoint.cpu_architecture
-      ignore_missing: true
   - set:
       field: host.architecture
       tag: set_host_architecture_from_event_endpoint_cpu_architecture
       copy_from: prisma_access.event.endpoint.cpu_architecture
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSEndpointDeviceDomain
-      tag: rename_extension_PanOSEndpointDeviceDomain
-      target_field: prisma_access.event.endpoint.device.domain
-      ignore_missing: true
   - set:
       field: host.domain
       tag: set_host_domain_from_event_endpoint_device_domain
@@ -1676,11 +1520,6 @@ processors:
       value: "{{{prisma_access.event.endpoint.device.domain}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.endpoint?.device?.domain != null
-  - rename:
-      field: cef.extensions.PanOSEndpointDeviceName
-      tag: rename_extension_PanOSEndpointDeviceName
-      target_field: prisma_access.event.endpoint.device.name
-      ignore_missing: true
   - set:
       field: host.hostname
       tag: set_host_hostname_from_event_endpoint_device_name
@@ -1722,11 +1561,6 @@ processors:
       if: ctx.cef?.device?.event_class_id == 'HIPMATCH'
       ignore_missing: true
   - rename:
-      field: cef.extensions.deviceCustomString2Label
-      tag: rename_extension_deviceCustomString2Label
-      target_field: prisma_access.event.label.cs2
-      ignore_missing: true
-  - rename:
       field: cef.extensions.PanOSEndpointOSType
       tag: rename_extension_PanOSEndpointOSType
       target_field: prisma_access.event.endpoint.os.type
@@ -1736,46 +1570,21 @@ processors:
       tag: set_host_os_name_from_event_endpoint_os_type
       copy_from: prisma_access.event.endpoint.os.type
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSEndpointOSVersion
-      tag: rename_extension_PanOSEndpointOSVersion
-      target_field: prisma_access.event.endpoint.os.version
-      ignore_missing: true
   - set:
       field: host.os.version
       tag: set_host_os_version_from_event_endpoint_os_version
       copy_from: prisma_access.event.endpoint.os.version
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSEndpointSerialNumber
-      tag: rename_extension_PanOSEndpointSerialNumber
-      target_field: prisma_access.event.endpoint.serial_number
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSEndpointSN
-      tag: rename_extension_PanOSEndpointSN
-      target_field: prisma_access.event.endpoint.sn
-      ignore_missing: true
   - set:
       field: host.id
       tag: set_host_id_from_event_endpoint_sn
       copy_from: prisma_access.event.endpoint.sn
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSEndpointUserDomain
-      tag: rename_extension_PanOSEndpointUserDomain
-      target_field: prisma_access.event.endpoint.user.domain
-      ignore_missing: true
   - set:
       field: user.domain
       tag: set_user_domain_from_event_endpoint_user_domain
       copy_from: prisma_access.event.endpoint.user.domain
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSEndpointUserName
-      tag: rename_extension_PanOSEndpointUserName
-      target_field: prisma_access.event.endpoint.user.name
-      ignore_missing: true
   - set:
       field: user.name
       tag: set_user_name_from_event_endpoint_user_name
@@ -1787,11 +1596,6 @@ processors:
       value: "{{{prisma_access.event.endpoint.user.name}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.endpoint?.user?.name != null
-  - rename:
-      field: cef.extensions.PanOSEndpointUserUUID
-      tag: rename_extension_PanOSEndpointUserUUID
-      target_field: prisma_access.event.endpoint.user.uuid
-      ignore_missing: true
   - set:
       field: user.id
       tag: set_user_id_from_event_endpoint_user_uuid
@@ -1813,51 +1617,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSErrorDetails
-      tag: rename_extension_PanOSErrorDetails
-      target_field: prisma_access.event.error.details
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSErrorIndex
-      tag: rename_extension_PanOSErrorIndex
-      target_field: prisma_access.event.error.index
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSErrorMessage
-      tag: rename_extension_PanOSErrorMessage
-      target_field: prisma_access.event.error.message
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSErrorStage
-      tag: rename_extension_PanOSErrorStage
-      target_field: prisma_access.event.error.stage
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSEventCode
-      tag: rename_extension_PanOSEventCode
-      target_field: prisma_access.event.data.code
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSEventDescription
-      tag: rename_extension_PanOSEventDescription
-      target_field: prisma_access.event.data.description
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSEventDetails
-      tag: rename_extension_PanOSEventDetails
-      target_field: prisma_access.event.data.details
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSEventID
-      tag: rename_extension_PanOSEventID
-      target_field: prisma_access.event.data.id
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.eventOutcome
-      tag: rename_extension_eventOutcome
-      target_field: prisma_access.event.data.outcome
-      ignore_missing: true
   - set:
       field: event.outcome
       tag: set_event_outcome_to_success
@@ -1870,31 +1629,11 @@ processors:
       value: "failure"
       ignore_empty_value: true
       if: ctx.prisma_access?.event?.data?.outcome != null && ctx.prisma_access.event.data.outcome.toLowerCase() == 'failure'
-  - rename:
-      field: cef.extensions.PanOSEventResult
-      tag: rename_extension_PanOSEventResult
-      target_field: prisma_access.event.data.result
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.externalId
-      tag: rename_extension_externalId
-      target_field: prisma_access.event.external_id
-      ignore_missing: true
   - set:
       field: event.id
       tag: set_event_id_from_event_external_id
       copy_from: prisma_access.event.external_id
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSFallbacktoSSLReason
-      tag: rename_extension_PanOSFallbacktoSSLReason
-      target_field: prisma_access.event.fallback_to_ssl_reason
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSFileHash
-      tag: rename_extension_PanOSFileHash
-      target_field: prisma_access.event.file.hash
-      ignore_missing: true
   - set:
       field: file.hash.sha256
       tag: set_file_hash_sha256_from_event_file_hash
@@ -1913,27 +1652,12 @@ processors:
       value: "{{{prisma_access.event.file.hash}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.file?.hash != null
-  - rename:
-      field: cef.extensions.fileId
-      tag: rename_extension_fileId
-      target_field: prisma_access.event.file.id
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.filePath
-      tag: rename_extension_filePath
-      target_field: prisma_access.event.file.name
-      ignore_missing: true
   - append:
       field: file.name
       tag: append_prisma_access_event_file_name_into_file_name
       value: "{{{prisma_access.event.file.name}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.file?.name != null
-  - rename:
-      field: cef.extensions.PanOSFileType
-      tag: rename_extension_PanOSFileType
-      target_field: prisma_access.event.file.type
-      ignore_missing: true
   - set:
       field: file.type
       tag: set_file_type_from_event_file_type
@@ -1946,27 +1670,12 @@ processors:
       copy_from: prisma_access.event.file.type
       ignore_empty_value: true
       if: ctx.cef?.device?.event_class_id == 'THREAT' && ctx.cef?.extensions?.Name != 'file'
-  - rename:
-      field: cef.extensions.PanOSFileURL
-      tag: rename_extension_PanOSFileURL
-      target_field: prisma_access.event.file.url
-      ignore_missing: true
   - append:
       field: file.path
       tag: append_prisma_access_event_file_url_into_file_path
       value: "{{{prisma_access.event.file.url}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.file?.url != null && ctx.cef?.device?.event_class_id == 'FILE' || ctx.cef?.extensions?.Name == 'file'
-  - rename:
-      field: cef.extensions.filename
-      tag: rename_extension_filename
-      target_field: prisma_access.event.filename
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSFingerprint
-      tag: rename_extension_PanOSFingerprint
-      target_field: prisma_access.event.fingerprint
-      ignore_missing: true
   - set:
       field: tls.client.hash.md5
       tag: set_tls_client_hash_md5_from_event_fingerprint
@@ -2005,20 +1714,10 @@ processors:
             target_field: prisma_access.event.firewall_to_client_str
             ignore_missing: true
   - rename:
-      field: cef.extensions.FlowType
-      tag: rename_extension_FlowType
-      target_field: prisma_access.event.flow_type
-      ignore_missing: true
-  - rename:
       field: cef.extensions.deviceCustomString4
       tag: rename_extension_deviceCustomString4
       target_field: prisma_access.event.from_zone
       if: ctx.cef?.device?.event_class_id != null && ['DNS SECURITY','DECRYPTION','FILE','SCTP','THREAT','TRAFFIC','TUNNEL','URL'].contains(ctx.cef.device.event_class_id) || (ctx.cef?.extensions != null && ['url','file'].contains(ctx.cef.extensions.Name))
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSGateway
-      tag: rename_extension_PanOSGateway
-      target_field: prisma_access.event.gateway.value
       ignore_missing: true
   - convert:
       field: cef.extensions.PanOSGatewayAddress
@@ -2043,16 +1742,6 @@ processors:
       value: "{{{prisma_access.event.gateway.address}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.gateway?.address != null
-  - rename:
-      field: cef.extensions.PanOSGatewayAuthentication
-      tag: rename_extension_PanOSGatewayAuthentication
-      target_field: prisma_access.event.gateway.authentication
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSGatewayConfigurationName
-      tag: rename_extension_PanOSGatewayConfigurationName
-      target_field: prisma_access.event.gateway.configuration_name
-      ignore_missing: true
   - date:
       field: cef.extensions.PanOSGatewayLogoutTime
       tag: date_extension_PanOSGatewayLogoutTime
@@ -2065,11 +1754,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSGatewayPriority
-      tag: rename_extension_PanOSGatewayPriority
-      target_field: prisma_access.event.gateway.priority
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSGatewayReachable
       tag: convert_extension_PanOSGatewayReachable_to_boolean
@@ -2080,11 +1764,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSGatewaySelectionType
-      tag: rename_extension_PanOSGatewaySelectionType
-      target_field: prisma_access.event.gateway.selection_type
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSGatewaySSLCertificateValid
       tag: convert_extension_PanOSGatewaySSLCertificateValid_to_boolean
@@ -2095,16 +1774,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSGatewayStatus
-      tag: rename_extension_PanOSGatewayStatus
-      target_field: prisma_access.event.gateway.status
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSGlobalProtectClientVersion
-      tag: rename_extension_PanOSGlobalProtectClientVersion
-      target_field: prisma_access.event.global_protect.client_version
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSGlobalProtectCPUUsage
       tag: convert_extension_PanOSGlobalProtectCPUUsage_to_double
@@ -2116,16 +1785,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSGlobalProtectGatewayLocation
-      tag: rename_extension_PanOSGlobalProtectGatewayLocation
-      target_field: prisma_access.event.global_protect.gateway_location
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSGlobalProtectMemoryUsage
-      tag: rename_extension_PanOSGlobalProtectMemoryUsage
-      target_field: prisma_access.event.global_protect.memory_usage
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSGlobalProtectMTU
       tag: convert_extension_PanOSGlobalProtectMTU_to_long
@@ -2136,68 +1795,28 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSGlobalProtectVersion
-      tag: rename_extension_PanOSGlobalProtectVersion
-      target_field: prisma_access.event.global_protect.version
-      ignore_missing: true
   - set:
       field: observer.version
       tag: set_observer_version_from_event_global_protect_version
       copy_from: prisma_access.event.global_protect.version
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSGPHostID
-      tag: rename_extension_PanOSGPHostID
-      target_field: prisma_access.event.gp_host_id
-      ignore_missing: true
   - append:
       field: related.hosts
       tag: append_event_gp_host_id_into_related_hosts
       value: "{{{prisma_access.event.gp_host_id}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.gp_host_id != null
-  - rename:
-      field: cef.extensions.PanOSHASessionOwner
-      tag: rename_extension_PanOSHASessionOwner
-      target_field: prisma_access.event.ha_session_owner
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSHipMatchType
-      tag: rename_extension_PanOSHipMatchType
-      target_field: prisma_access.event.hip_match_type
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSHostID
-      tag: rename_extension_PanOSHostID
-      target_field: prisma_access.event.host_id
-      ignore_missing: true
   - append:
       field: related.hosts
       tag: append_event_host_id_into_related_hosts
       value: "{{{prisma_access.event.host_id}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.host_id != null
-  - rename:
-      field: cef.extensions.PanOSHTTPHeaders
-      tag: rename_extension_PanOSHTTPHeaders
-      target_field: prisma_access.event.http.headers
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSHTTPMethod
-      tag: rename_extension_PanOSHTTPMethod
-      target_field: prisma_access.event.http.method
-      ignore_missing: true
   - set:
       field: http.request.method
       tag: set_http_request_method_from_event_http_method
       copy_from: prisma_access.event.http.method
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSHTTPRefererFQDN
-      tag: rename_extension_PanOSHTTPRefererFQDN
-      target_field: prisma_access.event.http.referer.fqdn
-      ignore_missing: true
   - append:
       field: related.hosts
       tag: append_event_http_referer_fqdn_into_related_hosts
@@ -2214,36 +1833,11 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSHTTPRefererProtocol
-      tag: rename_extension_PanOSHTTPRefererProtocol
-      target_field: prisma_access.event.http.referer.protocol
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSHTTPRefererURLPath
-      tag: rename_extension_PanOSHTTPRefererURLPath
-      target_field: prisma_access.event.http.referer.url_path
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSHTTP2Connection
       tag: convert_extension_PanOSHTTP2Connection_to_string
       target_field: prisma_access.event.http2_connection
       type: string
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSIMEI
-      tag: rename_extension_PanOSIMEI
-      target_field: prisma_access.event.imei
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSIMSI
-      tag: rename_extension_PanOSIMSI
-      target_field: prisma_access.event.imsi
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSInboundInterface
-      tag: rename_extension_PanOSInboundInterface
-      target_field: prisma_access.event.inbound_interface.value
       ignore_missing: true
   - set:
       field: observer.ingress.interface.name
@@ -2270,11 +1864,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSInboundInterfaceDetailsType
-      tag: rename_extension_PanOSInboundInterfaceDetailsType
-      target_field: prisma_access.event.inbound_interface.details.type
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSInboundInterfaceDetailsUnit
       tag: convert_extension_PanOSInboundInterfaceDetailsUnit_to_long
@@ -2285,11 +1874,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSInlineMLVerdict
-      tag: rename_extension_PanOSInlineMLVerdict
-      target_field: prisma_access.event.inline_ml_verdict
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSInstallHistory
       tag: convert_extension_PanOSInstallHistory_to_boolean
@@ -2320,11 +1904,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSIPSubnetRange
-      tag: rename_extension_PanOSIPSubnetRange
-      target_field: prisma_access.event.ip_subnet_range
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSIPSecEnabled
       tag: convert_extension_PanOSIPSecEnabled_to_boolean
@@ -2335,11 +1914,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSIPSecFailureReason
-      tag: rename_extension_PanOSIPSecFailureReason
-      target_field: prisma_access.event.ipsec.failure_reason
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSIsCertCNTruncated
       tag: convert_extension_PanOSIsCertCNTruncated_to_boolean
@@ -2749,11 +2323,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSIssuerCommonName
-      tag: rename_extension_PanOSIssuerCommonName
-      target_field: prisma_access.event.issuer.common_name
-      ignore_missing: true
   - append:
       field: tls.client.x509.issuer.common_name
       tag: append_prisma_access_event_issuer_common_name_into_tls_client_x509_issuer_common_name
@@ -2790,11 +2359,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSJustification
-      tag: rename_extension_PanOSJustification
-      target_field: prisma_access.event.justification
-      ignore_missing: true
   - date:
       field: cef.extensions.PanOSLastHIPReportTime
       tag: date_extension_PanOSLastHIPReportTime
@@ -2839,21 +2403,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSLinkSwitches
-      tag: rename_extension_PanOSLinkSwitches
-      target_field: prisma_access.event.link.switches
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSLocale
-      tag: rename_extension_PanOSLocale
-      target_field: prisma_access.event.locale
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSLocation
-      tag: rename_extension_PanOSLocation
-      target_field: prisma_access.event.location
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSLogExported
       tag: convert_extension_PanOSLogExported_to_boolean
@@ -2881,29 +2430,9 @@ processors:
       if: ctx.cef?.device?.event_class_id != null && ['AUTH','FILE','DECRYPTION','SCTP','THREAT','TRAFFIC','TUNNEL','URL'].contains(ctx.cef.device.event_class_id) || (ctx.cef?.extensions != null && ['url','file'].contains(ctx.cef.extensions.Name))
       ignore_missing: true
   - rename:
-      field: cef.extensions.deviceCustomString6Label
-      tag: rename_extension_deviceCustomString6Label
-      target_field: prisma_access.event.label.cs6
-      ignore_missing: true
-  - rename:
       field: cef.extensions.PanOSLogSetting
       tag: rename_extension_PanOSLogSetting
       target_field: prisma_access.event.log.setting
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSLogSource
-      tag: rename_extension_PanOSLogSource
-      target_field: prisma_access.event.log.source.value
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.LogSourceGroupID
-      tag: rename_extension_LogSourceGroupID
-      target_field: prisma_access.event.log.source.group_id
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSLogSourceTimeZoneOffset
-      tag: rename_extension_PanOSLogSourceTimeZoneOffset
-      target_field: prisma_access.event.log.source.timezone_offset
       ignore_missing: true
   - set:
       field: event.timezone
@@ -2940,16 +2469,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSLogSubtype
-      tag: rename_extension_PanOSLogSubtype
-      target_field: prisma_access.event.log.subtype
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSLoggingServiceID
-      tag: rename_extension_PanOSLoggingServiceID
-      target_field: prisma_access.event.logging_service_id
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSLoginDuration
       tag: convert_extension_PanOSLoginDuration_to_long
@@ -2966,11 +2485,6 @@ processors:
       copy_from: prisma_access.event.login_duration
       ignore_empty_value: true
   - rename:
-      field: cef.extensions.PanOSMapAppCode
-      tag: rename_extension_PanOSMapAppCode
-      target_field: prisma_access.event.map_app_code
-      ignore_missing: true
-  - rename:
       field: cef.extensions.deviceCustomString5
       tag: rename_extension_deviceCustomString5
       target_field: prisma_access.event.mapping.data_source.value
@@ -2986,11 +2500,6 @@ processors:
       tag: rename_extension_deviceCustomString4
       target_field: prisma_access.event.mapping.data_source.name
       if: ctx.cef?.device?.event_class_id == 'USERID'
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSMappingDataSourceSubType
-      tag: rename_extension_PanOSMappingDataSourceSubType
-      target_field: prisma_access.event.mapping.data_source.subtype
       ignore_missing: true
   - rename:
       field: cef.extensions.deviceCustomString6
@@ -3034,11 +2543,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.message
-      tag: rename_extension_message
-      target_field: prisma_access.event.message
-      ignore_missing: true
   - set:
       field: message
       tag: set_message_from_event_message
@@ -3057,26 +2561,6 @@ processors:
       target_field: prisma_access.event.mfa.factor_type
       if: ctx.cef?.device?.event_class_id == 'USERID'
       ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSMFAVendor
-      tag: rename_extension_PanOSMFAVendor
-      target_field: prisma_access.event.mfa.vendor
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSMobileAreaCode
-      tag: rename_extension_PanOSMobileAreaCode
-      target_field: prisma_access.event.mobile.area_code
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSMobileBaseStationCode
-      tag: rename_extension_PanOSMobileBaseStationCode
-      target_field: prisma_access.event.mobile.base_station_code
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSMobileCountryCode
-      tag: rename_extension_PanOSMobileCountryCode
-      target_field: prisma_access.event.mobile.country_code
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSMobileIP
       tag: convert_extension_PanOSMobileIP_to_ip
@@ -3094,16 +2578,6 @@ processors:
       value: "{{{prisma_access.event.mobile.ip}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.mobile?.ip != null
-  - rename:
-      field: cef.extensions.PanOSMobileNetworkCode
-      tag: rename_extension_PanOSMobileNetworkCode
-      target_field: prisma_access.event.mobile.network_code
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSMobileSubscriberISDN
-      tag: rename_extension_PanOSMobileSubscriberISDN
-      target_field: prisma_access.event.mobile.subscriber_isdn
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSNAT
       tag: convert_extension_PanOSNAT_to_boolean
@@ -3234,21 +2708,6 @@ processors:
       value: "{{{prisma_access.event.normalize_user.name}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.normalize_user?.name != null
-  - rename:
-      field: cef.extensions.PanOSNSSAINetworkSliceDifferentiator
-      tag: rename_extension_PanOSNSSAINetworkSliceDifferentiator
-      target_field: prisma_access.event.nssai_network_slice.differentiator
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSNSSAINetworkSliceType
-      tag: rename_extension_PanOSNSSAINetworkSliceType
-      target_field: prisma_access.event.nssai_network_slice.type
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSOperatingSystem
-      tag: rename_extension_PanOSOperatingSystem
-      target_field: prisma_access.event.operating_system
-      ignore_missing: true
   - append:
       field: host.os.full
       tag: append_event_operating_system_into_host_os_full
@@ -3275,11 +2734,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSOutboundInterfaceDetailsType
-      tag: rename_extension_PanOSOutboundInterfaceDetailsType
-      target_field: prisma_access.event.outbound_interface_details.type
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSOutboundInterfaceDetailsUnit
       tag: convert_extension_PanOSOutboundInterfaceDetailsUnit_to_long
@@ -3290,11 +2744,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSPacket
-      tag: rename_extension_PanOSPacket
-      target_field: prisma_access.event.packet.value
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSPacketCapture
       tag: convert_extension_PanOSPacketCapture_to_boolean
@@ -3392,26 +2841,6 @@ processors:
       tag: set_network_packets_from_event_packets_total
       copy_from: prisma_access.event.packets.total
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSPadding
-      tag: rename_extension_PanOSPadding
-      target_field: prisma_access.event.padding
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSPadding3
-      tag: rename_extension_PanOSPadding3
-      target_field: prisma_access.event.padding3
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSPanoramaSN
-      tag: rename_extension_PanOSPanoramaSN
-      target_field: prisma_access.event.panorama_sn
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSParentSessionID
-      tag: rename_extension_PanOSParentSessionID
-      target_field: prisma_access.event.parent.session_id
-      ignore_missing: true
   - date:
       field: cef.extensions.PanOSParentStartTime
       tag: date_extension_PanOSParentStartTime
@@ -3436,37 +2865,12 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSPartialHash
-      tag: rename_extension_PanOSPartialHash
-      target_field: prisma_access.event.partial_hash
-      ignore_missing: true
   - append:
       field: related.hash
       tag: append_event_partial_hash_into_related_hash
       value: "{{{prisma_access.event.partial_hash}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.partial_hash != null
-  - rename:
-      field: cef.extensions.PanOSPayloadProtocolID
-      tag: rename_extension_PanOSPayloadProtocolID
-      target_field: prisma_access.event.payload_protocol_id
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PlatformType
-      tag: rename_extension_PlatformType
-      target_field: prisma_access.event.platform_type
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSPolicyName
-      tag: rename_extension_PanOSPolicyName
-      target_field: prisma_access.event.policy_name
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSPortal
-      tag: rename_extension_PanOSPortal
-      target_field: prisma_access.event.portal.value
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSPortalAddress
       tag: convert_extension_PanOSPortalAddress_to_ip
@@ -3484,16 +2888,6 @@ processors:
       value: "{{{prisma_access.event.portal.address}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.portal?.address != null
-  - rename:
-      field: cef.extensions.PanOSPortalAuthentication
-      tag: rename_extension_PanOSPortalAuthentication
-      target_field: prisma_access.event.portal.authentication
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSPortalConfigurationName
-      tag: rename_extension_PanOSPortalConfigurationName
-      target_field: prisma_access.event.portal.configuration_name
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSPortalGatewayLatency
       tag: convert_extension_PanOSPortalGatewayLatency_to_long
@@ -3536,11 +2930,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSPortalStatus
-      tag: rename_extension_PanOSPortalStatus
-      target_field: prisma_access.event.portal.status
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSPrivateIPv4
       tag: convert_extension_PanOSPrivateIPv4_to_ip
@@ -3651,26 +3040,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSProfileName
-      tag: rename_extension_PanOSProfileName
-      target_field: prisma_access.event.profile.name
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.ProfileToken
-      tag: rename_extension_ProfileToken
-      target_field: prisma_access.event.profile.token
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.ProjectName
-      tag: rename_extension_ProjectName
-      target_field: prisma_access.event.project_name
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.transportProtocol
-      tag: rename_extension_transportProtocol
-      target_field: prisma_access.event.transport_protocol
-      ignore_missing: true
   - set:
       field: network.transport
       tag: set_network_transport_from_event_transport_protocol
@@ -3679,11 +3048,6 @@ processors:
   - lowercase:
       field: network.transport
       tag: lowercase_network_transport
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSProtocolDataUnitsessionID
-      tag: rename_extension_PanOSProtocolDataUnitsessionID
-      target_field: prisma_access.event.protocol_data_unitsession_id
       ignore_missing: true
   - convert:
       field: cef.extensions.PanOSProxyServer
@@ -3695,41 +3059,11 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSProxyType
-      tag: rename_extension_PanOSProxyType
-      target_field: prisma_access.event.proxy.type
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSQuarantineReason
-      tag: rename_extension_PanOSQuarantineReason
-      target_field: prisma_access.event.quarantine_reason
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSRadioAccessTechnology
-      tag: rename_extension_PanOSRadioAccessTechnology
-      target_field: prisma_access.event.radio_access_technology
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.Reason
-      tag: rename_extension_Reason
-      target_field: prisma_access.event.reason
-      ignore_missing: true
   - set:
       field: event.reason
       tag: set_event_reason_from_event_reason
       copy_from: prisma_access.event.reason
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSReasonForDataFilteringAction
-      tag: rename_extension_PanOSReasonForDataFilteringAction
-      target_field: prisma_access.event.reason_for_data_filtering_action
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSRecipientEmail
-      tag: rename_extension_PanOSRecipientEmail
-      target_field: prisma_access.event.recipient_email
-      ignore_missing: true
   - append:
       field: email.to.address
       tag: append_event_reason_from_event_recipient_email
@@ -3742,11 +3076,6 @@ processors:
       value: "{{{prisma_access.event.recipient_email}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.recipient_email != null
-  - rename:
-      field: cef.extensions.PanOSRecordType
-      tag: rename_extension_PanOSRecordType
-      target_field: prisma_access.event.record_type
-      ignore_missing: true
   - split:
       field: prisma_access.event.record_type
       tag: split_dns_answers_array_from_record_type
@@ -3770,34 +3099,14 @@ processors:
       copy_from: prisma_access.event.record_type
       if: ctx.dns?.answers?.type == null
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSReferer
-      tag: rename_extension_PanOSReferer
-      target_field: prisma_access.event.referer
-      ignore_missing: true
   - set:
       field: http.request.referrer
       tag: set_http_request_referrer_from_event_referer
       copy_from: prisma_access.event.referer
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSReportID
-      tag: rename_extension_PanOSReportID
-      target_field: prisma_access.event.report_id
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.requestClientApplication
-      tag: rename_extension_requestClientApplication
-      target_field: prisma_access.event.request.client_application
-      ignore_missing: true
   - user_agent:
       field: prisma_access.event.request.client_application
       tag: user_agent_original_from_request_client_application
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.requestContext
-      tag: rename_extension_requestContext
-      target_field: prisma_access.event.request.context
       ignore_missing: true
   - append:
       field: http.response.mime_type
@@ -3805,38 +3114,26 @@ processors:
       value: "{{{prisma_access.event.request.context}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.request?.context != null
-  - rename:
-      field: cef.extensions.requestMethod
-      tag: rename_extension_requestMethod
-      target_field: prisma_access.event.request.method
-      ignore_missing: true
   - set:
       field: http.request.method
       tag: set_http_request_method_from_event_request_method
       copy_from: prisma_access.event.request.method
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.requestUrl
-      tag: rename_extension_requestUrl
-      target_field: prisma_access.event.request.url
-      ignore_missing: true
-  # For wildfire events, the CEF request field contains a filename, not a
-  # URL. Map it to file.name instead of url.full.
   - append:
       field: file.name
       tag: set_file_name_from_request_url_for_wildfire
       value: "{{{prisma_access.event.request.url}}}"
       allow_duplicates: false
-      if: ctx.cef?.device?.event_class_id == 'THREAT' && (ctx.cef?.extensions?.Name == 'wildfire' || ctx.cef?.extensions?.Name == 'wildfire-virus') && ctx.prisma_access?.event?.request?.url != null
+      if: ctx.cef?.device?.event_class_id == 'THREAT' && (['wildfire', 'wildfire-virus'].contains(ctx.cef?.extensions?.Name) || ['wildfire', 'wildfire-virus'].contains(ctx.cef?.name)) && ctx.prisma_access?.event?.request?.url != null
   - set:
       field: threat.indicator.file.name
       tag: set_threat_indicator_file_name_for_wildfire
       copy_from: prisma_access.event.request.url
       ignore_empty_value: true
-      if: ctx.cef?.device?.event_class_id == 'THREAT' && (ctx.cef?.extensions?.Name == 'wildfire' || ctx.cef?.extensions?.Name == 'wildfire-virus')
+      if: ctx.cef?.device?.event_class_id == 'THREAT' && (['wildfire', 'wildfire-virus'].contains(ctx.cef?.extensions?.Name) || ['wildfire', 'wildfire-virus'].contains(ctx.cef?.name))
   - uri_parts:
       field: prisma_access.event.request.url
-      if: ctx.prisma_access?.event?.request?.url != null && ctx.prisma_access.event.request.url != '' && !(ctx.cef?.device?.event_class_id == 'THREAT' && (ctx.cef?.extensions?.Name == 'wildfire' || ctx.cef?.extensions?.Name == 'wildfire-virus'))
+      if: ctx.prisma_access?.event?.request?.url != null && ctx.prisma_access.event.request.url != '' && !(ctx.cef?.device?.event_class_id == 'THREAT' && (['wildfire', 'wildfire-virus'].contains(ctx.cef?.extensions?.Name) || ['wildfire', 'wildfire-virus'].contains(ctx.cef?.name)))
       tag: uri_parts_processor
       ignore_failure: true
   - set:
@@ -3844,7 +3141,7 @@ processors:
       tag: set_http_request_url_from_event_request_url
       copy_from: prisma_access.event.request.url
       ignore_empty_value: true
-      if: "!(ctx.cef?.device?.event_class_id == 'THREAT' && (ctx.cef?.extensions?.Name == 'wildfire' || ctx.cef?.extensions?.Name == 'wildfire-virus'))"
+      if: "!(ctx.cef?.device?.event_class_id == 'THREAT' && (['wildfire', 'wildfire-virus'].contains(ctx.cef?.extensions?.Name) || ['wildfire', 'wildfire-virus'].contains(ctx.cef?.name)))"
   - convert:
       field: cef.extensions.PanOSRootCNLength
       tag: convert_extension_PanOSRootCNLength_to_long
@@ -3855,16 +3152,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSRootCommonName
-      tag: rename_extension_PanOSRootCommonName
-      target_field: prisma_access.event.root.common_name
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSRootStatus
-      tag: rename_extension_PanOSRootStatus
-      target_field: prisma_access.event.root.status
-      ignore_missing: true
   - date:
       field: cef.extensions.deviceReceiptTime
       tag: date_extension__rt
@@ -3893,32 +3180,17 @@ processors:
       tag: set_rule_name_from_event_rule_value
       copy_from: prisma_access.event.rule.value
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSRuleMatched
-      tag: rename_extension_PanOSRuleMatched
-      target_field: prisma_access.event.rule.matched
-      ignore_missing: true
   - set:
       field: rule.name
       tag: set_rule_name_from_event_rule_matched
       copy_from: prisma_access.event.rule.matched
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSRuleMatchedUUID
-      tag: rename_extension_PanOSRuleMatchedUUID
-      target_field: prisma_access.event.rule.matched_uuid
-      ignore_missing: true
   - append:
       field: rule.uuid
       tag: append_rule_uuid_from_event_rule_matched_uuid
       value: "{{{prisma_access.event.rule.matched_uuid}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.rule?.matched_uuid != null
-  - rename:
-      field: cef.extensions.PanOSRuleUUID
-      tag: rename_extension_PanOSRuleUUID
-      target_field: prisma_access.event.rule.uuid
-      ignore_missing: true
   - append:
       field: rule.uuid
       tag: append_rule_uuid_from_event_rule_uuid
@@ -3945,11 +3217,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSSccpCallingGt
-      tag: rename_extension_PanOSSccpCallingGt
-      target_field: prisma_access.event.sccp_calling.gt
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSSccpCallingSSN
       tag: convert_extension_PanOSSccpCallingSSN_to_long
@@ -3960,41 +3227,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSSctpCauseCode
-      tag: rename_extension_PanOSSctpCauseCode
-      target_field: prisma_access.event.sctp.cause_code
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSctpChunkType
-      tag: rename_extension_PanOSSctpChunkType
-      target_field: prisma_access.event.sctp.chunk_type
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSCTPEventType
-      tag: rename_extension_PanOSSCTPEventType
-      target_field: prisma_access.event.sctp.event_type
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSctpFilter
-      tag: rename_extension_PanOSSctpFilter
-      target_field: prisma_access.event.sctp.filter
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSDWANCluster
-      tag: rename_extension_PanOSSDWANCluster
-      target_field: prisma_access.event.sdwan.cluster.name
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSDWANClusterType
-      tag: rename_extension_PanOSSDWANClusterType
-      target_field: prisma_access.event.sdwan.cluster.type
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSDWANDeviceType
-      tag: rename_extension_PanOSSDWANDeviceType
-      target_field: prisma_access.event.sdwan.device_type
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSSDWANFECRatio
       tag: convert_extension_PanOSSDWANFECRatio_to_double
@@ -4005,21 +3237,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSSDWANPolicyName
-      tag: rename_extension_PanOSSDWANPolicyName
-      target_field: prisma_access.event.sdwan.policy_name
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSDWANSite
-      tag: rename_extension_PanOSSDWANSite
-      target_field: prisma_access.event.sdwan.site
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSenderEmail
-      tag: rename_extension_PanOSSenderEmail
-      target_field: prisma_access.event.sender_email
-      ignore_missing: true
   - set:
       field: threat.indicator.email.address
       tag: set_threat_indicator_email_address_from_event_sender_email
@@ -4048,11 +3265,6 @@ processors:
       tag: set_event_id_from_event_sequence_no
       copy_from: prisma_access.event.sequence_no
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSServerNameIndication
-      tag: rename_extension_PanOSServerNameIndication
-      target_field: prisma_access.event.server.name_indication
-      ignore_missing: true
   - set:
       field: tls.client.server_name
       tag: set_tls_client_server_name_from_event_server_name_indication
@@ -4064,11 +3276,6 @@ processors:
       value: "{{{prisma_access.event.server.name_indication}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.server?.name_indication != null
-  - rename:
-      field: cef.extensions.PanOSServerPerformance
-      tag: rename_extension_PanOSServerPerformance
-      target_field: prisma_access.event.server.perfomance
-      ignore_missing: true
   - convert:
       field: cef.extensions.deviceCustomNumber3
       tag: convert_extension_deviceCustomNumber3_to_long
@@ -4085,11 +3292,6 @@ processors:
       tag: set_event_duration_from_event_session_duration
       copy_from: prisma_access.event.session.duration
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSSessionEndReason
-      tag: rename_extension_PanOSSessionEndReason
-      target_field: prisma_access.event.session.end_reason
-      ignore_missing: true
   - convert:
       field: cef.extensions.deviceCustomNumber1
       tag: convert_extension_deviceCustomNumber1_to_string
@@ -4129,26 +3331,11 @@ processors:
       tag: set_event_start_from_event_session_start_time
       copy_from: prisma_access.event.session.start_time
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSSessionTracker
-      tag: rename_extension_PanOSSessionTracker
-      target_field: prisma_access.event.session.tracker
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSeverity
-      tag: rename_extension_PanOSSeverity
-      target_field: prisma_access.event.severity
-      ignore_missing: true
   - set:
       field: log.level
       tag: set_log_level_from_event_severity
       copy_from: prisma_access.event.severity
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSSigFlags
-      tag: rename_extension_PanOSSigFlags
-      target_field: prisma_access.event.sig_flags
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSSNILength
       tag: convert_extension_PanOSSNILength_to_long
@@ -4159,11 +3346,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSSource
-      tag: rename_extension_PanOSSource
-      target_field: prisma_access.event.source.value
-      ignore_missing: true
   - convert:
       field: cef.extensions.sourceAddress
       tag: convert_extension_sourceAddress_to_ip
@@ -4193,21 +3375,6 @@ processors:
       value: "{{{prisma_access.event.source.address.value}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.source?.address?.value != null
-  - rename:
-      field: cef.extensions.PanOSSourceDeviceCategory
-      tag: rename_extension_PanOSSourceDeviceCategory
-      target_field: prisma_access.event.source.device.category
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSourceDeviceClass
-      tag: rename_extension_PanOSSourceDeviceClass
-      target_field: prisma_access.event.source.device.class
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSourceDeviceHost
-      tag: rename_extension_PanOSSourceDeviceHost
-      target_field: prisma_access.event.source.device.host
-      ignore_missing: true
   - append:
       field: source.domain
       tag: append_prisma_access_event_source_device_host_into_source_domain
@@ -4220,11 +3387,6 @@ processors:
       value: "{{{prisma_access.event.source.device.host}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.source?.device?.host != null
-  - rename:
-      field: cef.extensions.PanOSSourceDeviceMac
-      tag: rename_extension_PanOSSourceDeviceMac
-      target_field: prisma_access.event.source.device.mac
-      ignore_missing: true
   - set:
       field: source.mac
       tag: set_source_mac_from_event_source_device_mac
@@ -4249,51 +3411,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: cef.extensions.PanOSSourceDeviceModel
-      tag: rename_extension_PanOSSourceDeviceModel
-      target_field: prisma_access.event.source.device.model
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSourceDeviceOS
-      tag: rename_extension_PanOSSourceDeviceOS
-      target_field: prisma_access.event.source.device.os.type
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSourceDeviceOSFamily
-      tag: rename_extension_PanOSSourceDeviceOSFamily
-      target_field: prisma_access.event.source.device.os.family
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSourceDeviceOSVersion
-      tag: rename_extension_PanOSSourceDeviceOSVersion
-      target_field: prisma_access.event.source.device.os.version
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSourceDeviceProfile
-      tag: rename_extension_PanOSSourceDeviceProfile
-      target_field: prisma_access.event.source.device.profile
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSourceDeviceVendor
-      tag: rename_extension_PanOSSourceDeviceVendor
-      target_field: prisma_access.event.source.device.vendor
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSourceDynamicAddressGroup
-      tag: rename_extension_PanOSSourceDynamicAddressGroup
-      target_field: prisma_access.event.source.dynamic_address_group
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSSourceEDL
-      tag: rename_extension_PanOSSourceEDL
-      target_field: prisma_access.event.source.edl
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.sourceHostName
-      tag: rename_extension_sourceHostName
-      target_field: prisma_access.event.source.host_name
-      ignore_missing: true
   - append:
       field: source.domain
       tag: append_prisma_access_event_source_host_name_into_source_domain
@@ -4312,16 +3429,6 @@ processors:
       value: "{{{prisma_access.event.source.host_name}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.source?.host_name != null
-  - rename:
-      field: cef.extensions.PanOSSourceLocation
-      tag: rename_extension_PanOSSourceLocation
-      target_field: prisma_access.event.source.location
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.sourceNtDomain
-      tag: rename_extension_sourceNtDomain
-      target_field: prisma_access.event.source.nt_domain
-      ignore_missing: true
   - append:
       field: source.user.domain
       tag: append_prisma_access_event_source_nt_domain_into_source_user_domain
@@ -4343,16 +3450,6 @@ processors:
       tag: set_source_port_from_event_source_port
       copy_from: prisma_access.event.source.port
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSSourceRegion
-      tag: rename_extension_PanOSSourceRegion
-      target_field: prisma_access.event.source.region
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.sourceServiceName
-      tag: rename_extension_sourceServiceName
-      target_field: prisma_access.event.source.service_name
-      ignore_missing: true
   - convert:
       field: cef.extensions.sourceTranslatedAddress
       tag: convert_extension_sourceTranslatedAddress_to_ip
@@ -4426,22 +3523,12 @@ processors:
       value: "{{{prisma_access.event.pan_os_value.source.user.name}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.pan_os_value?.source?.user?.name != null
-  - rename:
-      field: cef.extensions.PanOSSourceUserDomain
-      tag: rename_extension_PanOSSourceUserDomain
-      target_field: prisma_access.event.pan_os.source.user.domain
-      ignore_missing: true
   - append:
       field: source.user.domain
       tag: append_prisma_access_event_source_user_domain_into_source_user_domain
       value: "{{{prisma_access.event.pan_os.source.user.domain}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.pan_os?.source?.user?.domain != null
-  - rename:
-      field: cef.extensions.sourceUserId
-      tag: rename_extension_sourceUserId
-      target_field: prisma_access.event.source.user.id
-      ignore_missing: true
   - append:
       field: source.user.id
       tag: append_prisma_access_event_source_user_id_into_source_user_id
@@ -4490,16 +3577,6 @@ processors:
       value: "{{{prisma_access.event.pan_os_data.source.user.name}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.pan_os_data?.source?.user?.name != null
-  - rename:
-      field: cef.extensions.suser0
-      tag: rename_extension_suser0
-      target_field: prisma_access.event.s_user_0
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.duser0
-      tag: rename_extension_duser0
-      target_field: prisma_access.event.d_user_0
-      ignore_missing: true
   - grok:
       field: cef.extensions.sourceUserName
       tag: grok_sourceUserName
@@ -4536,11 +3613,6 @@ processors:
       value: "{{{prisma_access.event.source.user.name}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.source?.user?.name != null
-  - rename:
-      field: cef.extensions.PanOSSourceUserUUID
-      tag: rename_extension_PanOSSourceUserUUID
-      target_field: prisma_access.event.source.user.uuid
-      ignore_missing: true
   - append:
       field: source.user.id
       tag: append_prisma_access_event_source_user_uuid_into_source_user_id
@@ -4553,11 +3625,6 @@ processors:
       value: "{{{prisma_access.event.source.user.uuid}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.source?.user?.uuid != null
-  - rename:
-      field: cef.extensions.PanOSSourceUUID
-      tag: rename_extension_PanOSSourceUUID
-      target_field: prisma_access.event.source.uuid
-      ignore_missing: true
   - append:
       field: related.hosts
       tag: append_event_source_uuid_into_related_hosts
@@ -4574,11 +3641,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSSSLFailureReason
-      tag: rename_extension_PanOSSSLFailureReason
-      target_field: prisma_access.event.ssl.failure_reason
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSSSLResponseTime
       tag: convert_extension_PanOSSSLResponseTime_to_long
@@ -4589,11 +3651,6 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSStage
-      tag: rename_extension_PanOSStage
-      target_field: prisma_access.event.stage
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSStandardPortsOfApp
       tag: convert_extension_PanOSStandardPortsOfApp_to_long
@@ -4621,52 +3678,12 @@ processors:
       tag: set_timestamp_from_event_start_time
       copy_from: prisma_access.event.start_time
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSStreamID
-      tag: rename_extension_PanOSStreamID
-      target_field: prisma_access.event.stream_id
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSTag
-      tag: rename_extension_PanOSTag
-      target_field: prisma_access.event.tag.value
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSTagName
-      tag: rename_extension_PanOSTagName
-      target_field: prisma_access.event.tag.name
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSTemplate
-      tag: rename_extension_PanOSTemplate
-      target_field: prisma_access.event.template
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSTenantID
-      tag: rename_extension_PanOSTenantID
-      target_field: prisma_access.event.tenant_id
-      ignore_missing: true
   - append:
       field: cloud.account.id
       tag: append_cloud_account_id_from_event_tenant_id
       value: "{{{prisma_access.event.tenant_id}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.tenant_id != null
-  - rename:
-      field: cef.extensions.PanOSThreatCategory
-      tag: rename_extension_PanOSThreatCategory
-      target_field: prisma_access.event.threat.category
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSThreatID
-      tag: rename_extension_PanOSThreatID
-      target_field: prisma_access.event.threat.id
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSThreatNameFirewall
-      tag: rename_extension_PanOSThreatNameFirewall
-      target_field: prisma_access.event.threat.name_firewall
-      ignore_missing: true
   - date:
       field: cef.extensions.PanOSTimeGeneratedHighResolution
       tag: date_extension_PanOSTimeGeneratedHighResolution
@@ -4738,31 +3755,11 @@ processors:
         - ISO8601
       if: ctx.cef?.extensions?.PanOSTimestampDeviceIdentification != null && ctx.cef.extensions.PanOSTimestampDeviceIdentification != ''
       ignore_failure: true
-  - rename:
-      field: cef.extensions.PanOSTLSAuth
-      tag: rename_extension_PanOSTLSAuth
-      target_field: prisma_access.event.tls.auth
-      ignore_missing: true
   - set:
       field: tls.client.x509.signature_algorithm
       tag: set_tls_client_x509_signature_algorithm_from_event_tls_auth
       copy_from: prisma_access.event.tls.auth
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSTLSEncryptionAlgorithm
-      tag: rename_extension_PanOSTLSEncryptionAlgorithm
-      target_field: prisma_access.event.tls.encryption_algorithm
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSTLSKeyExchange
-      tag: rename_extension_PanOSTLSKeyExchange
-      target_field: prisma_access.event.tls.key_exchange
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSTLSVersion
-      tag: rename_extension_PanOSTLSVersion
-      target_field: prisma_access.event.tls.version
-      ignore_missing: true
   - set:
       field: tls.version
       tag: set_tls_version_from_event_tls_version
@@ -4812,11 +3809,6 @@ processors:
       copy_from: prisma_access.event.total.time_elapsed
       ignore_empty_value: true
   - rename:
-      field: cef.extensions.PanOSTpadding
-      tag: rename_extension_PanOSTpadding
-      target_field: prisma_access.event.tpadding
-      ignore_missing: true
-  - rename:
       field: cef.extensions.deviceCustomString2
       tag: rename_extension_deviceCustomString2
       target_field: prisma_access.event.tunnel.value
@@ -4826,51 +3818,6 @@ processors:
       field: cef.extensions.PanOSTunnel
       tag: rename_extension_PanOSTunnel
       target_field: prisma_access.event.tunnel.value
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSTunnelCauseCode
-      tag: rename_extension_PanOSTunnelCauseCode
-      target_field: prisma_access.event.tunnel.cause_code
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSTunnelEndpointID1
-      tag: rename_extension_PanOSTunnelEndpointID1
-      target_field: prisma_access.event.tunnel.endpoint.id1
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSTunnelEndpointID2
-      tag: rename_extension_PanOSTunnelEndpointID2
-      target_field: prisma_access.event.tunnel.endpoint.id2
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSTunnelEventCode
-      tag: rename_extension_PanOSTunnelEventCode
-      target_field: prisma_access.event.tunnel.event.code
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSTunnelEventType
-      tag: rename_extension_PanOSTunnelEventType
-      target_field: prisma_access.event.tunnel.event.type
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSTunnelInspectionRule
-      tag: rename_extension_PanOSTunnelInspectionRule
-      target_field: prisma_access.event.tunnel.inspection_rule
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSTunnelInterface
-      tag: rename_extension_PanOSTunnelInterface
-      target_field: prisma_access.event.tunnel.interface
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSTunnelMessageType
-      tag: rename_extension_PanOSTunnelMessageType
-      target_field: prisma_access.event.tunnel.message_type
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSTunnelRemoteIMSIID
-      tag: rename_extension_PanOSTunnelRemoteIMSIID
-      target_field: prisma_access.event.tunnel.remote.imsi_id
       ignore_missing: true
   - convert:
       field: cef.extensions.PanOSTunnelRemoteUserIP
@@ -4944,31 +3891,6 @@ processors:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
-      field: cef.extensions.PanOSTunnelType
-      tag: rename_extension_PanOSTunnelType
-      target_field: prisma_access.event.tunnel.type
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSTunneledApplication
-      tag: rename_extension_PanOSTunneledApplication
-      target_field: prisma_access.event.tunneled_application
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSType
-      tag: rename_extension_PanOSType
-      target_field: prisma_access.event.type
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSUGFlags
-      tag: rename_extension_PanOSUGFlags
-      target_field: prisma_access.event.ug_flags
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSURL
-      tag: rename_extension_PanOSURL
-      target_field: prisma_access.event.url.value
-      ignore_missing: true
-  - rename:
       field: cef.extensions.deviceCustomString2
       tag: rename_extension_deviceCustomString2
       target_field: prisma_access.event.url.category.value
@@ -4978,11 +3900,6 @@ processors:
       field: cef.extensions.PanOSURLCategory
       tag: rename_extension_PanOSURLCategory
       target_field: prisma_access.event.url.category.value
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSURLCategoryList
-      tag: rename_extension_PanOSURLCategoryList
-      target_field: prisma_access.event.url.category.list
       ignore_missing: true
   - convert:
       field: cef.extensions.PanOSURLCounter
@@ -4994,39 +3911,14 @@ processors:
         - append:
             field: error.message
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - rename:
-      field: cef.extensions.PanOSURLDomain
-      tag: rename_extension_PanOSURLDomain
-      target_field: prisma_access.event.url.domain
-      ignore_missing: true
   - set:
       field: url.domain
       tag: set_url_domain_from_event_url_domain
       copy_from: prisma_access.event.url.domain
       ignore_empty_value: true
-  - rename:
-      field: cef.extensions.PanOSUserAgentString
-      tag: rename_extension_PanOSUserAgentString
-      target_field: prisma_access.event.user.agent_string
-      ignore_missing: true
   - user_agent:
       field: prisma_access.event.user.agent_string
       tag: user_agent_original_from_user_agent_string
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSUserComment
-      tag: rename_extension_PanOSUserComment
-      target_field: prisma_access.event.user.comment
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSUserGroupFound
-      tag: rename_extension_PanOSUserGroupFound
-      target_field: prisma_access.event.user.group_found
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSUserIdentifiedBySource
-      tag: rename_extension_PanOSUserIdentifiedBySource
-      target_field: prisma_access.event.user.identified_by_source
       ignore_missing: true
   - append:
       field: related.user
@@ -5034,11 +3926,6 @@ processors:
       value: "{{{prisma_access.event.user.identified_by_source}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.user?.identified_by_source != null
-  - rename:
-      field: cef.extensions.PanOSUsername
-      tag: rename_extension_PanOSUsername
-      target_field: prisma_access.event.username
-      ignore_missing: true
   - set:
       field: user.name
       tag: set_user_name_from_event_username
@@ -5069,11 +3956,6 @@ processors:
       value: "{{{prisma_access.event.users.name}}}"
       allow_duplicates: false
       if: ctx.prisma_access?.event?.users?.name != null
-  - rename:
-      field: cef.extensions.PanOSUUID
-      tag: rename_extension_PanOSUUID
-      target_field: prisma_access.event.uuid
-      ignore_missing: true
   - convert:
       field: cef.extensions.PanOSVDIEndpoint
       tag: convert_extension_PanOSVDIEndpoint_to_string
@@ -5092,35 +3974,10 @@ processors:
       target_field: prisma_access.event.vendor_severity
       ignore_missing: true
   - rename:
-      field: cef.extensions.PanOSVerdict
-      tag: rename_extension_PanOSVerdict
-      target_field: prisma_access.event.verdict
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSVerificationTag1
-      tag: rename_extension_PanOSVerificationTag1
-      target_field: prisma_access.event.verification.tag1
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSVerificationTag2
-      tag: rename_extension_PanOSVerificationTag2
-      target_field: prisma_access.event.verification.tag2
-      ignore_missing: true
-  - rename:
       field: cef.extensions.deviceCustomString3
       tag: rename_extension_deviceCustomString3
       target_field: prisma_access.event.virtual.location
       if: ctx.cef?.device?.event_class_id != null && ['CONFIG','SYSTEM','AUTH','DECRYPTION','FILE','HIPMATCH','IPTAG','SCTP','THREAT','TRAFFIC','TUNNEL','URL','USERID'].contains(ctx.cef.device.event_class_id) || (ctx.cef?.extensions != null && ['url','file'].contains(ctx.cef.extensions.Name))
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.deviceCustomString3Label
-      tag: rename_extension_deviceCustomString3Label
-      target_field: prisma_access.event.label.cs3
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSVirtualSystem
-      tag: rename_extension_PanOSVirtualSystem
-      target_field: prisma_access.event.virtual.system.value
       ignore_missing: true
   - convert:
       field: cef.extensions.deviceCustomNumber2
@@ -5133,16 +3990,6 @@ processors:
       field: cef.extensions.PanOSVirtualSystemID
       tag: rename_extension_PanOSVirtualSystemID
       target_field: prisma_access.event.virtual.system.id
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSVirtualSystemName
-      tag: rename_extension_PanOSVirtualSystemName
-      target_field: prisma_access.event.virtual.system.name
-      ignore_missing: true
-  - rename:
-      field: cef.extensions.PanOSVpadding
-      tag: rename_extension_PanOSVpadding
-      target_field: prisma_access.event.vpadding
       ignore_missing: true
   - rename:
       field: cef.extensions.deviceCustomString3
@@ -5396,16 +4243,23 @@ processors:
       tag: script_to_drop_null_values
       lang: painless
       source: |-
-        boolean drop(Object o) {
-          if (o == null || o == '') {
-            return true;
-          } else if (o instanceof Map) {
-            ((Map) o).values().removeIf(v -> drop(v));
-            return (((Map) o).size() == 0);
-          } else if (o instanceof List) {
-            ((List) o).removeIf(v -> drop(v));
-            return (((List) o).length == 0);
+        boolean drop(def object) {
+          if (object == null) return true;
+
+          if (object instanceof String) {
+            return object.isEmpty();
           }
+
+          if (object instanceof Map) {
+            object.values().removeIf(v -> drop(v));
+            return object.isEmpty();
+          }
+
+          if (object instanceof List) {
+            object.removeIf(v -> drop(v));
+            return object.isEmpty();
+          }
+
           return false;
         }
         drop(ctx);
@@ -5431,3 +4285,4 @@ on_failure:
       field: tags
       value: preserve_original_event
       allow_duplicates: false
+

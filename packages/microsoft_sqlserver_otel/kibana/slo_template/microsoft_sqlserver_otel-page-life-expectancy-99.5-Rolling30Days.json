@@ -1,0 +1,55 @@
+{
+  "attributes": {
+    "name": "[SQL Server OTel] Page life expectancy 99.5% rolling 30 days",
+    "description": "This SLO tracks SQL Server buffer pool page life expectancy via OTel metrics, ensuring that 99.5% of 1-minute time intervals show PLE at or above 300 seconds over a rolling period of 30 days. Values below 300s indicate severe memory pressure; pages are evicted too quickly, causing increased disk I/O and slower queries.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"sqlserverreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "min",
+              "field": "sqlserver.page.life_expectancy"
+            }
+          ],
+          "equation": "A",
+          "comparator": "GTE",
+          "threshold": 300
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "sqlserver",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.service.instance.id"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "microsoft_sqlserver_otel-overview"
+        },
+        {
+          "id": "microsoft_sqlserver_otel-memory-saturation"
+        }
+      ]
+    }
+  },
+  "id": "microsoft_sqlserver_otel-page-life-expectancy-99.5-Rolling30Days",
+  "type": "slo_template"
+}

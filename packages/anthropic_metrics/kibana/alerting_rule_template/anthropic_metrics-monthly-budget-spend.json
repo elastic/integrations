@@ -1,0 +1,44 @@
+{
+    "id": "anthropic_metrics-monthly-budget-spend",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Anthropic] Monthly Budget Spend Limit",
+        "description": "Alerts when cumulative spend for the current calendar month exceeds a configurable budget. Resets on the 1st of each month. Default threshold is $1,000 (100000 cents). Adjust the threshold in the ES|QL WHERE clause.",
+        "tags": [
+            "Anthropic",
+            "Cost",
+            "Budget",
+            "Spend Limit"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "6h"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 30,
+            "timeWindowUnit": "d",
+            "esqlQuery": {
+                "esql": "// Calendar month budget spend limit alert.\n// Sums cost from the 1st of the current month to now.\n// Resets automatically on the 1st of each month.\n// Amount is in cents — 100000 = $1,000.00.\n// Adjust the budget threshold in the final WHERE clause.\nFROM metrics-anthropic_metrics.cost-*\n| WHERE anthropic.cost.amount IS NOT NULL AND anthropic.cost.currency == \"USD\"\n| WHERE @timestamp >= DATE_TRUNC(1 month, NOW())\n| STATS monthly_cost_cents = SUM(anthropic.cost.amount)\n| EVAL monthly_cost_usd = ROUND(monthly_cost_cents / 100.0, 2)\n| WHERE monthly_cost_cents > 100000"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "anthropic_metrics-2bd61c2c-4418-458f-a79e-12a74c34b2f0"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Monthly Budget Spend Limit\n\n### Triage Steps\n1. Open the Cost & Billing dashboard and set the time range to the current calendar month.\n2. Review the cumulative spend trend to see the trajectory — is spend accelerating or steady?\n3. Break down cost by `anthropic.cost.model` and `anthropic.cost.workspace_id` to find the largest contributors.\n4. Compare with the previous month's total to determine if the increase is expected growth or an anomaly.\n5. Check if any new workloads, models, or teams were onboarded this month.\n\n### Common Causes\n- Organic growth in API usage across the organization\n- A new high-volume workload or team starting mid-month\n- Price changes or model tier upgrades\n- Batch migration or backfill jobs consuming large budgets\n\n### Tuning\n- Adjust the `100000` cent threshold ($1,000) in the WHERE clause to match your monthly budget.\n- This alert resets on the 1st of each month via `DATE_TRUNC(1 month, NOW())`.\n- For workspace-level budget monitoring, use the Per-Workspace Daily Cost Spike alert."
+            }
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

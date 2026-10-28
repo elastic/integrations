@@ -1,6 +1,5 @@
 # Citrix Web App Firewall Integration for Elastic
 
-> Note: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 The Citrix Web App Firewall integration for Elastic enables you to collect and analyze logs from Citrix ADC and NetScaler appliances. This integration provides visibility into your web application security posture by capturing detailed event data, including security violations, signature matches, and network metadata.

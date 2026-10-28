@@ -3,18 +3,26 @@ description: Pipeline for parsing Cloudflare Sinkhole HTTP logs.
 processors:
   - set:
       field: ecs.version
-      value: 8.11.0
+      value: '9.3.0'
       tag: set_ecs_version
   - rename:
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
-      tag: rename_event_original
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
       field: event.original
       target_field: json
       tag: json_event_original
+      if: ctx.event?.original != null
   - set:
       field: event.kind
       value: event
@@ -27,9 +35,9 @@ processors:
       field: event.type
       value: [info]
       tag: set_event_type
-## AWS S3 input does _id Based Deduplication and generates "_id" by default.
-## When "Data Deduplication" is not enabled, this field must be removed.
-## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
   - remove:
       field: _id
       tag: remove_id_based_deduplication
@@ -38,28 +46,29 @@ processors:
         must be removed.
       if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
       ignore_missing: true
-# Timestamp
+  # Timestamp
+  - convert:
+      tag: convert_json_Timestamp_7242ddce
+      field: json.Timestamp
+      type: long
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
+      ignore_failure: true
   - script:
       lang: painless
       tag: painless_timestamp_to_milli
-      if: ctx.json?.Timestamp != null
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp instanceof Number
       source: |
-        try {
-          long t;
-          if (ctx.json.Timestamp instanceof String) {
-            t = Long.parseLong(ctx.json.Timestamp);
-          } else if (ctx.json.Timestamp instanceof Number) {
-            t = (long)(ctx.json.Timestamp);
-          } else {
-            return;
-          }
-          if (t > (long)(1e18)) {
-            ctx.json.Timestamp = t/(long)(1e6)
-          } else if (t < (long)(1e10))  {
-            ctx.json.Timestamp = t*(long)(1e3)
-          }
+        long t = (long)(ctx.json.Timestamp);
+        if (t > (long)(1e18)) {
+          ctx.json.Timestamp = t/(long)(1e6)
+        } else if (t < (long)(1e10))  {
+          ctx.json.Timestamp = t*(long)(1e3)
         }
-        catch (Exception e) {}
+      on_failure:
+        - append:
+            tag: append_error_message_df40dd8a
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.Timestamp
       if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
@@ -70,30 +79,41 @@ processors:
       timezone: UTC
       tag: date_event_timestamp
       on_failure:
-      - append:
-          field: error.message
-          value: "{{{_ingest.on_failure_message}}}"
+        - append:
+            tag: append_error_message_ccdbdce0
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: cloudflare_logpush.sinkhole_http.timestamp
       copy_from: "@timestamp"
+      ignore_empty_value: true
       tag: set_timestamp
 
-# Handle destination IP
-  - rename:
+  # Handle destination IP
+  - convert:
       field: json.DestAddr
+      tag: convert_destaddr_to_ip
       target_field: cloudflare_logpush.sinkhole_http.destination.ip
+      type: ip
       ignore_missing: true
-      tag: rename_destination_ip
+      if: ctx.json?.DestAddr != null && ctx.json.DestAddr != ''
+      on_failure:
+        - append:
+            tag: append_error_message_9c5ae997
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.ip
       copy_from: cloudflare_logpush.sinkhole_http.destination.ip
       ignore_empty_value: true
       tag: set_destination_ip
-# Geo enrichment (destination IP)
+  # Geo enrichment (destination IP)
   - geoip:
       field: destination.ip
       target_field: destination.geo
       tag: geo_destination_ip
+      ignore_missing: true
+      if: ctx.destination?.ip != null
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       tag: geo_destination_as
@@ -103,6 +123,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      if: ctx.destination?.ip != null
   - rename:
       field: destination.as.asn
       target_field: destination.as.number
@@ -114,22 +135,31 @@ processors:
       ignore_missing: true
       tag: rename_destination_as_org
 
-# Handle source IP
-  - rename:
+  # Handle source IP
+  - convert:
       field: json.SrcAddr
+      tag: convert_srcaddr_to_ip
       target_field: cloudflare_logpush.sinkhole_http.source.ip
+      type: ip
       ignore_missing: true
-      tag: rename_source_ip
+      if: ctx.json?.SrcAddr != null && ctx.json.SrcAddr != ''
+      on_failure:
+        - append:
+            tag: append_error_message_f9c3eb86
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.sinkhole_http.source.ip
       ignore_empty_value: true
       tag: set_source_ip
-# Geo enrichment (source IP)
+  # Geo enrichment (source IP)
   - geoip:
       field: source.ip
       target_field: source.geo
       tag: geo_source_ip
+      ignore_missing: true
+      if: ctx.source?.ip != null
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       tag: geo_source_as
@@ -139,6 +169,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      if: ctx.source?.ip != null
   - rename:
       field: source.as.asn
       target_field: source.as.number
@@ -150,7 +181,7 @@ processors:
       ignore_missing: true
       tag: rename_source_as_org
 
-# HTTP fields
+  # HTTP fields
   - rename:
       field: json.Body
       target_field: cloudflare_logpush.sinkhole_http.request.body.content
@@ -161,11 +192,17 @@ processors:
       copy_from: cloudflare_logpush.sinkhole_http.request.body.content
       ignore_empty_value: true
       tag: set_http_body
-  - rename:
+  - convert:
       field: json.BodyLength
+      tag: convert_bodylength_to_long
       target_field: cloudflare_logpush.sinkhole_http.request.body.bytes
+      type: long
       ignore_missing: true
-      tag: rename_http_body_bytes
+      on_failure:
+        - append:
+            tag: append_error_message_cdc179d0
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: http.request.body.bytes
       copy_from: cloudflare_logpush.sinkhole_http.request.body.bytes
@@ -203,14 +240,17 @@ processors:
       ignore_empty_value: true
       tag: set_http_host
   - rename:
+      tag: rename_json_URI_to_cloudflare_logpush_sinkhole_http_request_uri_fcb3a925
       field: json.URI
       target_field: cloudflare_logpush.sinkhole_http.request.uri
       ignore_missing: true
   - rename:
+      tag: rename_json_URL_to_cloudflare_logpush_sinkhole_http_request_url_44a29715
       field: json.URL
       target_field: cloudflare_logpush.sinkhole_http.request.url
       ignore_missing: true
   - uri_parts:
+      tag: uri_parts_cloudflare_logpush_sinkhole_http_request_url_to_url_4d919288
       field: cloudflare_logpush.sinkhole_http.request.url
       target_field: url
       if: ctx.cloudflare_logpush?.sinkhole_http?.request?.url != null && ctx.cloudflare_logpush.sinkhole_http.request.url != ''
@@ -220,6 +260,7 @@ processors:
       ignore_missing: true
       tag: rename_user_agent
   - user_agent:
+      tag: user_agent_cloudflare_logpush_sinkhole_http_user_agent_3af01702
       field: cloudflare_logpush.sinkhole_http.user_agent
       ignore_missing: true
   - rename:
@@ -233,7 +274,7 @@ processors:
       ignore_empty_value: true
       tag: set_username
 
-# Custom fields
+  # Custom fields
   - rename:
       field: json.AccountID
       target_field: cloudflare_logpush.sinkhole_http.account_id
@@ -265,33 +306,33 @@ processors:
       ignore_missing: true
       tag: rename_sinkhole_id
 
-# Create related fields
+  # Create related fields
   - append:
       field: related.ip
-      value: '{{{destination.ip}}}'
-      if: ctx.destination?.ip != null && ctx.destination.ip != ''
+      value: '{{{cloudflare_logpush.sinkhole_http.destination.ip}}}'
+      if: ctx.cloudflare_logpush?.sinkhole_http?.destination?.ip != null
       allow_duplicates: false
       tag: append_related_destination_ip
   - append:
       field: related.ip
-      value: '{{{source.ip}}}'
-      if: ctx.source?.ip != null && ctx.source.ip != ''
+      value: '{{{cloudflare_logpush.sinkhole_http.source.ip}}}'
+      if: ctx.cloudflare_logpush?.sinkhole_http?.source?.ip != null
       allow_duplicates: false
       tag: append_related_source_ip
   - append:
       field: related.hosts
-      value: '{{{host.name}}}'
-      if: ctx.host?.name != null && ctx.host.name != ''
+      value: '{{{cloudflare_logpush.sinkhole_http.host.name}}}'
+      if: ctx.cloudflare_logpush?.sinkhole_http?.host?.name != null
       allow_duplicates: false
       tag: append_related_host
   - append:
       field: related.user
-      value: '{{{user.name}}}'
-      if: ctx.user?.name != null && ctx.user.name != ''
+      value: '{{{cloudflare_logpush.sinkhole_http.user.name}}}'
+      if: ctx.cloudflare_logpush?.sinkhole_http?.user?.name != null
       allow_duplicates: false
       tag: append_related_user
 
-# Clean resulting event
+  # Clean resulting event
   - remove:
       tag: remove_json_conf
       field:
@@ -313,36 +354,56 @@ processors:
         - cloudflare_logpush.sinkhole_http.request.uri
         - cloudflare_logpush.sinkhole_http.request.url
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-      ignore_failure: true
       ignore_missing: true
       tag: remove_duplicated_custom_fields
   - script:
-      description: Drops null/empty values recursively.
-      tag: script_drop_empty_fields
+      tag: script_to_drop_null_values
       lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || v == 'N/A' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
-        dropEmptyFields(ctx);
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_tags_9fe66b2c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_pipeline_error_message
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_pipeline_error_to_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_preserve_original_event_tag
       field: tags
       value: preserve_original_event
       allow_duplicates: false

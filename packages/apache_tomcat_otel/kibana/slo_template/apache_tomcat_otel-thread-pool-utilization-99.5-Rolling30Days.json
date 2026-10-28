@@ -1,0 +1,58 @@
+{
+  "attributes": {
+    "name": "[Tomcat OTel] Thread pool utilization 99.5% rolling 30 days",
+    "description": "Tracks the ratio of busy threads to maximum threads in Tomcat connector thread pools, ensuring that 99.5% of 1-minute time intervals show thread pool utilization below 80% over a rolling 30-day period. Breach indicates sustained thread pool saturation risking request queuing and connection refusal.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"tomcat.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "avg",
+              "field": "Catalina_ThreadPool_currentThreadsBusy"
+            },
+            {
+              "name": "B",
+              "aggregation": "avg",
+              "field": "Catalina_ThreadPool_maxThreads"
+            }
+          ],
+          "equation": "A/B",
+          "comparator": "LT",
+          "threshold": 0.8
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "tomcat",
+      "otel"
+    ],
+    "groupBy": "resource.attributes.service.instance.id"
+  },
+  "id": "apache_tomcat_otel-thread-pool-utilization-99.5-Rolling30Days",
+  "type": "slo_template",
+  "artifacts": {
+    "dashboards": [
+      {
+        "id": "apache_tomcat_otel-thread-pool-connections"
+      },
+      {
+        "id": "apache_tomcat_otel-overview"
+      }
+    ]
+  }
+}

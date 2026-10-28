@@ -1,0 +1,696 @@
+# The BeyondTrust EPM API uses dot-notation query parameter keys (e.g.
+# "Pagination.PageSize", "Sorts[0].order").  The stream mock server parses its
+# config with ucfg.PathSep("."), which interprets dots as nested-path separators,
+# so these keys cannot be used in query_params matching rules.
+#
+# To exercise pagination despite this, the Details rule omits query_params and
+# instead uses response cycling: the stream server rotates through the responses
+# list on successive requests to the same path (response index = request_count %
+# len(responses)).  Page 1 returns pageCount > pageNumber, causing the CEL
+# program to set want_more=true and request the next page.  Page 2 returns
+# pageNumber == pageCount, ending pagination.
+rules:
+  - path: /oauth/connect/token
+    methods: ['POST']
+    query_params:
+      grant_type: client_credentials
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"access_token":"xxxx","expires_in":600,"token_type":"Bearer", "scope":"urn:management:api"}
+  - path: /management-api/v3/ActivityAudits/Details
+    methods: ['GET']
+    request_headers:
+      Authorization: "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "pageNumber": 1,
+            "pageSize": 1,
+            "totalRecordCount": 2,
+            "pageCount": 2,
+            "data": [
+              {
+                "id": 10574823,
+                "details": "User john.doe modified security policy settings for Windows Defender Exclusions",
+                "userId": "a7b5c3d1-8f2e-4a6b-9c3d-e5f7a2b4c6d8",
+                "user": "john.doe@company.com",
+                "entity": "PolicyRevision",
+                "entityName": "Windows_Security_Policy_v2",
+                "auditType": "PolicyModification",
+                "created": "2026-04-08T14:32:15.2340000",
+                "changedBy": "Portal",
+                "apiClientDataAuditing": {
+                  "newName": "ProductionAPIClient_v2",
+                  "oldName": "ProductionAPIClient",
+                  "newDescription": "Production environment API client for automated deployments",
+                  "oldDescription": "Production API client",
+                  "secretUpdated": false,
+                  "deleted": false
+                },
+                "computerDataAuditing": {
+                  "updatedPoliciesOn": {
+                    "WORKSTATION-001": "Windows_Security_Policy_v2",
+                    "SERVER-DB-01": "Server_Hardening_Policy_v3"
+                  },
+                  "deactivatedAgents": {
+                    "LAPTOP-042": "Agent inactive for 30 days",
+                    "DESKTOP-178": "Hardware decommissioned"
+                  },
+                  "newDeletedAgents": [
+                    "LAPTOP-042",
+                    "DESKTOP-178"
+                  ]
+                },
+                "groupDataAuditing": {
+                  "newName": "Finance_Department_Users",
+                  "oldName": "Finance_Users",
+                  "newDescription": "All finance department users including contractors",
+                  "oldDescription": "Finance department users",
+                  "newIsDefault": false,
+                  "oldIsDefault": false,
+                  "addPolicyRevisions": {
+                    "Finance_Access_Policy": "Revision 3.2",
+                    "Data_Protection_Policy": "Revision 2.1"
+                  },
+                  "removePolicyRevisions": {
+                    "Legacy_Finance_Policy": "Revision 1.0"
+                  },
+                  "newAgents": {
+                    "WORKSTATION-501": "Finance_WS_01",
+                    "WORKSTATION-502": "Finance_WS_02"
+                  },
+                  "removeAgents": {
+                    "WORKSTATION-401": "Migrated to new group"
+                  }
+                },
+                "installationKeyDataAuditing": {
+                  "oldLabel": "Production_Key_2025",
+                  "newLabel": "Production_Key_2026",
+                  "newDisabled": false,
+                  "oldDisabled": false,
+                  "deleted": false
+                },
+                "policyDataAuditing": {
+                  "newName": "Enhanced_Security_Policy",
+                  "oldName": "Standard_Security_Policy",
+                  "newDescription": "Enhanced security policy with additional privilege management rules",
+                  "oldDescription": "Standard security policy for general users"
+                },
+                "policyRevisionDataAuditing": {
+                  "newGroups": {
+                    "IT_Administrators": "Full access",
+                    "Security_Team": "Audit access"
+                  },
+                  "newAnnotationNote": "Updated policy to include new CVE-2026-1234 mitigation"
+                },
+                "settingsDataAuditing": {
+                  "addDomain": "subsidiary.company.com",
+                  "removeDomain": "subsi.company.com",
+                  "modifyDomainOldValue": "company.local",
+                  "modifyDomainNewValue": "company.com"
+                },
+                "userDataAuditing": {
+                  "newEmailAddress": "john.doe@company.com",
+                  "oldEmailAddress": "j.doe@company.com",
+                  "newOlsonTimeZoneId": "America/New_York",
+                  "oldOlsonTimeZoneId": "UTC",
+                  "newDateTimeDisplayFormat": "MM/dd/yyyy HH:mm:ss",
+                  "oldDateTimeDisplayFormat": "yyyy-MM-dd HH:mm:ss",
+                  "newPreferredLanguage": "en-US",
+                  "oldPreferredLanguage": "en-GB",
+                  "newDisabled": false,
+                  "oldDisabled": false,
+                  "newUserType": "Administrator",
+                  "oldUserType": "Standard",
+                  "deletedAt": "2026-04-08T14:32:15.2340000",
+                  "roles": [
+                    {
+                      "resourceType": "PolicyManagement",
+                      "resourceId": "f4g7h8i9-2j3k-4l5m-6n7o-p8q9r0s1t2u3",
+                      "resourceName": "Global_Policy_Manager",
+                      "newRoles": [
+                        {
+                          "roleId": "b8c6d4e2-9f3a-5b7c-0d4e-f6g8b3c5d7e9",
+                          "roleName": "Security Administrator"
+                        }
+                      ],
+                      "oldRoles": [
+                        {
+                          "roleId": "a5b6c7d8-1e2f-3g4h-5i6j-k7l8m9n0o1p2",
+                          "roleName": "Policy Viewer"
+                        }
+                      ]
+                    }
+                  ],
+                  "newPermissionSets": [
+                    {
+                      "permissionSetId": "d1e2f3g4-5h6i-7j8k-9l0m-n1o2p3q4r5s6",
+                      "permissionSetName": "Full_Admin_Access"
+                    }
+                  ],
+                  "oldPermissionSets": [
+                    {
+                      "permissionSetId": "c0d1e2f3-4g5h-6i7j-8k9l-m0n1o2p3q4r5",
+                      "permissionSetName": "Read_Only_Access"
+                    }
+                  ]
+                },
+                "openIdConfigDataAuditing": {
+                  "oldAuthenticationType": "SAML",
+                  "newAuthenticationType": "OAuth2",
+                  "oldDomain": "auth.company.local",
+                  "newDomain": "auth.company.com",
+                  "oldClientId": "beyondtrust-client-prod-v1",
+                  "newClientId": "beyondtrust-client-prod-v2",
+                  "secretUpdated": true,
+                  "oldOpenIDConnectProvider": "https://login.company.local",
+                  "newOpenIDConnectProvider": "https://login.company.com"
+                },
+                "mmcRemoteClientDataAuditing": {
+                  "enabled": true,
+                  "oldEnabled": false,
+                  "clientId": "e2f3g4h5-6i7j-8k9l-0m1n-o2p3q4r5s6t7",
+                  "oldClientId": "d1e2f3g4-5h6i-7j8k-9l0m-n1o2p3q4r5s6"
+                },
+                "computerPolicyDataAuditing": {
+                  "oldInactivityAgentDeactivationDays": 60,
+                  "oldEnableDeactivatedAgentDeletion": false,
+                  "oldDeactivatedAgentDeletionDays": 90,
+                  "inactivityAgentDeactivationDays": 30,
+                  "enableDeactivatedAgentDeletion": true,
+                  "deactivatedAgentDeletionDays": 60
+                },
+                "azureADIntegrationDataAuditing": {
+                  "oldAzureAdTenantId": "12345678-1234-1234-1234-123456789012",
+                  "oldAzureAdClientId": "abcdef01-2345-6789-abcd-ef0123456789",
+                  "oldAzureAdClientSecret": "***",
+                  "oldAzureAdUseCertificateAuth": false,
+                  "oldAzureAdIntegrationEnabled": false,
+                  "azureAdTenantId": "87654321-4321-4321-4321-210987654321",
+                  "azureAdClientId": "fedcba98-7654-3210-fedc-ba9876543210",
+                  "azureAdClientSecret": "***",
+                  "azureAdUseCertificateAuth": true,
+                  "azureAdIntegrationEnabled": true,
+                  "azureAdConfigChanged": true
+                },
+                "authorizationRequestDataAuditing": {
+                  "oldAuthRequestIntegrationEnabled": false,
+                  "oldAuthRequestHostName": "auth-old.company.local",
+                  "oldAuthRequestClientId": "bt-auth-client-v1",
+                  "oldAuthRequestClientSecret": "***",
+                  "oldAuthRequestPassword": "***",
+                  "oldAuthRequestUserName": "bt_service_account",
+                  "oldAuthRequestApiClientId": "api-client-v1",
+                  "oldAuthRequestApiClientSecret": "***",
+                  "authRequestIntegrationEnabled": true,
+                  "authRequestHostName": "auth.company.com",
+                  "authRequestClientId": "bt-auth-client-v2",
+                  "authRequestClientSecret": "***",
+                  "authRequestPassword": "***",
+                  "authRequestUserName": "bt_service_account_v2",
+                  "authRequestApiClientId": "api-client-v2",
+                  "authRequestApiClientSecret": "***",
+                  "authRequestConfigChanged": true
+                },
+                "reputationSettingsDataAuditing": {
+                  "oldReputationIntegrationEnabled": false,
+                  "oldReputationIntegrationApiKey": "***",
+                  "reputationIntegrationEnabled": true,
+                  "reputationIntegrationApiKey": "***",
+                  "reputationConfigChanged": true
+                },
+                "securitySettingsDataAuditing": {
+                  "tokenTimeout": 3600,
+                  "oldTokenTimeout": 7200
+                },
+                "siemIntegrationBaseDetailModel": {
+                  "siemIntegrationEnabled": true,
+                  "siemIntegrationType": "Splunk",
+                  "siemFormat": "JSON"
+                },
+                "siemIntegrationQradarAuditing": {
+                  "siemIntegrationEnabled": false,
+                  "siemIntegrationType": "QRadar",
+                  "siemFormat": "LEEF",
+                  "hostName": "qradar.company.com",
+                  "port": "514",
+                  "cert": "-----BEGIN CERTIFICATE-----\nMIID...certificate...content\n-----END CERTIFICATE-----"
+                },
+                "siemIntegrationS3Auditing": {
+                  "siemIntegrationEnabled": true,
+                  "siemIntegrationType": "AWS",
+                  "siemFormat": "JSON",
+                  "siemAccessKeyId": "AKIAIOSFODNN7EXAMPLE",
+                  "siemBucketName": "company-beyondtrust-logs",
+                  "siemCodec": "gzip",
+                  "siemRegionName": "us-east-1",
+                  "siemSseEnabled": true
+                },
+                "siemIntegrationSentinelAuditing": {
+                  "siemIntegrationEnabled": true,
+                  "siemIntegrationType": "Sentinel",
+                  "siemFormat": "JSON",
+                  "tableName": "BeyondTrustAuditLogs",
+                  "workspaceId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                },
+                "siemIntegrationSplunkAuditing": {
+                  "siemIntegrationEnabled": true,
+                  "siemIntegrationType": "Splunk",
+                  "siemFormat": "JSON",
+                  "hostName": "splunk-hec.company.com",
+                  "index": "beyondtrust_audit"
+                },
+                "agentDataAuditing": {
+                  "newAgentId": "f5g6h7i8-9j0k-1l2m-3n4o-p5q6r7s8t9u0",
+                  "oldAgentId": "e4f5g6h7-8i9j-0k1l-2m3n-o4p5q6r7s8t9",
+                  "newTimestamp": "2026-04-08T14:30:00.0000000",
+                  "oldTimestamp": "2026-04-08T14:00:00.0000000",
+                  "newHostType": "Windows Server",
+                  "oldHostType": "Windows Workstation",
+                  "newOsName": "Windows Server 2022",
+                  "oldOsName": "Windows 10 Enterprise",
+                  "newAdapterVersion": "25.1.0.234",
+                  "oldAdapterVersion": "25.0.1.198",
+                  "newComputerGroupId": "g6h7i8j9-0k1l-2m3n-4o5p-q6r7s8t9u0v1",
+                  "oldComputerGroupId": "f5g6h7i8-9j0k-1l2m-3n4o-p5q6r7s8t9u0",
+                  "newComputerGroupName": "Production_Servers",
+                  "oldComputerGroupName": "Workstations"
+                },
+                "managementRuleDataAuditing": {
+                  "newPriority": 100,
+                  "oldPriority": 50
+                },
+                "autoUpdateRateLimitDataAuditing": {
+                  "oldPmRequestsLimits": 100,
+                  "oldPmRequestsLimitMinutes": 60,
+                  "pmRequestsLimits": 200,
+                  "pmRequestsLimitMinutes": 30
+                },
+                "autoUpdateGroupConfigSettingsDataAuditing": {
+                  "newEnableAutoUpdate": "true",
+                  "newUseLatestVersion": "true",
+                  "newClientVersion": "25.1.0",
+                  "newAdapterVersion": "25.1.0.234",
+                  "oldEnableAutoUpdate": "false",
+                  "oldUseLatestVersion": "false",
+                  "oldClientVersion": "25.0.0",
+                  "oldAdapterVersion": "25.0.1.198"
+                },
+                "autoUpdateGroupClientSettingsDataAuditing": {
+                  "oldAppEventLogType": "Warning",
+                  "oldBeyondInsightCertName": "BeyondInsight_Prod_2025",
+                  "oldBeyondInsightUrl": "https://beyondinsight.company.local",
+                  "oldBeyondInsightWorkGroup": "WORKGROUP",
+                  "oldCertMode": "Thumbprint",
+                  "oldConfigAuditEnabled": "false",
+                  "oldConfigAuditMode": "Basic",
+                  "oldCrlFailOpen": "false",
+                  "oldDownloadAuditMode": "Minimal",
+                  "oldHookLoadMethod": "Standard",
+                  "oldPolicyEnabled": "true",
+                  "oldPolicyPrecedence": "Local",
+                  "oldPsMode": "Restricted",
+                  "newPsMode": "Full",
+                  "newBeyondInsightCertName": "BeyondInsight_Prod_2026",
+                  "newBeyondInsightUrl": "https://beyondinsight.company.com",
+                  "newBeyondInsightWorkGroup": "DOMAIN",
+                  "newAppEventLogType": "Information",
+                  "newHookLoadMethod": "Advanced",
+                  "newCertMode": "Subject",
+                  "newConfigAuditEnabled": "true",
+                  "newConfigAuditMode": "Detailed",
+                  "newCrlFailOpen": "true",
+                  "newDownloadAuditMode": "Verbose",
+                  "newPolicyEnabled": "true",
+                  "newPolicyPrecedence": "Central"
+                },
+                "permissionGroupDataAuditing": {
+                  "permissionSetId": "h7i8j9k0-1l2m-3n4o-5p6q-r7s8t9u0v1w2",
+                  "newName": "Advanced_Security_Permissions",
+                  "oldName": "Basic_Security_Permissions",
+                  "newDescription": "Full security administration permissions including audit and compliance",
+                  "oldDescription": "Basic security permissions for viewing",
+                  "newNumberOfUsers": "25",
+                  "oldNumberOfUsers": "50"
+                },
+                "autoUpdateGroupMacClientSettingsDataAuditing": {
+                  "newAntiTamper": "enabled",
+                  "newMountAssist": "enabled",
+                  "newSudoEnabled": "true",
+                  "newBiometricAuthenticationEnabled": "true",
+                  "newBadgeIcons": "visible",
+                  "oldAntiTamper": "disabled",
+                  "oldMountAssist": "disabled",
+                  "oldSudoEnabled": "false",
+                  "oldBiometricAuthenticationEnabled": "false",
+                  "oldBadgeIcons": "hidden"
+                }
+              }
+            ]
+          }
+          `}}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "pageNumber": 2,
+            "pageSize": 1,
+            "totalRecordCount": 2,
+            "pageCount": 2,
+            "data": [
+              {
+                "id": 10574824,
+                "details": "User jane.smith modified group membership and role assignments for IT Operations team",
+                "userId": "b8c6d4e2-9f3a-5b7c-0d4e-f6g8b3c5d7e9",
+                "user": "jane.smith@company.com",
+                "entity": "Group",
+                "entityName": "IT_Operations_Group_v2",
+                "auditType": "GroupModification",
+                "created": "2026-04-09T09:15:42.5612340",
+                "changedBy": "API",
+                "apiClientDataAuditing": {
+                  "newName": "StagingAPIClient_v2",
+                  "oldName": "StagingAPIClient",
+                  "newDescription": "Staging environment API client for CI/CD pipeline integrations",
+                  "oldDescription": "Staging API client for testing",
+                  "secretUpdated": true,
+                  "deleted": false
+                },
+                "computerDataAuditing": {
+                  "updatedPoliciesOn": {
+                    "WORKSTATION-101": "IT_Operations_Policy_v3",
+                    "SERVER-APP-02": "Application_Server_Policy_v2"
+                  },
+                  "deactivatedAgents": {
+                    "LAPTOP-055": "Agent inactive for 45 days",
+                    "DESKTOP-203": "Replaced by virtual machine"
+                  },
+                  "newDeletedAgents": [
+                    "LAPTOP-055",
+                    "DESKTOP-203"
+                  ]
+                },
+                "groupDataAuditing": {
+                  "newName": "IT_Operations_Team",
+                  "oldName": "IT_Operations",
+                  "newDescription": "IT Operations team including on-call engineers and support staff",
+                  "oldDescription": "IT Operations core team",
+                  "newIsDefault": true,
+                  "oldIsDefault": false,
+                  "addPolicyRevisions": {
+                    "IT_Operations_Policy": "Revision 4.1",
+                    "Endpoint_Management_Policy": "Revision 1.5"
+                  },
+                  "removePolicyRevisions": {
+                    "Legacy_IT_Policy": "Revision 2.0",
+                    "Deprecated_Access_Policy": "Revision 1.2"
+                  },
+                  "newAgents": {
+                    "WORKSTATION-601": "IT_Ops_WS_01",
+                    "WORKSTATION-602": "IT_Ops_WS_02",
+                    "WORKSTATION-603": "IT_Ops_WS_03"
+                  },
+                  "removeAgents": {
+                    "WORKSTATION-502": "Transferred to Finance group",
+                    "WORKSTATION-503": "Decommissioned"
+                  }
+                },
+                "installationKeyDataAuditing": {
+                  "oldLabel": "Staging_Key_2025",
+                  "newLabel": "Staging_Key_2026",
+                  "newDisabled": false,
+                  "oldDisabled": true,
+                  "deleted": false
+                },
+                "policyDataAuditing": {
+                  "newName": "IT_Operations_Hardening_Policy",
+                  "oldName": "IT_Operations_Standard_Policy",
+                  "newDescription": "Hardened IT operations policy with strict privilege controls and audit logging",
+                  "oldDescription": "Standard IT operations policy for general access"
+                },
+                "policyRevisionDataAuditing": {
+                  "newGroups": {
+                    "IT_Administrators": "Full access",
+                    "IT_Operations": "Read-write access",
+                    "Help_Desk": "Read-only access"
+                  },
+                  "newAnnotationNote": "Revised policy to enforce least-privilege access following Q1 security audit findings"
+                },
+                "settingsDataAuditing": {
+                  "addDomain": "it-ops.company.com",
+                  "removeDomain": "it.company.local",
+                  "modifyDomainOldValue": "operations.company.local",
+                  "modifyDomainNewValue": "operations.company.com"
+                },
+                "userDataAuditing": {
+                  "newEmailAddress": "jane.smith@company.com",
+                  "oldEmailAddress": "j.smith@company.com",
+                  "newOlsonTimeZoneId": "America/Chicago",
+                  "oldOlsonTimeZoneId": "America/Los_Angeles",
+                  "newDateTimeDisplayFormat": "dd/MM/yyyy HH:mm:ss",
+                  "oldDateTimeDisplayFormat": "MM/dd/yyyy HH:mm:ss",
+                  "newPreferredLanguage": "en-US",
+                  "oldPreferredLanguage": "en-AU",
+                  "newDisabled": false,
+                  "oldDisabled": true,
+                  "newUserType": "Auditor",
+                  "oldUserType": "Standard",
+                  "deletedAt": "2026-04-09T09:15:42.5612340",
+                  "roles": [
+                    {
+                      "resourceType": "GroupManagement",
+                      "resourceId": "g5h6i7j8-3k4l-5m6n-7o8p-q9r0s1t2u3v4",
+                      "resourceName": "IT_Operations_Manager",
+                      "newRoles": [
+                        {
+                          "roleId": "c9d7e5f3-0a4b-6c8d-2e0f-g4h2i8j0k2l4",
+                          "roleName": "Group Administrator"
+                        }
+                      ],
+                      "oldRoles": [
+                        {
+                          "roleId": "b8c6d4e2-9f3a-5b7c-0d4e-f6g8b3c5d7e9",
+                          "roleName": "Group Member"
+                        }
+                      ]
+                    }
+                  ],
+                  "newPermissionSets": [
+                    {
+                      "permissionSetId": "e2f3g4h5-6i7j-8k9l-0m1n-o2p3q4r5s6t7",
+                      "permissionSetName": "IT_Ops_Admin_Access"
+                    }
+                  ],
+                  "oldPermissionSets": [
+                    {
+                      "permissionSetId": "d1e2f3g4-5h6i-7j8k-9l0m-n1o2p3q4r5s6",
+                      "permissionSetName": "Standard_User_Access"
+                    }
+                  ]
+                },
+                "openIdConfigDataAuditing": {
+                  "oldAuthenticationType": "LocalDB",
+                  "newAuthenticationType": "SAML",
+                  "oldDomain": "sso.company.local",
+                  "newDomain": "sso.company.com",
+                  "oldClientId": "beyondtrust-sso-staging-v1",
+                  "newClientId": "beyondtrust-sso-staging-v2",
+                  "secretUpdated": false,
+                  "oldOpenIDConnectProvider": "https://sso.company.local",
+                  "newOpenIDConnectProvider": "https://sso.company.com"
+                },
+                "mmcRemoteClientDataAuditing": {
+                  "enabled": false,
+                  "oldEnabled": true,
+                  "clientId": "f3g4h5i6-7j8k-9l0m-1n2o-p3q4r5s6t7u8",
+                  "oldClientId": "e2f3g4h5-6i7j-8k9l-0m1n-o2p3q4r5s6t7"
+                },
+                "computerPolicyDataAuditing": {
+                  "oldInactivityAgentDeactivationDays": 90,
+                  "oldEnableDeactivatedAgentDeletion": true,
+                  "oldDeactivatedAgentDeletionDays": 120,
+                  "inactivityAgentDeactivationDays": 45,
+                  "enableDeactivatedAgentDeletion": true,
+                  "deactivatedAgentDeletionDays": 90
+                },
+                "azureADIntegrationDataAuditing": {
+                  "oldAzureAdTenantId": "11223344-5566-7788-9900-aabbccddeeff",
+                  "oldAzureAdClientId": "aabbccdd-1122-3344-5566-778899001122",
+                  "oldAzureAdClientSecret": "***",
+                  "oldAzureAdUseCertificateAuth": true,
+                  "oldAzureAdIntegrationEnabled": true,
+                  "azureAdTenantId": "99887766-5544-3322-1100-ffeeddccbbaa",
+                  "azureAdClientId": "ffeeddc0-9988-7766-5544-332211009988",
+                  "azureAdClientSecret": "***",
+                  "azureAdUseCertificateAuth": true,
+                  "azureAdIntegrationEnabled": true,
+                  "azureAdConfigChanged": true
+                },
+                "authorizationRequestDataAuditing": {
+                  "oldAuthRequestIntegrationEnabled": true,
+                  "oldAuthRequestHostName": "auth-staging.company.local",
+                  "oldAuthRequestClientId": "bt-auth-staging-v1",
+                  "oldAuthRequestClientSecret": "***",
+                  "oldAuthRequestPassword": "***",
+                  "oldAuthRequestUserName": "bt_staging_account",
+                  "oldAuthRequestApiClientId": "api-staging-v1",
+                  "oldAuthRequestApiClientSecret": "***",
+                  "authRequestIntegrationEnabled": true,
+                  "authRequestHostName": "auth-staging.company.com",
+                  "authRequestClientId": "bt-auth-staging-v2",
+                  "authRequestClientSecret": "***",
+                  "authRequestPassword": "***",
+                  "authRequestUserName": "bt_staging_account_v2",
+                  "authRequestApiClientId": "api-staging-v2",
+                  "authRequestApiClientSecret": "***",
+                  "authRequestConfigChanged": true
+                },
+                "reputationSettingsDataAuditing": {
+                  "oldReputationIntegrationEnabled": true,
+                  "oldReputationIntegrationApiKey": "***",
+                  "reputationIntegrationEnabled": true,
+                  "reputationIntegrationApiKey": "***",
+                  "reputationConfigChanged": true
+                },
+                "securitySettingsDataAuditing": {
+                  "tokenTimeout": 1800,
+                  "oldTokenTimeout": 3600
+                },
+                "siemIntegrationBaseDetailModel": {
+                  "siemIntegrationEnabled": true,
+                  "siemIntegrationType": "Sentinel",
+                  "siemFormat": "JSON"
+                },
+                "siemIntegrationQradarAuditing": {
+                  "siemIntegrationEnabled": true,
+                  "siemIntegrationType": "QRadar",
+                  "siemFormat": "LEEF",
+                  "hostName": "qradar-staging.company.com",
+                  "port": "6514",
+                  "cert": "-----BEGIN CERTIFICATE-----\nMIIE...staging-certificate...content\n-----END CERTIFICATE-----"
+                },
+                "siemIntegrationS3Auditing": {
+                  "siemIntegrationEnabled": false,
+                  "siemIntegrationType": "AWS",
+                  "siemFormat": "JSON",
+                  "siemAccessKeyId": "AKIAI9SFODNN7STAGING",
+                  "siemBucketName": "company-beyondtrust-staging-logs",
+                  "siemCodec": "none",
+                  "siemRegionName": "us-west-2",
+                  "siemSseEnabled": false
+                },
+                "siemIntegrationSentinelAuditing": {
+                  "siemIntegrationEnabled": true,
+                  "siemIntegrationType": "Sentinel",
+                  "siemFormat": "JSON",
+                  "tableName": "BeyondTrustStagingLogs",
+                  "workspaceId": "b2c3d4e5-f6a7-8901-bcde-fg2345678901"
+                },
+                "siemIntegrationSplunkAuditing": {
+                  "siemIntegrationEnabled": false,
+                  "siemIntegrationType": "Splunk",
+                  "siemFormat": "JSON",
+                  "hostName": "splunk-staging.company.com",
+                  "index": "beyondtrust_staging"
+                },
+                "agentDataAuditing": {
+                  "newAgentId": "g6h7i8j9-0k1l-2m3n-4o5p-q6r7s8t9u0v1",
+                  "oldAgentId": "f5g6h7i8-9j0k-1l2m-3n4o-p5q6r7s8t9u0",
+                  "newTimestamp": "2026-04-09T09:10:00.0000000",
+                  "oldTimestamp": "2026-04-09T08:45:00.0000000",
+                  "newHostType": "Windows Workstation",
+                  "oldHostType": "Windows Workstation",
+                  "newOsName": "Windows 11 Enterprise",
+                  "oldOsName": "Windows 10 Enterprise",
+                  "newAdapterVersion": "25.1.0.234",
+                  "oldAdapterVersion": "24.4.2.156",
+                  "newComputerGroupId": "h7i8j9k0-1l2m-3n4o-5p6q-r7s8t9u0v1w2",
+                  "oldComputerGroupId": "g6h7i8j9-0k1l-2m3n-4o5p-q6r7s8t9u0v1",
+                  "newComputerGroupName": "IT_Operations_Workstations",
+                  "oldComputerGroupName": "General_Workstations"
+                },
+                "managementRuleDataAuditing": {
+                  "newPriority": 75,
+                  "oldPriority": 25
+                },
+                "autoUpdateRateLimitDataAuditing": {
+                  "oldPmRequestsLimits": 150,
+                  "oldPmRequestsLimitMinutes": 45,
+                  "pmRequestsLimits": 300,
+                  "pmRequestsLimitMinutes": 60
+                },
+                "autoUpdateGroupConfigSettingsDataAuditing": {
+                  "newEnableAutoUpdate": "true",
+                  "newUseLatestVersion": "false",
+                  "newClientVersion": "25.1.0",
+                  "newAdapterVersion": "25.1.0.234",
+                  "oldEnableAutoUpdate": "true",
+                  "oldUseLatestVersion": "true",
+                  "oldClientVersion": "24.4.0",
+                  "oldAdapterVersion": "24.4.2.156"
+                },
+                "autoUpdateGroupClientSettingsDataAuditing": {
+                  "oldAppEventLogType": "Error",
+                  "oldBeyondInsightCertName": "BeyondInsight_Staging_2025",
+                  "oldBeyondInsightUrl": "https://beyondinsight-staging.company.local",
+                  "oldBeyondInsightWorkGroup": "STAGING",
+                  "oldCertMode": "Subject",
+                  "oldConfigAuditEnabled": "true",
+                  "oldConfigAuditMode": "Basic",
+                  "oldCrlFailOpen": "true",
+                  "oldDownloadAuditMode": "Standard",
+                  "oldHookLoadMethod": "Standard",
+                  "oldPolicyEnabled": "true",
+                  "oldPolicyPrecedence": "Central",
+                  "oldPsMode": "Restricted",
+                  "newPsMode": "Restricted",
+                  "newBeyondInsightCertName": "BeyondInsight_Staging_2026",
+                  "newBeyondInsightUrl": "https://beyondinsight-staging.company.com",
+                  "newBeyondInsightWorkGroup": "STAGING",
+                  "newAppEventLogType": "Warning",
+                  "newHookLoadMethod": "Standard",
+                  "newCertMode": "Thumbprint",
+                  "newConfigAuditEnabled": "true",
+                  "newConfigAuditMode": "Detailed",
+                  "newCrlFailOpen": "false",
+                  "newDownloadAuditMode": "Standard",
+                  "newPolicyEnabled": "true",
+                  "newPolicyPrecedence": "Central"
+                },
+                "permissionGroupDataAuditing": {
+                  "permissionSetId": "i8j9k0l1-2m3n-4o5p-6q7r-s8t9u0v1w2x3",
+                  "newName": "IT_Operations_Permissions",
+                  "oldName": "IT_Standard_Permissions",
+                  "newDescription": "IT Operations team permissions with elevated endpoint management rights",
+                  "oldDescription": "Standard IT permissions for basic endpoint access",
+                  "newNumberOfUsers": "18",
+                  "oldNumberOfUsers": "30"
+                },
+                "autoUpdateGroupMacClientSettingsDataAuditing": {
+                  "newAntiTamper": "enabled",
+                  "newMountAssist": "disabled",
+                  "newSudoEnabled": "false",
+                  "newBiometricAuthenticationEnabled": "true",
+                  "newBadgeIcons": "hidden",
+                  "oldAntiTamper": "disabled",
+                  "oldMountAssist": "disabled",
+                  "oldSudoEnabled": "false",
+                  "oldBiometricAuthenticationEnabled": "false",
+                  "oldBadgeIcons": "hidden"
+                }
+              }
+            ]
+          }
+          `}}

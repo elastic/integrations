@@ -1,0 +1,26 @@
+---
+description: Benchmark 10000 spectrum_event events ingested
+input: http_endpoint
+vars:
+  listen_address: 0.0.0.0
+data_stream:
+  name: spectrum_event
+  vars:
+    listen_port: 9560
+    url: /cloudflare_logpush/spectrum_event
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+warmup_time_period: 10s
+corpora:
+  input_service:
+    name: cloudflare-logpush-spectrum_event
+    signal: SIGHUP
+  generator:
+    total_events: 10000
+    template:
+      path: ./spectrum_event-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./spectrum_event-benchmark/config.yml
+    fields:
+      path: ./spectrum_event-benchmark/fields.yml

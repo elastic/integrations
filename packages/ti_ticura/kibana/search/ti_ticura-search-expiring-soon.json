@@ -1,0 +1,48 @@
+{
+    "id": "ti_ticura-search-expiring-soon",
+    "type": "search",
+    "namespaces": [
+        "default"
+    ],
+    "migrationVersion": {
+        "search": "8.0.0"
+    },
+    "attributes": {
+        "title": "[Ticura] Indicators expiring in next 24h",
+        "description": "Indicators whose Ticura `ages_out` falls within the next 24 hours. Worth a quick look in case any are still operationally relevant.",
+        "columns": [
+            "ticura.indicator.ages_out",
+            "threat.indicator.type",
+            "threat.indicator.name",
+            "event.severity",
+            "ticura.indicator.risk_category"
+        ],
+        "sort": [
+            [
+                "ticura.indicator.ages_out",
+                "asc"
+            ]
+        ],
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": "{\"filter\": [{\"$state\": {\"store\": \"appState\"}, \"meta\": {\"alias\": null, \"disabled\": false, \"field\": \"event.module\", \"indexRefName\": \"kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index\", \"key\": \"event.module\", \"negate\": false, \"params\": {\"query\": \"ti_ticura\"}, \"type\": \"phrase\"}, \"query\": {\"match_phrase\": {\"event.module\": \"ti_ticura\"}}}, {\"$state\": {\"store\": \"appState\"}, \"meta\": {\"alias\": null, \"disabled\": false, \"field\": \"labels.is_ioc_transform_source\", \"indexRefName\": \"kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index\", \"key\": \"labels.is_ioc_transform_source\", \"negate\": false, \"params\": {\"query\": \"false\"}, \"type\": \"phrase\"}, \"query\": {\"match_phrase\": {\"labels.is_ioc_transform_source\": \"false\"}}}], \"query\": {\"language\": \"kuery\", \"query\": \"ticura.indicator.ages_out <= now+24h\"}, \"indexRefName\": \"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+        }
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "coreMigrationVersion": "8.8.0"
+}

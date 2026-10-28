@@ -2,19 +2,23 @@
 description: Pipeline for parsing specific fields related to su events in Jamf Protect
 processors:
 
-##########################
-## ECS Event Specific ##
-##########################
+    ##########################
+    ## ECS Event Specific ##
+    ##########################
     - set:
+        tag: set_event_reason_17d5df9e
         field: event.reason
         value: A user attempts to start a new shell using a substitute user identity
     - append:
+        tag: append_event_type_fffb7a5a
         field: event.type
         value: start
     - append:
+        tag: append_event_category_109b4d72
         field: event.category
         value: authentication
     - script:
+        tag: script_b92a9dcd
         lang: painless
         source: >
             ctx.event = ctx.event != null ? ctx.event : new HashMap();
@@ -29,20 +33,24 @@ processors:
               ctx.event.outcome = 'unknown';
             }
     - rename:
+        tag: rename_jamf_protect_telemetry_event_su_username_to_user_name_db45debd
         field: jamf_protect.telemetry.event.su.username
         target_field: user.name
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_su_uid_to_user_id_3d8802df
         field: jamf_protect.telemetry.event.su.uid
         target_field: user.id
         type: string
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_su_argv_to_process_args_ee94e293
         field: jamf_protect.telemetry.event.su.argv
         target_field: process.args
         ignore_missing: true
         if: ctx.jamf_protect?.telemetry?.event?.su?.argv != null
     - script:
+        tag: script_counts_indexes_arguments_9e475c50
         description: Counts the indexes of the arguments
         lang: painless
         source: >
@@ -54,47 +62,56 @@ processors:
             }
         ignore_failure: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_su_env_to_process_env_vars_d879fc62
         field: jamf_protect.telemetry.event.su.env
         target_field: process.env_vars
         ignore_missing: true
         if: ctx.jamf_protect?.telemetry?.event?.su?.env != null
     - convert:
+        tag: convert_jamf_protect_telemetry_event_su_env_count_to_jamf_protect_telemetry_env_count_99a0b268
         field: jamf_protect.telemetry.event.su.env_count
         target_field: jamf_protect.telemetry.env_count
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_su_shell_to_jamf_protect_telemetry_shell_e626b83c
         field: jamf_protect.telemetry.event.su.shell
         target_field: jamf_protect.telemetry.shell
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_su_from_username_to_jamf_protect_telemetry_from_username_24c4f274
         field: jamf_protect.telemetry.event.su.from_username
         target_field: jamf_protect.telemetry.from_username
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_su_to_username_to_jamf_protect_telemetry_to_username_3dafafc4
         field: jamf_protect.telemetry.event.su.to_username
         target_field: jamf_protect.telemetry.to_username
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_su_failure_message_to_jamf_protect_failure_reason_add5b330
         field: jamf_protect.telemetry.event.su.failure_message
         target_field: jamf_protect.failure_reason
         type: string
         ignore_missing: true
     - append:
+        tag: append_related_user_4c442fde
         field: related.user
         value: '{{{jamf_protect.telemetry.to_username}}}'
         if: ctx.jamf_protect?.to_username != null
         allow_duplicates: false
     - append:
+        tag: append_related_user_259f8822
         field: related.user
         value: '{{{jamf_protect.telemetry.from_username}}}'
         if: ctx.jamf_protect?.from_username != null
         allow_duplicates: false
-##########################
-## ECS Process ##
-##########################
+    ##########################
+    ## ECS Process ##
+    ##########################
     - pipeline:
+        tag: pipeline_object_process_0d75fa7a
         name: '{{ IngestPipeline "pipeline_object_process" }}'

@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the broker JVM heap utilization exceeds 85% (`heap.used / heap.max > 0.85`). Sustained high heap triggers GC thrashing and often precedes OutOfMemoryError.",
     "name": "[ActiveMQ OTel] High JVM heap utilization",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -16,13 +17,28 @@
     "alertDelay": {
       "active": 2
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "activemq_otel-broker-health"
+        },
+        {
+          "id": "activemq_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## ActiveMQ JVM heap utilization high\n\n### What fired\n`activemq.jvm.memory.heap.used / activemq.jvm.memory.heap.max` peaked above 0.85 over the evaluation window.\n\n### Why it matters\nWhen the JVM cannot reclaim enough heap, GC pauses lengthen and become more frequent. Message processing stalls during major collections, destination memory fills up, and a full heap eventually crashes the broker with `OutOfMemoryError`.\n\n### Triage\n1. Broker Health dashboard: confirm heap trend vs `.committed` and `.max`.\n2. Correlate with broker memory utilization (`activemq.memory.utilization`) \u2014 these often move together.\n3. Look at GC metrics for a sustained upward step in `activemq.jvm.gc.collections` or `.duration` rates.\n4. Watch `activemq.jvm.thread.count` \u2014 thread leaks can drive heap growth.\n\n### Remediation\n- Raise `-Xmx` if the workload has legitimately grown.\n- Investigate leaks: unbounded DLQ, long-lived subscriptions, custom plugins holding references.\n- Ensure `storeCursor` / `fileCursor` is used for large queues instead of `vmCursor` which keeps everything in memory.\n\n### Tuning\n- Threshold `> 0.85` matches the documented \"warning\" band. Tighten to 0.80 for tight clusters.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-activemq.otel-*\n// JVM heap metrics are broker-level (no destination dimension)\n| WHERE activemq.jvm.memory.heap.used IS NOT NULL AND activemq.jvm.memory.heap.max IS NOT NULL AND activemq.jvm.memory.heap.max > 0\n| STATS heap_used = MAX(LAST_OVER_TIME(activemq.jvm.memory.heap.used)), heap_max = MAX(LAST_OVER_TIME(activemq.jvm.memory.heap.max)) BY activemq.broker.name, host.name\n| EVAL heap_util = heap_used / heap_max\n// Alert when heap utilization exceeds 85%; adjust threshold for your environment\n| WHERE heap_util > 0.85\n| SORT heap_util DESC\n| LIMIT 10"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

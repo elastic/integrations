@@ -1,0 +1,88 @@
+{
+    "attributes": {
+        "created_at": "2026-03-27T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Amcache Application Forensics: Combined application and file inventory from the Windows Amcache.hve registry hive. Enumerates installed applications and associated binary files with SHA1 hashes, publishers, install dates, file paths, binary types, and USN journal references. The Amcache records metadata about binaries present on the system including file paths, hashes, timestamps, and install/interaction information. NOTE: Execution must be corroborated with additional artifacts (Prefetch, ShimCache, UserAssist).",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.amcache_application"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "lower_case_long_path"
+                }
+            },
+            {
+                "key": "file.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "file.hash.sha1",
+                "value": {
+                    "field": "file_sha1"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "size"
+                }
+            },
+            {
+                "key": "package.name",
+                "value": {
+                    "field": "product_name"
+                }
+            },
+            {
+                "key": "package.version",
+                "value": {
+                    "field": "product_version"
+                }
+            },
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "user_sid"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "amcache", "forensics", "execution_artifacts", "windows"]
+                }
+            }
+        ],
+        "id": "amcache_application_forensics_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "timeout": 180,
+        "query": "-- Amcache Application Forensics: Combined application and file inventory\n-- Source: elastic_amcache_applications_view (Amcache.hve registry hive)\n-- Forensic value: Application execution/installation evidence with SHA1 hashes\n-- NOTE: Execution must be corroborated with additional artifacts\n\nSELECT\n  *,\n  datetime(timestamp, 'unixepoch') AS record_time\nFROM elastic_amcache_applications_view\nWHERE name IS NOT NULL AND name != ''\nORDER BY timestamp DESC;",
+        "updated_at": "2026-03-27T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.4.0",
+    "id": "osquery_manager-5b2e3867-a277-4269-b3eb-9158d10965df",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-03-27T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

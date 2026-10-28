@@ -186,6 +186,7 @@ An example event for `deep_security` looks as following:
 | trendmicro.deep_security.file.size | The file size in bytes. | long |
 | trendmicro.deep_security.file_path | The location of the malware file. | keyword |
 | trendmicro.deep_security.filename | The file name that was accessed. | keyword |
+| trendmicro.deep_security.malware.name | The name of the malware that was found. | keyword |
 | trendmicro.deep_security.message | A list of changed attribute names. | keyword |
 | trendmicro.deep_security.model | The product name of the device. | keyword |
 | trendmicro.deep_security.name | CEF event containing message. | keyword |

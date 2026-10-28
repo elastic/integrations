@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when buffer cache hit ratio drops below 99%. Cache pressure pushes reads to disk.",
     "name": "[PostgreSQL OTel] Low buffer hit ratio",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,6 +20,19 @@
       "enabled": true,
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-io-health"
+        },
+        {
+          "id": "postgresql_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## PostgreSQL low buffer hit ratio\n\n### What fired\n`blks_hit / (blks_hit + blks_read) < 99%` with at least 1000 reads.\n\n### Why it matters\nHealthy PostgreSQL runs at > 99% hit ratio. Sub-99% indicates shared_buffers pressure or a working-set change.\n\n### Triage\n1. Check `shared_buffers` sizing.\n2. Inspect recent workload changes.\n\n### Remediation\n- Raise `shared_buffers`.\n- Tune expensive queries.\n\n### Tuning\n- 99% threshold; lower for read-heavy analytic workloads.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

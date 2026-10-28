@@ -1,0 +1,46 @@
+{
+    "attributes": {
+        "created_at": "2026-03-27T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Amcache Device PnP: Enumerates Plug and Play device history from the Windows Amcache.hve registry hive (Root\\InventoryDevicePnp). Records USB, Bluetooth, and peripheral device connections with manufacturer, model, driver information, install dates, and hardware IDs. Useful for forensic investigation of unauthorized device connections, data exfiltration via removable media, and hardware-based attacks.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["host"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.amcache_device_pnp"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "amcache", "forensics", "device_inventory", "usb_forensics", "windows"]
+                }
+            }
+        ],
+        "id": "amcache_device_pnp_windows_elastic",
+        "interval": "7200",
+        "platform": "windows",
+        "timeout": 180,
+        "query": "-- Amcache Device PnP: Plug and Play device history\n-- Source: elastic_amcache_device_pnp (Root\\InventoryDevicePnp)\n-- Forensic value: USB, Bluetooth, and peripheral device connection history\n-- Use case: Unauthorized device detection, data exfiltration investigation\n\nSELECT\n  *,\n  datetime(timestamp, 'unixepoch') AS record_time\nFROM elastic_amcache_device_pnp\nORDER BY timestamp DESC;",
+        "updated_at": "2026-03-27T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.4.0",
+    "id": "osquery_manager-5bc9de27-6ae5-4148-b087-97d2669f6f27",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-03-27T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

@@ -1,0 +1,51 @@
+{
+  "attributes": {
+    "name": "[AWS SQS OTel] DLQ empty 99.5% rolling 30 days",
+    "description": "Tracks dead-letter queue correctness: 99.5% of 1-minute intervals must show zero visible messages on DLQ queues (QueueName matching *dlq*). Any message in a DLQ represents a processing failure and dropped work — the primary SQS error signal. Adjust the QueueName pattern if your DLQ naming convention differs.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"aws.sqs.otel\" AND Namespace: \"AWS/SQS\" AND MetricName: \"ApproximateNumberOfMessagesVisible\" AND stat: \"Maximum\" AND QueueName: *dlq*",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible"
+            }
+          ],
+          "equation": "A",
+          "comparator": "LTE",
+          "threshold": 0
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "aws_sqs",
+      "otel"
+    ],
+    "groupBy": [
+      "cloud.region",
+      "QueueName"
+    ],
+    "artifacts": {
+      "dashboards": [
+        { "id": "aws_sqs_otel-b1c3d401-841f-43f1-9421-4afc51a2ec87" }
+      ]
+    }
+  },
+  "id": "aws_sqs_otel-dlq-empty-99.5-Rolling30Days",
+  "type": "slo_template"
+}

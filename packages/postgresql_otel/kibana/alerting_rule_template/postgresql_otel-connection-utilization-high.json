@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `backends / connection.max > 80%`. Near-exhaustion blocks new clients.",
     "name": "[PostgreSQL OTel] Connection utilization high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,6 +20,19 @@
       "enabled": true,
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-connections"
+        },
+        {
+          "id": "postgresql_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## PostgreSQL connection utilization high\n\n### What fired\n`total backends / connection.max > 80%`.\n\n### Why it matters\nExhausting `max_connections` prevents new clients from connecting \u2014 application outage. Usually indicates a pool misconfiguration.\n\n### Triage\n1. Inspect app-side pools.\n2. Look for long-idle backends.\n\n### Remediation\n- Fix pooling / add pgbouncer.\n- Raise `max_connections` only with memory headroom.\n\n### Tuning\n- 80% threshold.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

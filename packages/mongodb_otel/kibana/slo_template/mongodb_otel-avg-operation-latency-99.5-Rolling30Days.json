@@ -1,0 +1,45 @@
+{
+  "attributes": {
+    "name": "[MongoDB OTel] Average operation latency 99.5% rolling 30 days",
+    "description": "This SLO tracks the average operation latency of MongoDB via OTel metrics, ensuring that 99.5% of 1-minute time intervals show average per-operation processing time below 200 milliseconds over a rolling period of 30 days. Rising operation time relative to operation count indicates degrading performance and can lead to slow queries and client timeouts.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"mongodbreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {"name": "A", "aggregation": "max", "field": "metrics.mongodb.operation.time"},
+            {"name": "B", "aggregation": "min", "field": "metrics.mongodb.operation.time"},
+            {"name": "C", "aggregation": "max", "field": "metrics.mongodb.operation.count"},
+            {"name": "D", "aggregation": "min", "field": "metrics.mongodb.operation.count"}
+          ],
+          "equation": "(A-B)/(C-D)",
+          "comparator": "LT",
+          "threshold": 200
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": ["mongodb", "otel"],
+    "groupBy": ["resource.attributes.server.address"],
+    "artifacts": {
+      "dashboards": [
+        {"id": "mongodb_otel-overview"},
+        {"id": "mongodb_otel-operations"}
+      ]
+    }
+  },
+  "id": "mongodb_otel-avg-operation-latency-99.5-Rolling30Days",
+  "type": "slo_template"
+}

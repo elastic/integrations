@@ -1,0 +1,48 @@
+{
+  "id": "aws_rds_otel-swap-usage-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when swap usage exceeds an absolute byte threshold. Non-zero or rising swap indicates memory pressure spilling to disk and degrading performance.",
+    "name": "[AWS RDS OTel] Swap usage high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_rds",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Swap Usage High\n\n### Triage\n1. Check `FreeableMemory` — low freeable memory is the upstream cause.\n2. Review `DatabaseConnections` for connection leaks or storms.\n3. Inspect `CPUUtilization` — swap activity often correlates with CPU spikes.\n4. Identify memory-heavy queries or large buffer pool misconfiguration.\n\n### Mitigation\n- Reduce connections or enable pooling.\n- Scale up instance class for more RAM.\n- Tune memory-related engine parameters appropriately for the instance size."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.rds.otel-*\n| WHERE Namespace == \"AWS/RDS\"\n    AND MetricName == \"SwapUsage\"\n    AND stat == \"Average\"\n| STATS max_swap_usage = MAX(`metrics.amazonaws.com/AWS/RDS/SwapUsage`)\n    BY DBInstanceIdentifier, cloud.region\n// Absolute bytes in swap — healthy instances stay near zero (default: 100 MB)\n| WHERE max_swap_usage > 104857600\n| SORT max_swap_usage DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "DBInstanceIdentifier",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

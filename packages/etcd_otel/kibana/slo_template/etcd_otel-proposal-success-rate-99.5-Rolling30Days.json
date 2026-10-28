@@ -1,0 +1,68 @@
+{
+  "attributes": {
+    "name": "[etcd OTel] Proposal success rate 99.5% rolling 30 days",
+    "description": "This SLO tracks the Raft proposal success rate of etcd via OTel metrics, ensuring that 99.5% of 1-minute time intervals show a proposal success rate (committed / (committed + failed)) of at least 99.5% over a rolling period of 30 days. Failed proposals indicate consensus or quorum issues that cause writes to be rejected, directly impacting Kubernetes control plane and other etcd clients.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"etcd.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "etcd_server_proposals_committed_total",
+              "filter": ""
+            },
+            {
+              "name": "B",
+              "aggregation": "min",
+              "field": "etcd_server_proposals_committed_total",
+              "filter": ""
+            },
+            {
+              "name": "C",
+              "aggregation": "max",
+              "field": "etcd_server_proposals_failed_total",
+              "filter": ""
+            },
+            {
+              "name": "D",
+              "aggregation": "min",
+              "field": "etcd_server_proposals_failed_total",
+              "filter": ""
+            }
+          ],
+          "equation": "(A-B)/((A-B)+(C-D))",
+          "comparator": "GTE",
+          "threshold": 0.995
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "etcd",
+      "otel"
+    ],
+    "groupBy": "resource.attributes.service.instance.id"
+  },
+  "id": "etcd_otel-proposal-success-rate-99.5-Rolling30Days",
+  "type": "slo_template",
+  "artifacts": {
+    "dashboards": [
+      { "id": "etcd_otel-overview" },
+      { "id": "etcd_otel-raft-consensus" }
+    ]
+  }
+}

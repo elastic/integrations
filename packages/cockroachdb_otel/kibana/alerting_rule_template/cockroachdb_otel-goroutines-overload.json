@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the average runnable goroutines per CPU on a node exceeds 30 (`sys_runnable_goroutines_per_cpu > 30`). This is CockroachDB's canonical indicator that the Go scheduler cannot keep up and the process is CPU-bound.",
     "name": "[CockroachDB OTel] Runnable goroutines per CPU high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cockroachdb_otel-overview"
+        },
+        {
+          "id": "cockroachdb_otel-sql-transactions"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## CockroachDB runnable goroutines per CPU high\n\n### What fired\n`sys_runnable_goroutines_per_cpu` exceeded 30 on at least one node over the evaluation window.\n\n### Why it matters\nThis metric is CockroachDB's preferred indicator of CPU saturation inside the process \u2014 it reflects scheduling pressure regardless of what the host CPU gauge shows. Sustained values above 30 produce elevated tail latency across all workloads.\n\n### Triage\n1. Cross-check with `sys_cpu_combined_percent_normalized` and `sys_cpu_host_combined_percent_normalized` \u2014 both should be high if the node is truly CPU-bound.\n2. Look at the workload: `sql_statements_active`, `sql_distsql_contended_queries_count`, `sql_full_scan_count` rate.\n3. Inspect leaseholder/replica balance (`replicas_leaseholders`, `rebalancing_queriespersecond`) \u2014 one node holding too many leases produces this pattern.\n4. Check for GC or compaction storms (`rocksdb_compactions` rate) that can saturate CPU indirectly.\n\n### Remediation\n- Rebalance leases / add nodes.\n- Eliminate expensive queries (full scans, large joins) surfaced by the application.\n- Upgrade instance size if the workload is simply beyond provisioned cores.\n\n### Tuning\n- `> 30` is the documented overload threshold. Lower only if you need earlier warning.\n- Default 10-minute window filters brief GC/scheduling spikes.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND sys_runnable_goroutines_per_cpu IS NOT NULL\n  AND sys_runnable_goroutines_per_cpu > 30\n// Values > 30 indicate CPU overload\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NULL\n| STATS goroutines_per_cpu = MAX(sys_runnable_goroutines_per_cpu) BY attributes.node_id, host.name\n| SORT goroutines_per_cpu DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 10,

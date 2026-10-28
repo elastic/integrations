@@ -1,0 +1,56 @@
+{
+    "id": "supabase_otel-postgres-down",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when the PostgreSQL availability gauge reports 0 for a Supabase project, meaning the exporter could not reach the database. Every other service in the project is a client of this database, so this is the highest-priority signal.",
+        "name": "[Supabase OTel] PostgreSQL is down",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "postgresql",
+            "availability"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                },
+                {
+                    "id": "supabase_otel-7c6a2004-c517-4b50-b70a-2682b7a79228"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## PostgreSQL Down\n\nA Supabase project is a small fleet of services (PostgREST, Auth/GoTrue, Realtime, the poolers) sharing one PostgreSQL instance. When `pg_up` reads 0 the whole project is effectively unavailable.\n\n### Triage Steps\n1. Confirm the database is genuinely down rather than the exporter being broken. If the `[Supabase OTel] Metrics collection is failing` rule is also active, suspect the collector first.\n2. Check whether the database bounced rather than stopped: `TS metrics-supabase.metrics.otel-* | STATS restarts = SUM(INCREASE(postgresql_restarts_total)) BY resource.attributes.supabase_project_ref`\n3. Check the host for the cause: a full or read-only data volume, or an OOM kill, will all stop PostgreSQL.\n4. Check whether the connection budget was exhausted immediately before the outage — the exporter's own connection can be refused when `max_connections` is reached.\n\n### Escalation\nThis is a full project outage. Escalate immediately.\n\n### Tuning\n`MIN()` is used across series so one unhealthy scrape target is not masked by a healthy one. If the metric is absent entirely the query returns no rows and the rule stays silent, so a project that does not expose `pg_up` never produces a false alert."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// pg_up is a gauge: 1 = the exporter reached PostgreSQL, 0 = it could not.\n// MIN() across series so a single unhealthy scrape target is not masked by a healthy one.\n// Swap LAST_OVER_TIME for MIN_OVER_TIME to also catch transient dips inside the window.\n| STATS `Postgres Up` = MIN(LAST_OVER_TIME(pg_up))\n    BY resource.attributes.supabase_project_ref\n// If pg_up is absent entirely the STATS produces no row, so a project that does not\n// expose the metric never triggers a false alert.\n| WHERE `Postgres Up` == 0"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.supabase_project_ref",
+            "termSize": 50
+        }
+    }
+}

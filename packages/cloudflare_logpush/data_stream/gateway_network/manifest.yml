@@ -3,7 +3,7 @@ type: logs
 streams:
   - input: http_endpoint
     template_path: http_endpoint.yml.hbs
-    title: Gateway Network logs
+    title: Gateway Network
     description: Collect Gateway Network logs from Cloudflare via HTTP endpoint.
     vars:
       - name: listen_port
@@ -80,7 +80,7 @@ streams:
         description: >
           The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-http_endpoint.html#_tracer_enabled_3) for details.
   - input: aws-s3
-    title: Gateway Network logs
+    title: Gateway Network
     description: Collect Gateway Network logs from Cloudflare via S3 or SQS.
     template_path: aws-s3.yml.hbs
     vars:
@@ -122,6 +122,20 @@ streams:
         show_user: true
         default: 5
         description: Number of workers that will process the S3/SQS objects listed.
+      - name: start_timestamp
+        type: text
+        title: "[S3] Start Timestamp"
+        multi: false
+        required: false
+        show_user: false
+        description: If set, only read S3 objects with last modified timestamp newer than the given timestamp. Accepts a timestamp in `YYYY-MM-DDTHH:MM:SSZ` format. For example, "2020-10-10T10:30:00Z" (UTC) or "2020-10-10T10:30:00Z+02:30" (with zone offset).
+      - name: ignore_older
+        type: text
+        title: "[S3] Ignore Older Timespan"
+        multi: false
+        required: false
+        show_user: false
+        description: If set, ignore S3 objects whose Last-Modified time is before the ignore older timespan. Timespan is checked from the current time to S3 object's Last-Modified time. Accepts a duration like `48h`, `2h30m`.
       - name: visibility_timeout
         type: text
         title: '[SQS] Visibility Timeout'
@@ -196,7 +210,7 @@ streams:
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
   - input: gcs
-    title: Gateway Network logs
+    title: Gateway Network
     description: Collect Gateway Network logs from Cloudflare via GCS.
     template_path: gcs.yml.hbs
     vars:
@@ -258,6 +272,22 @@ streams:
           #  poll: true
           #  poll_interval: 10s
           #  bucket_timeout: 30s
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: true
+        title: Preserve duplicate custom fields
+        description: Preserve custom fields for all ECS mappings.
+        type: bool
+        multi: false
+        default: false
       - name: processors
         type: yaml
         title: Processors
@@ -276,7 +306,7 @@ streams:
           - forwarded
           - cloudflare_logpush-gateway_network
   - input: azure-blob-storage
-    title: Gateway Network logs
+    title: Gateway Network
     description: Collect Gateway Network logs from Cloudflare via Azure Blob Storage.
     enabled: false
     template_path: abs.yml.hbs
@@ -342,7 +372,7 @@ streams:
           # - regex: "event/"
         description: >
            If the container will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded.
-           This is a list of selectors which is made up of regex patters. The regex should match the container filepath. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax).
+           This is a list of selectors which is made up of regex patterns. The regex should match the container filepath. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax).
            Files that don’t match one of the regexes will not be processed. This process happens locally on the host hence it is an expensive operation. 
            It is recommended to use this attribute only if there is a specific need to filter out files locally.
       
@@ -379,9 +409,9 @@ streams:
         default: false
       - name: preserve_duplicate_custom_fields
         required: true
-        show_user: false
+        show_user: true
         title: Preserve duplicate custom fields
-        description: Preserve github.audit fields that were copied to Elastic Common Schema (ECS) fields.
+        description: Preserve custom fields for all ECS mappings.
         type: bool
         multi: false
         default: false

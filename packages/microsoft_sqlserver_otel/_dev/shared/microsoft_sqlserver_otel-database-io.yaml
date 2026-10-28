@@ -1,0 +1,348 @@
+# SQL Server OTel Database I/O — per-database file I/O, latency, operations
+# Deep-dive: Which databases/files have I/O pressure?
+
+dashboards:
+- id: microsoft_sqlserver_otel-database-io
+  name: '[SQL Server OTel] Database I/O'
+  description: Per-database file I/O bytes, latency, and operations by direction and file type.
+
+  settings:
+    margins: true
+    titles: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+
+  controls:
+  - type: options
+    label: Instance
+    data_view: metrics-*
+    field: resource.attributes.service.instance.id
+  - type: options
+    label: Database
+    data_view: metrics-*
+    field: resource.attributes.sqlserver.database.name
+
+  panels:
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: microsoft_sqlserver_otel-overview
+      - label: Memory & saturation
+        dashboard: microsoft_sqlserver_otel-memory-saturation
+      - label: Concurrency & errors
+        dashboard: microsoft_sqlserver_otel-concurrency-errors
+      - label: Database I/O
+        dashboard: microsoft_sqlserver_otel-database-io
+      - label: Query performance
+        dashboard: microsoft_sqlserver_otel-query-performance
+
+  - hide_title: true
+    size: {w: 16, h: 12}
+    markdown:
+      content: |
+        ## [SQL Server OTel] Database I/O
+
+        This dashboard tracks per-database file I/O:
+        - I/O bytes and operations by direction (read/write) and file type (ROWS/LOG)
+        - I/O latency (wait time) per file
+        - Database and log file I/O trends
+        - Replication throughput (replica data rate)
+
+  - title: Total I/O rate (bytes/s)
+    hide_title: true
+    size: {w: 6, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.database.io IS NOT NULL
+      - STATS io_rate = SUM(RATE(metrics.sqlserver.database.io))
+      primary:
+        field: io_rate
+        label: I/O bytes/s
+        format:
+          type: bytes
+          suffix: "/s"
+
+  - title: Avg I/O latency per operation
+    hide_title: true
+    size: {w: 5, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.database.latency IS NOT NULL
+      - STATS total_latency = SUM(RATE(metrics.sqlserver.database.latency)), total_ops = SUM(RATE(metrics.sqlserver.database.operations))
+      - EVAL avg_latency_ms = CASE(total_ops > 0, (total_latency / total_ops) * 1000, 0)
+      primary:
+        field: avg_latency_ms
+        label: Avg latency (ms/op)
+        format:
+          type: number
+          decimals: 2
+          suffix: " ms"
+
+  - title: I/O ops rate
+    hide_title: true
+    size: {w: 5, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.database.operations IS NOT NULL
+      - STATS ops_rate = SUM(RATE(metrics.sqlserver.database.operations))
+      primary:
+        field: ops_rate
+        label: Ops/s
+        format:
+          type: number
+          decimals: 0
+          suffix: "/s"
+
+  - title: Replica data rate
+    hide_title: true
+    size: {w: 6, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.replica.data.rate IS NOT NULL
+      - STATS rate = AVG(metrics.sqlserver.replica.data.rate)
+      primary:
+        field: rate
+        label: Replica B/s
+        format:
+          type: bytes
+          suffix: "/s"
+
+  - title: Transaction delay
+    hide_title: true
+    size: {w: 5, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.transaction.delay IS NOT NULL
+      - STATS delay = AVG(metrics.sqlserver.transaction.delay)
+      primary:
+        field: delay
+        label: Txn delay (ms)
+        format:
+          type: number
+          decimals: 0
+
+  - title: Backup/restore throughput
+    hide_title: true
+    size: {w: 5, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.database.backup_or_restore.rate IS NOT NULL
+      - STATS rate = AVG(metrics.sqlserver.database.backup_or_restore.rate)
+      primary:
+        field: rate
+        label: Backup/restore throughput
+        format:
+          type: bytes
+          decimals: 1
+          suffix: /s
+
+  - title: I/O bytes rate by database and direction
+    size: {w: 32, h: 8}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.database.io IS NOT NULL
+      - STATS io_rate = SUM(RATE(metrics.sqlserver.database.io)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), db = 
+        COALESCE(resource.attributes.sqlserver.database.name, "unknown"), direction = COALESCE(attributes.direction, direction, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: io_rate
+        label: I/O bytes/s
+        format:
+          type: bytes
+      breakdown:
+        field: db
+      legend:
+        visible: show
+        position: right
+
+  - title: I/O latency rate by database and file type
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.database.latency IS NOT NULL
+      - STATS latency_rate = SUM(RATE(metrics.sqlserver.database.latency)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), db = 
+        COALESCE(resource.attributes.sqlserver.database.name, "unknown"), file_type = COALESCE(attributes.file_type, file_type, "unknown")
+      - EVAL latency_rate_ms = latency_rate * 1000
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: latency_rate_ms
+        label: Latency (ms/s)
+        format:
+          type: number
+          decimals: 2
+      breakdown:
+        field: db
+      legend:
+        visible: show
+        position: right
+
+  - title: I/O bytes rate by file type (ROWS vs LOG)
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.database.io IS NOT NULL
+      - STATS io_rate = SUM(RATE(metrics.sqlserver.database.io)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), file_type = 
+        COALESCE(attributes.file_type, file_type, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: io_rate
+        label: I/O bytes/s
+        format:
+          type: bytes
+      breakdown:
+        field: file_type
+      legend:
+        visible: show
+        position: right
+
+  - title: I/O bytes rate by direction (read vs write)
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.database.io IS NOT NULL
+      - STATS io_rate = SUM(RATE(metrics.sqlserver.database.io)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), direction = 
+        COALESCE(attributes.direction, direction, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: io_rate
+        label: I/O bytes/s
+        format:
+          type: bytes
+      breakdown:
+        field: direction
+      legend:
+        visible: show
+        position: right
+
+  - title: Top databases by I/O rate
+    size: {w: 24, h: 12}
+    esql:
+      type: bar
+      mode: unstacked
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.database.io IS NOT NULL
+      - STATS io_rate = SUM(RATE(metrics.sqlserver.database.io)) BY db = COALESCE(resource.attributes.sqlserver.database.name, "unknown")
+      - SORT io_rate DESC
+      - LIMIT 10
+      dimension:
+        field: db
+      metrics:
+      - field: io_rate
+        label: I/O bytes/s
+        format:
+          type: bytes
+
+  - title: Replica data rate by direction
+    size: {w: 48, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.replica.data.rate IS NOT NULL
+      - STATS rate = AVG(metrics.sqlserver.replica.data.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), direction = 
+        COALESCE(attributes.replica.direction, replica.direction, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: rate
+        label: Replica B/s
+        format:
+          type: bytes
+      breakdown:
+        field: direction
+      legend:
+        visible: show
+        position: right
+
+  - title: Top databases by I/O latency rate
+    size: {w: 48, h: 15}
+    esql:
+      type: datatable
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.database.io IS NOT NULL OR metrics.sqlserver.database.latency IS NOT NULL
+      - STATS io_rate = SUM(RATE(metrics.sqlserver.database.io)), latency_rate = SUM(RATE(metrics.sqlserver.database.latency)), ops_rate = 
+        SUM(RATE(metrics.sqlserver.database.operations)) BY db = COALESCE(resource.attributes.sqlserver.database.name, "unknown"), file_type
+        = COALESCE(attributes.file_type, file_type, "unknown"), direction = COALESCE(attributes.direction, direction, "unknown")
+      - EVAL io_rate = COALESCE(io_rate, 0.0), latency_rate = COALESCE(latency_rate, 0.0), ops_rate = COALESCE(ops_rate, 0.0)
+      - EVAL latency_rate_ms = latency_rate * 1000
+      - SORT latency_rate_ms DESC
+      - LIMIT 20
+      breakdowns:
+      - field: db
+        label: Database
+      - field: file_type
+        label: File type
+      - field: direction
+        label: Direction
+      metrics:
+      - field: io_rate
+        label: I/O bytes/s
+        format:
+          type: bytes
+      - field: latency_rate_ms
+        label: Latency (ms/s)
+        format:
+          type: number
+          decimals: 2
+      - field: ops_rate
+        label: Ops/s
+        format:
+          type: number
+          decimals: 0

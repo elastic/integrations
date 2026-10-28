@@ -13,6 +13,8 @@ resource.ssl: {{ssl}}
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
 resource.url: {{url}}
 auth.oauth2:
   client.id: {{client_id}}
@@ -148,9 +150,9 @@ max_executions: {{max_executions}}
 {{/if}}
 program: |
   state.with(
-    post_request(
-      state.url.trim_right("/") + "/graphql",
-      "application/json",
+    request(
+      "POST",
+      state.url.trim_right("/").trim_suffix("/graphql") + "/graphql",
       {
         "query": state.query,
         "variables": {
@@ -166,7 +168,12 @@ program: |
           }
         }
       }.encode_json()
-    ).do_request().as(resp, resp.StatusCode == 200 ?
+    ).with({
+      "Header": {
+        "Content-Type": ["application/json"],
+        "User-Agent": [useragent],
+      },
+    }).do_request().as(resp, resp.StatusCode == 200 ?
         bytes(resp.Body).decode_json().as(body, body.?data.issues.nodes.orValue(null) != null ?
           {
             "events": body.data.issues.nodes.map(e, {

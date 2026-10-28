@@ -1,0 +1,52 @@
+{
+  "attributes": {
+    "name": "[IBM MQ OTel] Log write latency 99.5% rolling 30 days",
+    "description": "Tracks the average log write latency of the IBM MQ queue manager, ensuring that 99.5% of 1-minute time intervals maintain average log write latency below 5 milliseconds over a rolling 30-day period. Log write performance directly governs persistent message throughput since every persistent MQPUT requires a synchronous log write before acknowledgement.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"ibmmq.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "avg",
+              "field": "ibmmq_qmgr_log_write_latency_seconds",
+              "filter": ""
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 0.005
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "ibmmq",
+      "otel"
+    ],
+    "groupBy": [
+      "attributes.qmgr"
+    ]
+  },
+  "artifacts": {
+    "dashboards": [
+      { "id": "ibmmq_otel-resources" },
+      { "id": "ibmmq_otel-overview" }
+    ]
+  },
+  "id": "ibmmq_otel-log-write-latency-99.5-Rolling30Days",
+  "type": "slo_template"
+}

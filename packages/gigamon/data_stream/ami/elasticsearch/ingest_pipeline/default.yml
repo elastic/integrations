@@ -9,6 +9,131 @@ processors:
       target_field: gigamon.ami
       if: ctx.json != null
       tag: rename_json
+
+  - rename:
+      field: gigamon.ami.TcpRttMin
+      target_field: gigamon.ami.tcp_rtt_min
+      ignore_missing: true
+      tag: rename_tcp_rtt_min
+
+  - rename:
+      field: gigamon.ami.TcpRttMax
+      target_field: gigamon.ami.tcp_rtt_max
+      ignore_missing: true
+      tag: rename_tcp_rtt_max
+
+  - rename:
+      field: gigamon.ami.TcpRttMean
+      target_field: gigamon.ami.tcp_rtt_mean
+      ignore_missing: true
+      tag: rename_tcp_rtt_mean
+
+  - rename:
+      field: gigamon.ami.TcpRttAppMin
+      target_field: gigamon.ami.tcp_rtt_app_min
+      ignore_missing: true
+      tag: rename_tcp_rtt_app_min
+
+  - rename:
+      field: gigamon.ami.TcpRttAppMax
+      target_field: gigamon.ami.tcp_rtt_app_max
+      ignore_missing: true
+      tag: rename_tcp_rtt_app_max
+
+  - rename:
+      field: gigamon.ami.TcpRttAppMean
+      target_field: gigamon.ami.tcp_rtt_app_mean
+      ignore_missing: true
+      tag: rename_tcp_rtt_app_mean
+
+  - rename:
+      field: gigamon.ami.TcpClientWinMax
+      target_field: gigamon.ami.tcp_client_win_max
+      ignore_missing: true
+      tag: rename_tcp_client_win_max
+
+  - rename:
+      field: gigamon.ami.TcpClientWinMin
+      target_field: gigamon.ami.tcp_client_win_min
+      ignore_missing: true
+      tag: rename_tcp_client_win_min
+
+  - rename:
+      field: gigamon.ami.TcpClientWinMean
+      target_field: gigamon.ami.tcp_client_win_mean
+      ignore_missing: true
+      tag: rename_tcp_client_win_mean
+
+  - rename:
+      field: gigamon.ami.TcpClientZwAck
+      target_field: gigamon.ami.tcp_client_zw_ack
+      ignore_missing: true
+      tag: rename_tcp_client_zw_ack
+
+  - rename:
+      field: gigamon.ami.TcpClientZwProbe
+      target_field: gigamon.ami.tcp_client_zw_probe
+      ignore_missing: true
+      tag: rename_tcp_client_zw_probe
+
+  - rename:
+      field: gigamon.ami.TcpServerWinMax
+      target_field: gigamon.ami.tcp_server_win_max
+      ignore_missing: true
+      tag: rename_tcp_server_win_max
+
+  - rename:
+      field: gigamon.ami.TcpServerWinMin
+      target_field: gigamon.ami.tcp_server_win_min
+      ignore_missing: true
+      tag: rename_tcp_server_win_min
+
+  - rename:
+      field: gigamon.ami.TcpServerWinMean
+      target_field: gigamon.ami.tcp_server_win_mean
+      ignore_missing: true
+      tag: rename_tcp_server_win_mean
+
+  - rename:
+      field: gigamon.ami.TcpServerZwProbe
+      target_field: gigamon.ami.tcp_server_zw_probe
+      ignore_missing: true
+      tag: rename_tcp_server_zw_probe
+
+  - rename:
+      field: gigamon.ami.TcpServerZwAck
+      target_field: gigamon.ami.tcp_server_zw_ack
+      ignore_missing: true
+      tag: rename_tcp_server_zw_ack
+
+  - rename:
+      field: gigamon.ami.TcpServerZw
+      target_field: gigamon.ami.tcp_server_zw
+      ignore_missing: true
+      tag: rename_tcp_server_zw
+
+  - rename:
+      field: gigamon.ami.TcpClientZw
+      target_field: gigamon.ami.tcp_client_zw
+      ignore_missing: true
+      tag: rename_tcp_client_zw
+
+  - rename:
+      field: gigamon.ami.TcpClientMss
+      target_field: gigamon.ami.tcp_client_mss
+      ignore_missing: true
+      tag: rename_tcp_client_mss
+
+  - rename:
+      field: gigamon.ami.TcpServerMss
+      target_field: gigamon.ami.tcp_server_mss
+      ignore_missing: true
+      tag: rename_tcp_server_mss
+
+  - pipeline:
+      if: ctx.cef != null
+      name: '{{ IngestPipeline "cef-pipeline" }}'
+      tag: cef_pipeline
   - set:
       field: event.kind
       value: event
@@ -101,12 +226,27 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Expand ASN.1 UTCTime 2-digit years using the RFC 5280 pivot (YY >= 50 is 19YY).
+      tag: script_expand_asn1_utctime_not_before
+      if: ctx.gigamon?.ami?.ssl_validity_not_before instanceof String && ctx.gigamon.ami.ssl_validity_not_before.length() == 13 && ctx.gigamon.ami.ssl_validity_not_before.endsWith('Z')
+      source: |-
+        def v = ctx.gigamon.ami.ssl_validity_not_before;
+        int yy = Integer.parseInt(v.substring(0, 2));
+        ctx.gigamon.ami.ssl_validity_not_before = (yy >= 50 ? '19' : '20') + v;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
   - date:
       field: gigamon.ami.ssl_validity_not_before
       target_field: gigamon.ami.ssl_validity_not_before
       tag: date_gigamon_ami_ssl_validity_not_before
       formats:
         - 'yyyy-MM-dd HH:mm:ss'
+        - "yyyyMMddHHmmss'Z'"
         - ISO8601
       if: ctx.gigamon?.ami?.ssl_validity_not_before != null
       on_failure:
@@ -115,12 +255,28 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - script:
+      lang: painless
+      description: Expand ASN.1 UTCTime 2-digit years using the RFC 5280 pivot (YY >= 50 is 19YY).
+      tag: script_expand_asn1_utctime_not_after
+      if: ctx.gigamon?.ami?.ssl_validity_not_after instanceof String && ctx.gigamon.ami.ssl_validity_not_after.length() == 13 && ctx.gigamon.ami.ssl_validity_not_after.endsWith('Z')
+      source: |-
+        def v = ctx.gigamon.ami.ssl_validity_not_after;
+        int yy = Integer.parseInt(v.substring(0, 2));
+        ctx.gigamon.ami.ssl_validity_not_after = (yy >= 50 ? '19' : '20') + v;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
   - date:
       field: gigamon.ami.ssl_validity_not_after
       target_field: gigamon.ami.ssl_validity_not_after
       tag: date_gigamon_ami_ssl_validity_not_after
       formats:
         - 'yyyy-MM-dd HH:mm:ss'
+        - "yyyyMMddHHmmss'Z'"
         - ISO8601
       if: ctx.gigamon?.ami?.ssl_validity_not_after != null
       on_failure:
@@ -129,6 +285,7 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
 
   # set @timestamp from gigamon.ami.ts
   - set: 
@@ -466,6 +623,288 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'  
+  - convert:
+      field: gigamon.ami.tcp_rtt_min
+      if: ctx.gigamon?.ami?.tcp_rtt_min != null
+      tag: convert_tcp_rtt_min
+      type: double
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_rtt_min
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.tcp_rtt_max
+      if: ctx.gigamon?.ami?.tcp_rtt_max != null
+      tag: convert_tcp_rtt_max
+      type: double
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_rtt_max
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.tcp_rtt_mean
+      if: ctx.gigamon?.ami?.tcp_rtt_mean != null
+      tag: convert_tcp_rtt_mean
+      type: double
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_rtt_mean
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.tcp_rtt_app_min
+      if: ctx.gigamon?.ami?.tcp_rtt_app_min != null
+      tag: convert_tcp_rtt_app_min
+      type: double
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_rtt_app_min
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.tcp_rtt_app_max
+      if: ctx.gigamon?.ami?.tcp_rtt_app_max != null
+      tag: convert_tcp_rtt_app_max
+      type: double
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_rtt_app_max
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.tcp_rtt_app_mean
+      if: ctx.gigamon?.ami?.tcp_rtt_app_mean != null
+      tag: convert_tcp_rtt_app_mean
+      type: double
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_rtt_app_mean
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.tcp_win_size
+      if: ctx.gigamon?.ami?.tcp_win_size != null
+      tag: convert_tcp_win_size
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_win_size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - convert:
+      field: gigamon.ami.tcp_client_win_max
+      if: ctx.gigamon?.ami?.tcp_client_win_max != null
+      tag: convert_tcp_client_win_max
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_client_win_max
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - convert:
+      field: gigamon.ami.tcp_client_win_min
+      if: ctx.gigamon?.ami?.tcp_client_win_min != null
+      tag: convert_tcp_client_win_min
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_client_win_min
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - convert:
+      field: gigamon.ami.tcp_client_win_mean
+      if: ctx.gigamon?.ami?.tcp_client_win_mean != null
+      tag: convert_tcp_client_win_mean
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_client_win_mean
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - convert:
+      field: gigamon.ami.tcp_client_zw
+      if: ctx.gigamon?.ami?.tcp_client_zw != null
+      tag: convert_tcp_client_zw
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_client_zw
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - convert:
+      field: gigamon.ami.tcp_client_zw_ack
+      if: ctx.gigamon?.ami?.tcp_client_zw_ack != null
+      tag: convert_tcp_client_zw_ack
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_client_zw_ack
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - convert:
+      field: gigamon.ami.tcp_client_zw_probe
+      if: ctx.gigamon?.ami?.tcp_client_zw_probe != null
+      tag: convert_tcp_client_zw_probe
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_client_zw_probe
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - convert:
+      field: gigamon.ami.tcp_server_win_max
+      if: ctx.gigamon?.ami?.tcp_server_win_max != null
+      tag: convert_tcp_server_win_max
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_server_win_max
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - convert:
+      field: gigamon.ami.tcp_server_win_mean
+      if: ctx.gigamon?.ami?.tcp_server_win_mean != null
+      tag: convert_tcp_server_win_mean
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_server_win_mean
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - convert:
+      field: gigamon.ami.tcp_server_win_min
+      if: ctx.gigamon?.ami?.tcp_server_win_min != null
+      tag: convert_tcp_server_win_min
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_server_win_min
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - convert:
+      field: gigamon.ami.tcp_server_zw_probe
+      if: ctx.gigamon?.ami?.tcp_server_zw_probe != null
+      tag: convert_tcp_server_zw_probe
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_server_zw_probe
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - convert:
+      field: gigamon.ami.tcp_server_zw_ack
+      if: ctx.gigamon?.ami?.tcp_server_zw_ack != null
+      tag: convert_tcp_server_zw_ack
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_server_zw_ack
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - convert:
+      field: gigamon.ami.tcp_server_zw
+      if: ctx.gigamon?.ami?.tcp_server_zw != null
+      tag: convert_tcp_server_zw
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_server_zw
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+
+  - convert:
+      field: gigamon.ami.tcp_client_mss
+      if: ctx.gigamon?.ami?.tcp_client_mss != null
+      tag: convert_tcp_client_mss
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_client_mss
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - convert:
+      field: gigamon.ami.tcp_server_mss
+      if: ctx.gigamon?.ami?.tcp_server_mss != null
+      tag: convert_tcp_server_mss
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_server_mss
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - convert:
+      field: gigamon.ami.tcp_mss
+      if: ctx.gigamon?.ami?.tcp_mss != null
+      tag: convert_tcp_mss
+      type: long
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_mss
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+
   - script:
       lang: painless
       description: Gigamon AMI lookup mappings
@@ -895,18 +1334,6 @@ processors:
             ctx.gigamon.ami.dns_reply_code_value = params['dns_reply_code'][ctx.gigamon.ami.dns_reply_code];
         }
 
-  - convert:
-      field: gigamon.ami.dns_response_time
-      if: ctx.gigamon?.ami?.dns_response_time != null
-      tag: convert_dns_response_time
-      type: float
-      on_failure:
-        - remove:
-            field: gigamon.ami.dns_response_time
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
      lang: painless
      description: Convert dns_response_time in seconds to nanoseconds for populating event.duration
@@ -960,18 +1387,6 @@ processors:
       value: "{{{gigamon.ami.dns_host_addr}}}"
       if: ctx.gigamon?.ami?.dns_host_addr != null
       allow_duplicates: false
-  - convert:
-      field: gigamon.ami.dns_ttl
-      if: ctx.gigamon?.ami?.dns_ttl != null
-      tag: convert_dns_ttl
-      type: long
-      on_failure:
-        - remove:
-            field: gigamon.ami.dns_ttl
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: dns.answers.ttl
       tag: set_dns_answers.ttl
@@ -1041,18 +1456,6 @@ processors:
       tag: set_http_version
       copy_from: gigamon.ami.http_version
       if: ctx.gigamon?.ami?.http_version != null
-  - convert:
-      field: gigamon.ami.http_code
-      if: ctx.gigamon?.ami?.http_code != null
-      tag: convert_http_code
-      type: long
-      on_failure:
-        - remove:
-            field: gigamon.ami.http_code
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: http.response.status_code
       tag: set_http_response_status_code

@@ -1,0 +1,26 @@
+- name: kolide.osquery_status
+  type: group
+  description: >-
+    Custom fields for raw osquery Status Logs, collected from the Kolide Log Pipeline (S3/GCS).
+  fields:
+    - name: host_identifier
+      type: keyword
+      description: Osquery's own host identifier string (typically a UUID or hostname, depending on the host's `--host_identifier` configuration). Kept for correlation/debugging alongside the more reliable `host.id`/`host.name` sourced from Kolide's device decoration.
+    - name: device_serial
+      type: keyword
+      description: Serial number of the reporting device, from Kolide's device decoration (`kolide_decorations.serial_number`). No ECS host-serial field exists, so this stays custom.
+    - name: hardware_uuid
+      type: keyword
+      description: Hardware UUID of the reporting device, from Kolide's device decoration (`kolide_decorations.hardware_uuid`).
+    - name: request_id
+      type: keyword
+      description: Kolide Log Pipeline request ID (a ULID) for this delivery. Unique per object, used as the deduplication key for `event.id`.
+    - name: severity
+      type: keyword
+      description: Raw GLOG severity level (0=INFO, 1=WARNING, 2=ERROR, 3=FATAL), alongside the derived `log.level`.
+    - name: enrolled_at
+      type: date
+      description: When the reporting device enrolled with Kolide (`kolide_decorations.enrolled_at`).
+    - name: device_registered_at
+      type: date
+      description: When the reporting device was registered to its owner in Kolide (`kolide_decorations.device_registered_at`).

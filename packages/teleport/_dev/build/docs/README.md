@@ -34,8 +34,8 @@ See the {{ url "getting-started-observability" "Getting started guide" }} for in
 ### Enable the integration in Elastic
 
 1. In Kibana navigate to **Management** > **Integrations**.
-2. In the search top bar, type **Symantec Endpoint Security**.
-3. Select the **Symantec Endpoint Security** integration and add it.
+2. In the search top bar, type **Teleport**.
+3. Select the **Teleport** integration and add it.
 4. Add all the required integration configuration parameters, including Paths.
 5. Save the integration.
 

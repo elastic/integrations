@@ -33,6 +33,8 @@ It is compatible with a subset of applications under the [Google Reports API v1]
 | [Vault](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/vault) | The Vault activity report returns information about various types of Vault Audit activity events. |
 | [Meet](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/meet) | The Meet activity report returns information about various aspects of call events. |
 | [Keep](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/keep) | The Keep activity report returns information about how your account's users manage and modify their notes. |
+| [Gmail Reports](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/gmail) | The Gmail activity report returns information about message delivery, SMTP connections, spam classification and policy rule matches. |
+| [Gemini](https://developers.google.com/workspace/admin/reports/v1/appendix/activity/gemini-in-workspace-apps) | The Gemini in Workspace Apps activity report returns information about generative AI feature usage across Workspace applications. |
 
 ## Requirements
 
@@ -60,17 +62,43 @@ In order to ingest data from the Google Reports API you must:
 - [Set up access to the Admin SDK API](https://support.google.com/workspacemigrate/answer/9222865?hl=en) for the ServiceAccount.
 - [Enable Domain-Wide Delegation](https://developers.google.com/admin-sdk/reports/v1/guides/delegation) for your ServiceAccount.
 
-This integration will use the following *oauth2 scope*:
+The Reports API data streams use the following *oauth2 scope*:
 
 - `https://www.googleapis.com/auth/admin.reports.audit.readonly`
 
+The `users` data stream needs different scopes. See the Google Workspace Users section.
+
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
-Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `keep`, `login`, `meet`, `rules`, `saml`, `token`, `user accounts` and `vault` logs.
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `gemini`, `gmail_reports`, `groups`, `group_enterprise`, `keep`, `login`, `meet`, `rules`, `saml`, `token`, `user accounts` and `vault` logs.
 
 >  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
+### Collection window settings for Reports API data streams
+
+The `access_transparency`, `admin`, `context_aware_access`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token` and `user_accounts` data streams request activity from the Reports API in time windows. Three settings control those windows:
+
+- **Initial Interval** (package level, default `24h`): how far back the first collection reaches when a data stream starts with no saved position.
+- **Lag Time** (per data stream, default `2h`): how far behind the current time the end of every window stays. Google publishes activity with a delay that varies by report; see [Data retention and lag times](https://support.google.com/a/answer/7061566). Events newer than `now - Lag Time` are not requested yet, and are collected on a later interval once they have settled.
+- **Chunk Duration** (per data stream, under Advanced options, disabled by default): the maximum span of activity requested in one interval. When set, each interval requests a window of at most this duration starting from the last completed position, and the position only moves forward after the whole window has been collected. If collection is interrupted, for example by an agent restart or a policy update, only that one chunk is requested again.
+
+Without Chunk Duration, an interval requests everything from the last completed position up to `now - Lag Time` in a single window. For a data stream with a large backlog or a high event rate, such as `token` or `drive` on a busy domain, that window can take longer to page through than the time between interruptions. Each interruption then restarts the same window from the beginning, no progress is saved, and the data stream appears to stall while it re-sends events it has already sent.
+
+Recommended Chunk Duration values:
+
+| Data stream volume | Suggested value |
+|---|---|
+| High (for example `token`, `drive`, `login` on large domains) | `1h` |
+| Moderate | `6h` |
+| Low (for example `rules`, `saml`, `access_transparency`) | `24h` |
+
+A chunk should be small enough to be fully collected between the interruptions you expect, and must not exceed `720h` (30 days). Once the data stream has caught up, the window end is limited by `now - Lag Time`, so Chunk Duration has no effect on steady-state collection. Leaving the setting empty, or setting it to `0`, disables chunking. Existing saved positions are reused unchanged when the setting is turned on or off.
+
 # Google Workspace Gmail Logs
+
+:::{note}
+The integration provides two Gmail data streams. This section is for `gmail`, which queries logs exported to Google BigQuery. If you prefer the Google Reports API, enable `gmail_reports` instead — it shares the service account and `admin.reports.audit.readonly` scope used by the other Reports API streams and skips the BigQuery configuration steps below.
+:::
 
 The integration collects and parses Gmail audit logs data available for reporting in Google Workspace. You must first export Google Workspace logs to Google BigQuery. This involves exporting all activity log events and usage reports to Google BigQuery. Only certain Google Workspace editions support this feature. For more details see [About reporting logs and BigQuery](https://support.google.com/a/answer/9079364?hl=en). The integration uses the [BigQuery API](https://cloud.google.com/bigquery/docs/reference/rest) to query logs from BigQuery.
 
@@ -233,6 +261,63 @@ Once Service Account credentials are downloaded as a JSON file, then the integra
 
 >  NOTE: The default value of the "Page Size" is set to 1000. This option is available under 'Alert' Advance options. Set the parameter "Page Size" according to the requirement. For Alert Data Stream, The default value of "Alert Center API Host" is `https://alertcenter.googleapis.com`. The Alert Center API Host will be used for collecting alert logs only.
 
+# Google Workspace Users
+
+The `users` data stream collects an **inventory** of the user accounts in your Google Workspace tenant from the [Admin SDK Directory API](https://developers.google.com/workspace/admin/directory/reference/rest/v1/users/list). Each collection cycle produces one document per user, describing what exists: identity, 2-Step Verification, admin, suspension and archive state, organizational unit, manager and other directory attributes. Documents have `event.kind: asset`.
+
+This is different from the `user_accounts` data stream, which contains audit **events** about actions users took on their own accounts (what happened). Changes to users made by administrators are in the `admin` data stream.
+
+The data stream is turned off by default.
+
+## Collection
+
+The Directory API has no filter for changed users, so each cycle reads the whole directory again. The default interval is `24h`. A tenant of 50,000 users needs about 100 requests per cycle.
+
+Two optional settings add more information to each user document. Both are off by default:
+
+- **Collect group membership** adds the groups each user is a direct member of (`user.group.id`, `user.group.name` and `google_workspace.users.groups`). Membership inherited through nested groups is not included.
+- **Collect admin roles and privileges** adds the admin roles assigned to each user (`user.roles`), their privileges (`user.entity.attributes.permissions`) and the scope each role applies to (`user.entity.relationships.administers.entity.id`): an organizational unit ID, or the customer ID for roles that apply to the whole account, such as super administrator. The full assignments are in `google_workspace.users.role_assignments`. Only roles assigned **directly** to the user are included. Roles a user gets through a group are not, because the Directory API only returns those for a single user at a time.
+
+`user.roles` always includes `super_admin` or `delegated_admin` when Google flags the user as one, even when the roles option is off.
+
+When an option is on and its requests succeed, every user document carries `google_workspace.users.groups` or `google_workspace.users.role_assignments`, as an empty list (`[]`) if the user has no direct membership or assignment. When the option is off, or its requests failed in that cycle, the field is left out of the document, and a failure also produces an error document. Elasticsearch does not index empty lists, so the difference is visible in the document source but cannot be used in a query.
+
+## Requirements
+
+The `users` data stream uses the same service account and `Delegated Account` as the Reports API data streams. It needs these extra scopes and privileges:
+
+| Setting | OAuth scope to add | Privilege the delegated account needs |
+|---|---|---|
+| Always | `https://www.googleapis.com/auth/admin.directory.user.readonly` | Users → Read and Organizational Units → Read, on **all** organizational units |
+| Collect group membership | `https://www.googleapis.com/auth/admin.directory.group.readonly` | Groups → Read. If you use a Groups Reader or Groups Editor role assignment instead, it must cover all groups. |
+| Collect admin roles and privileges | `https://www.googleapis.com/auth/admin.directory.rolemanagement.readonly` | The delegated account must be a **super administrator**. Google does not offer a privilege that grants read access to admin roles, so other accounts get HTTP 403 on these requests. |
+
+Google has merged the former "Admin console privileges" and "Admin API privileges" into one **Admin privileges** section, so one *Users → Read* privilege covers both. See [Administrator privilege definitions](https://support.google.com/a/answer/1219251).
+
+To add the scopes to the service account's domain-wide delegation (a super administrator must do this):
+
+1. In the Admin console go to **Security → Access and data control → API controls → Manage Domain Wide Delegation**.
+2. Find the service account's client ID and click **Edit**. Do not use **Add new** for a client ID that is already listed, and do not delete and re-add it: deleting it stops every application that uses it straight away.
+3. Add the scopes you need, separated by commas. **Keep** `https://www.googleapis.com/auth/admin.reports.audit.readonly` and any other scopes already listed.
+4. Click **Authorize**, then open **View details** and check that every scope is listed.
+
+Use the exact scope strings in the table. Google does not accept a broader scope in place of the one the integration requests. Scope changes can take up to 24 hours to take effect. If your organization uses multi-party approval, another super administrator must approve the change first.
+
+> NOTE: The integration requests all the scopes the data stream needs in one token request. If any of them is not delegated yet, Google issues no token and the **whole** `users` data stream stops, including the basic user inventory. Turn on an optional setting only after its scope is delegated and in effect. The other data streams of the integration are not affected.
+
+The data stream calls `https://admin.googleapis.com`. You can change this with the **Directory API Host** setting under the data stream's advanced options. If your network uses an egress allowlist, add `admin.googleapis.com`.
+
+## Notes on the data
+
+- `user.entity.lifecycle.last_activity` comes from the user's last sign-in time. Google says this value "might be inaccurate" when listing all users, so treat it as approximate. Users who have never signed in have no value. `google_workspace.users.agreed_to_terms: false` also shows that a user has never completed a first sign-in.
+- Deleted users are not included.
+
+## Troubleshooting
+
+- **The data stream stops with `oauth2: cannot fetch token` and the input health is Degraded.** Google rejected the token request. The error usually contains `unauthorized_client`, `access_denied`, `invalid_grant`, `invalid_scope` or `admin_policy_enforced`. Check that every scope for the settings you enabled is delegated exactly as in the table above, and that enough time has passed for the change to take effect.
+- **An error document reports HTTP 403 on a roles, role assignments, groups or members request.** The delegated account lacks the privilege for that option. Users are still collected, without that information. For the roles option, the delegated account must be a super administrator.
+- **Fewer users than expected.** The delegated account's role is probably limited to some organizational units. Grant Users → Read on all organizational units.
+
 ## Agentless Enabled Integration
 
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
@@ -263,6 +348,14 @@ This is the `saml` dataset.
 {{event "saml"}}
 
 {{fields "saml"}}
+
+### Users
+
+This is the `users` dataset. It contains an inventory of user accounts, not events. See the Google Workspace Users section.
+
+{{event "users"}}
+
+{{fields "users"}}
 
 ### User Accounts
 
@@ -423,6 +516,21 @@ This is the `keep` dataset.
 {{event "keep"}}
 
 {{fields "keep"}}
+
+### Gmail Reports
+
+This is the `gmail_reports` dataset. It is collected from the Google Reports API and emits one document per event, so a single activity record containing several events produces several documents.
+
+{{event "gmail_reports"}}
+
+{{fields "gmail_reports"}}
+### Gemini
+
+This is the `gemini` dataset.
+
+{{event "gemini"}}
+
+{{fields "gemini"}}
 
 ### Gmail
 

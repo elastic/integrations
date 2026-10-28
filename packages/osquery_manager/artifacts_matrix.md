@@ -2,10 +2,11 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2026-01-30
-**Total Core Artifacts**: 48 available + 6 in progress = 54 total variants
-**Total Queries**: 71
-**Completion Rate**: 88.9% (48/54 core artifacts fully supported)
+**Last Updated**: 2026-08-10
+**Total Core Artifacts**: 60 available + 2 in progress = 62 total variants
+**Total Queries**: 82
+**Completion Rate**: 96.8% (60/62 core artifacts fully supported)
+**Shadow AI Discovery Packs**: 3 platform packs (Windows 17, macOS 19, Linux 18 queries) — see [Shadow AI Discovery Packs](#shadow-ai-discovery-packs)
 
 ---
 
@@ -22,8 +23,8 @@ The saved queries in `kibana/osquery_saved_query/*.json` are Kibana saved object
 
 | Status                             | Count | Percentage |
 |------------------------------------|-------|------------|
-| ✅ Available (Fully Supported)      | 48    | 88.9%      |
-| ⚠️ In Progress (Needs Validation)  | 6     | 11.1%      |
+| ✅ Available (Fully Supported)      | 60    | 96.8%      |
+| ⚠️ In Progress (Needs Validation)  | 2     | 3.2%       |
 
 ---
 
@@ -32,7 +33,13 @@ The saved queries in `kibana/osquery_saved_query/*.json` are Kibana saved object
 | #   | Artifact                              | ✓ | OS    | Query                                      | File                                                                                             | Implementation Notes                                                                                                                                                                                                                       |
 |-----|---------------------------------------|---|-------|--------------------------------------------|--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 1   | AppCompatCache                        | ✅ | Win   | appcompatcache_shimcache_windows_elastic   | [4a7c](kibana/osquery_saved_query/osquery_manager-4a7c3e8f-9d5b-4c2a-b1e4-7f8a6d3c9e2b.json)     | shimcache table with signature-aware filtering (unsigned/untrusted binaries, suspicious paths), hash enrichment, excludes valid Microsoft-signed binaries                                                                                  |
-| 2   | AmCache                               | ⚠️ | Win   | -                                          | -                                                                                                | In progress                                                                                                                                                                                                                                |
+| 2   | AmCache (Applications)                | ✅ | Win   | amcache_application_forensics_windows_elastic | [5b2e](kibana/osquery_saved_query/osquery_manager-5b2e3867-a277-4269-b3eb-9158d10965df.json)     | Combined application + file inventory via `elastic_amcache_applications_view`. SHA1 hashes, publishers, install dates, binary types, USN, VirusTotal links. Requires Elastic Agent with osquery extension amcache support.                  |
+| 2a  | AmCache (Drivers)                     | ✅ | Win   | amcache_driver_forensics_windows_elastic    | [d55f](kibana/osquery_saved_query/osquery_manager-d55fb469-b20d-43aa-902a-f0e71cf036a6.json)     | Driver binary inventory sorted by unsigned + kernel-mode first. Detects rootkits, BYOVD, unauthorized drivers.                                                                                                                             |
+| 2b  | AmCache (Shortcuts)                   | ✅ | Win   | amcache_shortcut_windows_elastic           | [c138](kibana/osquery_saved_query/osquery_manager-c1382246-e840-4270-b095-677b6c6be796.json)     | Start Menu shortcut (LNK) inventory for execution evidence and persistence analysis.                                                                                                                                                        |
+| 2c  | AmCache (Device PnP)                  | ✅ | Win   | amcache_device_pnp_windows_elastic         | [5bc9](kibana/osquery_saved_query/osquery_manager-5bc9de27-6ae5-4148-b087-97d2669f6f27.json)     | Plug and Play device history (USB, Bluetooth, peripherals). Unauthorized device detection, data exfiltration investigation.                                                                                                                 |
+| 2d  | AmCache (Driver Packages)             | ✅ | Win   | amcache_driver_package_windows_elastic      | [bcef](kibana/osquery_saved_query/osquery_manager-bcef7e6e-31df-4d72-a296-2e7657f49d64.json)     | Driver package metadata: class, version, provider, directory, hardware IDs. Cross-references with driver binaries and PnP devices.                                                                                                          |
+| 2e  | AmCache (Application Enriched)       | ✅ | Win   | amcache_application_enriched_windows_elastic | [abed](kibana/osquery_saved_query/osquery_manager-abed45b1-6b61-4398-b607-a7a6b09e6dc6.json)   | Combined JOIN: applications view + shortcuts via program_id. Full app forensics with shortcut launch points. Superset of #2 and #2b.                                                                                                        |
+| 2f  | AmCache (Driver Enriched)            | ✅ | Win   | amcache_driver_enriched_windows_elastic    | [743c](kibana/osquery_saved_query/osquery_manager-743c6727-2a18-46cc-9e23-215ca38b3373.json)     | Combined JOIN: driver binaries + PnP devices via service name. Driver-to-device correlation. Superset of #2a and #2c.                                                                                                                       |
 | 3   | BITS Jobs Database                    | ✅ | Win   | bits_monitoring_windows_elastic            | [4b2e](kibana/osquery_saved_query/osquery_manager-4b2e8f3a-9d5c-4e2a-b8f1-7c6d3e9a2b1f.json)     | Not a native table, but can be queried via windows_eventlog (EventID 59)                                                                                                                                                                   |
 | 4   | Browser URL History Suspicious        | ✅ | All   | browser_history_suspicious_elastic         | [b352f3c9](kibana/osquery_saved_query/osquery_manager-b352f3c9-c630-47ec-83bb-5887fe0bb874.json) | Requires Elastic Agent v9.3.0+. Cross-platform (Windows, macOS, Linux). Multi-browser support (Chrome, Edge, Firefox, Safari). No ATC configuration needed.                                                                                |
 | 4a  | Browser URL History (Full Collection) | ✅ | All   | browser_history_elastic                    | [2a5c0d4a](kibana/osquery_saved_query/osquery_manager-2a5c0d4a-21b8-4a37-8d71-2d5d2c8a0f45.json) | Complete browser history collection for forensic analysis. Requires Elastic Agent v9.3.0+. Discovers Chrome, Edge, Firefox, Safari histories.                                                                                              |
@@ -42,7 +49,7 @@ The saved queries in `kibana/osquery_saved_query/*.json` are Kibana saved object
 | 6   | Installed Services                    | ✅ | Win   | services_suspicious_windows_elastic        | [892e](kibana/osquery_saved_query/osquery_manager-892ee425-60e7-4eb6-ba25-6e97dc3e2ea0.json)     | Detects suspicious Windows services: unsigned binaries, unusual paths, FailureCommand persistence, ServiceDLL hijacking. Excludes Microsoft-signed services.                                                                               |
 | 6a  | Installed Services                    | ✅ | Linux | services_suspicious_linux_elastic          | [f8b0](kibana/osquery_saved_query/osquery_manager-f8b0894b-772d-4242-8e19-dbc5d7ae2e06.json)     | Detects suspicious systemd services in user directories, /tmp, ~/.config/systemd. Hash enrichment and file age tracking.                                                                                                                   |
 | 6b  | Installed Services                    | ✅ | Mac   | services_suspicious_darwin_elastic         | [5823](kibana/osquery_saved_query/osquery_manager-5823a22e-5add-416d-a142-de323400edb0.json)     | Detects ALL non-Apple-signed launchd services plus Apple-signed services in suspicious locations (/tmp, /Users, hidden dirs). Derives executable from program or program_arguments. Signature and hash enrichment.                         |
-| 7   | Jumplists                             | ⚠️ | Win   | -                                          | -                                                                                                | In progress                                                                                                                                                                                                                                |
+| 7   | Jumplists                             | ✅ | Win   | jumplists_forensics_windows_elastic        | [a4b2](kibana/osquery_saved_query/osquery_manager-a4b2c8d0-jmpl-11f0-b4d1-4f9e8c3a1b2e.json)     | elastic_jumplists extension table (requires Elastic Agent v9.3.0+). Both automatic and custom destinations. Full DestList metadata (hostname, MAC, interaction_count, is_pinned). LOLBin detection, suspicious arguments, remote access tool flags. T1204, T1083. |
 | 8   | LNK files                             | ✅ | Win   | lnk_forensics_windows_elastic              | [a1b2](kibana/osquery_saved_query/osquery_manager-a1b2c3d4-lnk1-11ef-8f39-bf9c07530bbb.json)     | file table with native shortcut parsing; can enrich with hash + authenticode; enumerate common locations via users table                                                                                                                   |
 | 9   | ARP Cache (Enriched)                  | ✅ | All   | arp_cache_elastic                          | [b2c3](kibana/osquery_saved_query/osquery_manager-b2c3d4e5-f6a7-11ef-89c6-331eb0db6d02.json)     | Enriched ARP cache with local interface details (local IP, local MAC). Combines arp_cache with interface_details and interface_addresses tables. Includes ECS mappings for destination.ip/mac, source.ip/mac, interface.name, network.type. |
 | 10  | Disks & Volumes                       | ✅ | Win   | disk_info_windows_elastic                  | [d8a1](kibana/osquery_saved_query/osquery_manager-d8a1b2c3-d4e5-11ef-a6b7-12c3d4e5f678.json)     | disk_info table                                                                                                                                                                                                                            |
@@ -54,7 +61,7 @@ The saved queries in `kibana/osquery_saved_query/*.json` are Kibana saved object
 | 12  | NTFS USN Journal                      | ✅ | Win   | ntfs_usn_journal_events_windows_elastic    | [e4eb](kibana/osquery_saved_query/osquery_manager-e4ebcc53-fbb9-420a-9418-b8edc1f8f2df.json)     | ntfs_journal_events table. Requires: `enable_ntfs_event_publisher=true`, `disable_events=false`                                                                                                                                            |
 | 12a | File System Events                    | ✅ | Linux | file_system_events_linux_elastic           | [521f](kibana/osquery_saved_query/osquery_manager-521f7c0d-7ef4-4ff4-9510-e899bbc1b285.json)     | file_events table (inotify). Includes hashes. Requires: `enable_file_events=true`                                                                                                                                                          |
 | 12b | File System Events                    | ✅️ | Mac   | file_system_events_darwin_elastic          | [6954](kibana/osquery_saved_query/osquery_manager-6954690d-32c3-4c50-a973-3fae66114349.json)     | file_events (FSEvents). Includes hashes. Requires: `enable_file_events=true`                                                                                                                                                               |
-| 13  | Open Handles                          | ⚠️ | Win   | -                                          | -                                                                                                | In progress                                                                                                                                                                                                                                | |
+| 13  | Open Handles                          | ✅ | Win   | open_handles_suspicious_windows_elastic    | [888b](kibana/osquery_saved_query/osquery_manager-888b25ea-10f9-4fef-952c-972ff02e1199.json)     | `process_open_handles` table ([osquery/osquery#8795](https://github.com/osquery/osquery/pull/8795), merged 2026-04-24; requires osquery v5.23.0+ in osquerybeat). CTE materializes the join with no predicate on `oh.*`, then three CASE-based flags evaluate over the rowset: sensitive registry hive access (SAM/SECURITY/LSA Key handles), suspicious mutex names (Mutant handles matching known malware-family / offensive-tooling indicators), and lateral-movement / C2 named pipes (File handles into psexec / paexec / Cobalt Strike beacon / RPC pipes from non-system holders). Hash + authenticode + parent-process resolution via correlated subqueries (in-repo enrichment pattern). Cross-process Process/Thread credential-theft detection (LSASS-handle hunting) is out of scope: the upstream table emits empty `name` for Process/Thread/Token handles by design. End-to-end validated 2026-05-28 on UTM Windows host (mutex trigger fired a single correct row with full hash + authenticode + VT-link enrichment). See [`open_handles_findings.md`](./open_handles_findings.md). **Wired into `forensic-malware-execution` pack on 2026-05-28.**         |
 | 14  | Startup Items                         | ✅ | Win   | startup_items_windows_elastic              | [d4e5](kibana/osquery_saved_query/osquery_manager-d4e5f6a7-b8c9-12de-f345-678901234567.json)     | Dual-detection approach: (1) Non-whitelisted binaries, (2) LotL indicators (PowerShell -e, certutil, wscript abuse). Filters known-good tasks while flagging suspicious patterns.                                                          |
 | 14a | Startup Items                         | ✅ | Linux | startup_items_linux_elastic                | [e5f6](kibana/osquery_saved_query/osquery_manager-e5f6a7b8-c9d0-23ef-4567-890123456789.json)     | Dual-detection approach: (1) User-created systemd/cron/XDG autostart, (2) LotL patterns (bash -c, curl pipe bash, base64 -d). Location-based filtering for cross-distro compatibility.                                                     |
 | 14b | Startup Items                         | ✅ | Mac   | startup_items_darwin_elastic               | [f6a7](kibana/osquery_saved_query/osquery_manager-f6a7b8c9-d0e1-34f0-5678-901234567890.json)     | Dual-detection approach: (1) Non-Apple signed LaunchAgents/Daemons, (2) LotL patterns (bash -c, curl pipe bash, osascript -e). Signature-based filtering with comprehensive LotL coverage.                                                 |
@@ -77,7 +84,9 @@ The saved queries in `kibana/osquery_saved_query/*.json` are Kibana saved object
 | 22  | User Assist                           | ✅ | Win   | userassist_windows_elastic                 | [e9e5](kibana/osquery_saved_query/osquery_manager-e9e51a33-b2a2-47b4-a00e-7de8a205d55b.json)     | userassist table with user resolution and hash enrichment                                                                                                                                                                                  |
 | 23  | WMI Config & Used Apps                | ✅ | Win   | wmi_persistence_event_subscriptions_windows_elastic | [4003](kibana/osquery_saved_query/osquery_manager-40033716-3580-48fe-a17d-441a838acd8a.json)     | wmi_cli_event_consumers, wmi_script_event_consumers - Combined with #24 into single comprehensive query                                                                                                                                    |
 | 24  | WMI Providers & Filters               | ✅ | Win   | wmi_persistence_event_subscriptions_windows_elastic | [4003](kibana/osquery_saved_query/osquery_manager-40033716-3580-48fe-a17d-441a838acd8a.json)     | wmi_event_filters, wmi_filter_consumer_binding - Combined with #23 into single comprehensive query                                                                                                                                         |
-| 25  | MFT                                   | ⚠️  | Win   | -                                          | -                                                                                                | In progress                                                                                                                                                                                                                                |
+| 25  | MFT                                   | ✅ | Win   | ntfs_mft_windows_elastic                   | [d90c](kibana/osquery_saved_query/osquery_manager-d90c2cb6-9d10-486d-a0db-fd7ea0a3bc1f.json)     | `elastic_ntfs_file` extension table (requires osquerybeat 9.5.0+ with the NTFS extension, [beats#50641](https://github.com/elastic/beats/pull/50641)). `$MFT` forensic sweep over high-signal directories via `UNION ALL` of bounded, non-recursive `directory=` blocks (Startup, Windows\Temp, ProgramData, Users\Public, System32\Tasks, default-profile AppData). Returns both `$SI` and `$FN` timestamp sets plus NTFS metadata (inode, parent_inode, sequence, hard links, ADS, allocation). `active=0` surfaces deleted/unallocated entries; `si_lt_fn=1` flags timestomping. Triage hints only — corroborate with `ntfs_usn_journal_events_windows_elastic`. |
+| 25a | Disk Volumes                          | ✅ | Win   | disk_volumes_windows_elastic               | [1d7e](kibana/osquery_saved_query/osquery_manager-1d7ee6b5-ac81-4cc0-aff1-69e972b51199.json)     | `elastic_ntfs_volumes` extension table (requires osquerybeat 9.5.0+ with the NTFS extension). Inventory of all volumes (NTFS, CDFS, RAW, etc.): device, device type, drive letter, volume label, file system name. Used to correlate `$MFT`/USN findings with specific volumes.                                                    |
+| 25b | Disk Partitions                       | ✅ | Win   | disk_partitions_windows_elastic            | [f785](kibana/osquery_saved_query/osquery_manager-f785dc96-bd2d-4d7f-97d0-a5b77d78f111.json)     | `elastic_ntfs_partitions` extension table (requires osquerybeat 9.5.0+ with the NTFS extension). Partition-level inventory: device, drive letter, partition id/number, style (MBR/GPT/RAW), type, offset, length, attributes, name. Determines volumes available for `ntfs_mft_windows_elastic`.                                     |
 | 26  | Remote Desktop Protocol               | ✅ | Win   | rdp_authentication_windows_elastic         | [d8d7](kibana/osquery_saved_query/osquery_manager-d8d79510-6f58-44e1-b7fc-63a073158096.json)     | Comprehensive RDP authentication and session lifecycle events via windows_eventlog (Security + TerminalServices + System channels)                                                                                                         |
 | 27  | DNS Cache                             | ✅ | Win   | dns_cache_snapshot_windows_elastic         | [ae61](kibana/osquery_saved_query/osquery_manager-ae619588-47a8-4ba8-a378-375244fbef23.json)     | dns_cache table - enumerates cached DNS queries for threat hunting, C2 detection. Filters reverse lookups and AD noise                                                                                                                     |
 | 27a | DNS Event Log                         | ✅ | Win   | dns_event_log_windows_elastic              | [66ee](kibana/osquery_saved_query/osquery_manager-66ee8c5f-7030-4641-a14b-f4a45d1edd6a.json)     | windows_eventlog (DNS Client Operational, Event ID 3008) with process context via LEFT JOIN. Requires DNS logging enabled                                                                                                                  |
@@ -126,6 +135,47 @@ listed above.
 
 ---
 
+## Shadow AI Discovery Packs
+
+Unlike the forensic artifacts above (which are individual `kibana/osquery_saved_query/*.json` saved objects), Shadow AI discovery ships as three canonical **osquery packs** in `kibana/osquery_pack_asset/`. Assign the pack matching each agent's OS to the Osquery Manager policy in Fleet. See [`docs/README.md`](docs/README.md) for which queries run in snapshot versus differential mode, and for the metadata-only privacy boundary.
+
+| Pack | OS | Queries | File |
+|------|:--:|:-------:|:----:|
+| `ai-asset-discovery-windows` | Windows | 15 | [win0](kibana/osquery_pack_asset/osquery_manager-e7a1b2c3-win0-4f6a-8b9c-0d1e2f3a4b5c.json) |
+| `ai-asset-discovery-macos` | macOS | 17 | [mac0](kibana/osquery_pack_asset/osquery_manager-e7a1b2c3-mac0-4f6a-8b9c-0d1e2f3a4b5c.json) |
+| `ai-asset-discovery-linux` | Linux | 16 | [lin0](kibana/osquery_pack_asset/osquery_manager-e7a1b2c3-lin0-4f6a-8b9c-0d1e2f3a4b5c.json) |
+
+### Query coverage matrix
+
+Pack `id`s are platform-suffixed (`_windows`, `_macos`, `_linux`); the shared `event.action` (`osquery.<base>`) is the cross-platform field to correlate on in hunts and detections. `_*` below means the query runs on more than one OS with per-OS ids. Interval `1h` = 3600s, `24h` = 86400s.
+
+| #  | Query (pack `id`) | `event.action` | Category | Interval | Win | macOS | Linux | Description |
+|:--:|-------------------|----------------|----------|:--------:|:--:|:-----:|:-----:|-------------|
+| 1  | `ai_processes_*` | `osquery.ai_processes` | process | 1h | ✅ | ✅ | ✅ | Running AI processes — LLM runtimes, coding agents, MCP servers; slice on `labels.process_category` (`llm_runtime`, `agent`, `mcp`) |
+| 2  | `ai_process_envs_*` | `osquery.ai_process_envs` | process | 1h | — | ✅ | ✅ | Processes whose environment exposes known AI/LLM provider API-key variable names (names only, values never collected) |
+| 3  | `ai_listening_ports_*` | `osquery.ai_listening_ports` | network | 1h | ✅ | ✅ | ✅ | AI services listening on non-loopback addresses |
+| 4  | `ai_process_network_summary_*` | `osquery.ai_process_network_summary` | network, process | 1h | ✅ | ✅ | ✅ | Outbound sockets for classified AI processes; `network.direction` (internal/egress); slice on `labels.process_category` |
+| 5  | `ai_dns_cache_windows` | `osquery.ai_dns_cache` | network | 1h | ✅ | — | — | AI service DNS lookups (Windows) |
+| 6  | `ai_programs_windows` / `ai_apps_macos` / `ai_packages_linux` | `osquery.ai_programs` / `osquery.ai_apps` / `osquery.ai_packages` | package | 24h | ✅ | ✅ | ✅ | Installed AI desktop applications / OS packages |
+| 7  | `ai_python_packages_*` | `osquery.ai_python_packages` | package | 24h | ✅ | ✅ | ✅ | AI/ML Python packages (torch, transformers, langchain, openai, …) |
+| 8  | `ai_npm_packages_*` | `osquery.ai_npm_packages` | package | 24h | ✅ | ✅ | ✅ | Globally installed AI/MCP npm packages (LLM SDKs, agent CLIs, MCP) |
+| 9  | `ai_chrome_extensions_*` | `osquery.ai_chrome_extensions` | package | 24h | ✅ | ✅ | ✅ | AI browser extensions (Chrome/Chromium/Edge) |
+| 10 | `ai_firefox_extensions_*` | `osquery.ai_firefox_extensions` | package | 24h | ✅ | ✅ | ✅ | AI browser extensions (Firefox) |
+| 11 | `ai_safari_extensions` | `osquery.ai_safari_extensions` | package | 24h | — | ✅ | — | AI browser extensions (Safari) |
+| 12 | `ai_vscode_extensions_*` | `osquery.ai_vscode_extensions` | package | 24h | ✅ | ✅ | ✅ | AI VS Code / editor extensions |
+| 13 | `ai_homebrew_packages` | `osquery.ai_homebrew_packages` | package | 24h | — | ✅ | — | AI Homebrew packages (macOS) |
+| 14 | `ai_config_files_*` | `osquery.ai_config_files` | file | 24h | ✅ | ✅ | ✅ | AI/MCP config files and tool directories; slice on `labels.config_kind` |
+| 15 | `ai_config_file_changes_*` | `osquery.ai_config_file_changes` | file | 1h | ✅ | ✅ | ✅ | MCP/AI config files added or changed since the previous run (metadata only, differential mode) |
+| 16 | `ai_docker_containers_*` | `osquery.ai_docker_containers` | host | 1h | — | ✅ | ✅ | Docker containers running AI workloads |
+| 17 | `ai_sensitive_file_proximity_*` | `osquery.ai_sensitive_file_proximity` | process, file | mac/lin 1h · win 24h | ✅ | ✅ | ✅ | AI-process proximity to credential-adjacent paths (metadata only); slice on `labels.process_category`. macOS/Linux use open-file access evidence; Windows is uid co-occurrence inventory, **not** access proof |
+| 18 | `ai_windows_services` | `osquery.ai_windows_services` | configuration | 24h | ✅ | — | — | AI auto-start Windows services |
+| 19 | `ai_scheduled_tasks_windows` | `osquery.ai_scheduled_tasks` | configuration | 24h | ✅ | — | — | AI scheduled tasks (Windows) |
+| 20 | `ai_launchd_services` | `osquery.ai_launchd_services` | configuration | 24h | — | ✅ | — | AI auto-start macOS launchd services |
+| 21 | `ai_systemd_services_linux` | `osquery.ai_systemd_services` | configuration | 24h | — | — | ✅ | AI auto-start Linux systemd services |
+| 22 | `ai_crontab_linux` | `osquery.ai_crontab` | configuration | 24h | — | — | ✅ | AI cron jobs (Linux) |
+
+---
+
 ## Legend
 
 ### Status Definitions
@@ -146,8 +196,8 @@ Queries are organized by investigative goal to support both **scheduled monitori
 - ✅ **Shimcache / AppCompatCache** (Windows) - Application compatibility cache with signature-aware filtering. Query: `appcompatcache_shimcache_windows_elastic`
 - ✅ **Process Listing** (All) - Full forensic process listing with parent/child relationships. Queries: `process_listing_windows_elastic`, `process_listing_linux_elastic`, `process_listing_darwin_elastic`
 - ✅ **Suspicious Processes** (All) - LOLBins, unsigned binaries, unusual paths. Queries: `suspicious_processes_windows_elastic`, `suspicious_processes_linux_elastic`, `suspicious_processes_darwin_elastic`
-- ⚠️ **AmCache** - In Progress
-- ⚠️ **Jumplists** - In Progress
+- ✅ **AmCache** (Windows) - 7 queries covering all 6 extension tables: 5 individual table queries + 2 combined JOINed queries for full-picture forensics. Requires Elastic Agent with osquery extension amcache support. Individual: `amcache_application_forensics_windows_elastic`, `amcache_driver_forensics_windows_elastic`, `amcache_driver_package_windows_elastic`, `amcache_shortcut_windows_elastic`, `amcache_device_pnp_windows_elastic`. Combined: `amcache_application_enriched_windows_elastic`, `amcache_driver_enriched_windows_elastic`
+- ✅ **Jumplists** (Windows) - User activity timeline with DestList metadata (hostname, MAC, interaction count) and LOLBin/suspicious argument detection. Requires Elastic Agent v9.3.0+. Query: `jumplists_forensics_windows_elastic`
 
 ### Persistence
 
@@ -168,7 +218,7 @@ Queries are organized by investigative goal to support both **scheduled monitori
 - ✅ **Logon Users** (All) - Cross-platform logged-in users with session details, lateral movement detection. Query: `logged_in_users_elastic`
 - ✅ **LNK Files** (Windows) - Shortcut file forensics with hash + authenticode enrichment. Query: `lnk_forensics_windows_elastic`
 - ✅ **Shellbags** (Windows) - Directory access tracking via Windows Explorer. Query: `shellbags_windows_elastic`
-- ⚠️ **Jumplists** - In progress
+- ✅ **Jumplists** (Windows) - User activity timeline, both automatic and custom destinations, DestList metadata (hostname, MAC, interaction count, pinned status), LOLBin and suspicious argument detection. Requires Elastic Agent v9.3.0+. Query: `jumplists_forensics_windows_elastic`
 
 ### Lateral Movement & C2 Communication
 
@@ -194,12 +244,14 @@ Queries are organized by investigative goal to support both **scheduled monitori
 - ✅ **Unsigned Executables & Drivers** (All) - Suspicious process detection + VirusTotal integration. Queries: `suspicious_processes_windows_elastic`, `suspicious_processes_linux_elastic`, `suspicious_processes_darwin_elastic`, `unsigned_processes_vt_windows_elastic`
 - ✅ **Code Execution from Non-Standard Paths** (All) - File hash info in staging directories with signature validation. Queries: `file_hash_info_windows_elastic`, `file_hash_info_linux_elastic`, `file_hash_info_darwin_elastic`
 - ✅ **Suspicious New Services** (All) - See Persistence above. Queries: `services_suspicious_windows_elastic`, `services_suspicious_linux_elastic`, `services_suspicious_darwin_elastic`
-- ✅ **Process Injection Attempts** - Comprehensive memory analysis using `process_memory_map` with 5 detection patterns (RWX unbacked/file-backed, temp/hidden exec, unbacked regions) and 5 anomaly indicators (PPID spoofing, process-not-on-disk, protected process abuse, name/path mismatch, system binary unusual location). Hash enrichment included. Query: `process_memory_suspicious_elastic` 
+- ✅ **Process Injection Attempts** - Comprehensive memory analysis using `process_memory_map` with 5 detection patterns (RWX unbacked/file-backed, temp/hidden exec, unbacked regions) and 5 anomaly indicators (PPID spoofing, process-not-on-disk, protected process abuse, name/path mismatch, system binary unusual location). Hash enrichment included. Query: `process_memory_suspicious_elastic`
+- ✅ **Open Handles** (Windows) - `process_open_handles` ([osquery/osquery#8795](https://github.com/osquery/osquery/pull/8795), merged 2026-04-24; osquery v5.23.0+) joined to processes via a CTE that carries no predicate on the handle table. Three high-signal flags evaluate over the materialized rowset: sensitive registry hive access (SAM/SECURITY/LSA Key handles), suspicious mutex names (Mutant handles matching known malware-family / offensive-tooling indicators), and lateral-movement / C2 named pipes (psexec / paexec / Cobalt Strike beacon / RPC pipes from non-system holders). Hash + authenticode + parent-process resolution via correlated subqueries. Cross-process Process/Thread credential-theft flags are out of scope (upstream emits empty `name` for those handle types by design). End-to-end validated 2026-05-28 — see [`open_handles_findings.md`](./open_handles_findings.md). Query: `open_handles_suspicious_windows_elastic`. *Wired into `forensic-malware-execution` pack on 2026-05-28.*
 
 ### Data Exfiltration & Collection
 
 - ✅ **Shell / PowerShell History** (All) - See User Activity above. Queries: `powershell_history_windows_elastic`, `shell_history_linux_darwin_elastic`
 - ✅ **External Device Usage** (Linux/macOS) - USB device enumeration. Query: `usb_devices_mac_or_linux_elastic`
+- ✅ **External Device Usage** (Windows) - Amcache PnP device history (USB, Bluetooth, peripherals). Query: `amcache_device_pnp_windows_elastic`
 - ⚠️ **Sensitive Directory Access** - Partially covered by suspicious process queries (processes accessing sensitive paths). *Needs dedicated file access monitoring query*
 - ⚠️ **Screenshot Taken** (Windows) - In progress
 - ⚠️ **Large File Copies / Archival Tools** - In Progress
@@ -207,9 +259,9 @@ Queries are organized by investigative goal to support both **scheduled monitori
 
 ### Defense Evasion
 
-- ✅ **Disabled Security Tools** (Windows) - Detects stopped/paused security services across major vendors and Windows Defender registry tampering (12 values). Query: `security_products_disabled_windows_elastic` ([a8f3](kibana/osquery_saved_query/osquery_manager-a8f3c5e7-d9b4-4a21-8f6c-2e9d1b3a5c7e.json)) 
-- ✅ **Cleared Event Logs** (Windows) - Detects Security/System event log clearing via Event IDs 1102 and 104 (windows_eventlog). Query: `event_log_cleared_windows_elastic` ([f2a9](kibana/osquery_saved_query/osquery_manager-f2a9c7d5-e3b1-4f8a-9c2e-6d4b8a1e3f5c.json)) 
-- ⚠️ **Timestomping Detection** - In Progress
+- ✅ **Disabled Security Tools** (Windows) - Detects stopped/paused security services across major vendors and Windows Defender registry tampering (12 values). Query: `security_products_disabled_windows_elastic` ([a8f3](kibana/osquery_saved_query/osquery_manager-a8f3c5e7-d9b4-4a21-8f6c-2e9d1b3a5c7e.json))
+- ✅ **Cleared Event Logs** (Windows) - Detects Security/System event log clearing via Event IDs 1102 and 104 (windows_eventlog). Query: `event_log_cleared_windows_elastic` ([f2a9](kibana/osquery_saved_query/osquery_manager-f2a9c7d5-e3b1-4f8a-9c2e-6d4b8a1e3f5c.json))
+- ✅ **Timestomping Detection** (Windows) - `$MFT` sweep compares `$STANDARD_INFORMATION` vs `$FILE_NAME` creation times (`si_lt_fn=1`) as a timestomping triage hint; corroborate with USN journal. Query: `ntfs_mft_windows_elastic`
 
 ### File System Forensics (Supporting)
 
@@ -219,7 +271,8 @@ These queries provide cross-cutting forensic support used across multiple invest
 - ✅ **File System Events** (Linux/macOS) - Real-time file monitoring via inotify/FSEvents. Queries: `file_system_events_linux_elastic`, `file_system_events_darwin_elastic`
 - ✅ **File Hash Info** (All) - File hashing with signature validation. Queries: `file_hash_info_windows_elastic`, `file_hash_info_linux_elastic`, `file_hash_info_darwin_elastic`
 - ✅ **Disks & Volumes** (All) - Storage device enumeration. Queries: `disk_info_windows_elastic`, `disk_info_linux_darwin_elastic`
-- ⚠️ **MFT** (Windows) - In Progress
+- ✅ **Disk Volumes / Partitions** (Windows) - Inventory of all volumes and partitions via the `elastic_ntfs_volumes` / `elastic_ntfs_partitions` extension tables (requires osquerybeat 9.5.0+ with the NTFS extension). Used to correlate `$MFT`/USN findings with specific volumes. Queries: `disk_volumes_windows_elastic`, `disk_partitions_windows_elastic`
+- ✅ **MFT** (Windows) - `$MFT` forensic sweep over high-signal directories via the `elastic_ntfs_file` extension table (requires osquerybeat 9.5.0+ with the NTFS extension). Returns `$SI`/`$FN` timestamp sets, deleted/unallocated entries (`active=0`), and a timestomping hint (`si_lt_fn=1`). Query: `ntfs_mft_windows_elastic`
 
 ### System Information (Supporting)
 

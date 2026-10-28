@@ -2,6 +2,7 @@
 description: Pipeline for parsing Proofpoint TAP permitted clicks logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -11,67 +12,82 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - drop:
+      tag: drop_3468b8b4
       if: ctx.json?.clicksPermitted instanceof List && ctx.json.clicksPermitted.length == 0
   - fingerprint:
+      tag: fingerprint_to_id_02243b84
       fields:
         - event.original
       target_field: _id
       ignore_missing: true
   - append:
+      tag: append_event_category_df23064f
       field: event.category
       value: email
       ignore_failure: true
   - append:
+      tag: append_event_action_466170d5
       field: event.action
       value: allowed
       ignore_failure: true
   - append:
+      tag: append_event_type_61ba5509
       field: event.type
       value: info
       ignore_failure: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - rename:
+      tag: rename_json_sender_to_email_from_address_aefd139d
       field: json.sender
       target_field: email.from.address
       ignore_missing: true
   - set:
+      tag: set_email_from_address_fff7c0a5
       field: email.from.address
       value: ['{{{email.from.address}}}']
       if: ctx.email?.from?.address instanceof String
   - rename:
+      tag: rename_json_messageID_to_email_message_id_478a43db
       field: json.messageID
       target_field: email.message_id
       ignore_missing: true
   - rename:
+      tag: rename_json_recipient_to_email_to_address_d9c203ce
       field: json.recipient
       target_field: email.to.address
       ignore_missing: true
   - set:
+      tag: set_email_to_address_52631338
       field: email.to.address
       value: ['{{{email.to.address}}}']
       if: ctx.email?.to?.address instanceof String
   - date:
+      tag: date_json_clickTime_to_proofpoint_tap_clicks_permitted_click_time_1ee48696
       field: json.clickTime
       target_field: proofpoint_tap.clicks_permitted.click_time
       if: ctx.json?.clickTime != null && ctx.json.clickTime != ''
@@ -79,37 +95,46 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_adbf1b21
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_timestamp_c37daf0e
       field: '@timestamp'
       copy_from: proofpoint_tap.clicks_permitted.click_time
       ignore_failure: true
       ignore_empty_value: true
   - rename:
+      tag: rename_json_id_to_event_id_6438e920
       field: json.id
       target_field: event.id
       ignore_missing: true
   - convert:
+      tag: convert_json_clickIP_to_destination_ip_c503d1a2
       field: json.clickIP
       target_field: destination.ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_clickIP_b414ea43
             field: json.clickIP
         - append:
+            tag: append_error_message_b66feaad
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_b3425e9d
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_340fa3f4
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_ffe24f3a
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -119,28 +144,35 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d6b244b7
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
   - convert:
+      tag: convert_json_senderIP_to_source_ip_0e7c10d3
       field: json.senderIP
       target_field: source.ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_senderIP_d3b08891
             field: json.senderIP
         - append:
+            tag: append_error_message_18a6114e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_threatTime_to_proofpoint_tap_clicks_permitted_threat_time_f989427b
       field: json.threatTime
       target_field: proofpoint_tap.clicks_permitted.threat.time
       if: ctx.json?.threatTime != null && ctx.json.threatTime != ''
@@ -148,12 +180,13 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_3a78e690
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       description: Set the @timestamp to the maximum of clickTime and threatTime.
-      tag: timestamp-is-maximum
+      tag: timestamp-is-maximum_1f4ab183
       if: ctx.proofpoint_tap?.clicks_permitted?.threat?.time instanceof String
       ignore_failure: true
       source: |
@@ -163,61 +196,75 @@ processors:
           ctx['@timestamp'] = ctx.proofpoint_tap.clicks_permitted.threat.time;
         }
   - uri_parts:
+      tag: uri_parts_json_url_be09671e
       field: json.url
       keep_original: false
       on_failure:
         - append:
+            tag: append_error_message_ff176615
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - urldecode:
+      tag: urldecode_json_url_to_url_full_28871040
       field: json.url
       target_field: url.full
       ignore_missing: true
   - user_agent:
+      tag: user_agent_json_userAgent_to_user_agent_46c412e7
       field: json.userAgent
       target_field: user_agent
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_campaignId_to_proofpoint_tap_clicks_permitted_campaign_id_2a8d6ad7
       field: json.campaignId
       target_field: proofpoint_tap.clicks_permitted.campaign_id
       ignore_missing: true
   - rename:
+      tag: rename_json_classification_to_proofpoint_tap_clicks_permitted_classification_397d7cba
       field: json.classification
       target_field: proofpoint_tap.clicks_permitted.classification
       ignore_missing: true
   - rename:
+      tag: rename_json_GUID_to_proofpoint_tap_guid_ab57fad4
       field: json.GUID
       target_field: proofpoint_tap.guid
       ignore_missing: true
   - rename:
+      tag: rename_json_threatID_to_proofpoint_tap_clicks_permitted_threat_id_8e50f5d6
       field: json.threatID
       target_field: proofpoint_tap.clicks_permitted.threat.id
       ignore_missing: true
   - rename:
+      tag: rename_json_threatStatus_to_proofpoint_tap_clicks_permitted_threat_status_43c0eb28
       field: json.threatStatus
       target_field: proofpoint_tap.clicks_permitted.threat.status
       ignore_missing: true
   - rename:
+      tag: rename_json_threatURL_to_proofpoint_tap_clicks_permitted_threat_url_4fe24982
       field: json.threatURL
       target_field: proofpoint_tap.clicks_permitted.threat.url
       ignore_missing: true
   - append:
+      tag: append_related_ip_86c0561d
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null && ctx.source.ip != ''
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_e09ec9b6
       field: related.ip
       value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null && ctx.destination.ip != ''
       allow_duplicates: false
       ignore_failure: true
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
   - script:
+      tag: script_drops_null_empty_values_recursively_258616c7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -236,12 +283,18 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

@@ -1,0 +1,19 @@
+wait_for_data_timeout: 1m
+input: cel
+service: anthropic-metrics-usage
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  admin_api_key: xxxx
+  anthropic_version: "2023-06-01"
+data_stream:
+  vars:
+    interval: 10s
+    initial_interval: 24h
+    bucket_width: 1h
+    group_by:
+      - model
+      - workspace_id
+      - service_tier
+    preserve_original_event: true
+assert:
+  hit_count: 6

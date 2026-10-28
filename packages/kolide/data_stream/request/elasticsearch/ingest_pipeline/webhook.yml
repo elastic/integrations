@@ -1,0 +1,127 @@
+---
+description: >-
+  Webhook-specific field extraction for Kolide request events
+  (requests.issue_exemption / requests.registration). Invoked from default.yml
+  when json.event is set. Reads the webhook envelope payload under json.data.*.
+  event.kind / event.category / event.type are assigned centrally by
+  categorize.yml from the resolved event.action.
+processors:
+  # --- Request type from the webhook event name. ---
+  - set:
+      field: kolide.request.type
+      tag: set_type_issue_exemption_webhook
+      value: exemption
+      if: ctx.kolide?.request?.type == null && (ctx.json?.event == 'requests.issue_exemption' || ctx.json?.event == 'request.issue_exemption')
+  - set:
+      field: kolide.request.type
+      tag: set_type_registration_webhook
+      value: registration
+      if: ctx.kolide?.request?.type == null && (ctx.json?.event == 'requests.registration' || ctx.json?.event == 'request.registration')
+
+  # --- event.action: Kolide webhook event name (json.event). ---
+  - rename:
+      field: json.event
+      target_field: event.action
+      tag: rename_event_action_webhook
+      ignore_missing: true
+      if: ctx.event?.action == null
+
+  # --- Human message/reason (webhook). ---
+  - set:
+      field: message
+      tag: set_message_from_webhook
+      copy_from: json.data.message
+      ignore_empty_value: true
+      if: ctx.message == null && ctx.json?.data?.message instanceof String
+
+  # --- Request state: webhook deliveries represent a newly-created (pending) request. ---
+  - set:
+      field: kolide.request.state
+      tag: set_state_pending_for_webhook
+      value: pending
+      if: ctx.kolide?.request?.state == null && ctx.event?.action != null
+
+  # --- Device / host (webhook). ---
+  - convert:
+      field: json.data.device_id
+      target_field: host.id
+      type: string
+      tag: convert_host_id_webhook_flat
+      ignore_missing: true
+      if: ctx.host?.id == null
+  - convert:
+      field: json.data.device.id
+      target_field: host.id
+      type: string
+      tag: convert_host_id_webhook_nested
+      ignore_missing: true
+      if: ctx.host?.id == null
+  - set:
+      field: host.name
+      tag: set_host_name_webhook_flat
+      copy_from: json.data.device_name
+      ignore_empty_value: true
+      if: ctx.host?.name == null && ctx.json?.data?.device_name instanceof String
+  - set:
+      field: host.name
+      tag: set_host_name_webhook_nested
+      copy_from: json.data.device.name
+      ignore_empty_value: true
+      if: ctx.host?.name == null && ctx.json?.data?.device?.name instanceof String
+  - set:
+      field: kolide.request.device.url
+      tag: set_device_url_webhook_nested
+      copy_from: json.data.device.url
+      ignore_empty_value: true
+      if: ctx.kolide?.request?.device?.url == null && ctx.json?.data?.device?.url instanceof String
+
+  # --- Requester/person (webhook). ---
+  - convert:
+      field: json.data.requester.id
+      target_field: user.id
+      type: string
+      tag: convert_user_id_webhook_requester
+      ignore_missing: true
+      if: ctx.user?.id == null
+  - set:
+      field: user.email
+      tag: set_user_email_webhook_person
+      copy_from: json.data.person_email
+      ignore_empty_value: true
+      if: ctx.user?.email == null && ctx.json?.data?.person_email instanceof String
+  - set:
+      field: user.email
+      tag: set_user_email_webhook_requester
+      copy_from: json.data.requester.email
+      ignore_empty_value: true
+      if: ctx.user?.email == null && ctx.json?.data?.requester?.email instanceof String
+  - set:
+      field: kolide.request.requester.url
+      tag: set_requester_url_webhook
+      copy_from: json.data.requester.url
+      ignore_empty_value: true
+      if: ctx.kolide?.request?.requester?.url == null && ctx.json?.data?.requester?.url instanceof String
+
+  # --- Issues attached to exemption requests (webhook). ---
+  - rename:
+      field: json.data.issues
+      target_field: kolide.request.issues
+      tag: rename_issues_webhook
+      ignore_missing: true
+      if: ctx.kolide?.request?.issues == null
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -9,8 +9,7 @@
         },
         "query": {
             "bool": {
-                "minimum_should_match": 1,
-                "should": [
+                "filter": [
                     {
                         "exists": {
                             "field": "problemchild.prediction"
@@ -18,7 +17,7 @@
                     },
                     {
                         "exists": {
-                            "field": "blocklist_label"
+                            "field": "problemchild.prediction_probability"
                         }
                     }
                 ],
@@ -34,7 +33,7 @@
         },
         "jobs": [
             {
-                "id": "problem_child_rare_process_by_host",
+                "id": "problem_child_rare_process_by_host_ea",
                 "config": {
                     "groups": [
                         "living_off_the_land",
@@ -55,8 +54,13 @@
                         "influencers": [
                             "process.name",
                             "host.name",
+                            "host.id",
                             "user.name",
-                            "process.command_line"
+                            "event.module",
+                            "user.id",
+                            "process.command_line",
+                            "process_code_signature_subject_name",
+                            "process_code_signature_trusted"
                         ]
                     },
                     "data_description": {
@@ -64,12 +68,18 @@
                         "time_format": "epoch_ms"
                     },
                     "custom_settings": {
-                        "created_by": "ml-module-problem-child"
+                        "created_by": "ml-module-problem-child",
+                        "threat_tactics": [
+                            "TA0005"
+                        ],
+                        "threat_techniques": [
+                            "T1218"
+                        ]
                     }
                 }
             },
             {
-                "id": "problem_child_high_sum_by_host",
+                "id": "problem_child_high_sum_by_host_ea",
                 "config": {
                     "groups": [
                         "living_off_the_land",
@@ -85,20 +95,18 @@
                                 "detector_index": 0,
                                 "field_name": "problemchild.prediction_probability",
                                 "function": "high_sum"
-                            },
-                            {
-                                "by_field_name": "host.name",
-                                "detector_description": "high sum of blocklist hits by host",
-                                "detector_index": 0,
-                                "field_name": "blocklist_label",
-                                "function": "high_sum"
                             }
                         ],
                         "influencers": [
                             "process.name",
                             "host.name",
+                            "host.id",
                             "user.name",
-                            "process.command_line"
+                            "event.module",
+                            "user.id",
+                            "process.command_line",
+                            "process_code_signature_subject_name",
+                            "process_code_signature_trusted"
                         ]
                     },
                     "data_description": {
@@ -106,12 +114,19 @@
                         "time_format": "epoch_ms"
                     },
                     "custom_settings": {
-                        "created_by": "ml-module-problem-child"
+                        "created_by": "ml-module-problem-child",
+                        "threat_tactics": [
+                            "TA0005"
+                        ],
+                        "threat_techniques": [
+                            "T1036",
+                            "T1218"
+                        ]
                     }
                 }
             },
             {
-                "id": "problem_child_rare_process_by_user",
+                "id": "problem_child_rare_process_by_user_ea",
                 "config": {
                     "groups": [
                         "living_off_the_land",
@@ -132,8 +147,13 @@
                         "influencers": [
                             "process.name",
                             "user.name",
+                            "event.module",
+                            "user.id",
                             "host.name",
-                            "process.command_line"
+                            "host.id",
+                            "process.command_line",
+                            "process_code_signature_subject_name",
+                            "process_code_signature_trusted"
                         ]
                     },
                     "data_description": {
@@ -141,12 +161,19 @@
                         "time_format": "epoch_ms"
                     },
                     "custom_settings": {
-                        "created_by": "ml-module-problem-child"
+                        "created_by": "ml-module-problem-child",
+                        "threat_tactics": [
+                            "TA0005"
+                        ],
+                        "threat_techniques": [
+                            "T1036",
+                            "T1218"
+                        ]
                     }
                 }
             },
             {
-                "id": "problem_child_rare_process_by_parent",
+                "id": "problem_child_rare_process_by_parent_ea",
                 "config": {
                     "groups": [
                         "living_off_the_land",
@@ -169,7 +196,12 @@
                             "process.parent.name",
                             "process.command_line",
                             "host.name",
-                            "user.name"
+                            "host.id",
+                            "user.name",
+                            "event.module",
+                            "user.id",
+                            "process_code_signature_subject_name",
+                            "process_code_signature_trusted"
                         ]
                     },
                     "data_description": {
@@ -177,12 +209,19 @@
                         "time_format": "epoch_ms"
                     },
                     "custom_settings": {
-                        "created_by": "ml-module-problem-child"
+                        "created_by": "ml-module-problem-child",
+                        "threat_tactics": [
+                            "TA0005"
+                        ],
+                        "threat_techniques": [
+                            "T1036",
+                            "T1218"
+                        ]
                     }
                 }
             },
             {
-                "id": "problem_child_high_sum_by_user",
+                "id": "problem_child_high_sum_by_user_ea",
                 "config": {
                     "groups": [
                         "living_off_the_land",
@@ -198,20 +237,18 @@
                                 "detector_index": 0,
                                 "field_name": "problemchild.prediction_probability",
                                 "function": "high_sum"
-                            },
-                            {
-                                "by_field_name": "user.name",
-                                "detector_description": "high sum of blocklist hits by user",
-                                "detector_index": 0,
-                                "field_name": "blocklist_label",
-                                "function": "high_sum"
                             }
                         ],
                         "influencers": [
                             "process.name",
                             "user.name",
+                            "event.module",
+                            "user.id",
                             "host.name",
-                            "process.command_line"
+                            "host.id",
+                            "process.command_line",
+                            "process_code_signature_subject_name",
+                            "process_code_signature_trusted"
                         ]
                     },
                     "data_description": {
@@ -219,12 +256,19 @@
                         "time_format": "epoch_ms"
                     },
                     "custom_settings": {
-                        "created_by": "ml-module-problem-child"
+                        "created_by": "ml-module-problem-child",
+                        "threat_tactics": [
+                            "TA0005"
+                        ],
+                        "threat_techniques": [
+                            "T1036",
+                            "T1218"
+                        ]
                     }
                 }
             },
             {
-                "id": "problem_child_high_sum_by_parent",
+                "id": "problem_child_high_sum_by_parent_ea",
                 "config": {
                     "groups": [
                         "living_off_the_land",
@@ -240,13 +284,6 @@
                                 "detector_index": 0,
                                 "field_name": "problemchild.prediction_probability",
                                 "function": "high_sum"
-                            },
-                            {
-                                "by_field_name": "process.parent.name",
-                                "detector_description": "high sum of blocklist hits by parent process",
-                                "detector_index": 0,
-                                "field_name": "blocklist_label",
-                                "function": "high_sum"
                             }
                         ],
                         "influencers": [
@@ -254,7 +291,12 @@
                             "process.parent.name",
                             "process.command_line",
                             "host.name",
-                            "user.name"
+                            "host.id",
+                            "user.name",
+                            "event.module",
+                            "user.id",
+                            "process_code_signature_subject_name",
+                            "process_code_signature_trusted"
                         ]
                     },
                     "data_description": {
@@ -262,32 +304,40 @@
                         "time_format": "epoch_ms"
                     },
                     "custom_settings": {
-                        "created_by": "ml-module-problem-child"
+                        "created_by": "ml-module-problem-child",
+                        "threat_tactics": [
+                            "TA0005"
+                        ],
+                        "threat_techniques": [
+                            "T1036",
+                            "T1218"
+                        ]
                     }
                 }
             }
         ],
         "datafeeds": [
             {
-                "id": "datafeed-problem_child_rare_process_by_host",
-                "job_id": "problem_child_rare_process_by_host",
+                "id": "datafeed-problem_child_rare_process_by_host_ea",
+                "job_id": "problem_child_rare_process_by_host_ea",
                 "config": {
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
-                    "job_id": "problem_child_rare_process_by_host",
+                    "job_id": "problem_child_rare_process_by_host_ea",
                     "query": {
                         "bool": {
-                            "minimum_should_match": 1,
-                            "should": [
+                            "filter": [
                                 {
                                     "match": {
                                         "problemchild.prediction": 1
                                     }
                                 },
                                 {
-                                    "match": {
-                                        "blocklist_label": 1
+                                    "range": {
+                                        "problemchild.prediction_probability": {
+                                            "gte": 0.5
+                                        }
                                     }
                                 }
                             ],
@@ -312,29 +362,44 @@
                                 }
                             ]
                         }
+                    },
+                    "runtime_mappings": {
+                        "process_code_signature_subject_name": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.subject_name') && doc['process.code_signature.subject_name'].size() != 0) { emit(doc['process.code_signature.subject_name'].value); } else { emit('None'); }"
+                            }
+                        },
+                        "process_code_signature_trusted": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.trusted') && doc['process.code_signature.trusted'].size() != 0) { emit(doc['process.code_signature.trusted'].value.toString()); } else if (doc.containsKey('winlog.event_data.SignatureStatus') && doc['winlog.event_data.SignatureStatus'].size() != 0) { emit(doc['winlog.event_data.SignatureStatus'].value); } else { emit('None'); }"
+                            }
+                        }
                     }
                 }
             },
             {
-                "id": "datafeed-problem_child_high_sum_by_host",
-                "job_id": "problem_child_high_sum_by_host",
+                "id": "datafeed-problem_child_high_sum_by_host_ea",
+                "job_id": "problem_child_high_sum_by_host_ea",
                 "config": {
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
-                    "job_id": "problem_child_high_sum_by_host",
+                    "job_id": "problem_child_high_sum_by_host_ea",
                     "query": {
                         "bool": {
-                            "minimum_should_match": 1,
-                            "should": [
+                            "filter": [
                                 {
                                     "match": {
                                         "problemchild.prediction": 1
                                     }
                                 },
                                 {
-                                    "match": {
-                                        "blocklist_label": 1
+                                    "range": {
+                                        "problemchild.prediction_probability": {
+                                            "gte": 0.5
+                                        }
                                     }
                                 }
                             ],
@@ -359,29 +424,44 @@
                                 }
                             ]
                         }
+                    },
+                    "runtime_mappings": {
+                        "process_code_signature_subject_name": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.subject_name') && doc['process.code_signature.subject_name'].size() != 0) { emit(doc['process.code_signature.subject_name'].value); } else { emit('None'); }"
+                            }
+                        },
+                        "process_code_signature_trusted": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.trusted') && doc['process.code_signature.trusted'].size() != 0) { emit(doc['process.code_signature.trusted'].value.toString()); } else if (doc.containsKey('winlog.event_data.SignatureStatus') && doc['winlog.event_data.SignatureStatus'].size() != 0) { emit(doc['winlog.event_data.SignatureStatus'].value); } else { emit('None'); }"
+                            }
+                        }
                     }
                 }
             },
             {
-                "id": "datafeed-problem_child_rare_process_by_user",
-                "job_id": "problem_child_rare_process_by_user",
+                "id": "datafeed-problem_child_rare_process_by_user_ea",
+                "job_id": "problem_child_rare_process_by_user_ea",
                 "config": {
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
-                    "job_id": "problem_child_rare_process_by_user",
+                    "job_id": "problem_child_rare_process_by_user_ea",
                     "query": {
                         "bool": {
-                            "minimum_should_match": 1,
-                            "should": [
+                            "filter": [
                                 {
                                     "match": {
                                         "problemchild.prediction": 1
                                     }
                                 },
                                 {
-                                    "match": {
-                                        "blocklist_label": 1
+                                    "range": {
+                                        "problemchild.prediction_probability": {
+                                            "gte": 0.5
+                                        }
                                     }
                                 }
                             ],
@@ -406,29 +486,44 @@
                                 }
                             ]
                         }
+                    },
+                    "runtime_mappings": {
+                        "process_code_signature_subject_name": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.subject_name') && doc['process.code_signature.subject_name'].size() != 0) { emit(doc['process.code_signature.subject_name'].value); } else { emit('None'); }"
+                            }
+                        },
+                        "process_code_signature_trusted": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.trusted') && doc['process.code_signature.trusted'].size() != 0) { emit(doc['process.code_signature.trusted'].value.toString()); } else if (doc.containsKey('winlog.event_data.SignatureStatus') && doc['winlog.event_data.SignatureStatus'].size() != 0) { emit(doc['winlog.event_data.SignatureStatus'].value); } else { emit('None'); }"
+                            }
+                        }
                     }
                 }
             },
             {
-                "id": "datafeed-problem_child_rare_process_by_parent",
-                "job_id": "problem_child_rare_process_by_parent",
+                "id": "datafeed-problem_child_rare_process_by_parent_ea",
+                "job_id": "problem_child_rare_process_by_parent_ea",
                 "config": {
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
-                    "job_id": "problem_child_rare_process_by_parent",
+                    "job_id": "problem_child_rare_process_by_parent_ea",
                     "query": {
                         "bool": {
-                            "minimum_should_match": 1,
-                            "should": [
+                            "filter": [
                                 {
                                     "match": {
                                         "problemchild.prediction": 1
                                     }
                                 },
                                 {
-                                    "match": {
-                                        "blocklist_label": 1
+                                    "range": {
+                                        "problemchild.prediction_probability": {
+                                            "gte": 0.5
+                                        }
                                     }
                                 }
                             ],
@@ -453,29 +548,44 @@
                                 }
                             ]
                         }
+                    },
+                    "runtime_mappings": {
+                        "process_code_signature_subject_name": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.subject_name') && doc['process.code_signature.subject_name'].size() != 0) { emit(doc['process.code_signature.subject_name'].value); } else { emit('None'); }"
+                            }
+                        },
+                        "process_code_signature_trusted": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.trusted') && doc['process.code_signature.trusted'].size() != 0) { emit(doc['process.code_signature.trusted'].value.toString()); } else if (doc.containsKey('winlog.event_data.SignatureStatus') && doc['winlog.event_data.SignatureStatus'].size() != 0) { emit(doc['winlog.event_data.SignatureStatus'].value); } else { emit('None'); }"
+                            }
+                        }
                     }
                 }
             },
             {
-                "id": "datafeed-problem_child_high_sum_by_user",
-                "job_id": "problem_child_high_sum_by_user",
+                "id": "datafeed-problem_child_high_sum_by_user_ea",
+                "job_id": "problem_child_high_sum_by_user_ea",
                 "config": {
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
-                    "job_id": "problem_child_high_sum_by_user",
+                    "job_id": "problem_child_high_sum_by_user_ea",
                     "query": {
                         "bool": {
-                            "minimum_should_match": 1,
-                            "should": [
+                            "filter": [
                                 {
                                     "match": {
                                         "problemchild.prediction": 1
                                     }
                                 },
                                 {
-                                    "match": {
-                                        "blocklist_label": 1
+                                    "range": {
+                                        "problemchild.prediction_probability": {
+                                            "gte": 0.5
+                                        }
                                     }
                                 }
                             ],
@@ -500,29 +610,44 @@
                                 }
                             ]
                         }
+                    },
+                    "runtime_mappings": {
+                        "process_code_signature_subject_name": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.subject_name') && doc['process.code_signature.subject_name'].size() != 0) { emit(doc['process.code_signature.subject_name'].value); } else { emit('None'); }"
+                            }
+                        },
+                        "process_code_signature_trusted": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.trusted') && doc['process.code_signature.trusted'].size() != 0) { emit(doc['process.code_signature.trusted'].value.toString()); } else if (doc.containsKey('winlog.event_data.SignatureStatus') && doc['winlog.event_data.SignatureStatus'].size() != 0) { emit(doc['winlog.event_data.SignatureStatus'].value); } else { emit('None'); }"
+                            }
+                        }
                     }
                 }
             },
             {
-                "id": "datafeed-problem_child_high_sum_by_parent",
-                "job_id": "problem_child_high_sum_by_parent",
+                "id": "datafeed-problem_child_high_sum_by_parent_ea",
+                "job_id": "problem_child_high_sum_by_parent_ea",
                 "config": {
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
-                    "job_id": "problem_child_high_sum_by_parent",
+                    "job_id": "problem_child_high_sum_by_parent_ea",
                     "query": {
                         "bool": {
-                            "minimum_should_match": 1,
-                            "should": [
+                            "filter": [
                                 {
                                     "match": {
                                         "problemchild.prediction": 1
                                     }
                                 },
                                 {
-                                    "match": {
-                                        "blocklist_label": 1
+                                    "range": {
+                                        "problemchild.prediction_probability": {
+                                            "gte": 0.5
+                                        }
                                     }
                                 }
                             ],
@@ -546,6 +671,20 @@
                                     }
                                 }
                             ]
+                        }
+                    },
+                    "runtime_mappings": {
+                        "process_code_signature_subject_name": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.subject_name') && doc['process.code_signature.subject_name'].size() != 0) { emit(doc['process.code_signature.subject_name'].value); } else { emit('None'); }"
+                            }
+                        },
+                        "process_code_signature_trusted": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.trusted') && doc['process.code_signature.trusted'].size() != 0) { emit(doc['process.code_signature.trusted'].value.toString()); } else if (doc.containsKey('winlog.event_data.SignatureStatus') && doc['winlog.event_data.SignatureStatus'].size() != 0) { emit(doc['winlog.event_data.SignatureStatus'].value); } else { emit('None'); }"
+                            }
                         }
                     }
                 }

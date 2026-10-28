@@ -7,11 +7,15 @@ on:
 permissions:
   actions: read
   contents: read
+  copilot-requests: write
   issues: write
   pull-requests: read
 
 jobs:
   run:
+    # Disabled 2026-07-02 — no current owner. Re-enable by removing this
+    # `if: false` line via a reviewed PR so the change is visible.
+    if: false
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-quality-audit.lock.yml@v0
     with:
       title-prefix: "[field-mapping-conflicts]"
@@ -92,5 +96,3 @@ jobs:
         - High-confidence integer overflow risks with the field, the source context, and
           the concrete reason the range will be exceeded
         - Cross-data-stream type conflicts, by package
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

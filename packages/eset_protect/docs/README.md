@@ -4,6 +4,12 @@ ESET PROTECT enables you to manage ESET products on workstations and servers in 
 
 ## Data streams
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+
 The ESET PROTECT integration collects three types of logs: Detection, Device Task and Event.
 
 **[Detection](https://help.eset.com/protect_cloud/en-US/admin_ct.html?threats.html)** is used to retrieve detections via the [Incident Management - List detections v1](https://help.eset.com/eset_connect/en-US/incident_management_v1_detections_get.html) endpoint.
@@ -231,8 +237,22 @@ An example event for `detection` looks as following:
 | eset_protect.detection.uuid | Universally Unique Identifier of detection. | keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
+| host.ip | Host ip addresses. | ip |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.full | Operating system name, including the version or code name. | keyword |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
+| observer.product | The product name of the observer. | keyword |
+| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
+| observer.vendor | Vendor name of the observer. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
 
 
 ### Device Task
@@ -431,7 +451,7 @@ An example event for `event` looks as following:
             "is_handled": false,
             "name": "An attempt to connect to URL",
             "object_uri": "https://test.com",
-            "occured": "2021-06-21T03:56:20.000Z",
+            "occurred": "2021-06-21T03:56:20.000Z",
             "os_name": "Microsoft Windows 11 Pro",
             "processname": "C:\\Program Files\\Web browser\\brwser.exe",
             "rule_id": "Blocked by PUA blacklist",
@@ -544,6 +564,11 @@ An example event for `event` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.subject.text | Multi-field of `email.subject`. | match_only_text |
 | eset_protect.event.account | Name of the user account associated with the event. | keyword |
 | eset_protect.event.action | Action taken. | keyword |
 | eset_protect.event.action_error | Error message if the "action" was not successful. | keyword |
@@ -576,7 +601,7 @@ An example event for `event` looks as following:
 | eset_protect.event.need_restart | Whether or not the restart is needed. | boolean |
 | eset_protect.event.object_type | Type of object related to this event. | keyword |
 | eset_protect.event.object_uri | Object URI associated with the event. | keyword |
-| eset_protect.event.occured | UTC time of occurrence of the event. Format is %d-%b-%Y %H:%M:%S. | date |
+| eset_protect.event.occurred | UTC time of occurrence of the event. Format is %d-%b-%Y %H:%M:%S. | date |
 | eset_protect.event.operation | Operation associated with the event. | keyword |
 | eset_protect.event.os_name | Information about the computer´s operating system. | keyword |
 | eset_protect.event.processname | Name of the process associated with the event. | keyword |

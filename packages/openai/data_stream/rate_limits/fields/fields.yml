@@ -1,0 +1,70 @@
+- name: openai
+  type: group
+  fields:
+    # Shared usage fields, declared here (unpopulated) so the rate-limit headroom
+    # dashboard ES|QL resolves these columns even before any usage data is collected.
+    - name: base
+      type: group
+      description: Common usage fields shared across OpenAI usage data streams.
+      fields:
+        - name: project_id
+          type: keyword
+          description: Identifier of the project.
+        - name: model
+          type: keyword
+          description: Name of the OpenAI model used.
+        - name: num_model_requests
+          type: long
+          description: Number of requests made to the model.
+        - name: usage_tokens
+          type: long
+          description: Total tokens consumed by a usage record, normalized across usage data streams.
+        - name: usage_images
+          type: long
+          description: Number of images processed by a usage record, normalized across usage data streams.
+    - name: rate_limits
+      type: group
+      description: OpenAI project rate limits per model.
+      fields:
+        - name: id
+          type: keyword
+          description: OpenAI rate limit identifier.
+        - name: object
+          type: keyword
+          description: OpenAI object type. Expected value is project.rate_limit.
+        - name: project_id
+          type: keyword
+          description: OpenAI project ID (injected from projects list).
+        - name: project_name
+          type: keyword
+          description: OpenAI project name (injected from projects list).
+        - name: project_status
+          type: keyword
+          description: OpenAI project status (injected from projects list).
+        - name: model
+          type: keyword
+          description: OpenAI model name this limit applies to.
+        - name: max_requests_per_1_minute
+          type: long
+          description: Maximum requests per minute.
+        - name: max_tokens_per_1_minute
+          type: long
+          description: Maximum tokens per minute.
+        - name: max_images_per_1_minute
+          type: long
+          description: Maximum images per minute, when provided by OpenAI.
+        - name: max_audio_megabytes_per_1_minute
+          type: long
+          description: Maximum audio megabytes per minute, when provided by OpenAI.
+        - name: max_requests_per_1_day
+          type: long
+          description: Maximum requests per day, when provided by OpenAI.
+        - name: max_tokens_per_1_day
+          type: long
+          description: Maximum tokens per day, when provided by OpenAI.
+        - name: batch_1_day_max_input_tokens
+          type: long
+          description: Maximum batch input tokens per day, when provided by OpenAI.
+        - name: collected_at
+          type: date
+          description: Time when the rate-limit document was collected.

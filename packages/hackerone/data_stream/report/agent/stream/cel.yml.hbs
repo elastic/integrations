@@ -1,0 +1,213 @@
+interval: {{interval}}
+
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+
+{{!-- https://api.hackerone.com/getting-started/#rate-limits --}}
+resource.rate_limit.limit: 5
+resource.rate_limit.burst: 20
+
+resource.headers:
+  Accept: application/json
+
+state:
+  initial_interval: {{initial_interval}}
+  page_size: {{page_size}}
+{{#if program_handles}}
+  program_handles:
+{{#each program_handles as |h|}}
+    - "{{h}}"
+{{/each}}
+{{/if}}
+{{#if inbox_ids}}
+  inbox_ids:
+{{#each inbox_ids as |id|}}
+    - "{{id}}"
+{{/each}}
+{{/if}}
+{{#if state_filter}}
+  state_filter:
+{{#each state_filter as |s|}}
+    - "{{s}}"
+{{/each}}
+{{/if}}
+{{#if severity_filter}}
+  severity_filter:
+{{#each severity_filter as |sev|}}
+    - "{{sev}}"
+{{/each}}
+{{/if}}
+  api_token_identifier: "{{api_token_identifier}}"
+  api_token_value: "{{api_token_value}}"
+
+redact:
+  fields:
+    - api_token_identifier
+    - api_token_value
+
+program: |-
+  {
+    "updated_since": (state.?cursor.cycle_since.orValue("") != "") ?
+      state.?cursor.cycle_since.orValue("")
+    :
+      state.?cursor.max_updated_at.orValue(
+        string(now - duration(state.initial_interval))
+      ),
+    "prior_running": string(state.?cursor.running_max_updated_at.orValue("")),
+  }.as(bind,
+    state.with(
+      request(
+        "GET",
+        (state.?next_link.orValue("") != "") ?
+          state.?next_link.orValue("")
+        :
+          state.url.trim_right("/") + "/v1/reports?" + {
+            "sort": ["reports.last_activity_at"],
+            "page[size]": [string(int(state.page_size))],
+            "filter[last_activity_at__gt]": [
+              (
+                state.?cursor.max_updated_at.optMap(t,
+                  timestamp(t) + duration("1ms")
+                )
+              ).orValue(
+                now - duration(state.initial_interval)
+              ).format("2006-01-02T15:04:05.000Z07:00"),
+            ],
+            ?"filter[program][]": state.?program_handles[0].hasValue() ?
+              optional.of(state.program_handles)
+            :
+              optional.none(),
+            ?"filter[inbox_ids][]": state.?inbox_ids[0].hasValue() ?
+              optional.of(state.inbox_ids)
+            :
+              optional.none(),
+            ?"filter[state][]": state.?state_filter[0].hasValue() ?
+              optional.of(state.state_filter)
+            :
+              optional.none(),
+            ?"filter[severity][]": state.?severity_filter[0].hasValue() ?
+              optional.of(state.severity_filter)
+            :
+              optional.none(),
+          }.format_query()
+      ).with(
+        {
+          "Header": {
+            "Accept": ["application/json"],
+            "Authorization": [
+              "Basic " + bytes(state.api_token_identifier + ":" + state.api_token_value).base64(),
+            ],
+          },
+        }
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          try(resp.Body.decode_json()).as(body,
+            is_error(body.with({})) ?
+              {
+                "events": {
+                  "error": {
+                    "message": "GET /v1/reports: Response is not a JSON object",
+                  },
+                },
+                "want_more": false,
+                "next_link": "",
+                "url": state.url,
+              }
+            :
+              {
+                "items": body.?data.orValue([]),
+                "next_link": (body.?links.next.orValue(null) != null) ?
+                  string(body.links.next).as(raw,
+                    raw.startsWith("/") ?
+                      (state.url.trim_right("/") + raw)
+                    :
+                      raw
+                  )
+                :
+                  "",
+                "max_updated": body.?data.orValue([]).map(r,
+                  r.?attributes.last_activity_at.hasValue() || r.?attributes.created_at.hasValue(),
+                  r.?attributes.last_activity_at.orValue(r.?attributes.created_at.orValue(""))
+                ).as(stamps,
+                  (size(stamps) > 0) ? stamps.max() : ""
+                ),
+              }.as(page,
+                (
+                  (bind.prior_running != "" && page.max_updated != "") ?
+                    (
+                      (bind.prior_running > page.max_updated) ?
+                        bind.prior_running
+                      :
+                        page.max_updated
+                    )
+                  : (bind.prior_running != "") ? bind.prior_running : page.max_updated
+                ).as(cm,
+                  {
+                    "events": (size(page.items) > 0) ?
+                      dyn(page.items.map(e, {"message": e.encode_json()}))
+                    : (page.next_link != "") ?
+                      dyn([{"retry": true}])
+                    :
+                      dyn([]),
+                    "want_more": page.next_link != "",
+                    "next_link": page.next_link,
+                    "cursor": (page.next_link != "") ?
+                      {
+                        ?"max_updated_at": state.?cursor.max_updated_at,
+                        "cycle_since": bind.updated_since,
+                        "running_max_updated_at": cm,
+                      }
+                    :
+                      {
+                        ?"max_updated_at": (cm != "") ?
+                          optional.of(cm)
+                        :
+                          state.?cursor.max_updated_at,
+                      },
+                    "url": state.url,
+                  }
+                )
+              )
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "message": "GET /v1/reports: " + string(resp.StatusCode),
+              },
+            },
+            "want_more": false,
+            "next_link": "",
+            "url": state.url,
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}

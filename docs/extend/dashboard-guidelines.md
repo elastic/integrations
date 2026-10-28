@@ -3,7 +3,7 @@ mapped_pages:
   - https://www.elastic.co/guide/en/integrations-developer/current/dashboard-guidelines.html
 ---
 
-# Dashboard guidelines [dashboard-guidelines]
+# Dashboard guidelines for integrations [dashboard-guidelines]
 
 A [Kibana dashboard](docs-content://explore-analyze/dashboards.md) is a set of one or more panels, also referred to as visualizations. Panels display data in charts, tables, maps, and more. Dashboards support several types of panels to display your data, and several options to create panels.
 
@@ -91,7 +91,7 @@ Kibana dashboards offer the possibility to apply margins between visualizations,
 
 ## Visualization Best Practices [_visualization_best_practices]
 
-Following are recommended best practices for designing Kibana vizualizations.
+Following are recommended best practices for designing Kibana visualizations.
 
 
 ### Lens vs TSVB visualizations [_lens_vs_tsvb_visualizations]

@@ -1,0 +1,125 @@
+rules:
+  - path: /v1/organizations/cost_report
+    methods: ['GET']
+    query_params:
+      page: 'page_cost01'
+      starting_at: '{starting_at:.*}'
+      ending_at: '{ending_at:.*}'
+      bucket_width: '1d'
+    request_headers:
+      x-api-key:
+        - 'xxxx'
+      anthropic-version:
+        - '2023-06-01'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "starting_at": "2025-01-09T00:00:00Z",
+                "ending_at": "2025-01-10T00:00:00Z",
+                "results": [
+                  {
+                    "workspace_id": "wrkspc_01ExampleWorkspace01",
+                    "description": "Claude Sonnet 4 Usage - Output Tokens",
+                    "inference_geo": "us",
+                    "model": "claude-sonnet-4-20250514",
+                    "service_tier": "standard",
+                    "cost_type": "tokens",
+                    "token_type": "output_tokens",
+                    "context_window": "0-200k",
+                    "amount": "15.23",
+                    "currency": "USD"
+                  }
+                ]
+              }
+            ],
+            "has_more": false,
+            "next_page": null
+          }
+          ` }}
+  - path: /v1/organizations/cost_report
+    methods: ['GET']
+    query_params:
+      starting_at: '{starting_at:.*}'
+      ending_at: '{ending_at:.*}'
+      bucket_width: '1d'
+    request_headers:
+      x-api-key:
+        - 'xxxx'
+      anthropic-version:
+        - '2023-06-01'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ if ge .req_num 3 }}{{ minify_json `
+          {
+            "data": [
+              {
+                "starting_at": "2025-01-10T00:00:00Z",
+                "ending_at": "2025-01-11T00:00:00Z",
+                "results": [
+                  {
+                    "workspace_id": "wrkspc_01ExampleWorkspace01",
+                    "description": "Web Search Usage",
+                    "inference_geo": "us",
+                    "model": null,
+                    "service_tier": null,
+                    "cost_type": "web_search",
+                    "token_type": null,
+                    "context_window": null,
+                    "amount": "2.50",
+                    "currency": "USD"
+                  }
+                ]
+              }
+            ],
+            "has_more": false,
+            "next_page": null
+          }
+          ` }}{{ else }}{{ minify_json `
+          {
+            "data": [
+              {
+                "starting_at": "2025-01-08T00:00:00Z",
+                "ending_at": "2025-01-09T00:00:00Z",
+                "results": [
+                  {
+                    "workspace_id": "wrkspc_01ExampleWorkspace01",
+                    "description": "Claude Sonnet 4 Usage - Input Tokens",
+                    "inference_geo": "us",
+                    "model": "claude-sonnet-4-20250514",
+                    "service_tier": "standard",
+                    "cost_type": "tokens",
+                    "token_type": "uncached_input_tokens",
+                    "context_window": "0-200k",
+                    "amount": "15.23",
+                    "currency": "USD"
+                  },
+                  {
+                    "workspace_id": "wrkspc_01ExampleWorkspace02",
+                    "description": "Code Execution Usage",
+                    "inference_geo": "global",
+                    "model": null,
+                    "service_tier": null,
+                    "cost_type": "code_execution",
+                    "token_type": null,
+                    "context_window": null,
+                    "amount": "8.90",
+                    "currency": "USD"
+                  }
+                ]
+              }
+            ],
+            "has_more": true,
+            "next_page": "page_cost01"
+          }
+          ` }}{{ end }}

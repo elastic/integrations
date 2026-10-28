@@ -1,0 +1,22 @@
+deployer: docker
+service: gcs-mock
+input: gcs
+wait_for_data_timeout: 1m
+vars:
+  project_id: fake-gcs-project
+  service_account_key: "{\"type\":\"service_account\",\"project_id\":\"fake-gcs-project\"}"
+  alternative_host: "http://{{Hostname}}:{{Port}}"
+data_stream:
+  vars:
+    number_of_workers: 1
+    poll: true
+    poll_interval: 15s
+    buckets: |
+      - name: kolide-osquery-result
+    # The mock preloads objects under flat names, so the default
+    # `^kolide/results/` prefix selector is overridden here.
+    file_selectors: |
+      - regex: '\.log$'
+    preserve_original_event: true
+assert:
+  hit_count: 5

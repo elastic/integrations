@@ -1,0 +1,26 @@
+---
+description: Benchmark 10000 audit events ingested
+input: http_endpoint
+vars:
+  listen_address: 0.0.0.0
+data_stream:
+  name: audit
+  vars:
+    listen_port: 9560
+    url: /cloudflare_logpush/audit
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+warmup_time_period: 10s
+corpora:
+  input_service:
+    name: cloudflare-logpush-audit
+    signal: SIGHUP
+  generator:
+    total_events: 10000
+    template:
+      path: ./audit-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./audit-benchmark/config.yml
+    fields:
+      path: ./audit-benchmark/fields.yml

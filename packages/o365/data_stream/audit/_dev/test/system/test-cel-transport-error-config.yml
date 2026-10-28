@@ -1,0 +1,40 @@
+input: cel
+service: o365-transport-error
+vars: ~
+policy_template: o365
+data_stream:
+  vars:
+    url: http://{{Hostname}}:{{Port}}
+    token_url: http://{{Hostname}}:{{Port}}
+    preserve_original_event: true
+    client_id: test-cel-client-id
+    client_secret: test-cel-client-secret
+    azure_tenant_id: test-cel-tenant-id
+    content_types: "Audit.Exchange"
+    interval: 30s
+    initial_interval: 1h
+    enable_request_tracer: true
+    # Disable the HTTP client's retries (they are only wrapped when
+    # max_attempts > 1). With retries on, the client would transparently
+    # re-fetch the truncated response and the transport error would never reach
+    # the CEL program, masking the behaviour under test. Disabling them makes a
+    # single truncated response surface to the program as it would once retries
+    # are exhausted in the field.
+    resource_retry_max_attempts: 1
+# Exercises transport-level resilience. The mock lists two content blobs; the
+# first fetch of blob-transient is answered with a truncated body, which makes
+# do_request fail with "unexpected EOF". Before the 3.10.6 fix that error
+# crashed the evaluation and froze the cursor, so nothing more was collected
+# until the agent restarted. Now the failure is caught, the blob is moved to the
+# back of the queue, and the cursor advances (via a dropped retry event) instead
+# of freezing. The failure itself is not indexed.
+#
+# Expected documents (hit_count 2), both audit events and no pipeline_error:
+#   - 1 audit event from blob-good (proves the failing blob did not block it)
+#   - 1 audit event from blob-transient when a later poll re-fetches it
+#     successfully (proves recovery)
+#
+# The mock serves the content listing once and truncates blob-transient exactly
+# once, so the count is stable and does not grow across polling intervals.
+assert:
+  hit_count: 2

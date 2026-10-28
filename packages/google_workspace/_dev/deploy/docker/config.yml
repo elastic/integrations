@@ -15,6 +15,37 @@ rules:
         body: |
           {"access_token": "1/fFAGRNJru1FTz70BzhT3Zg","expires_in": 3920,"token_type": "Bearer",
           "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly","refresh_token": "1//xEoDL4iW3cxlI7yDbSRFYNG01kVKM2C-259HOF2aQbI"}
+  # Chunked-window endpoint shared by the Reports API data streams' test-chunked
+  # system tests, which point application_name_for_url at "chunked_<app>".
+  # The response echoes the requested startTime as the event time with a fixed
+  # uniqueQualifier, so the fingerprinted _id only changes when the requested
+  # window start changes. With chunk_duration set, every interval advances
+  # startTime by one chunk and produces a new document. Without it, the next
+  # startTime is derived from the returned event time, which equals the previous
+  # startTime, so the same document is re-sent and only one is indexed.
+  # An empty window (startTime == endTime) is answered with an error body and
+  # no items, mirroring the API's rejection of such requests.
+  - path: /admin/reports/v1/activity/users/all/applications/chunked_{app}
+    methods: [GET]
+    query_params:
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {{- if eq .request.vars.startTime .request.vars.endTime }}
+          {"error":{"code":400,"message":"Start time must be before end time.","status":"INVALID_ARGUMENT"}}
+          {{- else }}
+          {"kind":"admin#reports#activities","etag":"\"chunked\"","items":[{"kind":"admin#reports#activity","id":{"time":"{{.request.vars.startTime}}","uniqueQualifier":1,"applicationName":"{{.request.vars.app}}","customerId":"C03az79cb"},"etag":"\"chunk\"","actor":{"callerType":"USER","email":"user@example.com","profileId":"114511147312345678901"},"ownerDomain":"example.com","ipAddress":"192.0.2.10","events":[{"type":"chunk_test","name":"chunk_window"}]}]}
+          {{- end }}
   - path: /v1beta1/alerts
     methods: [GET]
     query_params:
@@ -369,6 +400,406 @@ rules:
                         "name": "VIRTUAL_DEVICE_ID",
                         "value": "3d69c5a5-0afc-474b-a1a3-d3dc617e2a60"
                       }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+  - path: /admin/reports/v1/activity/users/all/applications/gmail
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "kind": "admin#reports#activities",
+            "nextPageToken": "page-2",
+            "etag": "\"D3eVYP-htSyObw0LSef_OWddNBN36m10z6d49o1_SA8/WS-Mf9vICAvzKDNCCz3ms9ShPWg\"",
+            "items": [
+              {
+                "kind": "admin#reports#activity",
+                "id": {
+                  "time": "2026-08-11T03:04:01.312Z",
+                  "uniqueQualifier": "1193008247809429026",
+                  "applicationName": "gmail",
+                  "customerId": "C00yte8g0"
+                },
+                "etag": "\"D3eVYP-htSyObw0LSef_OWddNBN36m10z6d49o1_SA8/WS-Mf9vICAvzKDNCCz3ms9ShPWg\"",
+                "actor": {
+                  "callerType": "USER",
+                  "email": "user1@example.com",
+                  "profileId": "109107487136189420589"
+                },
+                "ipAddress": "81.2.69.142",
+                "isAgenticAction": false,
+                "networkInfo": {
+                  "ipAsn": [
+                    0,
+                    15169
+                  ],
+                  "regionCode": "US",
+                  "subdivisionCode": ""
+                },
+                "resourceDetails": [
+                  {
+                    "id": "<000000000000f8bdf50658bcb834@mail.example.com>",
+                    "title": "[ACTION REQUIRED] Cloud Logging sink configuration error in example-project-123456",
+                    "type": "EMAIL",
+                    "relation": "GMAIL_PRIMARY",
+                    "ownerDetails": {
+                      "ownerType": "USER",
+                      "ownerIdentity": [
+                        {
+                          "userIdentity": {
+                            "id": "0z337ya2lr9by9",
+                            "userEmail": "user1@example.com"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "events": [
+                  {
+                    "type": "delivery_type",
+                    "name": "delivery",
+                    "parameters": [
+                      {
+                        "name": "event_info",
+                        "messageValue": {
+                          "parameter": [
+                            {
+                              "name": "timestamp_usec",
+                              "intValue": "1786417441312628"
+                            },
+                            {
+                              "name": "elapsed_time_usec",
+                              "intValue": "1645948"
+                            },
+                            {
+                              "name": "success",
+                              "boolValue": true
+                            },
+                            {
+                              "name": "mail_event_type",
+                              "intValue": "2"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "name": "message_info",
+                        "messageValue": {
+                          "parameter": [
+                            {
+                              "name": "action_type",
+                              "intValue": "3"
+                            },
+                            {
+                              "name": "rfc2822_message_id",
+                              "value": "<000000000000f8bdf50658bcb834@mail.example.com>"
+                            },
+                            {
+                              "name": "subject",
+                              "value": "[ACTION REQUIRED] Cloud Logging sink configuration error in example-project-123456"
+                            },
+                            {
+                              "name": "payload_size",
+                              "intValue": "12179"
+                            },
+                            {
+                              "name": "flattened_destinations",
+                              "value": "gmail-ui::user1@example.com"
+                            },
+                            {
+                              "name": "description",
+                              "value": ""
+                            },
+                            {
+                              "name": "is_spam",
+                              "boolValue": false
+                            },
+                            {
+                              "name": "is_policy_check_for_sender",
+                              "boolValue": false
+                            },
+                            {
+                              "name": "num_message_attachments",
+                              "intValue": "0"
+                            },
+                            {
+                              "name": "smime_content_type",
+                              "intValue": "0"
+                            },
+                            {
+                              "name": "link_domain",
+                              "multiValue": [
+                                "example.com",
+                                "example.net"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "resourceIds": [
+                      "<000000000000f8bdf50658bcb834@mail.example.com>"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+  - path: /admin/reports/v1/activity/users/all/applications/gmail
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: page-2
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "kind": "admin#reports#activities",
+            "etag": "\"D3eVYP-htSyObw0LSef_OWddNBN36m10z6d49o1_SA8/WS-Mf9vICAvzKDNCCz3ms9ShPWg\"",
+            "items": [
+              {
+                "kind": "admin#reports#activity",
+                "id": {
+                  "time": "2026-08-11T05:12:44.001Z",
+                  "uniqueQualifier": "-4471002316937498211",
+                  "applicationName": "gmail",
+                  "customerId": "C00yte8g0"
+                },
+                "etag": "\"aB3eVYP-htSyObw0LSef_OWddNBN36m10z6d49o1_SA8/QQ-Mf9vICAvzKDNCCz3ms9ShPWg\"",
+                "actor": {
+                  "callerType": "USER",
+                  "email": "user2@example.com",
+                  "profileId": "109107487136189420590"
+                },
+                "ipAddress": "216.160.83.56",
+                "events": [
+                  {
+                    "type": "message_info_type",
+                    "name": "smtp_out_connection",
+                    "parameters": [
+                      {
+                        "name": "event_info",
+                        "messageValue": {
+                          "parameter": [
+                            {
+                              "name": "timestamp_usec",
+                              "intValue": "1786425164001000"
+                            },
+                            {
+                              "name": "elapsed_time_usec",
+                              "intValue": "678440"
+                            },
+                            {
+                              "name": "success",
+                              "boolValue": false
+                            },
+                            {
+                              "name": "mail_event_type",
+                              "intValue": "0"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "name": "message_info",
+                        "messageValue": {
+                          "parameter": [
+                            {
+                              "name": "rfc2822_message_id",
+                              "value": "<12345627134207078908@example.com>"
+                            },
+                            {
+                              "name": "subject",
+                              "value": "Quarterly invoice"
+                            },
+                            {
+                              "name": "payload_size",
+                              "intValue": "84213"
+                            },
+                            {
+                              "name": "num_message_attachments",
+                              "intValue": "1"
+                            },
+                            {
+                              "name": "smime_content_type",
+                              "intValue": "2"
+                            },
+                            {
+                              "name": "smtp_relay_error",
+                              "value": "SMTP_RELAY_UNAUTHORIZED_SENDER"
+                            },
+                            {
+                              "name": "source",
+                              "messageValue": {
+                                "parameter": [
+                                  {
+                                    "name": "address",
+                                    "value": "billing@example.com"
+                                  },
+                                  {
+                                    "name": "service",
+                                    "value": "smtp_in"
+                                  },
+                                  {
+                                    "name": "from_header_address",
+                                    "value": "billing@example.com"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "name": "destination",
+                              "multiMessageValue": [
+                                {
+                                  "parameter": [
+                                    {
+                                      "name": "address",
+                                      "value": "finance@example.com"
+                                    },
+                                    {
+                                      "name": "service",
+                                      "value": "gmail-ui"
+                                    },
+                                    {
+                                      "name": "selector",
+                                      "value": "1"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "flattened_destinations",
+                              "value": "gmail-ui:1:finance@example.com"
+                            },
+                            {
+                              "name": "attachment",
+                              "messageValue": {
+                                "parameter": [
+                                  {
+                                    "name": "file_name",
+                                    "value": "invoice.pdf"
+                                  },
+                                  {
+                                    "name": "file_extension_type",
+                                    "value": "pdf"
+                                  },
+                                  {
+                                    "name": "sha256",
+                                    "value": "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "name": "connection_info",
+                              "messageValue": {
+                                "parameter": [
+                                  {
+                                    "name": "client_ip",
+                                    "value": "216.160.83.56"
+                                  },
+                                  {
+                                    "name": "smtp_out_connect_ip",
+                                    "value": "81.2.69.142"
+                                  },
+                                  {
+                                    "name": "smtp_out_remote_host",
+                                    "value": "mx.example.com"
+                                  },
+                                  {
+                                    "name": "smtp_reply_code",
+                                    "intValue": "550"
+                                  },
+                                  {
+                                    "name": "smtp_tls_cipher",
+                                    "value": "ECDHE-RSA-AES128-GCM-SHA256"
+                                  },
+                                  {
+                                    "name": "smtp_tls_version",
+                                    "value": "TLSv1.3"
+                                  },
+                                  {
+                                    "name": "spf_pass",
+                                    "boolValue": true
+                                  },
+                                  {
+                                    "name": "dkim_pass",
+                                    "boolValue": false
+                                  },
+                                  {
+                                    "name": "is_internal",
+                                    "boolValue": false
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "name": "spam_info",
+                              "messageValue": {
+                                "parameter": [
+                                  {
+                                    "name": "classification_timestamp_usec",
+                                    "intValue": "1786425163000000"
+                                  },
+                                  {
+                                    "name": "disposition",
+                                    "value": "SPAM"
+                                  },
+                                  {
+                                    "name": "classification_reason",
+                                    "value": "PHISHING"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "name": "triggered_rule_info",
+                              "multiMessageValue": [
+                                {
+                                  "parameter": [
+                                    {
+                                      "name": "rule_name",
+                                      "value": "Block external invoices"
+                                    },
+                                    {
+                                      "name": "policy_holder_address",
+                                      "value": "admin@example.com"
+                                    },
+                                    {
+                                      "name": "rule_type",
+                                      "value": "ATTACHMENT_POLICY"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "resourceIds": [
+                      "<12345627134207078908@example.com>"
                     ]
                   }
                 ]
@@ -3431,6 +3862,188 @@ rules:
               ]
           }
           `}}
+  - path: /admin/reports/v1/activity/users/all/applications/gemini_in_workspace_apps
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "kind": "admin#reports#activities",
+              "nextPageToken": "page-2",
+              "items": [
+                  {
+                      "kind": "admin#reports#activity",
+                      "id": {
+                          "time": "2026-06-01T14:23:11.000Z",
+                          "uniqueQualifier": "1",
+                          "applicationName": "gemini_in_workspace_apps",
+                          "customerId": "1"
+                      },
+                      "actor": {
+                          "callerType": "USER",
+                          "email": "foo@example.com",
+                          "profileId": "1"
+                      },
+                      "ipAddress": "81.2.69.142",
+                      "events": [
+                          {
+                              "type": "ai_usage_event",
+                              "name": "feature_utilization",
+                              "parameters": [
+                                  {
+                                      "name": "app_name",
+                                      "value": "docs"
+                                  },
+                                  {
+                                      "name": "action",
+                                      "value": "summarize_file"
+                                  },
+                                  {
+                                      "name": "feature_source",
+                                      "value": "side_panel"
+                                  },
+                                  {
+                                      "name": "event_category",
+                                      "value": "active_summarize"
+                                  }
+                              ]
+                          }
+                      ]
+                  }
+              ]
+          }
+          `}}
+  - path: /admin/reports/v1/activity/users/all/applications/gemini_in_workspace_apps
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: page-2
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "kind": "admin#reports#activities",
+              "nextPageToken": "page-3",
+              "items": [
+                  {
+                      "kind": "admin#reports#activity",
+                      "id": {
+                          "time": "2026-06-01T14:24:11.000Z",
+                          "uniqueQualifier": "2",
+                          "applicationName": "gemini_in_workspace_apps",
+                          "customerId": "1"
+                      },
+                      "actor": {
+                          "callerType": "USER",
+                          "email": "foo@example.com",
+                          "profileId": "1"
+                      },
+                      "ipAddress": "81.2.69.142",
+                      "events": [
+                          {
+                              "type": "ai_usage_event",
+                              "name": "feature_utilization",
+                              "parameters": [
+                                  {
+                                      "name": "app_name",
+                                      "value": "docs"
+                                  },
+                                  {
+                                      "name": "action",
+                                      "value": "generate_document"
+                                  },
+                                  {
+                                      "name": "feature_source",
+                                      "value": "side_panel"
+                                  },
+                                  {
+                                      "name": "event_category",
+                                      "value": "active_generate"
+                                  }
+                              ]
+                          }
+                      ]
+                  }
+              ]
+          }
+          `}}
+  - path: /admin/reports/v1/activity/users/all/applications/gemini_in_workspace_apps
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: page-3
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "kind": "admin#reports#activities",
+              "items": [
+                  {
+                      "kind": "admin#reports#activity",
+                      "id": {
+                          "time": "2026-06-01T14:25:11.000Z",
+                          "uniqueQualifier": "3",
+                          "applicationName": "gemini_in_workspace_apps",
+                          "customerId": "1"
+                      },
+                      "actor": {
+                          "callerType": "USER",
+                          "email": "foo@example.com",
+                          "profileId": "1"
+                      },
+                      "ipAddress": "81.2.69.142",
+                      "events": [
+                          {
+                              "type": "ai_usage_event",
+                              "name": "feature_utilization",
+                              "parameters": [
+                                  {
+                                      "name": "app_name",
+                                      "value": "gmail"
+                                  },
+                                  {
+                                      "name": "action",
+                                      "value": "proofread"
+                                  },
+                                  {
+                                      "name": "feature_source",
+                                      "value": "side_panel"
+                                  },
+                                  {
+                                      "name": "event_category",
+                                      "value": "active_unspecified"
+                                  }
+                              ]
+                          }
+                      ]
+                  }
+              ]
+          }
+          `}}
   - path: /admin/reports/v1/activity/users/all/applications/drive
     methods: [GET]
     query_params:
@@ -3659,6 +4272,36 @@ rules:
           {"kind": "reports#auditActivities","items": [{"actor":{"callerType":"USER","email":"foo@bar.com","profileId":1},"events":[{"name":"login_failure","parameters":[{"name":"application_name","value":"app"},{"name":"failure_type","value":"failure_app_not_configured_for_user"},{"name":"initiated_by","value":"idp"},{"name":"orgunit_path","value":"ounit"},{"name":"saml_second_level_status_code","value":"SUCCESS_URI"},
           {"name":"saml_status_code","value":"SUCCESS_URI"}],"type":"login"},{"name":"login_success","parameters":[{"name":"application_name","value":"app"},{"name":"initiated_by","value":"idp"},{"name":"orgunit_path","value":"ounit"},{"name":"saml_status_code","value":"SUCCESS_URI"}],"type":"login"}],"id":{"applicationName":"saml","customerId":"1","time":"2021-10-02T15:00:00Z",
           "uniqueQualifier":1},"ipAddress":"98.235.162.24","kind":"admin#reports#activity","ownerDomain":"elastic.com"}]}
+  # Empty-response recovery scenario.
+  # Reached only by the "empty-response" system test via application_name_for_url=saml_empty.
+  # Responses cycle empty -> data: the first poll returns no items (so first_event has
+  # no "id"), which must not fail the next_start_date cursor template. The stream must
+  # recover and ingest the events returned by the following poll.
+  - path: /admin/reports/v1/activity/users/all/applications/saml_empty
+    methods: [GET]
+    query_params:
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"kind": "reports#auditActivities"}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"kind": "reports#auditActivities","items": [{"actor":{"callerType":"USER","email":"foo@bar.com","profileId":1},"events":[{"name":"login_failure","parameters":[{"name":"application_name","value":"app"},{"name":"failure_type","value":"failure_app_not_configured_for_user"},{"name":"initiated_by","value":"idp"},{"name":"orgunit_path","value":"ounit"},{"name":"saml_second_level_status_code","value":"SUCCESS_URI"},
+          {"name":"saml_status_code","value":"SUCCESS_URI"}],"type":"login"},{"name":"login_success","parameters":[{"name":"application_name","value":"app"},{"name":"initiated_by","value":"idp"},{"name":"orgunit_path","value":"ounit"},{"name":"saml_status_code","value":"SUCCESS_URI"}],"type":"login"}],"id":{"applicationName":"saml","customerId":"1","time":"2021-10-02T15:00:00Z",
+          "uniqueQualifier":1},"ipAddress":"98.235.162.24","kind":"admin#reports#activity","ownerDomain":"elastic.com"}]}
   - path: /admin/reports/v1/activity/users/all/applications/user_accounts
     methods: [GET]
     query_params:
@@ -3830,3 +4473,881 @@ rules:
             - "application/json"
         body: |
           {"kind":"reports#auditActivities","items":[{"kind":"admin#reports#activity","id":{"time":"2020-10-02T15:00:00Z","uniqueQualifier":1,"applicationName":"device","customerId":"1"},"actor":{"callerType":"USER","email":"foo@bar.com","profileId":1},"ownerDomain":"example.com","ipAddress":"67.43.156.13","events":[{"type":"CLOUD_OSLOGIN","name":"IMPORT_SSH_PUBLIC_KEY","parameters":[{"name":"USER_EMAIL","value":"foo@bar.com"}]}]}]}
+  # Directory API routes for the users entity data stream
+  - path: /admin/directory/v1/customer/my_customer/roles
+    methods: [GET]
+    query_params:
+      maxResults: "100"
+      pageToken: roles-page-2
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#roles",
+            "etag": "\"exampleEtag_roles_2\"",
+            "items": [
+              {
+                "kind": "admin#directory#role",
+                "etag": "\"exampleEtag_role_3\"",
+                "roleId": "10000000000000003",
+                "roleName": "Example Helpdesk",
+                "roleDescription": "Custom helpdesk role",
+                "rolePrivileges": [
+                  {"privilegeName": "USERS_RETRIEVE", "serviceId": "00example000003"},
+                  {"privilegeName": "USERS_UPDATE", "serviceId": "00example000003"}
+                ],
+                "isSystemRole": false,
+                "isSuperAdminRole": false
+              }
+            ]
+          }
+          `}}
+  - path: /admin/directory/v1/customer/my_customer/roles
+    methods: [GET]
+    query_params:
+      maxResults: "100"
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#roles",
+            "etag": "\"exampleEtag_roles_1\"",
+            "items": [
+              {
+                "kind": "admin#directory#role",
+                "etag": "\"exampleEtag_role_1\"",
+                "roleId": "10000000000000001",
+                "roleName": "_SEED_ADMIN_ROLE",
+                "roleDescription": "Google Workspace Administrator Seed Role",
+                "rolePrivileges": [
+                  {"privilegeName": "ADMIN_DASHBOARD", "serviceId": "00example000001"},
+                  {"privilegeName": "USERS_ALL", "serviceId": "00example000003"},
+                  {"privilegeName": "GROUPS_ALL", "serviceId": "00example000002"}
+                ],
+                "isSystemRole": true,
+                "isSuperAdminRole": true
+              },
+              {
+                "kind": "admin#directory#role",
+                "etag": "\"exampleEtag_role_2\"",
+                "roleId": "10000000000000002",
+                "roleName": "_GROUPS_ADMIN_ROLE",
+                "roleDescription": "Groups Administrator",
+                "rolePrivileges": [
+                  {"privilegeName": "ADMIN_DASHBOARD", "serviceId": "00example000001"},
+                  {"privilegeName": "GROUPS_ALL", "serviceId": "00example000002"}
+                ],
+                "isSystemRole": true,
+                "isSuperAdminRole": false
+              }
+            ],
+            "nextPageToken": "roles-page-2"
+          }
+          `}}
+  # roleAssignments.list: three pages. Page 1 has a lowercase "user" assignee
+  # (CUSTOMER scope), an ORG_UNIT-scoped assignment and a "group" assignee
+  # that the program drops. Page 2 is empty but still carries a token. Page 3
+  # has an assignment without assigneeType (kept as a user), an expired one
+  # (dropped) and an uppercase "USER" one with a future expiry (kept).
+  - path: /admin/directory/v1/customer/my_customer/roleassignments
+    methods: [GET]
+    query_params:
+      maxResults: "200"
+      pageToken: ra-page-3
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#roleAssignments",
+            "etag": "\"exampleEtag_ra_page_3\"",
+            "items": [
+              {
+                "kind": "admin#directory#roleAssignment",
+                "etag": "\"exampleEtag_ra_4\"",
+                "roleAssignmentId": "20000000000000004",
+                "roleId": "10000000000000002",
+                "assignedTo": "100000000000000000001",
+                "scopeType": "CUSTOMER"
+              },
+              {
+                "kind": "admin#directory#roleAssignment",
+                "etag": "\"exampleEtag_ra_5\"",
+                "roleAssignmentId": "20000000000000005",
+                "roleId": "10000000000000003",
+                "assignedTo": "100000000000000000001",
+                "assigneeType": "user",
+                "scopeType": "CUSTOMER",
+                "expirationDetails": {"expireTime": "2020-01-01T00:00:00Z"}
+              },
+              {
+                "kind": "admin#directory#roleAssignment",
+                "etag": "\"exampleEtag_ra_6\"",
+                "roleAssignmentId": "20000000000000006",
+                "roleId": "10000000000000003",
+                "assignedTo": "100000000000000000007",
+                "assigneeType": "USER",
+                "scopeType": "CUSTOMER",
+                "expirationDetails": {"expireTime": "2099-12-31T00:00:00Z"}
+              }
+            ]
+          }
+          `}}
+  - path: /admin/directory/v1/customer/my_customer/roleassignments
+    methods: [GET]
+    query_params:
+      maxResults: "200"
+      pageToken: ra-page-2
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"kind":"admin#directory#roleAssignments","etag":"\"exampleEtag_ra_page_2\"","nextPageToken":"ra-page-3"}'
+  - path: /admin/directory/v1/customer/my_customer/roleassignments
+    methods: [GET]
+    query_params:
+      maxResults: "200"
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#roleAssignments",
+            "etag": "\"exampleEtag_ra_page_1\"",
+            "items": [
+              {
+                "kind": "admin#directory#roleAssignment",
+                "etag": "\"exampleEtag_ra_1\"",
+                "roleAssignmentId": "20000000000000001",
+                "roleId": "10000000000000001",
+                "assignedTo": "100000000000000000002",
+                "assigneeType": "user",
+                "scopeType": "CUSTOMER"
+              },
+              {
+                "kind": "admin#directory#roleAssignment",
+                "etag": "\"exampleEtag_ra_2\"",
+                "roleAssignmentId": "20000000000000002",
+                "roleId": "10000000000000003",
+                "assignedTo": "100000000000000000001",
+                "assigneeType": "user",
+                "scopeType": "ORG_UNIT",
+                "orgUnitId": "03ph8a2z00example"
+              },
+              {
+                "kind": "admin#directory#roleAssignment",
+                "etag": "\"exampleEtag_ra_3\"",
+                "roleAssignmentId": "20000000000000003",
+                "roleId": "10000000000000002",
+                "assignedTo": "00example0group1",
+                "assigneeType": "group",
+                "scopeType": "CUSTOMER"
+              }
+            ],
+            "nextPageToken": "ra-page-2"
+          }
+          `}}
+  # groups.list: two pages, one group each.
+  - path: /admin/directory/v1/groups
+    methods: [GET]
+    query_params:
+      customer: my_customer
+      maxResults: "200"
+      pageToken: groups-page-2
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#groups",
+            "etag": "\"exampleEtag_groups_2\"",
+            "groups": [
+              {
+                "kind": "admin#directory#group",
+                "id": "00example0group2",
+                "etag": "\"exampleEtag_group_2\"",
+                "email": "all-staff@example.com",
+                "name": "All Staff",
+                "directMembersCount": "4",
+                "description": "Everyone in Example Corp",
+                "adminCreated": false
+              }
+            ]
+          }
+          `}}
+  - path: /admin/directory/v1/groups
+    methods: [GET]
+    query_params:
+      customer: my_customer
+      maxResults: "200"
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#groups",
+            "etag": "\"exampleEtag_groups_1\"",
+            "groups": [
+              {
+                "kind": "admin#directory#group",
+                "id": "00example0group1",
+                "etag": "\"exampleEtag_group_1\"",
+                "email": "engineering@example.com",
+                "name": "Engineering",
+                "directMembersCount": "5",
+                "description": "Engineering team",
+                "adminCreated": true,
+                "aliases": ["eng@example.com"],
+                "nonEditableAliases": ["engineering@example.org"]
+              }
+            ],
+            "nextPageToken": "groups-page-2"
+          }
+          `}}
+  # members.list for group 1: two pages. Page 1 has two USER members and a
+  # GROUP member (dropped). Page 2 has a USER member and an external USER
+  # member whose id matches no user.
+  - path: /admin/directory/v1/groups/00example0group1/members
+    methods: [GET]
+    query_params:
+      maxResults: "200"
+      pageToken: members-g1-page-2
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#members",
+            "etag": "\"exampleEtag_members_g1_2\"",
+            "members": [
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_4\"",
+                "id": "100000000000000000003",
+                "email": "carol.white@example.com",
+                "role": "MANAGER",
+                "type": "USER",
+                "status": "ACTIVE"
+              },
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_5\"",
+                "id": "100000000000000000999",
+                "email": "external.partner@example.org",
+                "role": "MEMBER",
+                "type": "USER",
+                "status": "ACTIVE"
+              }
+            ]
+          }
+          `}}
+  - path: /admin/directory/v1/groups/00example0group1/members
+    methods: [GET]
+    query_params:
+      maxResults: "200"
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#members",
+            "etag": "\"exampleEtag_members_g1_1\"",
+            "members": [
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_1\"",
+                "id": "100000000000000000001",
+                "email": "alice.johnson@example.com",
+                "role": "OWNER",
+                "type": "USER",
+                "status": "ACTIVE"
+              },
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_2\"",
+                "id": "100000000000000000002",
+                "email": "bob.smith@example.com",
+                "role": "MEMBER",
+                "type": "USER",
+                "status": "ACTIVE"
+              },
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_3\"",
+                "id": "00example0group2",
+                "email": "all-staff@example.com",
+                "role": "MEMBER",
+                "type": "GROUP",
+                "status": "ACTIVE"
+              }
+            ],
+            "nextPageToken": "members-g1-page-2"
+          }
+          `}}
+  # members.list for group 2: one page with a CUSTOMER member and an EXTERNAL
+  # member (both dropped) and two USER members.
+  - path: /admin/directory/v1/groups/00example0group2/members
+    methods: [GET]
+    query_params:
+      maxResults: "200"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#members",
+            "etag": "\"exampleEtag_members_g2_1\"",
+            "members": [
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_6\"",
+                "id": "C0example1",
+                "role": "MEMBER",
+                "type": "CUSTOMER"
+              },
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_7\"",
+                "id": "100000000000000000001",
+                "email": "alice.johnson@example.com",
+                "role": "MEMBER",
+                "type": "USER",
+                "status": "ACTIVE"
+              },
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_8\"",
+                "id": "100000000000000000008",
+                "email": "guest.user@example.com",
+                "role": "MEMBER",
+                "type": "USER",
+                "status": "ACTIVE"
+              },
+              {
+                "kind": "admin#directory#member",
+                "etag": "\"exampleEtag_member_9\"",
+                "id": "100000000000000000998",
+                "email": "contractor@example.net",
+                "role": "MEMBER",
+                "type": "EXTERNAL",
+                "status": "ACTIVE"
+              }
+            ]
+          }
+          `}}
+  # users.list (customer=my_customer, projection=full, maxResults=3): four
+  # pages. Page 2 has no "users" key but still carries a token; page 4 is the
+  # terminal page. Edge cases: a delegated admin with relations,
+  # organizations, customSchemas, aliases and nonEditableAliases (user 1), a
+  # super admin (user 2), lastLoginTime as 1970-01-01T00:00:00.000Z (user 3),
+  # as 1970-01-01T00:00:00Z (user 4), as an epoch-milliseconds string
+  # (user 5) and absent (user 6), a user suspended by an admin (user 7) and
+  # an archived guest (user 8).
+  - path: /admin/directory/v1/users
+    methods: [GET]
+    query_params:
+      customer: my_customer
+      projection: full
+      maxResults: "3"
+      pageToken: users-page-4
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#users",
+            "etag": "\"exampleEtag_users_page_4\"",
+            "users": [
+              {
+                "kind": "admin#directory#user",
+                "id": "100000000000000000007",
+                "etag": "\"exampleEtag_user_7\"",
+                "primaryEmail": "grace.lee@example.com",
+                "name": {"givenName": "Grace", "familyName": "Lee", "fullName": "Grace Lee"},
+                "isAdmin": false,
+                "isDelegatedAdmin": true,
+                "lastLoginTime": "2026-08-30T16:45:00.000Z",
+                "creationTime": "2020-02-14T08:00:00.000Z",
+                "agreedToTerms": true,
+                "suspended": true,
+                "suspensionReason": "ADMIN",
+                "suspensionTime": "2026-09-01T10:00:00.000Z",
+                "archived": false,
+                "changePasswordAtNextLogin": false,
+                "ipWhitelisted": false,
+                "emails": [{"address": "grace.lee@example.com", "primary": true}],
+                "isMailboxSetup": true,
+                "customerId": "C0example1",
+                "includeInGlobalAddressList": true,
+                "isEnrolledIn2Sv": true,
+                "isEnforcedIn2Sv": true,
+                "orgUnitPath": "/Support"
+              },
+              {
+                "kind": "admin#directory#user",
+                "id": "100000000000000000008",
+                "etag": "\"exampleEtag_user_8\"",
+                "primaryEmail": "guest.user@example.com",
+                "name": {"givenName": "Guest", "familyName": "User", "fullName": "Guest User"},
+                "isAdmin": false,
+                "isDelegatedAdmin": false,
+                "lastLoginTime": "2026-09-20T11:11:11.000Z",
+                "creationTime": "2026-08-01T09:00:00.000Z",
+                "agreedToTerms": true,
+                "suspended": false,
+                "archived": true,
+                "archivalTime": "2026-09-25T09:00:00.000Z",
+                "changePasswordAtNextLogin": false,
+                "ipWhitelisted": false,
+                "emails": [{"address": "guest.user@example.com", "primary": true}],
+                "isMailboxSetup": false,
+                "customerId": "C0example1",
+                "includeInGlobalAddressList": false,
+                "isEnrolledIn2Sv": false,
+                "isEnforcedIn2Sv": false,
+                "orgUnitPath": "/Guests",
+                "isGuestUser": true,
+                "guestAccountInfo": {"primaryGuestEmail": "partner@example.org"}
+              }
+            ]
+          }
+          `}}
+  - path: /admin/directory/v1/users
+    methods: [GET]
+    query_params:
+      customer: my_customer
+      projection: full
+      maxResults: "3"
+      pageToken: users-page-3
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#users",
+            "etag": "\"exampleEtag_users_page_3\"",
+            "users": [
+              {
+                "kind": "admin#directory#user",
+                "id": "100000000000000000004",
+                "etag": "\"exampleEtag_user_4\"",
+                "primaryEmail": "dave.brown@example.com",
+                "name": {"givenName": "Dave", "familyName": "Brown", "fullName": "Dave Brown"},
+                "isAdmin": false,
+                "isDelegatedAdmin": false,
+                "lastLoginTime": "1970-01-01T00:00:00Z",
+                "creationTime": "2026-09-27T10:00:00.000Z",
+                "agreedToTerms": false,
+                "suspended": false,
+                "archived": false,
+                "changePasswordAtNextLogin": true,
+                "ipWhitelisted": false,
+                "emails": [{"address": "dave.brown@example.com", "primary": true}],
+                "isMailboxSetup": true,
+                "customerId": "C0example1",
+                "includeInGlobalAddressList": true,
+                "isEnrolledIn2Sv": false,
+                "isEnforcedIn2Sv": false,
+                "orgUnitPath": "/Sales"
+              },
+              {
+                "kind": "admin#directory#user",
+                "id": "100000000000000000005",
+                "etag": "\"exampleEtag_user_5\"",
+                "primaryEmail": "erin.davis@example.com",
+                "name": {"givenName": "Erin", "familyName": "Davis", "fullName": "Erin Davis"},
+                "isAdmin": false,
+                "isDelegatedAdmin": false,
+                "lastLoginTime": "1336509883546",
+                "creationTime": "2012-05-08T20:44:43.546Z",
+                "agreedToTerms": true,
+                "suspended": false,
+                "archived": false,
+                "changePasswordAtNextLogin": false,
+                "ipWhitelisted": false,
+                "emails": [{"address": "erin.davis@example.com", "primary": true}],
+                "isMailboxSetup": true,
+                "customerId": "C0example1",
+                "includeInGlobalAddressList": true,
+                "isEnrolledIn2Sv": true,
+                "isEnforcedIn2Sv": false,
+                "orgUnitPath": "/Sales"
+              },
+              {
+                "kind": "admin#directory#user",
+                "id": "100000000000000000006",
+                "etag": "\"exampleEtag_user_6\"",
+                "primaryEmail": "frank.miller@example.com",
+                "name": {"givenName": "Frank", "familyName": "Miller", "fullName": "Frank Miller"},
+                "isAdmin": false,
+                "isDelegatedAdmin": false,
+                "creationTime": "2026-09-30T12:00:00.000Z",
+                "agreedToTerms": false,
+                "suspended": false,
+                "archived": false,
+                "changePasswordAtNextLogin": true,
+                "ipWhitelisted": false,
+                "emails": [{"address": "frank.miller@example.com", "primary": true}],
+                "isMailboxSetup": false,
+                "customerId": "C0example1",
+                "includeInGlobalAddressList": true,
+                "isEnrolledIn2Sv": false,
+                "isEnforcedIn2Sv": false,
+                "orgUnitPath": "/Sales"
+              }
+            ],
+            "nextPageToken": "users-page-4"
+          }
+          `}}
+  - path: /admin/directory/v1/users
+    methods: [GET]
+    query_params:
+      customer: my_customer
+      projection: full
+      maxResults: "3"
+      pageToken: users-page-2
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"kind":"admin#directory#users","etag":"\"exampleEtag_users_page_2\"","nextPageToken":"users-page-3"}'
+  - path: /admin/directory/v1/users
+    methods: [GET]
+    query_params:
+      customer: my_customer
+      projection: full
+      maxResults: "3"
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#users",
+            "etag": "\"exampleEtag_users_page_1\"",
+            "users": [
+              {
+                "kind": "admin#directory#user",
+                "id": "100000000000000000001",
+                "etag": "\"exampleEtag_user_1\"",
+                "primaryEmail": "alice.johnson@example.com",
+                "name": {"givenName": "Alice", "familyName": "Johnson", "fullName": "Alice Johnson", "displayName": "Alice J."},
+                "isAdmin": false,
+                "isDelegatedAdmin": true,
+                "lastLoginTime": "2026-09-30T08:15:42.000Z",
+                "creationTime": "2021-03-04T09:12:44.000Z",
+                "agreedToTerms": true,
+                "suspended": false,
+                "archived": false,
+                "changePasswordAtNextLogin": false,
+                "ipWhitelisted": false,
+                "emails": [
+                  {"address": "alice.johnson@example.com", "primary": true},
+                  {"address": "a.johnson@example.com"}
+                ],
+                "externalIds": [{"value": "EMP-000123", "type": "organization"}],
+                "relations": [
+                  {"value": "bob.smith@example.com", "type": "manager"},
+                  {"value": "carol.white@example.com", "type": "dotted_line_manager"}
+                ],
+                "aliases": ["a.johnson@example.com"],
+                "nonEditableAliases": ["alice.johnson@example.org"],
+                "isMailboxSetup": true,
+                "customerId": "C0example1",
+                "organizations": [
+                  {
+                    "name": "Example Corp",
+                    "title": "Staff Engineer",
+                    "primary": true,
+                    "type": "work",
+                    "department": "Platform",
+                    "costCenter": "CC-0001",
+                    "location": "Example City",
+                    "description": "Platform team",
+                    "customType": ""
+                  }
+                ],
+                "phones": [{"value": "+1 734-555-0100", "type": "work"}],
+                "includeInGlobalAddressList": true,
+                "thumbnailPhotoUrl": "https://www.example.com/photos/100000000000000000001",
+                "isEnrolledIn2Sv": true,
+                "isEnforcedIn2Sv": true,
+                "orgUnitPath": "/Engineering/Platform",
+                "recoveryEmail": "alice.personal@example.net",
+                "customSchemas": {
+                  "EmployeeInfo": {"EmployeeType": "FTE", "StartDate": "2021-03-04"}
+                }
+              },
+              {
+                "kind": "admin#directory#user",
+                "id": "100000000000000000002",
+                "etag": "\"exampleEtag_user_2\"",
+                "primaryEmail": "bob.smith@example.com",
+                "name": {"givenName": "Bob", "familyName": "Smith", "fullName": "Bob Smith"},
+                "isAdmin": true,
+                "isDelegatedAdmin": false,
+                "lastLoginTime": "2026-09-29T17:02:10.000Z",
+                "creationTime": "2019-06-10T12:00:00.000Z",
+                "agreedToTerms": true,
+                "suspended": false,
+                "archived": false,
+                "changePasswordAtNextLogin": false,
+                "ipWhitelisted": false,
+                "emails": [{"address": "bob.smith@example.com", "primary": true}],
+                "isMailboxSetup": true,
+                "customerId": "C0example1",
+                "includeInGlobalAddressList": true,
+                "isEnrolledIn2Sv": true,
+                "isEnforcedIn2Sv": false,
+                "orgUnitPath": "/"
+              },
+              {
+                "kind": "admin#directory#user",
+                "id": "100000000000000000003",
+                "etag": "\"exampleEtag_user_3\"",
+                "primaryEmail": "carol.white@example.com",
+                "name": {"givenName": "Carol", "familyName": "White", "fullName": "Carol White"},
+                "isAdmin": false,
+                "isDelegatedAdmin": false,
+                "lastLoginTime": "1970-01-01T00:00:00.000Z",
+                "creationTime": "2026-09-28T10:00:00.000Z",
+                "agreedToTerms": false,
+                "suspended": false,
+                "archived": false,
+                "changePasswordAtNextLogin": true,
+                "ipWhitelisted": false,
+                "emails": [{"address": "carol.white@example.com", "primary": true}],
+                "isMailboxSetup": true,
+                "customerId": "C0example1",
+                "includeInGlobalAddressList": true,
+                "isEnrolledIn2Sv": false,
+                "isEnforcedIn2Sv": false,
+                "orgUnitPath": "/Engineering"
+              }
+            ],
+            "nextPageToken": "users-page-2"
+          }
+          `}}
+  # [CONSTRUCTED EXAMPLE] users error-path test (test-enrichment-error-config.yml):
+  # the delegated admin lacks the roles and groups privileges, and users are
+  # listed by domain instead of customer.
+  - path: /admin/directory/v1/customer/C0forbidden/roles
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 403
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "error": {
+              "code": 403,
+              "message": "Not Authorized to access this resource/api",
+              "errors": [
+                {
+                  "message": "Not Authorized to access this resource/api",
+                  "domain": "global",
+                  "reason": "forbidden"
+                }
+              ]
+            }
+          }
+          `}}
+  - path: /admin/directory/v1/groups
+    methods: [GET]
+    query_params:
+      customer: C0forbidden
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 403
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "error": {
+              "code": 403,
+              "message": "Not Authorized to access this resource/api",
+              "errors": [
+                {
+                  "message": "Not Authorized to access this resource/api",
+                  "domain": "global",
+                  "reason": "forbidden"
+                }
+              ]
+            }
+          }
+          `}}
+  - path: /admin/directory/v1/users
+    methods: [GET]
+    query_params:
+      domain: example.com
+      projection: full
+      maxResults: "3"
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "kind": "admin#directory#users",
+            "users": [
+              {
+                "kind": "admin#directory#user",
+                "id": "100000000000000000101",
+                "primaryEmail": "domain.one@example.com",
+                "name": {"givenName": "Domain", "familyName": "One", "fullName": "Domain One"},
+                "customerId": "C0forbidden",
+                "orgUnitPath": "/",
+                "isAdmin": false,
+                "isDelegatedAdmin": false,
+                "isEnrolledIn2Sv": false,
+                "agreedToTerms": true
+              },
+              {
+                "kind": "admin#directory#user",
+                "id": "100000000000000000102",
+                "primaryEmail": "domain.two@example.com",
+                "name": {"givenName": "Domain", "familyName": "Two", "fullName": "Domain Two"},
+                "customerId": "C0forbidden",
+                "orgUnitPath": "/",
+                "isAdmin": false,
+                "isDelegatedAdmin": false,
+                "isEnrolledIn2Sv": true,
+                "agreedToTerms": true
+              }
+            ]
+          }
+          `}}
+  # [CONSTRUCTED EXAMPLE] users base-inventory error-path test
+  # (test-users-error-config.yml): the delegated admin cannot list users.
+  - path: /admin/directory/v1/users
+    methods: [GET]
+    query_params:
+      domain: forbidden.example.com
+      projection: full
+      maxResults: "3"
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 403
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "error": {
+              "code": 403,
+              "message": "Not Authorized to access this resource/api",
+              "errors": [
+                {
+                  "message": "Not Authorized to access this resource/api",
+                  "domain": "global",
+                  "reason": "forbidden"
+                }
+              ]
+            }
+          }
+          `}}

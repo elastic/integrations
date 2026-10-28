@@ -23,19 +23,20 @@ targets:
       environments:
         - name: PATH
         - name: HOME
-      # This script collects titles and package names (as determined by their
-      # directory name) from source. Then updates the issue template. It uses
+      # This script uses `mage listPackages` to collect package paths, then it reads
+      # title and name from each manifest.yml. It updates the issue template and uses
       # 'git diff' to satisfy the conditions needed by updatecli to determine
       # if any changes occurred.
       command: |
         #!/usr/bin/env bash
         set -eu
 
-        pkgs=$(for i in $(LC_ALL=C ls packages); do
-          title=$(yq .title packages/$i/manifest.yml)
-          pkg=$i
-          echo "- $title [$pkg]"
-        done | sort -s -f | yq -o json .)
+        package_paths=$(mage listPackages)
+
+        pkgs=$(echo "$package_paths" | while IFS= read -r package_path; do
+          title=$(yq .title "${package_path}/manifest.yml")
+          echo "- $title [$package_path]"
+        done | LC_ALL=C sort -s -f | yq -o json .)
         
         yq eval ".body[1].attributes.options = $pkgs" -i '.github/ISSUE_TEMPLATE/integration_bug.yml'
         yq eval ".body[1].attributes.options = $pkgs" -i '.github/ISSUE_TEMPLATE/integration_feature_request.yml'

@@ -1,0 +1,43 @@
+{
+  "id": "apache_otel-availability-server-restart",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "description": "Alerts when Apache's uptime counter resets, indicating the server has restarted within the evaluation window. Unplanned restarts should be correlated with crashes, OOM, or operator-driven maintenance.",
+    "name": "[Apache OTel] Server restart detected",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "Apache",
+      "OTEL",
+      "Availability"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "apache_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Apache server restart detected\n\n### What fired\n`apache.uptime` dropped to a low value within the evaluation window while the observed delta indicates the counter rolled \u2014 Apache was restarted.\n\n### Why it matters\nA restart means every in-flight request was terminated and all worker state was reset. Unplanned restarts usually reflect crashes (segfault, out-of-memory, module bugs) or forcible kills from monitoring/orchestration. Even planned restarts should be noted so they can be correlated with other signals.\n\n### Triage\n1. Overview dashboard: confirm whether one server or the fleet restarted.\n2. Inspect system logs (`journalctl`, `/var/log/messages`) for OOM killer activity and service restart events.\n3. Look at `apache.load.1`/`apache.load.5` leading up to the restart \u2014 elevated load often precedes a crash.\n4. Check whether the restart correlates with a recent deploy or config push.\n\n### Remediation\n- If restart was operator-driven, document and close.\n- If crash-driven, capture core dumps, inspect Apache error logs (`error_log`), and file bug if MPM/module-related.\n- For resource exhaustion, tune `MaxRequestWorkers` / `MaxConnectionsPerChild` and scale the host.\n\n### Tuning\n- `min_uptime < 300 AND uptime_delta > 300` balances detection speed vs false positives. Tighten the `min_uptime` if instant detection is required.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "// Alert triggers when Apache server uptime resets, indicating a restart.\n// A restart is detected when the current uptime is significantly lower than the previous maximum,\n// which suggests the server was restarted.\n// You can adjust the threshold value by modifying the uptime_seconds in the WHERE clause.\nFROM metrics-apachereceiver.otel-*\n| STATS max_uptime = MAX(metrics.apache.uptime), min_uptime = MIN(metrics.apache.uptime) BY resource.attributes.host.name\n| WHERE max_uptime IS NOT NULL AND min_uptime IS NOT NULL\n| EVAL uptime_delta = max_uptime - min_uptime\n| WHERE min_uptime < 300 AND uptime_delta > 300\n| KEEP resource.attributes.host.name, min_uptime, max_uptime, uptime_delta\n| SORT min_uptime ASC"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

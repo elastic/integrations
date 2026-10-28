@@ -1,0 +1,48 @@
+{
+  "id": "aws_rds_otel-replica-lag-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when read replica lag exceeds a threshold. Uses the Maximum statistic for worst-case lag. Rising lag means stale read traffic and failover targets behind the primary.",
+    "name": "[AWS RDS OTel] Replica lag high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_rds",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Replica Lag High\n\n### Triage\n1. Confirm this is a read replica instance (lag is zero on primaries).\n2. Check primary write load — `WriteIOPS`, `WriteThroughput`, and `CPUUtilization`.\n3. Inspect replica `CPUUtilization` and I/O metrics — replica may be undersized.\n4. Review long-running transactions on the primary that delay replication.\n\n### Mitigation\n- Scale up the replica instance class.\n- Reduce write volume or batch writes on the primary.\n- Investigate network issues between primary and replica regions."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.rds.otel-*\n| WHERE Namespace == \"AWS/RDS\"\n    AND MetricName == \"ReplicaLag\"\n    AND stat == \"Maximum\"\n| STATS max_replica_lag = MAX(`metrics.amazonaws.com/AWS/RDS/ReplicaLag`)\n    BY DBInstanceIdentifier, cloud.region\n// Lag in seconds — adjust per RPO/RTO requirements (default: 60 s)\n| WHERE max_replica_lag > 60.0\n| SORT max_replica_lag DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "DBInstanceIdentifier",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

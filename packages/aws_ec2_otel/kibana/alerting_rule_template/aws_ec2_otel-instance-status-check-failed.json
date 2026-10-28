@@ -1,0 +1,44 @@
+{
+  "id": "aws_ec2_otel-instance-status-check-failed",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the EC2 instance status check fails, indicating a guest OS or instance-level problem (exhausted memory, corrupt network config, failed boot). Remediation is typically reboot.",
+    "name": "[AWS EC2 OTel] Instance status check failed",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_ec2",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## EC2 Instance Status Check Failed\n\n### Meaning\nThe **instance status check** validates the guest OS and instance configuration (software, network, file system). A failure is a customer-side problem on the instance itself.\n\n### Remediation\n1. Attempt **reboot** via the AWS console or CLI.\n2. If reboot fails, check console output and system logs for kernel panics, OOM, or boot failures.\n3. Consider stopping the instance and attaching the root volume to another instance for diagnosis.\n\n### Common causes\nExhausted memory, hung processes, corrupt network configuration, failed automated updates."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.ec2.otel-*\n| WHERE Namespace == \"AWS/EC2\"\n    AND MetricName == \"StatusCheckFailed_Instance\"\n    AND stat == \"Maximum\"\n| EVAL ec2_instance = CONCAT(InstanceId, \" (\", cloud.region, \")\")\n| STATS max_failed = MAX(`metrics.amazonaws.com/AWS/EC2/StatusCheckFailed_Instance`) BY ec2_instance\n// 1 = failed — Maximum stat catches any failure within the period\n| WHERE max_failed >= 1\n| SORT max_failed DESC\n| LIMIT 100"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "ec2_instance",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

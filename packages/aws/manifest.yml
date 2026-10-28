@@ -1,7 +1,7 @@
-format_version: 3.4.0
+format_version: 3.6.4
 name: aws
 title: AWS
-version: 6.4.3
+version: 8.12.0
 description: Collect logs and metrics from Amazon Web Services (AWS) with Elastic Agent.
 type: integration
 categories:
@@ -21,7 +21,10 @@ conditions:
   elastic:
     subscription: basic
   kibana:
-    version: "^8.19.4 || ^9.2.1"
+    version: "^9.6.0"
+  # auth.aws + libbeat cloud connectors on the current ExternalID contract ship in Elastic Agent 9.4.0 (elastic/beats#47260, #47587, #48956).
+  agent:
+    version: "^9.4.0"
 screenshots:
   - src: /img/metricbeat-aws-overview.png
     title: metricbeat aws overview
@@ -73,13 +76,20 @@ vars:
     multi: false
     required: false
     show_user: false
-  - name: external_id
-    type: text
-    title: External ID
+  - name: assume_role_duration
+    type: duration
+    title: Assume Role Duration
     multi: false
     required: false
     show_user: false
-    description: External ID to use when assuming a role in another account, see [the AWS documentation for use of external IDs](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html)
+    description: Duration of the assumed role session.
+  - name: assume_role_expiry_window
+    type: duration
+    title: Assume Role Expiry Window
+    multi: false
+    required: false
+    show_user: false
+    description: Amount of time before the assumed role session expires during which credentials are refreshed.
   - name: default_region
     type: text
     title: Default AWS Region
@@ -95,6 +105,44 @@ vars:
     required: false
     show_user: false
     description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+  - name: supports_identity_federation
+    type: bool
+    title: Supports Identity Federation
+    multi: false
+    required: false
+    show_user: false
+var_groups:
+  - name: credential_type
+    required: true
+    title: Setup Access
+    selector_title: Preferred method
+    options:
+      - name: identity_federation
+        title: Identity Federation
+        vars: [role_arn, supports_identity_federation]
+        hide_in_deployment_modes: [default]
+        provider: aws
+        iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-federated-identity-wii-aws-9.6.0.yml&param_ElasticOrganizationId=ORGANIZATION_ID&param_ElasticCloudProvider=CLOUD_PROVIDER&param_ElasticCloudRegion=CLOUD_REGION&param_ElasticCloudEnvironment=CLOUD_ENVIRONMENT&param_ElasticResourceType=RESOURCE_TYPE&param_ElasticResourceId=RESOURCE_ID
+      - name: direct_access_key
+        title: Direct Access Keys
+        vars: [access_key_id, secret_access_key]
+      - name: temporary_access_key
+        title: Temporary Access Keys
+        vars: [access_key_id, secret_access_key, session_token]
+        hide_in_deployment_modes: [agentless]
+      - name: assume_role
+        title: Assume Role
+        vars: [role_arn]
+        hide_in_deployment_modes: [agentless]
+      - name: shared_credentials
+        title: Shared Credentials
+        vars: [shared_credential_file, credential_profile_name]
+        hide_in_deployment_modes: [agentless]
+      - name: default_credentials
+        title: Instance or Pod IAM Role
+        description: Use the IAM role attached to the EC2 instance profile or Kubernetes pod (EKS Pod Identity or IRSA). Credentials are discovered by the AWS SDK default credential chain, so no fields are required.
+        vars: []
+        hide_in_deployment_modes: [agentless]
 policy_templates:
   - name: awshealth
     title: AWS Health
@@ -108,6 +156,16 @@ policy_templates:
         title: Collect AWS Health metrics (experimental)
         description: Collect AWS Health metrics (experimental).
         input_group: metrics
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        is_default: true
+        organization: observability
+        division: engineering
+        team: obs-signals-integrations-team
     icons:
       - src: /img/logo_aws_health.svg
         title: AWS Health logo
@@ -130,6 +188,16 @@ policy_templates:
         title: Collect billing metrics
         description: Collect billing metrics using AWS CloudWatch
         input_group: metrics
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        is_default: true
+        organization: observability
+        division: engineering
+        team: obs-signals-integrations-team
     icons:
       - src: /img/logo_billing.svg
         title: AWS Billing logo
@@ -162,9 +230,9 @@ policy_templates:
         size: 32x32
         type: image/svg+xml
     screenshots:
-      - src: /img/filebeat-aws-cloudtrail.png
-        title: filebeat aws cloudtrail
-        size: 1702x1063
+      - src: /img/cloudtrail-overview-dashboard.png
+        title: aws cloudtrail dashboard overview
+        size: 1690x3999
         type: image/png
   - name: cloudwatch
     title: AWS CloudWatch
@@ -184,6 +252,15 @@ policy_templates:
         title: Collect metrics from CloudWatch
         description: Collecting metrics using AWS CloudWatch
         input_group: metrics
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: observability
+        division: engineering
+        team: obs-signals-integrations-team
     icons:
       - src: /img/logo_cloudwatch.svg
         title: AWS CloudWatch logo
@@ -197,6 +274,7 @@ policy_templates:
         enabled: true
       agentless:
         enabled: true
+        release: beta
         organization: security
         division: engineering
         team: security-service-integrations
@@ -233,6 +311,16 @@ policy_templates:
         title: Collect dynamodb metrics
         description: Collect dynamodb metrics
         input_group: metrics
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        is_default: true
+        organization: observability
+        division: engineering
+        team: obs-signals-integrations-team
     icons:
       - src: /img/logo_dynamodb.svg
         title: AWS DynamoDB logo
@@ -256,6 +344,16 @@ policy_templates:
         title: Collect EBS metrics
         description: Collect EBS metrics using AWS CloudWatch
         input_group: metrics
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        is_default: true
+        organization: observability
+        division: engineering
+        team: obs-signals-integrations-team
     icons:
       - src: /img/logo_ebs.svg
         title: AWS EBS logo
@@ -287,6 +385,15 @@ policy_templates:
         title: Collect EC2 metrics
         description: Collecting EC2 metrics using AWS CloudWatch
         input_group: metrics
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: observability
+        division: engineering
+        team: obs-signals-integrations-team
     icons:
       - src: /img/logo_ec2.svg
         title: AWS EC2 logo
@@ -310,9 +417,52 @@ policy_templates:
         title: Collect ECS metrics
         description: Collecting ECS metrics using AWS CloudWatch
         input_group: metrics
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        is_default: true
+        organization: observability
+        division: engineering
+        team: obs-signals-integrations-team
     icons:
       - src: /img/logo_ecs.svg
         title: AWS ECS logo
+        size: 32x32
+        type: image/svg+xml
+  - name: eks
+    title: Amazon EKS
+    description: Collect Amazon EKS Kubernetes API audit logs from CloudWatch with Elastic Agent.
+    data_streams:
+      - eks_audit
+    categories:
+      - security
+      - containers
+    inputs:
+      - type: aws-cloudwatch
+        title: Collect Amazon EKS audit logs from CloudWatch
+        description: Collect EKS kube-apiserver audit logs using the aws-cloudwatch input.
+        input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: CloudWatch Logs read access for EKS control-plane audit log collection.
+            permissions:
+              - name: logs:DescribeLogGroups
+              - name: logs:FilterLogEvents
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: security
+        division: engineering
+        team: security-service-integrations
+    icons:
+      - src: /img/logo_eks.svg
+        title: Amazon EKS logo
         size: 32x32
         type: image/svg+xml
   - name: elb
@@ -337,6 +487,15 @@ policy_templates:
         title: Collect ELB metrics
         description: Collecting ELB metrics using AWS CloudWatch
         input_group: metrics
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: observability
+        division: engineering
+        team: obs-signals-integrations-team
     icons:
       - src: /img/logo_elb.svg
         title: AWS ELB logo
@@ -384,6 +543,15 @@ policy_templates:
         title: Collect lambda logs from CloudWatch
         description: Collecting AWS lambda logs using aws-cloudwatch input
         input_group: logs
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: observability
+        division: engineering
+        team: obs-signals-integrations-team
     icons:
       - src: /img/logo_lambda.svg
         title: AWS Lambda logo
@@ -430,14 +598,25 @@ policy_templates:
         title: Collect Network Firewall logs from S3
         description: Collecting logs from Network Firewall using aws-s3 input
         input_group: logs
+        deployment_modes: ["default"]
       - type: aws-cloudwatch
         title: Collect Network Firewall logs from CloudWatch
         description: Collecting logs from Network Firewall using aws-cloudwatch input
         input_group: logs
+        deployment_modes: ["default"]
       - type: aws/metrics
         title: Collect Network Firewall metrics
         description: Collecting AWS Network Firewall metrics using AWS CloudWatch
         input_group: metrics
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: security
+        division: engineering
+        team: security-service-integrations
     icons:
       - src: /img/logo_firewall.svg
         title: AWS Network Firewall logo
@@ -473,6 +652,16 @@ policy_templates:
         title: Collect RDS metrics
         description: Collect RDS metrics using AWS CloudWatch
         input_group: metrics
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        is_default: true
+        organization: observability
+        division: engineering
+        team: obs-signals-integrations-team
     icons:
       - src: /img/logo_rds.svg
         title: AWS RDS logo
@@ -502,6 +691,15 @@ policy_templates:
         title: Collect S3 metrics
         description: Collecting S3 metrics using AWS CloudWatch
         input_group: metrics
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: observability
+        division: engineering
+        team: obs-signals-integrations-team
     icons:
       - src: /img/logo_s3.svg
         title: AWS S3 logo
@@ -551,6 +749,16 @@ policy_templates:
         title: Collect SNS metrics
         description: Collect SNS metrics using AWS CloudWatch
         input_group: metrics
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        is_default: true
+        organization: observability
+        division: engineering
+        team: obs-signals-integrations-team
     icons:
       - src: /img/logo_sns.svg
         title: AWS SNS logo
@@ -573,6 +781,16 @@ policy_templates:
         title: Collect SQS metrics
         description: Collect SQS metrics using AWS CloudWatch
         input_group: metrics
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        is_default: true
+        organization: observability
+        division: engineering
+        team: obs-signals-integrations-team
     icons:
       - src: /img/logo_sqs.svg
         title: AWS SQS logo
@@ -595,6 +813,16 @@ policy_templates:
         title: Collect Transit Gateway metrics
         description: Collect Transit Gateway metrics using AWS CloudWatch
         input_group: metrics
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        is_default: true
+        organization: observability
+        division: engineering
+        team: obs-signals-integrations-team
     icons:
       - src: /img/logo_transitgateway.svg
         title: AWS Transit Gateway logo
@@ -779,6 +1007,7 @@ policy_templates:
         enabled: true
       agentless:
         enabled: true
+        release: beta
         organization: security
         division: engineering
         team: security-service-integrations
@@ -794,6 +1023,12 @@ policy_templates:
       - type: httpjson
         title: Collect AWS Security Hub CSPM logs via API
         description: Collecting AWS Security Hub CSPM logs via API.
+        provider_permissions:
+          - provider: aws
+            description: Security Hub read access for findings and insights collection.
+            permissions:
+              - name: securityhub:GetFindings
+              - name: securityhub:GetInsights
     screenshots:
       - src: /img/securityhub_cspm_findings_insights_dashboard.png
         title: Security Hub CSPM Findings and Insights dashboard screenshot
@@ -816,6 +1051,7 @@ policy_templates:
         enabled: true
       agentless:
         enabled: true
+        release: beta
         organization: security
         division: engineering
         team: security-service-integrations
@@ -859,6 +1095,7 @@ policy_templates:
         enabled: true
       agentless:
         enabled: true
+        release: beta
         organization: security
         division: engineering
         team: security-service-integrations

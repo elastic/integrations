@@ -12,14 +12,20 @@ The Island Browser integration is compatible with `v1` version of Island Browser
 
 ### How it works
 
-This integration periodically queries the Island Browser API to retrieve details for devices, users, and compromised credentials, and to log audit events and admin action events.
+This integration periodically queries the Island Browser API to retrieve details for devices, users, and compromised credentials, and to collect SIEM events.
+
+The **SIEM Events** data stream collects events through the Island SIEM integration. It supports three audit types: user audits, admin audits, and system audits. User audits are routed to the **Audit** data stream, admin audits to the **Admin Actions** data stream, and system audits to the **System Events** data stream.
+
+The separate **Audit** and **Admin Actions** data streams are deprecated. New deployments should use **SIEM Events** instead.
 
 ## What data does this integration collect?
 
 This integration collects log messages of the following types:
 
-- `Admin Actions`: Collects all admin actions from the Island Browser via [Admin Actions API endpoint](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter)
-- `Audit`: Collects all timeline audits from the Island Browser via [Audit API endpoint](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter).
+- `SIEM Events`: Collects user audits, admin audits, and system audits through the Island SIEM integration.
+- `Admin Actions` (deprecated): Collects all admin actions from the Island Browser via [Admin Actions API endpoint](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter). Use **SIEM Events** instead.
+- `Audit` (deprecated): Collects all timeline audits from the Island Browser via [Audit API endpoint](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter). Use **SIEM Events** instead.
+- `System Events`: System audits (`SystemEvent` records), such as device management, user management, and Island Private Access connector and health-check events. This data stream is populated only by **SIEM Events**; it has no collector of its own.
 - `Compromised Credential`: Collects a list of all compromised credentials from the Island Browser via [Compromised Credential API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-compromised-credentials).
 - `Device`: Collects a list of all devices from the Island Browser via [Device API endpoint](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
 - `User`: Collects all the users from the Island Browser via [User API endpoint](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
@@ -40,15 +46,17 @@ This integration installs [Elastic latest transforms](https://www.elastic.co/doc
 
 ### From Island Browser
 
-To collect data through the Island Browser APIs, `Admin` role must be required and admin must have permission to generate and manage API keys (i.e. full admin, system admin). Authentication is handled using a `API Key`, which serve as the required credentials.
+**Required permissions:** The API key must belong to an Island account with administrator access (Admin or System Admin).
+
+Authentication uses an API key as the required credential. The account used to create the key must also have permission to generate and manage API keys.
 
 #### Generate an `API Key`:
 
-1. Log in to Island Browser Management Console.
+1. Log in to Island Browser Management Console as an administrator (Admin or System Admin).
 2. From the **Island Management Console**, navigate to **Modules > Platform Settings > System Settings > Integrations > API**.
 3. Click **+ Create**. The **Create API Key** drawer is displayed to assist in the key creation.
 4. Enter a **Name**.
-5. Select the **Role** that applies to this API key (i.e. Full Admin, or Read Only).
+5. Select **Full Admin** or **System Admin** as the role for this API key.
 6. Click **Generate API Key**.
 7. Copy the **API Key** to your clipboard to be used when using the [API Explorer](https://documentation.island.io/v1-api/apidocs/introduction-to-the-api-explorer).
 8. Click **Save**.
@@ -56,6 +64,18 @@ To collect data through the Island Browser APIs, `Admin` role must be required a
 For more details, check [Documentation](https://documentation.island.io/apidocs/generate-and-manage-api-keys).
 
 >**Note**: If an API key already exists and you need to create a new one, you must first deactivate and delete the existing key by selecting **Deactivate and Delete API Key**.
+
+#### Configure the SIEM integration
+
+To collect user, admin, and system audits through the SIEM API, set up the Generic SIEM Integration in the Island Management Console and copy the **Audit ID**.
+
+1. Log in to the Island Management Console as an administrator (Full Admin or System Admin).
+2. Navigate to **Modules > Platform Settings > System Settings > Integrations > SIEM**.
+3. Click **Setup** for the **Generic SIEM Integration**.
+4. Click **Generate API Key** if you need a dedicated SIEM API key. The API key must belong to an Island account with administrator access (Admin or System Admin).
+5. Copy the **Audit ID** displayed for the SIEM connector. You will need this value when configuring **SIEM Events** in Elastic.
+
+> **Note**: **Audit** and **Admin Actions** are deprecated. Use **SIEM Events** for new deployments. Do not enable **SIEM Events** together with **Audit** or **Admin Actions** to avoid collecting duplicate logs.
 
 
 ## How do I deploy this integration?
@@ -82,11 +102,48 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
     * To **Collect logs from Island Browser API**, you'll need to:
 
-        - Configure **URL** and **API Key**.
+        - Configure **URL** and **API Key**. **SIEM Events** must use `https://api.island.io`. **User**, **Device**, **Compromised Credential**, and the deprecated **Audit** and **Admin Actions** data streams must use `https://management.island.io`. The URL applies to every data stream enabled in the policy, so collect SIEM Events in a separate integration policy from the management API data streams.
         - Enable/Disable the required datasets.
+        - For **SIEM Events**, provide the **Audit ID** from the Generic SIEM Integration in the Island Management Console.
         - For each dataset, adjust the integration configuration parameters if required, including the Interval, Batch Size etc. to enable data collection.
 
 6. Select **Save and continue** to save the integration.
+
+### Collecting data from the SIEM API
+
+To collect user, admin, and system audits through the Island SIEM integration:
+
+1. Complete the [SIEM integration setup](#configure-the-siem-integration) in the Island Management Console.
+2. Enable **SIEM Events** in Fleet, set **URL** to `https://api.island.io`, and configure **API Key** and **Audit ID**.
+
+#### Reprocessing system audits collected before version 1.7.0
+
+Before version 1.7.0, `SystemEvent` records were stored in the `logs-island_browser.siem_event-*` data stream without their parsed content. They can be reprocessed into the **System Events** data stream only if **Preserve original event** was enabled for **SIEM Events** when they were collected, because the original event is the only copy of their content. Documents without `event.original` cannot be recovered.
+
+After upgrading, reprocess them with the reindex API. Replace `<namespace>` with your namespace:
+
+```
+POST _reindex
+{
+  "conflicts": "proceed",
+  "source": {
+    "index": "logs-island_browser.siem_event-<namespace>",
+    "query": {
+      "term": { "routing.source": "SystemEvent" }
+    }
+  },
+  "dest": {
+    "index": "logs-island_browser.system_event-<namespace>",
+    "op_type": "create"
+  },
+  "script": {
+    "lang": "painless",
+    "source": "if (ctx._source.event?.original == null) { ctx.op = 'noop'; return; } ctx._source.data_stream.dataset = 'island_browser.system_event'; ctx._source.event.dataset = 'island_browser.system_event';"
+  }
+}
+```
+
+The script skips documents without `event.original` and sets the dataset fields to the **System Events** data stream. The destination's default ingest pipeline then parses the events. Document IDs are derived from the original event, so running the reindex more than once skips documents that were already copied instead of creating duplicates. After checking the result, you can delete the old documents from `logs-island_browser.siem_event-<namespace>` with the delete by query API.
 
 ### Validation
 
@@ -111,6 +168,10 @@ For more information on architectures that can be used for scaling this integrat
 
 ### ECS field reference
 
+#### SIEM Events
+
+{{fields "siem_event"}}
+
 #### Admin Actions
 
 {{fields "admin_actions"}}
@@ -118,6 +179,10 @@ For more information on architectures that can be used for scaling this integrat
 #### Audit
 
 {{fields "audit"}}
+
+#### System Events
+
+{{fields "system_event"}}
 
 #### Compromised Credential
 
@@ -141,6 +206,10 @@ For more information on architectures that can be used for scaling this integrat
 
 {{event "audit"}}
 
+#### System Events
+
+{{event "system_event"}}
+
 #### Compromised Credential
 
 {{event "compromised_credential"}}
@@ -163,12 +232,28 @@ This input is used in this integration:
 
 This integration dataset uses the following APIs:
 
-- `Admin Actions`: [Island Browser API](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter)
-- `Audit`: [Island Browser API](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter).
+- `SIEM Events`: Island SIEM API
+- `Admin Actions` (deprecated): [Island Browser API](https://documentation.island.io/apidocs/get-all-admin-actions-that-match-the-specified-simple-filter). Use **SIEM Events** instead.
+- `Audit` (deprecated): [Island Browser API](https://documentation.island.io/apidocs/get-all-timeline-audits-that-match-the-specified-simple-filter). Use **SIEM Events** instead.
+- `System Events`: Island SIEM API, through **SIEM Events**.
 - `Compromised Credential`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-compromised-credentials).
 - `Device`: [Island Browser API](https://documentation.island.io/apidocs/get-a-list-of-all-devices-1).
 - `User`: [Island Browser API](https://documentation.island.io/apidocs/get-all-browser-users-that-match-the-specified-simple-filter).
 
-#### ILM Policy
+#### Data retention
 
-To facilitate user and device data, source data stream-backed indices `.ds-logs-island_browser.user-*` and `.ds-logs-island_browser.device-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-island_browser.user-default_policy` and `logs-island_browser.device-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+The data streams below collect a full snapshot of Island Browser devices and users on every polling interval, so their backing indices hold one copy of each record per interval.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-island_browser.device-*` | `logs-island_browser.device-default_policy`: roll over after 30d, delete 30d after rollover | delete 30d after rollover |
+| `logs-island_browser.user-*` | `logs-island_browser.user-default_policy`: roll over after 30d, delete 30d after rollover | delete 30d after rollover |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-island_browser.device-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.

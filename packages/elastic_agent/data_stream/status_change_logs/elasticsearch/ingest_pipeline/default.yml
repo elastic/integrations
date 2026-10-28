@@ -2,6 +2,7 @@
 description: Pipeline for Elastic Agent status change logs.
 processors:
   - script:
+      tag: script_derive_health_status
       description: Derive health_status from status field
       if: ctx.status != null
       lang: painless
@@ -21,3 +22,14 @@ processors:
 
         ctx.health_status = healthStatus;
       ignore_failure: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'

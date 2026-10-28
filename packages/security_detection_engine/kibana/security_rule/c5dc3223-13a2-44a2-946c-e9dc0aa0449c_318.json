@@ -1,0 +1,167 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "An instance of MSBuild, the Microsoft Build Engine, was started by an Office application. This is unusual behavior for the Build Engine and could have been caused by a malicious document executing a script payload.",
+        "false_positives": [
+            "The Build Engine is commonly used by Windows developers but use by non-engineers is unusual. It is quite unusual for this program to be started by an Office application like Word or Excel."
+        ],
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.name",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.command_line",
+                "process.pe.original_file_name",
+                "process.working_directory",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted",
+                "process.parent.executable",
+                "process.parent.command_line"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Microsoft Build Engine Started by an Office Application",
+        "note": "## Triage and analysis\n\n### Investigating Microsoft Build Engine Started by an Office Application\n\n#### Possible investigation steps\n\n- What Office-to-MSBuild path did the alert capture?\n  - Focus: `process.parent.name`, `process.parent.executable`, `process.executable`, and `process.command_line`.\n  - Implication: escalate when Office launches MSBuild from a user-writable path or against a project, response, or import path unrelated to document work; lower suspicion only when the Office parent, working directory, project argument, and user-host pair align to one add-in, template-packaging, or test case.\n- Is the MSBuild binary the expected Microsoft Build Engine instance?\n  - Focus: `process.executable`, `process.pe.original_file_name`, `process.hash.sha256`, `process.code_signature.subject_name`, and `process.code_signature.trusted`.\n  - Implication: escalate when MSBuild is renamed, unsigned, recently introduced, user-writable, or not signed by the expected Microsoft publisher; lower suspicion when path, original name, signer, and hash history fit the installed Microsoft Build Engine. Identity alone does not clear the Office launch.\n- Do the MSBuild arguments indicate inline-task or staged-project abuse?\n  - Why: MSBuild can execute project-defined tasks, making project or response-file paths the alert-local clue for developer tooling versus payload staging.\n  - Focus: `process.command_line` and same-process file activity for project or response artifacts. !{investigate{\"description\":\"\",\"label\":\"File events for MSBuild process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when arguments point to XML, project, response, or imported files in temp, downloads, archive, cache, mail, or relative paths, or when targets do not fit user compilation; lower suspicion when the same project path, target set, and working directory match a recognized developer or packaging workflow.\n- Does the parent and user context explain this Office-launched build?\n  - Focus: `process.parent.command_line`, `user.id`, `host.id`, and `host.name`.\n  - Implication: escalate when a standard Office user, shared workstation, or unusual parent command line triggers MSBuild without a matching project path and child helper pattern; lower suspicion when `user.id`, `host.id`, parent command line, project path, and child helpers converge on developer packaging or authorized testing.\n- Did MSBuild spawn compiler helpers only, or did it hand off to payload tooling?\n  - Focus: child starts where `process.parent.entity_id` matches `process.entity_id`, then child `process.executable` and `process.command_line`. !{investigate{\"description\":\"\",\"label\":\"Child process events for MSBuild\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: if `process.entity_id` is absent, recover child starts with `host.id` + `process.pid` + a tight alert window; treat the result as weaker than exact lineage.\n  - Implication: escalate when MSBuild launches shells, scripting engines, browsers, LOLBins, installers, or children from unexpected paths; lower suspicion when telemetry shows no child starts or only expected compiler helpers such as csc.exe and cvtres.exe for the same recognized project path. Missing child-process telemetry is unresolved, not benign.\n- If local evidence is suspicious or unresolved, is this part of a broader Office proxy-execution pattern?\n  - Focus: related alerts for the same `user.id`, especially Office-to-script, Office-to-LOLBin, persistence, or credential-access activity. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: check whether the same `host.id` shows Office-launched rundll32.exe, regsvr32.exe, mshta.exe, PowerShell, or suspicious child-process alerts. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden scope and raise priority when either pivot shows related proxy execution or follow-on alerts; keep localized when related alerts are absent and local evidence points to one stable Office parent, MSBuild project path, child helper pattern, and user-host pair.\n\n- Escalate when identity, arguments, parent context, child behavior, or related alerts show abnormal Office-launched MSBuild execution; close only when the same signer, parent command line, project path, child helper pattern, `host.id`, and `user.id` support a recognized workflow with no contradictory findings; preserve evidence and escalate when visibility or answers remain mixed.\n\n### False positive analysis\n\n- Office add-in, template, document-packaging, or controlled testing workflows can legitimately trigger this rule. Confirm from process evidence that `process.executable`, `process.code_signature.subject_name`, the project or response-file pattern in `process.command_line`, `process.parent.executable`, `process.parent.command_line`, child `process.executable`, and the `user.id` plus `host.id` pair align to the same workflow. When telemetry cannot prove purpose, require outside confirmation before closing; use recurrence only after confirmation to judge exception stability.\n- Before creating an exception, validate that the same user-host cohort shows a stable recognized workflow across prior alerts. Keep `process.code_signature.subject_name`, `process.executable`, `process.parent.executable`, the project or response-file pattern in `process.command_line`, `user.id`, and `host.id` stable; allow `process.hash.sha256` changes only when signer, path, and workflow remain consistent with normal updates. Avoid exceptions on `process.name`, Office parent name, or `user.name` alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and record the evidence that validated the workflow: MSBuild signer and path, project-path pattern in `process.command_line`, Office parent context, child-process pattern, and the `user.id` plus `host.id` cohort. Create an exception only after the same pattern recurs consistently across prior alerts.\n- If suspicious but unconfirmed, preserve the alert record, process tree, `process.entity_id`, recovered child entity IDs, `process.command_line`, Office parent command line, and project or response-file paths named in the command line before containment. Apply reversible controls first, such as heightened monitoring, temporary delivery blocks, or endpoint isolation when host criticality allows; avoid process termination or file deletion until lineage and scope are clearer.\n- If confirmed malicious, preserve the same process and project evidence, then contain the affected `host.id` or `user.id` based on the child-process chain, payload handoff, or related alerts. Block confirmed malicious indicators recovered during the case, collect suspicious project or response files before deletion, and terminate malicious processes only after recording their entity IDs and command lines.\n- Eradicate only artifacts tied to the investigated process chain: malicious Office content, MSBuild project or response files, scripts, build outputs, and follow-on payloads identified from child-process execution. Remediate the delivery path that let Office launch the build chain, then scope other `host.id` and `user.id` values for the same project-path pattern or child-process sequence before broader cleanup.\n- Post-incident hardening: restrict Office macro, add-in, and template paths that can invoke developer utilities; retain the process evidence that supported the case; record adjacent Office-launched proxy-execution variants in the case notes for future triage.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.name : \"MSBuild.exe\" and\n  process.parent.name : (\"eqnedt32.exe\",\n                         \"excel.exe\",\n                         \"fltldr.exe\",\n                         \"msaccess.exe\",\n                         \"mspub.exe\",\n                         \"outlook.exe\",\n                         \"powerpnt.exe\",\n                         \"winword.exe\" )\n",
+        "references": [
+            "https://blog.talosintelligence.com/building-bypass-with-msbuild/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "c5dc3223-13a2-44a2-946c-e9dc0aa0449c",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1127",
+                        "name": "Trusted Developer Utilities Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1127/",
+                        "subtechnique": [
+                            {
+                                "id": "T1127.001",
+                                "name": "MSBuild",
+                                "reference": "https://attack.mitre.org/techniques/T1127/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1204",
+                        "name": "User Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1204/",
+                        "subtechnique": [
+                            {
+                                "id": "T1204.002",
+                                "name": "Malicious File",
+                                "reference": "https://attack.mitre.org/techniques/T1204/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 318
+    },
+    "id": "c5dc3223-13a2-44a2-946c-e9dc0aa0449c_318",
+    "type": "security-rule"
+}

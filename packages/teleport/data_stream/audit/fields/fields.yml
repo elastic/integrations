@@ -18,6 +18,12 @@
   description: >
     Flags are the flags passed to open.
 
+# Teleport-specific fields
+- name: teleport.audit.addr
+  type: keyword
+  description: >
+    Target address for port forwarding events (host:port).
+
 # Teleport-specific field subgroups
 - name: teleport.audit.access_list
   type: group
@@ -395,9 +401,9 @@
             DisallowReissue is a flag that, if set, instructs the auth server to deny any attempts to reissue new certificates while authenticated with this certificate.
 
         - name: allowed_resource_ids
-          type: keyword
+          type: flattened
           description: >
-            AllowedResourceIDs is the list of resources which the identity will be allowed to access. An empty list indicates that no resource-specific restrictions will be applied.
+            AllowedResourceIDs is the list of resources which the identity will be allowed to access. Each entry contains cluster, kind, name, and optionally sub_resource fields. An empty list indicates that no resource-specific restrictions will be applied.
 
         - name: prev_identity_expires
           type: date

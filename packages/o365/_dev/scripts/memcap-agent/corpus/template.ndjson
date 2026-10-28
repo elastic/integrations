@@ -1,0 +1,46 @@
+{{- /*
+  Corpus-generator template for the memory harness. It renders ONE synthetic o365
+  audit record, deliberately bloated (40 ExtendedProperties, 20 ModifiedProperties,
+  8x-repeated values, etc.) to model a worst-case event shape; the corpus generator
+  emits many copies of it to build a single large content blob.
+
+  This is a JSON *fragment*, not a standalone document: mock-config.yml splices the
+  whole generated blob verbatim into a content-fetch response, between an opening "["
+  and a final hard-coded record that closes the array. Two deliberate oddities:
+
+    - each record ends with a trailing comma "}," - that comma is what separates
+      consecutive records into a valid JSON array (the final hard-coded record has no
+      comma and closes it);
+    - the template has NO trailing newline, because the corpus generator already
+      appends a "\n" after every rendered record; a newline here would double up and
+      leave a blank line between records.
+*/ -}}
+{{- $Id := generate "Id" -}}
+{{- $CreationTime := generate "CreationTime" | date "2006-01-02T15:04:05" -}}
+{{- $RecordType := generate "RecordType" -}}
+{{- $Operation := generate "Operation" -}}
+{{- $OrganizationId := generate "OrganizationId" -}}
+{{- $UserType := generate "UserType" -}}
+{{- $UserKey := generate "UserKey" -}}
+{{- $Workload := generate "Workload" -}}
+{{- $ResultStatus := generate "ResultStatus" -}}
+{{- $ObjectId := generate "ObjectId" -}}
+{{- $UserId := generate "UserId" -}}
+{{- $ClientIP := generate "ClientIP" -}}
+{{- $UserAgent := generate "UserAgent" -}}
+{{- $ActorContextId := generate "ActorContextId" -}}
+{{- $InterSystemsId := generate "InterSystemsId" -}}
+{{- $IntraSystemId := generate "IntraSystemId" -}}
+{{- $TargetContextId := generate "TargetContextId" -}}
+{{- $ApplicationId := generate "ApplicationId" -}}
+{"Id":"{{$Id}}","CreationTime":"{{$CreationTime}}","RecordType":{{$RecordType}},"Operation":"{{$Operation}}","OrganizationId":"{{$OrganizationId}}","UserType":{{$UserType}},"UserKey":"{{$UserKey}}","Workload":"{{$Workload}}","ResultStatus":"{{$ResultStatus}}","ObjectId":"{{$ObjectId}}","UserId":"{{$UserId}}","ClientIP":"{{$ClientIP}}","UserAgent":"{{$UserAgent}}","ActorContextId":"{{$ActorContextId}}","InterSystemsId":"{{$InterSystemsId}}","IntraSystemId":"{{$IntraSystemId}}","TargetContextId":"{{$TargetContextId}}","ApplicationId":"{{$ApplicationId}}","Actor":[
+{{- range $i := until 4 -}}{{- if $i }},{{ end -}}{"ID":"{{ generate "Actor.ID" }}","Type":{{ generate "Actor.Type" }}}{{- end -}}
+],"Target":[
+{{- range $i := until 3 -}}{{- if $i }},{{ end -}}{"ID":"{{ generate "Target.ID" }}","Type":{{ generate "Target.Type" }}}{{- end -}}
+],"ExtendedProperties":[
+{{- range $i := until 40 -}}{{- if $i }},{{ end -}}{"Name":"{{ generate "ExtendedProperties.Name" }}","Value":"{{ repeat 8 (generate "ExtendedProperties.Value") }}"}{{- end -}}
+],"ModifiedProperties":[
+{{- range $i := until 20 -}}{{- if $i }},{{ end -}}{"Name":"{{ generate "ModifiedProperties.Name" }}","NewValue":"{{ repeat 8 (generate "ModifiedProperties.NewValue") }}","OldValue":"{{ repeat 8 (generate "ModifiedProperties.OldValue") }}"}{{- end -}}
+],"DeviceProperties":[
+{{- range $i := until 8 -}}{{- if $i }},{{ end -}}{"Name":"{{ generate "DeviceProperties.Name" }}","Value":"{{ generate "DeviceProperties.Value" }}"}{{- end -}}
+]},

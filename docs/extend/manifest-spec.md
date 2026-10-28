@@ -156,6 +156,22 @@ spec:
               description: Kibana versions compatible with this package.
               examples:
                 - ">=7.9.0"
+        agent:
+          description: Elastic Agent conditions
+          type: object
+          additionalProperties: false
+          properties:
+            version:
+              type: string
+              deprecated: true
+              description: >
+                Elastic Agent versions compatible with this package (deprecated since 3.6.7,
+                disallowed since 3.7.0). A policy manages agents on multiple versions at once,
+                so gate agent-version-specific configuration inside input templates with a
+                working fallback instead of excluding older agents at the package level.
+              examples:
+                - "^8.13.0"
+                - "^9.3.0"
     description:
       description: >
         A longer description of the package. It should describe, at least all the kinds of

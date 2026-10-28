@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when any queries are blocked on Lock wait events. Direct blocking indicator.",
     "name": "[PostgreSQL OTel] Queries waiting on locks",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,6 +20,19 @@
       "enabled": true,
       "lookBackWindow": 4,
       "statusChangeThreshold": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-locks"
+        },
+        {
+          "id": "postgresql_otel-active-queries"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## PostgreSQL queries waiting on locks\n\n### What fired\n`wait_event_type=Lock` samples > 0 during the window.\n\n### Why it matters\nQueries blocked on lock waits experience latency directly proportional to the blocker's duration. Cascading blocking storms can take down an app.\n\n### Triage\n1. Find the blocker via `pg_stat_activity` / `pg_locks`.\n\n### Remediation\n- Kill or finish the blocker.\n- Reduce transaction hold time.\n\n### Tuning\n- Fires on any blocked query.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

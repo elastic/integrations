@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when CockroachDB's IO admission-control subsystem reports overload (`admission_io_overload > 1.0`) on a store. The admission controller is shedding or queueing work to protect the storage engine.",
     "name": "[CockroachDB OTel] IO admission control overload",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cockroachdb_otel-storage"
+        },
+        {
+          "id": "cockroachdb_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## CockroachDB IO admission control overload\n\n### What fired\n`admission_io_overload` for one or more stores exceeded 1.0 over the evaluation window.\n\n### Why it matters\nAdmission control is CockroachDB's internal back-pressure mechanism. A value above 1.0 means the subsystem is actively shedding or delaying work because the storage engine would otherwise fall behind. This precedes user-visible symptoms: write stalls, elevated latency, and LSM health degradation.\n\n### Triage\n1. Confirm affected store(s) from the alert context (`attributes.node_id`, `attributes.store`).\n2. Inspect the Storage dashboard for correlated signals: `storage_write_stalls`, `storage_l0_sublevels`, `storage_l0_num_files`, `rocksdb_read_amplification`.\n3. Look at the disk itself: `sys_host_disk_iopsinprogress`, and cloud-provider IOPS/throughput metrics.\n4. Check CPU; under-provisioned CPU can starve compactions and trigger admission overload even when the disk is fine.\n\n### Remediation\n- If the disk is saturated, provision faster/bigger storage.\n- If CPU is starved, scale up cores or reduce workload intensity.\n- Reduce write amplification (batch size, indexing strategy) if compactions are the bottleneck.\n\n### Tuning\n- The `> 1.0` threshold matches CockroachDB's documented \"overloaded\" semantics.\n- Consider widening the window to 15m+ if brief spikes are tolerable.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND admission_io_overload IS NOT NULL\n  AND admission_io_overload > 1.0\n// Values > 1.0 indicate storage overload; adjust threshold if needed\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NOT NULL\n| STATS overload = MAX(admission_io_overload) BY attributes.node_id, attributes.store, host.name\n| SORT overload DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 10,

@@ -226,7 +226,7 @@ Sample logs can be placed in `_dev/deploy/docker/sample_logs/integration.log`:
 <13>1 2024-03-08T10:14:08+00:00 integration-1 serverd - - - ﻿id=firewall time="2024-03-08 10:14:08" fw="integration-1" tz=+0000 startime="2024-03-08 10:14:08" error=0 user="admin" address=192.168.197.1 sessionid=1 msg="example syslog line" logtype="server"
 <13>1 2024-03-08T10:14:08+00:00 integration-1 serverd - - - ﻿id=firewall time="2024-03-08 10:14:08" fw="integration-1" tz=+0000 startime="2024-03-08 10:14:08" error=0 user="admin" address=192.168.197.1 sessionid=1 msg="example syslog line 2" logtype="server"
 ```
-Together, these two files will start a service which write the sample logs to a UDP socket on port 5144. The Elastic Agent will listen to the data on this port, and process it in a system test.
+Together, these two files will start a service which writes the sample logs to a UDP socket on port 5144. The Elastic Agent will listen to the data on this port, and process it in a system test.
 
 ### Kibana support
 
@@ -576,6 +576,24 @@ elastic-package test [pipeline|static|asset|policy|system] -v -g
     ::::{note}
     The package version with such condition as above will be only available in Kibana version >=8.7.0
     ::::
+
+6. If a package relies on features available only in a specific Elastic Agent version, gate the configuration in the input template (`.hbs` stream template) with the `semverSatisfies` helper, and provide a fallback so a single package version keeps working on all supported agents:
+
+    ```handlebars
+    {{#semverSatisfies _meta.agent.version "^9.3.0"}}
+    program: |
+      ...
+    {{else}}
+    program: |
+      ...
+    {{/semverSatisfies}}
+    ```
+
+    ::::{warning}
+    Do not use the package-level `conditions.agent.version` field in `manifest.yml`. It is deprecated: Fleet removes the whole integration from agents that do not satisfy the range, which causes data gaps in policies with mixed agent versions, for example during rolling upgrades. To restrict the Kibana versions a package can be installed on, use `conditions.kibana.version` instead.
+    ::::
+
+    See [Agent version conditions](agent-version-conditions.md) for full details.
 
 
     ::::{note}

@@ -28,7 +28,7 @@ See [data streams](docs-content://reference/fleet/data-streams.md) for more info
 
 ## How to add a data stream [how-to]
 
-1. Boostrap a new data stream
+1. Bootstrap a new data stream
 
 In your package directory, run:
 

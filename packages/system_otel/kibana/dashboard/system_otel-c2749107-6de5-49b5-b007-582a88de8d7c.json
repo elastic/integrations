@@ -140,7 +140,6 @@
                     "attributes": {
                         "references": [],
                         "state": {
-                            
                             "datasourceStates": {
                                 "textBased": {
                                     "indexPatternRefs": [
@@ -202,7 +201,7 @@
                                             ],
                                             "index": "metrics-hostmetricsreceiver.otel-*",
                                             "query": {
-                                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| LIMIT 1\n| STATS BY \narch = resource.attributes.host.arch,\nip = resource.attributes.host.ip,\nmac = resource.attributes.host.mac,\nname = resource.attributes.host.name\n| EVAL ip_str = TO_STRING(ip)\n| EVAL str = CONCAT(\"host.arch$\",arch, \"|\",\n\"host.ip$\", ip_str, \"|\",\n\"host.mac$\",mac, \"|\",\n\"host.name$\", name)\n| EVAL arr = SPLIT(str, \"|\")\n| MV_EXPAND arr\n| EVAL pairs = SPLIT(arr, \"$\")\n| EVAL `Resource Attribute` = MV_FIRST(pairs), value = MV_LAST(pairs)\n| keep `Resource Attribute`, value\n| STATS `Value` = MV_DEDUPE(TOP(value, 400, \"asc\")) BY `Resource Attribute`"
+                                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| LIMIT 1\n| STATS BY \narch = resource.attributes.host.arch,\nname = resource.attributes.host.name\n| EVAL str = CONCAT(\"host.arch$\",arch, \"|\",\n\"host.name$\", name)\n| EVAL arr = SPLIT(str, \"|\")\n| MV_EXPAND arr\n| EVAL pairs = SPLIT(arr, \"$\")\n| EVAL `Resource Attribute` = MV_FIRST(pairs), value = MV_LAST(pairs)\n| keep `Resource Attribute`, value\n| STATS `Value` = MV_DEDUPE(TOP(value, 400, \"asc\")) BY `Resource Attribute`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -212,7 +211,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| LIMIT 1\n| STATS BY \narch = resource.attributes.host.arch,\nip = resource.attributes.host.ip,\nmac = resource.attributes.host.mac,\nname = resource.attributes.host.name\n| EVAL ip_str = TO_STRING(ip)\n| EVAL str = CONCAT(\"host.arch$\",arch, \"|\",\n\"host.ip$\", ip_str, \"|\",\n\"host.mac$\",mac, \"|\",\n\"host.name$\", name)\n| EVAL arr = SPLIT(str, \"|\")\n| MV_EXPAND arr\n| EVAL pairs = SPLIT(arr, \"$\")\n| EVAL `Resource Attribute` = MV_FIRST(pairs), value = MV_LAST(pairs)\n| keep `Resource Attribute`, value\n| STATS `Value` = MV_DEDUPE(TOP(value, 400, \"asc\")) BY `Resource Attribute`"
+                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| LIMIT 1\n| STATS BY \narch = resource.attributes.host.arch,\nname = resource.attributes.host.name\n| EVAL str = CONCAT(\"host.arch$\",arch, \"|\",\n\"host.name$\", name)\n| EVAL arr = SPLIT(str, \"|\")\n| MV_EXPAND arr\n| EVAL pairs = SPLIT(arr, \"$\")\n| EVAL `Resource Attribute` = MV_FIRST(pairs), value = MV_LAST(pairs)\n| keep `Resource Attribute`, value\n| STATS `Value` = MV_DEDUPE(TOP(value, 400, \"asc\")) BY `Resource Attribute`"
                             },
                             "visualization": {
                                 "columns": [
@@ -240,7 +239,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| LIMIT 1\n| STATS BY \narch = resource.attributes.host.arch,\nip = resource.attributes.host.ip,\nmac = resource.attributes.host.mac,\nname = resource.attributes.host.name\n| EVAL ip_str = TO_STRING(ip)\n| EVAL str = CONCAT(\"host.arch$\",arch, \"|\",\n\"host.ip$\", ip_str, \"|\",\n\"host.mac$\",mac, \"|\",\n\"host.name$\", name)\n| EVAL arr = SPLIT(str, \"|\")\n| MV_EXPAND arr\n| EVAL pairs = SPLIT(arr, \"$\")\n| EVAL `Resource Attribute` = MV_FIRST(pairs), value = MV_LAST(pairs)\n| keep `Resource Attribute`, value\n| STATS `Value` = MV_DEDUPE(TOP(value, 400, \"asc\")) BY `Resource Attribute`"
+                        "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| LIMIT 1\n| STATS BY \narch = resource.attributes.host.arch,\nname = resource.attributes.host.name\n| EVAL str = CONCAT(\"host.arch$\",arch, \"|\",\n\"host.name$\", name)\n| EVAL arr = SPLIT(str, \"|\")\n| MV_EXPAND arr\n| EVAL pairs = SPLIT(arr, \"$\")\n| EVAL `Resource Attribute` = MV_FIRST(pairs), value = MV_LAST(pairs)\n| keep `Resource Attribute`, value\n| STATS `Value` = MV_DEDUPE(TOP(value, 400, \"asc\")) BY `Resource Attribute`"
                     },
                     "searchSessionId": "d3777fa7-1c8f-4127-ad65-b28bdc06a24e",
                     "syncColors": false,
@@ -263,7 +262,6 @@
                     "attributes": {
                         "references": [],
                         "state": {
-                            
                             "datasourceStates": {
                                 "textBased": {
                                     "indexPatternRefs": [
@@ -495,7 +493,7 @@
                                             ],
                                             "index": "metrics-hostmetricsreceiver.otel-*",
                                             "query": {
-                                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| LIMIT 1\n| STATS BY \nresource.attributes.cloud.account.id,\nresource.attributes.cloud.instance.id,\nresource.attributes.cloud.platform,\nresource.attributes.cloud.provider\n| EVAL str = CONCAT(\"cloud.account.id:\",resource.attributes.cloud.account.id, \"|\",\n\"cloud.instance.id:\",resource.attributes.cloud.instance.id, \"|\",\n\"cloud.platform:\",resource.attributes.cloud.platform, \"|\",\n\"cloud.provider:\",resource.attributes.cloud.provider)\n| EVAL arr = SPLIT(str, \"|\")\n| MV_EXPAND arr\n| EVAL pairs = SPLIT(arr, \":\")\n| EVAL `Resource Attribute` = MV_FIRST(pairs), `Value` = MV_LAST(pairs)\n| keep `Resource Attribute`, `Value`"
+                                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| LIMIT 1\n| STATS BY \nresource.attributes.cloud.account.id,\nresource.attributes.host.id,\nresource.attributes.cloud.platform,\nresource.attributes.cloud.provider\n| EVAL str = CONCAT(\"cloud.account.id:\",resource.attributes.cloud.account.id, \"|\",\n\"cloud.instance.id:\",resource.attributes.host.id, \"|\",\n\"cloud.platform:\",resource.attributes.cloud.platform, \"|\",\n\"cloud.provider:\",resource.attributes.cloud.provider)\n| EVAL arr = SPLIT(str, \"|\")\n| MV_EXPAND arr\n| EVAL pairs = SPLIT(arr, \":\")\n| EVAL `Resource Attribute` = MV_FIRST(pairs), `Value` = MV_LAST(pairs)\n| keep `Resource Attribute`, `Value`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -505,7 +503,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| LIMIT 1\n| STATS BY \nresource.attributes.cloud.account.id,\nresource.attributes.cloud.instance.id,\nresource.attributes.cloud.platform,\nresource.attributes.cloud.provider\n| EVAL str = CONCAT(\"cloud.account.id:\",resource.attributes.cloud.account.id, \"|\",\n\"cloud.instance.id:\",resource.attributes.cloud.instance.id, \"|\",\n\"cloud.platform:\",resource.attributes.cloud.platform, \"|\",\n\"cloud.provider:\",resource.attributes.cloud.provider)\n| EVAL arr = SPLIT(str, \"|\")\n| MV_EXPAND arr\n| EVAL pairs = SPLIT(arr, \":\")\n| EVAL `Resource Attribute` = MV_FIRST(pairs), `Value` = MV_LAST(pairs)\n| keep `Resource Attribute`, `Value`"
+                                "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| LIMIT 1\n| STATS BY \nresource.attributes.cloud.account.id,\nresource.attributes.host.id,\nresource.attributes.cloud.platform,\nresource.attributes.cloud.provider\n| EVAL str = CONCAT(\"cloud.account.id:\",resource.attributes.cloud.account.id, \"|\",\n\"cloud.instance.id:\",resource.attributes.host.id, \"|\",\n\"cloud.platform:\",resource.attributes.cloud.platform, \"|\",\n\"cloud.provider:\",resource.attributes.cloud.provider)\n| EVAL arr = SPLIT(str, \"|\")\n| MV_EXPAND arr\n| EVAL pairs = SPLIT(arr, \":\")\n| EVAL `Resource Attribute` = MV_FIRST(pairs), `Value` = MV_LAST(pairs)\n| keep `Resource Attribute`, `Value`"
                             },
                             "visualization": {
                                 "columns": [
@@ -531,7 +529,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| LIMIT 1\n| STATS BY \nresource.attributes.cloud.account.id,\nresource.attributes.cloud.instance.id,\nresource.attributes.cloud.platform,\nresource.attributes.cloud.provider\n| EVAL str = CONCAT(\"cloud.account.id:\",resource.attributes.cloud.account.id, \"|\",\n\"cloud.instance.id:\",resource.attributes.cloud.instance.id, \"|\",\n\"cloud.platform:\",resource.attributes.cloud.platform, \"|\",\n\"cloud.provider:\",resource.attributes.cloud.provider)\n| EVAL arr = SPLIT(str, \"|\")\n| MV_EXPAND arr\n| EVAL pairs = SPLIT(arr, \":\")\n| EVAL `Resource Attribute` = MV_FIRST(pairs), `Value` = MV_LAST(pairs)\n| keep `Resource Attribute`, `Value`"
+                        "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| LIMIT 1\n| STATS BY \nresource.attributes.cloud.account.id,\nresource.attributes.host.id,\nresource.attributes.cloud.platform,\nresource.attributes.cloud.provider\n| EVAL str = CONCAT(\"cloud.account.id:\",resource.attributes.cloud.account.id, \"|\",\n\"cloud.instance.id:\",resource.attributes.host.id, \"|\",\n\"cloud.platform:\",resource.attributes.cloud.platform, \"|\",\n\"cloud.provider:\",resource.attributes.cloud.provider)\n| EVAL arr = SPLIT(str, \"|\")\n| MV_EXPAND arr\n| EVAL pairs = SPLIT(arr, \":\")\n| EVAL `Resource Attribute` = MV_FIRST(pairs), `Value` = MV_LAST(pairs)\n| keep `Resource Attribute`, `Value`"
                     },
                     "searchSessionId": "d3777fa7-1c8f-4127-ad65-b28bdc06a24e",
                     "syncColors": false,

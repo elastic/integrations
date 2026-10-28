@@ -2,105 +2,132 @@
 description: Pipeline for processing Command Script Event logs.
 processors:
   - set:
+      tag: set_event_category_dffe0229
       field: event.category
       value: [process]
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - rename:
+      tag: rename_json_tgt_file_sha1_to_sentinel_one_cloud_funnel_event_tgt_file_sha1_4685387e
       field: json.tgt.file.sha1
       target_field: sentinel_one_cloud_funnel.event.tgt.file.sha1
       ignore_missing: true
   - set:
+      tag: set_file_hash_sha1_5c6ba116
       field: file.hash.sha1
       copy_from: sentinel_one_cloud_funnel.event.tgt.file.sha1
       ignore_empty_value: true
   - append:
+      tag: append_related_hash_b56c7961
       field: related.hash
       value: '{{{file.hash.sha1}}}'
       allow_duplicates: false
       if: ctx.file?.hash?.sha1 != null
   - rename:
+      tag: rename_json_cmdScript_applicationName_to_sentinel_one_cloud_funnel_event_cmd_script_application_name_b1ca8d1a
       field: json.cmdScript.applicationName
       target_field: sentinel_one_cloud_funnel.event.cmd_script.application_name
       ignore_missing: true
   - rename:
+      tag: rename_json_cmdScript_content_to_sentinel_one_cloud_funnel_event_cmd_script_content_7f83794d
       field: json.cmdScript.content
       target_field: sentinel_one_cloud_funnel.event.cmd_script.content
       ignore_missing: true
   - set:
+      tag: set_powershell_file_script_block_text_82b728f0
       field: powershell.file.script_block_text
       copy_from: sentinel_one_cloud_funnel.event.cmd_script.content
       ignore_empty_value: true
   - convert:
       field: json.cmdScript.isComplete
-      tag: 'convert_json_cmdScript_isComplete'
+      tag: convert_json_cmdScript_isComplete_aae598ee
       target_field: sentinel_one_cloud_funnel.event.cmd_script.is_complete
       type: boolean
       ignore_missing: true
       if: ctx.json?.cmdScript?.isComplete != ''
       on_failure:
         - append:
+            tag: append_error_message_29202d73
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.cmdScript.originalSize
-      tag: 'convert_json_cmdScript_originalSize'
+      tag: convert_json_cmdScript_originalSize_714f045f
       target_field: sentinel_one_cloud_funnel.event.cmd_script.original_size
       type: long
       ignore_missing: true
       if: ctx.json?.cmdScript?.originalSize != ''
       on_failure:
         - append:
+            tag: append_error_message_d7cc71af
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_cmdScript_sha256_to_sentinel_one_cloud_funnel_event_cmd_script_sha256_e27e61e5
       field: json.cmdScript.sha256
       target_field: sentinel_one_cloud_funnel.event.cmd_script.sha256
       ignore_missing: true
   - append:
+      tag: append_related_hash_c7781308
       field: related.hash
       value: '{{{sentinel_one_cloud_funnel.event.cmd_script.sha256}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.cmd_script?.sha256 != null
   - convert:
       field: json.src.process.crossProcessOutOfStoryline™Count
-      tag: 'convert_json_src_process_crossProcessOutOfStoryline™Count'
+      tag: convert_json_src_process_crossProcessOutOfStoryline™Count_9470005a
       target_field: sentinel_one_cloud_funnel.event.src.process.cross_process.out_of_storyline_count
       type: long
       ignore_missing: true
       if: ctx.json?.src?.process != null && ctx.json.src.process['crossProcessOutOfStoryline™Count'] != ''
       on_failure:
         - append:
+            tag: append_error_message_a423316f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_src_process_isStoryline™Root_to_sentinel_one_cloud_funnel_event_src_process_is_storyline_tm_root_99123876
       field: json.src.process.isStoryline™Root
       target_field: sentinel_one_cloud_funnel.event.src.process.is_storyline_tm_root
       ignore_missing: true
   - convert:
       field: json.src.process.parent.isStoryline™Root
-      tag: 'convert_json_src_process_parent_isStoryline™Root'
+      tag: convert_json_src_process_parent_isStoryline™Root_40378dbe
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.is_storyline_tm_root
       type: boolean
       ignore_missing: true
       if: ctx.json?.src?.process?.parent != null && ctx.json.src.process.parent['isStoryline™Root'] != ''
       on_failure:
         - append:
+            tag: append_error_message_0f75dfb9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_src_process_parent_Storyline™_id_to_sentinel_one_cloud_funnel_event_src_process_parent_storyline_tm_id_9a709a5f
       field: json.src.process.parent.Storyline™.id
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.storyline_tm_id
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_Storyline™_id_to_sentinel_one_cloud_funnel_event_src_process_storyline_tm_id_f075c2d7
       field: json.src.process.Storyline™.id
       target_field: sentinel_one_cloud_funnel.event.src.process.storyline_tm_id
       ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
+      value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

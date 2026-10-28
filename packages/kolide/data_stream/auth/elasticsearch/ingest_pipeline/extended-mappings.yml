@@ -1,0 +1,48 @@
+---
+description: >-
+  Extended field extraction for Kolide auth_log API events. Scans the session
+  `events` array (still in `json.events` when this sub-pipeline runs) for
+  structured data in sub-event descriptions. Reference:
+  https://www.kolide.com/docs/admins/auth-logs
+processors:
+  # Extract package names from "Downloaded package: …" sub-event descriptions.
+  - script:
+      lang: painless
+      tag: extract_downloaded_packages
+      if: ctx.json?.events instanceof List
+      ignore_failure: true
+      description: >-
+        Scan session sub-event descriptions for downloaded package names and
+        collect them into kolide.auth.downloaded_packages.
+      source: |-
+        def prefix = 'Downloaded package: ';
+        def packages = new ArrayList();
+        for (def ev : ctx.json.events) {
+          def desc = ev?.event_description;
+          if (desc instanceof String && desc.startsWith(prefix)) {
+            packages.add(desc.substring(prefix.length()));
+          }
+        }
+        if (!packages.isEmpty()) {
+          if (ctx.kolide.auth.downloaded_packages == null) {
+            ctx.kolide.auth.downloaded_packages = packages;
+          } else {
+            ctx.kolide.auth.downloaded_packages.addAll(packages);
+          }
+        }
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

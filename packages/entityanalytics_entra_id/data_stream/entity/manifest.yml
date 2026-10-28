@@ -35,6 +35,51 @@ streams:
         required: true
         show_user: true
         default: all
+      - name: enrich_with_mfa
+        type: bool
+        title: MFA Enrichment
+        description: >-
+          Enable enrichment of user records with MFA registration details. Requires
+          the AuditLog.Read.All application permission in Azure in addition to the
+          existing permissions. Populates user.entity.attributes.mfa_enabled.
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: user_sign_in_activity
+        type: bool
+        title: User Sign-in Activity
+        description: >-
+          Enable enrichment of user records with sign-in activity via a dedicated
+          Microsoft Graph query. Requires the AuditLog.Read.All application permission
+          in Azure in addition to the existing permissions. Populates
+          user.entity.lifecycle.last_activity.
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: user_direct_reports
+        type: bool
+        title: User Direct Reports
+        description: >-
+          Enable enrichment of user records with their direct reports by expanding
+          the directReports property. Populates user.entity.relationships.supervises.
+          Note: Microsoft Graph limits this expansion to 20 objects per query.
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: user_app_role_assignments
+        type: bool
+        title: User App Role Assignments
+        description: >-
+          Enable enrichment of user records with their app role assignments by
+          expanding the appRoleAssignments property. Populates
+          user.entity.attributes.permissions.
+        multi: false
+        required: false
+        show_user: true
+        default: false
       - name: intune_managed_devices
         type: bool
         title: Intune Managed Device Properties
@@ -42,7 +87,8 @@ streams:
           Enable collection of additional device properties managed by Microsoft
           Intune (isCompliant, isManaged, deviceCategory, deviceOwnership,
           enrollmentProfileName, mdmAppId, complianceExpirationDateTime,
-          manufacturer, model, registrationDateTime, systemLabels). Requires the
+          manufacturer, model, registrationDateTime, systemLabels) and the
+          device last sign-in time (approximateLastSignInDateTime). Requires the
           DeviceManagementManagedDevices.Read.All application permission and an
           active Intune license on the tenant.
         multi: false
@@ -153,6 +199,8 @@ streams:
         required: false
         show_user: false
         description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-entity-analytics.html#_tracer_enabled) for details.
+        hide_in_deployment_modes:
+          - agentless
       - name: tags
         type: text
         title: Tags
@@ -186,6 +234,23 @@ streams:
         show_user: false
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: use_minimal_state
+        type: bool
+        title: Use minimal state
+        description: >-
+          Use the minimal-state sync implementation. Required for agentless
+          deployments. Uses reduced local storage and supports ES-backed state.
+        multi: false
+        required: false
+        show_user: false
+        default: true
+        # Hidden in both modes: this is a platform-managed implementation detail.
+        # Minimal-state sync is required for agentless and is the standard path
+        # for all new deployments. The legacy path (use_minimal_state: false) is
+        # still supported but not exposed in Fleet.
+        hide_in_deployment_modes:
+          - default
+          - agentless
 elasticsearch:
   dynamic_dataset: true
   dynamic_namespace: true

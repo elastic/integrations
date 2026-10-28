@@ -1,0 +1,26 @@
+---
+description: Benchmark 10000 dns events ingested
+input: http_endpoint
+vars:
+  listen_address: 0.0.0.0
+data_stream:
+  name: dns
+  vars:
+    listen_port: 9560
+    url: /cloudflare_logpush/dns
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+warmup_time_period: 10s
+corpora:
+  input_service:
+    name: cloudflare-logpush-dns
+    signal: SIGHUP
+  generator:
+    total_events: 10000
+    template:
+      path: ./dns-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./dns-benchmark/config.yml
+    fields:
+      path: ./dns-benchmark/fields.yml

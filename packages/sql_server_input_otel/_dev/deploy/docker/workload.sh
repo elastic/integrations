@@ -19,9 +19,11 @@ done
 echo "Starting workload generation..."
 touch /tmp/workload_ready
 
-# Background: long-running query for query_sample capture
+# Background: holds an exclusive table lock for 20s, causing the foreground SELECTs to block.
+# Blocked sessions appear in sys.dm_exec_requests as status=suspended with a real query hash,
+# making them reliably visible to the query_sample collector across each collection interval.
 while true; do
-    $SQLCMD -Q "WAITFOR DELAY '00:00:30'; SELECT * FROM dbo.test_table" >/dev/null 2>&1
+    $SQLCMD -Q "BEGIN TRAN; SELECT * FROM dbo.test_table WITH (TABLOCKX, HOLDLOCK); WAITFOR DELAY '00:00:20'; ROLLBACK;" >/dev/null 2>&1
 done &
 
 # Foreground: repeated short queries for top_query capture

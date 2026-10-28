@@ -1,0 +1,96 @@
+{
+    "attributes": {
+        "enabled": false,
+        "author": [
+            "Contrast Security"
+        ],
+        "description": "Detects when a Contrast ADR agent confirms that an application-layer attack was successfully exploited in a production environment. Contrast ADR agents observe code execution within the application runtime and can definitively determine when an attack payload reaches a dangerous function (such as a database query, system command, or file operation) and modifies its behavior. An exploited result means the attack was not just attempted but actually succeeded at the code level. Filtering to production environments reduces noise from development and testing environments where exploitation may be expected.",
+        "false_positives": [
+            "Penetration testing or security scanning in production environments may trigger this rule. Consider adding exceptions for known testing periods or source IPs."
+        ],
+        "index": [
+            "logs-contrast_security.attack_event-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Contrast ADR: Exploited Attack in Production Environment",
+        "note": "## Triage and analysis\n\n### Investigating Exploited Attack in Production\n\nContrast ADR confirms exploitation at the code level. When this rule fires, the attack payload reached a dangerous function and modified its behavior.\n\n#### Possible investigation steps:\n\n- Review `rule.name` to identify the attack type (sql-injection, cmd-injection, etc.).\n- Check `source.ip` for the attacker's IP address and investigate its reputation.\n- Review `url.path` to identify the targeted application endpoint.\n- Check `service.name` to identify which application was exploited.\n- Follow the `event.url` link to view full attack details in the Contrast Security console.\n- Review `http.request.body.content` for the attack payload that triggered the rule.\n- Check `error.stack_trace` for the call stack leading to the vulnerable function.\n- Look for related events from the same `source.ip` to identify campaign activity.\n\n### Response and remediation:\n\n- Visit the runbook for the specific attack type at https://contrastsecurity.dev/adr-runbooks/runbooks/{rule.name}/\n- If the exploit is confirmed, initiate your incident response process.\n- Consider enabling Contrast ADR Block Mode for the affected rule to prevent future exploitation.\n- Work with the development team to remediate the underlying vulnerability.",
+        "query": "event.dataset: \"contrast_security.attack_event\" and event.outcome: \"success\" and service.environment: \"production\"",
+        "references": [
+            "https://www.contrastsecurity.com/contrast-adr",
+            "https://contrastsecurity.dev/adr-runbooks/"
+        ],
+        "related_integrations": [
+            {
+                "package": "contrast_security",
+                "version": "^0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "service.environment",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 95,
+        "rule_id": "2964bdac-31dc-4612-9543-04b69960a3f0",
+        "setup": "Contrast Security ADR must be configured to send attack events to Elasticsearch via the Bulk API. Events should be written to the logs-contrast_security.attack_event-* index pattern.",
+        "severity": "critical",
+        "tags": [
+            "Data Source: Contrast Security",
+            "Use Case: Application Security",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Tactic: Impact",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "2964bdac-31dc-4612-9543-04b69960a3f0",
+    "type": "security-rule"
+}

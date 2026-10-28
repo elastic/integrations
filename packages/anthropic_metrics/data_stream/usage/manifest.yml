@@ -1,0 +1,85 @@
+title: "usage"
+type: metrics
+streams:
+  - input: cel
+    title: Anthropic message usage metrics
+    description: Collect message usage metrics from the Anthropic Usage API.
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: How often the Usage API is polled.
+        required: true
+        show_user: true
+        default: 5m
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: Lookback window on the first collection run (e.g. 24h). Must fit within bucket_width limits. Refer to [granularity limits](https://platform.claude.com/docs/en/manage-claude/usage-cost-api) for details.
+        required: true
+        show_user: true
+        default: 24h
+      - name: bucket_width
+        type: text
+        title: Bucket Width
+        description: Time granularity for usage buckets. One of 1m, 1h, or 1d.
+        required: true
+        show_user: true
+        default: 1h
+      - name: group_by
+        type: text
+        title: Group By
+        description: Dimensions to group usage data by. Supported values include model, workspace_id, api_key_id, service_tier, context_window, inference_geo, and speed.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - model
+          - workspace_id
+          - service_tier
+          - inference_geo
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        description: The request tracer logs HTTP requests and responses to the agent's local filesystem for debugging. Enabling this compromises security and should only be used for debugging.
+        default: false
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        required: false
+        show_user: false
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        required: false
+        show_user: false
+        description: Processors to apply to events before ingest parsing.
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

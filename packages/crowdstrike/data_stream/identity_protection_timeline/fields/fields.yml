@@ -1,0 +1,166 @@
+- name: crowdstrike
+  type: group
+  fields:
+    - name: idp
+      type: group
+      description: Falcon Identity Protection fields.
+      fields:
+        - name: timeline
+          type: group
+          description: Timeline fields.
+          fields:
+            - name: active_directory_site_name
+              type: keyword
+              description: If the activity is known to have occurred within an Active Directory site, this is set to the site's name.
+            - name: authentication_type
+              type: keyword
+              description: Vendor authentication mechanism.
+            - name: data_source_vendor_name
+              type: keyword
+              description: Name of the upstream identity.
+            - name: end_time
+              type: date
+              description: The event end time. For non-continuous events, its value is identical with startTime and timestamp.
+            - name: endpoint_display_name
+              type: keyword
+              description: A display-oriented label reflecting the best available display name for the origin endpoint.
+            - name: endpoint_entity
+              type: group
+              fields:
+                - name: primary_display_name
+                  type: keyword
+                  description: The primary display name used to represent this endpoint in user-facing data.
+            - name: entity
+              type: group
+              fields:
+                - name: accounts
+                  type: group
+                  fields:
+                    - name: object_sid
+                      type: keyword
+                      description: Active Directory objectSid string.
+                    - name: sam_account_name
+                      type: keyword
+                      description: sAMAccountName for the AD account.
+                    - name: service_principal_names
+                      type: keyword
+                      description: SPNs registered on the account.
+                - name: primary_display_name
+                  type: keyword
+                  description: Primary display name for the directory object.
+                - name: secondary_display_name
+                  type: keyword
+                  description: Qualified display form.
+                - name: type
+                  type: keyword
+                  description: Entity kind from the vendor.
+            - name: event_id
+              type: keyword
+              description: A unique identifier for the event.
+            - name: event_label
+              type: keyword
+              description: The display name for the event. This is typically based on the event type, but may also depend on additional data, such as the event data source.
+            - name: event_severity
+              type: keyword
+              description: The event severity. Defaults to NEUTRAL.
+            - name: event_type
+              type: keyword
+              description: The event type.
+            - name: geo_location
+              type: group
+              fields:
+                - name: city
+                  type: keyword
+                  description: City derived from GeoIP for ipAddress.
+                - name: country
+                  type: keyword
+                  description: Country derived from GeoIP for ipAddress.
+            - name: host_name
+              type: keyword
+              description: The origin endpoint host name.
+            - name: ip_address
+              type: ip
+              description: The origin endpoint IP address.
+            - name: ip_address_reputations
+              type: keyword
+              description: Vendor IP reputation signals; exact shape depends on API schema.
+            - name: isp_classification
+              type: keyword
+              description: ISP or IP reputation category from vendor enrichment.
+            - name: isp_domain
+              type: keyword
+              description: ISP or organization domain string when provided.
+            - name: kerberos_encryption_types
+              type: keyword
+              description: Kerberos etypes offered or used.
+            - name: ldap_search_attributes
+              type: keyword
+              description: LDAP attributes requested in the search.
+            - name: ldap_search_filter_sample
+              type: keyword
+              description: Sampled LDAP filter text for the search.
+            - name: ldap_search_query_signatures
+              type: keyword
+              description: Vendor signatures classifying the LDAP query pattern.
+            - name: ldap_search_scope
+              type: keyword
+              description: LDAP search scope value.
+            - name: ldap_search_size_limit
+              type: long
+              description: LDAP size limit when provided.
+            - name: ldap_security_type
+              type: keyword
+              description: LDAP binding / security mode when relevant.
+            - name: network_tag
+              type: keyword
+              description: The subnet label, as defined in the system configuration, associated with the origin endpoint IP address at the time the activity was performed.
+            - name: network_type
+              type: keyword
+              description: The subnet type, as defined in the system configuration, associated with the origin endpoint IP address at the time the activity was performed.
+            - name: protocol_type
+              type: keyword
+              description: The primary network protocol used for performing the activity.
+            - name: protocol_version
+              type: keyword
+            - name: smb_dialect
+              type: keyword
+              description: SMB dialect when SMB was involved.
+            - name: start_time
+              type: date
+              description: An alias for the timestamp field. Use it in conjunction with endTime for continuous events.
+            - name: target_endpoint_entity
+              type: group
+              fields:
+                - name: primary_display_name
+                  type: keyword
+                  description: Display name of the endpoint that was targeted.
+            - name: target_service_description
+              type: keyword
+              description: Longer description of the targeted service context.
+            - name: target_service_display_name
+              type: keyword
+              description: Human-readable name of the targeted service.
+            - name: target_service_identifier
+              type: keyword
+              description: Technical identifier for the targeted service.
+            - name: target_service_type
+              type: keyword
+              description: Enum or category for the targeted service.
+            - name: timestamp
+              type: date
+              description: The event start time. This is the primary sort-key in timeline queries.
+            - name: tls_version
+              type: keyword
+              description: TLS protocol version when the auth path used TLS.
+            - name: user_display_name
+              type: keyword
+              description: A display-oriented label of the best available display name for the user associated with this event.
+            - name: user_entity
+              type: group
+              fields:
+                - name: primary_display_name
+                  type: keyword
+                  description: The primary display name representing this user in user-facing data.
+                - name: email_addresses
+                  type: keyword
+                  description: The list of unique email addresses available for this entity from all known data sources.

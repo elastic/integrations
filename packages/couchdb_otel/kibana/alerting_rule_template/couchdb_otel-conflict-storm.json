@@ -3,6 +3,7 @@
     "type": "alerting_rule_template",
     "managed": true,
     "attributes": {
+        "description": "Alerts when CouchDB returns an elevated rate of 409 (Conflict) responses, indicating heavy write contention on the same documents. Sustained conflict storms suggest application-level retry loops or concurrent writers competing for the same document IDs.",
         "name": "[CouchDB OTel] Conflict storm (elevated 409 responses)",
         "ruleTypeId": ".es-query",
         "tags": [
@@ -16,9 +17,16 @@
             "active": 2
         },
         "flapping": {
-            "enabled": true,
             "lookBackWindow": 6,
             "statusChangeThreshold": 3
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## Conflict Storm (Elevated 409 Responses)\n\n### Triage Steps\n1. Identify which CouchDB node is producing the 409s — open the CouchDB overview dashboard and filter by the alerting node.\n2. Correlate with HTTP request rate (PUT/POST in particular) — conflicts grow with concurrent write volume on the same documents.\n3. Check application logs for the documents being updated — are multiple clients writing to the same `_id`?\n4. Look for retry storms: clients that retry on 409 without backoff can amplify the problem.\n\n### Remediation\n- Implement exponential backoff and jitter in client retry logic.\n- Use CouchDB's bulk update endpoint with `all_or_nothing: false` to handle conflicts gracefully.\n- Redesign the data model to avoid hot documents — split frequently-updated state across multiple documents.\n- For counter-style updates, consider using a separate document per increment and aggregating on read.\n\n### Threshold Tuning\nThe default of 10 conflicts/sec is a moderate threshold. Some workloads (e.g. CRDT-style replication) may legitimately produce more conflicts; raise the threshold accordingly. For low-write workloads, lower the threshold to detect smaller anomalies."
+            },
+            "dashboards": [
+                {"id": "couchdb_otel-overview"}
+            ]
         },
         "params": {
             "searchType": "esqlQuery",

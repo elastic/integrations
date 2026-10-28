@@ -2,43 +2,51 @@
 description: Pipeline for parsing cloudflare logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - set:
+      tag: set_observer_vendor_e5322849
       field: observer.vendor
       value: cloudflare
   - set:
+      tag: set_observer_type_5da7be42
       field: observer.type
       value: proxy
   - fingerprint:
+      tag: fingerprint_to_id_02243b84
       fields:
         - event.original
       target_field: "_id"
       ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "http" }}'
-      tag: pipeline_processor
+      tag: pipeline_processor_fea34dd3
       if: "ctx.json?.EdgeRequestHost != null"
   - remove:
+      tag: remove_e5a80934
       field:
         - json
       ignore_missing: true
   - script:
       lang: painless
-      tag: painless_remove_null
+      tag: painless_remove_null_a0a1a21a
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
         void handleMap(Map map) {
@@ -64,13 +72,16 @@ processors:
         handleMap(ctx);
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
       value: |-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

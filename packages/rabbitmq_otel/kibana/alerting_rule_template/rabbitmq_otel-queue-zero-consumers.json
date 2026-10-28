@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when a queue has ready messages but zero consumers. No one is processing the queue.",
     "name": "[RabbitMQ OTel] Queue with zero consumers and ready messages",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "rabbitmq_otel-queues"
+        },
+        {
+          "id": "rabbitmq_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## RabbitMQ queue with zero consumers and ready messages\n\n### What fired\nQueue has `ready > 0` and `consumer_count == 0`.\n\n### Why it matters\nReady messages with no consumer mean the workload is silently stalling \u2014 often a consumer deployment that never came back up.\n\n### Triage\n1. Check consumer services and deployments.\n\n### Remediation\n- Restart consumers.\n\n### Tuning\n- Filter out queues that are intentionally dormant.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-rabbitmqreceiver.otel-default\n| WHERE resource.attributes.rabbitmq.queue.name IS NOT NULL\n// Aggregate ready messages and consumer count per queue\n| STATS\n    ready_count = MAX(metrics.rabbitmq.message.current) WHERE attributes.state == \"ready\",\n    consumer_count = MAX(metrics.rabbitmq.consumer.count)\n  BY resource.attributes.rabbitmq.queue.name,\n     resource.attributes.rabbitmq.vhost.name,\n     resource.attributes.rabbitmq.node.name\n// Alert when queue has messages but no consumers\n| WHERE ready_count > 0 AND COALESCE(consumer_count, TO_LONG(0)) == 0\n| SORT ready_count DESC\n| LIMIT 20"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

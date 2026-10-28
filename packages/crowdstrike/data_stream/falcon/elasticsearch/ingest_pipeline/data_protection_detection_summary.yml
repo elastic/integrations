@@ -5,20 +5,20 @@ processors:
   - set:
       field: event.kind
       value: alert
-      tag: set_event_kind
+      tag: set_event_kind_ab1166ce
   - append:
       field: event.category
       value: malware
-      tag: append_malware_category
+      tag: append_malware_category_00df95f0
   - append:
       field: event.type
       value: info
-      tag: append_info_type
+      tag: append_info_type_5eab37e6
 
   # converts
   - convert:
       field: crowdstrike.event.DataVolume
-      tag: convert_DataVolume_to_long
+      tag: convert_DataVolume_to_long_47cebacb
       type: long
       ignore_missing: true
       on_failure:
@@ -28,7 +28,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.event.ContentPatterns.ConfidenceLevel
-      tag: convert_ContentPatterns_ConfidenceLevel_to_long
+      tag: convert_ContentPatterns_ConfidenceLevel_to_long_a1f45462
       type: long
       ignore_missing: true
       on_failure:
@@ -41,7 +41,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.event.ContentPatterns.MatchCount
-      tag: convert_ContentPatterns_MatchCount_to_long
+      tag: convert_ContentPatterns_MatchCount_to_long_63493cff
       type: long
       ignore_missing: true
       on_failure:
@@ -54,7 +54,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.event.FilesEgressedCount
-      tag: convert_FilesEgressedCount_to_long
+      tag: convert_FilesEgressedCount_to_long_6a23f74f
       type: long
       ignore_missing: true
       on_failure:
@@ -67,7 +67,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.event.UserNotified
-      tag: convert_UserNotified_to_boolean
+      tag: convert_UserNotified_to_boolean_4bd88ea7
       type: boolean
       ignore_missing: true
       on_failure:
@@ -80,7 +80,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.event.UserMapped
-      tag: convert_UserMapped_to_boolean
+      tag: convert_UserMapped_to_boolean_b1073521
       type: boolean
       ignore_missing: true
       on_failure:
@@ -93,7 +93,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: crowdstrike.event.IsClipboard
-      tag: convert_IsClipboard_to_boolean
+      tag: convert_IsClipboard_to_boolean_bf03a864
       type: boolean
       ignore_missing: true
       on_failure:
@@ -106,7 +106,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: crowdstrike.event.EventTimestamp
-      tag: date_EventTimestamp
+      tag: date_EventTimestamp_34cd0dea
       target_field: crowdstrike.event.EventTimestamp
       timezone: UTC
       formats:
@@ -120,7 +120,7 @@ processors:
   # Anomaly-based detections contains SessionStartTimestamp and SessionEndTimestamp fields
   - date:
       field: crowdstrike.event.SessionStartTimestamp
-      tag: date_SessionStartTimestamp
+      tag: date_SessionStartTimestamp_bfdcd33d
       target_field: 'event.start'
       timezone: UTC
       formats:
@@ -133,7 +133,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: crowdstrike.event.SessionEndTimestamp
-      tag: date_SessionEndTimestamp
+      tag: date_SessionEndTimestamp_aa66c8e5
       target_field: 'event.end'
       timezone: UTC
       formats:
@@ -146,7 +146,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: Determine event.duration from event start and end date.
-      tag: script_to_set_event_duration
+      tag: script_to_set_event_duration_131393fc
       lang: painless
       if: ctx.event?.start != null && ctx.event?.end != null
       source: |
@@ -162,58 +162,58 @@ processors:
   # ECS mappings
   - set:
       field: message
-      tag: set_message_from_event_Description
+      tag: set_message_from_event_Description_cc41ad21
       copy_from: crowdstrike.event.Description
       ignore_empty_value: true
   - set:
       field: event.id
-      tag: set_event_id_from_event_EgressEventId
+      tag: set_event_id_from_event_EgressEventId_0fde10fa
       copy_from: crowdstrike.event.EgressEventId
       ignore_empty_value: true
   - set:
       field: event.action
-      tag: set_event_action_from_event_Name
+      tag: set_event_action_from_event_Name_a72aa629
       copy_from: crowdstrike.event.Name
       ignore_empty_value: true
   - set:
       field: event.reference
-      tag: set_event_reference_from_event_FalconHostLink
+      tag: set_event_reference_from_event_FalconHostLink_9d592c01
       copy_from: crowdstrike.event.FalconHostLink
       ignore_empty_value: true
   - set:
       field: event.outcome
-      tag: set_event_outcome_success
+      tag: set_event_outcome_success_73358d95
       value: success
       if: ctx.crowdstrike?.event?.ResponseAction == 'allowed'
   - set:
       field: event.outcome
-      tag: set_event_outcome_failure
+      tag: set_event_outcome_failure_b5e7d863
       value: failure
       if: ctx.crowdstrike?.event?.ResponseAction == 'blocked'
   - set:
       field: event.outcome
-      tag: set_event_outcome_unknown
+      tag: set_event_outcome_unknown_c8c86a04
       value: unknown
       override: false
   - set:
       field: file.hash.sha256
-      tag: set_file_hash_sha256_from_event_ContentSha
+      tag: set_file_hash_sha256_from_event_ContentSha_d5ecc793
       copy_from: crowdstrike.event.ContentSha
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_file_hash_sha256_to_related_hash
+      tag: append_file_hash_sha256_to_related_hash_caf9f974
       value: '{{{file.hash.sha256}}}'
       allow_duplicates: false
       if: ctx.file?.hash?.sha256 != null
   - set:
       field: file.name
-      tag: set_file_name_from_event_Filename
+      tag: set_file_name_from_event_Filename_44c7b674
       copy_from: crowdstrike.event.Filename
       ignore_empty_value: true
   - script:
       lang: painless
-      tag: extract_file_extension_from_filename
+      tag: extract_file_extension_from_filename_21d838db
       if: ctx.crowdstrike?.event?.Filename != null
       source: |-
         def idx = ctx.crowdstrike.event.Filename.lastIndexOf('.');
@@ -228,37 +228,37 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.size
-      tag: set_file_size_from_event_DataVolume
+      tag: set_file_size_from_event_DataVolume_03f52ff6
       copy_from: crowdstrike.event.DataVolume
       ignore_empty_value: true
   - set:
       field: host.name
-      tag: set_host_name_from_event_Hostname
+      tag: set_host_name_from_event_Hostname_da128acc
       copy_from: crowdstrike.event.Hostname
       ignore_empty_value: true
   - lowercase:
       field: crowdstrike.event.Platform
-      tag: lowercase_Platform
+      tag: lowercase_Platform_03b34b6d
       target_field: host.os.platform
       ignore_missing: true
   - set:
       field: rule.id
-      tag: set_rule_id_from_event_policy_id
+      tag: set_rule_id_from_event_policy_id_4a6c3c08
       copy_from: crowdstrike.event.Policy.ID
       ignore_empty_value: true
   - set:
       field: rule.name
-      tag: set_rule_name_from_event_policy_name
+      tag: set_rule_name_from_event_policy_name_b39c6054
       copy_from: crowdstrike.event.Policy.Name
       ignore_empty_value: true
   - set:
       field: user.id
-      tag: set_user_id_from_event_UserSid
+      tag: set_user_id_from_event_UserSid_68169d4c
       copy_from: crowdstrike.event.UserSid
       ignore_empty_value: true
   - set:
       field: user.name
-      tag: set_user_name_from_event_UserName
+      tag: set_user_name_from_event_UserName_0d6f9192
       copy_from: crowdstrike.event.UserName
       ignore_empty_value: true
 
@@ -278,13 +278,13 @@ processors:
         - crowdstrike.event.SessionStartTimestamp
         - crowdstrike.event.SessionEndTimestamp
         - crowdstrike.event.UserSid
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_21b27674
       ignore_missing: true
 
   # error handling
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
@@ -295,6 +295,7 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -302,9 +303,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

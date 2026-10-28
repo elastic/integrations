@@ -25,13 +25,18 @@ processors:
       tag: kv__tmp_new_message_0bb63133
       field: _tmp.new_message
       if: ctx._tmp.new_message != null && ctx._tmp.grok_match_index != "1"
-      field_split: ",\\s*(?=[A-Za-z_][^',]*[=:][^',]*)"
+      # Only split on a comma that immediately precedes a key the pipeline actually
+      # extracts (followed by '=' or ':'). Any other comma belongs to a value such as
+      # a free-form file name, which may contain commas, uppercase words, or colons.
+      field_split: ",\\s*(?=(File Name|FileName|File Size|File Type|Reputation Score|Analysis Score|verdict_source|upload_action|Disposition|Malware|Verdict|Spyname|Timestamp|SHA256|sha256|MID)\\s*[=:])"
       value_split: '\s*=\s*|:\s*'
   - kv:
       tag: kv__tmp_new_message_grok_1_0bb63133
       field: _tmp.new_message
       if: ctx._tmp.new_message != null && ctx._tmp.grok_match_index == "1"
-      field_split: ",\\s*(?=[A-Za-z_][^',]*[=][^',]*)"
+      # See the note above: split only before a known key (followed by '='), so commas
+      # inside a free-form file name are preserved regardless of their contents.
+      field_split: ",\\s*(?=(File Name|FileName|File Size|File Type|Reputation Score|Analysis Score|verdict_source|upload_action|Disposition|Malware|Verdict|Spyname|Timestamp|SHA256|sha256|MID)\\s*=)"
       value_split: '\s*=\s*'
   - grok:
       tag: grok__tmp_cisco_secure_email_gateway_log_remaining_details_7273cf72

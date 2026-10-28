@@ -1,0 +1,117 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects CloudTrail PutEventSelectors calls where the legacy event selectors explicitly set includeManagementEvents to false, disabling capture of all management API calls for that trail. Unlike StopLogging or DeleteTrail \u2014 which leave an obvious trace of the trail being stopped or removed entirely \u2014 this technique leaves the trail appearing active and healthy in the console while silently blinding defenders to subsequent IAM changes, credential operations, and resource abuse. This technique is documented in Stratus Red Team as aws.defense-evasion.cloudtrail-event-selectors and is a known pre-exfiltration step.",
+        "false_positives": [
+            "IaC pipelines setting event selectors during trail creation always set includeManagementEvents to true \u2014 the rule will not fire on those calls. The remaining FP vector is an administrator intentionally restricting a trail to data-events-only for cost reasons. Validate the caller, change management ticket, and confirm this is not a multi-region or organization-wide trail where the coverage impact would be severe."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.provider",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS CloudTrail Management Events Disabled via PutEventSelectors",
+        "note": "## Triage and analysis\n\n### Investigating AWS CloudTrail Management Events Disabled via PutEventSelectors\n\n`PutEventSelectors` controls which CloudTrail events a trail captures. This rule fires when the\nnew event selectors explicitly set `includeManagementEvents` to `false` \u2014 disabling capture of\nall management API calls for that trail while leaving it appearing active in the console. This is\na surgical evasion technique that does not trigger the existing `StopLogging` or `DeleteTrail`\nalerts, and can persist silently for days before detection.\n\n### Possible investigation steps\n\n- **Confirm the intent**: `aws.cloudtrail.request_parameters` contains the full JSON of the new\n  event selectors. The rule has already matched `includeManagementEvents: false`. Confirm whether\n  ALL selectors have management events disabled or only some, and whether `ExcludeManagementEventSources`\n  further filters specific services.\n\n- **Check for other narrowing**: Also inspect `ReadWriteType` and `DataResources` in the same\n  event \u2014 switching to `ReadOnly` or removing data event entries compounds the coverage gap.\n\n- **Verify the caller**: `aws.cloudtrail.user_identity.arn` \u2014 IaC automation (Terraform,\n  CloudFormation, CDK) uses AssumedRole/ASIA* credentials and legitimately sets management event\n  selectors to `true` during trail creation. An AKIA* key or Root identity making this change\n  outside of a deployment pipeline is high-confidence adversarial.\n\n- **Check trail scope**: Was this a multi-region trail or organization-wide trail? Changes to\n  broad-scope trails have the largest visibility impact.\n\n- **Correlate activity**: Look for high-impact API calls in the 30\u201360 minutes following this\n  event \u2014 particularly IAM changes, credential operations, or S3/KMS data access \u2014 that would\n  now be invisible to the trail.\n\n- **Prior access**: Check for `GetTrailStatus`, `GetEventSelectors`, or `DescribeTrails` calls\n  from the same identity before this event, indicating reconnaissance of the trail configuration.\n\n### Response and remediation\n\n- Immediately call `PutEventSelectors` to restore `includeManagementEvents: true` on all selectors.\n- Confirm that `GetTrailStatus` shows `IsLogging: true`.\n- Review all API activity from the time the selectors were modified until detection using\n  alternative sources (CloudWatch, other regional trails) for the gap window.\n- Restrict `cloudtrail:PutEventSelectors` to break-glass roles and enforce via SCP.\n",
+        "query": "data_stream.dataset: \"aws.cloudtrail\"\n    and event.provider: \"cloudtrail.amazonaws.com\"\n    and event.action: \"PutEventSelectors\"\n    and event.outcome: \"success\"\n    and aws.cloudtrail.request_parameters: *includeManagementEvents*false*\n",
+        "references": [
+            "https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_PutEventSelectors.html",
+            "https://stratus-red-team.cloud/attack-techniques/AWS/aws.defense-evasion.cloudtrail-event-selectors/",
+            "https://attack.mitre.org/techniques/T1562/008/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": ">=6.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.request_parameters",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "20b79388-3225-4a98-b19f-17de8feaa39c",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS CloudTrail",
+            "Use Case: Log Auditing",
+            "Resources: Investigation Guide",
+            "Tactic: Defense Impairment"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0112",
+                    "name": "Defense Impairment",
+                    "reference": "https://attack.mitre.org/tactics/TA0112/"
+                },
+                "technique": [
+                    {
+                        "id": "T1685",
+                        "name": "Disable or Modify Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1685/",
+                        "subtechnique": [
+                            {
+                                "id": "T1685.002",
+                                "name": "Disable or Modify Cloud Log",
+                                "reference": "https://attack.mitre.org/techniques/T1685/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 2
+    },
+    "id": "20b79388-3225-4a98-b19f-17de8feaa39c_2",
+    "type": "security-rule"
+}

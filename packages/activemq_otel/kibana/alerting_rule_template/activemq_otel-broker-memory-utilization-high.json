@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when a broker's memory utilization sustains above 85% (`activemq.memory.utilization > 0.85`). At this level producers are likely to be blocked and the broker is one incident away from refusing writes.",
     "name": "[ActiveMQ OTel] Broker memory utilization high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -16,13 +17,28 @@
     "alertDelay": {
       "active": 2
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "activemq_otel-broker-health"
+        },
+        {
+          "id": "activemq_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## ActiveMQ broker memory utilization high\n\n### What fired\n`activemq.memory.utilization` averaged above 0.85 over the evaluation window.\n\n### Why it matters\nActiveMQ reserves a bounded pool of JVM heap for buffering in-flight messages. As the pool fills, the broker applies back-pressure \u2014 first by slowing producers, then by blocking sends outright. Approaching 100% puts the broker in a near-unavailable state.\n\n### Triage\n1. Overview dashboard: confirm which broker(s) are affected.\n2. Broker Health dashboard: inspect `activemq.memory.usage` vs `activemq.memory.limit` to see absolute pressure.\n3. Correlate with `activemq.queue.blocked.sends` \u2014 if > 0 the broker is already blocking producers.\n4. Check consumer counts on busy destinations; consumer starvation is the usual root cause.\n5. Review JVM heap (`activemq.jvm.memory.heap.used` vs `.max`) \u2014 a broker under GC pressure drives this metric too.\n\n### Remediation\n- Unblock consumers / add consumer capacity for the backed-up destinations.\n- Raise the broker's memory limit (`systemUsage/memoryUsage/limit`) if the workload has legitimately grown.\n- Investigate message producers bursting into topics/queues without matching consumption capacity.\n\n### Tuning\n- `> 0.85` with a 15-minute window balances responsiveness and noise. Tighten to `> 0.80` for latency-sensitive tiers; loosen to `> 0.90` if your workload sustains high utilization in steady state.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "TS metrics-activemq.otel-*\n// Broker memory utilization is a gauge (0–1 ratio)\n| WHERE activemq.memory.utilization IS NOT NULL\n| STATS max_util = MAX(AVG_OVER_TIME(activemq.memory.utilization)) BY activemq.broker.name, host.name\n// Alert when memory utilization exceeds 85%; producers may be blocked\n| WHERE max_util > 0.85\n| SORT max_util DESC\n| LIMIT 10"
+        "esql": "TS metrics-activemq.otel-*\n// Broker memory utilization is a gauge (0\u20131 ratio)\n| WHERE activemq.memory.utilization IS NOT NULL\n| STATS max_util = MAX(AVG_OVER_TIME(activemq.memory.utilization)) BY activemq.broker.name, host.name\n// Alert when memory utilization exceeds 85%; producers may be blocked\n| WHERE max_util > 0.85\n| SORT max_util DESC\n| LIMIT 10"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

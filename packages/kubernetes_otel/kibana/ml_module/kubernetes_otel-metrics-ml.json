@@ -1,0 +1,139 @@
+{
+    "id": "kubernetes_otel-metrics-ml",
+    "type": "ml-module",
+    "migrationVersion": {
+        "search": "7.9.3"
+    },
+    "references": [],
+    "attributes": {
+        "id": "kubernetes_otel-metrics-ml",
+        "title": "Kubernetes workload resources (OpenTelemetry)",
+        "description": "Detect anomalies in pod memory working set using metrics from the OpenTelemetry kubeletstats receiver. Memory is modelled per workload (Deployment, StatefulSet, DaemonSet) to survive pod recycling.",
+        "type": "Container metrics",
+        "logo": {
+            "icon": "logoKubernetes"
+        },
+        "defaultIndexPattern": "metrics-kubeletstatsreceiver.otel-*",
+        "query": {
+            "bool": {
+                "filter": [
+                    {
+                        "exists": {
+                            "field": "k8s.pod.memory.working_set"
+                        }
+                    }
+                ],
+                "must_not": {
+                    "terms": {
+                        "_tier": [
+                            "data_frozen",
+                            "data_cold"
+                        ]
+                    }
+                }
+            }
+        },
+        "jobs": [
+            {
+                "id": "k8s_workload_memory_anomaly",
+                "config": {
+                    "groups": [
+                        "kubernetes",
+                        "otel"
+                    ],
+                    "description": "Kubernetes: detect workloads (Deployment, StatefulSet, DaemonSet) whose pod memory working set has grown unusually relative to that workload's own history. Catches slow leak trajectories that affect every replica before any individual pod crosses a hard OOM threshold. Per-replica spikes are covered by the threshold-based alert rules.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "detector_description": "Anomalous Deployment pod memory working set",
+                                "function": "high_mean",
+                                "field_name": "k8s.pod.memory.working_set",
+                                "by_field_name": "k8s.deployment.name",
+                                "partition_field_name": "k8s.namespace.name"
+                            },
+                            {
+                                "detector_description": "Anomalous StatefulSet pod memory working set",
+                                "function": "high_mean",
+                                "field_name": "k8s.pod.memory.working_set",
+                                "by_field_name": "k8s.statefulset.name",
+                                "partition_field_name": "k8s.namespace.name"
+                            },
+                            {
+                                "detector_description": "Anomalous DaemonSet pod memory working set",
+                                "function": "high_mean",
+                                "field_name": "k8s.pod.memory.working_set",
+                                "by_field_name": "k8s.daemonset.name",
+                                "partition_field_name": "k8s.namespace.name"
+                            }
+                        ],
+                        "influencers": [
+                            "k8s.deployment.name",
+                            "k8s.statefulset.name",
+                            "k8s.daemonset.name",
+                            "k8s.namespace.name"
+                        ]
+                    },
+                    "analysis_limits": {
+                        "model_memory_limit": "128mb"
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "model_plot_config": {
+                        "enabled": false,
+                        "annotations_enabled": true
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-kubernetes-otel-metrics-ml"
+                    }
+                }
+            }
+        ],
+        "datafeeds": [
+            {
+                "id": "datafeed-k8s_workload_memory_anomaly",
+                "job_id": "k8s_workload_memory_anomaly",
+                "config": {
+                    "job_id": "k8s_workload_memory_anomaly",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "indices_options": {
+                        "allow_no_indices": true
+                    },
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "exists": {
+                                        "field": "k8s.pod.memory.working_set"
+                                    }
+                                }
+                            ],
+                            "should": [
+                                {
+                                    "exists": {
+                                        "field": "k8s.deployment.name"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "k8s.statefulset.name"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "k8s.daemonset.name"
+                                    }
+                                }
+                            ],
+                            "minimum_should_match": 1
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

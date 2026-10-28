@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `INCREASE(redis.keys.evicted) > 100` in the window. Memory pressure forces key removal.",
     "name": "[Redis OTel] High eviction rate",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "redis_otel-memory-persistence"
+        },
+        {
+          "id": "redis_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Redis high eviction rate\n\n### What fired\nMore than 100 keys evicted during the window.\n\n### Why it matters\nEvictions happen when Redis reaches `maxmemory` and enforces its policy. Normal for cache workloads; problematic for data-store workloads (means data loss).\n\n### Triage\n1. Check memory trend vs `maxmemory`.\n2. Inspect key volume per database.\n\n### Remediation\n- Raise `maxmemory` or adopt an eviction policy that matches workload.\n\n### Tuning\n- 100 threshold; tune per workload.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-redisreceiver.otel-*\n| WHERE redis.keys.evicted IS NOT NULL\n// Counter: use INCREASE to get evictions over the time window\n| STATS evicted = SUM(INCREASE(redis.keys.evicted))\n  BY server.address, server.port\n// Alert when evictions exceed threshold (adjust based on workload)\n// Sudden spikes indicate memory pressure; sustained evictions may be normal for cache workloads\n| WHERE evicted > 100\n| SORT evicted DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

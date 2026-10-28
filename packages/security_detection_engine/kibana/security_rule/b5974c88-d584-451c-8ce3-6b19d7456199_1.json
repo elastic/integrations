@@ -1,0 +1,134 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects successful GKE pod exec sessions whose command resembles reverse-shell or bind-shell one-liner patterns, including /dev/tcp and /dev/udp redirection, netcat/ncat exec-style flags, socat shell handoff, mkfifo pipelines, and common language socket idioms. Legitimate debug sessions sometimes use similar building blocks, but together these patterns align with post-exploitation interactive access and command-and-control. Common localhost /dev/tcp health-check ports are excluded. GKE records the command in gcp.audit.labels.command.gke.io/command when an explicit command is passed to exec.",
+        "false_positives": [
+            "Security training, CTF-style images, or vendor diagnostics may include bash redirection or /dev/tcp examples. Baseline approved images then expand exclusions as needed."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "client.user.email",
+                "source.ip",
+                "user_agent.original",
+                "event.action",
+                "event.outcome",
+                "event.type",
+                "gcp.audit.labels.command.gke.io/command",
+                "gcp.audit.resource_name",
+                "data_stream.namespace"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Pod Exec Potential Reverse Shell",
+        "note": "## Triage and analysis\n\n### Investigating GKE Pod Exec Potential Reverse Shell\n\nThis alert fires when a successful pods/exec API call includes a command matching reverse/bind-shell idioms.\nReview `gcp.audit.labels.command.gke.io/command` for the reconstructed payload.\n\n### Possible investigation steps\n\n- Identify the actor (`client.user.email`), source IP, and user agent (human kubectl vs automation).\n- Resolve the target namespace and pod from `gcp.audit.resource_name` and correlate with workload ownership.\n- Hunt nearby events from the same identity: secret reads, pods/exec to other workloads, RoleBinding changes.\n- Do not replay the command against live infrastructure unless policy explicitly allows a sandboxed recreation.\n\n### False positive analysis\n\n- Security training or CTF images may include reverse-shell examples; scope exceptions to those namespaces/images.\n- Some observability or mesh sidecars use socat or sockets in overlapping ways; validate image and command lineage.\n\n### Response and remediation\n\n- If malicious, terminate the exec session, isolate the workload or node, rotate credentials reachable from the pod,\n  and revoke pods/exec for the abused principal unless strictly required.\n",
+        "query": "data_stream.dataset:gcp.audit and service.name:\"k8s.io\" and event.outcome:success and\nevent.type:start and\nevent.action:(\"io.k8s.core.v1.pods.exec.create\" or \"io.k8s.core.v1.pods.exec.get\") and\ngcp.audit.labels.command.gke.io/command:(\n  (\n    */dev/tcp/* or */dev/udp/* or */inet/tcp/* or\n    *0\\\\\\>&1* or\n    *IO*Socket*INET* or *TCPSocket.new* or *bash*-i* or *fsockopen* or\n    *import*pty* or *import*socket* or *mkfifo* or\n    *nc*-c* or *nc*-e* or *netcat*-e* or\n    *socat*exec* or *socat*pty* or *socket.socket* or\n    *zsh/net/tcp* or *zsh/net/udp*\n  ) and not (\n    *127.0.0.1* or *localhost*\n  )\n)\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1609/",
+            "https://attack.mitre.org/techniques/T1059/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": ">=2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.labels.command.gke.io/command",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "service.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "b5974c88-d584-451c-8ce3-6b19d7456199",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: GCP Audit Logs",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Tactic: Command and Control",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1609",
+                        "name": "Container Administration Command",
+                        "reference": "https://attack.mitre.org/techniques/T1609/"
+                    },
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1095",
+                        "name": "Non-Application Layer Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1095/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "b5974c88-d584-451c-8ce3-6b19d7456199_1",
+    "type": "security-rule"
+}

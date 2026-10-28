@@ -4,6 +4,11 @@ This integration is for [CISA KEV](https://www.cisa.gov/known-exploited-vulnerab
 
 - `vulnerability` dataset: Supports vulnerabilities classified as known exploited from CISA.
 
+## Elastic Managed enabled integration
+
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ### Example Enrich Policy and ES|QL Correlation Query
 
 An enrich policy can be created to have other vulnerability information be enriched based on the CVE number.
@@ -35,6 +40,19 @@ from logs-nessus.vulnerability*
 | sort count desc
 | keep nessus.plugin.name, vulnerability.severity, cisa_kev.vulnerability.product, cisa_kev.vulnerability.date_added, count
 | limit 10
+```
+
+### Query-time KEV enrichment (LOOKUP JOIN)
+
+The package ships a `latest` transform that maintains the most recent KEV entry per CVE in the lookup index `logs-cisa_kevs_latest.vulnerability`. Unchanged catalog entries are deduplicated at ingest, while updated entries are retained as new source documents, so the raw data stream can hold multiple historical versions of a CVE. The lookup index collapses those versions into the latest row per CVE, making it the preferred enrichment path.
+
+You can enrich vulnerability findings at query time with the ES|QL [`LOOKUP JOIN`](https://www.elastic.co/guide/en/elasticsearch/reference/current/esql-lookup-join.html) command on `vulnerability.id`:
+
+```esql
+FROM logs-endpoint.vulnerability-*
+| LOOKUP JOIN logs-cisa_kevs_latest.vulnerability ON vulnerability.id
+| KEEP vulnerability.id, cisa_kev.vulnerability.date_added, cisa_kev.vulnerability.due_date, cisa_kev.vulnerability.known_ransomware_campaign_use
+| WHERE cisa_kev.vulnerability.date_added IS NOT NULL
 ```
 
 ## Upgrading to v1.7.0+

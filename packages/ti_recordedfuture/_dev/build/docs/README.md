@@ -1,6 +1,6 @@
 # Recorded Future Integration
 
-The Recorded Future integration has three data streams:
+The Recorded Future integration has four data streams:
 
 * `threat`: Threat intelligence from the Recorded Future Connect
   API's [risklist endpoints](https://api.recordedfuture.com/v2/#!/Domain/Domain_Risk_Lists),
@@ -9,6 +9,22 @@ The Recorded Future integration has three data streams:
   Future's [API for Playbook Alerts](https://api.recordedfuture.com/playbook-alert).
 * `triggered_alert`: Triggered alerts data from the Recorded Future Connect
   API's [alerts endpoint](https://api.recordedfuture.com/v2/#!/Alerts/Alert_Notification_Search).
+* `identity_detection`: Identity exposure detections (compromised credentials
+  discovered in breach dumps and stealer malware logs) from Recorded Future's
+  [Identity Detections API](https://docs.recordedfuture.com/reference/identity-detections).
+
+For the `identity_detection` data stream, the `Hash Password Cleartext` and
+`Hash Cookie Values` toggles are turned off by default. With both toggles off,
+any leaked password cleartext
+(`recordedfuture.identity_detection.password.cleartext`) and stolen cookie
+values (`recordedfuture.identity_detection.cookies.value`) returned by the API
+are stored in Elasticsearch as-is. To avoid storing these raw secret values,
+turn on `Hash Password Cleartext` and/or `Hash Cookie Values` and set a
+`Hashing Key`. When a toggle is on, the Elastic Agent replaces the corresponding
+value with a keyed `HMAC-SHA256` hash before the data reaches Elasticsearch, so
+the raw value is never indexed. The same `Hashing Key` is applied to both, and a
+stable key produces stable hashes, allowing correlation of the same leaked
+credential across detections.
 
 For the `threat` data stream, you need to define the `entity` and `list` to
 fetch. The supported entities are `domain`, `hash`, `ip`, and `url`. Check the
@@ -16,8 +32,27 @@ Recorded Future documentation for the available lists for each entity or use the
 default. To fetch indicators from multiple entities, you need to create a
 separate integration policy for each.
 
-Alternatively, the `threat` data stream can fetch custom Fusion files by
-supplying the URL to the CSV file as an advanced configuration option.
+Alternatively, the `threat` data stream can fetch a custom Fusion file by
+supplying the URL to the CSV file as an advanced configuration option. The file
+must use the same CSV format as the risklist endpoints:
+
+| Column | Required | Notes |
+|---|---|---|
+| `Name` | Yes | The indicator value. Its type (IP, URL, domain, or file hash) is auto-detected from the value, independent of the configured `entity`. |
+| `Risk` | Recommended | Risk score from 0 to 99. Mapped to `event.risk_score`. |
+| `RiskString` | No | For example, `4/52`. |
+| `EvidenceDetails` | No | JSON-encoded evidence from Recorded Future. |
+| `Algorithm` | No | Hash algorithm (for example `SHA-256`); marks the row as a file-hash indicator. |
+
+Recorded Future's public VPN and proxy Fusion lists
+(`/public/vpn_proxy_lists/vpn_ips_list.csv` and `proxy_ips_list.csv`) use the
+columns `ip`, `risk_score`, and `service` instead. These files are supported
+when fetched through the custom Fusion file URL option:
+`ip` and `risk_score` are mapped onto `Name` and `Risk`, and `service` is kept
+under `recordedfuture.service`. Any other Fusion file that uses a different
+schema (no `Name`/`ip` column) is not supported; its documents are indexed with
+`event.kind: pipeline_error` and an explanatory `error.message`. Additional
+columns are preserved under `recordedfuture.*`.
 
 The `threat` data stream will check whether the available data has changed
 before actually downloading it. A short interval setting will mean that it
@@ -33,22 +68,31 @@ The ingested IOCs expire after a certain duration. An
 [Elastic Transform][elasticsearch_transforms]
 is created to facilitate making only active IOCs available to end users. This
 transform creates a destination index named
-`logs-ti_recordedfuture_latest.threat-3` which only contains active and
+`logs-ti_recordedfuture_latest.threat-4` which only contains active and
 unexpired IOCs. The destination index also has an alias
 `logs-ti_recordedfuture_latest.threat`. When setting up indicator match rules,
 use this latest destination index to avoid false positives from expired IOCs.
-Please refer to the [ILM Policy](#ilm-policy) section below for information on
+See [Data retention](#data-retention) for information on
 how source indices are managed to prevent unbounded growth.
 
 [elasticsearch_transforms]: https://www.elastic.co/docs/explore-analyze/transforms
 
-### ILM Policy
+### Data retention
 
-To facilitate IOC expiration, source datastream-backed indices
-`.ds-logs-ti_recordedfuture.threat-*` are allowed to contain duplicates from
-each polling interval. An ILM policy is added to these source indices to prevent
-unbounded growth. This means data in these source indices will be deleted after
-`5 days` from the ingestion date.
+Threat indicators are re-collected across polling intervals, and the latest transform keeps the active, deduplicated view in its destination index. The source data streams therefore hold repeated copies of the same indicators.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-ti_recordedfuture.threat-*` | `logs-ti_recordedfuture.threat-default_policy`: roll over after 2d, delete 3d after rollover | delete 5d after rollover |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-ti_recordedfuture.threat-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
 
 **NOTE:** For large risklist downloads, adjust the timeout setting so that the
 Agent has enough time to download and process the risklist.
@@ -99,3 +143,13 @@ This is the `playbook_alert` dataset.
 {{event "playbook_alert"}}
 
 {{fields "playbook_alert"}}
+
+### identity_detection
+
+This is the `identity_detection` dataset.
+
+#### Example
+
+{{event "identity_detection"}}
+
+{{fields "identity_detection"}}

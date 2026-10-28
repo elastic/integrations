@@ -1,0 +1,86 @@
+{
+    "attributes": {
+        "enabled": false,
+        "author": [
+            "Contrast Security"
+        ],
+        "description": "Surfaces Contrast ADR incidents as Elastic Security alerts. Incidents are escalated cases created by the Contrast platform when related attack events are correlated with known application vulnerabilities or chained attacks. Each incident represents a finding that requires SOC analyst attention and includes a summary, severity score, and links to relevant runbooks.",
+        "false_positives": [
+            "Incidents created during scheduled penetration testing or security assessments in non-production environments."
+        ],
+        "index": [
+            "logs-contrast_security.incident-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Contrast ADR: Security Incident Requiring Investigation",
+        "note": "## Triage and analysis\n\n### Investigating Contrast ADR Incidents\n\nContrast ADR incidents aggregate related attack events into a single finding that warrants investigation.\n\n#### Possible investigation steps:\n\n- Review `message` for the incident title and `event.reason` for the summary.\n- Check `event.risk_score` to understand the incident severity (0-100 scale).\n- Follow the `event.url` link to view the full incident in the Contrast Security console.\n- Review `rule.reference` for recommended runbook links.\n- Check `rule.name` for the attack types involved in this incident.\n- Pivot to `logs-contrast_security.attack_event-*` using the incident time window and `rule.name` (the related attack type) to find the underlying attack evidence. Contrast does not currently emit a stable incident-to-attack-event join key, so this pivot is approximate.\n\n### Response and remediation:\n\n- Follow the recommended runbooks linked in the incident.\n- Review the individual attack events that comprise this incident for detailed exploit evidence.\n- Coordinate with the application development team for vulnerability remediation.",
+        "query": "event.dataset: \"contrast_security.incident\"",
+        "references": [
+            "https://www.contrastsecurity.com/contrast-adr",
+            "https://contrastsecurity.dev/adr-runbooks/"
+        ],
+        "related_integrations": [
+            {
+                "package": "contrast_security",
+                "version": "^0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "constant_keyword"
+            }
+        ],
+        "risk_score": 90,
+        "rule_id": "dacdf5ad-55fb-42c8-8bf1-631168499cd9",
+        "setup": "Contrast Security ADR must be configured to send incident alerts to Elasticsearch via the Bulk API. Events should be written to the logs-contrast_security.incident-* index pattern.",
+        "severity": "high",
+        "tags": [
+            "Data Source: Contrast Security",
+            "Use Case: Application Security",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Tactic: Execution",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "dacdf5ad-55fb-42c8-8bf1-631168499cd9",
+    "type": "security-rule"
+}

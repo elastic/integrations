@@ -8,34 +8,40 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
+      tag: set_ecs_version_135371bc
       field: ecs.version
-      value: '8.16.0'
+      value: '9.5.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - drop:
       if: ctx.json?.events == null
       description: Discard events that are missing the target during the split operation and are subsequently returned as the root object.
-      tag: drop_empty_events
+      tag: drop_empty_events_ac9e0c9d
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - date:
+      tag: date_json_id_time_dc34ff3c
       field: json.id.time
       if: ctx.json?.id?.time != null && ctx.json.id.time != ''
       timezone: UTC
@@ -47,9 +53,11 @@ processors:
         - yyyy/MM/dd HH:mm:ss z
       on_failure:
         - append:
+            tag: append_error_message_a48f8d5f
             field: error.message
             value: "{{{_ingest.on_failure_message}}}"
   - fingerprint:
+      tag: fingerprint_to_id_567b61c4
       description: Hashes the ID object and uses it as the document id to avoid duplicate events.
       fields:
         - json.id
@@ -58,37 +66,45 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_events_name_to_event_action_75ca640e
       field: json.events.name
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_json_id_applicationName_to_event_provider_fffca35d
       field: json.id.applicationName
       target_field: event.provider
       ignore_missing: true
   - convert:
+      tag: convert_json_id_uniqueQualifier_to_event_id_0664525d
       field: json.id.uniqueQualifier
       target_field: event.id
       type: string
       ignore_missing: true
   - rename:
+      tag: rename_json_actor_email_to_source_user_email_4ee5e9ab
       field: json.actor.email
       target_field: source.user.email
       ignore_missing: true
   - set:
+      tag: set_user_email_f8429233
       field: user.email
       copy_from: source.user.email
       ignore_failure: true
   - convert:
+      tag: convert_json_actor_profileId_to_source_user_id_edfcffb4
       field: json.actor.profileId
       target_field: source.user.id
       type: string
       ignore_missing: true
   - convert:
+      tag: convert_json_ipAddress_to_source_ip_aabdaf8f
       field: json.ipAddress
       target_field: source.ip
       type: ip
       ignore_missing: true
   - rename:
+      tag: rename_json_kind_to_google_workspace_kind_8c6d9f29
       field: json.kind
       target_field: google_workspace.kind
       ignore_missing: true
@@ -97,28 +113,34 @@ processors:
       target_field: organization.id
       type: string
       ignore_missing: true
-      tag: convert_customer_id_to_string
+      tag: convert_customer_id_to_string_2c4efbdb
       on_failure:
         - append:
+            tag: append_error_message_044cfe8e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_actor_callerType_to_google_workspace_actor_type_308eeffc
       field: json.actor.callerType
       target_field: google_workspace.actor.type
       ignore_missing: true
   - rename:
+      tag: rename_json_actor_key_to_google_workspace_actor_key_3f392d49
       field: json.actor.key
       target_field: google_workspace.actor.key
       ignore_missing: true
   - rename:
+      tag: rename_json_ownerDomain_to_google_workspace_organization_domain_6580cd7d
       field: json.ownerDomain
       target_field: google_workspace.organization.domain
       ignore_missing: true
   - rename:
+      tag: rename_json_events_type_to_google_workspace_event_type_e73f1e18
       field: json.events.type
       target_field: google_workspace.event.type
       ignore_missing: true
   - script:
+      tag: script_8d756e1a
       lang: painless
       if: 'ctx?.source?.user?.email != null && ctx?.source?.user?.email.contains("@")'
       source: >
@@ -134,68 +156,94 @@ processors:
         ctx.user.domain = splitmail[1];
         ctx.source.user.domain = splitmail[1];
   - set:
+      tag: set_user_id_64f70b73
       field: user.id
       copy_from: source.user.id
       if: ctx?.source?.user?.id != null
   - append:
+      tag: append_related_ip_549fa858
       field: related.ip
       value: "{{{source.ip}}}"
       if: ctx?.source?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_8302ba1f
       field: related.user
       value: "{{{source.user.name}}}"
       if: ctx?.source?.user?.name != null
       allow_duplicates: false
   - append:
+      tag: append_event_category_0ad925bf
       field: event.category
       value: authentication
       if: '["suspicious_login","suspicious_login_less_secure_app","suspicious_programmatic_login","user_signed_out_due_to_suspicious_session_cookie","login_failure","login_challenge","login_verification","logout","login_success"].contains(ctx?.event?.action)'
   - append:
+      tag: append_event_category_862a8460
       field: event.category
       value: iam
-      if: '["account_disabled_password_leak","2sv_disable","2sv_enroll","account_disabled_generic","account_disabled_spamming_through_relay","account_disabled_spamming","account_disabled_hijacked","titanium_enroll","titanium_unenroll","gov_attack_warning"].contains(ctx?.event?.action)'
+      if: '["account_disabled_password_leak","2sv_disable","2sv_enroll","account_disabled_generic","account_disabled_spamming_through_relay","account_disabled_spamming","account_disabled_hijacked","titanium_enroll","titanium_unenroll","gov_attack_warning","passkey_enrolled","passkey_removed"].contains(ctx.event?.action)'
   - append:
+      tag: append_event_category_55dc9de0
       field: event.category
       value: configuration
       if: '["password_edit","recovery_email_edit","recovery_phone_edit","recovery_secret_qa_edit","blocked_sender","email_forwarding_out_of_domain","risky_sensitive_action_allowed","risky_sensitive_action_blocked"].contains(ctx?.event?.action)'
   - append:
+      tag: append_event_category_7fdb64db
       field: event.category
       value: session
       if: '["login_failure","login_success","logout"].contains(ctx?.event?.action)'
   - append:
+      tag: append_event_type_700c8f91
       field: event.type
       value: start
       if: '["login_failure","login_success"].contains(ctx?.event?.action)'
   - append:
+      tag: append_event_type_c5b41421
       field: event.type
       value: end
       if: '["logout","user_signed_out_due_to_suspicious_session_cookie"].contains(ctx?.event?.action)'
   - append:
+      tag: append_event_type_19753b1b
       field: event.type
       value: user
       if: '["account_disabled_password_leak","account_disabled_generic","account_disabled_spamming_through_relay","account_disabled_spamming","account_disabled_hijacked","gov_attack_warning"].contains(ctx?.event?.action)'
   - append:
+      tag: append_event_type_6961815c
       field: event.type
       value: change
       if: '["password_edit","recovery_email_edit","recovery_phone_edit","recovery_secret_qa_edit","account_disabled_generic","account_disabled_spamming_through_relay","account_disabled_spamming","account_disabled_hijacked"].contains(ctx?.event?.action)'
   - append:
       field: event.type
+      tag: append_creation_into_event_type_for_passkey_enrolled_af7b0acb
+      value: creation
+      if: ctx.event?.action == 'passkey_enrolled'
+  - append:
+      field: event.type
+      tag: append_deletion_into_event_type_for_passkey_removed_66af66f4
+      value: deletion
+      if: ctx.event?.action == 'passkey_removed'
+  - append:
+      tag: append_event_type_93616ccd
+      field: event.type
       value: info
       if: '["2sv_disable","2sv_enroll","suspicious_login","suspicious_login_less_secure_app","suspicious_programmatic_login","titanium_enroll","titanium_unenroll","blocked_sender","email_forwarding_out_of_domain","login_challenge","login_verification","risky_sensitive_action_allowed","risky_sensitive_action_blocked","account_disabled_password_leak"].contains(ctx?.event?.action)'
   - set:
+      tag: set_event_kind_dab39c46
       field: event.kind
       value: alert
       if: '["gov_attack_warning"].contains(ctx?.event?.action)'
   - set:
+      tag: set_event_outcome_c64393de
       field: event.outcome
       value: failure
       if: 'ctx?.event?.action == "login_failure"'
   - set:
+      tag: set_event_outcome_2f7e52b2
       field: event.outcome
       value: success
       if: 'ctx?.event?.action == "login_success"'
   - script:
+      tag: script_8c31eaf3
       lang: painless
       if: 'ctx?.json?.events?.parameters != null && ctx?.json?.events?.parameters instanceof List'
       source: >
@@ -220,48 +268,58 @@ processors:
           }    
         }
   - rename:
+      tag: rename_json_networkInfo_ipAsn_to_google_workspace_login_network_info_ip_asn_47e6b506
       field: json.networkInfo.ipAsn
       target_field: google_workspace.login.network_info.ip_asn
       ignore_missing: true
   - rename:
+      tag: rename_json_networkInfo_regionCode_to_google_workspace_login_network_info_region_code_21f4d5a4
       field: json.networkInfo.regionCode
       target_field: google_workspace.login.network_info.region_code
       ignore_missing: true
   - rename:
+      tag: rename_json_networkInfo_subdivisionCode_to_google_workspace_login_network_info_subdivision_code_11b8939c
       field: json.networkInfo.subdivisionCode
       target_field: google_workspace.login.network_info.subdivision_code
       ignore_missing: true
   - rename:
+      tag: rename_json_resourceIds_to_google_workspace_login_resource_ids_3ee11581
       field: json.resourceIds
       target_field: google_workspace.login.resource_ids
       ignore_missing: true
   - convert:
+      tag: convert_google_workspace_login_timestamp_to_google_workspace_login_timestamp_ef394597
       field: google_workspace.login.timestamp
       target_field: google_workspace.login.timestamp
       type: long
       ignore_missing: true
   - script:
+      tag: script_5351eb5a
       lang: painless
       if: ctx?.google_workspace?.login?.timestamp != null
       source: >
         ctx._temp_ = new HashMap();
         ctx._temp_.start = ctx?.google_workspace?.login.timestamp / 1000;
   - date:
+      tag: date__temp__start_to_event_start_66e664ee
       field: _temp_.start
       target_field: event.start
       timezone: UTC
       formats:
         - UNIX_MS
       if: ctx?._temp_?.start != null
-  - set: 
+  - set:
+      tag: set_event_outcome_dd2f9147
       field: event.outcome
       value: success
       if: ctx.event?.outcome == null && ctx.google_workspace?.login?.challenge_status?.toLowerCase()?.contains('passed') == true
-  - set: 
+  - set:
+      tag: set_event_outcome_40353fcc
       field: event.outcome
       value: failure
       if: 'ctx.google_workspace?.login?.challenge_status != null && ctx.event?.outcome == null'
   - script:
+      tag: script_f160a7de
       lang: painless
       if: 'ctx?.google_workspace?.login?.affected_email_address != null && ctx?.google_workspace?.login?.affected_email_address.contains("@")'
       source: >
@@ -285,10 +343,12 @@ processors:
         ctx.user.target.domain = splitmail[1];
         ctx.related.user.add(splitmail[0]);
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -297,27 +357,33 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - remove:
-      field: 
+      tag: remove_86fcb9a0
+      field:
         - json
         - _temp_
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

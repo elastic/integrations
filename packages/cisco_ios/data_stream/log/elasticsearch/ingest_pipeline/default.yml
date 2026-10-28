@@ -22,10 +22,7 @@ processors:
       tag: set_observer_product_b4ddab2e
       field: observer.product
       value: IOS
-  - set:
-      tag: set_observer_type_5dddf3ba
-      field: observer.type
-      value: firewall
+  # observer.type is assigned later using precedence-based logic
   - set:
       tag: set_event_type_ec95f7f2
       field: event.type
@@ -64,6 +61,7 @@ processors:
         - '^%{CISCO_PRIORITY_MSGCOUNT}?(?:(?:%{IP}|%{CISCO_HOSTNAME:log.syslog.hostname})(?:: \*%{DATA}:|:?)? )?(?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP:_temp_.timestamp}): %{GREEDYDATA:_temp_.message}$'
         - '^%{SYSLOGTIMESTAMP} (?:%{IP}|%{HOSTNAME:log.syslog.hostname}) %{CISCO_PRIORITY_MSGCOUNT}?(?:%{NUMBER:cisco.ios.sequence}: )(?:(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): )?%{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP:log.syslog.hostname}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{GREEDYDATA:_temp_.message}$'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}%{GREEDYDATA:_temp_.message}$'
       pattern_definitions:
         ISO8601_TIMEZONE: "(?:Z|[+-]%{HOUR}(?::?%{MINUTE}))"
         TIMESTAMP_ISO8601: "%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:_temp_.tz}?"
@@ -209,6 +207,7 @@ processors:
       tag: grok_message
       patterns:
         - '%{DATA:cisco.ios.facility}-%{POSINT:event.severity}-%{DATA:event.code}:\s+(\w+\d+(/\d+)?\:\s+)?([a-zA-Z0-9_]+\:\s+)?%{GREEDYDATA:message}'
+        - '%{DATA:cisco.ios.facility}-(?<cisco.ios.mnemonic>[A-Z])-%{DATA:event.code}:\s+(\w+\d+(/\d+)?\:\s+)?([a-zA-Z0-9_]+\:\s+)?%{GREEDYDATA:message}'
       ignore_missing: true
   - grok:
       field: message
@@ -310,6 +309,28 @@ processors:
         - '^(?:No|Invalid) MD5 digest from %{DATA:source.address}(\(%{INT:source.port}\)|\:%{INT:source.port}) to %{DATA:destination.address}(\(%{INT:destination.port}\)|\:%{INT:destination.port})(?:(?: \(RST\))? (?:tableid - %{DATA:cisco.ios.tableid}|%{GREEDYDATA:_temp_.rst}))?$'
       ignore_missing: true
       if: ctx.event?.code == 'BADAUTH'
+  # observer.type precedence: preserve existing -> firewall (strict) -> switch -> router
+  - set:
+      tag: set_observer_type_firewall_9f7a64f1
+      field: observer.type
+      value: firewall
+      if: >-
+        ctx.observer?.type == null && (
+          ['SEC', 'FW', 'IPV6', 'IPV6_ACL'].contains(ctx.cisco?.ios?.facility) ||
+          ['IPACCESSLOGP', 'IPACCESSLOGDP', 'IPACCESSLOGNP', 'IPACCESSLOGSP', 'IPACCESSLOGRP', 'ACCESSLOGP', 'ACCESSLOGDP', 'ACCESSLOGNP', 'ACCESSLOGSP', 'IPV6ACCESSLOGP'].contains(ctx.event?.code)
+        )
+  - set:
+      tag: set_observer_type_switch_5a42cf1a
+      field: observer.type
+      value: switch
+      if: >-
+        ctx.observer?.type == null &&
+        ['LINK', 'SPANTREE', 'STP', 'PORTSECURITY', 'VTP', 'LINEPROTO'].contains(ctx.cisco?.ios?.facility)
+  - set:
+      tag: set_observer_type_router_37bdbeb8
+      field: observer.type
+      value: router
+      if: ctx.observer?.type == null
   - grok:
       field: message
       tag: grok_message_rp_join

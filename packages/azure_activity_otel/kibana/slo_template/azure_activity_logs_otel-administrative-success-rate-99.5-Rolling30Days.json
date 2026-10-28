@@ -1,0 +1,52 @@
+{
+  "attributes": {
+    "name": "[Azure Activity Logs OTel] Administrative operation success rate 99.5% rolling 30 days",
+    "description": "This SLO tracks the success rate of Azure Resource Manager administrative operations via Activity Logs, ensuring that 99.5% of completed operations (excluding in-progress Start/Started) succeed over a rolling 30-day period. Failed operations indicate infrastructure automation issues, permissions problems, or resource provider outages.",
+    "indicator": {
+      "type": "sli.metric.custom",
+      "params": {
+        "index": "logs-azure.activity.otel-*",
+        "timestampField": "@timestamp",
+        "filter": "data_stream.dataset: \"azure.activity.otel\" and azure.category: \"Administrative\"",
+        "good": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "doc_count",
+              "filter": "not (azure.result.type: \"Start\" or azure.result.type: \"Started\") and not (azure.result.type: \"Failure\" or azure.result.type: \"Failed\")"
+            }
+          ],
+          "equation": "A"
+        },
+        "total": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "doc_count",
+              "filter": "not (azure.result.type: \"Start\" or azure.result.type: \"Started\")"
+            }
+          ],
+          "equation": "A"
+        }
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995
+    },
+    "tags": ["azure", "activity-logs", "otel"],
+    "artifacts": {
+      "dashboards": [
+        { "id": "azure_activity_otel-overview" },
+        { "id": "azure_activity_otel-administrative-operations" },
+        { "id": "azure_activity_otel-platform-health" }
+      ]
+    }
+  },
+  "id": "azure_activity_logs_otel-administrative-success-rate-99.5-Rolling30Days",
+  "type": "slo_template"
+}

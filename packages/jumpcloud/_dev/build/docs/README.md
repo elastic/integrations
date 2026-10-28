@@ -4,6 +4,11 @@ The JumpCloud integration allows you to monitor events related to the JumpCloud 
 
 You can find out more about JumpCloud and JumpCloud Directory Insights [here](https://jumpcloud.com/platform/directory-insights)
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Data streams
 
 A single data stream named "jumpcloud.events" is used by this integration.
@@ -36,6 +41,33 @@ Ensure you have created a JumpCloud admin API key that you have access to, refer
 6. Assign the integration to a new Elastic Agent host, or an existing Elastic Agent host
 
 ![Example of Add JumpCloud Integration](../img/sample-add-integration.png)
+
+## Supported services
+
+The integration collects events from [JumpCloud's Directory Insights API](https://docs.jumpcloud.com/api/insights/directory/1.0/index.html). You can control which event categories are collected using the **services** setting. The default value is `all`, which collects events from every service.
+
+The supported service values are:
+
+| Service | Description |
+|---|---|
+| `all` | Events from all services. |
+| `access_management` | Access management activity. |
+| `aigw` | AI gateway activity. |
+| `alert` | Alert service events. |
+| `asset_management` | Asset management activity. |
+| `di_events` | Generic Directory Insights events. |
+| `directory` | Admin Portal and User Portal activity, including admin changes and authentications. |
+| `genai` | Generative AI activity. |
+| `ldap` | User authentications to LDAP, including LDAP Bind and Search events. |
+| `mdm` | MDM command results. |
+| `notifications` | Notification activity. |
+| `object_storage` | Object storage activity. |
+| `password_manager` | JumpCloud password manager activity. |
+| `radius` | User authentications to RADIUS, used for Wi-Fi and VPNs. |
+| `reports` | Report activity. |
+| `software` | Application changes on macOS, Windows, and Linux devices. |
+| `sso` | User authentications to SAML applications. |
+| `systems` | User authentications to macOS, Windows, and Linux systems, including agent-related events. |
 
 ## Events
 

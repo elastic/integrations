@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the `ActiveMQ.DLQ` destination accumulates more than 100 unconsumed messages. Growth in the dead-letter queue means messages are failing delivery \u2014 poison payloads, serialization errors, or downstream failures.",
     "name": "[ActiveMQ OTel] Dead letter queue depth high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -16,13 +17,31 @@
     "alertDelay": {
       "active": 2
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "activemq_otel-destinations"
+        },
+        {
+          "id": "activemq_otel-overview"
+        },
+        {
+          "id": "activemq_otel-broker-health"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## ActiveMQ dead letter queue depth high\n\n### What fired\nThe gauge `activemq.message.current` for destination `ActiveMQ.DLQ` exceeded 100 in the evaluation window.\n\n### Why it matters\nMessages land in the DLQ after exhausting broker-side retries. DLQ growth is almost always an application-layer signal: a poison message format, a serializer bug, a downstream service outage, or a TTL that is too aggressive for current consumer throughput.\n\n### Triage\n1. Destinations dashboard: confirm the DLQ depth and rate of growth.\n2. Check which source destinations are feeding the DLQ \u2014 usually via broker logs or by inspecting message headers (`OriginalDestination`).\n3. Correlate with `activemq.message.expired` increases and downstream service health.\n4. Sample a few DLQ messages (via JMX/console/Jolokia) to inspect payload and failure reason.\n\n### Remediation\n- Fix the application or consumer that is rejecting messages.\n- Drain the DLQ after the root cause is addressed (reprocess or discard as business rules dictate).\n- If the DLQ is used as a feature for async retries, consider adding a separate queue rather than accumulating in `ActiveMQ.DLQ`.\n\n### Tuning\n- Threshold (`> 100`) and 15-minute window can be lowered for zero-tolerance environments; raise for noisy systems where small DLQ churn is expected.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-activemq.otel-*\n// activemq.message.current is gauge; destination name in activemq.destination.name\n| WHERE activemq.message.current IS NOT NULL AND activemq.destination.name == \"ActiveMQ.DLQ\"\n| STATS dlq_depth = MAX(LAST_OVER_TIME(activemq.message.current)) BY activemq.broker.name, activemq.destination.name\n// Alert when DLQ accumulates significant messages; adjust threshold for your tolerance\n| WHERE dlq_depth > 100\n| SORT dlq_depth DESC\n| LIMIT 10"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

@@ -1,0 +1,118 @@
+title: Collect Chronicle alerts from Google SecOps.
+type: logs
+dataset: google_secops.alert_v2
+streams:
+  - input: cel
+    enabled: false
+    title: Alerts v2
+    description: >-
+      Collect alerts from Google SecOps using the Chronicle API legacySearchDetections method.
+      Use this data stream for new deployments.
+    template_path: cel.yml.hbs
+    vars:
+      - name: oauth_scope
+        type: select
+        title: OAuth Scope
+        description: OAuth scope used to authenticate with the Chronicle API. Requires one of the supported Google OAuth scopes for legacySearchDetections. See [Chronicle API authentication](https://cloud.google.com/chronicle/docs/reference/authentication).
+        multi: false
+        required: true
+        show_user: true
+        default: https://www.googleapis.com/auth/chronicle.readonly
+        options:
+          - value: https://www.googleapis.com/auth/chronicle.readonly
+            text: Chronicle Read Only
+          - value: https://www.googleapis.com/auth/chronicle
+            text: Chronicle
+          - value: https://www.googleapis.com/auth/cloud-platform
+            text: Cloud Platform
+      - name: project_id
+        type: text
+        title: GCP Project ID
+        description: Google Cloud project ID linked to the Google SecOps instance.
+        multi: false
+        required: true
+        show_user: true
+      - name: location
+        type: text
+        title: Location
+        description: Regional location code for the SecOps instance (for example, us, eu, or europe-west3).
+        multi: false
+        required: true
+        show_user: true
+      - name: instance_id
+        type: text
+        title: Instance ID
+        description: Google SecOps SIEM customer or instance ID (Settings → SIEM Settings → Profile).
+        multi: false
+        required: true
+        show_user: true
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: How far back to pull the Alerts from Google SecOps API. Supported units for this parameter are h/m/s.
+        default: 24h
+        multi: false
+        required: true
+        show_user: true
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between requests to the Google SecOps API. Supported units for this parameter are h/m/s.
+        default: 1h
+        multi: false
+        required: true
+        show_user: true
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: Batch size for the response of the Google SecOps API. The maximum supported batch size value is 1000.
+        default: 1000
+        multi: false
+        required: true
+        show_user: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+          Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
+          tracer will delete any stored traces.
+          See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable)
+          for details.
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 1m
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - google_secops-alert-v2
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

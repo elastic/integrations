@@ -26,6 +26,11 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 Sysdig must be configured to output alerts to a supported output channel as defined in [Setup](#setup). The system will only receive common fields output by Sysdig's rules, meaning that if a rule does not include a desired field the rule must be edited in Sysdig to add the field.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Setup
 
 For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
@@ -618,6 +623,17 @@ An example event for `event` looks as following:
 | sysdig.event.content.fields.fd.type |  | keyword |
 | sysdig.event.content.fields.group.gid |  | keyword |
 | sysdig.event.content.fields.group.name |  | keyword |
+| sysdig.event.content.fields.jevt.obj | Original JSON-serialized Kubernetes audit event (retained for backwards compatibility). | keyword |
+| sysdig.event.content.fields.jevt.obj_parsed | Parsed JSON-serialized Kubernetes audit event. | flattened |
+| sysdig.event.content.fields.ka.auth.decision |  | keyword |
+| sysdig.event.content.fields.ka.response.code |  | keyword |
+| sysdig.event.content.fields.ka.target.name |  | keyword |
+| sysdig.event.content.fields.ka.target.namespace |  | keyword |
+| sysdig.event.content.fields.ka.target.subresource |  | keyword |
+| sysdig.event.content.fields.ka.uri |  | keyword |
+| sysdig.event.content.fields.ka.uri_params | Kubernetes audit URI query parameters. | flattened |
+| sysdig.event.content.fields.ka.user.name |  | keyword |
+| sysdig.event.content.fields.ka.verb |  | keyword |
 | sysdig.event.content.fields.proc.acmdline_2 |  | wildcard |
 | sysdig.event.content.fields.proc.acmdline_2.text | Multi-field of `sysdig.event.content.fields.proc.acmdline_2`. | match_only_text |
 | sysdig.event.content.fields.proc.acmdline_3 |  | wildcard |
@@ -698,6 +714,8 @@ An example event for `event` looks as following:
 | sysdig.event.description | Description of the policy the event is generated after. | match_only_text |
 | sysdig.event.engine | The engine used to generate the event out of the raw signal. Possible values are drift, falco, list, machineLearning, malware. | keyword |
 | sysdig.event.id | The event id. | keyword |
+| sysdig.event.labels.agent.variant |  | keyword |
+| sysdig.event.labels.agent.version |  | keyword |
 | sysdig.event.labels.aws.account_id |  | keyword |
 | sysdig.event.labels.aws.region |  | keyword |
 | sysdig.event.labels.aws.user |  | keyword |
@@ -710,8 +728,10 @@ An example event for `event` looks as following:
 | sysdig.event.labels.cloud_provider.name |  | keyword |
 | sysdig.event.labels.cloud_provider.region |  | keyword |
 | sysdig.event.labels.cloud_provider.user |  | keyword |
+| sysdig.event.labels.container.id |  | keyword |
 | sysdig.event.labels.container.image.digest |  | keyword |
 | sysdig.event.labels.container.image.id |  | keyword |
+| sysdig.event.labels.container.image.name |  | keyword |
 | sysdig.event.labels.container.image.repo |  | keyword |
 | sysdig.event.labels.container.image.tag |  | keyword |
 | sysdig.event.labels.container.label.io.kubernetes.container.name |  | keyword |
@@ -726,17 +746,22 @@ An example event for `event` looks as following:
 | sysdig.event.labels.gcp.project_id |  | keyword |
 | sysdig.event.labels.gcp.project_name |  | keyword |
 | sysdig.event.labels.host.host_name |  | keyword |
+| sysdig.event.labels.host.id |  | keyword |
 | sysdig.event.labels.host.mac |  | keyword |
+| sysdig.event.labels.kubernetes.cluster.distribution |  | keyword |
 | sysdig.event.labels.kubernetes.cluster.name |  | keyword |
 | sysdig.event.labels.kubernetes.cron_job.name |  | keyword |
 | sysdig.event.labels.kubernetes.daemon_set.name |  | keyword |
+| sysdig.event.labels.kubernetes.deployment.name |  | keyword |
 | sysdig.event.labels.kubernetes.job.name |  | keyword |
 | sysdig.event.labels.kubernetes.namespace.name |  | keyword |
 | sysdig.event.labels.kubernetes.node.name |  | keyword |
 | sysdig.event.labels.kubernetes.pod.name |  | keyword |
+| sysdig.event.labels.kubernetes.replica_set.name |  | keyword |
 | sysdig.event.labels.kubernetes.service.name |  | keyword |
 | sysdig.event.labels.kubernetes.workload.name |  | keyword |
 | sysdig.event.labels.kubernetes.workload.type |  | keyword |
+| sysdig.event.labels.orchestrator.type |  | keyword |
 | sysdig.event.labels.source.ip |  | ip |
 | sysdig.event.name | Name of the policy the event is generated after. | keyword |
 | sysdig.event.originator | Type of event. Possible values are policy, profilingDetection, falcocloud, admissionController. | keyword |

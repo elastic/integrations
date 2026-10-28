@@ -1,0 +1,55 @@
+---
+description: >-
+  Pipeline for categorizing ECS event fields for Kolide device events. Maps the
+  resolved event.action to event.kind/category/type using an exact lookup table.
+  API inventory snapshots (event.action: device) are event.kind: state /
+  event.type: info. Webhook lifecycle deliveries (devices.created,
+  devices.registered, devices.destroyed, device_trust.status_changed) are
+  event.kind: event. All device records carry the host category. Because the ECS
+  host category only permits event.type access/change/end/info/start, lifecycle
+  deliveries use change. event.action is set upstream (default.yml for the API
+  snapshot, webhook.yml for lifecycle deliveries).
+processors:
+  - script:
+      lang: painless
+      tag: set_ecs_categorization
+      description: Map Kolide device event.action to ECS categorization fields using exact lookups.
+      if: ctx.event?.action != null
+      params:
+        exact:
+          device: { kind: state, category: ['host'], type: ['info'] }
+          devices.created: { kind: event, category: ['host'], type: ['change'] }
+          devices.registered: { kind: event, category: ['host'], type: ['change'], outcome: success }
+          devices.destroyed: { kind: event, category: ['host'], type: ['change'] }
+          device_trust.status_changed: { kind: event, category: ['host'], type: ['change'] }
+      source: |-
+        def action = ctx.event.action;
+        def m = params.exact.get(action);
+        if (m != null) {
+          ctx.event.kind = m.kind;
+          ctx.event.category = new ArrayList(m.category);
+          ctx.event.type = new ArrayList(m.type);
+          if (m.containsKey('outcome') && ctx.event.outcome == null) {
+            ctx.event.outcome = m.outcome;
+          }
+        } else {
+          ctx.event.kind = 'event';
+          ctx.event.category = ['host'];
+          ctx.event.type = ['change'];
+        }
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

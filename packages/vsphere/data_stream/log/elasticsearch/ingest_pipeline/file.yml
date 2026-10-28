@@ -14,3 +14,12 @@ processors:
   - append:
       field: event.type
       value: creation
+  - set:
+      field: source.ip
+      copy_from: client.ip
+      if: ctx.client?.ip != null
+  - append:
+      field: related.ip
+      value: "{{client.ip}}"
+      allow_duplicates: false
+      if: ctx.client?.ip != null

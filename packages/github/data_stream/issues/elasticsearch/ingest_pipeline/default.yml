@@ -2,43 +2,76 @@
 description: Pipeline for parsing GitHub audit logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_github_issues_b6b557e5
       field: event.original
       target_field: github.issues
   - fail:
+      tag: fail_missing_json_object_2df5ab84
       if: "!(ctx.github.issues instanceof Map)"
       message: Missing JSON object
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
+  # The API returns a snapshot of the issue's current state, not a discrete action, so
+  # event.type is inferred from timestamps. `creation` applies only while the issue has
+  # never been modified; reopened and closed issues have updated_at > created_at.
   - append:
+      tag: append_event_type_5b8105e1
       field: event.type
       value: creation
       if: ctx.github?.issues?.created_at == ctx.github?.issues?.updated_at
+  # A closed issue or a merged pull request has reached the end of its lifecycle.
   - append:
+      tag: append_event_type_70c57ee5
       field: event.type
       value: deletion
       if: ctx.github?.issues?.closed_at != null || ctx.github?.issues?.pull_request?.merged_at != null
+  # Anything still open but modified since it was created has been edited or reopened.
   - append:
+      tag: append_event_type_3417105c
       field: event.type
       value: change
       if: ctx.github?.issues?.created_at != ctx.github?.issues?.updated_at && ctx.github?.issues?.closed_at == null && ctx.github?.issues?.pull_request?.merged_at == null
+  - set:
+      field: event.action
+      value: reopened
+      tag: set_event_action_reopened_fba32d46
+      if: ctx.github?.issues?.state == 'open' && ctx.github.issues.state_reason == 'reopened'
+  - set:
+      field: event.action
+      value: opened
+      tag: set_event_action_opened_ba3d87d9
+      if: ctx.github?.issues?.state == 'open' && ctx.github.issues.state_reason != 'reopened'
+  - set:
+      field: event.action
+      value: closed
+      tag: set_event_action_closed_a1434ad3
+      if: ctx.github?.issues?.state == 'closed'
+  - set:
+      field: event.reason
+      copy_from: github.issues.state_reason
+      tag: set_event_reason_from_state_reason_6739bff4
+      ignore_empty_value: true
   - date:
+      tag: date_github_issues_updated_at_to_github_issues_updated_at_093ebffd
       field: github.issues.updated_at
       formats:
         - ISO8601
@@ -46,6 +79,7 @@ processors:
       target_field: github.issues.updated_at
       if: ctx.github.issues.updated_at != null
   - date:
+      tag: date_github_issues_created_at_to_github_issues_created_at_1a606418
       field: github.issues.created_at
       formats:
         - ISO8601
@@ -53,47 +87,59 @@ processors:
       target_field: github.issues.created_at
       if: ctx.github.issues.created_at != null
   - set:
+      tag: set_timestamp_783c7f2d
       field: '@timestamp'
       copy_from: github.issues.updated_at
       ignore_empty_value: true
   - set:
+      tag: set_event_created_e9a0636f
       field: event.created
       copy_from: "@timestamp"
       ignore_empty_value: true
   - set:
+      tag: set_github_issues_is_pr_29e7aae7
       field: github.issues.is_pr
       value: false
   - set:
+      tag: set_github_issues_is_pr_8baf3bdf
       if: ctx.github.issues.pull_request != null
       field: github.issues.is_pr
       value: true
   - dissect:
+      tag: dissect_github_issues_url_843c793f
       field: github.issues.url
       pattern: "https://api.github.com/repos/%{_temp_.owner}/%{_temp_.repository}/issues/%{_temp_.number}"
       ignore_missing: true
   - set:
+      tag: set_github_repository_name_3fd19038
       field: github.repository.name
       value: "{{{_temp_.repository}}}"
       if: ctx._temp_?.repository != null
   - set:
+      tag: set_github_repository_html_url_e09a8fc8
       field: github.repository.html_url
       value: "https://github.com/{{{_temp_.owner}}}/{{{_temp_.repository}}}"
       if: ctx._temp_?.owner != null && ctx._temp_?.repository != null
   - set:
+      tag: set_github_repository_url_cc7c15f2
       field: github.repository.url
       value: "https://api.github.com/repos/{{{_temp_.owner}}}/{{{_temp_.repository}}}"
       if: ctx._temp_?.owner != null && ctx._temp_?.repository != null
   - set:
+      tag: set_github_repository_owner_login_3283116b
       field: github.repository.owner.login
       value: "{{{_temp_.owner}}}"
       if: ctx._temp_?.owner != null
   - foreach:
+      tag: foreach_github_issues_assignees_6ee08aae
       field: github.issues.assignees
       ignore_missing: true
       processor:
         remove:
+          tag: remove_ingest_value_node_id_c6d8b287
           field: ["_ingest._value.node_id", "_ingest._value.avatar_url", "_ingest._value.gravatar_id", "_ingest._value.followers_url", "_ingest._value.following_url", "_ingest._value.gists_url", "_ingest._value.starred_url", "_ingest._value.subscriptions_url", "_ingest._value.organizations_url", "_ingest._value.repos_url", "_ingest._value.events_url", "_ingest._value.received_events_url"]
   - fingerprint:
+      tag: fingerprint_to_id_aba2b3a0
       fields:
         - github.repository.owner.login
         - github.repository.name
@@ -104,6 +150,7 @@ processors:
       target_field: "_id"
       ignore_missing: true
   - remove:
+      tag: remove_b2d8d5b5
       field:
         - github.issues.user.node_id
         - github.issues.user.avatar_url
@@ -145,10 +192,12 @@ processors:
         - github.issues.reactions
       ignore_missing: true
   - rename:
+      tag: rename_github_issues_labels_to__temp__labels_eb146963
       target_field: _temp_.labels
       field: github.issues.labels
       ignore_missing: true
   - script:
+      tag: script_remove_unwanted_fields_from_labels_261fc403
       lang: painless
       description: Remove unwanted fields from labels
       if: ctx._temp_?.labels != null
@@ -165,6 +214,7 @@ processors:
         }
         ctx.github.issues.labels = labels;
   - script:
+      tag: script_calculate_time_taken_to_close_bfa45937
       lang: painless
       description: Calculate time taken to close an issue
       if: ctx.github.issues.closed_at != null
@@ -182,15 +232,18 @@ processors:
       # User ECS fields #
       ###################
   - set:
+      tag: set_user_name_4ce1cced
       field: user.name
       copy_from: github.issues.user.login
       if: ctx.github.issues.user?.login != null
   - convert:
+      tag: convert_github_issues_user_id_to_user_id_0895ac4d
       field: github.issues.user.id
       type: string
       target_field: user.id
       ignore_missing: true
   - append:
+      tag: append_user_roles_ba25e906
       field: user.roles
       value: ['site_admin']
       if: ctx.github.issues.user?.site_admin != null && ctx.github.issues.user?.site_admin == true
@@ -199,15 +252,18 @@ processors:
       # Related ECS fields #
       ###################
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: "{{{user.name}}}"
       if: ctx.user?.name != null
       allow_duplicates: false
   - foreach:
+      tag: foreach_github_issues_assignees_20d89808
       field: github.issues.assignees
       if: ctx.github.issues.assignees != null
       processor:
         append:
+          tag: append_related_user_d03bf79f
           field: related.user
           value: "{{{_ingest._value.login}}}"
           allow_duplicates: false
@@ -215,11 +271,13 @@ processors:
           # Cleanup #
           ###########
   - remove:
+      tag: remove_cleanup_96fa0639
       field:
         - _temp_
         - github.issues.repository
       ignore_missing: true
   - script:
+      tag: script_processor_iterates_over_whole_document_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -246,12 +304,18 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

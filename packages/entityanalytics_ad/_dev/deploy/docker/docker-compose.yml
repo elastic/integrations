@@ -1,0 +1,14 @@
+version: '2.3'
+services:
+  ldap-mock-service:
+    image: golang:1.26-alpine
+    working_dir: /app
+    volumes:
+      - ./ldap-mock-service:/app
+    ports:
+      - 10389
+    healthcheck:
+      test: "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1"
+      interval: 10s
+      timeout: 5s
+    command: ["go", "run", "main.go"]

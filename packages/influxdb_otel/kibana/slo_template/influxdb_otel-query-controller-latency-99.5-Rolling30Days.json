@@ -1,0 +1,51 @@
+{
+  "attributes": {
+    "name": "[InfluxDB OTel] Query controller execution latency 99.5% rolling 30 days",
+    "description": "This SLO tracks the proportion of Flux query executions that complete within 5 seconds, ensuring 99.5% of queries meet this latency target over a rolling 30-day period. Reflects query controller health and storage read performance.",
+    "indicator": {
+      "type": "sli.histogram.custom",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"influxdb.otel\"",
+        "timestampField": "@timestamp",
+        "good": {
+          "field": "qc_executing_duration_seconds",
+          "aggregation": "range",
+          "from": 0,
+          "to": 5
+        },
+        "total": {
+          "field": "qc_executing_duration_seconds",
+          "aggregation": "value_count"
+        }
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995
+    },
+    "tags": [
+      "influxdb",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.host.name"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "influxdb_otel-query-tasks"
+        },
+        {
+          "id": "influxdb_otel-overview"
+        }
+      ]
+    }
+  },
+  "id": "influxdb_otel-query-controller-latency-99.5-Rolling30Days",
+  "type": "slo_template"
+}

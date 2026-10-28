@@ -1,0 +1,160 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a potential privilege escalation attempt via CVE-2022-38028 through modification of the protected Print to PDF MPDW constraints script.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "winlogbeat-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-crowdstrike.fdr*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.id",
+                "process.executable",
+                "process.command_line",
+                "process.pid",
+                "process.entity_id",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.hash.sha256",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted",
+                "file.path",
+                "file.name"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential privilege escalation via CVE-2022-38028",
+        "note": "## Triage and analysis\n\n### Investigating Potential privilege escalation via CVE-2022-38028\n\n#### Possible investigation steps\n\n- Does the alert show protected-path MPDW-constraints.js placement outside Windows servicing?\n  - Why: the rule proves a Print to PDF constraints-script write, not Print Spooler execution of the modified script.\n  - Focus: confirm `file.path` is DriverStore or Print to PDF WinSxS for MPDW-constraints.js, then read `process.executable`, `process.command_line`, `process.parent.executable`, and `process.parent.command_line`. !{investigate{\"description\":\"\",\"label\":\"File events for the same suspicious JavaScript path\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"file.path\",\"queryType\":\"phrase\",\"value\":\"{{file.path}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-2h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the target is protected DriverStore or WinSxS and the writer is not Windows setup, repair, or print-component servicing; lower suspicion only when path, writer, parent, and surrounding servicing files match the same recognized OS or Print to PDF repair activity.\n- Does the writer process look like GooseEgg staging rather than servicing?\n  - Why: Microsoft observed GooseEgg launchers and batch scripts before Print Spooler redirection; writer identity and parentage separate servicing from exploit staging.\n  - Focus: recover the writer start event with `process.entity_id`; compare `process.executable`, `process.hash.sha256`, `process.code_signature.subject_name`, `process.parent.executable`, and `process.parent.command_line`.\n  - Implication: escalate when writer or parent is a batch/script host, user-writable or renamed binary, known GooseEgg launcher, or unsigned/unrecognized executable; lower suspicion when identity and lineage remain signed Windows servicing or recognized print-management tooling.\n- Did the same writer stage GooseEgg files or copied driver-store content?\n  - Why: published GooseEgg examples stage batch files, wayzgoose*.dll, and copied print-driver directories under version-like C:\\ProgramData\\<vendor>\\v#.#.# paths.\n  - Focus: same `host.id` and `process.entity_id` file events: `file.path`, `file.name`, `file.Ext.original.path`, and `file.Ext.header_bytes` for staging, rename, or content clues. !{investigate{\"description\":\"\",\"label\":\"File events from the writer process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-2h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when those filenames, ProgramData version paths, copied driver-store directories, .save / .zip hive outputs, or rename chains appear around the writer; lower suspicion when the same-process file set is limited to recognized servicing content and no GooseEgg artifact family appears.\n- If registry telemetry is available, did the writer create GooseEgg protocol or CLSID redirection?\n  - Focus: same `host.id` and `process.entity_id` registry events, especially `registry.path`, `registry.value`, `registry.data.strings`, and `process.executable` for rogue protocol handler, CLSID, or wayzgoose*.dll paths. !{investigate{\"description\":\"\",\"label\":\"Registry events from the writer process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"registry\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-2h\",\"relativeTo\":\"now\"}}\n  - Hint: missing registry telemetry is unresolved, not benign; continue with file, process, and spooler evidence.\n  - Implication: escalate when registry changes register the rogue protocol or CLSID or point Print Spooler resolution to actor-controlled ProgramData content; lower suspicion only when available registry data remains recognized print-component configuration and file/process evidence is also clean.\n- Did activation or spooler follow-on show SYSTEM-level execution?\n  - Focus: process starts after the write on `host.id`: `process.name`, `process.parent.name`, `process.parent.executable`, `process.command_line`, and `process.Ext.token.integrity_level_name` for scheduled-task launch, spoolsv.exe, PrintIsolationHost.exe, or SYSTEM command tests. !{investigate{\"description\":\"\",\"label\":\"Process events after the protected file write\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now\",\"relativeTo\":\"now\"}}\n  - Hint: with library telemetry, check `dll.name` and `dll.path` for wayzgoose*.dll or loads from the written driver-store path; missing library telemetry is unresolved for load proof, not benign.\n  - Implication: escalate when the host shows scheduled-task activation as SYSTEM, spooler or print isolation child processes, a SYSTEM whoami test, or a wayzgoose*.dll load after the write; absence is no execution proof, not proof the write was benign.\n- Does the suspicious artifact set recur enough to change scope?\n  - Focus: after suspicious or unresolved local evidence, review recent alerts for `host.id`, then search `file.path`, suspicious `process.hash.sha256`, and GooseEgg filenames across hosts. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden containment and hunting when the same writer hash, ProgramData version path, wayzgoose*.dll, or protected MPDW-constraints.js placement appears on other hosts or pairs with spooler/privilege-escalation alerts; keep scope local when recurrence is absent and local evidence resolves to one recognized workflow.\n- Escalate when protected-path placement aligns with non-servicing lineage or any GooseEgg, registry, scheduled-task, or spooler corroborator; close only when path, writer, parent, file set, user/host scope, and recovery bind to one recognized servicing or print workflow; preserve artifacts and escalate when evidence is mixed, missing, or contradictory.\n\n### False positive analysis\n\n- Windows servicing, Print to PDF repair, printer-driver packaging, image-build, or print-management workflows can touch these paths. Confirm `file.path`, writer, parent, signer, `host.id` cohort, surrounding file set, and spooler follow-on all bind to one such workflow, with no GooseEgg artifacts, rogue registry evidence, or spooler child-process anomalies. Change records, patch windows, build records, or management tickets can corroborate; if unavailable, close only when telemetry independently proves the bounded workflow.\n- Before creating an exception, validate a stable benign workflow across prior alerts: keep writer identity, `process.parent.executable`, `file.path`, `host.id` cohort, and bounded file set stable. Avoid exceptions on MPDW-constraints.js alone, DriverStore or WinSxS paths alone, or spoolsv.exe activity alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and record the `file.path`, writer identity, parent lineage, `host.id` cohort, and servicing or print-management file pattern that justified closure. Create an exception only for that recurring workflow.\n- If suspicious but unconfirmed, preserve the written MPDW-constraints.js, its path and hash when available, the writer `process.entity_id`, `process.executable`, `process.command_line`, parent lineage, `user.id`, GooseEgg scripts or DLLs, ProgramData staging directories, scheduled-task evidence, and any registry or library corroboration before cleanup. Apply reversible containment first, such as pausing nonessential printing, limiting print-management access, isolating the host when business impact permits, or increasing monitoring. Avoid deleting files, stopping spoolsv.exe, or restoring registry state until the evidence is preserved.\n- If confirmed malicious, preserve the same file, process, registry, library, scheduled-task, and spooler evidence first, then isolate the host through endpoint response when available and proportionate to host criticality. If direct response is unavailable, escalate with the preserved `file.path`, writer lineage, staging directory, registry redirection, and spooler follow-on evidence to the team that can act. After scope is clear, remove the malicious JavaScript, GooseEgg scripts, wayzgoose*.dll, ProgramData staging directory, scheduled task, and rogue registry/protocol state; restore affected print configuration, close the staging mechanism, and rotate credentials only for accounts or hives exposed by collected evidence.\n- Post-incident hardening: apply the Microsoft security update for CVE-2022-38028, disable Print Spooler on systems that do not need it, restrict print-management rights, retain file/process coverage plus registry or library telemetry where it limited the investigation, and document the confirmed MPDW-constraints.js, ProgramData, wayzgoose, or scheduled-task pattern for future triage.\n",
+        "query": "file where host.os.type == \"windows\" and event.type != \"deletion\" and\n    file.name : \"MPDW-constraints.js\" and\n    file.path : (\n        \"?:\\\\*\\\\Windows\\\\system32\\\\DriverStore\\\\FileRepository\\\\*\\\\MPDW-constraints.js\",\n        \"?:\\\\*\\\\Windows\\\\WinSxS\\\\amd64_microsoft-windows-printing-printtopdf_*\\\\MPDW-constraints.js\", \n        \"\\\\Device\\\\HarddiskVolume*\\\\*\\\\Windows\\\\system32\\\\DriverStore\\\\FileRepository\\\\*\\\\MPDW-constraints.js\",\n        \"\\\\Device\\\\HarddiskVolume*\\\\*\\\\Windows\\\\WinSxS\\\\amd64_microsoft-windows-printing-printtopdf_*\\\\MPDW-constraints.js\"\n    ) and\n    not process.executable : (\n          \"?:\\\\$WINDOWS.~BT\\\\Sources\\\\SetupHost.exe\",\n          \"?:\\\\Windows\\\\System32\\\\taskhostw.exe\"\n    ) and\n    not file.path : (\n        \"?:\\\\$WINDOWS.~BT\\\\NewOS\\\\Windows\\\\WinSxS\\\\*\\\\MPDW-constraints.js\",\n        \"\\\\Device\\\\HarddiskVolume*\\\\$WINDOWS.~BT\\\\NewOS\\\\Windows\\\\WinSxS\\\\*\\\\MPDW-constraints.js\"\n    )\n",
+        "references": [
+            "https://www.microsoft.com/en-us/security/blog/2024/04/22/analyzing-forest-blizzards-custom-post-compromise-tool-for-exploiting-cve-2022-38028-to-obtain-credentials/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "dffbd37c-d4c5-46f8-9181-5afdd9172b4c",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 11 - File Create](https://ela.st/sysmon-event-11-setup)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1068",
+                        "name": "Exploitation for Privilege Escalation",
+                        "reference": "https://attack.mitre.org/techniques/T1068/"
+                    },
+                    {
+                        "id": "T1574",
+                        "name": "Hijack Execution Flow",
+                        "reference": "https://attack.mitre.org/techniques/T1574/",
+                        "subtechnique": [
+                            {
+                                "id": "T1574.010",
+                                "name": "Services File Permissions Weakness",
+                                "reference": "https://attack.mitre.org/techniques/T1574/010/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1036",
+                        "name": "Masquerading",
+                        "reference": "https://attack.mitre.org/techniques/T1036/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 211
+    },
+    "id": "dffbd37c-d4c5-46f8-9181-5afdd9172b4c_211",
+    "type": "security-rule"
+}

@@ -10,14 +10,15 @@ processors:
         if (ctx.message == null) {
             return;
         }
-        // Initialize event object if it doesn't exist
+        // Initialize event object if it doesn't exist to store the dataset
         if (ctx.event == null) {
             ctx.event = [:];
         }
-        
-        // AWS WAF Logs
+
+        // Initialize lower case version of the message to use for pattern matching
         def message_lower = ctx.message.toLowerCase();
-        
+
+        // AWS WAF Logs
         if (ctx['aws.kinesis.name'] != null && ctx['aws.kinesis.name'].contains('aws-waf-logs-') ||
             (ctx['aws.cloudwatch.log_group'] != null && ctx['aws.cloudwatch.log_group'].contains('aws-waf-logs-'))) {
             ctx.event.dataset = 'aws.waf';
@@ -26,14 +27,28 @@ processors:
                  message_lower.contains('httpsource') && message_lower.contains('rulegrouplist')) {
             ctx.event.dataset = 'aws.waf';
         }
-        
+
         // AWS CloudTrail Logs
         else if (ctx['aws.cloudwatch.log_stream'] != null && ctx['aws.cloudwatch.log_stream'].contains('CloudTrail')) {
             ctx.event.dataset = 'aws.cloudtrail';
         }
 
-        // AWS VPC Flow Logs
-        else if (message_lower.contains('"eni-') && message_lower.contains('"vpc-') && message_lower.contains('accept') || message_lower.contains('reject')) {
+        // AWS VPC Flow Logs:
+        //   eni-  → standard ENI-based records AND zonal NAT gateway (interface-id = eni-xxxxx)
+        //   nat-  → regional NAT gateway v9+ (interface-id = "-", resource-id = nat-xxxxx)
+        //   tgw-  → transit gateway (no action field; log-status may be OK with no ACCEPT/REJECT)
+        else if (
+            (message_lower.contains('tgw-') && message_lower.contains('transitgateway'))
+            || (
+                (message_lower.contains('eni-') || message_lower.contains('nat-'))
+                && (
+                    message_lower.contains('accept')
+                    || message_lower.contains('reject')
+                    || message_lower.contains('nodata')
+                    || message_lower.contains('skipdata')
+                )
+            )
+        ) {
             ctx.event.dataset = 'aws.vpcflow';
         }
 
@@ -42,27 +57,27 @@ processors:
                  message_lower.contains('"event_timestamp":') && message_lower.contains('"event":')) {
             ctx.event.dataset = 'aws.firewall_logs';
         }
-        
+
         // AWS Route53 Resolver Logs - This needs to be before the Route53 Public Logs
         else if (message_lower.contains('"version":') && message_lower.contains('"account_id":') && message_lower.contains('"region":') &&
                  message_lower.contains('"vpc_id":') && message_lower.contains('"query_timestamp":')) {
             ctx.event.dataset = 'aws.route53_resolver_logs';
         }
-        
+
         // AWS Route53 Public Logs
         else if (ctx['aws.cloudwatch.log_group'] != null && ctx['aws.cloudwatch.log_group'].contains('/aws/route53/')) {
             if (ctx.message.contains("T") && ctx.message.contains("Z") && ctx.message.contains("NOERROR") && ctx.message.contains("UDP")) {
                 ctx.event.dataset = 'aws.route53_public_logs';
             }
         }
-        
+
         // AWS API Gateway Logs
         else if (message_lower.contains('"requestid":') && message_lower.contains('"ip":')
                  && (message_lower.contains('"requesttime":') || message_lower.contains('"request_time":'))
                  && (message_lower.contains('"httpmethod":') || message_lower.contains('"eventtype":'))) {
             ctx.event.dataset = 'aws.apigateway_logs';
         }
-        
+
         // AWS S3 Access Logs, CloudFront, and ELB Logs
         else {
             // Inlined logic for splitting tokens
@@ -89,14 +104,14 @@ processors:
             }
             def tokens = tokens_result.toArray(new String[0]);
             def tokenCount = tokens.length;
-        
+
             // Check for S3 Access logs
             if (tokenCount >= 24) {
                 def hostHeader = tokens[23];
                 if (hostHeader.contains('s3') && hostHeader.contains('amazonaws.com')) {
                     ctx.event.dataset = 'aws.s3access';
                     return;
-                } 
+                }
 
                 // Check for Operation field content. Refer - https://docs.aws.amazon.com/AmazonS3/latest/userguide/LogFormat.html#log-record-fields
                 def opField = tokens[7];
@@ -105,7 +120,7 @@ processors:
                      return;
                 }
             }
-        
+
             // Fallback to CloudFront and ELB if S3 check fails
             if (ctx.event.dataset == null) {
                 // AWS CloudFront Logs - Updated logic
@@ -127,7 +142,7 @@ processors:
                     if (tokens.length >= 4) {
                         boolean token2IsIpPort = tokens[2].contains(':');
                         boolean token3IsIpPort = tokens[3].contains(':');
-        
+
                         try {
                             Double.parseDouble(tokens[4]);
                             if (token2IsIpPort && token3IsIpPort) {

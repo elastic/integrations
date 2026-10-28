@@ -1,0 +1,135 @@
+rules:
+  # Zoom S2S OAuth token endpoint (account_credentials grant).
+  - path: /oauth/token
+    methods: [POST]
+    query_params:
+      grant_type: account_credentials
+      account_id: test-account-id
+    request_headers:
+      Authorization:
+        - "Basic dGVzdC1jbGllbnQtaWQ6dGVzdC1jbGllbnQtc2VjcmV0"
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"access_token":"test-access-token","token_type":"Bearer","expires_in":3600,"scope":"report:read:admin"}
+  # Pagination page 2 — token from page 1.
+  - path: /v2/report/operationlogs
+    methods: [GET]
+    query_params:
+      from: "{from:.*}"
+      to: "{to:.*}"
+      page_size: "{page_size:.*}"
+      next_page_token: mock-page-2-token
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "operation_logs": [
+              {
+                "action": "Delete",
+                "category_type": "Recording",
+                "operation_detail": "Delete cloud recording for meeting 11122223333",
+                "operator": "admin@example.com",
+                "time": "{{ .request.vars.from }}T14:30:00Z"
+              }
+            ],
+            "from": "{{ .request.vars.from }}",
+            "to": "{{ .request.vars.to }}",
+            "page_size": 300,
+            "next_page_token": "mock-page-3-token"
+          }
+  # Pagination page 3 — terminal page for round 1.
+  - path: /v2/report/operationlogs
+    methods: [GET]
+    query_params:
+      from: "{from:.*}"
+      to: "{to:.*}"
+      page_size: "{page_size:.*}"
+      next_page_token: mock-page-3-token
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "operation_logs": [
+              {
+                "action": "Update",
+                "category_type": "Account",
+                "operation_detail": "Change account setting Cloud Recording from ON to OFF",
+                "operator": "superadmin@example.com",
+                "time": "{{ .request.vars.to }}T08:45:00Z"
+              }
+            ],
+            "from": "{{ .request.vars.from }}",
+            "to": "{{ .request.vars.to }}",
+            "page_size": 300
+          }
+  # Initial page (round 1) and cursor-resumed page (round 2).
+  - path: /v2/report/operationlogs
+    methods: [GET]
+    query_params:
+      from: "{from:.*}"
+      to: "{to:.*}"
+      page_size: "{page_size:.*}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {
+            "operation_logs": [
+              {
+                "action": "Update",
+                "category_type": "User",
+                "operation_detail": "Activate User alice@example.com",
+                "operator": "admin@example.com",
+                "time": "{{ .request.vars.from }}T10:00:00Z"
+              },
+              {
+                "action": "Add",
+                "category_type": "User",
+                "operation_detail": "Add User bob@example.com",
+                "operator": "admin@example.com",
+                "time": "{{ .request.vars.from }}T11:15:00Z"
+              }
+            ],
+            "from": "{{ .request.vars.from }}",
+            "to": "{{ .request.vars.to }}",
+            "page_size": 300,
+            "next_page_token": "mock-page-2-token"
+          }
+          {{ else if eq .req_num 2 }}
+          {
+            "operation_logs": [
+              {
+                "action": "Update",
+                "category_type": "Billing",
+                "operation_detail": "Update billing contact information",
+                "operator": "superadmin@example.com",
+                "time": "{{ .request.vars.from }}T12:00:00Z"
+              }
+            ],
+            "from": "{{ .request.vars.from }}",
+            "to": "{{ .request.vars.to }}",
+            "page_size": 300
+          }
+          {{ else }}
+          {
+            "operation_logs": [],
+            "from": "{{ .request.vars.from }}",
+            "to": "{{ .request.vars.to }}",
+            "page_size": 300
+          }
+          {{ end }}

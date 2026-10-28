@@ -1,0 +1,48 @@
+{
+    "id": "aws_lambda_otel-high-duration-tail",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when peak (Maximum) Lambda invocation duration exceeds a configurable threshold, indicating slow handler execution or downstream latency.",
+        "name": "[AWS Lambda OTel] High tail duration",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws_lambda",
+            "otel"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## High Tail Duration\n\n### Triage Steps\n1. Tail latency uses CloudWatch `Maximum` statistic — true percentiles are not available from this source.\n2. Check function logs for slow handler paths, retries, timeouts, or expensive operations.\n3. Review downstream dependencies such as APIs, databases, and SDK calls for latency spikes.\n4. Compare tail vs average duration — a large gap often points to rare slow paths or severe outliers.\n5. Profile memory allocation and CPU-sensitive work; under-provisioned memory can increase execution duration.\n\n### Note\nAdjust the threshold to match your tail-latency SLO. The default targets severe outliers, not typical p99 behaviour."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE Namespace == \"AWS/Lambda\"\n    AND MetricName == \"Duration\"\n    AND stat == \"Maximum\"\n| STATS max_duration_ms = MAX(`metrics.amazonaws.com/AWS/Lambda/Duration`)\n  BY FunctionName, cloud.region\n// Tail latency threshold (ms): catches severe execution-duration outliers\n| WHERE max_duration_ms > 10000\n| EVAL function_id = CONCAT(FunctionName, \"/\", cloud.region)\n| SORT max_duration_ms DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "function_id",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

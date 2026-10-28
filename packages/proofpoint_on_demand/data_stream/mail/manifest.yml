@@ -6,6 +6,20 @@ streams:
     description: Collecting Proofpoint On Demand Mail logs via Websocket.
     template_path: websocket.yml.hbs
     vars:
+      - name: initial_since_time
+        type: text
+        title: Initial Since Time
+        description: >-
+          Optional ISO 8601 timestamp (e.g. 2026-04-28T14:00:00-0500) to
+          backfill message and mail data after an extended outage. The agent
+          includes this timestamp on the first connection, then tracks
+          position via cursor. The Proofpoint API ignores sinceTime when it
+          is less than one hour old, so normal operation automatically uses
+          real-time streaming. Clear the agent's cursor state to trigger
+          another backfill.
+        multi: false
+        required: false
+        show_user: false
       - name: keep_alive
         type: bool
         title: Keep Alive

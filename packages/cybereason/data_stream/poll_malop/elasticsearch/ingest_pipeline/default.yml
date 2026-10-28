@@ -3,43 +3,45 @@ description: Pipeline for processing poll_malop logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_ab1166ce
       value: alert
   - set:
       field: event.category
-      tag: set_event_category
+      tag: set_event_category_6a9683d3
       value: ["malware"]
   - set:
       field: event.type
-      tag: set_event_type
+      tag: set_event_type_8bf4a5be
       value: ["info"]
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_552e65e1
       target_field: json
       if: ctx.event?.original != null
       on_failure:
         - append:
+            tag: append_error_message_04014d20
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
+      tag: fingerprint_to_id_8ca1c0b2
       fields:
         - json.guid
         - json.lastUpdateTime
@@ -47,336 +49,363 @@ processors:
       ignore_missing: true
   - rename:
       field: json.@class
-      tag: rename_@class
+      tag: rename_@class_eb1ba0af
       target_field: cybereason.poll_malop.class
       ignore_missing: true
   - convert:
       field: json.closed
-      tag: convert_closed_to_boolean
+      tag: convert_closed_to_boolean_6eeb9031
       target_field: cybereason.poll_malop.closed
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ea703f68
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.closerName
-      tag: rename_closerName
+      tag: rename_closerName_c7c2c89b
       target_field: cybereason.poll_malop.closer_name
       ignore_missing: true
   - rename:
       field: json.containers
-      tag: rename_containers
+      tag: rename_containers_aa216dff
       target_field: cybereason.poll_malop.containers
       ignore_missing: true
   - date:
       field: json.creationTime
-      tag: date_creationTime
+      tag: date_creationTime_a0a2e578
       target_field: cybereason.poll_malop.creation_time
       formats:
         - UNIX_MS
       if: ctx.json?.creationTime != null && ctx.json.creationTime != ''
       on_failure:
         - append:
+            tag: append_error_message_99ba7d5d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created_from_poll_malop_creation_time
+      tag: set_event_created_from_poll_malop_creation_time_d4a0890e
       copy_from: cybereason.poll_malop.creation_time
       ignore_empty_value: true
   - date:
       field: json.malopCloseTime
-      tag: date_malopCloseTime
+      tag: date_malopCloseTime_e40ec899
       target_field: cybereason.poll_malop.data.close_time
       formats:
         - UNIX_MS
       if: ctx.json?.malopCloseTime != null && ctx.json.malopCloseTime != ''
       on_failure:
         - append:
+            tag: append_error_message_d1bb7daa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.malopDetectionType
-      tag: rename_malopDetectionType
+      tag: rename_malopDetectionType_c5ac32e6
       target_field: cybereason.poll_malop.data.detection_type
       ignore_missing: true
   - rename:
       field: json.malopPriority
-      tag: rename_malopPriority
+      tag: rename_malopPriority_acf47909
       target_field: cybereason.poll_malop.data.priority
       ignore_missing: true
   - rename:
       field: json.malopSeverity
-      tag: rename_malopSeverity
+      tag: rename_malopSeverity_10820b4c
       target_field: cybereason.poll_malop.data.severity
       ignore_missing: true
   - rename:
       field: json.malopStatus
-      tag: rename_malopStatus
+      tag: rename_malopStatus_5f74b3f6
       target_field: cybereason.poll_malop.data.status
       ignore_missing: true
   - rename:
       field: json.malopType
-      tag: rename_malopType
+      tag: rename_malopType_309ba2f3
       target_field: cybereason.poll_malop.data.type
       ignore_missing: true
   - rename:
       field: json.decisionStatuses
-      tag: rename_decisionStatuses
+      tag: rename_decisionStatuses_8ccaab98
       target_field: cybereason.poll_malop.decision_statuses
       ignore_missing: true
   - rename:
       field: json.detectionEngines
-      tag: rename_detectionEngines
+      tag: rename_detectionEngines_961d02ca
       target_field: cybereason.poll_malop.detection.engines
       ignore_missing: true
   - rename:
       field: json.detectionTypes
-      tag: rename_detectionTypes
+      tag: rename_detectionTypes_23c2ce73
       target_field: cybereason.poll_malop.detection.types
       ignore_missing: true
   - rename:
       field: json.displayName
-      tag: rename_displayName
+      tag: rename_displayName_64232f4e
       target_field: cybereason.poll_malop.display_name
       ignore_missing: true
   - convert:
       field: json.edr
-      tag: convert_edr_to_boolean
+      tag: convert_edr_to_boolean_94ae8bae
       target_field: cybereason.poll_malop.edr
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3895caa7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.empty
-      tag: convert_empty_to_boolean
+      tag: convert_empty_to_boolean_6566e31c
       target_field: cybereason.poll_malop.empty
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d2209e73
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.escalated
-      tag: convert_escalated_to_boolean
+      tag: convert_escalated_to_boolean_16ee26fa
       target_field: cybereason.poll_malop.escalated
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d2dddda6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.files
-      tag: rename_files
+      tag: rename_files_dbb641b1
       target_field: cybereason.poll_malop.files
       ignore_missing: true
   - rename:
       field: json.group
-      tag: rename_group
+      tag: rename_group_42e2cc41
       target_field: cybereason.poll_malop.group
       ignore_missing: true
   - append:
       field: group.id
-      tag: append_group_id_from_poll_malop_group
+      tag: append_group_id_from_poll_malop_group_6d510997
       value: '{{{cybereason.poll_malop.group}}}'
       allow_duplicates: false
   - rename:
       field: json.guid
-      tag: rename_guid
+      tag: rename_guid_c346be8d
       target_field: cybereason.poll_malop.guid
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_poll_malop_guid
+      tag: set_event_id_from_poll_malop_guid_c7f420ba
       copy_from: cybereason.poll_malop.guid
       ignore_empty_value: true
   - convert:
       field: json.iconBase64
-      tag: convert_iconBase64_to_string
+      tag: convert_iconBase64_to_string_b8e8a209
       target_field: cybereason.poll_malop.icon_base64
       type: string
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1d7fe5f9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.labels
-      tag: rename_labels
+      tag: rename_labels_2c17322d
       target_field: cybereason.poll_malop.labels
       ignore_missing: true
   - date:
       field: json.lastUpdateTime
-      tag: date_lastUpdateTime
+      tag: date_lastUpdateTime_da8e0973
       target_field: cybereason.poll_malop.last_update_time
       formats:
         - UNIX_MS
       if: ctx.json?.lastUpdateTime != null && ctx.json.lastUpdateTime != ''
       on_failure:
         - append:
+            tag: append_error_message_6542ae04
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_poll_malop_last_update_time
+      tag: set_@timestamp_from_poll_malop_last_update_time_0914213a
       copy_from: cybereason.poll_malop.last_update_time
       ignore_empty_value: true
   - foreach:
+      tag: foreach_json_machines_be5a33bd
       field: json.machines
       if: ctx.json?.machines != null
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.@class
-          tag: rename_machines_@class
+          tag: rename_machines_@class_819e7a2b
           target_field: _ingest._value.class
           ignore_missing: true
   - foreach:
+      tag: foreach_json_machines_c2fa63a4
       field: json.machines
       if: ctx.json?.machines != null
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.connected
-          tag: convert_machines_connected_to_boolean
+          tag: convert_machines_connected_to_boolean_3835f1f9
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_connected_45c2110c
                 field: _ingest._value.connected
                 ignore_missing: true
             - append:
+                tag: append_error_message_5477e03a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_machines_5a84f385
       field: json.machines
       if: ctx.json?.machines != null
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.displayName
-          tag: rename_machines_displayName
+          tag: rename_machines_displayName_195115ec
           target_field: _ingest._value.display_name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_machines_02b4ac62
       field: json.machines
       if: ctx.json?.machines != null
       ignore_failure: true
       processor:
         append:
           field: related.hosts
-          tag: append_machines_display_name_into_related_hosts
+          tag: append_machines_display_name_into_related_hosts_37cd0f36
           value: '{{{_ingest._value.display_name}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_machines_3696aa3d
       field: json.machines
       if: ctx.json?.machines != null
       ignore_failure: true
       processor:
         append:
           field: host.name
-          tag: append_machines_displayName_into_host_name
+          tag: append_machines_displayName_into_host_name_25075e0b
           value: '{{{_ingest._value.display_name}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_machines_b09244be
       field: json.machines
       if: ctx.json?.machines != null
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.empty
-          tag: convert_machines_empty_to_boolean
+          tag: convert_machines_empty_to_boolean_e7d3b51b
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_empty_37292b3a
                 field: _ingest._value.empty
                 ignore_missing: true
             - append:
+                tag: append_error_message_6c7efdde
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_machines_bcb713fa
       field: json.machines
       if: ctx.json?.machines != null
       ignore_failure: true
       processor:
         append:
           field: related.hosts
-          tag: append_machines_guid_into_related_hosts
+          tag: append_machines_guid_into_related_hosts_cbaacc91
           value: '{{{_ingest._value.guid}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_machines_0bb9970c
       field: json.machines
       if: ctx.json?.machines != null
       ignore_failure: true
       processor:
         append:
           field: host.id
-          tag: append_machines_guid_into_host_id
+          tag: append_machines_guid_into_host_id_34f02aba
           value: '{{{_ingest._value.guid}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_machines_23712fbc
       field: json.machines
       if: ctx.json?.machines != null
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.isolated
-          tag: convert_machines_isolated_to_boolean
+          tag: convert_machines_isolated_to_boolean_ef4e379c
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_isolated_81ce89ed
                 field: _ingest._value.isolated
                 ignore_missing: true
             - append:
+                tag: append_error_message_6f396c6d
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_machines_66245d60
       field: json.machines
       if: ctx.json?.machines != null
       ignore_failure: true
       processor:
         date:
           field: _ingest._value.lastConnected
-          tag: date_machines_lastConnected
+          tag: date_machines_lastConnected_5e1fabd7
           target_field: _ingest._value.last_connected
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_lastConnected_98641e9c
                 field: _ingest._value.lastConnected
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_machines_96d0fbb0
       field: json.machines
       if: ctx.json?.machines != null
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.osType
-          tag: rename_machines_osType
+          tag: rename_machines_osType_8579a427
           target_field: _ingest._value.os_type
           ignore_missing: true
   - foreach:
+      tag: foreach_json_machines_ac55ddb0
       field: json.machines
       if: ctx.json?.machines != null
       ignore_failure: true
       processor:
         append:
           field: related.hosts
-          tag: append_machines_os_type_into_related_hosts
+          tag: append_machines_os_type_into_related_hosts_90b94100
           value: '{{{_ingest._value.os_type}}}'
           allow_duplicates: false
   - script:
       lang: painless
-      tag: script_to_set_host_os_type
+      tag: script_to_set_host_os_type_dfecf45e
       description: Script to set host_os_type
       if: ctx.json?.machines instanceof List
       source: >-
@@ -393,170 +422,186 @@ processors:
           ctx.host.os.type= os_types;
         }
   - foreach:
+      tag: foreach_json_machines_3a3de820
       field: json.machines
       if: ctx.json?.machines != null
       ignore_failure: true
       processor:
         remove:
-          tag: remove_machines_lastConnected
+          tag: remove_machines_lastConnected_cfbd9803
           field:
             - _ingest._value.lastConnected
           ignore_missing: true
   - rename:
       field: json.machines
-      tag: rename_machines
+      tag: rename_machines_5eacabd1
       target_field: cybereason.poll_malop.machines
       ignore_missing: true
   - rename:
       field: json.primaryRootCauseName
-      tag: rename_primaryRootCauseName
+      tag: rename_primaryRootCauseName_ba81ce26
       target_field: cybereason.poll_malop.primary_root_cause_name
       ignore_missing: true
   - rename:
       field: json.priority
-      tag: rename_priority
+      tag: rename_priority_3580bc22
       target_field: cybereason.poll_malop.priority
       ignore_missing: true
   - rename:
       field: json.processes
-      tag: rename_processes
+      tag: rename_processes_c1868f64
       target_field: cybereason.poll_malop.processes
       ignore_missing: true
   - rename:
       field: json.rootCauseElementHashes
-      tag: rename_rootCauseElementHashes
+      tag: rename_rootCauseElementHashes_0737f1bb
       target_field: cybereason.poll_malop.root_cause_element.hashes
       ignore_missing: true
   - append:
       field: related.hash
-      tag: append_cybereason_poll_malop_root_cause_element_hashes_into_related_hash
+      tag: append_cybereason_poll_malop_root_cause_element_hashes_into_related_hash_683e216d
       value: '{{{cybereason.poll_malop.root_cause_element.hashes}}}'
       allow_duplicates: false
   - convert:
       field: json.rootCauseElementNamesCount
-      tag: convert_rootCauseElementNamesCount_to_long
+      tag: convert_rootCauseElementNamesCount_to_long_9d019ba9
       target_field: cybereason.poll_malop.root_cause_element.names_count
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_41dd62ff
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.rootCauseElementType
-      tag: rename_rootCauseElementType
+      tag: rename_rootCauseElementType_1bb7a767
       target_field: cybereason.poll_malop.root_cause_element.type
       ignore_missing: true
   - rename:
       field: json.severity
-      tag: rename_severity
+      tag: rename_severity_025236a2
       target_field: cybereason.poll_malop.severity
       ignore_missing: true
   - rename:
       field: json.status
-      tag: rename_status
+      tag: rename_status_9584adf0
       target_field: cybereason.poll_malop.status
       ignore_missing: true
   - foreach:
+      tag: foreach_json_users_3e36408e
       field: json.users
       if: ctx.json?.users != null
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.admin
-          tag: convert_users_admin_to_boolean
+          tag: convert_users_admin_to_boolean_fb9ce7d4
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_admin_44efd353
                 field: _ingest._value.admin
                 ignore_missing: true
             - append:
+                tag: append_error_message_de1a3df0
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_users_3f91cf39
       field: json.users
       if: ctx.json?.users != null
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.displayName
-          tag: rename_users_displayName
+          tag: rename_users_displayName_59e9f6f5
           target_field: _ingest._value.display_name
           ignore_missing: true
   - foreach:
+      tag: foreach_json_users_f1fa088c
       field: json.users
       if: ctx.json?.users != null
       ignore_failure: true
       processor:
         append:
           field: related.user
-          tag: append_users_display_name_into_related_user
+          tag: append_users_display_name_into_related_user_b75be008
           value: '{{{_ingest._value.display_name}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_users_9b9d16ee
       field: json.users
       if: ctx.json?.users != null
       ignore_failure: true
       processor:
         append:
           field: related.user
-          tag: append_users_guid_into_related_user
+          tag: append_users_guid_into_related_user_54aa64f9
           value: '{{{_ingest._value.guid}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_users_22b78fe1
       field: json.users
       if: ctx.json?.users != null
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.domainUser
-          tag: convert_users_domainUser_to_boolean
+          tag: convert_users_domainUser_to_boolean_bc5889ec
           target_field: _ingest._value.domain_user
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_domainUser_df52f9a5
                 field: _ingest._value.domainUser
                 ignore_missing: true
             - append:
+                tag: append_error_message_71e84db2
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_users_6e6dc041
       field: json.users
       if: ctx.json?.users != null
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value.localSystem
-          tag: convert_users_localSystem_to_boolean
+          tag: convert_users_localSystem_to_boolean_e1a9cd25
           target_field: _ingest._value.local_system
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_localSystem_a75084db
                 field: _ingest._value.localSystem
                 ignore_missing: true
             - append:
+                tag: append_error_message_8a10976c
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_users_3358649f
       field: json.users
       if: ctx.json?.users != null
       ignore_failure: true
       processor:
         remove:
-          tag: remove_users_duplicate_fields
+          tag: remove_users_duplicate_fields_cdf0f960
           field:
             - _ingest._value.localSystem
             - _ingest._value.domainUser
           ignore_missing: true
   - rename:
       field: json.users
-      tag: rename_users
+      tag: rename_users_ddec3c05
       target_field: cybereason.poll_malop.users
       ignore_missing: true
   - foreach:
+      tag: foreach_cybereason_poll_malop_machines_04107367
       field: cybereason.poll_malop.machines
       if: ctx.cybereason?.poll_malop?.machines != null
       ignore_failure: true
@@ -566,7 +611,7 @@ processors:
             - _ingest._value.display_name
             - _ingest._value.guid
             - _ingest._value.os_type
-          tag: remove_custom_duplicate_fields_from_cybereason_poll_malop_machines
+          tag: remove_custom_duplicate_fields_from_cybereason_poll_malop_machines_05d4bb24
           ignore_missing: true
           if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
@@ -575,15 +620,15 @@ processors:
         - cybereason.poll_malop.group
         - cybereason.poll_malop.guid
         - cybereason.poll_malop.last_update_time
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_39e4afb7
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_44aeee7c
       lang: painless
       source: |-
         boolean drop(Object o) {
@@ -601,24 +646,28 @@ processors:
         drop(ctx);
       description: Drops null/empty values recursively.
   - append:
+      tag: append_event_kind_d2f25e35
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

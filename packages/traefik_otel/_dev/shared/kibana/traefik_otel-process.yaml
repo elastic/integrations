@@ -1,0 +1,266 @@
+# Traefik OTel — Process
+# Go runtime and process metrics: CPU, memory, goroutines, file descriptors.
+
+dashboards:
+  - id: traefik_otel-process
+    name: '[Traefik OTel] Process'
+    description: "Traefik process health: CPU, memory, goroutines, and file descriptor usage."
+
+    settings:
+      margins: true
+      titles: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    filters:
+      - field: data_stream.dataset
+        equals: traefik.otel
+
+    controls:
+      - type: options
+        label: Host
+        data_view: metrics-*
+        field: host.name
+
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: traefik_otel-overview
+            - label: Services
+              dashboard: traefik_otel-services
+            - label: TLS & Config
+              dashboard: traefik_otel-tls-config
+            - label: Process
+              dashboard: traefik_otel-process
+
+      # ─── Dashboard Overview Panel ────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [Traefik OTel] Process
+
+            This dashboard monitors Traefik process health:
+            - CPU consumption rate
+            - Memory usage (RSS, heap)
+            - Goroutine and thread counts
+            - File descriptor usage vs limit
+            - GC activity
+
+      # ─── KPI Metric Row ──────────────────────────────────────────────
+      - title: CPU Rate
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE process_cpu_seconds_total IS NOT NULL
+            - STATS total = SUM(process_cpu_seconds_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+            - EVAL duration_sec = DATE_DIFF("seconds", min_ts, max_ts)
+            - EVAL cpu_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)
+            - KEEP cpu_rate
+          primary:
+            field: cpu_rate
+            label: CPU sec/sec
+            format:
+              type: number
+              decimals: 2
+
+      - title: Memory (RSS)
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE process_resident_memory_bytes IS NOT NULL
+            - STATS rss = MAX(LAST_OVER_TIME(process_resident_memory_bytes))
+          primary:
+            field: rss
+            label: RSS
+            format:
+              type: bytes
+
+      - title: Goroutines
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE go_goroutines IS NOT NULL
+            - STATS goroutines = MAX(LAST_OVER_TIME(go_goroutines))
+          primary:
+            field: goroutines
+            label: Goroutines
+            format:
+              type: number
+              decimals: 0
+
+      - title: FD Usage
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE process_open_fds IS NOT NULL AND process_max_fds IS NOT NULL
+            - STATS open_fds = MAX(LAST_OVER_TIME(process_open_fds)),
+              max_fds = MAX(LAST_OVER_TIME(process_max_fds))
+            - EVAL fd_pct = CASE(max_fds > 0, open_fds / max_fds, 0.0)
+          primary:
+            field: fd_pct
+            label: FD %
+            format:
+              type: percent
+              decimals: 1
+
+      # ─── Memory Gauge ─────────────────────────────────────────────────
+      - title: Memory Utilization (RSS vs Heap Sys)
+        size: {w: 16, h: 10}
+        esql:
+          type: gauge
+          query:
+            - TS metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE go_memstats_heap_sys_bytes IS NOT NULL
+            - STATS heap_sys = MAX(LAST_OVER_TIME(go_memstats_heap_sys_bytes))
+            - EVAL heap_sys_mb = heap_sys / 1048576, gauge_min = 0, gauge_max = 1000
+          metric:
+            field: heap_sys_mb
+            label: Heap Sys (MB)
+            format:
+              type: number
+              decimals: 1
+          minimum:
+            field: gauge_min
+          maximum:
+            field: gauge_max
+          appearance:
+            shape: arc
+            ticks_position: auto
+
+      # ─── CPU Over Time ─────────────────────────────────────────────────
+      - title: CPU Consumption Rate Over Time
+        size: {w: 32, h: 10}
+        esql:
+          type: line
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE process_cpu_seconds_total IS NOT NULL
+            - STATS total = SUM(process_cpu_seconds_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
+            - EVAL cpu_rate = total / bucket_secs
+            - KEEP time_bucket, cpu_rate
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: cpu_rate
+              label: CPU sec/sec
+              format:
+                type: number
+                decimals: 3
+          legend:
+            visible: show
+            position: right
+
+      # ─── Memory Over Time ──────────────────────────────────────────────
+      - title: Memory Usage Over Time
+        size: {w: 48, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE process_resident_memory_bytes IS NOT NULL
+                OR go_memstats_heap_inuse_bytes IS NOT NULL
+            - STATS rss = MAX(LAST_OVER_TIME(process_resident_memory_bytes)),
+              heap_inuse = MAX(LAST_OVER_TIME(go_memstats_heap_inuse_bytes))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: rss
+              label: RSS
+              format:
+                type: bytes
+            - field: heap_inuse
+              label: Heap In Use
+              format:
+                type: bytes
+          legend:
+            visible: show
+            position: right
+
+      # ─── Goroutines Over Time ──────────────────────────────────────────
+      - title: Goroutines Over Time
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE go_goroutines IS NOT NULL
+            - STATS goroutines = MAX(LAST_OVER_TIME(go_goroutines))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: goroutines
+              label: Goroutines
+              format:
+                type: number
+                decimals: 0
+
+      # ─── FD Usage Over Time ───────────────────────────────────────────
+      - title: File Descriptors (Open vs Max)
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE process_open_fds IS NOT NULL OR process_max_fds IS NOT NULL
+            - STATS open_fds = MAX(LAST_OVER_TIME(process_open_fds)),
+              max_fds = MAX(LAST_OVER_TIME(process_max_fds))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: open_fds
+              label: Open FDs
+              format:
+                type: number
+                decimals: 0
+            - field: max_fds
+              label: Max FDs
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+            position: right

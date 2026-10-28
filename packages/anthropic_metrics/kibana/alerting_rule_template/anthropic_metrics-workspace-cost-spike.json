@@ -1,0 +1,44 @@
+{
+    "id": "anthropic_metrics-workspace-cost-spike",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Anthropic] Per-Workspace Daily Cost Spike",
+        "description": "Alerts when any single workspace's daily cost exceeds a configurable threshold. Catches runaway spend in individual workspaces that may hide under the org-wide total. Default threshold is $20 (2000 cents). Adjust the threshold in the ES|QL WHERE clause.",
+        "tags": [
+            "Anthropic",
+            "Cost",
+            "Budget",
+            "Workspace"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1h"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 24,
+            "timeWindowUnit": "h",
+            "esqlQuery": {
+                "esql": "// Per-workspace daily cost spike alert.\n// Amount is in cents — 2000 = $20.00 per workspace per day.\n// Adjust the threshold in the final WHERE clause.\nFROM metrics-anthropic_metrics.cost-*\n| WHERE anthropic.cost.amount IS NOT NULL AND anthropic.cost.currency == \"USD\" AND anthropic.cost.workspace_id IS NOT NULL\n| STATS ws_cost_cents = SUM(anthropic.cost.amount) BY anthropic.cost.workspace_id\n| EVAL ws_cost_usd = ROUND(ws_cost_cents / 100.0, 2)\n| WHERE ws_cost_cents > 2000"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "anthropic_metrics-2bd61c2c-4418-458f-a79e-12a74c34b2f0"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Per-Workspace Daily Cost Spike\n\n### Triage Steps\n1. Open the Cost & Billing dashboard and filter by the `anthropic.cost.workspace_id` from the alert.\n2. Identify which models and cost types are driving the spike within that workspace.\n3. Check if the workspace recently onboarded new users or workloads.\n4. Compare the workspace's daily cost to its historical baseline over the past week.\n5. Coordinate with the workspace owner to confirm whether the usage is expected.\n\n### Common Causes\n- A team deploying a new application or feature that generates high API usage\n- Batch processing or data migration jobs running within a single workspace\n- Misconfigured retry logic causing excessive API calls\n- Switching to a more expensive model within the workspace\n\n### Tuning\n- Adjust the `2000` cent threshold ($20) in the WHERE clause to match your per-workspace daily budget.\n- Workspaces with known high usage can be excluded by adding `AND anthropic.cost.workspace_id != \"<id>\"` to the WHERE clause."
+            }
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

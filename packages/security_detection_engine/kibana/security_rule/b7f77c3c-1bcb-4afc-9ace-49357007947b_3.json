@@ -13,31 +13,6 @@
         "query": "FROM metrics-*, .alerts-security.*  METADATA _index\n| where not KQL(\"\"\"kibana.alert.rule.tags : \"Rule Type: Higher-Order Rule\" \"\"\")\n| eval\n       // hosts with more than 90% total CPU use\n       cpu_metrics_host_ids = CASE(_index like \".ds-metrics-system.cpu-*\" and system.cpu.total.norm.pct >= 0.9, host.id, null),\n       // hosts with high severity security alerts\n       alerts_host_ids = CASE(_index like \".internal.alerts-security.*\" and kibana.alert.rule.name is not null and host.id is not null and kibana.alert.risk_score >= 73, host.id, null)\n| stats host_with_cpu_spike = COUNT_DISTINCT(cpu_metrics_host_ids),\n        host_with_alerts = COUNT_DISTINCT(alerts_host_ids),\n        Esql.max_cpu_pct = MAX(system.cpu.total.norm.pct),\n        Esql.unique_alerts_count = COUNT_DISTINCT(kibana.alert.rule.name),\n        Esql.unique_process_count = COUNT_DISTINCT(process.entity_id),\n        Esql.alerts = VALUES(kibana.alert.rule.name),\n        Esql.process_hash_sha256 = VALUES(process.hash.sha256),\n        process_path = VALUES(process.executable),\n        parent_process_path = VALUES(process.parent.executable),\n        user_name = VALUES(user.name),\n        host_name = VALUES(host.name),\n        cmdline = VALUES(process.command_line) by host.id\n// at least 3 unique high severity alerts and from a host with 90% CPU use\n| where host_with_cpu_spike > 0 and host_with_alerts > 0 and Esql.unique_alerts_count >= 3\n| eval process.hash.sha256 = MV_FIRST(Esql.process_hash_sha256),\n       process.executable = MV_FIRST(process_path),\n       process.parent.executable = MV_FIRST(parent_process_path),\n       process.command_line = MV_FIRST(cmdline),\n       host.name = MV_FIRST(host_name),\n       user.name = MV_FIRST(user_name)\n| KEEP user.name, host.name, host.id, process.*, Esql.*\n",
         "required_fields": [
             {
-                "ecs": false,
-                "name": "Esql.alerts",
-                "type": "keyword"
-            },
-            {
-                "ecs": false,
-                "name": "Esql.max_cpu_pct",
-                "type": "double"
-            },
-            {
-                "ecs": false,
-                "name": "Esql.process_hash_sha256",
-                "type": "keyword"
-            },
-            {
-                "ecs": false,
-                "name": "Esql.unique_alerts_count",
-                "type": "long"
-            },
-            {
-                "ecs": false,
-                "name": "Esql.unique_process_count",
-                "type": "long"
-            },
-            {
                 "ecs": true,
                 "name": "host.id",
                 "type": "keyword"

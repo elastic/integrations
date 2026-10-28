@@ -1,0 +1,121 @@
+{
+    "attributes": {
+        "created_at": "2026-03-31T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Windows Jump Lists Forensics — comprehensive user activity timeline and lateral movement detection using the elastic_jumplists extension table (requires Elastic Agent v9.3.0+ with osquerybeat). Jump Lists are Windows shell artifacts stored in %APPDATA%\\Microsoft\\Windows\\Recent\\AutomaticDestinations and CustomDestinations. They track recently and pinned application shortcuts, providing a detailed record of user activity and application usage patterns.\n\nThis query extracts BOTH automatic destinations (Windows-generated, includes DestList metadata) and custom destinations (application-defined pinned items) — providing broader coverage than tools that handle only automatic destinations.\n\nKey forensic capabilities:\n- DestList metadata unique to automatic destinations: hostname, MAC address, entry number, interaction count, pinned status — critical for identifying lateral movement (remote hostnames/MACs that differ from the local host)\n- Full LNK target metadata: local_path, file_size, creation/modification/access timestamps, volume serial number, volume type, volume label\n- Command-line arguments and icon location embedded in shortcut entries\n- Username and SID for each entry enabling per-user activity attribution\n- Application identification: application_id hex and resolved application_name when known\n\nSuspicious pattern detection (computed flags):\n- risky_executable_flag: LOLBins in local_path (cmd, powershell, pwsh, cscript, wscript, rundll32, regsvr32, mshta, wmic, certutil, bitsadmin, msiexec)\n- suspicious_arguments_flag: Malicious patterns in command_line_arguments (encoded commands, download cradles, hidden windows, UNC paths, -NoP, -W Hidden, -enc, Invoke-Expression, .DownloadString)\n- network_indicator_flag: Non-empty hostname or MAC address metadata, or UNC paths in local_path — indicates the target was accessed from or stored on a remote machine\n- remote_access_flag: Application is a remote access tool (RDP, VNC, TeamViewer, AnyDesk, PuTTY, WinSCP, SSH, mRemoteNG, RealVNC, UltraVNC)\n\nResults are ordered: pinned items first (persistence awareness), then by interaction count (most-used), then by last modified time (most recent).",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["file"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.jumplists_forensics"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "local_path"
+                }
+            },
+            {
+                "key": "file.size",
+                "value": {
+                    "field": "file_size"
+                }
+            },
+            {
+                "key": "file.mtime",
+                "value": {
+                    "field": "target_modification_time"
+                }
+            },
+            {
+                "key": "file.created",
+                "value": {
+                    "field": "target_creation_time"
+                }
+            },
+            {
+                "key": "file.accessed",
+                "value": {
+                    "field": "target_last_accessed_time"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "username"
+                }
+            },
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "user_sid"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "command_line_arguments"
+                }
+            },
+            {
+                "key": "labels.jumplist_type",
+                "value": {
+                    "field": "jumplist_type"
+                }
+            },
+            {
+                "key": "labels.application_id",
+                "value": {
+                    "field": "application_id"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "forensics",
+                        "jumplists",
+                        "user_activity",
+                        "file_analysis",
+                        "windows"
+                    ]
+                }
+            }
+        ],
+        "id": "jumplists_forensics_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "timeout": 180,
+        "query": "-- Windows Jump Lists Forensics with Suspicious Pattern Detection\n-- Source: elastic_jumplists extension table (Elastic Agent v9.3.0+ with osquerybeat)\n-- Focus: User activity timeline, lateral movement indicators (DestList hostname/MAC),\n--        LOLBin execution, suspicious arguments, remote access tool usage\n-- Coverage: BOTH automatic (DestList metadata) AND custom (application-defined) destination types\n-- NOTE: Timestamps from elastic_jumplists are pre-formatted TEXT strings; do NOT apply datetime() conversion\n\nSELECT\n    -- Jump List identity and source\n    jl.application_id,\n    jl.application_name,\n    jl.jumplist_type,\n    jl.source_file_path,\n\n    -- User context\n    jl.username,\n    jl.sid AS user_sid,\n\n    -- DestList metadata (automatic destinations only)\n    -- These fields expose lateral movement: remote hostnames and MACs differ from local host\n    jl.hostname,\n    jl.mac_address,\n    jl.entry_number,\n    jl.interaction_count,\n    jl.is_pinned,\n    jl.last_modified_time,\n\n    -- Destination path (raw and GUID-resolved)\n    jl.dest_entry_path,\n    jl.dest_entry_path_resolved,\n\n    -- LNK target metadata\n    jl.local_path,\n    jl.file_size,\n    jl.command_line_arguments,\n    jl.hot_key,\n    jl.show_window,\n    jl.icon_location,\n    jl.icon_index,\n    jl.name,\n\n    -- Target timestamps (pre-formatted TEXT from extension, no conversion needed)\n    jl.target_creation_time,\n    jl.target_modification_time,\n    jl.target_last_accessed_time,\n    jl.creation_time,\n\n    -- Volume information\n    jl.volume_serial_number,\n    jl.volume_type,\n    jl.volume_label,\n\n    -- VirusTotal pivot link for application_id investigation\n    concat('https://www.virustotal.com/gui/search/', jl.application_id) AS vt_appid_link,\n\n    -- Suspicious indicator: LOLBin detected in local_path, dest_entry_path_resolved, OR application_name\n    -- Checks all three fields because Jump Lists may store the .lnk shortcut path in local_path\n    -- rather than the resolved target executable\n    CASE\n        WHEN lower(jl.local_path) LIKE '%\\cmd.exe'\n            OR lower(jl.local_path) LIKE '%\\powershell.exe'\n            OR lower(jl.local_path) LIKE '%\\powershell_ise.exe'\n            OR lower(jl.local_path) LIKE '%\\pwsh.exe'\n            OR lower(jl.local_path) LIKE '%\\cscript.exe'\n            OR lower(jl.local_path) LIKE '%\\wscript.exe'\n            OR lower(jl.local_path) LIKE '%\\rundll32.exe'\n            OR lower(jl.local_path) LIKE '%\\regsvr32.exe'\n            OR lower(jl.local_path) LIKE '%\\mshta.exe'\n            OR lower(jl.local_path) LIKE '%\\wmic.exe'\n            OR lower(jl.local_path) LIKE '%\\certutil.exe'\n            OR lower(jl.local_path) LIKE '%\\bitsadmin.exe'\n            OR lower(jl.local_path) LIKE '%\\msiexec.exe'\n            OR lower(jl.dest_entry_path_resolved) LIKE '%\\cmd.exe'\n            OR lower(jl.dest_entry_path_resolved) LIKE '%\\powershell.exe'\n            OR lower(jl.dest_entry_path_resolved) LIKE '%\\powershell_ise.exe'\n            OR lower(jl.dest_entry_path_resolved) LIKE '%\\pwsh.exe'\n            OR lower(jl.dest_entry_path_resolved) LIKE '%\\cscript.exe'\n            OR lower(jl.dest_entry_path_resolved) LIKE '%\\wscript.exe'\n            OR lower(jl.dest_entry_path_resolved) LIKE '%\\rundll32.exe'\n            OR lower(jl.dest_entry_path_resolved) LIKE '%\\regsvr32.exe'\n            OR lower(jl.dest_entry_path_resolved) LIKE '%\\mshta.exe'\n            OR lower(jl.dest_entry_path_resolved) LIKE '%\\wmic.exe'\n            OR lower(jl.dest_entry_path_resolved) LIKE '%\\certutil.exe'\n            OR lower(jl.dest_entry_path_resolved) LIKE '%\\bitsadmin.exe'\n            OR lower(jl.dest_entry_path_resolved) LIKE '%\\msiexec.exe'\n            OR lower(jl.application_name) LIKE '%cmd%'\n            OR lower(jl.application_name) LIKE '%powershell%'\n            OR lower(jl.application_name) LIKE '%command prompt%'\n            OR lower(jl.application_name) LIKE '%certutil%'\n            OR lower(jl.application_name) LIKE '%bitsadmin%'\n            OR lower(jl.application_name) LIKE '%mshta%'\n            OR lower(jl.application_name) LIKE '%wmic%'\n            OR lower(jl.application_name) LIKE '%wscript%'\n            OR lower(jl.application_name) LIKE '%cscript%'\n        THEN 1 ELSE 0\n    END AS risky_executable_flag,\n\n    -- Suspicious indicator: Malicious patterns in command-line arguments or shortcut name\n    -- Covers encoded commands, download cradles, execution policy bypasses, hidden windows\n    -- Also checks local_path for .lnk filenames containing LOLBin names (Jump Lists may\n    -- store the shortcut path instead of the resolved target)\n    CASE\n        WHEN lower(jl.command_line_arguments) LIKE '%-enc %'\n            OR lower(jl.command_line_arguments) LIKE '%-encodedcommand %'\n            OR lower(jl.command_line_arguments) LIKE '%-nop %'\n            OR lower(jl.command_line_arguments) LIKE '%-noprofile%'\n            OR lower(jl.command_line_arguments) LIKE '%-w hidden%'\n            OR lower(jl.command_line_arguments) LIKE '%-windowstyle hidden%'\n            OR lower(jl.command_line_arguments) LIKE '%invoke-webrequest%'\n            OR lower(jl.command_line_arguments) LIKE '%iwr %'\n            OR lower(jl.command_line_arguments) LIKE '%invoke-expression%'\n            OR lower(jl.command_line_arguments) LIKE '%iex(%'\n            OR lower(jl.command_line_arguments) LIKE '%iex %'\n            OR lower(jl.command_line_arguments) LIKE '%.downloadstring(%'\n            OR lower(jl.command_line_arguments) LIKE '%.downloadfile(%'\n            OR lower(jl.command_line_arguments) LIKE '%certutil%urlcache%'\n            OR lower(jl.command_line_arguments) LIKE '%certutil%-f%'\n            OR lower(jl.command_line_arguments) LIKE '%bitsadmin%transfer%'\n            OR jl.command_line_arguments LIKE '%\\\\%'\n        THEN 1 ELSE 0\n    END AS suspicious_arguments_flag,\n\n    -- Network indicator: DestList metadata reveals cross-host activity, or UNC target path\n    -- A non-empty hostname/MAC in DestList means the shortcut was accessed from/on a remote machine\n    CASE\n        WHEN (jl.hostname IS NOT NULL AND jl.hostname != '')\n            OR (jl.mac_address IS NOT NULL AND jl.mac_address != '')\n            OR jl.local_path LIKE '\\\\%'\n            OR jl.dest_entry_path LIKE '\\\\%'\n            OR jl.dest_entry_path_resolved LIKE '\\\\%'\n        THEN 1 ELSE 0\n    END AS network_indicator_flag,\n\n    -- Remote access tool indicator: application is a remote access / admin tool\n    -- Checks application_name, local_path, AND dest_entry_path_resolved since Jump Lists\n    -- may store the shortcut path in local_path instead of the resolved executable\n    CASE\n        WHEN lower(jl.application_name) LIKE '%remote desktop%'\n            OR lower(jl.application_name) LIKE '%mstsc%'\n            OR lower(jl.application_name) LIKE '%vnc%'\n            OR lower(jl.application_name) LIKE '%teamviewer%'\n            OR lower(jl.application_name) LIKE '%anydesk%'\n            OR lower(jl.application_name) LIKE '%putty%'\n            OR lower(jl.application_name) LIKE '%winscp%'\n            OR lower(jl.application_name) LIKE '%openssh%'\n            OR lower(jl.application_name) LIKE '%mremoteng%'\n            OR lower(jl.application_name) LIKE '%realvnc%'\n            OR lower(jl.application_name) LIKE '%ultravnc%'\n            OR lower(jl.application_name) LIKE '%tightvnc%'\n            OR lower(jl.local_path) LIKE '%\\mstsc.exe'\n            OR lower(jl.local_path) LIKE '%\\putty.exe'\n            OR lower(jl.local_path) LIKE '%\\winscp.exe'\n            OR lower(jl.local_path) LIKE '%\\teamviewer.exe'\n            OR lower(jl.local_path) LIKE '%\\anydesk.exe'\n            OR lower(jl.dest_entry_path_resolved) LIKE '%\\mstsc.exe'\n            OR lower(jl.dest_entry_path_resolved) LIKE '%\\putty.exe'\n            OR lower(jl.dest_entry_path_resolved) LIKE '%\\winscp.exe'\n            OR lower(jl.dest_entry_path_resolved) LIKE '%\\teamviewer.exe'\n            OR lower(jl.dest_entry_path_resolved) LIKE '%\\anydesk.exe'\n        THEN 1 ELSE 0\n    END AS remote_access_flag\n\nFROM elastic_jumplists AS jl\n\nORDER BY\n    -- Pinned items first: these are deliberate user choices, relevant for persistence awareness\n    jl.is_pinned DESC,\n    -- Then by usage frequency: high interaction count indicates habitual/automated access\n    jl.interaction_count DESC,\n    -- Then by most recently modified: freshest entries are most forensically relevant\n    jl.last_modified_time DESC;",
+        "updated_at": "2026-03-31T00:00:00.000Z",
+        "updated_by": "elastic",
+        "tags": [
+            "osquery",
+            "forensics",
+            "jumplists",
+            "user_activity",
+            "file_analysis",
+            "windows"
+        ]
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-a4b2c8d0-jmpl-11f0-b4d1-4f9e8c3a1b2e",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-03-31T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

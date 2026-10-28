@@ -2,7 +2,7 @@
 
 The Domain Generation Algorithm (DGA) Detection package contains assets to detect DGA activity in your network data. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under [Elastic License 2.0](https://www.elastic.co/licensing/elastic-license).
 
-This package leverages event logs on Linux, macOS, and Windows. Prior to using this integration, you must have Elastic Endpoint via Elastic Defend, or have equivalent tools/endpoints set up. If using Elastic Defend, Elastic Defend should be installed through Elastic Agent and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information.
+This package supports data from Elastic Endpoint via Elastic Defend or Packetbeat on Linux, macOS, and Windows, although Elastic Defend is recommended. Prior to using this integration, Elastic Defend should be installed through Elastic Agent (or Packetbeat should be enrolled) and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information.
 
 **Note**: In versions 2.0.1 and later, this package ignores data in cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
 
@@ -12,7 +12,7 @@ The following blogs provide additional context. For the most current installatio
 
 ## Installation
 
-1. **Upgrading**: If upgrading from a version below v2.0.0, see the section v2.0.0 and beyond.
+1. **Upgrading**: If upgrading from a version below v3.0.0, see the section v3.0.0 and beyond.
 1. **Add the Integration Package**: Install the package via **Management > Integrations > Add Domain Generation Algorithm Detection**. Configure the integration name and agent policy. Click Save and Continue. (Note that this integration does not rely on an agent, and can be assigned to a policy without an agent.)
 1. **Install assets**: Install the assets by clicking **Settings > Install Domain Generation Algorithm Detection assets**.
 1. **Configure the pipeline**: To configure the pipeline you can use one of the following steps:
@@ -77,16 +77,18 @@ The following blogs provide additional context. For the most current installatio
     ```
 1. **(Optional) [Create a data view](https://www.elastic.co/guide/en/kibana/current/data-views.html)** for your network logs.
 1. **Add preconfigured anomaly detection jobs**: In **Stack Management -> Anomaly Detection Jobs**, you will see **Select data view or saved search**. Select the data view created in the previous step. Then under `Use preconfigured jobs` you will see `DGA`. When you select the card, you will see a pre-configured anomaly detection job that you can create. Note this job is only useful for indices that have been enriched by the ingest pipeline.
-1. **Enable detection rules**: You can also enable detection rules to alert on DGA activity in your environment, based on anomalies flagged by the above ML jobs. As of version 2.0.0 of this package, these rules are available as part of the Detection Engine in **Security > Rules**, and can be found using the tag `Use Case: Domain Generated Algorithm Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules. **Warning**: if the ingest pipeline hasn't run for some reason, such as no eligible data has come in yet, or the required mapping has not been added, _you won't be able to see this card yet_. If that is the case, try troubleshooting the ingest pipeline, and if any predictions have been populated yet.
+### Enable detection rules
+
+You can also enable detection rules to alert on DGA activity in your environment, based on anomalies flagged by the above ML jobs. As of version 2.0.0 of this package, these rules are available as part of the Detection Engine in **Security > Rules**, and can be found using the tag `Use Case: Domain Generated Algorithm Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules. **Warning**: if the ingest pipeline hasn't run for some reason, such as no eligible data has come in yet, or the required mapping has not been added, _you won't be able to see this card yet_. If that is the case, try troubleshooting the ingest pipeline, and if any predictions have been populated yet.
 
 ![Domain Generation Detection Detection Rules](../img/dgarules.png)
 *In **Security > Rules**, filtering with the “Use Case: Domain Generation Algorithm Detection” tag*
 
 ## Anomaly Detection Jobs
 
-| Job | Description |
-|---|---|
-| dga_high_sum_probability | Detects potential DGA (domain generation algorithm) activity that is often used by malware command and control (C2) channels. Looks for a source IP address making DNS requests that have an aggregate high probability of being DGA activity.| 
+| Job                         | Description                                                                                                                                                                                                                                    | Supported Platform    | Network Protocol |
+|-----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------|------------------|
+| dga_high_sum_probability_ea | Detects potential DGA (domain generation algorithm) activity that is often used by malware command and control (C2) channels. Looks for a source IP address making DNS requests that have an aggregate high probability of being DGA activity. | Linux, macOS, Windows | dns              |
 
 ## Customize ML jobs for Domain Generation Algorithm Detection 
 
@@ -104,6 +106,22 @@ To customize the datafeed query and other settings such as model memory limit, f
 1. You can also modify the job configuration by adjusting the **Bucket span** and by adding or removing **Influencers** to improve anomaly attribution. 
 ![Domain Generation Algorithm Detection jobs](../img/dga_ml_job_6.png)
 1. Finally, assign a new Job ID, and click on **Create job**, and start the datafeed to apply the updated settings.
+
+## v3.0.0 and beyond
+
+v3.0.0 of this package requires Elastic Stack version 9.4 or later. It introduces support for Entity Analytics (EA), adding new fields for proper entity resolution.
+
+- This package installs new ML jobs which include `_ea` suffix in their names, as outlined below. New detection rules are also included.
+- Previously installed ML jobs and rules will continue to run, allowing time to transition to the new Entity Analytics assets.
+- **Important**: We recommend installing the new ML jobs and verifying that they are properly set up, collecting data, and generating anomalies **before** deleting the old jobs and upgrading to the new version of the detection rules available in 9.4. The new detection rules reference ML job IDs with the `_ea` suffix and are not compatible with older versions of the jobs.
+
+The new Entity Analytics ML job IDs are:
+- `dga_high_sum_probability_ea`
+
+After confirming the new Entity Analytics ML jobs are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions (Elastic stack 9.4+):
+
+- Delete old ML jobs: Navigate to **Stack Management -> Anomaly Detection Jobs** and delete the following jobs:
+    - `dga_high_sum_probability`
 
 ## v2.0.0 and beyond
 

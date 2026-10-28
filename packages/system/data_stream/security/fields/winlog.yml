@@ -13,6 +13,127 @@
       description: >
         A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity.
 
+    - name: adcs
+      type: group
+      description: >
+        Normalized data from Active Directory Certificate Services audit events. This group is rebuilt from native fields on each normalization; existing values in this group are replaced. Native event values remain available under `winlog.event_data`.
+
+      fields:
+        - name: request
+          type: group
+          description: >
+            Typed certificate request data derived from native audit fields.
+
+          fields:
+            - name: id
+              type: long
+              description: >
+                Strict signed-ASCII-decimal request identifier derived from `winlog.event_data.RequestId`.
+
+            - name: disposition
+              type: group
+              description: >
+                Certificate request disposition code and recognized Certificate Services disposition or error name.
+
+              fields:
+                - name: code
+                  type: long
+                  description: >
+                    Unsigned 32-bit disposition or HRESULT derived from decimal `winlog.event_data.Disposition`. Signed and unsigned representations normalize to the same code, including unknown codes. Values outside -2147483648 through 4294967295 have no normalized code. The original representation remains in the native field.
+
+                - name: name
+                  type: keyword
+                  description: >
+                    Canonical CR_DISP_* or CERTSRV_E_* name for a recognized Certificate Services disposition or HRESULT in `winlog.adcs.request.disposition.code`. Signed and unsigned decimal representations of an HRESULT resolve to the same name. Unknown codes have no derived name.
+
+            - name: requester
+              type: group
+              description: >
+                Certificate requester identity. For receipt event 4886 only, also populates ECS `user.name` and `user.domain` with the request initiator when no root ECS user identity is present. Issuance, denial, and pending events retain the requester here without that fallback.
+
+              fields:
+                - name: domain
+                  type: keyword
+                  ignore_above: 8191
+                  description: >
+                    Exact requester domain component from `winlog.event_data.Requester`, with source case preserved.
+
+                - name: name
+                  type: keyword
+                  ignore_above: 1024
+                  description: >
+                    Exact requester name component from `winlog.event_data.Requester`, with source case preserved.
+
+            - name: extension
+              type: group
+              description: Neutral identifiers for an extension changed on a pending certificate request.
+              fields:
+                - name: name
+                  type: keyword
+                  ignore_above: 8191
+                  description: Exact nonblank event 4873 ExtensionName without value decoding.
+                - name: oid
+                  type: keyword
+                  ignore_above: 8191
+                  description: Conservative dotted-ASCII-decimal identifier derived from event 4873 ExtensionName.
+            - name: attributes
+              type: group
+              description: >
+                Bounded allowlisted values parsed from `winlog.event_data.Attributes` for events 4874 and 4886-4889 without changing the raw field. Event 4874 describes administratively changed request attributes, not necessarily the original submission or a complete current attribute set. Attribute names ignore ASCII case, spaces, and hyphens; internal tabs are not removed.
+
+              fields:
+                - name: certificate_template
+                  type: keyword
+                  ignore_above: 4096
+                  description: >
+                    Ordered CertificateTemplate request-attribute values. These remain separate from the native `winlog.event_data.CertificateTemplate` field and do not establish which template was used for issuance.
+
+                - name: request_client_info
+                  type: keyword
+                  ignore_above: 4096
+                  description: Ordered RequestClientInfo request values.
+                - name: cdc
+                  type: keyword
+                  ignore_above: 4096
+                  description: >
+                    Active Directory server names supplied in the cdc enrollment attribute for the CA to use when requester information cannot be obtained from its working directory. Values are preserved in request order without hostname validation.
+                - name: rmd
+                  type: keyword
+                  ignore_above: 4096
+                  description: >
+                    Machine object FQDNs supplied in the rmd enrollment attribute for the certificate request. Values are preserved in request order without hostname validation.
+                - name: ccm
+                  type: keyword
+                  ignore_above: 4096
+                  description: >
+                    Values extracted from the ccm enrollment attribute in `winlog.event_data.Attributes`, preserved in request order.
+                - name: san
+                  type: keyword
+                  ignore_above: 4096
+                  description: Ordered, outer-trimmed SAN request values parsed from `winlog.event_data.Attributes`.
+            - name: subject_alt_name
+              type: group
+              description: >
+                SAN request claims parsed only from `winlog.event_data.Attributes`. These values describe submitted request attributes and do not establish the contents of the issued certificate. They may be absent when SAN data is carried elsewhere in the request or is not recorded in `Attributes`.
+              fields:
+                - name: upn
+                  type: keyword
+                  ignore_above: 4096
+                  description: Ordered UPN SAN request claims parsed from `winlog.event_data.Attributes`.
+                - name: dns
+                  type: keyword
+                  ignore_above: 4096
+                  description: Ordered DNS SAN request claims parsed from `winlog.event_data.Attributes`.
+                - name: uri
+                  type: keyword
+                  ignore_above: 4096
+                  description: Ordered URL or URI SAN request claims parsed from `winlog.event_data.Attributes`.
+                - name: sid
+                  type: keyword
+                  ignore_above: 4096
+                  description: >
+                    Exact unvalidated suffix from a recognized Microsoft SID URI parsed from `winlog.event_data.Attributes`.
+
     - name: channel
       type: keyword
       description: >
@@ -83,6 +204,8 @@
           type: keyword
         - name: AttributeLDAPDisplayName
           type: keyword
+        - name: Attributes
+          type: keyword
         - name: AttributeSyntaxOID
           type: keyword
         - name: AttributeValue
@@ -97,8 +220,16 @@
           type: keyword
         - name: AuditSourceName
           type: keyword
+        - name: AuthenticationLevel
+          type: keyword
+          description: >
+            Authentication level reported in the AD CS audit event.
         - name: AuthenticationPackageName
           type: keyword
+        - name: AuthenticationService
+          type: keyword
+          description: >
+            Authentication service reported in the AD CS audit event.
         - name: BackupType
           type: keyword
         - name: BackupTypeDescription
@@ -113,6 +244,8 @@
           type: keyword
         - name: BuildVersion
           type: keyword
+        - name: CACertificateHash
+          type: keyword
         - name: CallerProcessId
           type: keyword
         - name: CallerProcessName
@@ -125,10 +258,32 @@
           type: keyword
         - name: CalloutType
           type: keyword
+        - name: CAPublicKeyHash
+          type: keyword
         - name: Category
           type: keyword
         - name: CategoryId
           type: keyword
+        - name: CertificateDatabaseHash
+          type: keyword
+        - name: CertificateSerialNumber
+          type: keyword
+        - name: CertificateTemplate
+          type: keyword
+          description: >
+            Native template reported by Windows: the requested template on event 4886 version 1, and the template reported by the CA issuance event on 4887 version 1. Availability depends on the event version and source. When absent, parsed request attributes are not substituted as confirmed issuance metadata.
+        - name: CertIssuerName
+          type: keyword
+          description: >
+            Issuer name of the certificate presented for certificate-based Kerberos authentication.
+        - name: CertSerialNumber
+          type: keyword
+          description: >
+            Serial number of the certificate presented for certificate-based Kerberos authentication.
+        - name: CertThumbprint
+          type: keyword
+          description: >
+            Thumbprint of the certificate presented for certificate-based Kerberos authentication.
         - name: ChangeType
           type: keyword
         - name: ClassId
@@ -161,11 +316,21 @@
           type: keyword
         - name: CreationUtcTime
           type: keyword
+        - name: CRLNumber
+          type: keyword
         - name: CurrentProfile
           type: keyword
         - name: CryptoAlgorithms
           type: keyword
         - name: DataDescription
+          type: keyword
+        - name: DCDNSName
+          type: keyword
+        - name: DCOMorRPC
+          type: keyword
+          description: >
+            DCOM or RPC transport indicator reported for the AD CS certificate request.
+        - name: Disposition
           type: keyword
         - name: DSName
           type: keyword
@@ -219,6 +384,8 @@
           type: keyword
         - name: EnabledPrivilegeList
           type: keyword
+        - name: Entry
+          type: keyword
         - name: EntryCount
           type: keyword
         - name: ErrorCode
@@ -228,6 +395,14 @@
         - name: EventIdx
           type: long
         - name: EventSourceId
+          type: keyword
+        - name: ExtensionData
+          type: keyword
+        - name: ExtensionDataType
+          type: keyword
+        - name: ExtensionName
+          type: keyword
+        - name: ExtensionPolicyFlags
           type: keyword
         - name: ExtraInfo
           type: keyword
@@ -295,9 +470,13 @@
           type: keyword
         - name: IpPort
           type: keyword
+        - name: IsBaseCRL
+          type: keyword
         - name: IsLoopback
           type: keyword
         - name: KerberosPolicyChange
+          type: keyword
+        - name: KeyContainer
           type: keyword
         - name: KeyFilePath
           type: keyword
@@ -393,6 +572,16 @@
           type: keyword
         - name: NewUacValue
           type: keyword
+        - name: NextPublish
+          type: keyword
+        - name: NextPublishForBaseCRL
+          type: keyword
+        - name: NextPublishForDeltaCRL
+          type: keyword
+        - name: NextUpdate
+          type: keyword
+        - name: Node
+          type: keyword
         - name: NominalFrequency
           type: keyword
         - name: Number
@@ -465,7 +654,17 @@
           type: keyword
         - name: PrimaryGroupId
           type: keyword
+        - name: PrivateKeyUsageCount
+          type: keyword
         - name: PrivilegeList
+          type: keyword
+        - name: PropertyIndex
+          type: keyword
+        - name: PropertyName
+          type: keyword
+        - name: PropertyType
+          type: keyword
+        - name: PropertyValue
           type: keyword
         - name: ProtectedDataFlags
           type: keyword
@@ -509,6 +708,8 @@
           type: keyword
         - name: PuaPolicyId
           type: keyword
+        - name: PublishURLs
+          type: keyword
         - name: QfeVersion
           type: keyword
         - name: ReadOperation
@@ -535,6 +736,20 @@
           type: keyword
         - name: RemoteUserID
           type: keyword
+        - name: RequestClientInfo
+          type: keyword
+          description: >
+            Native client information reported for the AD CS certificate request, separate from values parsed from request attributes.
+        - name: RequestCSPProvider
+          type: keyword
+          description: >
+            Cryptographic service provider reported for the AD CS certificate request.
+        - name: RequestOSVersion
+          type: keyword
+          description: >
+            Operating system version reported for the AD CS certificate request client.
+        - name: Requester
+          type: keyword
         - name: RequestId
           type: keyword
         - name: Resource
@@ -547,12 +762,22 @@
           type: keyword
         - name: ReturnCode
           type: keyword
+        - name: RevocationReason
+          type: keyword
+        - name: RoleSeparationEnabled
+          type: keyword
         - name: RuleAttr
           type: keyword
         - name: RuleId
           type: keyword
         - name: RuleName
           type: keyword
+        - name: SecurityDescriptor
+          type: keyword
+        - name: SerialNumber
+          type: keyword
+          description: >
+            Serial number of the certificate issued by AD CS.
         - name: SPI
           type: keyword
         - name: SamAccountName
@@ -635,6 +860,14 @@
           type: keyword
         - name: SubCategoryId
           type: keyword
+        - name: Subject
+          type: keyword
+        - name: SubjectAlternativeName
+          type: keyword
+          description: >
+            Native subject alternative name information reported by the AD CS audit event, separate from SAN values parsed from request attributes.
+        - name: SubjectKeyIdentifier
+          type: keyword
         - name: SubStatus
           type: keyword
         - name: SubcategoryGuid
@@ -648,6 +881,18 @@
         - name: SubjectUserName
           type: keyword
         - name: SubjectUserSid
+          type: keyword
+        - name: TemplateContent
+          type: keyword
+        - name: TemplateDSObjectFQDN
+          type: keyword
+        - name: TemplateInternalName
+          type: keyword
+        - name: TemplateOID
+          type: keyword
+        - name: TemplateSchemaVersion
+          type: keyword
+        - name: TemplateVersion
           type: keyword
         - name: TSId
           type: keyword
@@ -706,6 +951,8 @@
         - name: UserSid
           type: keyword
         - name: UserWorkstations
+          type: keyword
+        - name: Value
           type: keyword
         - name: VendorIds
           type: keyword
@@ -773,6 +1020,255 @@
       type: keyword
       description: >
         A globally unique identifier that identifies the provider that logged the event.
+
+    - name: scheduled_task
+      type: group
+      description: >
+        Selected configuration from Windows Security scheduled task lifecycle
+        events. These normalized fields provide searchable task metadata when the
+        raw XML may exceed keyword indexing limits. They describe the task
+        definition, not evidence that the task, a trigger, or an action ran. Use
+        `event.action` to identify the audited lifecycle operation.
+      fields:
+        - name: name
+          type: keyword
+          ignore_above: 4096
+          description: >
+            Full task path from `winlog.event_data.TaskName`, in
+            `\folder\task` form.
+        - name: uri
+          type: keyword
+          ignore_above: 4096
+          description: >
+            URI from `RegistrationInfo/URI` in the task XML. Compare it with
+            `winlog.scheduled_task.name` when investigating inconsistent task
+            identity.
+        - name: principals
+          type: group
+          description: >
+            Security contexts configured to run the task. These identify run-as
+            users or groups, not the account that created or changed the task.
+          fields:
+            - name: id
+              type: keyword
+              ignore_above: 1024
+              description: >
+                Task-local identifier for this principal.
+                `winlog.scheduled_task.actions.context` can reference this value;
+                it is not a Windows account identifier.
+            - name: user
+              type: group
+              description: >
+                User account configured to run the task under this principal.
+              fields:
+                - name: identifier
+                  type: keyword
+                  ignore_above: 1024
+                  description: >
+                    User identifier from `Principal/UserId` required to run task
+                    actions associated with this principal.
+            - name: group
+              type: group
+              description: >
+                User group configured to run the task under this principal.
+              fields:
+                - name: identifier
+                  type: keyword
+                  ignore_above: 1024
+                  description: >
+                    User-group identifier from `Principal/GroupId` required to run
+                    task actions associated with this principal.
+            - name: logon
+              type: group
+              description: >
+                Security logon method configured for this principal.
+              fields:
+                - name: type
+                  type: keyword
+                  ignore_above: 1024
+                  description: >
+                    Method Task Scheduler uses to establish the principal's security
+                    context, such as `Password`, `S4U`, `InteractiveToken`, or
+                    `ServiceAccount`. This field is populated only when
+                    `Principal/LogonType` exists in the XML.
+            - name: run_level
+              type: keyword
+              ignore_above: 1024
+              description: >
+                Requested privilege level for task execution, such as
+                `LeastPrivilege` or `HighestAvailable`. This setting does not prove
+                that an execution was elevated.
+        - name: actions
+          type: group
+          description: >
+            Selected actions configured to run when the task starts. Only `Exec`
+            and `ComHandler` actions are normalized. These fields do not prove
+            execution, and their array order may differ from the configured action
+            order. When a task has multiple actions, predicates against separate
+            fields may be satisfied by different actions.
+          fields:
+            - name: definition
+              type: wildcard
+              # Override logsdb's default ignore_above of 8191 so long definitions remain indexed.
+              ignore_above: 2147483647
+              description: >
+                Versioned canonical representation of one configured action as a
+                pipe-separated sequence with fixed key order: `v=1`, `type=<value>`,
+                `context=<value>`, `command=<value>`, `arguments=<value>`,
+                `working_directory=<value>`, and `class_id=<value>`. An empty value
+                means the source element was omitted or empty after normalization.
+                Percent signs, pipe separators, equals signs, C0 controls, and DEL
+                are escaped as uppercase `%HH`; printable Unicode, backslashes, `*`,
+                and `?` remain literal and may need query-language escaping. Put
+                every same-action condition in one predicate. For example, one KQL
+                predicate can require an `exec` type, `powershell.exe` command, and
+                `EncodedCommand` argument so they must occur in the same action.
+                Separate predicates may match different actions. Use the component
+                fields for single-attribute searches; use this field when multiple
+                attributes must belong to the same action.
+            - name: type
+              type: keyword
+              ignore_above: 1024
+              description: >
+                Normalized action type: `exec` runs a command-line operation;
+                `com_handler` invokes a COM handler.
+            - name: context
+              type: keyword
+              ignore_above: 1024
+              description: >
+                Task-local principal identifier whose security context applies to
+                this action. It references
+                `winlog.scheduled_task.principals.id` and is not a Windows account
+                identifier.
+            - name: command
+              type: wildcard
+              ignore_above: 4096
+              description: >
+                Executable file or document configured for an `exec` action. The
+                value may contain environment variables; command-line arguments are
+                stored separately in `winlog.scheduled_task.actions.arguments`.
+              multi_fields:
+                - name: text
+                  type: match_only_text
+            - name: arguments
+              type: wildcard
+              ignore_above: 4096
+              description: >
+                Command-line arguments configured for the `exec` action command. The
+                value may contain environment variables.
+              multi_fields:
+                - name: text
+                  type: match_only_text
+            - name: working_directory
+              type: wildcard
+              ignore_above: 4096
+              description: >
+                Working directory configured for the `exec` action. The value may
+                contain environment variables.
+              multi_fields:
+                - name: text
+                  type: match_only_text
+            - name: class_id
+              type: keyword
+              ignore_above: 1024
+              description: >
+                COM class identifier (CLSID) invoked by a `com_handler` action. This
+                identifies the configured COM component, not a file or observed
+                process.
+        - name: triggers
+          type: group
+          description: >
+            Triggers configured to start the task. These fields describe
+            configuration, not evidence that a trigger fired or the task ran. When
+            a task has multiple triggers, predicates against separate fields may be
+            satisfied by different triggers. Only the trigger types listed under
+            `winlog.scheduled_task.triggers.type` are normalized. Unrecognized
+            trigger elements are omitted from this group and remain available in
+            `winlog.event_data.TaskContent` or `winlog.event_data.TaskContentNew`.
+          fields:
+            - name: definition
+              type: wildcard
+              # Override logsdb's default ignore_above of 8191 so long definitions remain indexed.
+              ignore_above: 2147483647
+              description: >
+                Versioned canonical representation of one configured trigger as a
+                pipe-separated sequence with fixed key order: `v=1`, `type=<value>`,
+                `enabled=<value>`, `interval=<value>`, `duration=<value>`, and
+                `stop_at_duration_end=<value>`. An empty value means the source
+                element was omitted or empty after normalization. An empty
+                `stop_at_duration_end=` means the element was omitted; when
+                repetition applies, Task Scheduler defaults the omitted value to
+                `false`. This remains distinct from explicit
+                `stop_at_duration_end=false`. Percent signs, pipe separators, equals
+                signs, C0 controls, and DEL are escaped as uppercase `%HH`;
+                printable Unicode, backslashes, `*`, and `?` remain literal and may
+                need query-language escaping. Put every same-trigger condition in
+                one predicate. For example, one KQL predicate can require a `time`
+                type, an `enabled` value of `false`, and a `PT30M` interval so they
+                must occur in the same trigger. Separate predicates may match
+                different triggers. Use the component fields for single-attribute
+                searches; use this field when multiple attributes must belong to
+                the same trigger.
+            - name: type
+              type: keyword
+              ignore_above: 1024
+              description: >
+                Normalized trigger type: `boot`, `wnf_state_change`, `time`,
+                `calendar`, `logon`, `registration`, `session_state_change`,
+                `event`, or `idle`.
+            - name: enabled
+              type: boolean
+              description: >
+                Whether the trigger is effectively enabled. If the trigger XML has
+                no `Enabled` element, Task Scheduler treats the trigger as enabled.
+            - name: repetition
+              type: group
+              description: >
+                Configuration that controls how often the trigger repeats and how
+                long the repetition pattern remains active.
+              fields:
+                - name: interval
+                  type: keyword
+                  ignore_above: 1024
+                  description: >
+                    Time between repeated task starts, represented as an XML duration
+                    such as `PT5M` for five minutes.
+                - name: duration
+                  type: keyword
+                  ignore_above: 1024
+                  description: >
+                    How long the repetition pattern remains active, represented as an
+                    XML duration such as `PT1H` for one hour. If `Duration` is
+                    absent, the pattern repeats indefinitely.
+                - name: stop_at_duration_end
+                  type: boolean
+                  description: >
+                    Whether Task Scheduler stops a running task instance when the
+                    repetition duration ends. This field is populated only when the
+                    XML contains `StopAtDurationEnd`; otherwise Task Scheduler
+                    defaults the setting to `false`.
+        - name: settings
+          type: group
+          description: >
+            Selected task-wide settings that control task availability and
+            visibility. These describe configured state, not the lifecycle operation
+            recorded in `event.action`.
+          fields:
+            - name: enabled
+              type: boolean
+              description: >
+                Whether the task definition is effectively enabled. When a `Settings`
+                block omits `Enabled`, this field is populated with Task Scheduler's
+                default of `true`. The field remains absent when `Settings` is absent
+                or `Enabled` is invalid. It is separate from `event.action`, which
+                identifies the audited lifecycle operation.
+            - name: hidden
+              type: boolean
+              description: >
+                Whether the task is hidden from default Task Scheduler views. This
+                field is populated only when the XML contains `Settings/Hidden`;
+                otherwise Task Scheduler defaults the setting to `false`. Hidden
+                tasks remain registered and can still run.
 
     - name: process.pid
       type: long
