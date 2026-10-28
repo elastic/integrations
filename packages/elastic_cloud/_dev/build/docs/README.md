@@ -3,7 +3,7 @@
 
 ## Overview
 
-The Elastic Cloud integration adds Elasticsearch mappings, an ingest pipeline, and Kibana dashboards for [audit trail log delivery](https://www.elastic.co/docs/deploy-manage/monitor/log-delivery/audit-trail). The first data stream is **Serverless audit logs**. This package does not collect data with Elastic Agent.
+The Elastic Cloud integration adds Elasticsearch mappings, an ingest pipeline, Kibana dashboards, and alerting rules for [audit trail log delivery](https://www.elastic.co/docs/deploy-manage/monitor/log-delivery/audit-trail). The first data stream is **Serverless audit logs**. This package does not collect data with Elastic Agent.
 
 Audit trail delivery writes project-level Elasticsearch and Kibana audit events to `logs-elastic_cloud.serverless_audit.otel-*` on an Elastic Security Serverless or Elastic Observability Serverless destination. The destination can be the same project as the source. You can read more about enablement, ignore filters, and example queries in [Audit trail log delivery](https://www.elastic.co/docs/deploy-manage/monitor/log-delivery/audit-trail).
 
@@ -36,7 +36,24 @@ This integration installs:
 - An ingest pipeline for the `elastic_cloud.serverless_audit` data stream
 - Field mappings for the GeoIP enrichment of `client.ip`
 - The **[Audit]** dashboards, saved searches, and visualizations
-- Alerting rules for failed sign-ins, a sign-in after repeated failures, impossible travel, a new country, a first-seen identity, and a credential used from many places
+- Alerting rule templates for sign-in and location anomalies
+
+## Alerting rules
+
+The package installs the rule templates with its other assets. Add a rule from the Elastic Cloud integration **Assets** tab before it alerts.
+
+Each rule reads `logs-elastic_cloud.serverless_audit.otel-*`. The identity is the email, otherwise the API key name, otherwise the user name. A Cloud API key stays distinct by realm. Platform accounts (`elastic/kibana`, `elastic/fleet-server`, `elastic.maintenance`, `autoscaling`, and `elasticsearch-controller`) are excluded. `realm_authentication_failed` is left out, so one sign-in attempt counts once.
+
+- **[Elastic Cloud] Password guessing**: one identity fails to sign in at least 15 times in 10 minutes.
+- **[Elastic Cloud] Password spray**: one client IP fails against at least 10 identities in 15 minutes.
+- **[Elastic Cloud] Credential stuffing**: at least 30 failures, 10 identities, and 5 public IPs in 10 minutes.
+- **[Elastic Cloud] Successful sign-in after repeated failures**: at least 5 failures, then a success, in 30 minutes.
+- **[Elastic Cloud] Impossible travel**: two geolocated sign-ins at least 500 km apart, faster than 800 km/h, within 6 hours.
+- **[Elastic Cloud] Sign-in from a new country**: a known identity uses a country it has not used in the last 7 days.
+- **[Elastic Cloud] First-seen identity sign-in**: the first sign-in in 7 days. This rule stays quiet until the audit stream is at least 24 hours old.
+- **[Elastic Cloud] Credential used from many places**: two countries in one hour, or an API key used from 3 public IPs.
+
+Private and carrier-NAT addresses are left out of the location rules, because those addresses do not geolocate.
 
 ## Troubleshooting
 
