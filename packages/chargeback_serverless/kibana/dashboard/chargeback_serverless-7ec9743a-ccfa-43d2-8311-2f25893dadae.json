@@ -76,7 +76,7 @@
                     "esql_query": [
                         "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit, conf_currency_symbol\n| SORT conf_start_date DESC\n| LIMIT 1"
                     ],
-                    "template": "<style>\n  .cb-dsl { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--cc-space-m); font-size: 0.85rem; }\n  .cb-dsl h4 { margin: 0 0 4px 0; font-size: 0.9rem; font-weight: 600; }\n  .cb-dsl p { margin: 0 0 6px 0; font-size: 0.75rem; color: var(--cc-color-text-secondary); }\n  .cb-dsl pre {\n    background: var(--cc-color-surface);\n    border: 1px solid var(--cc-color-border);\n    border-radius: var(--cc-radius-s);\n    padding: var(--cc-space-s);\n    margin: 0;\n    font-family: monospace;\n    font-size: 0.74rem;\n    overflow-x: auto;\n  }\n</style>\n{% assign r = rows[0] %}\n<div class=\"cb-dsl\">\n  <div>\n    <h4>1. Currency Rate Window (Dev Tools)</h4>\n    <p>Set active rate, currency, and date bounds in chargeback_conf_lookup.</p>\n    <pre>PUT chargeback_conf_lookup/_doc/config\n{\n  \"@timestamp\": \"1970-01-01T00:00:00.000Z\",\n  \"config_join_key\": \"config\",\n  \"conf_start_date\": \"{{ r[\"conf_start_date\"].value | default: \"2020-01-01T00:00:00.000Z\" }}\",\n  \"conf_end_date\": \"{{ r[\"conf_end_date\"].value | default: \"2099-12-31T23:59:59.999Z\" }}\",\n  \"conf_chargeable_unit_rate\": {{ r[\"conf_chargeable_unit_rate\"].value | default: 1.0 }},\n  \"conf_chargeable_unit_rate_unit\": \"{{ r[\"conf_chargeable_unit_rate_unit\"].value | default: \"USD\" }}\",\n  \"conf_currency_symbol\": \"{{ r[\"conf_currency_symbol\"].value | default: \"$\" }}\"\n}</pre>\n  </div>\n  <div>\n    <h4>2. Remote Least-Privilege Key (Dev Tools)</h4>\n    <p>Run on remote project. Grants index metadata read only (no data access).</p>\n    <pre>POST _security/api_key\n{\n  \"name\": \"chargeback-usage-harvesting\",\n  \"role_descriptors\": {\n    \"chargeback_harvest\": {\n      \"cluster\": [\"monitor\"],\n      \"indices\": [\n        {\n          \"names\": [\"*\"],\n          \"privileges\": [\"view_index_metadata\"]\n        }\n      ]\n    }\n  }\n}</pre>\n  </div>\n  <div>\n    <h4>3. Register Remote Key on Hub (Dev Tools)</h4>\n    <p>Run on Hub to register encoded key for remote project ID.</p>\n    <pre>POST chargeback-serverless-config/_update/config\n{\n  \"doc\": {\n    \"project_api_keys\": {\n      \"&lt;REMOTE_PROJECT_ID&gt;\": \"&lt;ENCODED_API_KEY&gt;\"\n    }\n  }\n}</pre>\n  </div>\n</div>\n"
+                    "template": "<style>\n  .cb-dsl { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--cc-space-m); font-size: 0.85rem; }\n  .cb-dsl h4 { margin: 0 0 4px 0; font-size: 0.9rem; font-weight: 600; }\n  .cb-dsl p { margin: 0 0 6px 0; font-size: 0.75rem; color: var(--cc-color-text-secondary); }\n  .cb-dsl pre {\n    background: var(--cc-color-surface);\n    border: 1px solid var(--cc-color-border);\n    border-radius: var(--cc-radius-s);\n    padding: var(--cc-space-s);\n    margin: 0;\n    font-family: monospace;\n    font-size: 0.74rem;\n    overflow-x: auto;\n  }\n</style>\n{% assign r = rows[0] %}\n<div class=\"cb-dsl\">\n  <div>\n    <h4>1. Currency Rate Window (Dev Tools)</h4>\n    <p>Set active rate, currency, and date bounds in chargeback_conf_lookup.</p>\n    <pre>PUT chargeback_conf_lookup/_doc/config\n{\n  \"@timestamp\": \"1970-01-01T00:00:00.000Z\",\n  \"config_join_key\": \"config\",\n  \"conf_start_date\": \"{{ r[\"conf_start_date\"].value | default: \"2020-01-01T00:00:00.000Z\" }}\",\n  \"conf_end_date\": \"{{ r[\"conf_end_date\"].value | default: \"2099-12-31T23:59:59.999Z\" }}\",\n  \"conf_chargeable_unit_rate\": {{ r[\"conf_chargeable_unit_rate\"].value | default: 1.0 }},\n  \"conf_chargeable_unit_rate_unit\": \"{{ r[\"conf_chargeable_unit_rate_unit\"].value | default: \"USD\" }}\",\n  \"conf_currency_symbol\": \"{{ r[\"conf_currency_symbol\"].value | default: \"$\" }}\"\n}</pre>\n  </div>\n  <div>\n    <h4>2. Remote Least-Privilege Key (Dev Tools)</h4>\n    <p>Run on remote project. Grants index metadata read only (no data access).</p>\n    <pre>POST _security/api_key\n{\n  \"name\": \"chargeback-usage-harvesting\",\n  \"role_descriptors\": {\n    \"chargeback_usage\": {\n      \"cluster\": [\"monitor\"],\n      \"indices\": [\n        {\n          \"names\": [\"*\"],\n          \"privileges\": [\"monitor\"]\n        }\n      ]\n    }\n  }\n}</pre>\n  </div>\n  <div>\n    <h4>3. Register Remote Key on Hub (Dev Tools)</h4>\n    <p>Run on Hub to register encoded key for remote project ID.</p>\n    <pre>POST chargeback-serverless-config/_update/config\n{\n  \"doc\": {\n    \"project_api_keys\": {\n      \"&lt;REMOTE_PROJECT_ID&gt;\": \"&lt;ENCODED_API_KEY&gt;\"\n    }\n  }\n}</pre>\n  </div>\n</div>\n"
                 },
                 "gridData": {
                     "h": 13,
@@ -105,7 +105,7 @@
                                     "name": "chargeback_conf_lookup",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
-                                    "timeFieldName": "conf_start_date",
+                                    "timeFieldName": null,
                                     "title": "chargeback_conf_lookup",
                                     "type": "esql"
                                 }
@@ -115,7 +115,7 @@
                                     "indexPatternRefs": [
                                         {
                                             "id": "6a4f7eba9ea0f9ab52eeba32fcc712df646596507d47b8c892451b6400029d6b",
-                                            "timeField": "conf_start_date",
+                                            "timeField": null,
                                             "title": "chargeback_conf_lookup"
                                         }
                                     ],
@@ -183,7 +183,7 @@
                                             "query": {
                                                 "esql": "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit, conf_currency_symbol\n| SORT conf_start_date DESC"
                                             },
-                                            "timeField": "conf_start_date"
+                                            "timeField": null
                                         }
                                     }
                                 }
@@ -260,7 +260,7 @@
                                     "name": "chargeback-serverless-projects",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
-                                    "timeFieldName": "updated_at",
+                                    "timeFieldName": null,
                                     "title": "chargeback-serverless-projects",
                                     "type": "esql"
                                 }
@@ -270,7 +270,7 @@
                                     "indexPatternRefs": [
                                         {
                                             "id": "dda14876d0db9f8c0c854499c13077c0ee010585c18afbde345cd5c8de3f7e61",
-                                            "timeField": "updated_at",
+                                            "timeField": null,
                                             "title": "chargeback-serverless-projects"
                                         }
                                     ],
@@ -332,7 +332,7 @@
                                             "query": {
                                                 "esql": "FROM chargeback-serverless-projects\n| KEEP project_name, project_id, project_type, optimized_for, es_url\n| RENAME project_name AS `Project`, project_id AS `Project ID`, project_type AS `Type`, optimized_for AS `Optimized for`, es_url AS `Elasticsearch endpoint`\n| SORT `Project` ASC\n| LIMIT 200"
                                             },
-                                            "timeField": "updated_at"
+                                            "timeField": null
                                         }
                                     }
                                 }
