@@ -102,8 +102,9 @@ Repeat for each integration whose syslog events you expect to receive.
 
 #### Input configuration reference
 
-The `preserve_original_event` setting is not handled by this integration, but rather
-by the integration to which the events are routed (to avoid duplicate handling).
+The `preserve_original_event` setting only adds the `preserve_original_event` tag to each event.
+The integration to which the event is routed then stores the raw message in `event.original`,
+so unmatched events that remain in `syslog_router.log` don't get it.
 If the user implements a custom integration, they should also implement this processing.
 
 ##### TCP input
@@ -112,7 +113,7 @@ If the user implements a custom integration, they should also implement this pro
 | --------------------------- | ------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Listen Address**          | `listen_address`          | `localhost`                    | Bind address for TCP connections. Set to `0.0.0.0` for all interfaces.                                                                           |
 | **Listen Port**             | `listen_port`             | `9514`                         | TCP port number to listen on.                                                                                                                    |
-| **Preserve original event** | `preserve_original_event` | `false`                        | Store raw event in `event.original`.                                                                                                             |
+| **Preserve original event** | `preserve_original_event` | `false`                        | Adds the `preserve_original_event` tag; the target integration stores `event.original`.                                                          |
 | **Reroute configuration**   | `reroute_config`          | _(22 pre-configured patterns)_ | YAML list of `if/then` blocks for pattern matching.                                                                                              |
 | **SSL Configuration**       | `ssl`                     | _(turned off)_                 | SSL/TLS settings. Refer to [SSL documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config). |
 | **Custom TCP Options**      | `tcp_options`             | _(commented out)_              | Additional TCP input options. See [TCP input docs](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-tcp.html).              |
@@ -124,7 +125,7 @@ If the user implements a custom integration, they should also implement this pro
 | --------------------------- | ------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | **Listen Address**          | `listen_host`             | `localhost`                    | Bind address for UDP connections. Set to `0.0.0.0` for all interfaces.                                                              |
 | **Listen Port**             | `listen_port`             | `9514`                         | UDP port number to listen on.                                                                                                       |
-| **Preserve original event** | `preserve_original_event` | `false`                        | Store raw event in `event.original`.                                                                                                |
+| **Preserve original event** | `preserve_original_event` | `false`                        | Adds the `preserve_original_event` tag; the target integration stores `event.original`.                                             |
 | **Reroute configuration**   | `reroute_config`          | _(22 pre-configured patterns)_ | YAML list of `if/then` blocks for pattern matching.                                                                                 |
 | **Custom UDP Options**      | `udp_options`             | _(commented out)_              | Additional UDP input options. See [UDP input docs](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-udp.html). |
 | **Tags**                    | `tags`                    | `['forwarded']`                | Custom tags for filtering.                                                                                                          |
@@ -134,7 +135,7 @@ If the user implements a custom integration, they should also implement this pro
 | Setting                       | Variable                  | Default                        | Description                                                                                                                                        |
 | ----------------------------- | ------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Paths**                     | `paths`                   | `['/var/log/syslog.log']`      | File paths to monitor.                                                                                                                             |
-| **Preserve original event**   | `preserve_original_event` | `false`                        | Store raw event in `event.original`.                                                                                                               |
+| **Preserve original event**   | `preserve_original_event` | `false`                        | Adds the `preserve_original_event` tag; the target integration stores `event.original`.                                                            |
 | **Reroute configuration**     | `reroute_config`          | _(22 pre-configured patterns)_ | YAML list of `if/then` blocks for pattern matching.                                                                                                |
 | **Custom Filestream Options** | `filestream_options`      | —                              | Additional filestream options. See [filestream input docs](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html). |
 | **Tags**                      | `tags`                    | `['forwarded']`                | Custom tags for filtering.                                                                                                                         |
@@ -219,7 +220,7 @@ Additional processors such as `decode_cef` or `syslog` may be added in the `then
 ### 1. Verify the agent is receiving data
 
 1. Check the Elastic Agent logs for the configured input (TCP/UDP) to confirm it is listening.
-2. Send a test syslog message to the agent host on the configured port (for example, `echo "<190>%ASA-6-302013: test message" | nc localhost 9514`).
+2. Send a test syslog message to the agent host on the configured port (for example, `echo 'Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-4-106023: Deny tcp src outside:192.168.19.254/80 dst inside:172.31.98.44/8277 by access-group "inbound" [0x0, 0x0]' | nc localhost 9514`).
 
 ### 2. Check data in Kibana
 

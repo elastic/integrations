@@ -53,6 +53,8 @@ The Syslog Router integration collects log messages of the following types:
 
 This integration acts as a transit layer that collects raw syslog events and routes them to other Elastic integrations for parsing. Events that are not matched and rerouted are processed by a minimal ingest pipeline that sets `ecs.version` and handles errors. The actual parsing of routed events is performed by the target integration's ingest pipeline.
 
+The **Preserve original event** setting only adds the `preserve_original_event` tag to each event. The target integration's ingest pipeline then stores the raw message in `event.original`. Events that remain in `syslog_router.log` don't get `event.original`.
+
 The routing mechanism works as follows:
 
 1. Each event is matched against ordered regex patterns on the `message` field.
@@ -240,7 +242,7 @@ For more information on architectures that can be used for scaling this integrat
 To optimize the performance and scaling of the Syslog Router, you should follow these best practices:
 
 - Pattern ordering: You should place stricter and more specific patterns before broader ones to avoid false matches. You'll also get better performance if you place your highest-traffic integrations at the top of your configuration to reduce the number of regex evaluations performed for each event.
-- Regex complexity: You should keep your patterns as straightforward as possible. Avoid using broad patterns like `.*` because they can cause excessive backtracking and increase CPU overhead on the ingestion nodes.
+- Regex complexity: You should keep your patterns as straightforward as possible. Avoid using broad patterns like `.*` because they can cause excessive backtracking and increase CPU usage on the Elastic Agent host.
 - Transport selection: You can use UDP for higher throughput with lower overhead, but you should use TCP when you need guaranteed delivery. When you use TCP, you can tune advanced settings like `max_connections` and `max_message_size` in the custom TCP options to match your environment's requirements.
 - Agent scaling: For high-throughput environments, you can deploy multiple Elastic Agents behind a network load balancer to distribute the ingestion load across multiple instances.
 - Routing efficiency: This integration routes all events through the `syslog_router.log` data stream. Because the rerouting rules happen at the Elasticsearch level rather than the agent level, you won't experience data duplication at rest, which keeps your storage and processing usage efficient.
