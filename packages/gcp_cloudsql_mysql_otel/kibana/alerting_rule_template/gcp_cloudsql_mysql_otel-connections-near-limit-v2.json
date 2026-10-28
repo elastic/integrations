@@ -14,7 +14,7 @@
       },
       "metadata": {
         "name": "[GCP Cloud SQL MySQL OTel] Connections near the max_connections limit",
-        "description": "Alerts when open connections to a Cloud SQL for MySQL instance (database/network/connections) are at least 90% of its max_connections setting (database/mysql/max_connections) in every observed minute of the last 10 minutes, with at least 3 minutes observed. At 100%, MySQL refuses new connections with 'Too many connections'. connection_usage_pct is the latest value, computed like the Connection usage % panel. Requiring every observed minute ignores single spikes and the partly filled newest minute.",
+        "description": "Alerts when open connections to a Cloud SQL for MySQL instance (database/network/connections) are at least 90% of its max_connections setting (database/mysql/max_connections) in every observed minute of the last 20 minutes, with at least 3 minutes observed. The 20-minute window still holds enough minutes when the receiver polls Cloud Monitoring every 5 minutes (the default), because the newest data can then be about 9 minutes old. At 100%, MySQL refuses new connections with 'Too many connections'. connection_usage_pct is the latest value, computed like the Connection usage % panel. Requiring every observed minute ignores single spikes and the partly filled newest minute.",
         "tags": [
           "observability",
           "gcp",
@@ -24,7 +24,7 @@
       },
       "schedule": {
         "every": "1m",
-        "lookback": "10m"
+        "lookback": "20m"
       },
       "time_field": "@timestamp",
       "query": {

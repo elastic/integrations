@@ -14,7 +14,7 @@
       },
       "metadata": {
         "name": "[GCP Cloud SQL MySQL OTel] High replication lag on read replica",
-        "description": "Alerts when a Cloud SQL for MySQL read replica has been at least 300 seconds (5 minutes) behind its primary (database/replication/replica_lag) in every observed minute of the last 10 minutes, with at least 3 minutes observed. Replica reads are stale, and promoting the replica would lose recent transactions. network_lag_s is the binary log transport delay and apply_lag_s is the rest, which is spent applying changes on the replica. Negative lag means replication is inactive, which the 'Replication broken on read replica' rule covers. Set the threshold to your read-staleness or recovery point objective.",
+        "description": "Alerts when a Cloud SQL for MySQL read replica has been at least 300 seconds (5 minutes) behind its primary (database/replication/replica_lag) in every observed minute of the last 20 minutes, with at least 3 minutes observed. The 20-minute window still holds enough minutes when the receiver polls Cloud Monitoring every 5 minutes (the default), because the newest data can then be about 9 minutes old. Replica reads are stale, and promoting the replica would lose recent transactions. network_lag_s is the binary log transport delay and apply_lag_s is the rest, which is spent applying changes on the replica. Negative lag means replication is inactive, which the 'Replication broken on read replica' rule covers. Set the threshold to your read-staleness or recovery point objective.",
         "tags": [
           "observability",
           "gcp",
@@ -24,7 +24,7 @@
       },
       "schedule": {
         "every": "2m",
-        "lookback": "10m"
+        "lookback": "20m"
       },
       "time_field": "@timestamp",
       "query": {
