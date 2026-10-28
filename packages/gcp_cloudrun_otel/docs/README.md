@@ -45,8 +45,6 @@ Alert rule templates require Elastic Stack version 9.6.0 or later.
 
 </details>
 
-
-
 ## SLO Templates
 SLO templates provide pre-defined configurations for creating SLOs in Kibana.
 
