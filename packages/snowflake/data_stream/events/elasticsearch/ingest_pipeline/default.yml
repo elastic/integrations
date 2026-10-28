@@ -141,6 +141,34 @@ processors:
       override: true
       tag: expand_resource_attributes
       if: ctx.json?.RESOURCE_ATTRIBUTES instanceof Map
+  - script:
+      tag: preserve_conflicting_record_attributes
+      lang: painless
+      description: >-
+        Move scalar RECORD_ATTRIBUTES keys that share a prefix with a dotted
+        sibling (for example db.query plus db.query.text) into a temporary
+        catch-all before dot expansion overwrites them.
+      if: ctx.json?.RECORD_ATTRIBUTES instanceof Map
+      source: |-
+        def attrs = ctx.json.RECORD_ATTRIBUTES;
+        def keys = new ArrayList(attrs.keySet());
+        def preserved = [:];
+        for (def key : keys) {
+          def val = attrs[key];
+          if (val instanceof Map) {
+            continue;
+          }
+          def prefix = key.toString() + '.';
+          for (def other : keys) {
+            if (other.toString().startsWith(prefix)) {
+              preserved[key.toString()] = attrs.remove(key);
+              break;
+            }
+          }
+        }
+        if (preserved.size() > 0) {
+          ctx.json.preserved_custom_attributes = preserved;
+        }
   - dot_expander:
       field: '*'
       path: json.RECORD_ATTRIBUTES
@@ -579,6 +607,9 @@ processors:
         def attrs = ctx.snowflake.events.record_attributes;
         def custom = [:];
         walk(attrs, '', custom, leaves);
+        if (ctx.json?.preserved_custom_attributes instanceof Map) {
+          custom.putAll(ctx.json.preserved_custom_attributes);
+        }
         if (custom.size() > 0) {
           ctx.snowflake.events.custom_attributes = custom;
         }

@@ -401,22 +401,22 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2020-07-01T08:00:00.000Z",
     "agent": {
-        "ephemeral_id": "e1382fb7-19c1-4a2b-a9fe-35f5afb1fd18",
-        "id": "5f89d62b-6541-4b50-ac2f-82f24301847b",
-        "name": "elastic-agent-67210",
+        "ephemeral_id": "c1763dfd-125c-4858-8976-7ebb87156425",
+        "id": "e8858486-268f-4c65-929c-90fb70a79da1",
+        "name": "elastic-agent-40334",
         "type": "filebeat",
         "version": "9.4.0"
     },
     "data_stream": {
         "dataset": "snowflake.events",
-        "namespace": "28821",
+        "namespace": "28806",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "5f89d62b-6541-4b50-ac2f-82f24301847b",
+        "id": "e8858486-268f-4c65-929c-90fb70a79da1",
         "snapshot": false,
         "version": "9.4.0"
     },
@@ -428,7 +428,7 @@ An example event for `events` looks as following:
         ],
         "created": "2020-07-01T08:00:00.000Z",
         "dataset": "snowflake.events",
-        "ingested": "2026-10-23T11:40:39Z",
+        "ingested": "2026-10-28T05:57:55Z",
         "kind": "event",
         "module": "snowflake",
         "original": "{\"OBSERVED_TIMESTAMP\":\"2020-07-01 08:00:00.000 +0000\",\"RECORD\":\"{\\\"severity_text\\\":\\\"INFO\\\"}\",\"RECORD_ATTRIBUTES\":\"{\\\"code.filepath\\\":\\\"main.py\\\",\\\"code.function\\\":\\\"handler\\\",\\\"code.lineno\\\":42,\\\"code.namespace\\\":\\\"example.module\\\",\\\"thread.id\\\":1,\\\"thread.name\\\":\\\"main\\\"}\",\"RECORD_TYPE\":\"LOG\",\"RESOURCE_ATTRIBUTES\":\"{\\\"db.user\\\":\\\"alice.johnson\\\",\\\"snow.database.id\\\":13,\\\"snow.database.name\\\":\\\"EXAMPLE_DB\\\",\\\"snow.executable.id\\\":197,\\\"snow.executable.name\\\":\\\"EXAMPLE_HANDLER\\\",\\\"snow.executable.type\\\":\\\"FUNCTION\\\",\\\"snow.owner.id\\\":2,\\\"snow.owner.name\\\":\\\"EXAMPLE_ROLE\\\",\\\"snow.query.id\\\":\\\"01ab0f07-0000-15c8-0000-0129000592c2\\\",\\\"snow.schema.id\\\":16,\\\"snow.schema.name\\\":\\\"PUBLIC\\\",\\\"snow.session.id\\\":1275605667850,\\\"snow.session.role.primary.id\\\":2,\\\"snow.session.role.primary.name\\\":\\\"EXAMPLE_ROLE\\\",\\\"snow.user.id\\\":25,\\\"snow.warehouse.id\\\":5,\\\"snow.warehouse.name\\\":\\\"EXAMPLE_WH\\\",\\\"telemetry.sdk.language\\\":\\\"python\\\"}\",\"SCOPE\":\"{\\\"name\\\":\\\"com.sample.MyClass\\\"}\",\"START_TIMESTAMP\":null,\"TIMESTAMP\":\"2020-07-01 08:00:00.000 +0000\",\"TRACE\":null,\"VALUE\":\"Example handler log message\"}",
