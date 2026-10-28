@@ -129,12 +129,7 @@ POST _reindex
   "source": {
     "index": "logs-island_browser.siem_event-<namespace>",
     "query": {
-      "bool": {
-        "filter": [
-          { "term": { "routing.source": "SystemEvent" } },
-          { "exists": { "field": "event.original" } }
-        ]
-      }
+      "term": { "routing.source": "SystemEvent" }
     }
   },
   "dest": {
@@ -143,12 +138,12 @@ POST _reindex
   },
   "script": {
     "lang": "painless",
-    "source": "ctx._source.data_stream.dataset = 'island_browser.system_event'; ctx._source.event.dataset = 'island_browser.system_event';"
+    "source": "if (ctx._source.event?.original == null) { ctx.op = 'noop'; return; } ctx._source.data_stream.dataset = 'island_browser.system_event'; ctx._source.event.dataset = 'island_browser.system_event';"
   }
 }
 ```
 
-The script sets the dataset fields to the **System Events** data stream, and the destination's default ingest pipeline parses the events. Document IDs are derived from the original event, so running the reindex more than once skips documents that were already copied instead of creating duplicates. After checking the result, you can delete the old documents from `logs-island_browser.siem_event-<namespace>` with the delete by query API.
+The script skips documents without `event.original` and sets the dataset fields to the **System Events** data stream. The destination's default ingest pipeline then parses the events. Document IDs are derived from the original event, so running the reindex more than once skips documents that were already copied instead of creating duplicates. After checking the result, you can delete the old documents from `logs-island_browser.siem_event-<namespace>` with the delete by query API.
 
 ### Validation
 
