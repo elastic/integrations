@@ -14,7 +14,7 @@
       },
       "metadata": {
         "name": "[GCP Cloud SQL PostgreSQL OTel] Instance restarted",
-        "description": "Alerts when a PostgreSQL instance restarted within the last 30 minutes, detected as an `uptime` sample of 0 < uptime < 55 seconds (the first partial minute after a start). Unexpected restarts usually mean an OOM kill or crash; Google maintenance and owner-initiated restarts also fire and are labelled as such in the guide. The engine marker is evaluated over the 24-hour rule window. Each restart keeps the alert active for about 30 minutes, then it recovers. Grouped by database_id.",
+        "description": "Alerts when a PostgreSQL instance restarted within the last 30 minutes, detected as an `uptime` sample of 0 < uptime < 55 seconds (the first partial minute after a start). Unexpected restarts usually mean an OOM kill or crash; Google maintenance and owner-initiated restarts also fire and are labelled as such in the guide. The engine marker is evaluated over the 1-hour rule window. Each restart keeps the alert active for about 30 minutes, then it recovers. Grouped by database_id.",
         "tags": [
           "observability",
           "gcp",
@@ -24,11 +24,11 @@
       },
       "schedule": {
         "every": "5m",
-        "lookback": "24h"
+        "lookback": "1h"
       },
       "time_field": "@timestamp",
       "query": {
-        "base": "TS metrics-gcp.cloudsql_postgresql.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// uptime is a DELTA metric: seconds of uptime within each 60 s sample.\n// Sum per minute so fragments of the same series are combined exactly.\n| STATS uptime_s = SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/uptime`)),\n        pg = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/postgresql/num_backends`))\n    BY `@timestamp` = TBUCKET(1 minute), database_id\n// PostgreSQL engine marker over the whole rule window (24h), so an instance\n// that restarts into a crash loop stays in scope.\n| INLINE STATS pg_total = SUM(pg) BY database_id\n// Signal window: restarts seen in the last 30 minutes (>= 15 min for ingestion delay).\n| WHERE pg_total > 0 AND `@timestamp` >= NOW() - 30 minutes\n// A restart shows as the first partial minute after start: 0 < uptime < 55 s.\n// Healthy samples read 59-61 s; 0 means reporting but not running (downtime, not a restart).\n| EVAL is_restart = CASE(uptime_s > 0 AND uptime_s < 55, 1, 0),\n       restart_ts = CASE(uptime_s > 0 AND uptime_s < 55, `@timestamp`, NULL)\n| STATS restarts = SUM(is_restart), last_restart = MAX(restart_ts) BY database_id",
+        "base": "TS metrics-gcp.cloudsql_postgresql.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// uptime is a DELTA metric: seconds of uptime within each 60 s sample.\n// Sum per minute so fragments of the same series are combined exactly.\n| STATS uptime_s = SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/uptime`)),\n        pg = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/postgresql/num_backends`))\n    BY `@timestamp` = TBUCKET(1 minute), database_id\n// PostgreSQL engine marker over the whole rule window (1h). A running instance reports\n// num_backends within a minute or two of a restart; an instance that never comes back\n// up reports up = 0 and is covered by the instance down rule.\n| INLINE STATS pg_total = SUM(pg) BY database_id\n// Signal window: restarts seen in the last 30 minutes (>= 15 min for ingestion delay).\n| WHERE pg_total > 0 AND `@timestamp` >= NOW() - 30 minutes\n// A restart shows as the first partial minute after start: 0 < uptime < 55 s.\n// Healthy samples read 59-61 s; 0 means reporting but not running (downtime, not a restart).\n| EVAL is_restart = CASE(uptime_s > 0 AND uptime_s < 55, 1, 0),\n       restart_ts = CASE(uptime_s > 0 AND uptime_s < 55, `@timestamp`, NULL)\n| STATS restarts = SUM(is_restart), last_restart = MAX(restart_ts) BY database_id",
         "breach": {
           "segment": "// Alert threshold: number of restarts in the signal window (default: any restart)\nWHERE restarts >= 1\n| KEEP database_id, restarts, last_restart\n| SORT restarts DESC\n| LIMIT 100"
         }
