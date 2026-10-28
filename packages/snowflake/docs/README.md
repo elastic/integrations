@@ -343,7 +343,6 @@ The `events` data stream collects handler **log messages** from the account even
 | snowflake.events.record_type | RECORD_TYPE from the event table. Only LOG rows are ingested; other types are dropped in the pipeline. | keyword |
 | snowflake.events.resource_attributes.application | Openflow application name. Fixed value openflow. | keyword |
 | snowflake.events.resource_attributes.deployment.version | Openflow deployment version (deployment.version). | keyword |
-| snowflake.events.resource_attributes.k8s.container.name | Kubernetes container name (k8s.container.name). | keyword |
 | snowflake.events.resource_attributes.k8s.container.restart_count | Container restart count, stored by Openflow as a numeric string (k8s.container.restart_count). | keyword |
 | snowflake.events.resource_attributes.k8s.pod.name | Kubernetes pod name (k8s.pod.name). | keyword |
 | snowflake.events.resource_attributes.k8s.pod.start_time | Pod start time (k8s.pod.start_time). | date |
