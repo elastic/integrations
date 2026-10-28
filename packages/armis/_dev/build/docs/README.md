@@ -54,7 +54,7 @@ For more information, refer to [Elastic Managed integrations](https://www.elasti
 
 ## How do I deploy this integration?
 
-Fleet-managed Elastic Agent and Elastic Managed (agentless) deployment are both supported. Standalone Elastic Agent is not required.
+Fleet-managed Elastic Agent and Elastic Managed (agentless) deployment are both supported.
 
 ### Collect logs through REST API
 
@@ -81,7 +81,7 @@ Fleet-managed Elastic Agent and Elastic Managed (agentless) deployment are both 
 After the integration is saved, confirm that data is arriving:
 
 1. In **Fleet**, confirm the Armis integration is healthy.
-2. In **Discover**, open `logs-armis.device-*`, `logs-armis.alert-*`, and `logs-armis.vulnerability-*`. Documents appear after the first interval. The first collection looks back the Initial Interval.
+2. In **Discover**, open `logs-armis.device-*`, `logs-armis.alert-*`, and `logs-armis.vulnerability-*`. The first poll runs as soon as the policy is applied and looks back the Initial Interval; later polls run every Interval.
 3. Open the Armis **Devices**, **Alerts**, and **Vulnerabilities** dashboards. The Devices and Alerts dashboards read the latest-transform destination.
 4. If a data stream returns no documents, check the Elastic Agent logs for errors from the CEL input and refer to [Troubleshooting](#troubleshooting).
 
@@ -176,7 +176,7 @@ An example event for `vulnerability` looks as following:
 
 ### Inputs used in this integration
 
-- [CEL input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html): Polls the Armis API v1 and paginates each search response.
+- [CEL input](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel): Polls the Armis API v1 and paginates each search response.
 
 ### APIs used to collect data
 
