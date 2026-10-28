@@ -35,7 +35,7 @@ This integration supports routing events from the following 22 pre-configured in
 - Sophos XG
 - Stormshield
 
-Due to subtle differences in how devices emit syslog events, the default patterns may not work in all cases. Some integrations that support syslog are not listed here because their patterns would be too complex or could overlap with other integrations, which might cause false matches. You may need to create custom patterns for those cases.
+Due to subtle differences in how devices emit syslog events, the default patterns might not work in all cases. Some integrations that support syslog are not listed here because their patterns would be too complex or could overlap with other integrations, which might cause false matches. You may need to create custom patterns for those cases.
 
 ### How it works
 
@@ -66,7 +66,7 @@ Based on your routing configuration, data is directed toward specialized integra
 - Network security logs: Firewall traffic and security policy events (for example, `cisco_asa.log`, `panw.panos`, `fortinet_fortigate.log`, or `arista_ngfw.log`).
 - Web application security logs: Web application firewall events (for example, `citrix_waf.log`).
 - Authentication and identity logs: Identity services and access logs (for example, `cisco_ise.log`).
-- Intrusion detection alerts: IDS/IPS signatures (for example, `snort.log` or `fortinet_fortiedr.log`).
+- Intrusion detection alerts: IDS/IPS signatures (for example, `snort.log`).
 
 ### Supported use cases
 
@@ -81,7 +81,7 @@ You can use this integration for the following use cases:
 The Syslog Router is an Elastic-built tool and not a third-party vendor product, so you don't have vendor-side prerequisites. To use this integration, you'll need the following:
 
 - An Elastic Agent installed and enrolled in a Fleet policy on a host that can receive syslog traffic from network devices.
-- Kibana and Elasticsearch version `8.14.3` or `9.0.0` and later, with at least a basic subscription.
+- Kibana version `^8.14.3` or `^9.0.0`, with at least a basic subscription.
 - Target integration assets for each specific data stream installed in Kibana so that events parse correctly (for example, you'll need to install the Cisco ASA integration assets before routing Cisco ASA syslog events).
 - Network connectivity that allows syslog-sending devices to reach the Elastic Agent host on the configured listen port, which defaults to `9514` for TCP and UDP.
 
@@ -99,9 +99,9 @@ This integration acts as a central hub. You first need to prepare the target int
 
 #### Install target integration assets
 
-Before you add the Syslog Router, you can install the assets for each integration you want to route data to:
+Before you add the Syslog Router, you need to install the assets for each integration you want to route data to:
 
-1. In Kibana, navigate to **Management > Integrations**.
+1. In Kibana, navigate to **Management → Integrations**.
 2. Find the relevant integration by searching or browsing the catalog. For example, search for "Cisco ASA".
    ![Cisco ASA Integration](../img/catalog-cisco-asa.png)
 3. Select the integration, navigate to the **Settings** tab, and click **Install \<Integration Name\> assets**. Confirm the installation in the popup.
@@ -116,14 +116,14 @@ Configure each network device to forward its syslog stream to the Elastic Agent 
 
 After your devices are ready to send data, you can set up the integration in Kibana:
 
-1. In Kibana, navigate to **Management > Integrations**.
+1. In Kibana, navigate to **Management → Integrations**.
 2. Search for **Syslog Router** and select it.
 3. Click **Add Syslog Router**.
 4. Enable and configure the inputs you need:
     - **TCP input**: Set the **Listen Address** and **Listen Port**. The default `localhost:9514` only accepts connections from the agent host, so use, for example, `0.0.0.0` to listen on all interfaces. You can also configure SSL settings if your devices support encrypted syslog.
     - **UDP input**: Set the **Listen Address** and **Listen Port**.
     - **Filestream input**: Specify the **Paths** to the syslog files on the host if the agent is reading from local logs.
-5. Review the **Reroute configuration** section. You'll find a list of patterns used to match incoming logs to specific integrations. You can modify these YAML patterns to match the specific log formats in your environment.
+5. Review the **Reroute configuration** section. You'll find a list of patterns used to match incoming logs to specific integrations. You can modify these YAML patterns to match the specific log formats in your environment. The Sophos XG block contains example values for the firewall host name (`_conf.default`) and the serial number to host name mappings (`_conf.mappings`). Replace them with your own devices or remove them.
 6. Select the **Elastic Agent policy** where you want to deploy the integration.
 7. Click **Save and continue**.
 
@@ -200,7 +200,7 @@ Multiple regex patterns can be combined with `or`:
           - regexp.message: <PATTERN_2>
 ```
 
-Additional processors such as `decode_cef` or `syslog` may be added in the `then` block if the target integration requires light pre-processing. However, for any complex processing of custom logs, we recommend creating a separate integration and routing to it.
+Additional processors such as `decode_cef` or `syslog` can be added in the `then` block if the target integration requires light pre-processing. However, for any complex processing of custom logs, we recommend creating a separate integration and routing to it.
 
 ### Validation
 
@@ -212,7 +212,7 @@ To ensure your deployment is working correctly, follow these steps:
    echo 'Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-4-106023: Deny tcp src outside:192.168.19.254/80 dst inside:172.31.98.44/8277 by access-group "inbound" [0x0, 0x0]' | nc localhost 9514
    ```
 
-2. In Kibana, navigate to **Analytics > Discover**.
+2. In Kibana, navigate to **Analytics → Discover**.
 3. Select the `logs-*` data view.
 4. Search for routed events using KQL. For example, to check for routed Cisco ASA logs, use: `data_stream.dataset : "cisco_asa.log"`.
 5. Verify that the events are correctly parsed and that fields from the target integration are present.
@@ -232,7 +232,6 @@ If you encounter issues while using this integration, check the following common
 - Events remain in `syslog_router.log` instead of the target data stream: This happens when an event doesn't match any pattern. Examine the `message` field against the configured regex patterns. You might need to add a custom pattern for your device's specific syslog format.
 - Routed events aren't parsed correctly: Ensure the target integration's assets are installed in Kibana. The Syslog Router only routes events; it doesn't parse them. The target integration's ingest pipeline handles the parsing.
 - Error message is present on routed events: The target integration's ingest pipeline encountered a parsing error. Verify that the syslog format matches what the target integration expects. Some integrations require specific formats, such as Citrix WAF which requires CEF format.
-- Missing `_conf.dataset` field: If this field is absent, the event defaults to the `syslog_router.log` stream. Review the `message` field and verify it matches a regex defined in your routing configuration.
 - High volume of unmatched events: Review the unmatched events in the `syslog_router.log` stream to identify their source. You might need to add custom routing patterns for device types that aren't covered by the default patterns.
 
 ## Performance and scaling
@@ -243,7 +242,7 @@ To optimize the performance and scaling of the Syslog Router, you should follow 
 
 - Pattern ordering: You should place stricter and more specific patterns before broader ones to avoid false matches. You'll also get better performance if you place your highest-traffic integrations at the top of your configuration to reduce the number of regex evaluations performed for each event.
 - Regex complexity: You should keep your patterns as straightforward as possible. Avoid using broad patterns like `.*` because they can cause excessive backtracking and increase CPU usage on the Elastic Agent host.
-- Transport selection: You can use UDP for higher throughput with lower overhead, but you should use TCP when you need guaranteed delivery. When you use TCP, you can tune advanced settings like `max_connections` and `max_message_size` in the custom TCP options to match your environment's requirements.
+- Transport selection: You can use UDP for higher throughput with lower overhead, but you should use TCP when you need more reliable delivery. When you use TCP, you can tune advanced settings like `max_connections` and `max_message_size` in the custom TCP options to match your environment's requirements.
 - Agent scaling: For high-throughput environments, you can deploy multiple Elastic Agents behind a network load balancer to distribute the ingestion load across multiple instances.
 - Routing efficiency: This integration routes all events through the `syslog_router.log` data stream. Because the rerouting rules happen at the Elasticsearch level rather than the agent level, you won't experience data duplication at rest, which keeps your storage and processing usage efficient.
 - Input buffers: When you use the UDP input in high-traffic environments, you can increase the `read_buffer` size in the custom UDP options to help prevent packet loss during bursts of network traffic.

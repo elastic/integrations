@@ -52,18 +52,18 @@ The following integrations (listed here alphabetically, but processed in a diffe
 | Imperva SecureSphere (CEF only) | `imperva.securesphere`           | `CEF:0\|Imperva Inc.\|SecureSphere`                     |
 | Iptables                        | `iptables.log`                   | `IN=`                                                   |
 | Juniper SRX                     | `juniper_srx.log`                | `RT_UTM -` or `RT_FLOW -`                               |
-| Palo Alto Next-Gen Firewall                | `panw.panos`                     | `1,[0-9]{4}/[0-9]{2}/[0-9]{2}`                          |
+| Palo Alto Next-Gen Firewall     | `panw.panos`                     | `1,[0-9]{4}/[0-9]{2}/[0-9]{2}`                          |
 | QNAP NAS                        | `qnap_nas.log`                   | `qulogd\[[0-9]+\]:`                                     |
 | Snort                           | `snort.log`                      | `\[[0-9]:[0-9]+:[0-9]\]`                                |
 | Sonicwall Firewall              | `sonicwall_firewall.log`         | `<[0-9]+>  id=firewall sn=[0-9a-zA-Z]+`                 |
 | Sophos XG                       | `sophos.xg`                      | `device="SFW"`                                          |
 | Stormshield                     | `stormshield.log`                | `id=firewall time="`                                    |
 
-**DISCLAIMER**: Due to subtle differences in how devices emit syslog events, the default patterns may not work in all cases. Some integrations that support syslog are not listed here because their patterns would be too complex or could overlap with other integrations. Custom patterns may need to be created for those cases.
+**DISCLAIMER**: Due to subtle differences in how devices emit syslog events, the default patterns might not work in all cases. Some integrations that support syslog are not listed here because their patterns would be too complex or could overlap with other integrations. Custom patterns may need to be created for those cases.
 
 ## Scaling and Performance
 
-- **Pattern ordering matters**: Patterns are evaluated in order and stop at the first match. Place stricter (more specific) patterns before broader ones (such as `IN=` used for iptables) to avoid false matches. Place high-traffic integrations near the top to reduce wasted regex evaluations.
+- **Pattern ordering matters**: Patterns are evaluated in order and stop at the first match. Place stricter (more specific) patterns before broader ones to avoid false matches. Place high-traffic integrations near the top to reduce wasted regex evaluations.
 - **Regex complexity**: Simpler patterns match faster. Avoid overly broad patterns like `.*` that can cause backtracking.
 - **Single data stream routing**: All events flow through one data stream (`syslog_router.log`) and are rerouted at the Elasticsearch level through routing rules, so there is no duplication of data at rest.
 
@@ -84,7 +84,7 @@ The Syslog Router is an Elastic-built tool (not a third-party vendor product), s
 
 Before adding the Syslog Router, install the assets for each integration you want to route to:
 
-1. In Kibana, navigate to **Management > Integrations**.
+1. In Kibana, navigate to **Management → Integrations**.
 2. Search for the target integration (for example, "Cisco ASA").
 3. Navigate to the **Settings** tab and click **Install Cisco ASA assets**. Confirm in the popup.
 
@@ -92,11 +92,11 @@ Repeat for each integration whose syslog events you expect to receive.
 
 #### 2. Add the Syslog Router integration
 
-1. In Kibana, navigate to **Management > Integrations**.
+1. In Kibana, navigate to **Management → Integrations**.
 2. Search for **Syslog Router** and select it.
 3. Click **Add Syslog Router**.
 4. Enable the desired input(s) — TCP, UDP, or Filestream — and configure listen address/port. The default listen address `localhost` only accepts local connections.
-5. Review the **Reroute configuration** YAML to confirm the pattern list matches your environment.
+5. Review the **Reroute configuration** YAML to confirm the pattern list matches your environment. The Sophos XG block contains example values for the firewall host name (`_conf.default`) and the serial number to host name mappings (`_conf.mappings`); replace them with your own devices or remove them.
 6. Select the **Elastic Agent policy** to assign this integration to.
 7. Click **Save and continue**.
 
@@ -213,7 +213,7 @@ Multiple regex patterns can be combined with `or`:
           - regexp.message: <PATTERN_2>
 ```
 
-Additional processors such as `decode_cef` or `syslog` may be added in the `then` block if the target integration requires light pre-processing. However, for any complex processing of custom logs, we recommend creating a separate integration and routing to it.
+Additional processors such as `decode_cef` or `syslog` can be added in the `then` block if the target integration requires light pre-processing. However, for any complex processing of custom logs, we recommend creating a separate integration and routing to it.
 
 ## Validation Steps
 
@@ -224,7 +224,7 @@ Additional processors such as `decode_cef` or `syslog` may be added in the `then
 
 ### 2. Check data in Kibana
 
-1. Navigate to **Analytics > Discover**.
+1. Navigate to **Analytics → Discover**.
 2. Select the `logs-*` data view.
 3. Search for the test event using KQL: `data_stream.dataset : "cisco_asa.log"`.
 4. Verify the event was routed to the correct data stream and parsed by the target integration's pipeline.
@@ -244,7 +244,7 @@ Additional processors such as `decode_cef` or `syslog` may be added in the `then
 
 **Issue**: Events appear in `syslog_router.log` instead of the target data stream
 
-- **Solution**: The event did not match any pattern. Check the `message` field against the configured regex patterns. You may need to add a custom pattern for your device's syslog format.
+- **Solution**: The event did not match any pattern. Check the `message` field against the configured regex patterns. You might need to add a custom pattern for your device's syslog format.
 
 **Issue**: Routed events are not parsed correctly
 
