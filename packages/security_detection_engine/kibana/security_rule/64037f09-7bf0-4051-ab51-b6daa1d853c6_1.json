@@ -1,0 +1,136 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies newly observed execution of SoftPerfect Network Scanner or Advanced IP/Port Scanner on a Windows host. Adversaries commonly use these legitimate scanners during post-compromise discovery to map live hosts, open ports, and reachable systems, then select targets for lateral movement.",
+        "from": "now-9m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Newly Seen Commonly Abused Network Scanner",
+        "new_terms_fields": [
+            "host.id",
+            "process.executable"
+        ],
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Newly Seen Commonly Abused Network Scanner\n\nThis rule detects the first observed execution of commonly abused network-scanning tools on a Windows host, which can signal post-compromise discovery activity. After gaining a foothold, an attacker may run a portable scanner across the local subnet to identify live systems and exposed SMB or RDP services, then prioritize targets for lateral movement.\n\n### Possible investigation steps\n\n- Validate the executable\u2019s path, digital signature, hash reputation, download origin, command line, parent process, user account, and prevalence across the environment to distinguish authorized software from a renamed or portable copy.\n- Correlate the execution with network telemetry to identify scanned address ranges, destination ports, connection volume, and whether sensitive systems or lateral-movement services such as SMB, RDP, WinRM, or SSH were targeted.\n- Review nearby endpoint and identity activity for initial-access or post-compromise indicators, including suspicious downloads, archive extraction, PowerShell execution, credential access, remote logons, service creation, and scheduled tasks.\n- Confirm with the host owner and IT teams whether the scanner and scope were approved, considering the user\u2019s role, device purpose, execution time, and any related change or vulnerability-management activity.\n- If unauthorized, isolate the host, preserve the binary and relevant telemetry, block confirmed malicious indicators, reset potentially exposed credentials, and investigate contacted systems for follow-on access.\n\n### False positive analysis\n\n- An authorized administrator may run the scanner for network inventory or connectivity troubleshooting; verify the user\u2019s role, executable path and signature, scanned range, and any associated change record.\n- An approved security assessment or vulnerability-management activity may execute the scanner on a newly provisioned or infrequently used Windows host; confirm the timing, source host, target scope, and authorization with the responsible team.\n\n### Response and remediation\n\n- Isolate the affected Windows host and restrict its access to scanned subnets and services such as SMB, RDP, WinRM, and SSH while preserving the scanner executable, command history, and relevant forensic evidence.\n- Remove unauthorized scanner binaries and attacker persistence, including suspicious scheduled tasks, services, startup entries, PowerShell scripts, remote-management tools, and newly created accounts.\n- Reset credentials used on the compromised host, revoke active sessions and tokens, and investigate contacted systems for remote logons, service creation, administrative shares, or other lateral-movement activity.\n- Escalate immediately to incident response if scanning reached sensitive systems, privileged credentials may be exposed, or follow-on access appears on another host, and expand containment to all affected accounts and endpoints.\n- Reimage or restore compromised systems from a verified known-good baseline, patch exploited weaknesses, and validate endpoint protection, logging, and business functionality before reconnecting them.\n- Block malicious file hashes and download sources, apply application control to unapproved portable scanners, restrict unnecessary east-west connectivity, and alert on future scanner execution or high-volume port probing.\n\n",
+        "query": "event.category:process and host.os.type:windows and event.type:start and\n(\n  process.name.caseless:(\n    netscan*.exe or advanced_ip_scanner*.exe or\n    advanced_ip_scanner_console.exe or advanced_port_scanner.exe\n  ) or\n  process.pe.original_file_name : (\n    \"advanced_ip_scanner.exe\" or\n    \"advanced_port_scanner.exe\" or\n    \"advanced_ip_scanner_console.exe\"\n  )\n)\n",
+        "references": [
+            "https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-319a",
+            "https://thedfirreport.com/2025/06/30/hide-your-rdp-password-spray-leads-to-ransomhub-deployment/",
+            "https://thedfirreport.com/2020/11/23/pysa-mespinoza-ransomware/",
+            "https://www.microsoft.com/en-us/security/blog/2023/07/06/the-five-day-job-a-blackbyte-ransomware-intrusion-case-study/",
+            "https://www.cyfirma.com/news/weekly-intelligence-report-26-jan-2024/",
+            "https://github.com/Securityinbits/defender-hunt-queries/blob/main/discovery-tools.md"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": ">=3.0.0"
+            },
+            {
+                "package": "system",
+                "version": ">=2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": ">=5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": ">=1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": ">=3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.name.caseless",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "64037f09-7bf0-4051-ab51-b6daa1d853c6",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Platform: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Rule Type: New Terms",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1018",
+                        "name": "Remote System Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1018/"
+                    },
+                    {
+                        "id": "T1046",
+                        "name": "Network Service Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1046/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "64037f09-7bf0-4051-ab51-b6daa1d853c6_1",
+    "type": "security-rule"
+}

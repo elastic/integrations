@@ -9,7 +9,7 @@ provider "aws" {
 
       division = "engineering"
       org      = "obs"
-      team     = "integration-experience"              # owner.github in manifest.yml
+      team     = "security-service-integrations"              # owner.github in manifest.yml
       project  = "integrations-cisco_umbrella-package" # name in manifest.yml
     }
   }
