@@ -52,6 +52,28 @@ stdout '"ip":\s*\[\s*"192\.0\.2\.10",\s*"2001:db8::20",\s*"198\.51\.100\.20"\s*\
 stdout 'preserve_original_event'
 ! stdout 'pipeline_error'
 
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-6.json
+! stderr .
+stdout 'FortiGate date is not a valid calendar date.'
+stdout 'preserve_original_event'
+stdout '"original":'
+! stdout '"date":'
+! stdout 'pipeline_error'
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-7.json
+! stderr .
+stdout 'FortiGate date is not a valid calendar date.'
+stdout 'preserve_original_event'
+! stdout '"date":'
+! stdout 'pipeline_error'
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-8.json
+! stderr .
+stdout '"date": "2026-01-08"'
+stdout '"@timestamp": "2026-01-08T12:34:56.000Z"'
+! stdout '"error":'
+! stdout 'pipeline_error'
+
 uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
 ! stderr .
 
@@ -97,4 +119,22 @@ uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
 {
   "@timestamp": "2026-01-08T00:00:00.000Z",
   "message": "type=traffic subtype=forward srcip=192.0.2.10 srcip=not-an-ip srcip=192.0.2.10 dstip=2001:db8::20 dstip=invalid dstip=198.51.100.20 action=deny"
+}
+
+-- case-6.json --
+{
+  "@timestamp": "2026-01-08T12:34:56.000Z",
+  "message": "date=not-a-date type=traffic srcip=192.0.2.10 action=deny"
+}
+
+-- case-7.json --
+{
+  "@timestamp": "2026-01-08T12:34:56.000Z",
+  "message": "date=2026-02-30 type=traffic srcip=192.0.2.10 action=deny"
+}
+
+-- case-8.json --
+{
+  "@timestamp": "2026-01-08T12:34:56.000Z",
+  "message": "date=2026-01-08 type=traffic srcip=192.0.2.10 action=deny"
 }
