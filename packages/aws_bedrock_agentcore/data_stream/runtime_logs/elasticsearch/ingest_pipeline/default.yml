@@ -33,15 +33,6 @@ processors:
         - '^%{GREEDYDATA:_tmp.log_group_name}$'
       if: ctx.aws?.cloudwatch?.log_group != null
 
-  - grok:
-      tag: grok_log_file_path_account
-      field: log.file.path
-      description: Fall back to the log group ARN inside `log.file.path` for the account ID and region when the log group was given by name.
-      patterns:
-        - '^arn:[^:]+:logs:(?<_tmp.region>[a-z0-9-]+):(?<_tmp.account_id>[0-9]+):log-group:%{GREEDYDATA}$'
-        - '^%{GREEDYDATA}$'
-      if: ctx._tmp?.account_id == null && ctx.log?.file?.path != null
-
   - set:
       tag: set_cloud_account_id
       field: cloud.account.id
