@@ -1050,6 +1050,12 @@ To use this integration, users must use GitHub Apps or Personal Access Token wit
 - At least `Read-only` permission on Metadata
 If misconfigured, the integration could run successfully without any data being processed. Alternatively, you might encounter an error like `⁠GET: server returned a 404 (Not Found)`.
 
+#### Upgrading to version 2.32.0
+
+Version 2.32.0 recreates the latest-issues transform with destination index `logs-github_latest.dest_issues-2` so the additional Issues API field mappings can take effect. The `logs-github_latest.issues` alias moves to the new index when it is created. The transform rebuilds the latest issue state from retained documents in `logs-github.issues-*`; source documents that have expired cannot be recovered this way.
+
+The previous destination index, `logs-github_latest.dest_issues-1`, is not deleted automatically. After upgrading, verify that the transform has caught up and the alias points to the new index. Before removing the old index, preserve any issue records that are no longer available in the source data stream and take a snapshot if needed. Once the new index contains the records you need, delete only `logs-github_latest.dest_issues-1`. Keeping both destination indices can produce duplicate results and field type conflicts in wildcard queries.
+
 **Exported fields**
 
 | Field | Description | Type | Unit | Metric Type |
@@ -1070,6 +1076,7 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.assignee.site_admin |  | boolean |  |  |
 | github.issues.assignee.type |  | keyword |  |  |
 | github.issues.assignee.url |  | keyword |  |  |
+| github.issues.assignee.user_view_type |  | keyword |  |  |
 | github.issues.assignees | Information of users who were assigned the issue. | flattened |  |  |
 | github.issues.author_association |  | keyword |  |  |
 | github.issues.body |  | text |  |  |
@@ -1082,6 +1089,7 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.closed_by.site_admin |  | boolean |  |  |
 | github.issues.closed_by.type |  | keyword |  |  |
 | github.issues.closed_by.url |  | keyword |  |  |
+| github.issues.closed_by.user_view_type |  | keyword |  |  |
 | github.issues.comments |  | integer |  |  |
 | github.issues.comments_url |  | keyword |  |  |
 | github.issues.created_at | The time that the issue was created in ISO 8601 format - `YYYY-MM-DDTHH:MM:SSZ`. | date |  |  |
@@ -1090,6 +1098,11 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.html_url |  | keyword |  |  |
 | github.issues.id | The id of GitHub issue. | integer |  |  |
 | github.issues.is_pr |  | boolean |  |  |
+| github.issues.issue_dependencies_summary.blocked_by |  | integer |  |  |
+| github.issues.issue_dependencies_summary.blocking |  | integer |  |  |
+| github.issues.issue_dependencies_summary.total_blocked_by |  | integer |  |  |
+| github.issues.issue_dependencies_summary.total_blocking |  | integer |  |  |
+| github.issues.issue_field_values.value |  | keyword |  |  |
 | github.issues.labels.description |  | keyword |  |  |
 | github.issues.labels.integration |  | keyword |  |  |
 | github.issues.labels.name |  | keyword |  |  |
@@ -1098,6 +1111,7 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.locked |  | boolean |  |  |
 | github.issues.node_id | The node_id of GitHub issue. | keyword |  |  |
 | github.issues.number |  | integer |  |  |
+| github.issues.pinned_comment.body |  | match_only_text |  |  |
 | github.issues.pull_request.diff_url |  | keyword |  |  |
 | github.issues.pull_request.html_url |  | keyword |  |  |
 | github.issues.pull_request.patch_url |  | keyword |  |  |
@@ -1105,6 +1119,9 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.repository_url | The repository containing the GitHub issue. | keyword |  |  |
 | github.issues.state |  | keyword |  |  |
 | github.issues.state_reason |  | keyword |  |  |
+| github.issues.sub_issues_summary.completed |  | integer |  |  |
+| github.issues.sub_issues_summary.percent_completed |  | integer |  |  |
+| github.issues.sub_issues_summary.total |  | integer |  |  |
 | github.issues.time_to_close.sec | The time taken to close an issue in seconds. | long | s | gauge |
 | github.issues.timeline_url |  | keyword |  |  |
 | github.issues.title |  | keyword |  |  |
@@ -1118,6 +1135,7 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.user.site_admin |  | boolean |  |  |
 | github.issues.user.type |  | keyword |  |  |
 | github.issues.user.url |  | keyword |  |  |
+| github.issues.user.user_view_type |  | keyword |  |  |
 | github.repository.description | The repository description. | text |  |  |
 | github.repository.fork | Whether the repository is a fork. | boolean |  |  |
 | github.repository.full_name | The full, globally unique, name of the repository. | keyword |  |  |
@@ -1149,32 +1167,33 @@ An example event for `issues` looks as following:
 {
     "@timestamp": "2011-04-22T13:33:48.000Z",
     "agent": {
-        "ephemeral_id": "0aa2f45d-e0a7-421c-ade5-45aa21712041",
-        "id": "906bbf2a-d522-4c69-829f-8d0d4d615392",
-        "name": "elastic-agent-18769",
+        "ephemeral_id": "0b2e9d17-5d3a-47aa-af61-77c9a8a9f3c1",
+        "id": "5fa7bb32-e0b8-4f48-be83-56cdb5575267",
+        "name": "elastic-agent-75889",
         "type": "filebeat",
-        "version": "8.19.10"
+        "version": "9.5.5"
     },
     "data_stream": {
         "dataset": "github.issues",
-        "namespace": "88899",
+        "namespace": "78706",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "906bbf2a-d522-4c69-829f-8d0d4d615392",
+        "id": "5fa7bb32-e0b8-4f48-be83-56cdb5575267",
         "snapshot": false,
-        "version": "8.19.10"
+        "version": "9.5.5"
     },
     "event": {
         "action": "opened",
         "agent_id_status": "verified",
         "created": "2011-04-22T13:33:48.000Z",
         "dataset": "github.issues",
-        "ingested": "2026-07-29T03:53:27Z",
+        "ingested": "2026-10-23T08:16:36Z",
         "kind": "event",
+        "module": "github",
         "original": "{\"active_lock_reason\":\"too heated\",\"assignee\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"assignees\":[{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"}],\"author_association\":\"COLLABORATOR\",\"body\":\"I'm having a problem with this.\",\"closed_at\":null,\"closed_by\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"comments\":0,\"comments_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/comments\",\"created_at\":\"2011-04-22T13:33:48Z\",\"events_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/events\",\"html_url\":\"https://github.com/octocat/Hello-World/issues/1347\",\"id\":1,\"labels\":[{\"color\":\"f29513\",\"default\":true,\"description\":\"Something isn't working\",\"id\":208045946,\"name\":\"bug\",\"node_id\":\"MDU6TGFiZWwyMDgwNDU5NDY=\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/labels/bug\"}],\"labels_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/labels{/name}\",\"locked\":true,\"milestone\":{\"closed_at\":\"2013-02-12T13:22:01Z\",\"closed_issues\":8,\"created_at\":\"2011-04-10T20:09:31Z\",\"creator\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"description\":\"Tracking milestone for version 1.0\",\"due_on\":\"2012-10-09T23:39:01Z\",\"html_url\":\"https://github.com/octocat/Hello-World/milestones/v1.0\",\"id\":1002604,\"labels_url\":\"https://api.github.com/repos/octocat/Hello-World/milestones/1/labels\",\"node_id\":\"MDk6TWlsZXN0b25lMTAwMjYwNA==\",\"number\":1,\"open_issues\":4,\"state\":\"open\",\"title\":\"v1.0\",\"updated_at\":\"2014-03-03T18:58:10Z\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/milestones/1\"},\"node_id\":\"MDU6SXNzdWUx\",\"number\":1347,\"pull_request\":{\"diff_url\":\"https://github.com/octocat/Hello-World/pull/1347.diff\",\"html_url\":\"https://github.com/octocat/Hello-World/pull/1347\",\"patch_url\":\"https://github.com/octocat/Hello-World/pull/1347.patch\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/pulls/1347\"},\"repository_url\":\"https://api.github.com/repos/octocat/Hello-World\",\"state\":\"open\",\"state_reason\":\"completed\",\"title\":\"Found a bug\",\"updated_at\":\"2011-04-22T13:33:48Z\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347\",\"user\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"}}",
         "reason": "completed",
         "type": [
@@ -1192,16 +1211,14 @@ An example event for `issues` looks as following:
                 "type": "User",
                 "url": "https://api.github.com/users/octocat"
             },
-            "assignees": [
-                {
-                    "html_url": "https://github.com/octocat",
-                    "id": 1,
-                    "login": "octocat",
-                    "site_admin": false,
-                    "type": "User",
-                    "url": "https://api.github.com/users/octocat"
-                }
-            ],
+            "assignees": {
+                "html_url": "https://github.com/octocat",
+                "id": 1,
+                "login": "octocat",
+                "site_admin": false,
+                "type": "User",
+                "url": "https://api.github.com/users/octocat"
+            },
             "author_association": "COLLABORATOR",
             "body": "I'm having a problem with this.",
             "closed_by": {
@@ -1219,12 +1236,10 @@ An example event for `issues` looks as following:
             "html_url": "https://github.com/octocat/Hello-World/issues/1347",
             "id": 1,
             "is_pr": true,
-            "labels": [
-                {
-                    "description": "Something isn't working",
-                    "name": "bug"
-                }
-            ],
+            "labels": {
+                "description": "Something isn't working",
+                "name": "bug"
+            },
             "labels_url": "https://api.github.com/repos/octocat/Hello-World/issues/1347/labels{/name}",
             "locked": true,
             "node_id": "MDU6SXNzdWUx",
@@ -1261,6 +1276,9 @@ An example event for `issues` looks as following:
     },
     "input": {
         "type": "httpjson"
+    },
+    "labels": {
+        "is_transform_source": "true"
     },
     "related": {
         "user": [

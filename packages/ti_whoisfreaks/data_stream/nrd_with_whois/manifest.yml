@@ -1,0 +1,115 @@
+title: "Newly Registered Domains with WHOIS"
+type: logs
+streams:
+  - input: cel
+    title: "WhoisFreaks Newly Registered Domains with WHOIS (gTLD + ccTLD) via CEL"
+    description: |-
+      Page through the daily WhoisFreaks gTLD and ccTLD domainer WHOIS stream feeds via the CEL input.
+    template_path: cel.yml.hbs
+    vars:
+      - name: url
+        type: text
+        title: "URL"
+        description: |-
+          The base HTTPS URL of the WhoisFreaks domainer stream endpoint, without
+          a TLD segment or query parameters. The input appends `/gtld` and
+          `/cctld` and builds the query string itself (`date`, `whois`, `limit`,
+          `offset`, and `apiKey`).
+        required: true
+        show_user: true
+        default: https://files.whoisfreaks.com/v3.3/stream/domainer
+      - name: status_url
+        type: text
+        title: "Status URL"
+        description: |-
+          The public WhoisFreaks database file status endpoint. On each poll the
+          integration reads `newly.gtld.last_update` and `newly.cctld.last_update`
+          from this endpoint and pages through a feed only when its date is newer
+          than the last date already ingested, so re-polling never re-ingests the
+          same file. This endpoint is public and does not require the API key.
+        required: true
+        show_user: false
+        default: https://files.whoisfreaks.com/v3.4/status
+      - name: page_limit
+        type: integer
+        title: "Page Size"
+        description: |-
+          Number of records requested per page (the `limit` sent to the stream
+          endpoint). The feed is paged with a dynamic `offset` until a page comes
+          back short, so this only controls memory and request count per poll, not
+          how much data is ingested. Larger pages mean fewer requests but more
+          memory per request. 5000 is a safe default for the large WHOIS response
+          rows; increase it only when the endpoint responds within the timeout.
+          Must be greater than 0.
+        required: true
+        show_user: true
+        default: 5000
+      - name: file_date
+        type: text
+        title: "File Date (optional)"
+        description: |-
+          Optional file date to ingest once, format yyyy-MM-dd (e.g. 2026-08-10). Leave empty
+          (recommended) to always fetch the latest file reported by the status endpoint
+          (`last_update`). When set, the date is validated against the range the status
+          endpoint reports for each feed (`newly.gtld` and `newly.cctld`, `available_from` to `last_update`). A valid date is fetched once, after which polls go back to
+          the latest file. An invalid or out-of-range date is reported once as an error event,
+          with no stream request for it, and polls continue with the latest file.
+        required: false
+        show_user: true
+        default: ""
+      - name: interval
+        type: text
+        title: "Interval"
+        description: |-
+          How often the status endpoint is checked for a new file. When a newer
+          date is found the whole day is paged in one burst; otherwise the poll
+          does nothing. WhoisFreaks publishes current-day files by 17:00 UTC.
+          Polls without a new file only call the public status endpoint, so the
+          1h default picks up a new file within an hour of publication and
+          retries failed pages hourly. Supports seconds, minutes and hours.
+        required: true
+        show_user: true
+        default: 1h
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Supported time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 10m
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        default: false
+        required: false
+        show_user: false
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags for the data stream.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - whoisfreaks-nrd-with-whois
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

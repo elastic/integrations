@@ -88,7 +88,7 @@ Some TAXII 2.1 servers issue an API key and secret instead of a username and pas
    | API Key / API Key Type | Leave unset |
 
    Leave **Accept header value** and **Content-Type header value** at their defaults. Configure one stream per collection. For example, the `malicious-ips` collection on IsMalicious uses `https://api.ismalicious.com/taxii/api-root/collections/malicious-ips/objects/`.
-4. Set **Initial Interval** and **Interval** according to collection size. Pagination follows the server's `next` token automatically. Use **Limit** to bound the page size, and raise **Maximum Pages Per Interval** if a large initial import hits the [CEL execution limit](#exceeding-maximum-number-of-cel-executions).
+4. Set **Initial Interval** and **Interval** according to collection size. Pagination follows the server's `next` token while the server reports `more: true`, as defined by TAXII 2.1. Use **Limit** to bound the page size, and raise **Maximum Pages Per Interval** if a large initial import hits the [CEL execution limit](#exceeding-maximum-number-of-cel-executions).
 5. Verify indicators arrive with the expected values, types and timestamps, and use the `logs-ti_custom_latest.indicator` alias for indicator match rules. See [Expiration of Indicators of Compromise](#expiration-of-indicators-of-compromise-iocs) for how `valid_until`, `revoked` and the `IOC Expiration Duration` fail-safe are applied.
 
 ### Expiration of Indicators of Compromise (IOCs)
