@@ -28,8 +28,6 @@ Events that do not match any pattern, such as custom logs, would remain in the `
 
 ## Compatibility
 
-This integration requires Kibana ^8.14.3 or ^9.0.0, and a basic Elastic subscription.
-
 ### Pre-configured routing patterns (22 integrations)
 
 The following integrations (listed here alphabetically, but processed in a different order) are supported out of the box. The target integration's assets must be installed in Kibana before events can be properly indexed.
