@@ -196,6 +196,84 @@ processors:
       tag: rename_actor_app_attributes
   - script:
       lang: painless
+      tag: replace_nul_in_attribute_keys
+      description: >-
+        Replace NUL (U+0000) characters in the keys of the flattened attributes objects with
+        underscores, at any depth, because Elasticsearch rejects NUL in flattened keys. If the
+        replaced key already exists, up to five underscores per NUL are tried; existing keys are
+        never overwritten. If all five collide, the value is dropped and the event is tagged
+        preserve_original_event so event.original keeps the raw event.
+      if: ctx.atlassian_cloud?.audit != null
+      source: |-
+        boolean cleanKeys(def node, String nul) {
+          boolean dropped = false;
+          if (node instanceof Map) {
+            Map map = (Map) node;
+            List keys = new ArrayList();
+            for (def key : map.keySet()) {
+              if (key instanceof String && ((String) key).indexOf(nul) >= 0) {
+                keys.add(key);
+              }
+            }
+            Collections.sort(keys);
+            for (String key : keys) {
+              def value = map.remove(key);
+              boolean placed = false;
+              String underscores = '';
+              for (int n = 1; n <= 5 && !placed; n++) {
+                underscores += '_';
+                String renamed = key.replace(nul, underscores);
+                if (!map.containsKey(renamed)) {
+                  map.put(renamed, value);
+                  placed = true;
+                }
+              }
+              if (!placed) {
+                dropped = true;
+              }
+            }
+            for (def value : map.values()) {
+              if (cleanKeys(value, nul)) {
+                dropped = true;
+              }
+            }
+          } else if (node instanceof List) {
+            for (def value : (List) node) {
+              if (cleanKeys(value, nul)) {
+                dropped = true;
+              }
+            }
+          }
+          return dropped;
+        }
+        String nul = Character.toString((char) 0);
+        def audit = ctx.atlassian_cloud.audit;
+        boolean dropped = false;
+        for (String name : ['context', 'container']) {
+          def items = audit[name];
+          if (items instanceof List) {
+            for (def item : items) {
+              if (item instanceof Map && cleanKeys(item.attributes, nul)) {
+                dropped = true;
+              }
+            }
+          }
+        }
+        if (cleanKeys(audit.actor?.app?.attributes, nul)) {
+          dropped = true;
+        }
+        if (dropped) {
+          if (ctx.tags == null) {
+            ctx.tags = new ArrayList();
+          } else if (!(ctx.tags instanceof List)) {
+            ctx.tags = new ArrayList([ctx.tags]);
+          }
+          if (!ctx.tags.contains('preserve_original_event')) {
+            ctx.tags.add('preserve_original_event');
+          }
+        }
+  - script:
+      lang: painless
       tag: map_actor_to_user_or_app
       description: >-
         Map human actors to ECS user fields when the actor id looks like an account id or email is present.
