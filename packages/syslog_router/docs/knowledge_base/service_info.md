@@ -76,7 +76,7 @@ The Syslog Router is an Elastic-built tool (not a third-party vendor product), s
 - **Elastic Agent**: An Elastic Agent must be installed and enrolled in a Fleet policy on a host that can receive syslog traffic from the network devices.
 - **Kibana/Elasticsearch**: Requires Kibana ^8.14.3 or ^9.0.0, with a basic subscription.
 - **Target integration assets**: The Elastic integration assets for each target data stream must be installed in Kibana before events can be correctly parsed. For example, to route Cisco ASA syslog events, the Cisco ASA integration assets must be installed first.
-- **Network access**: The syslog-sending devices must be able to reach the Elastic Agent host on the configured listen port (default `9514` for TCP/UDP).
+- **Network access**: The syslog-sending devices must be able to reach the Elastic Agent host on the configured listen address and port. The TCP and UDP defaults (`localhost:9514`) only accept connections from the agent host itself, so set the listen address to `0.0.0.0` or a specific interface to receive syslog from remote devices.
 
 ### Elastic setup steps
 
@@ -95,7 +95,7 @@ Repeat for each integration whose syslog events you expect to receive.
 1. In Kibana, navigate to **Management > Integrations**.
 2. Search for **Syslog Router** and select it.
 3. Click **Add Syslog Router**.
-4. Enable the desired input(s) — TCP, UDP, or Filestream — and configure listen address/port.
+4. Enable the desired input(s) — TCP, UDP, or Filestream — and configure listen address/port. The default listen address `localhost` only accepts local connections.
 5. Review the **Reroute configuration** YAML to confirm the pattern list matches your environment.
 6. Select the **Elastic Agent policy** to assign this integration to.
 7. Click **Save and continue**.

@@ -118,7 +118,7 @@ After your devices are ready to send data, you can set up the integration in Kib
 2. Search for **Syslog Router** and select it.
 3. Click **Add Syslog Router**.
 4. Enable and configure the inputs you need:
-    - **TCP input**: Set the **Listen Address** (for example, `0.0.0.0`) and **Listen Port** (for example, `9514`). You can also configure SSL settings if your devices support encrypted syslog.
+    - **TCP input**: Set the **Listen Address** and **Listen Port**. The default `localhost:9514` only accepts connections from the agent host, so use, for example, `0.0.0.0` to listen on all interfaces. You can also configure SSL settings if your devices support encrypted syslog.
     - **UDP input**: Set the **Listen Address** and **Listen Port**.
     - **Filestream input**: Specify the **Paths** to the syslog files on the host if the agent is reading from local logs.
 5. Review the **Reroute configuration** section. You'll find a list of patterns used to match incoming logs to specific integrations. You can modify these YAML patterns to match the specific log formats in your environment.
