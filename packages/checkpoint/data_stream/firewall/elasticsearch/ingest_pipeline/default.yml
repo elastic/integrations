@@ -118,6 +118,7 @@ processors:
       field: "@timestamp"
       target_field: "event.created"
       ignore_missing: true
+      if: "ctx.event?.created == null"
   # Time zone can come from three sources, choose in order: log, config, locale, default to UTC.
   - set:
       tag: set__temp__tz_aad5b1e3
@@ -1440,6 +1441,7 @@ processors:
   - rename:
       tag: rename_checkpoint__temp_unixms_to_@timestamp_332b0484
       field: checkpoint._temp_unixms
+      if: "ctx['@timestamp'] == null"
       target_field: "@timestamp"
       ignore_missing: true
   - date:
