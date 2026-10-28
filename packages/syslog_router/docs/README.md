@@ -1,7 +1,5 @@
 # Syslog Router Integration for Elastic
 
-> Note: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
-
 ## Overview
 
 The Syslog router integration for Elastic enables you to route incoming syslog events to the correct Elastic integration data stream using regex pattern matching on the `message` field. It acts as a centralized traffic controller for syslog messages, allowing a single Elastic Agent to receive a mixed stream of logs from multiple network devices and forward each event to its appropriate integration-specific data stream for parsing.
