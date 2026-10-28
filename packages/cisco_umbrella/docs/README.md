@@ -187,7 +187,7 @@ An example event for `log` looks as following:
 | cisco.umbrella.detected_response_file_type | The file type that resulted in a blocked response. | keyword |
 | cisco.umbrella.dlp_status | If the request was Blocked for DLP. | keyword |
 | cisco.umbrella.egress | Indicates whether or not the egress IP was a reserved IP. | keyword |
-| cisco.umbrella.egress_ip | The public IP address assigned to a session as it exits Secure Access. | keyword |
+| cisco.umbrella.egress_ip | The public IP address assigned to a session as it exits Secure Access. | ip |
 | cisco.umbrella.email_attachments | Attachment file names for an email scan event. | keyword |
 | cisco.umbrella.email_id | Identifier for the email message. | keyword |
 | cisco.umbrella.email_recipients | Recipient addresses for an email scan event. | keyword |
