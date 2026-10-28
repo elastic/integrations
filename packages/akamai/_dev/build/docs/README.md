@@ -56,7 +56,7 @@ Akamai [DataStream 2 security logs](https://techdocs.akamai.com/datastream2/docs
 1. In Akamai DataStream 2, create a security logs (SIEM) stream and select the relevant security configurations. See [Create a security log stream](https://techdocs.akamai.com/datastream2/docs/create-a-security-log-stream).
 2. Select **Amazon S3** as the delivery destination and configure the bucket name, region, optional folder path, and AWS access credentials. Follow [Akamai's Amazon S3 destination instructions](https://techdocs.akamai.com/datastream2/docs/stream-amazon-s3).
 3. Choose JSON security logs. Akamai DataStream 2 delivers log files gzip-compressed by default. The AWS S3 input reads supported compressed objects and processes newline-delimited JSON records individually.
-4. Verify that files are arriving in the intended S3 bucket and prefix. Note that Akamai may also create a small access-verification file while validating the destination; use a dedicated prefix and/or filtering where appropriate to avoid ingesting non-log files.
+4. Verify that files are arriving in the intended S3 bucket and prefix. Note that Akamai might also create a small access-verification file while validating the destination, use a dedicated prefix and/or filtering where appropriate to avoid ingesting non-log files.
 
 #### Collect data from AWS SQS (recommended)
 
@@ -67,7 +67,7 @@ Akamai [DataStream 2 security logs](https://techdocs.akamai.com/datastream2/docs
 5. In Fleet, enable **Collect Akamai SIEM logs via Amazon S3 / SQS**, leave **Collect via direct S3 bucket polling** disabled, and set **SQS Queue URL**. Configure the AWS region and authentication. Prefer an IAM role or the standard AWS credential chain to long-lived access keys where available.
 6. Adjust **SQS Visibility Timeout**, **SQS API Timeout**, and **Workers** for the expected object sizes and traffic. The API timeout must not exceed half the visibility timeout.
 
-SQS messages must contain standard S3 event notifications. Nonstandard wrappers, such as messages produced through SNS or EventBridge, may require custom notification parsing and are not configured by this integration's default input template. For a shared queue, use file selectors carefully; do not have multiple independent consumers compete for the same messages.
+SQS messages must contain standard S3 event notifications. Nonstandard wrappers, such as messages produced through SNS or EventBridge, might require custom notification parsing and are not configured by this integration's default input template. For a shared queue, use file selectors carefully, do not have multiple independent consumers compete for the same messages.
 
 #### Collect data by direct S3 bucket polling
 
