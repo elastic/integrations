@@ -98,15 +98,28 @@ processors:
       tag: set_source_address_from_suricata_eve_src_ip_10be4995
       field: source.address
       copy_from: suricata.eve.src_ip
-      if: ctx.source?.address == null && ctx.suricata?.eve?.src_ip instanceof String
+      if: ctx.source?.address == null && ctx.suricata?.eve?.src_ip instanceof String && !ctx.suricata.eve.src_ip.trim().isEmpty()
       ignore_empty_value: true
       ignore_failure: true
+  - remove:
+      tag: remove_empty_suricata_eve_src_ip
+      field: suricata.eve.src_ip
+      if: ctx.suricata?.eve?.src_ip instanceof String && ctx.suricata.eve.src_ip.trim().isEmpty()
+      ignore_missing: true
   - convert:
       tag: convert_suricata_eve_src_ip_5a236e8c
       field: suricata.eve.src_ip
       type: ip
       ignore_missing: true
       on_failure:
+        - append:
+            tag: append_suricata_eve_src_ip_convert_error
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
         - remove:
             tag: remove_invalid_suricata_eve_src_ip
             field: suricata.eve.src_ip
@@ -118,8 +131,9 @@ processors:
       type: ip
       ignore_missing: true
       on_failure:
-        # source.address may legitimately be a hostname. Only remove object
-        # values, which are incompatible with the ECS keyword mapping.
+        # source.address may legitimately be a hostname. Only report object
+        # values as errors; remove arrays that fail conversion to avoid mapping
+        # incompatible nested objects as ECS keywords.
         - append:
             tag: append_source_address_convert_error
             field: error.message
@@ -132,7 +146,7 @@ processors:
         - remove:
             tag: remove_invalid_source_address
             field: source.address
-            if: ctx.source?.address instanceof Map
+            if: ctx.source?.address instanceof Map || ctx.source?.address instanceof List
   - convert:
       tag: convert_suricata_eve_src_port_to_source_port_2ba6a53f
       field: suricata.eve.src_port
