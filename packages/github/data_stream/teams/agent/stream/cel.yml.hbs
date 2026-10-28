@@ -30,7 +30,8 @@ redact:
 max_executions: 5000
 program: |-
   // Full organization team snapshot. Page cursor lives in cursor.after and is
-  // cleared after the terminal page so the next interval collects the roster again.
+  // cleared after the terminal page and on error, so the next interval
+  // collects the roster from the beginning.
   state.with(
     request("POST", state.url.trim_right("/") + "/graphql").with(
       {
@@ -38,7 +39,7 @@ program: |-
           "Authorization": ["Bearer " + state.access_token],
         },
         "Body": {
-          "query": "query OrgTeams($org: String!, $teamCursor: String) { organization(login: $org) { teams(first: 20, after: $teamCursor, orderBy: { field: NAME, direction: ASC }) { pageInfo { hasNextPage endCursor } totalCount edges { node { id databaseId name slug combinedSlug privacy description parentTeam { id slug } } } } } rateLimit { cost remaining resetAt } }",
+          "query": "query OrgTeams($org: String!, $teamCursor: String) { organization(login: $org) { teams(first: 20, after: $teamCursor, orderBy: { field: NAME, direction: ASC }) { pageInfo { hasNextPage endCursor } totalCount edges { node { id databaseId name slug combinedSlug privacy description url createdAt updatedAt parentTeam { id slug } } } } } rateLimit { cost remaining resetAt } }",
           "variables": {
             "org": state.owner,
             "teamCursor": state.?cursor.after.orValue(
@@ -59,6 +60,7 @@ program: |-
                   "message": "POST /graphql (teams): " + ((body.?errors.orValue(null) != null) ? ((body.errors.size() > 0) ? body.errors[0].?message.orValue("GraphQL error") : "GraphQL error") : "missing organization.teams in response"),
                 },
               },
+              "cursor": {},
               "want_more": false,
             }
           :
@@ -84,6 +86,7 @@ program: |-
               "message": "POST /graphql (teams): " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
             },
           },
+          "cursor": {},
           "want_more": false,
         }
     )

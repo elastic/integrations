@@ -77,10 +77,6 @@ processors:
       copy_from: json.name
       ignore_empty_value: true
   - set:
-      field: entity.type
-      tag: set_entity_type
-      value: Team
-  - set:
       field: entity.sub_type
       tag: set_entity_sub_type
       value: GitHub Team
@@ -88,6 +84,12 @@ processors:
       field: entity.source
       tag: set_entity_source
       value: github
+  - set:
+      field: entity.reference
+      tag: set_entity_reference
+      copy_from: json.url
+      ignore_empty_value: true
+      if: ctx.json?.url != null && ctx.json.url != ''
   - set:
       field: entity.last_seen_timestamp
       tag: set_entity_last_seen_timestamp
@@ -142,13 +144,36 @@ processors:
       target_field: github.teams.parent_team_slug
       if: ctx.json?.parentTeam?.slug != null && ctx.json.parentTeam.slug != ''
       ignore_missing: true
-
-  - fingerprint:
-      fields:
-        - event.original
-      target_field: _id
-      tag: set_fingerprint_id
-      ignore_missing: false
+  - date:
+      field: json.createdAt
+      tag: date_created_at
+      target_field: github.teams.created_at
+      formats:
+        - ISO8601
+        - strict_date_optional_time
+      if: ctx.json?.createdAt != null
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}} with tag
+              {{{_ingest.on_failure_processor_tag}}} failed with message:
+              {{{_ingest.on_failure_message}}}
+  - date:
+      field: json.updatedAt
+      tag: date_updated_at
+      target_field: github.teams.updated_at
+      formats:
+        - ISO8601
+        - strict_date_optional_time
+      if: ctx.json?.updatedAt != null
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}} with tag
+              {{{_ingest.on_failure_processor_tag}}} failed with message:
+              {{{_ingest.on_failure_message}}}
 
   - remove:
       field: json

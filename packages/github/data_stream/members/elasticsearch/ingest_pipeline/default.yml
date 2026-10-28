@@ -356,14 +356,25 @@ processors:
       allow_duplicates: false
       if: ctx.user?.id != null
 
-  # Deduplication: stable document ID from the full raw payload; unchanged members
-  # produce the same hash across collection cycles and are not re-indexed.
+  # Deduplication key is the raw payload plus a schema version. members-3.0.0
+  # changes the hash once so an unchanged member is indexed again after upgrade
+  # and receives administers.entity.id and maintained_team_names. Later
+  # unchanged collections reuse this _id. The version field is not indexed.
+  - set:
+      field: _tmp.members_dedup_version
+      tag: set_members_dedup_version
+      value: members-3.0.0
   - fingerprint:
       fields:
         - event.original
+        - _tmp.members_dedup_version
       target_field: _id
       tag: set_fingerprint_id
       ignore_missing: false
+  - remove:
+      field: _tmp
+      tag: remove_members_dedup_version
+      ignore_missing: true
 
   # Cleanup: remove json scratch space
   - remove:
