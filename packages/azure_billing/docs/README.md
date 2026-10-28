@@ -259,7 +259,7 @@ they also run on Elasticsearch Serverless.
 | `usage_fetches` | `azure_billing.usage_fetches` | Sums the usage detail rows per usage day, meter (`azure.billing.billing_period_id`), resource, product, currency, and **fetch**. A fetch is identified by `azure.billing.fetch_id`, which Elastic Agent 9.6 and later stamps on every row of a run. |
 | `usage` | `azure_billing.usage_latest` | Keeps, for every usage day, meter, and resource, the document of the most recent fetch. |
 | `usage_latest_fetch` | `azure_billing.usage_latest_fetch` | Records, for every usage day and scope, which fetch is the newest. The dashboard joins `azure_billing.usage_latest` with this lookup index and counts only the buckets of that fetch, so a bucket that a newer fetch no longer contains, or that it carries under a corrected key, does not survive from an older fetch. |
-| `latest_forecast` | `azure_billing.forecast_latest` | A `latest` transform over the forecast rows of the Cost Management forecast API, keyed on `azure.subscription_id`, the queried scope (`azure.billing.scope`, or the subscription scope for agents that do not emit it), the Fleet namespace, `azure.billing.usage_date`, `azure.billing.currency`, and a derived `azure.billing.cost_status`. Documents that are not refreshed for three days are dropped, so the index always holds the current forecast window. |
+| `latest_forecast` | `azure_billing.forecast_latest` | A `latest` transform over the forecast rows of the Cost Management forecast API, keyed on the queried scope (`azure.billing.scope`), `azure.billing.usage_date`, `azure.billing.currency`, and a derived `azure.billing.cost_status`. It reads only rows that carry the scope, which Elastic Agent 9.6 and later stamps on them. Documents that are not refreshed for three days are dropped, so the index always holds the current forecast window. |
 
 The usage transforms do not deduplicate individual rows on purpose. The Azure Usage Details
 API does not give every row a unique ID: rows for the same day, meter, and resource share one
@@ -277,10 +277,9 @@ older agents collected, and those rows carry neither a fetch ID nor the queried 
 transforms then group them by the agent process (`agent.ephemeral_id`) and the minute in which
 they were created, which cannot guarantee correct deduplication: a fetch whose rows cross a minute
 boundary is split and only its later part counts, and two fetches of one process inside the same
-minute are summed.
-Their forecasts are keyed on the configured `Subscription ID`, so several such policies that
-query different scopes with the same subscription ID need different Fleet namespaces to be kept
-apart. Upgrade the agents to get exact deduplication.
+minute are summed. Their forecast rows are not read: older agents stamp them with the configured
+`Subscription ID` even for a department or billing account scope, so they cannot be told apart
+from the forecast that the upgraded agent collects for the same scope.
 
 ```text
                                                   ┌─────────────────────────────┐    ┌────────────────────────────┐
