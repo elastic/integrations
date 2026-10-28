@@ -303,7 +303,7 @@ The recent-alert table also shows available original event time, reporting vendo
 
 Matched IPs come from `threat.enrichments.matched.atomic` and source/destination match evidence. Duplicate indicators for one IP in one alert count once. One alert can match multiple IPs, so IP-specific totals can exceed total alerts.
 
-The alert panels use the **default Space** alias, `.alerts-security.alerts-default`. For another Space, duplicate the managed Criminal IP dashboard in the target Space and edit the copy; managed package dashboards are read-only. In the copy, update every alert ES|QL `FROM` to `.alerts-security.alerts-<space-id>` and duplicate or replace any referenced alert visualization so it uses the same Space-specific alias. Use the customized dashboard afterward. Before the first alert, a missing alert index can produce a panel error.
+The alert panels use the **default Space** alias, `.alerts-security.alerts-default`. For another Space, duplicate the managed Criminal IP dashboard in the target Space and edit the copy; managed package dashboards are read-only. In the copy, update every alert ES|QL `FROM` to `.alerts-security.alerts-<space-id>`. Also edit the embedded Vega matched-IP chart and change its `data[].url.index` to the same Space-specific alias; this chart is not a referenced saved visualization. Duplicate or replace any referenced alert visualization so it uses that alias as well. Use the customized dashboard afterward. Before the first alert, a missing alert index can produce a panel error.
 
 ### Cortex results
 
