@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Browser Isolation User Actions, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Email Security Post Delivery Events, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
 
 Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
@@ -39,6 +39,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 
 - `access_request`: HTTP requests to sites protected by Cloudflare Access. See [Access Requests schema](https://developers.cloudflare.com/logs/reference/log-fields/account/access_requests/).
 - `audit`: Authentication events through Cloudflare Access, plus account-level configuration and administrative actions. See [Audit Logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/audit_logs/).
+- `biso_user_actions`: User actions (copy, paste, download, upload, and print) performed in Cloudflare Browser Isolation sessions, with the decision applied by isolation policies. See [Browser Isolation User Actions schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/biso_user_actions/).
 - `casb`: Security issues detected by Cloudflare CASB in connected SaaS applications. See [CASB Findings schema](https://developers.cloudflare.com/logs/reference/log-fields/account/casb_findings/).
 - `device_posture`: Device posture status from the Cloudflare One Client (WARP). See [Device Posture Results schema](https://developers.cloudflare.com/logs/reference/log-fields/account/device_posture_results/).
 - `gateway_dns`: DNS queries inspected by Cloudflare Gateway. See [Gateway DNS schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_dns/).
@@ -54,6 +55,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 - `dns_firewall`: Cloudflare DNS Firewall query and response logs. See [DNS Firewall logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/dns_firewall_logs/).
 - `dlp_forensic_copies`: Data Loss Prevention forensic copies of content that matched a DLP profile. See [DLP Forensic Copies schema](https://developers.cloudflare.com/logs/reference/log-fields/account/dlp_forensic_copies/).
 - `email_security_alerts`: Cloudflare Email Security alerts for phishing, malware, and other email-based threats. See [Email Security Alerts schema](https://developers.cloudflare.com/logs/reference/log-fields/account/email_security_alerts/).
+- `email_security_post_delivery_events`: Post-delivery actions (move, submission, and quarantine release) taken by Cloudflare Email Security on already delivered email messages. See [Email Security Post Delivery Events schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/email_security_post_delivery_events/).
 - `firewall_event`: Zone-level Firewall events for requests mitigated by Cloudflare security products (WAF, Rate Limiting, Firewall Rules, etc.). See [Firewall Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/firewall_events/).
 - `http_request`: HTTP/HTTPS request logs served at the Cloudflare edge. See [HTTP Requests schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/http_requests/).
 - `magic_ids`: Magic Network Monitoring IDS detection logs. See [Magic IDS Detections schema](https://developers.cloudflare.com/logs/reference/log-fields/account/magic_ids_detections/).
@@ -69,8 +71,8 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 Integrating Cloudflare Logpush with Elastic provides centralized visibility across Cloudflare's edge, Zero Trust, and network-layer products. Common use cases include:
 
 - Investigating traffic, WAF, and DDoS-mitigation events from the Cloudflare edge (`http_request`, `firewall_event`, `network_analytics`).
-- Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `warp_config_changes`, `warp_toggle_changes`).
-- Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
+- Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `warp_config_changes`, `warp_toggle_changes`, `biso_user_actions`).
+- Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`, `email_security_post_delivery_events`).
 - Auditing administrative activity on the Cloudflare account (`audit`).
 - Troubleshooting DNS and client-side performance issues (`dns`, `dns_firewall`, `nel_report`, `workers_trace`).
 
@@ -89,7 +91,7 @@ To use this integration, you must be able to create and manage [Cloudflare Logpu
 Creating and managing Logpush jobs requires an API token or user role with the `Logs Write` permission (or a role that includes it, such as **Super Administrator**, **Administrator**, or **Log Share** with edit permissions). Refer to [Cloudflare Logpush permissions](https://developers.cloudflare.com/logs/logpush/permissions/) for details.
 
 - **Zone-scoped datasets** (for example, `http_requests`, `firewall_events`, `dns_logs`, `spectrum_events`, `nel_reports`, `page_shield_events`) require a **zone-scoped token**.
-- **Account-scoped datasets** (for example, `audit_logs`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
+- **Account-scoped datasets** (for example, `audit_logs`, `access_requests`, `biso_user_actions`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `email_security_post_delivery_events`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
 - Zero Trust datasets (Access, Gateway, DEX) additionally require `Zero Trust: PII Read`.
 
 **Destination-specific credentials**
@@ -118,31 +120,33 @@ Configure one of the following delivery pipelines before enabling the integratio
 - Configure [Cloudflare Logpush to Amazon S3](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/aws-s3/) to send Cloudflare's data to an AWS S3 bucket.
 - The default values of the **Bucket Prefix** are listed below. However, users can set the parameter **Bucket Prefix** according to their requirements.
 
-  | Data Stream Name           | Bucket Prefix          |
-  | -------------------------- | ---------------------- |
-  | Access Request             | access_request         |
-  | Audit Logs                 | audit_logs             |
-  | CASB findings              | casb                   |
-  | Device Posture Results     | device_posture         |
-  | DLP Forensic Copies        | dlp_forensic_copies    |
-  | DNS                        | dns                    |
-  | DNS Firewall               | dns_firewall           |
-  | Email Security Alerts      | email_security_alerts  |
-  | Firewall Event             | firewall_event         |
-  | Gateway DNS                | gateway_dns            |
-  | Gateway HTTP               | gateway_http           |
-  | Gateway Network            | gateway_network        |
-  | HTTP Request               | http_request           |
-  | Magic IDS                  | magic_ids              |
-  | NEL Report                 | nel_report             |
-  | Network Analytics          | network_analytics_logs |
-  | Page Shield Events         | page_shield_events     |
-  | Zero Trust Network Session | network_session        |
-  | Sinkhole HTTP              | sinkhole_http          |
-  | Spectrum Event             | spectrum_event         |
-  | WARP Config Changes        | warp_config_changes    |
-  | WARP Toggle Changes        | warp_toggle_changes    |
-  | Workers Trace Events       | workers_trace          |
+  | Data Stream Name                    | Bucket Prefix                       |
+  | ----------------------------------- | ----------------------------------- |
+  | Access Request                      | access_request                      |
+  | Audit Logs                          | audit_logs                          |
+  | Browser Isolation User Actions      | biso_user_actions                   |
+  | CASB findings                       | casb                                |
+  | Device Posture Results              | device_posture                      |
+  | DLP Forensic Copies                 | dlp_forensic_copies                 |
+  | DNS                                 | dns                                 |
+  | DNS Firewall                        | dns_firewall                        |
+  | Email Security Alerts               | email_security_alerts               |
+  | Email Security Post Delivery Events | email_security_post_delivery_events |
+  | Firewall Event                      | firewall_event                      |
+  | Gateway DNS                         | gateway_dns                         |
+  | Gateway HTTP                        | gateway_http                        |
+  | Gateway Network                     | gateway_network                     |
+  | HTTP Request                        | http_request                        |
+  | Magic IDS                           | magic_ids                           |
+  | NEL Report                          | nel_report                          |
+  | Network Analytics                   | network_analytics_logs              |
+  | Page Shield Events                  | page_shield_events                  |
+  | Zero Trust Network Session          | network_session                     |
+  | Sinkhole HTTP                       | sinkhole_http                       |
+  | Spectrum Event                      | spectrum_event                      |
+  | WARP Config Changes                 | warp_config_changes                 |
+  | WARP Toggle Changes                 | warp_toggle_changes                 |
+  | Workers Trace Events                | workers_trace                       |
 
 #### Collect data from AWS SQS
 
@@ -589,6 +593,142 @@ An example event for `audit` looks as following:
 | cloudflare_logpush.audit.resource.id | Unique identifier of the resource within Cloudflare system. | keyword |
 | cloudflare_logpush.audit.resource.type | The type of resource that was changed. | keyword |
 | cloudflare_logpush.audit.timestamp | When the change happened. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
+| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
+| gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
+| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+
+
+#### biso_user_actions
+
+This is the `biso_user_actions` dataset.
+
+##### Example
+
+An example event for `biso_user_actions` looks as following:
+
+```json
+{
+    "@timestamp": "2025-02-27T23:15:06.000Z",
+    "agent": {
+        "ephemeral_id": "79420ae8-7a71-48e9-86ba-cb9b9d98a560",
+        "id": "36e68e5b-f7c9-417c-8ac7-8258bc946889",
+        "name": "elastic-agent-80666",
+        "type": "filebeat",
+        "version": "8.17.1"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-biso-user-actions-bucket-29537",
+                "name": "elastic-package-biso-user-actions-bucket-29537"
+            },
+            "object": {
+                "key": "test-biso-user-actions.log"
+            }
+        }
+    },
+    "cloud": {
+        "region": "us-east-1"
+    },
+    "cloudflare_logpush": {
+        "biso_user_actions": {
+            "account_id": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6",
+            "decision": "block",
+            "metadata": {
+                "clipboard_length": 128,
+                "source": "keyboard"
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.biso_user_actions",
+        "namespace": "12022",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "36e68e5b-f7c9-417c-8ac7-8258bc946889",
+        "snapshot": false,
+        "version": "8.17.1"
+    },
+    "event": {
+        "action": "copy",
+        "agent_id_status": "verified",
+        "category": [
+            "web",
+            "network"
+        ],
+        "dataset": "cloudflare_logpush.biso_user_actions",
+        "ingested": "2026-10-13T11:40:22Z",
+        "kind": "event",
+        "original": "{\"AccountID\":\"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6\",\"Decision\":\"block\",\"DomainName\":\"www.example.com\",\"Metadata\":\"{\\\"clipboard_length\\\":128,\\\"source\\\":\\\"keyboard\\\"}\",\"Timestamp\":\"2025-02-27T23:15:06Z\",\"Type\":\"copy\",\"URL\":\"https://www.example.com/reports/quarterly\",\"UserEmail\":\"user@example.com\",\"UserID\":\"89a1d5c1-2b3e-4f67-8a9b-0c1d2e3f4a5b\"}",
+        "type": [
+            "access",
+            "denied"
+        ]
+    },
+    "input": {
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-biso-user-actions-bucket-29537.s3.us-east-1.amazonaws.com/test-biso-user-actions.log"
+        },
+        "offset": 0
+    },
+    "related": {
+        "hosts": [
+            "www.example.com"
+        ],
+        "user": [
+            "user@example.com",
+            "89a1d5c1-2b3e-4f67-8a9b-0c1d2e3f4a5b"
+        ]
+    },
+    "tags": [
+        "collect_sqs_logs",
+        "preserve_original_event",
+        "forwarded",
+        "cloudflare_logpush-biso_user_actions"
+    ],
+    "url": {
+        "domain": "www.example.com",
+        "original": "https://www.example.com/reports/quarterly",
+        "path": "/reports/quarterly",
+        "scheme": "https"
+    },
+    "user": {
+        "email": "user@example.com",
+        "id": "89a1d5c1-2b3e-4f67-8a9b-0c1d2e3f4a5b"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
+| cloudflare_logpush.biso_user_actions.account_id | The Cloudflare account ID in which the user action was performed. | keyword |
+| cloudflare_logpush.biso_user_actions.decision | The decision applied to the user action (for example `allow` or `block`). | keyword |
+| cloudflare_logpush.biso_user_actions.metadata | Additional information specific to the user action, decoded from the JSON-encoded `Metadata` string. Its structure is not documented by Cloudflare. | flattened |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
@@ -1653,6 +1793,167 @@ An example event for `email_security_alerts` looks as following:
 | email.attachments.file.hash.ssdeep | SSDEEP hash. | keyword |
 | email.attachments.file.mime_type | The MIME media type of the attachment. This value will typically be extracted from the `Content-Type` MIME header field. | keyword |
 | email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
+| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
+| gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
+| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+
+
+#### email_security_post_delivery_events
+
+This is the `email_security_post_delivery_events` dataset.
+
+##### Example
+
+An example event for `email_security_post_delivery_events` looks as following:
+
+```json
+{
+    "@timestamp": "2024-11-14T09:12:48.000Z",
+    "agent": {
+        "ephemeral_id": "edab6d7a-bb51-42e5-a47c-6ca8d2566c70",
+        "id": "31ba8a96-dbcd-4afc-b7c9-794b072b056b",
+        "name": "elastic-agent-59643",
+        "type": "filebeat",
+        "version": "8.17.1"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-email-security-post-delivery-bucket-20377",
+                "name": "elastic-package-email-security-post-delivery-bucket-20377"
+            },
+            "object": {
+                "key": "test-email-security-post-delivery-events.log"
+            }
+        }
+    },
+    "cloud": {
+        "region": "us-east-1"
+    },
+    "cloudflare_logpush": {
+        "email_security_post_delivery_events": {
+            "alert_id": "4Zq8Xk2LmN7vP1wRtY3sBd-2024-11-14T09:12:41",
+            "destination": "RecoverableItemsPurges",
+            "final_disposition": "malicious",
+            "folder": "RecoverableItemsPurges",
+            "from_name": "Example Billing",
+            "message_timestamp": "2024-11-14T09:12:33.000Z",
+            "microsoft_tenant_id": "6f1c2d3e-4a5b-4c6d-8e7f-0a1b2c3d4e5f",
+            "status": "OK",
+            "success": true
+        }
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.email_security_post_delivery_events",
+        "namespace": "33089",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "31ba8a96-dbcd-4afc-b7c9-794b072b056b",
+        "snapshot": false,
+        "version": "8.17.1"
+    },
+    "email": {
+        "from": {
+            "address": [
+                "billing@sender.example.net"
+            ]
+        },
+        "local_id": "4F2A1C0B7E",
+        "message_id": "<20241114091233.4F2A1C0B7E@mail.sender.example.net>",
+        "subject": "Action required: invoice 20241114 overdue",
+        "to": {
+            "address": [
+                "jdoe@example.com",
+                "asmith@example.com"
+            ]
+        }
+    },
+    "event": {
+        "action": "move",
+        "agent_id_status": "verified",
+        "category": [
+            "email"
+        ],
+        "dataset": "cloudflare_logpush.email_security_post_delivery_events",
+        "ingested": "2026-10-13T12:09:53Z",
+        "kind": "event",
+        "original": "{\"AlertID\":\"4Zq8Xk2LmN7vP1wRtY3sBd-2024-11-14T09:12:41\",\"CompletedAt\":\"2024-11-14T09:12:48Z\",\"Destination\":\"RecoverableItemsPurges\",\"FinalDisposition\":\"malicious\",\"Folder\":\"RecoverableItemsPurges\",\"From\":\"billing@sender.example.net\",\"FromName\":\"Example Billing\",\"MessageID\":\"<20241114091233.4F2A1C0B7E@mail.sender.example.net>\",\"MessageTimestamp\":\"2024-11-14T09:12:33Z\",\"MicrosoftTenantID\":\"6f1c2d3e-4a5b-4c6d-8e7f-0a1b2c3d4e5f\",\"Operation\":\"move\",\"PostfixID\":\"4F2A1C0B7E\",\"Reasons\":[\"Malicious URL\",\"Brand impersonation\"],\"Recipient\":\"jdoe@example.com\",\"RequestedAt\":\"2024-11-14T09:12:42Z\",\"RequestedBy\":\"secops-admin@example.com\",\"RequestedDisposition\":\"\",\"Status\":\"OK\",\"Subject\":\"Action required: invoice 20241114 overdue\",\"Success\":true,\"To\":[\"jdoe@example.com\",\"asmith@example.com\"]}",
+        "outcome": "success",
+        "reason": [
+            "Malicious URL",
+            "Brand impersonation"
+        ],
+        "start": "2024-11-14T09:12:42.000Z",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-email-security-post-delivery-bucket-20377.s3.us-east-1.amazonaws.com/test-email-security-post-delivery-events.log"
+        },
+        "offset": 0
+    },
+    "related": {
+        "user": [
+            "secops-admin@example.com",
+            "jdoe@example.com",
+            "billing@sender.example.net",
+            "asmith@example.com"
+        ]
+    },
+    "tags": [
+        "collect_sqs_logs",
+        "preserve_original_event",
+        "forwarded",
+        "cloudflare_logpush-email_security_post_delivery_events"
+    ],
+    "user": {
+        "email": "secops-admin@example.com",
+        "target": {
+            "email": "jdoe@example.com"
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
+| cloudflare_logpush.email_security_post_delivery_events.alert_id | Email Security alert ID of the original message. | keyword |
+| cloudflare_logpush.email_security_post_delivery_events.destination | Target folder for a `move` operation (for example `RecoverableItemsPurges`). | keyword |
+| cloudflare_logpush.email_security_post_delivery_events.final_disposition | Threat disposition of the original message (`unset`, `none`, `malicious`, `suspicious`, `spam`, `spoof` or `bulk`). | keyword |
+| cloudflare_logpush.email_security_post_delivery_events.folder | Folder name resolved after a successful `move` operation. | keyword |
+| cloudflare_logpush.email_security_post_delivery_events.from_name | Display name from the `From` header of the original message. | keyword |
+| cloudflare_logpush.email_security_post_delivery_events.message_timestamp | Timestamp of the original message. | date |
+| cloudflare_logpush.email_security_post_delivery_events.microsoft_tenant_id | Microsoft 365 tenant identifier. | keyword |
+| cloudflare_logpush.email_security_post_delivery_events.requested_disposition | Requested disposition for a `submission` operation. | keyword |
+| cloudflare_logpush.email_security_post_delivery_events.status | Status message from the post-delivery provider (for example `OK`). | keyword |
+| cloudflare_logpush.email_security_post_delivery_events.success | Whether the post-delivery action succeeded. | boolean |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |

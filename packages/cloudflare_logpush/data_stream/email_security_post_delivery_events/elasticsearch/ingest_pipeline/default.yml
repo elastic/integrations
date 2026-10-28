@@ -1,0 +1,374 @@
+---
+description: Pipeline for parsing Cloudflare Email Security Post-Delivery Events logs.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '9.3.0'
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      tag: json_event_original_to_json
+      field: event.original
+      target_field: json
+      if: ctx.event?.original != null
+  - append:
+      field: event.category
+      tag: append_email_into_event_category
+      value: email
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  - remove:
+      field: _id
+      tag: remove_id_based_deduplication
+      description: >
+        When data deduplication is disabled, the _id field (used for _id Based Deduplication)
+        must be removed.
+      if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
+      ignore_missing: true
+  - convert:
+      tag: convert_json_CompletedAt_to_long
+      field: json.CompletedAt
+      type: long
+      if: ctx.json?.CompletedAt != null && ctx.json.CompletedAt != ''
+      ignore_failure: true
+  - convert:
+      tag: convert_json_RequestedAt_to_long
+      field: json.RequestedAt
+      type: long
+      if: ctx.json?.RequestedAt != null && ctx.json.RequestedAt != ''
+      ignore_failure: true
+  - convert:
+      tag: convert_json_MessageTimestamp_to_long
+      field: json.MessageTimestamp
+      type: long
+      if: ctx.json?.MessageTimestamp != null && ctx.json.MessageTimestamp != ''
+      ignore_failure: true
+  - script:
+      lang: painless
+      tag: script_timestamp_to_milli
+      description: Normalises epoch CompletedAt, RequestedAt and MessageTimestamp values (seconds/millis/nanos) to milliseconds so the date processors can parse them consistently.
+      source: |
+        def convertToMillis(long timestamp) {
+          if (timestamp > (long)(1e18)) {
+            return timestamp/(long)(1e6)
+          } else if (timestamp < (long)(1e10))  {
+            return timestamp*(long)(1e3)
+          }
+          return timestamp
+        }
+        if (ctx.json?.CompletedAt != null && ctx.json.CompletedAt instanceof Number) {
+          ctx.json.CompletedAt = convertToMillis(((Number)ctx.json.CompletedAt).longValue());
+        }
+        if (ctx.json?.RequestedAt != null && ctx.json.RequestedAt instanceof Number) {
+          ctx.json.RequestedAt = convertToMillis(((Number)ctx.json.RequestedAt).longValue());
+        }
+        if (ctx.json?.MessageTimestamp != null && ctx.json.MessageTimestamp instanceof Number) {
+          ctx.json.MessageTimestamp = convertToMillis(((Number)ctx.json.MessageTimestamp).longValue());
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_timestamp_script
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # @timestamp is the time the post-delivery action finished (CompletedAt).
+  - date:
+      tag: date_json_CompletedAt
+      field: json.CompletedAt
+      target_field: '@timestamp'
+      if: ctx.json?.CompletedAt != null && ctx.json.CompletedAt != ''
+      formats:
+        - UNIX_MS
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      on_failure:
+        - remove:
+            tag: remove_json_CompletedAt
+            field: json.CompletedAt
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date_completedat
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # event.start is the time the post-delivery action was requested (RequestedAt).
+  - date:
+      tag: date_json_RequestedAt
+      field: json.RequestedAt
+      target_field: event.start
+      if: ctx.json?.RequestedAt != null && ctx.json.RequestedAt != ''
+      formats:
+        - UNIX_MS
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      on_failure:
+        - remove:
+            tag: remove_json_RequestedAt
+            field: json.RequestedAt
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date_requestedat
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # MessageTimestamp is the timestamp of the original message; its exact meaning is not documented
+  # by Cloudflare, so it is kept in a custom date field instead of an ECS email.* timestamp.
+  - date:
+      tag: date_json_MessageTimestamp
+      field: json.MessageTimestamp
+      target_field: cloudflare_logpush.email_security_post_delivery_events.message_timestamp
+      if: ctx.json?.MessageTimestamp != null && ctx.json.MessageTimestamp != ''
+      formats:
+        - UNIX_MS
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      on_failure:
+        - remove:
+            tag: remove_json_MessageTimestamp
+            field: json.MessageTimestamp
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date_messagetimestamp
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # email.*
+  - append:
+      tag: append_json_From_into_email_from_address
+      field: email.from.address
+      value: '{{{json.From}}}'
+      if: ctx.json?.From != null && ctx.json.From != ''
+      allow_duplicates: false
+  - rename:
+      tag: rename_json_To_to_email_to_address
+      field: json.To
+      target_field: email.to.address
+      ignore_missing: true
+  - rename:
+      tag: rename_json_Subject_to_email_subject
+      field: json.Subject
+      target_field: email.subject
+      ignore_missing: true
+  - rename:
+      tag: rename_json_MessageID_to_email_message_id
+      field: json.MessageID
+      target_field: email.message_id
+      ignore_missing: true
+
+  # user.*
+  # RequestedBy is the identity (email address format) that requested the post-delivery action.
+  - rename:
+      tag: rename_json_RequestedBy_to_user_email
+      field: json.RequestedBy
+      target_field: user.email
+      ignore_missing: true
+  # Recipient is the targeted mailbox the post-delivery action was taken on.
+  - rename:
+      tag: rename_json_Recipient_to_user_target_email
+      field: json.Recipient
+      target_field: user.target.email
+      ignore_missing: true
+
+  # event.action, event.outcome
+  - rename:
+      tag: rename_json_Operation_to_event_action
+      field: json.Operation
+      target_field: event.action
+      ignore_missing: true
+  - lowercase:
+      tag: lowercase_event_action
+      field: event.action
+      ignore_missing: true
+  - convert:
+      tag: convert_json_Success_to_boolean
+      field: json.Success
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.Success != null && ctx.json.Success != ''
+      on_failure:
+        - remove:
+            tag: remove_json_Success
+            field: json.Success
+            ignore_missing: true
+        - append:
+            tag: append_error_message_success
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_event_outcome_success
+      field: event.outcome
+      value: success
+      if: ctx.json?.Success == true
+  - set:
+      tag: set_event_outcome_failure
+      field: event.outcome
+      value: failure
+      if: ctx.json?.Success == false
+  - rename:
+      tag: rename_json_Success_to_success
+      field: json.Success
+      target_field: cloudflare_logpush.email_security_post_delivery_events.success
+      ignore_missing: true
+      if: ctx.json?.Success instanceof Boolean
+
+  # cloudflare_logpush.email_security_post_delivery_events.*
+  - rename:
+      tag: rename_json_AlertID_to_alert_id
+      field: json.AlertID
+      target_field: cloudflare_logpush.email_security_post_delivery_events.alert_id
+      ignore_missing: true
+  - rename:
+      tag: rename_json_Destination_to_destination
+      field: json.Destination
+      target_field: cloudflare_logpush.email_security_post_delivery_events.destination
+      ignore_missing: true
+  - rename:
+      tag: rename_json_FinalDisposition_to_final_disposition
+      field: json.FinalDisposition
+      target_field: cloudflare_logpush.email_security_post_delivery_events.final_disposition
+      ignore_missing: true
+  - rename:
+      tag: rename_json_Folder_to_folder
+      field: json.Folder
+      target_field: cloudflare_logpush.email_security_post_delivery_events.folder
+      ignore_missing: true
+  - rename:
+      tag: rename_json_FromName_to_from_name
+      field: json.FromName
+      target_field: cloudflare_logpush.email_security_post_delivery_events.from_name
+      ignore_missing: true
+  - rename:
+      tag: rename_json_MicrosoftTenantID_to_microsoft_tenant_id
+      field: json.MicrosoftTenantID
+      target_field: cloudflare_logpush.email_security_post_delivery_events.microsoft_tenant_id
+      ignore_missing: true
+  - rename:
+      tag: rename_json_PostfixID_to_email_local_id
+      field: json.PostfixID
+      target_field: email.local_id
+      ignore_missing: true
+  - rename:
+      tag: rename_json_Reasons_to_event_reason
+      field: json.Reasons
+      target_field: event.reason
+      ignore_missing: true
+  - rename:
+      tag: rename_json_RequestedDisposition_to_requested_disposition
+      field: json.RequestedDisposition
+      target_field: cloudflare_logpush.email_security_post_delivery_events.requested_disposition
+      ignore_missing: true
+  - rename:
+      tag: rename_json_Status_to_status
+      field: json.Status
+      target_field: cloudflare_logpush.email_security_post_delivery_events.status
+      ignore_missing: true
+
+  # related.*
+  - append:
+      tag: append_user_email_into_related_user
+      field: related.user
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null
+      allow_duplicates: false
+  - append:
+      tag: append_user_target_email_into_related_user
+      field: related.user
+      value: '{{{user.target.email}}}'
+      if: ctx.user?.target?.email != null
+      allow_duplicates: false
+  - foreach:
+      tag: foreach_email_from_address_into_related_user
+      field: email.from.address
+      if: ctx.email?.from?.address instanceof List
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_email_to_address_into_related_user
+      field: email.to.address
+      if: ctx.email?.to?.address instanceof List
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - remove:
+      tag: remove_json_conf
+      field:
+        - json
+        - _conf
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || v == 'N/A' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_preserve_original_event_tag
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_tag_on_failure
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
