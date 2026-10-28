@@ -1,0 +1,30 @@
+{
+    "attributes": {
+        "name": "[Chargeback Serverless] Stale project usage harvest",
+        "params": {
+            "esqlQuery": {
+                "esql": "FROM chargeback-serverless-state\n| WHERE COALESCE(last_status, \"\") != \"ok\" OR updated_at IS NULL OR updated_at < NOW() - 6 hours\n| EVAL result = CONCAT(\"Project `\", COALESCE(project_name, project_id, \"unknown\"), \"` (\", COALESCE(project_id, \"unknown\"), \") status=\", COALESCE(last_status, \"stale\"), \" last updated \", COALESCE(TO_STRING(updated_at), \"never\"), \".\")\n| STATS result = VALUES(result)\n| MV_EXPAND result"
+            },
+            "excludeHitsFromPreviousRun": true,
+            "searchType": "esqlQuery",
+            "size": 100,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 1,
+            "timeWindowUnit": "d"
+        },
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1h"
+        },
+        "tags": [
+            "Chargeback",
+            "Chargeback Serverless"
+        ]
+    },
+    "id": "chargeback_serverless-alert-stale-project-state",
+    "type": "alerting_rule_template"
+}

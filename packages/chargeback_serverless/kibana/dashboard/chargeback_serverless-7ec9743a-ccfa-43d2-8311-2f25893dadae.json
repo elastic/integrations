@@ -1,0 +1,443 @@
+{
+    "attributes": {
+        "description": "Configure currency rates via Dev Tools DSL, verify discovered Serverless projects, and monitor hourly usage harvest health.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "layout": "horizontal",
+                    "links": [
+                        {
+                            "destinationRefName": "link_4dbb1e36-6ea4-5b13-9dbd-8086f4214646_dashboard",
+                            "id": "4dbb1e36-6ea4-5b13-9dbd-8086f4214646",
+                            "label": "[Chargeback Serverless] Billing Components Overview",
+                            "options": {
+                                "openInNewTab": false,
+                                "useCurrentDateRange": true,
+                                "useCurrentFilters": true
+                            },
+                            "order": 0,
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_9d6a0835-5174-5b85-aac7-5f2003cbab91_dashboard",
+                            "id": "9d6a0835-5174-5b85-aac7-5f2003cbab91",
+                            "label": "[Chargeback Serverless] Usage \u0026 Cost Allocation",
+                            "options": {
+                                "openInNewTab": false,
+                                "useCurrentDateRange": true,
+                                "useCurrentFilters": true
+                            },
+                            "order": 1,
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_58b6b0d2-667a-52f1-8a55-4a35b426d41a_dashboard",
+                            "id": "58b6b0d2-667a-52f1-8a55-4a35b426d41a",
+                            "label": "[Chargeback Serverless] Configuration",
+                            "options": {
+                                "openInNewTab": false,
+                                "useCurrentDateRange": true,
+                                "useCurrentFilters": true
+                            },
+                            "order": 2,
+                            "type": "dashboardLink"
+                        }
+                    ]
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "565c2f52-2e63-51a7-97df-124f284efe7d",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "565c2f52-2e63-51a7-97df-124f284efe7d",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "esql_query": [
+                        "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit, conf_currency_symbol\n| SORT conf_start_date DESC\n| LIMIT 1"
+                    ],
+                    "template": "\u003cstyle\u003e\n  .cb-dsl { display: grid; grid-template-columns: 1fr 1fr; gap: var(--cc-space-m); font-size: 0.85rem; }\n  .cb-dsl h4 { margin: 0 0 4px 0; font-size: 0.9rem; font-weight: 600; }\n  .cb-dsl pre {\n    background: var(--cc-color-surface);\n    border: 1px solid var(--cc-color-border);\n    border-radius: var(--cc-radius-s);\n    padding: var(--cc-space-s);\n    margin: 0;\n    font-family: monospace;\n    font-size: 0.78rem;\n    overflow-x: auto;\n  }\n\u003c/style\u003e\n{% assign r = rows[0] %}\n\u003cdiv class=\"cb-dsl\"\u003e\n  \u003cdiv\u003e\n    \u003ch4\u003eCurrency Rate Window (Dev Tools)\u003c/h4\u003e\n    \u003cpre\u003ePUT chargeback_conf_lookup/_doc/config\n{\n  \"@timestamp\": \"1970-01-01T00:00:00.000Z\",\n  \"config_join_key\": \"config\",\n  \"conf_start_date\": \"{{ r[\"conf_start_date\"].value | default: \"2020-01-01T00:00:00.000Z\" }}\",\n  \"conf_end_date\": \"{{ r[\"conf_end_date\"].value | default: \"2099-12-31T23:59:59.999Z\" }}\",\n  \"conf_chargeable_unit_rate\": {{ r[\"conf_chargeable_unit_rate\"].value | default: 1.0 }},\n  \"conf_chargeable_unit_rate_unit\": \"{{ r[\"conf_chargeable_unit_rate_unit\"].value | default: \"USD\" }}\",\n  \"conf_currency_symbol\": \"{{ r[\"conf_currency_symbol\"].value | default: \"$\" }}\"\n}\u003c/pre\u003e\n  \u003c/div\u003e\n  \u003cdiv\u003e\n    \u003ch4\u003eWorkflow Config Document (Dev Tools)\u003c/h4\u003e\n    \u003cpre\u003ePUT chargeback-serverless-config/_doc/config\n{\n  \"organization_id\": \"\u0026lt;ORG_ID\u0026gt;\",\n  \"billing_api_key\": \"\u0026lt;BILLING_API_KEY\u0026gt;\",\n  \"usage_api_key\": \"\u0026lt;USAGE_API_KEY\u0026gt;\",\n  \"hub_es_api_key\": \"\u0026lt;HUB_ES_API_KEY\u0026gt;\",\n  \"project_api_keys\": {},\n  \"include_project_ids\": [],\n  \"exclude_project_ids\": []\n}\u003c/pre\u003e\n  \u003c/div\u003e\n\u003c/div\u003e\n"
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "921cacc3-dd42-5989-b53d-f4bb2f414391",
+                    "w": 48,
+                    "x": 0,
+                    "y": 2
+                },
+                "panelIndex": "921cacc3-dd42-5989-b53d-f4bb2f414391",
+                "title": "Dev Tools DSL — Configuration",
+                "type": "custom_content"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "6a4f7eba9ea0f9ab52eeba32fcc712df646596507d47b8c892451b6400029d6b": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "6a4f7eba9ea0f9ab52eeba32fcc712df646596507d47b8c892451b6400029d6b",
+                                    "managed": false,
+                                    "name": "chargeback_conf_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "conf_start_date",
+                                    "title": "chargeback_conf_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "6a4f7eba9ea0f9ab52eeba32fcc712df646596507d47b8c892451b6400029d6b",
+                                            "timeField": "conf_start_date",
+                                            "title": "chargeback_conf_lookup"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "d9c6059e-dd3b-54e7-a7de-f0ce6278385e": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "conf_start_date",
+                                                    "customLabel": true,
+                                                    "fieldName": "conf_start_date",
+                                                    "label": "Start date",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "conf_end_date",
+                                                    "customLabel": true,
+                                                    "fieldName": "conf_end_date",
+                                                    "label": "End date",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "conf_chargeable_unit_rate",
+                                                    "customFormat": {
+                                                        "id": "number",
+                                                        "params": {
+                                                            "decimals": 2
+                                                        }
+                                                    },
+                                                    "customLabel": true,
+                                                    "fieldName": "conf_chargeable_unit_rate",
+                                                    "label": "Unit rate",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "conf_chargeable_unit_rate_unit",
+                                                    "customLabel": true,
+                                                    "fieldName": "conf_chargeable_unit_rate_unit",
+                                                    "label": "Currency",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "conf_currency_symbol",
+                                                    "customLabel": true,
+                                                    "fieldName": "conf_currency_symbol",
+                                                    "label": "Symbol",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "6a4f7eba9ea0f9ab52eeba32fcc712df646596507d47b8c892451b6400029d6b",
+                                            "query": {
+                                                "esql": "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit, conf_currency_symbol\n| SORT conf_start_date DESC"
+                                            },
+                                            "timeField": "conf_start_date"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "esql": "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit, conf_currency_symbol\n| SORT conf_start_date DESC"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "conf_start_date"
+                                    },
+                                    {
+                                        "columnId": "conf_end_date"
+                                    },
+                                    {
+                                        "columnId": "conf_chargeable_unit_rate"
+                                    },
+                                    {
+                                        "columnId": "conf_chargeable_unit_rate_unit"
+                                    },
+                                    {
+                                        "columnId": "conf_currency_symbol"
+                                    }
+                                ],
+                                "layerId": "d9c6059e-dd3b-54e7-a7de-f0ce6278385e",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "Configured currency rates by date window",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit, conf_currency_symbol\n| SORT conf_start_date DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Configured currency rates by date window"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "ade88a54-34c2-5b84-9b0c-8c4209945af3",
+                    "w": 20,
+                    "x": 0,
+                    "y": 13
+                },
+                "panelIndex": "ade88a54-34c2-5b84-9b0c-8c4209945af3",
+                "title": "Configured currency rates by date window",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "dda14876d0db9f8c0c854499c13077c0ee010585c18afbde345cd5c8de3f7e61": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "dda14876d0db9f8c0c854499c13077c0ee010585c18afbde345cd5c8de3f7e61",
+                                    "managed": false,
+                                    "name": "chargeback-serverless-projects",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "updated_at",
+                                    "title": "chargeback-serverless-projects",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "dda14876d0db9f8c0c854499c13077c0ee010585c18afbde345cd5c8de3f7e61",
+                                            "timeField": "updated_at",
+                                            "title": "chargeback-serverless-projects"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "14f8694b-4dba-57db-8479-6eda9cd341f1": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "Project",
+                                                    "customLabel": false,
+                                                    "fieldName": "Project",
+                                                    "label": "Project",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Project ID",
+                                                    "customLabel": false,
+                                                    "fieldName": "Project ID",
+                                                    "label": "Project ID",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Type",
+                                                    "customLabel": false,
+                                                    "fieldName": "Type",
+                                                    "label": "Type",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Optimized for",
+                                                    "customLabel": false,
+                                                    "fieldName": "Optimized for",
+                                                    "label": "Optimized for",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Elasticsearch endpoint",
+                                                    "customLabel": false,
+                                                    "fieldName": "Elasticsearch endpoint",
+                                                    "label": "Elasticsearch endpoint",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "dda14876d0db9f8c0c854499c13077c0ee010585c18afbde345cd5c8de3f7e61",
+                                            "query": {
+                                                "esql": "FROM chargeback-serverless-projects\n| KEEP project_name, project_id, project_type, optimized_for, es_url\n| RENAME project_name AS `Project`, project_id AS `Project ID`, project_type AS `Type`, optimized_for AS `Optimized for`, es_url AS `Elasticsearch endpoint`\n| SORT `Project` ASC\n| LIMIT 200"
+                                            },
+                                            "timeField": "updated_at"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "esql": "FROM chargeback-serverless-projects\n| KEEP project_name, project_id, project_type, optimized_for, es_url\n| RENAME project_name AS `Project`, project_id AS `Project ID`, project_type AS `Type`, optimized_for AS `Optimized for`, es_url AS `Elasticsearch endpoint`\n| SORT `Project` ASC\n| LIMIT 200"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "Project"
+                                    },
+                                    {
+                                        "columnId": "Project ID"
+                                    },
+                                    {
+                                        "columnId": "Type"
+                                    },
+                                    {
+                                        "columnId": "Optimized for"
+                                    },
+                                    {
+                                        "columnId": "Elasticsearch endpoint"
+                                    }
+                                ],
+                                "layerId": "14f8694b-4dba-57db-8479-6eda9cd341f1",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "Discovered Serverless projects registry",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM chargeback-serverless-projects\n| KEEP project_name, project_id, project_type, optimized_for, es_url\n| RENAME project_name AS `Project`, project_id AS `Project ID`, project_type AS `Type`, optimized_for AS `Optimized for`, es_url AS `Elasticsearch endpoint`\n| SORT `Project` ASC\n| LIMIT 200"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Discovered Serverless projects registry"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "a8d8cdcc-4944-579d-a64a-9179d49a96fc",
+                    "w": 28,
+                    "x": 20,
+                    "y": 13
+                },
+                "panelIndex": "a8d8cdcc-4944-579d-a64a-9179d49a96fc",
+                "title": "Discovered Serverless projects registry",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "esql_query": [
+                        "FROM chargeback-serverless-state\n| SORT updated_at DESC NULLS LAST\n| LIMIT 100\n| EVAL health = CASE(COALESCE(last_status, \"\") == \"empty_or_unauthorized\", \"empty_or_unauthorized\", updated_at IS NOT NULL AND updated_at \u003e NOW() - 2 hours, \"ok\", \"stale\")\n| KEEP project_id, project_name, project_type, index_count, health, day, updated_at"
+                    ],
+                    "template": "\u003cstyle\u003e\n  .cb-status { display: flex; flex-direction: column; gap: var(--cc-space-xs); }\n  .cb-item {\n    display: grid; grid-template-columns: 18px 1.4fr 0.9fr 0.8fr 1.1fr 1.2fr; gap: var(--cc-space-s);\n    align-items: center; padding: var(--cc-space-s);\n    background: var(--cc-color-surface); border-radius: var(--cc-radius-s);\n    border: 1px solid var(--cc-color-border);\n  }\n  .cb-dot { width: 10px; height: 10px; border-radius: 50%; }\n  .cb-ok { background: var(--cc-vis-1, #54b399); }\n  .cb-warn { background: var(--cc-vis-8, #da8b45); }\n  .cb-err { background: var(--cc-vis-7, #c9404f); }\n  .cb-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n  .cb-meta { opacity: 0.8; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n\u003c/style\u003e\n\u003cdiv class=\"cb-status\"\u003e\n{% for row in rows %}\n  {% assign h = row[\"health\"].value | default: \"stale\" %}\n  \u003cdiv class=\"cb-item\"\u003e\n    \u003cdiv class=\"cb-dot {% if h == \"ok\" %}cb-ok{% elsif h == \"empty_or_unauthorized\" %}cb-err{% else %}cb-warn{% endif %}\"\u003e\u003c/div\u003e\n    \u003cdiv class=\"cb-name\"\u003e{{ row[\"project_name\"].value | default: row[\"project_id\"].value }}\u003c/div\u003e\n    \u003cdiv class=\"cb-meta\"\u003e{{ row[\"project_type\"].value | default: \"unknown\" }}\u003c/div\u003e\n    \u003cdiv class=\"cb-meta\"\u003e{{ row[\"index_count\"].value | default: 0 }} indices\u003c/div\u003e\n    \u003cdiv class=\"cb-meta\"\u003e{{ h }} · day {{ row[\"day\"].value | default: \"—\" }}\u003c/div\u003e\n    \u003cdiv class=\"cb-meta\"\u003e{{ row[\"updated_at\"].value | default: \"never\" | slice: 0, 19 }}\u003c/div\u003e\n  \u003c/div\u003e\n{% endfor %}\n\u003c/div\u003e\n"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "b0522f7b-6406-518d-86fb-065f6afc6a48",
+                    "w": 48,
+                    "x": 0,
+                    "y": 23
+                },
+                "panelIndex": "b0522f7b-6406-518d-86fb-065f6afc6a48",
+                "title": "Project usage harvest status",
+                "type": "custom_content"
+            }
+        ],
+        "timeFrom": "now-30d",
+        "timeRestore": true,
+        "timeTo": "now",
+        "title": "[Chargeback Serverless] Configuration",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-10-28T08:13:48.292Z",
+    "id": "chargeback_serverless-7ec9743a-ccfa-43d2-8311-2f25893dadae",
+    "references": [
+        {
+            "id": "chargeback_serverless-b6cecac0-ebe7-43de-bfc6-1ff287ad860a",
+            "name": "565c2f52-2e63-51a7-97df-124f284efe7d:link_4dbb1e36-6ea4-5b13-9dbd-8086f4214646_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "chargeback_serverless-21588d0e-fb6a-4f76-ad2f-cd7b3d7a3d7c",
+            "name": "565c2f52-2e63-51a7-97df-124f284efe7d:link_9d6a0835-5174-5b85-aac7-5f2003cbab91_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "chargeback_serverless-7ec9743a-ccfa-43d2-8311-2f25893dadae",
+            "name": "565c2f52-2e63-51a7-97df-124f284efe7d:link_58b6b0d2-667a-52f1-8a55-4a35b426d41a_dashboard",
+            "type": "dashboard"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0"
+}
