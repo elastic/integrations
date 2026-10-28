@@ -1,5 +1,3 @@
-config_version: 2
-
 interval: {{ interval }}
 
 resource:
@@ -8,63 +6,80 @@ resource:
   # Report a sanitized failure and retry on the next polling interval instead.
   retry:
     max_attempts: 1
+  tracer:
+    enabled: {{enable_request_tracer}}
+    filename: "../../logs/cel/http-request-trace-*.ndjson"
+    maxbackups: 5
 
 secret_state:
   api_key: {{ api_key }}
 
-program: |
-  try(
+redact:
+  fields: ~
+
+program: |-
+  state.with(
     request(
       "GET",
       state.url.parse_url().as(endpoint,
-        endpoint.with({"RawQuery": endpoint.RawQuery.parse_query().with({
-          "format": ["json"], "key": [state.secret.api_key]
-        }).format_query()}).format_url()
+        endpoint.with(
+          {
+            "RawQuery": endpoint.RawQuery.parse_query().with(
+              {
+                "format": ["json"],
+                "key": [state.secret.api_key],
+              }
+            ).format_query(),
+          }
+        ).format_url()
       )
-    ).with({
-      "Header": {
-        "Accept": ["application/json"]
-      }
-    }).do_request().as(resp,
-      resp.StatusCode == 200 ? resp.Body.decode_json().as(body,
-        type(body) == map && has(body.body) && type(body.body) == map &&
-        has(body.body.data) && type(body.body.data) == list ? {
-          "events": body.body.data.filter(e,
-            type(e) == map && has(e.ip) && type(e.ip) == string && e.ip.trim_space() != ""
-          ).map(e, {"message": e.encode_json()}),
-          "status_code": resp.StatusCode,
-          "url": state.url,
-          "secret": state.secret
-        } : {
+    ).with({"Header": {"Accept": ["application/json"]}}).do_request().as(resp,
+      (resp.StatusCode == 200) ?
+        resp.Body.decode_json().as(body,
+          (
+            type(body) == map && has(body.body) && type(body.body) == map && has(body.body.data) &&
+            type(body.body.data) == list
+          ) ?
+            {
+              "events": body.body.data.map(e,
+                type(e) == map && has(e.ip) && type(e.ip) == string && e.ip.trim_space() != "",
+                {"message": e.encode_json()}
+              ),
+              "status_code": resp.StatusCode,
+            }
+          :
+            {
+              "events": {
+                "event": {"outcome": "failure"},
+                "error": {"message": "Criminal IP TI Feed response did not contain a valid body.data list."},
+                "http": {"response": {"status_code": resp.StatusCode}},
+              },
+              "status_code": resp.StatusCode,
+            }
+        )
+      :
+        {
           "events": {
             "event": {"outcome": "failure"},
-            "error": {"message": "Criminal IP TI Feed response did not contain a valid body.data list."},
-            "http": {"response": {"status_code": resp.StatusCode}}
+            "error": {
+              "code": string(resp.StatusCode),
+              "message": "GET " + state.url.parse_url().Path + ": " + resp.Status + " (" + string(resp.StatusCode) + ")",
+            },
+            "http": {"response": {"status_code": resp.StatusCode}},
           },
           "status_code": resp.StatusCode,
-          "url": state.url,
-          "secret": state.secret
         }
-      ) : {
+    ).as(result, is_error(result) ?
+      {
         "events": {
           "event": {"outcome": "failure"},
-          "error": {"message": "Criminal IP TI Feed request failed with HTTP status " + string(resp.StatusCode)},
-          "http": {"response": {"status_code": resp.StatusCode}}
+          "error": {"message": "Criminal IP TI Feed request or response decoding failed; check endpoint, connectivity, and response format."},
         },
-        "status_code": resp.StatusCode,
-        "url": state.url,
-        "secret": state.secret
       }
-    ), "feed_error"
-  ).as(result, has(result.feed_error) ? {
-    "events": {
-      "event": {"outcome": "failure"},
-      "error": {"message": "Criminal IP TI Feed request or response decoding failed; check endpoint, connectivity, and response format."}
-    },
-    "url": state.url,
-    "secret": state.secret
-  } : result)
-
+    :
+      result
+    )
+  )
 {{#if tags.length}}
 tags:
 {{#each tags as |tag|}}

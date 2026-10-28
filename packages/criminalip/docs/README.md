@@ -13,9 +13,50 @@ OpenAI Codex was used to assist with code generation, refactoring, and debugging
 
 ![Criminal IP](../img/criminalip-wordmark.png)
 
+## Overview
+
 Use Criminal IP TI Feed indicators to detect matching IPs in ECS-normalized firewall events and investigate the observed communications in Elastic Security. TheHive/Cortex reports and configured IP Report lookups are separate optional investigation paths.
 
-## Before you start
+### Use cases
+
+- Compare supported firewall vendors using common ECS fields.
+- Identify frequently observed source IPs and review allowed, denied, and session events.
+- Prioritize events matching Criminal IP indicators and inspect their actual match evidence.
+- Investigate a public IP from TheHive and review the resulting context in Elastic.
+- Compare an IP's latest analysis with its stored history.
+
+These results support investigation. A match or suspicious classification alone does not prove a successful attack. Automatic IP blocking and response actions are outside the current scope.
+
+### Compatibility
+
+This package targets Elastic Stack and Elastic Agent 9.5.3 or later in the 9.x series.
+Criminal IP IP Report and TI Feed require separate API entitlements. The FortiGate
+parser has been tested with synthetic key-value syslog events over TCP (RFC 6587)
+and UDP. Compatibility with a specific FortiOS release or physical appliance has
+not yet been verified; validate representative logs before production deployment.
+
+### How it works
+
+Elastic Agent receives FortiGate syslog and polls the Criminal IP APIs using CEL.
+Elasticsearch pipelines normalize events and validate field types. A latest
+transform maintains the newest collected indicator for each IP, and the separately
+enabled Elastic Security indicator match rule compares firewall endpoints with
+these indicators. Configured IP Report lookups and the external Cortex analyzer
+are optional investigation paths.
+
+## What data does this integration collect?
+
+| Source | Available information | Where to view it |
+| --- | --- | --- |
+| Firewall events | Event time, source/destination IPs and ports, protocol, raw action, session state, and vendor/product when available | Firewall dashboard panels and Discover |
+| TI Feed | IP indicators, provider, reason, confidence, score, and first/last seen values when supplied | Discover: `logs-criminalip.ti_feed-*` |
+| Indicator match alerts | Firewall events matching a feed indicator, match evidence, and alert workflow status | Elastic Security Alerts and TI dashboard panels |
+| Optional Cortex analysis | Analysis time, IP, classification, summary, inbound/outbound risk, hostname, organization, and ASN when available | Separately configured `criminalip-cortex-results*` index in Discover |
+| Optional IP Report | Investigated IP, inbound/outbound scores, and available VPN, Tor, proxy, scanner, dark web, hosting, and cloud flags | IP Intelligence Overview and Discover: `logs-criminalip.ip_report-*` |
+
+IP Report collection and Cortex analysis are separate paths. An IP queried by the Agent does not automatically create a Cortex analysis result.
+
+## What do I need to use this integration?
 
 **Primary workflow — firewall TI detection:** prepare firewall logs with common ECS fields, a running collector, a key with Criminal IP TI Feed access, and permissions to install/enable the indicator match rule. Use vendor-specific parsers; this package does not automatically identify arbitrary raw firewall formats on one listener.
 
@@ -38,29 +79,9 @@ Obtain the Criminal IP keys and API access through your organization's Criminal 
 
 Installing the integration provides dashboard and rule assets. Each feature still requires its own connection settings and data source. Cortex writes directly to Elasticsearch and does not require Elastic Agent or the indicator match rule.
 
-## What information you receive
+## How do I deploy this integration?
 
-| Source | Available information | Where to view it |
-| --- | --- | --- |
-| Firewall events | Event time, source/destination IPs and ports, protocol, raw action, session state, and vendor/product when available | Firewall dashboard panels and Discover |
-| TI Feed | IP indicators, provider, reason, confidence, score, and first/last seen values when supplied | Discover: `logs-criminalip.ti_feed-*` |
-| Indicator match alerts | Firewall events matching a feed indicator, match evidence, and alert workflow status | Elastic Security Alerts and TI dashboard panels |
-| Optional Cortex analysis | Analysis time, IP, classification, summary, inbound/outbound risk, hostname, organization, and ASN when available | Separately configured `criminalip-cortex-results*` index in Discover |
-| Optional IP Report | Investigated IP, inbound/outbound scores, and available VPN, Tor, proxy, scanner, dark web, hosting, and cloud flags | IP Intelligence Overview and Discover: `logs-criminalip.ip_report-*` |
-
-IP Report collection and Cortex analysis are separate paths. An IP queried by the Agent does not automatically create a Cortex analysis result.
-
-## How this helps
-
-- Compare supported firewall vendors using common ECS fields.
-- Identify frequently observed source IPs and review allowed, denied, and session events.
-- Prioritize events matching Criminal IP indicators and inspect their actual match evidence.
-- Investigate a public IP from TheHive and review the resulting context in Elastic.
-- Compare an IP's latest analysis with its stored history.
-
-These results support investigation. A match or suspicious classification alone does not prove a successful attack. Automatic IP blocking and response actions are outside the current scope.
-
-## Setup
+For general deployment steps, see [Get started with Elastic](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html).
 
 ### 1. Install the integration
 
@@ -228,7 +249,14 @@ Open **[Logs Criminal IP] IP Intelligence Overview** for stored report totals, c
 
 An IP report does not prove that your network communicated with the IP and does not generate a firewall match alert.
 
-## Verify that it works
+### Deployment modes
+
+The documented deployment uses Fleet-managed Elastic Agent. Install and enroll
+the Agent on a collector with access to Elasticsearch, Fleet Server, and the
+selected Criminal IP endpoints. This package does not declare an agentless
+deployment. Standalone deployment has not been validated for this package.
+
+### Validation
 
 In Discover, select the data view and enter the KQL in the **main search bar**. Start with a recent period and expand it if necessary.
 
@@ -244,7 +272,7 @@ Replace the IP placeholders. For firewall documents, check timestamps, IP fields
 
 After documents arrive, open the managed dashboard for firewall and TI results. Cortex analyzer documents are external to this package; use Discover with a data view matching the index where your analyzer writes its results.
 
-### Distinguish test evidence from operational validation
+#### Distinguish test evidence from operational validation
 
 - Synthetic vendor-format events verify parser/mapping/rule behavior only; they are not evidence of real attacks or physical appliance interoperability.
 - Receipt of a virtual FortiGate system syslog message verifies that sender/receiver path, not real forwarded traffic or every FortiOS event type.
@@ -253,7 +281,7 @@ After documents arrive, open the managed dashboard for firewall and TI results. 
 - The production-oriented firewall/TI dashboard excludes `firewall_lab` and `synthetic` events. Inspect synthetic events in a dedicated test data view/dashboard; preserve their labels rather than removing them to make production panels populate. Review whether a test rule should be isolated from operational alerts.
 - TheHive manual analyzer execution, automatic execution on observable creation, Elastic delivery and dashboard rendering are separate checks. Test each advertised path; manual success does not prove automation.
 
-### Validate synthetic events with the packaged test dashboard
+#### Validate synthetic events with the packaged test dashboard
 
 Starting with 0.1.0, open **[Logs Criminal IP] Firewall and TI Validation · Synthetic
 Only**. This is a separate managed asset with a stable ID; it does not overwrite
@@ -277,9 +305,9 @@ do not tag operational inputs as synthetic. Traffic summaries count original
 logs and alert tables count rule matches, so their totals need not be equal.
 For customizations, duplicate a managed dashboard and save the copy separately.
 
-## Understand the dashboard
+### Use the dashboards
 
-### Investigation workflow
+#### Investigation workflow
 
 1. Find a Criminal IP rule alert and review its actual source/destination match evidence and indicator context in Elastic Security Alerts.
 2. Read both communication endpoints, the reporting firewall, its raw action and the normalized action/session state. Source is not always the attacker or an internal host; use addresses, zones and network direction where available to interpret the event.
@@ -287,7 +315,7 @@ For customizations, duplicate a managed dashboard and save the copy separately.
 4. If more context is needed, investigate the observed public IP with the optional TheHive/Cortex analyzer or configured IP Report lookup. This is a separate user-initiated path, not automatic alert enrichment.
 5. Record the investigation decision. A feed match, a denied connection and a successful compromise are different outcomes. No automatic blocking is performed.
 
-### Firewall activity
+#### Firewall activity
 
 Review event totals, unique IPs, action/session categories, top sources, vendor/product comparisons, hourly trends, and recent details.
 
@@ -295,7 +323,7 @@ Allowed/denied classification uses ECS `event.type` and explicit custom FortiGat
 
 Comparison charts exclude IPv6 multicast destinations in `ff00::/8`; summary and recent-event tables retain them, so totals can differ. Firewall/TI panels exclude the `firewall_lab` namespace and events tagged `synthetic`. Firewall dates/times follow Kibana's configured time zone.
 
-### Indicator match alerts
+#### Indicator match alerts
 
 Review totals, **Open / Acknowledged / Closed** counts, hourly trends, top matched IPs, and recent alerts for the fixed Criminal IP rule ID.
 
@@ -305,7 +333,7 @@ Matched IPs come from `threat.enrichments.matched.atomic` and source/destination
 
 The alert panels use the **default Space** alias, `.alerts-security.alerts-default`. For another Space, duplicate the managed Criminal IP dashboard in the target Space and edit the copy; managed package dashboards are read-only. In the copy, update every alert ES|QL `FROM` to `.alerts-security.alerts-<space-id>`. Also edit the embedded Vega matched-IP chart and change its `data[].url.index` to the same Space-specific alias; this chart is not a referenced saved visualization. Duplicate or replace any referenced alert visualization so it uses that alias as well. Use the customized dashboard afterward. Before the first alert, a missing alert index can produce a panel error.
 
-### Cortex results
+#### Cortex results
 
 The package does not include Cortex result panels or a Cortex data stream. The separately distributed analyzer can write results to its configured index; inspect those documents in Discover.
 
@@ -328,6 +356,29 @@ A dashboard-wide `event.category: network` filter hides Cortex documents, which 
 
 Local validation checks package structure and generated assets. Installation, permissions, data arrival, and rendering still require verification in the target Kibana environment. Package installation does not migrate old data, API keys, or Agent registrations.
 
+## Performance and scaling
+
+Run one TI Feed collector per intended feed scope to avoid collecting duplicate
+snapshots. The default interval is one hour; each poll republishes active indicators,
+while the latest transform keeps one destination document per IP. Raw feed history
+still consumes storage, so set retention to match investigation needs.
+
+IP Report requests each configured distinct IP every interval (five minutes by
+default). Choose the number of IPs and polling interval within the provider quota.
+Split firewall traffic across collectors with distinct sender assignments; UDP
+delivery has no acknowledgement. Monitor Agent drops, ingest latency, transform
+health, and detection rule execution time. No throughput benchmark is claimed;
+measure a representative event rate before increasing production traffic.
+
+### Request tracing
+
+The advanced **Enable request tracing** option is off by default for each CEL data
+stream. It writes bounded, rotated files under the Agent's `logs/cel` directory.
+HTTP trace files can include authentication headers and the TI Feed query key.
+Use temporary test credentials, restrict file access, disable tracing after
+troubleshooting, and remove the files. Do not attach unredacted traces to issues.
+State debug logs redact `secret_state` independently of HTTP request tracing.
+
 ## Reference
 
 - [FortiGate syslog configuration](https://docs.fortinet.com/document/fortigate/7.0.0/cli-reference/456620/config-log-syslogd-setting)
@@ -338,9 +389,9 @@ Local validation checks package structure and generated assets. Installation, pe
 - [ECS threat match fields](https://www.elastic.co/docs/reference/ecs/ecs-threat)
 - [Vega dashboard filters](https://www.elastic.co/docs/explore-analyze/visualize/custom-visualizations-with-vega)
 
-## Data stream reference
+### Data streams
 
-### FortiGate
+#### FortiGate
 
 An example event for `fortigate` looks as following:
 
@@ -479,7 +530,7 @@ An example event for `fortigate` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 
 
-### TI Feed
+#### TI Feed
 
 An example event for `ti_feed` looks as following:
 
@@ -595,6 +646,7 @@ An example event for `ti_feed` looks as following:
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.code | Error code describing the error. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
@@ -616,7 +668,7 @@ An example event for `ti_feed` looks as following:
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 
 
-### IP Report
+#### IP Report
 
 An example event for `ip_report` looks as following:
 
@@ -738,6 +790,7 @@ An example event for `ip_report` looks as following:
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.code | Error code describing the error. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |

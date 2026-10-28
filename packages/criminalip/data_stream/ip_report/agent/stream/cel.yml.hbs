@@ -1,9 +1,11 @@
-config_version: 2
-
 interval: {{ interval }}
 
 resource:
   url: {{ url }}
+  tracer:
+    enabled: {{enable_request_tracer}}
+    filename: "../../logs/cel/http-request-trace-*.ndjson"
+    maxbackups: 5
 
 secret_state:
   api_key: {{ api_key }}
@@ -15,42 +17,63 @@ state:
     - '{{this}}'
 {{/each}}
 
-program: |
-  state.ips.map(ip, string(ip).trim_space()).filter(ip, ip != "").as(ips, {
-    "events": ips.zip(ips).keys().map(ip,
-      try(
-        request("GET", state.url.parse_url().as(endpoint,
-          endpoint.with({"RawQuery": endpoint.RawQuery.parse_query().with({
-            "ip": [ip]
-          }).format_query()}).format_url()
-        )).with({
-          "Header": {
-            "x-api-key": [state.secret.api_key],
-            "Accept": ["application/json"]
-          }
-        }).do_request().as(resp,
-          resp.StatusCode == 200 ? {
-            "message": resp.Body.decode_json().encode_json(),
-            "criminalip.query_ip": ip,
-            "http.response.status_code": resp.StatusCode
-          } : {
-            "event.outcome": "failure",
-            "criminalip.query_ip": ip,
-            "http.response.status_code": resp.StatusCode,
-            "error.message": "Criminal IP request failed with HTTP status " + string(resp.StatusCode)
-          }
-        ), "request_error"
-      ).as(result, has(result.request_error) ? {
-        "event.outcome": "failure",
-        "criminalip.query_ip": ip,
-        "error.message": "Criminal IP request or JSON decoding failed; check endpoint and connectivity."
-      } : result)
-    ),
-    "ips": state.ips,
-    "url": state.url,
-    "secret": state.secret
-  })
+redact:
+  fields: ~
 
+program: |-
+  state.with(
+    state.ips.map(ip, ip.trim_space() != "", ip.trim_space()).as(ips,
+      {
+        "events": ips.zip(ips).keys().map(ip,
+          request(
+            "GET",
+            state.url.parse_url().as(endpoint,
+              endpoint.with(
+                {
+                  "RawQuery": endpoint.RawQuery.parse_query().with(
+                    {
+                      "ip": [ip],
+                    }
+                  ).format_query(),
+                }
+              ).format_url()
+            )
+          ).with(
+            {
+              "Header": {
+                "x-api-key": [state.secret.api_key],
+                "Accept": ["application/json"],
+              },
+            }
+          ).do_request().as(resp,
+            (resp.StatusCode == 200) ?
+              {
+                "message": resp.Body.decode_json().encode_json(),
+                "criminalip.query_ip": ip,
+              }
+            :
+              {
+                "event.outcome": "failure",
+                "criminalip.query_ip": ip,
+                "http.response.status_code": resp.StatusCode,
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "message": "GET " + state.url.parse_url().Path + ": " + resp.Status + " (" + string(resp.StatusCode) + ")",
+                },
+              }
+          ).as(result, is_error(result) ?
+            {
+              "event.outcome": "failure",
+              "criminalip.query_ip": ip,
+              "error": {"message": "Criminal IP request or JSON decoding failed; check endpoint and connectivity."},
+            }
+          :
+            result
+          )
+        ),
+      }
+    )
+  )
 {{#if tags.length}}
 tags:
 {{#each tags as |tag|}}
