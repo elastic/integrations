@@ -6,7 +6,7 @@ The Syslog router integration for Elastic enables you to route incoming syslog e
 
 ### Compatibility
 
-This integration requires Kibana version 8.14.3 or later, and a basic Elastic subscription.
+This integration is compatible with Elastic Stack version 8.14.3 or later.
 
 This integration supports routing events to the following 22 pre-configured integrations out of the box. They're listed here alphabetically, but the reroute configuration evaluates them in a different order.
 
