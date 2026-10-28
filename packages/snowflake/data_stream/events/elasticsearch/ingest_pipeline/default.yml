@@ -563,6 +563,17 @@ processors:
         snowflake.events.record_attributes object into a flattened catch-all.
       if: ctx.snowflake?.events?.record_attributes instanceof Map
       source: |-
+        void flattenToDotted(Map src, String prefix, Map dest) {
+          for (def entry : src.entrySet()) {
+            def path = prefix == '' ? entry.getKey().toString() : prefix + '.' + entry.getKey();
+            def val = entry.getValue();
+            if (val instanceof Map) {
+              flattenToDotted(val, path, dest);
+            } else {
+              dest[path] = val;
+            }
+          }
+        }
         void walk(Map src, String prefix, Map custom, List leaves) {
           def keys = new ArrayList(src.keySet());
           for (def key : keys) {
@@ -608,7 +619,15 @@ processors:
         def custom = [:];
         walk(attrs, '', custom, leaves);
         if (ctx.json?.preserved_custom_attributes instanceof Map) {
-          custom.putAll(ctx.json.preserved_custom_attributes);
+          def preserved = ctx.json.preserved_custom_attributes;
+          for (def key : preserved.keySet()) {
+            def existing = custom[key];
+            if (existing instanceof Map) {
+              flattenToDotted(existing, key.toString(), custom);
+              custom.remove(key);
+            }
+          }
+          custom.putAll(preserved);
         }
         if (custom.size() > 0) {
           ctx.snowflake.events.custom_attributes = custom;
