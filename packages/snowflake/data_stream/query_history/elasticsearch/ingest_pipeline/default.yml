@@ -319,9 +319,35 @@ processors:
         .contains(ctx.snowflake?.query_history?.query_type)
   - append:
       field: event.type
+      tag: append_event_type_change
+      value: change
+      allow_duplicates: false
+      if: >-
+        ['GRANT', 'REVOKE', 'ALTER_ROLE', 'ALTER_NETWORK_POLICY',
+        'RENAME_NETWORK_POLICY', 'ALTER_ACCOUNT']
+        .contains(ctx.snowflake?.query_history?.query_type)
+  - append:
+      field: event.type
+      tag: append_event_type_creation
+      value: creation
+      allow_duplicates: false
+      if: >-
+        ['CREATE_USER', 'CREATE_ROLE', 'CREATE_NETWORK_POLICY']
+        .contains(ctx.snowflake?.query_history?.query_type)
+  - append:
+      field: event.type
+      tag: append_event_type_deletion
+      value: deletion
+      allow_duplicates: false
+      if: >-
+        ['DROP_USER', 'DROP_ROLE', 'DROP_NETWORK_POLICY']
+        .contains(ctx.snowflake?.query_history?.query_type)
+  - append:
+      field: event.type
       tag: append_event_type_info
       value: info
       allow_duplicates: false
+      if: ctx.event?.type == null
   - set:
       field: event.outcome
       tag: set_event_outcome_success

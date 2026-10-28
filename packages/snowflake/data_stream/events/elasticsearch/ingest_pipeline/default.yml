@@ -74,7 +74,10 @@ processors:
         - append:
             field: error.message
             tag: append_parse_resource_attributes_failure
-            value: '{{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
   - json:
       field: json.SCOPE
       tag: parse_scope
@@ -83,7 +86,10 @@ processors:
         - append:
             field: error.message
             tag: append_parse_scope_failure
-            value: '{{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
   - json:
       field: json.RECORD
       tag: parse_record
@@ -92,7 +98,10 @@ processors:
         - append:
             field: error.message
             tag: append_parse_record_failure
-            value: '{{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
   - json:
       field: json.RECORD_ATTRIBUTES
       tag: parse_record_attributes
@@ -101,7 +110,10 @@ processors:
         - append:
             field: error.message
             tag: append_parse_record_attributes_failure
-            value: '{{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
   # SQL API returns VARIANT strings as JSON text, including surrounding quotes.
   - json:
       field: json.VALUE
@@ -348,6 +360,11 @@ processors:
       copy_from: snowflake.events.resource_attributes.cloud.service.provider
       ignore_empty_value: true
   - set:
+      field: container.name
+      tag: set_container_name
+      copy_from: snowflake.events.resource_attributes.k8s.container.name
+      ignore_empty_value: true
+  - set:
       field: container.id
       tag: set_container_id
       copy_from: snowflake.events.resource_attributes.container.id
@@ -539,6 +556,7 @@ processors:
         - snowflake.events.resource_attributes.container.id
         - snowflake.events.resource_attributes.container.image.name
         - snowflake.events.resource_attributes.container.image.tag
+        - snowflake.events.resource_attributes.k8s.container.name
         - snowflake.events.resource_attributes.k8s.namespace.name
         - snowflake.events.resource_attributes.k8s.node.name
         - snowflake.events.resource_attributes.service.version
