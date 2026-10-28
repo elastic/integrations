@@ -212,7 +212,7 @@ To ensure your deployment is working correctly, follow these steps:
    ```
 
 2. In Kibana, navigate to **Analytics → Discover**.
-3. Select the `logs-*` data view.
+3. Select the `logs-*` data view. If you used the sample message, set the time range to include October 10, 2018, the date in that message.
 4. Search for routed events using KQL. For example, to check for routed Cisco ASA logs, use: `data_stream.dataset : "cisco_asa.log"`.
 5. Verify that the events are correctly parsed and that fields from the target integration are present.
 6. To find events that didn't match any routing pattern, search for: `data_stream.dataset : "syslog_router.log"`.
