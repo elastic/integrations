@@ -57,6 +57,7 @@ Akamai [DataStream 2 security logs](https://techdocs.akamai.com/datastream2/docs
 2. Select **Amazon S3** as the delivery destination and configure the bucket name, region, optional folder path, and AWS access credentials. Follow [Akamai's Amazon S3 destination instructions](https://techdocs.akamai.com/datastream2/docs/stream-amazon-s3).
 3. Choose JSON security logs. Akamai DataStream 2 delivers log files gzip-compressed by default. The AWS S3 input reads supported compressed objects and processes newline-delimited JSON records individually.
 4. Verify that files are arriving in the intended S3 bucket and prefix. Note that Akamai might also create a small access-verification file while validating the destination, use a dedicated prefix and/or filtering where appropriate to avoid ingesting non-log files.
+
 #### Collect data from AWS SQS (recommended)
 
 1. Create a **Standard** SQS queue in the same AWS region as the S3 bucket. Do not use a FIFO queue for native S3 event notifications.
