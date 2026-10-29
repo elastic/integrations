@@ -346,6 +346,7 @@ The `eve` data stream collects all event types from Suricata's EVE JSON log outp
 | suricata.eve.smtp.helo |  | keyword |
 | suricata.eve.smtp.mail_from |  | keyword |
 | suricata.eve.smtp.rcpt_to |  | keyword |
+| suricata.eve.src_ip |  | ip |
 | suricata.eve.ssh.client.proto_version |  | keyword |
 | suricata.eve.ssh.client.software_version |  | keyword |
 | suricata.eve.ssh.server.proto_version |  | keyword |
