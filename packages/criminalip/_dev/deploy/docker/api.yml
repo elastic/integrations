@@ -1,4 +1,28 @@
 rules:
+- path: /v1/asset/ip/report/http-error
+  methods:
+  - GET
+  request_headers:
+    x-api-key:
+    - unit-test-key
+  responses:
+  - status_code: 403
+    headers:
+      Content-Type:
+      - application/json
+    body: '{"status":403}'
+- path: /v1/asset/ip/report/invalid-json
+  methods:
+  - GET
+  request_headers:
+    x-api-key:
+    - unit-test-key
+  responses:
+  - status_code: 200
+    headers:
+      Content-Type:
+      - application/json
+    body: '>'
 - path: /v1/asset/ip/report
   methods:
   - GET
@@ -180,10 +204,31 @@ rules:
         (eq (len (index .request.url.Query "empty")) 1)
         (eq (.request.url.Query.Get "empty") "")
       -}}
-        {"body": {"data": [{"ip": "192.0.2.10", "confidence": 80, "score": 95, "reason":
-        "Synthetic integration system-test indicator", "first_seen": "2026-01-01 00:00:00", "last_seen":
-        "2026-01-01 01:00:00"}, {"reason": "Missing IP must not discard the valid indicators"}, null, "invalid feed
-        entry", {"ip": null}, {"ip": ""}, {"ip": "   "}, {"ip": "\t 198.51.100.20 \r\n"}]}}
+        {{ minify_json `
+          {
+            "body": {
+              "data": [
+                {
+                  "ip": "192.0.2.10",
+                  "confidence": 80,
+                  "score": 95,
+                  "reason": "Synthetic integration system-test indicator",
+                  "first_seen": "2026-01-01 00:00:00",
+                  "last_seen": "2026-01-01 01:00:00"
+                },
+                {
+                  "reason": "Missing IP must not discard the valid indicators"
+                },
+                null,
+                "invalid feed entry",
+                {"ip": null},
+                {"ip": ""},
+                {"ip": "   "},
+                {"ip": "\t 198.51.100.20 \r\n"}
+              ]
+            }
+          }
+        ` }}
       {{- else -}}
         {"status":400}
-      {{- end -}}'
+      {{- end -}}

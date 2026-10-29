@@ -8,7 +8,7 @@ simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case
 ! stderr .
 stdout '"original":'
 stdout 'preserve_original_event'
-stdout 'Earlier error <keep & preserve>'
+stdout 'Earlier error (<|\\u003c)keep (&|\\u0026) preserve(>|\\u003e)'
 ! stdout '&lt;|&gt;|&amp;'
 
 simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-1.json
@@ -74,6 +74,22 @@ stdout '"@timestamp": "2026-01-08T12:34:56.000Z"'
 ! stdout '"error":'
 ! stdout 'pipeline_error'
 
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-9.json
+! stderr .
+stdout 'No FortiGate key-value fields found'
+stdout '"kind": "pipeline_error"'
+stdout '"original":'
+stdout 'preserve_original_event'
+! stdout '"_temp":'
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-10.json
+! stderr .
+stdout 'No FortiGate key-value fields found'
+stdout '"kind": "pipeline_error"'
+stdout '"original":'
+stdout 'preserve_original_event'
+! stdout '"_temp":'
+
 uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
 ! stderr .
 
@@ -137,4 +153,16 @@ uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
 {
   "@timestamp": "2026-01-08T12:34:56.000Z",
   "message": "date=2026-01-08 type=traffic srcip=192.0.2.10 action=deny"
+}
+
+-- case-9.json --
+{
+  "@timestamp": "2026-01-08T12:34:56.000Z",
+  "message": "<134>Oct 29 12:34:56 fortigate"
+}
+
+-- case-10.json --
+{
+  "@timestamp": "2026-01-08T12:34:56.000Z",
+  "message": "<134>   "
 }

@@ -6,7 +6,9 @@ install_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
 
 simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-0.json
 ! stderr .
-stdout 'Criminal IP request failed with HTTP status 403'
+stdout 'GET /v1/asset/ip/report: 403 Forbidden \(403\)'
+stdout '"code": "403"'
+! stdout '"http":'
 ! stdout '&lt;|&gt;|&amp;'
 
 simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-1.json
@@ -18,7 +20,7 @@ simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case
 ! stderr .
 stdout '"original":'
 stdout 'preserve_original_event'
-stdout 'Earlier error <keep & preserve>'
+stdout 'Earlier error (<|\\u003c)keep (&|\\u0026) preserve(>|\\u003e)'
 ! stdout '&lt;|&gt;|&amp;'
 
 simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-3.json
@@ -53,8 +55,10 @@ uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
 {
   "@timestamp": "2026-01-08T00:00:00.000Z",
   "event.outcome": "failure",
-  "error.message": "Criminal IP request failed with HTTP status 403",
-  "http.response.status_code": 403,
+  "error": {
+    "code": "403",
+    "message": "GET /v1/asset/ip/report: 403 Forbidden (403)"
+  },
   "criminalip.query_ip": "192.0.2.10"
 }
 
