@@ -2108,10 +2108,10 @@
                                         }
                                     ],
                                     "layers": {
-                                        "cc8df7e3-92fa-4eb0-b73e-f9bed826d7dd": {
+                                        "337f6f8c-0de6-4543-8eaf-d3b00dfda948": {
                                             "columns": [
                                                 {
-                                                    "columnId": "96b71288-77bc-48ac-beab-4db64ff709e8",
+                                                    "columnId": "1cad8a3f-7aa6-4235-ad92-34e074aa0337",
                                                     "fieldName": "Baseline Behavior",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -2135,16 +2135,16 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "96b71288-77bc-48ac-beab-4db64ff709e8",
+                                        "columnId": "1cad8a3f-7aa6-4235-ad92-34e074aa0337",
                                         "isMetric": false,
                                         "isTransposed": false
                                     }
                                 ],
-                                "layerId": "cc8df7e3-92fa-4eb0-b73e-f9bed826d7dd",
+                                "layerId": "337f6f8c-0de6-4543-8eaf-d3b00dfda948",
                                 "layerType": "data"
                             }
                         },
-                        "title": "Table Baseline Behavior",
+                        "title": "Table ",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -2345,10 +2345,10 @@
                                         }
                                     ],
                                     "layers": {
-                                        "6f606c8b-6d3b-4b7e-8b5e-9251ef414e33": {
+                                        "6472292f-aec9-4b6e-a7c2-4e4bf3b437d3": {
                                             "columns": [
                                                 {
-                                                    "columnId": "485dcef1-6855-4d00-948d-2343552adca8",
+                                                    "columnId": "9d986c0d-c427-4c7a-967a-5df7a6d91e4d",
                                                     "fieldName": "Alert Timestamp",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -2356,7 +2356,7 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "e7e0abdf-9877-4c9a-b171-e9522dcfa17e",
+                                                    "columnId": "e507a66e-334d-4f3c-bb17-88c323169b15",
                                                     "fieldName": "Anomalous Entity Host",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -2364,23 +2364,23 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "bf04739d-3355-4500-ad75-32bd1c82c17b",
-                                                    "fieldName": "Anomalous Service",
+                                                    "columnId": "0f7e06df-c3c3-4969-8574-c543828ccef2",
+                                                    "fieldName": "Anomalous Item",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "039bcf3f-b925-4430-8c0b-83b75eabd4d8",
-                                                    "fieldName": "Services during Baseline",
+                                                    "columnId": "ebc09925-21ec-4b7d-b012-c0f4c1ac3911",
+                                                    "fieldName": "Items during Baseline",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "c0c42de3-a593-4732-801c-846f126f3dac",
+                                                    "columnId": "c891b16a-e4c2-4bbf-af2e-dc0f8f75cac0",
                                                     "fieldName": "Anomalous Entity",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -2388,7 +2388,7 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "c51d9d3e-5a37-4a34-86fd-4623b6d98366",
+                                                    "columnId": "438fb1bf-af9d-48d9-973b-25ce97adbf4c",
                                                     "fieldName": "Engine Confidence",
                                                     "meta": {
                                                         "esType": "double",
@@ -2396,7 +2396,7 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "25e89c1b-b035-4640-b5c5-65e64a921c75",
+                                                    "columnId": "87ccdb52-1875-400c-a7c2-aa138ac387fa",
                                                     "fieldName": "uid",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -2406,7 +2406,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "FROM logs-corelight.various-*\r\n| WHERE event.dataset == \"anomaly\"\r\n    AND observer.hostname IS NOT NULL\r\n    AND use_case_description IS NOT NULL\r\n| EVAL display_entity = REPLACE(anomaly.original_entity, \"/[0-9]{1,2}$\", \"\")\r\n| EVAL `Alert Timestamp` = DATE_FORMAT(\"yyyy-MM-dd HH:mm:ss\", @timestamp)\r\n| EVAL `Services during Baseline` = MV_CONCAT(MV_DEDUPE(anomaly.entity_training_items), \", \")\r\n| EVAL `Engine Confidence` = ROUND(TO_DOUBLE(anomaly.item_score), 2)\r\n| RENAME\r\n    display_entity AS `Anomalous Entity Host`,\r\n    anomaly.item AS `Anomalous Service`,\r\n    anomaly.entity AS `Anomalous Entity`,\r\n    event.id AS `uid`\r\n| SORT @timestamp DESC\r\n| KEEP `Alert Timestamp`, `Anomalous Entity Host`, `Anomalous Service`, `Services during Baseline`, `Anomalous Entity`, `Engine Confidence`, `uid`\r\n"
+                                                "esql": "FROM logs-corelight.various-*\r\n| WHERE event.dataset == \"anomaly\"\r\n    AND observer.hostname IS NOT NULL\r\n    AND use_case_description IS NOT NULL\r\n| EVAL display_entity = REPLACE(anomaly.original_entity, \"/[0-9]{1,2}$\", \"\")\r\n| EVAL `Alert Timestamp` = DATE_FORMAT(\"yyyy-MM-dd HH:mm:ss\", @timestamp)\r\n| EVAL `Items during Baseline` = MV_CONCAT(MV_DEDUPE(anomaly.entity_training_items), \", \")\r\n| EVAL `Engine Confidence` = ROUND(TO_DOUBLE(anomaly.item_score), 2)\r\n| RENAME\r\n    display_entity AS `Anomalous Entity Host`,\r\n    anomaly.item AS `Anomalous Item`,\r\n    anomaly.entity AS `Anomalous Entity`,\r\n    event.id AS `uid`\r\n| SORT @timestamp DESC\r\n| KEEP `Alert Timestamp`, `Anomalous Entity Host`, `Anomalous Item`, `Items during Baseline`, `Anomalous Entity`, `Engine Confidence`, `uid`\r\n"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2415,47 +2415,47 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-corelight.various-*\r\n| WHERE event.dataset == \"anomaly\"\r\n    AND observer.hostname IS NOT NULL\r\n    AND use_case_description IS NOT NULL\r\n| EVAL display_entity = REPLACE(anomaly.original_entity, \"/[0-9]{1,2}$\", \"\")\r\n| EVAL `Alert Timestamp` = DATE_FORMAT(\"yyyy-MM-dd HH:mm:ss\", @timestamp)\r\n| EVAL `Services during Baseline` = MV_CONCAT(MV_DEDUPE(anomaly.entity_training_items), \", \")\r\n| EVAL `Engine Confidence` = ROUND(TO_DOUBLE(anomaly.item_score), 2)\r\n| RENAME\r\n    display_entity AS `Anomalous Entity Host`,\r\n    anomaly.item AS `Anomalous Service`,\r\n    anomaly.entity AS `Anomalous Entity`,\r\n    event.id AS `uid`\r\n| SORT @timestamp DESC\r\n| KEEP `Alert Timestamp`, `Anomalous Entity Host`, `Anomalous Service`, `Services during Baseline`, `Anomalous Entity`, `Engine Confidence`, `uid`\r\n"
+                                "esql": "FROM logs-corelight.various-*\r\n| WHERE event.dataset == \"anomaly\"\r\n    AND observer.hostname IS NOT NULL\r\n    AND use_case_description IS NOT NULL\r\n| EVAL display_entity = REPLACE(anomaly.original_entity, \"/[0-9]{1,2}$\", \"\")\r\n| EVAL `Alert Timestamp` = DATE_FORMAT(\"yyyy-MM-dd HH:mm:ss\", @timestamp)\r\n| EVAL `Items during Baseline` = MV_CONCAT(MV_DEDUPE(anomaly.entity_training_items), \", \")\r\n| EVAL `Engine Confidence` = ROUND(TO_DOUBLE(anomaly.item_score), 2)\r\n| RENAME\r\n    display_entity AS `Anomalous Entity Host`,\r\n    anomaly.item AS `Anomalous Item`,\r\n    anomaly.entity AS `Anomalous Entity`,\r\n    event.id AS `uid`\r\n| SORT @timestamp DESC\r\n| KEEP `Alert Timestamp`, `Anomalous Entity Host`, `Anomalous Item`, `Items during Baseline`, `Anomalous Entity`, `Engine Confidence`, `uid`\r\n"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "485dcef1-6855-4d00-948d-2343552adca8",
+                                        "columnId": "9d986c0d-c427-4c7a-967a-5df7a6d91e4d",
                                         "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "e7e0abdf-9877-4c9a-b171-e9522dcfa17e",
+                                        "columnId": "e507a66e-334d-4f3c-bb17-88c323169b15",
                                         "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "bf04739d-3355-4500-ad75-32bd1c82c17b",
+                                        "columnId": "0f7e06df-c3c3-4969-8574-c543828ccef2",
                                         "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "039bcf3f-b925-4430-8c0b-83b75eabd4d8",
+                                        "columnId": "ebc09925-21ec-4b7d-b012-c0f4c1ac3911",
                                         "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "c0c42de3-a593-4732-801c-846f126f3dac",
+                                        "columnId": "c891b16a-e4c2-4bbf-af2e-dc0f8f75cac0",
                                         "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "c51d9d3e-5a37-4a34-86fd-4623b6d98366",
+                                        "columnId": "438fb1bf-af9d-48d9-973b-25ce97adbf4c",
                                         "isMetric": true,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "25e89c1b-b035-4640-b5c5-65e64a921c75",
+                                        "columnId": "87ccdb52-1875-400c-a7c2-aa138ac387fa",
                                         "isMetric": false,
                                         "isTransposed": false
                                     }
                                 ],
-                                "layerId": "6f606c8b-6d3b-4b7e-8b5e-9251ef414e33",
+                                "layerId": "6472292f-aec9-4b6e-a7c2-4e4bf3b437d3",
                                 "layerType": "data",
                                 "paging": {
                                     "enabled": true,
@@ -2463,7 +2463,7 @@
                                 }
                             }
                         },
-                        "title": "Table Alert Timestamp \u0026 Anomalous Entity Host \u0026 Anomalous Service \u0026 Services during Baseline \u0026 Anomalous Entity",
+                        "title": "Table Alert Timestamp \u0026 Anomalous Entity Host \u0026 Anomalous Item \u0026 Items during Baseline \u0026 Anomalous Entity",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -2775,7 +2775,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-10-26T07:11:26.376Z",
+    "created_at": "2026-10-29T06:31:13.946Z",
     "id": "corelight-840406c1-9b84-43bc-b526-6aa86e72a150",
     "references": [
         {
