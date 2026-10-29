@@ -125,10 +125,40 @@ rules:
     headers:
       Content-Type:
       - application/json
-    body: '{"body": {"data": [{"ip": "192.0.2.10", "confidence": 80, "score": 95, "reason": "Synthetic integration
-      system-test indicator", "first_seen": "2026-01-01 00:00:00", "last_seen": "2026-01-01 01:00:00"}, {"reason":
-      "Missing IP must not discard the valid indicators"}, null, "invalid feed entry", {"ip": null}, {"ip": ""},
-      {"ip": "   "}, {"ip": "\t 198.51.100.20 \r\n"}]}}'
+    body: >-
+      {{ minify_json `
+        {
+            "body": {
+                "data": [
+                    {
+                        "ip": "192.0.2.10",
+                        "confidence": 80,
+                        "score": 95,
+                        "reason": "Synthetic integration system-test indicator",
+                        "first_seen": "2026-01-01 00:00:00",
+                        "last_seen": "2026-01-01 01:00:00"
+                    },
+                    {
+                        "reason": "Missing IP must not discard the valid indicators"
+                    },
+                    null,
+                    "invalid feed entry",
+                    {
+                        "ip": null
+                    },
+                    {
+                        "ip": ""
+                    },
+                    {
+                        "ip": "   "
+                    },
+                    {
+                        "ip": "\t 198.51.100.20 \r\n"
+                    }
+                ]
+            }
+        }
+      ` }}
 - path: /ti/v1/feed/outbound/query
   methods:
   - GET
