@@ -892,22 +892,72 @@ processors:
       field: checkpoint.packet_capture
       target_field: event.url
       ignore_missing: true
-  - rename:
-      tag: rename_checkpoint_start_time_to_event_start_0dad958c
+  - date:
+      tag: date_checkpoint_start_time_to_event_start_0dad958c
       field: checkpoint.start_time
+      formats: ["UNIX", "ISO8601"]
       target_field: event.start
-      ignore_missing: true
-  - rename:
-      tag: rename_checkpoint_first_detection_to_event_start_1174b06e
+      if: "ctx.checkpoint?.start_time != null"
+  - date:
+      tag: date_checkpoint_first_detection_1174b06e
       field: checkpoint.first_detection
-      target_field: event.start
-      ignore_missing: true
-      if: ctx.event?.start == null
-  - rename:
-      tag: rename_checkpoint_last_detection_to_event_end_e77b2d47
+      formats: ["UNIX", "ISO8601"]
+      target_field: checkpoint.first_detection
+      if: "ctx.checkpoint?.first_detection != null"
+  - date:
+      tag: date_checkpoint_creation_time_f2bceb79
+      field: checkpoint.creation_time
+      formats: ["UNIX", "ISO8601"]
+      target_field: checkpoint.creation_time
+      if: "ctx.checkpoint?.creation_time != null"
+  - date:
+      tag: date_checkpoint_segment_time
+      field: checkpoint.segment_time
+      formats: ["UNIX", "ISO8601"]
+      target_field: checkpoint.segment_time
+      if: "ctx.checkpoint?.segment_time != null"
+  - date:
+      tag: date_checkpoint_arrival_time
+      field: checkpoint.arrival_time
+      formats: ["UNIX", "ISO8601"]
+      target_field: checkpoint.arrival_time
+      if: "ctx.checkpoint?.arrival_time != null"
+     - date:
+      tag: date_checkpoint_last_detection_e77b2d47
       field: checkpoint.last_detection
-      target_field: event.end
-      ignore_missing: true
+      formats: ["UNIX", "ISO8601"]
+      target_field: checkpoint.last_detection
+      if: "ctx.checkpoint?.last_detection != null"
+  - date:
+      tag: date_checkpoint_last_hit_time_6aeafa0a
+      field: checkpoint.last_hit_time
+      formats: ["UNIX", "ISO8601"]
+      target_field: checkpoint.last_hit_time
+      if: "ctx.checkpoint?.last_hit_time != null"
+  - date:
+      tag: date_checkpoint_packet_capture_time
+      field: checkpoint.packet_capture_time
+      formats: ["UNIX", "ISO8601"]
+      target_field: event.packet_capture_time
+      if: "ctx.checkpoint?.packet_capture_time != null"
+  - date:
+      tag: date_checkpoint_delivery_time
+      field: checkpoint.delivery_time
+      formats: ["UNIX", "ISO8601"]
+      target_field: checkpoint.delivery_time
+      if: "ctx.checkpoint?.delivery_time != null"
+  - date:
+      tag: date_checkpoint_lastupdatetime_869e28e8
+      field: checkpoint.lastupdatetime
+      formats: ["UNIX", "ISO8601"]
+      target_field: checkpoint.lastupdatetime
+      if: "ctx.checkpoint?.lastupdatetime != null"
+  - date:
+      tag: date_checkpoint_login_timestamp_to_self
+      field: checkpoint.login_timestamp
+      formats: ["UNIX", "ISO8601"]
+      target_field: checkpoint.login_timestamp
+      if: "ctx.checkpoint?.login_timestamp != null"
   - convert:
       type: float
       tag: convert_risk_score
@@ -1442,30 +1492,24 @@ processors:
       field: checkpoint._temp_unixms
       target_field: "@timestamp"
       ignore_missing: true
-  - date:
-      tag: date_checkpoint_last_hit_time_to_event_end_6aeafa0a
-      field: checkpoint.last_hit_time
-      formats: ["UNIX"]
-      target_field: event.end
-      if: "ctx.checkpoint?.last_hit_time != null"
-  - date:
-      tag: date_checkpoint_lastupdatetime_to_event_end_869e28e8
-      field: checkpoint.lastupdatetime
-      formats: ["UNIX"]
-      target_field: event.end
-      if: "ctx.checkpoint?.lastupdatetime != null"
-  - date:
-      tag: date_checkpoint_creation_time_to_event_start_f2bceb79
-      field: checkpoint.creation_time
-      formats: ["ISO8601", "UNIX"]
-      target_field: event.start
-      if: "ctx.checkpoint?.creation_time != null"
-  - date:
-      tag: convert_login_timestamp
-      field: checkpoint.login_timestamp
-      formats: ["ISO8601", "UNIX"]
-      target_field: checkpoint.login_timestamp
-      if: "ctx.checkpoint?.login_timestamp != null"
+  - set:
+      tag: set_checkpoint_time_to_end_time
+      field: event.end
+      copy_from: @timestamp
+      override: true
+      if: "ctx.checkpoint?.lastupdatetime != null && ctx.checkpoint.segment_time != null"
+  - set:
+      tag: set_checkpoint_time_to_start_time
+      field: event.start
+      copy_from: @timestamp
+      override: true
+      if: "ctx.checkpoint?.lastupdatetime != null && ctx.checkpoint.packet_capture_time != null"
+  - set:
+      tag: set_checkpoint_lastupdatetime_to_event_time
+      field: @timestamp
+      copy_from: checkpoint.lastupdatetime
+      override: true
+      if: "ctx.checkpoint?.lastupdatetime != null && ctx.checkpoint.packet_capture_time != null"
   - rename:
       tag: rename_checkpoint_duration_to_event_duration_f53d9a8c
       field: checkpoint.duration
@@ -1804,7 +1848,7 @@ processors:
       if: ctx.checkpoint?.time != null
       field: checkpoint.time
       target_field: checkpoint.time
-      formats: ["UNIX"]
+      formats: ["UNIX", "ISO8601"]
       ignore_failure: true
   - script:
       tag: script_009c1e23
