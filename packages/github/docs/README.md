@@ -1,6 +1,6 @@
 # GitHub Integration
 
-The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest) and Azure Eventhub. It can also retrieve global advisories (reviewed or unreviewed) from the GitHub Security Advisories database, and collect an inventory of organization members for entity analytics.
+The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest) and Azure Eventhub. It can also retrieve global advisories (reviewed or unreviewed) from the GitHub Security Advisories database, and collect an inventory of organization members and teams for entity analytics.
 
 ## Agentless Enabled Integration
 
@@ -1050,6 +1050,12 @@ To use this integration, users must use GitHub Apps or Personal Access Token wit
 - At least `Read-only` permission on Metadata
 If misconfigured, the integration could run successfully without any data being processed. Alternatively, you might encounter an error like `⁠GET: server returned a 404 (Not Found)`.
 
+#### Upgrading to version 2.32.0
+
+Version 2.32.0 recreates the latest-issues transform with destination index `logs-github_latest.dest_issues-2` so the additional Issues API field mappings can take effect. The `logs-github_latest.issues` alias moves to the new index when it is created. The transform rebuilds the latest issue state from retained documents in `logs-github.issues-*`; source documents that have expired cannot be recovered this way.
+
+The previous destination index, `logs-github_latest.dest_issues-1`, is not deleted automatically. After upgrading, verify that the transform has caught up and the alias points to the new index. Before removing the old index, preserve any issue records that are no longer available in the source data stream and take a snapshot if needed. Once the new index contains the records you need, delete only `logs-github_latest.dest_issues-1`. Keeping both destination indices can produce duplicate results and field type conflicts in wildcard queries.
+
 **Exported fields**
 
 | Field | Description | Type | Unit | Metric Type |
@@ -1070,6 +1076,7 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.assignee.site_admin |  | boolean |  |  |
 | github.issues.assignee.type |  | keyword |  |  |
 | github.issues.assignee.url |  | keyword |  |  |
+| github.issues.assignee.user_view_type |  | keyword |  |  |
 | github.issues.assignees | Information of users who were assigned the issue. | flattened |  |  |
 | github.issues.author_association |  | keyword |  |  |
 | github.issues.body |  | text |  |  |
@@ -1082,6 +1089,7 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.closed_by.site_admin |  | boolean |  |  |
 | github.issues.closed_by.type |  | keyword |  |  |
 | github.issues.closed_by.url |  | keyword |  |  |
+| github.issues.closed_by.user_view_type |  | keyword |  |  |
 | github.issues.comments |  | integer |  |  |
 | github.issues.comments_url |  | keyword |  |  |
 | github.issues.created_at | The time that the issue was created in ISO 8601 format - `YYYY-MM-DDTHH:MM:SSZ`. | date |  |  |
@@ -1090,6 +1098,11 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.html_url |  | keyword |  |  |
 | github.issues.id | The id of GitHub issue. | integer |  |  |
 | github.issues.is_pr |  | boolean |  |  |
+| github.issues.issue_dependencies_summary.blocked_by |  | integer |  |  |
+| github.issues.issue_dependencies_summary.blocking |  | integer |  |  |
+| github.issues.issue_dependencies_summary.total_blocked_by |  | integer |  |  |
+| github.issues.issue_dependencies_summary.total_blocking |  | integer |  |  |
+| github.issues.issue_field_values.value |  | keyword |  |  |
 | github.issues.labels.description |  | keyword |  |  |
 | github.issues.labels.integration |  | keyword |  |  |
 | github.issues.labels.name |  | keyword |  |  |
@@ -1098,6 +1111,7 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.locked |  | boolean |  |  |
 | github.issues.node_id | The node_id of GitHub issue. | keyword |  |  |
 | github.issues.number |  | integer |  |  |
+| github.issues.pinned_comment.body |  | match_only_text |  |  |
 | github.issues.pull_request.diff_url |  | keyword |  |  |
 | github.issues.pull_request.html_url |  | keyword |  |  |
 | github.issues.pull_request.patch_url |  | keyword |  |  |
@@ -1105,6 +1119,9 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.repository_url | The repository containing the GitHub issue. | keyword |  |  |
 | github.issues.state |  | keyword |  |  |
 | github.issues.state_reason |  | keyword |  |  |
+| github.issues.sub_issues_summary.completed |  | integer |  |  |
+| github.issues.sub_issues_summary.percent_completed |  | integer |  |  |
+| github.issues.sub_issues_summary.total |  | integer |  |  |
 | github.issues.time_to_close.sec | The time taken to close an issue in seconds. | long | s | gauge |
 | github.issues.timeline_url |  | keyword |  |  |
 | github.issues.title |  | keyword |  |  |
@@ -1118,6 +1135,7 @@ If misconfigured, the integration could run successfully without any data being 
 | github.issues.user.site_admin |  | boolean |  |  |
 | github.issues.user.type |  | keyword |  |  |
 | github.issues.user.url |  | keyword |  |  |
+| github.issues.user.user_view_type |  | keyword |  |  |
 | github.repository.description | The repository description. | text |  |  |
 | github.repository.fork | Whether the repository is a fork. | boolean |  |  |
 | github.repository.full_name | The full, globally unique, name of the repository. | keyword |  |  |
@@ -1149,32 +1167,33 @@ An example event for `issues` looks as following:
 {
     "@timestamp": "2011-04-22T13:33:48.000Z",
     "agent": {
-        "ephemeral_id": "0aa2f45d-e0a7-421c-ade5-45aa21712041",
-        "id": "906bbf2a-d522-4c69-829f-8d0d4d615392",
-        "name": "elastic-agent-18769",
+        "ephemeral_id": "0b2e9d17-5d3a-47aa-af61-77c9a8a9f3c1",
+        "id": "5fa7bb32-e0b8-4f48-be83-56cdb5575267",
+        "name": "elastic-agent-75889",
         "type": "filebeat",
-        "version": "8.19.10"
+        "version": "9.5.5"
     },
     "data_stream": {
         "dataset": "github.issues",
-        "namespace": "88899",
+        "namespace": "78706",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "906bbf2a-d522-4c69-829f-8d0d4d615392",
+        "id": "5fa7bb32-e0b8-4f48-be83-56cdb5575267",
         "snapshot": false,
-        "version": "8.19.10"
+        "version": "9.5.5"
     },
     "event": {
         "action": "opened",
         "agent_id_status": "verified",
         "created": "2011-04-22T13:33:48.000Z",
         "dataset": "github.issues",
-        "ingested": "2026-07-29T03:53:27Z",
+        "ingested": "2026-10-23T08:16:36Z",
         "kind": "event",
+        "module": "github",
         "original": "{\"active_lock_reason\":\"too heated\",\"assignee\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"assignees\":[{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"}],\"author_association\":\"COLLABORATOR\",\"body\":\"I'm having a problem with this.\",\"closed_at\":null,\"closed_by\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"comments\":0,\"comments_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/comments\",\"created_at\":\"2011-04-22T13:33:48Z\",\"events_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/events\",\"html_url\":\"https://github.com/octocat/Hello-World/issues/1347\",\"id\":1,\"labels\":[{\"color\":\"f29513\",\"default\":true,\"description\":\"Something isn't working\",\"id\":208045946,\"name\":\"bug\",\"node_id\":\"MDU6TGFiZWwyMDgwNDU5NDY=\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/labels/bug\"}],\"labels_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/labels{/name}\",\"locked\":true,\"milestone\":{\"closed_at\":\"2013-02-12T13:22:01Z\",\"closed_issues\":8,\"created_at\":\"2011-04-10T20:09:31Z\",\"creator\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"description\":\"Tracking milestone for version 1.0\",\"due_on\":\"2012-10-09T23:39:01Z\",\"html_url\":\"https://github.com/octocat/Hello-World/milestones/v1.0\",\"id\":1002604,\"labels_url\":\"https://api.github.com/repos/octocat/Hello-World/milestones/1/labels\",\"node_id\":\"MDk6TWlsZXN0b25lMTAwMjYwNA==\",\"number\":1,\"open_issues\":4,\"state\":\"open\",\"title\":\"v1.0\",\"updated_at\":\"2014-03-03T18:58:10Z\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/milestones/1\"},\"node_id\":\"MDU6SXNzdWUx\",\"number\":1347,\"pull_request\":{\"diff_url\":\"https://github.com/octocat/Hello-World/pull/1347.diff\",\"html_url\":\"https://github.com/octocat/Hello-World/pull/1347\",\"patch_url\":\"https://github.com/octocat/Hello-World/pull/1347.patch\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/pulls/1347\"},\"repository_url\":\"https://api.github.com/repos/octocat/Hello-World\",\"state\":\"open\",\"state_reason\":\"completed\",\"title\":\"Found a bug\",\"updated_at\":\"2011-04-22T13:33:48Z\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347\",\"user\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"}}",
         "reason": "completed",
         "type": [
@@ -1192,16 +1211,14 @@ An example event for `issues` looks as following:
                 "type": "User",
                 "url": "https://api.github.com/users/octocat"
             },
-            "assignees": [
-                {
-                    "html_url": "https://github.com/octocat",
-                    "id": 1,
-                    "login": "octocat",
-                    "site_admin": false,
-                    "type": "User",
-                    "url": "https://api.github.com/users/octocat"
-                }
-            ],
+            "assignees": {
+                "html_url": "https://github.com/octocat",
+                "id": 1,
+                "login": "octocat",
+                "site_admin": false,
+                "type": "User",
+                "url": "https://api.github.com/users/octocat"
+            },
             "author_association": "COLLABORATOR",
             "body": "I'm having a problem with this.",
             "closed_by": {
@@ -1219,12 +1236,10 @@ An example event for `issues` looks as following:
             "html_url": "https://github.com/octocat/Hello-World/issues/1347",
             "id": 1,
             "is_pr": true,
-            "labels": [
-                {
-                    "description": "Something isn't working",
-                    "name": "bug"
-                }
-            ],
+            "labels": {
+                "description": "Something isn't working",
+                "name": "bug"
+            },
             "labels_url": "https://api.github.com/repos/octocat/Hello-World/issues/1347/labels{/name}",
             "locked": true,
             "node_id": "MDU6SXNzdWUx",
@@ -1261,6 +1276,9 @@ An example event for `issues` looks as following:
     },
     "input": {
         "type": "httpjson"
+    },
+    "labels": {
+        "is_transform_source": "true"
     },
     "related": {
         "user": [
@@ -1474,7 +1492,7 @@ Data collected per member includes: organization role (MEMBER or ADMIN), two-fac
 The data stream issues two GraphQL queries per collection cycle against `POST https://api.github.com/graphql`:
 
 1. **`organization.membersWithRole`** — paginated list of all org members with their role and 2FA status.
-2. **`organization.teams`** (with nested `team.members`) — paginated list of all teams and their members, used to populate team membership and entity relationship fields.
+2. **`organization.teams`** (with nested `team.members`) — paginated list of all teams and their members, used to populate team membership. For each team where the member is a `MAINTAINER`, the pipeline sets `user.entity.relationships.administers.entity.id` to that team's GitHub node id. The same id is `entity.id` on the teams data stream.
 
 **Authentication:** This data stream requires a **Classic Personal Access Token (PAT)**. Fine-grained PATs do not support the `admin:org` scope or the `membersWithRole` GraphQL query reliably and cannot be used.
 
@@ -1527,6 +1545,7 @@ Refer to [Creating a personal access token (classic)](https://docs.github.com/en
 | github.members.is_hireable | True if the user has indicated they are available for hire. | boolean |
 | github.members.is_site_admin | True if the user is a GitHub site administrator. | boolean |
 | github.members.location | Location listed on the member's GitHub profile. | keyword |
+| github.members.maintained_team_names | Display names of teams where the member is a MAINTAINER. | keyword |
 | github.members.pronouns | Pronouns set on the member's GitHub profile. | keyword |
 | github.members.role | Organization membership role (ADMIN or MEMBER). | keyword |
 | github.members.teams.combined_slug | Combined slug in the form org/team-slug. | keyword |
@@ -1554,8 +1573,7 @@ Refer to [Creating a personal access token (classic)](https://docs.github.com/en
 | user.entity.last_seen_timestamp | Indicates the date/time when this entity was last "seen," usually based upon the last event/log that is initiated by this entity. | date |
 | user.entity.name | The name of the entity. The keyword field enables exact matches for filtering and aggregations, while the text field enables full-text search. For entities with dedicated field sets (for example, `host`), this field should mirrors the corresponding \*.name value. | keyword |
 | user.entity.name.text | Multi-field of `user.entity.name`. | match_only_text |
-| user.entity.relationships.administers.service.id | Referenced service ids. | keyword |
-| user.entity.relationships.administers.service.name | Referenced service names. | keyword |
+| user.entity.relationships.administers.entity.id | Identifiers of referenced entities, using the same meaning as root `entity.id` (stable id for correlation within scope). | keyword |
 | user.entity.source | The module or integration that provided this entity data (similar to event.module). | keyword |
 | user.entity.type | A standardized high-level classification of the entity. This provides a normalized way to group similar entities across different providers or systems. Example values: `bucket`, `database`, `container`, `function`, `queue`, `host`, `user`, `application`, `session`, `cloud`, `orchestrator`, etc. If an entity is nested under a top-level namespace like `host` or `cloud`, or similar, its type array should include the matching value — for example, `host` or `cloud`. | keyword |
 | user.full_name | User's full name, if available. | keyword |
@@ -1570,26 +1588,26 @@ An example event for `members` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-09-10T18:54:03.258Z",
+    "@timestamp": "2026-10-26T10:55:38.850Z",
     "agent": {
-        "ephemeral_id": "dcbadef4-f927-4e26-b62c-795bfaa8eaab",
-        "id": "eff19031-7405-403d-be1b-d14764521226",
-        "name": "elastic-agent-61254",
+        "ephemeral_id": "bbfe7bfa-8df0-4795-86c0-4d99af33689f",
+        "id": "380e6368-940a-4529-8e8e-52c62443e06f",
+        "name": "elastic-agent-27574",
         "type": "filebeat",
-        "version": "9.4.4"
+        "version": "8.19.10"
     },
     "data_stream": {
         "dataset": "github.members",
-        "namespace": "69529",
+        "namespace": "12419",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "eff19031-7405-403d-be1b-d14764521226",
+        "id": "380e6368-940a-4529-8e8e-52c62443e06f",
         "snapshot": false,
-        "version": "9.4.4"
+        "version": "8.19.10"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1597,9 +1615,8 @@ An example event for `members` looks as following:
             "iam"
         ],
         "dataset": "github.members",
-        "ingested": "2026-09-10T18:54:06Z",
+        "ingested": "2026-10-26T10:55:41Z",
         "kind": "asset",
-        "module": "github",
         "type": [
             "user",
             "info"
@@ -1620,40 +1637,35 @@ An example event for `members` looks as following:
             "is_hireable": true,
             "is_site_admin": false,
             "location": "San Francisco, CA",
+            "maintained_team_names": [
+                "Backend Team"
+            ],
             "pronouns": "she/her",
             "role": "ADMIN",
-            "teams": {
-                "combined_slug": [
-                    "example-org/backend-team",
-                    "example-org/frontend-team"
-                ],
-                "database_id": [
-                    1001,
-                    1002
-                ],
-                "id": [
-                    "T_kgDOAABBCC",
-                    "T_kgDOAADDEE"
-                ],
-                "name": [
-                    "Backend Team",
-                    "Frontend Team"
-                ],
-                "parent_team_id": "",
-                "parent_team_slug": "",
-                "privacy": [
-                    "SECRET",
-                    "VISIBLE"
-                ],
-                "role": [
-                    "MAINTAINER",
-                    "MEMBER"
-                ],
-                "slug": [
-                    "backend-team",
-                    "frontend-team"
-                ]
-            },
+            "teams": [
+                {
+                    "combined_slug": "example-org/backend-team",
+                    "database_id": 1001,
+                    "id": "T_kgDOAABBCC",
+                    "name": "Backend Team",
+                    "parent_team_id": "",
+                    "parent_team_slug": "",
+                    "privacy": "VISIBLE",
+                    "role": "MAINTAINER",
+                    "slug": "backend-team"
+                },
+                {
+                    "combined_slug": "example-org/frontend-team",
+                    "database_id": 1002,
+                    "id": "T_kgDOAADDEE",
+                    "name": "Frontend Team",
+                    "parent_team_id": "",
+                    "parent_team_slug": "",
+                    "privacy": "SECRET",
+                    "role": "MEMBER",
+                    "slug": "frontend-team"
+                }
+            ],
             "twitter_username": "aliceexample",
             "updated_at": "2026-01-01T12:00:00.000Z",
             "url": "https://github.com/alice-example",
@@ -1666,7 +1678,9 @@ An example event for `members` looks as following:
     "related": {
         "user": [
             "alice-example",
-            "Alice Example"
+            "Alice Example",
+            "alice@example.com",
+            "U_kgDOABCDEF"
         ]
     },
     "tags": [
@@ -1677,16 +1691,13 @@ An example event for `members` looks as following:
         "email": "alice@example.com",
         "entity": {
             "id": "U_kgDOABCDEF",
-            "last_seen_timestamp": "2026-09-10T18:54:03.258Z",
+            "last_seen_timestamp": "2026-10-26T10:55:38.850Z",
             "name": "alice-example",
             "relationships": {
                 "administers": {
-                    "service": {
+                    "entity": {
                         "id": [
                             "T_kgDOAABBCC"
-                        ],
-                        "name": [
-                            "Backend Team"
                         ]
                     }
                 }
@@ -1703,5 +1714,122 @@ An example event for `members` looks as following:
             "ADMIN"
         ]
     }
+}
+```
+
+### Teams
+
+The GitHub Teams data stream collects one document per organization team using the [GitHub GraphQL API](https://docs.github.com/en/graphql) `organization.teams` query. Each document is a generic entity (`event.kind: asset`). It does not set `user.*` fields, so team documents do not create user entities.
+
+`entity.id` is the team's GitHub node id (for example `T_kgDOAABBCC`). That value is the same id written to `user.entity.relationships.administers.entity.id` on the member document of each maintainer of the team. `github.teams.combined_slug` keeps the `org/team-slug` value, which can change on rename.
+
+**Authentication:** Classic personal access token with the `read:org` scope. Fine-grained PATs are not supported. For GitHub Enterprise Server, set **API URL** to the instance API root (for example `https://github.example.com/api`). This data stream calls `<API URL>/graphql`.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| entity.id | A unique identifier for the entity. When multiple identifiers exist, this should be the most stable and commonly used identifier that: 1) persists across the entity's lifecycle, 2) ensures uniqueness within its scope, 3) is commonly used for queries and correlation, and 4) is readily available in most observations (logs/events). For entities with dedicated field sets (for example, host, user), this value should match the corresponding \*.id field. Alternative identifiers (for example, ARNs values in AWS, URLs) can be preserved in the raw field. | keyword |
+| entity.last_seen_timestamp | Indicates the date/time when this entity was last "seen," usually based upon the last event/log that is initiated by this entity. | date |
+| entity.name | The name of the entity. The keyword field enables exact matches for filtering and aggregations, while the text field enables full-text search. For entities with dedicated field sets (for example, `host`), this field should mirrors the corresponding \*.name value. | keyword |
+| entity.name.text | Multi-field of `entity.name`. | match_only_text |
+| entity.reference | A URI, URL, or other direct reference to access or locate the entity in its source system. This could be an API endpoint, web console URL, or other addressable location. Format can vary by entity type and source system. | keyword |
+| entity.source | The module or integration that provided this entity data (similar to event.module). | keyword |
+| entity.sub_type | The specific type designation for the entity as defined by its provider or system. This field provides more granular classification than the type field. Examples: `aws_s3_bucket`, `gcp_cloud_storage_bucket`, `azure_blob_container` would all map to entity type `bucket`.  `hardware` , `virtual` , `container` , `node` , `cloud_instance` would all map to entity type `host`. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| github.teams.combined_slug | Organization and team slug, `org/team-slug` (`combinedSlug` in the raw event). | keyword |
+| github.teams.created_at | Timestamp when the GitHub team was created (`createdAt` in the raw event). | date |
+| github.teams.database_id | GitHub database ID of the team (`databaseId` in the raw event). | long |
+| github.teams.description | Team description. Omitted when the team has no description. | keyword |
+| github.teams.id | GitHub GraphQL node ID of the team (for example, `T_kgDOAABBCC`). Stable across renames. The ingest pipeline copies this value to `entity.id`. | keyword |
+| github.teams.name | Display name of the team. | keyword |
+| github.teams.parent_team_id | GraphQL node ID of the parent team, when the team is nested. | keyword |
+| github.teams.parent_team_slug | Slug of the parent team, when the team is nested. | keyword |
+| github.teams.privacy | Team visibility, `SECRET` or `VISIBLE`. | keyword |
+| github.teams.slug | URL slug of the team. | keyword |
+| github.teams.updated_at | Timestamp when the GitHub team was last updated (`updatedAt` in the raw event). | date |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Input Type. | keyword |
+| log.offset | Log Offset. | long |
+
+
+An example event for `teams` looks as following:
+
+```json
+{
+    "@timestamp": "2026-10-22T11:27:32.951Z",
+    "agent": {
+        "ephemeral_id": "39786a36-342a-4e90-bb4e-9aa0fbb1a7fe",
+        "id": "ae847fa7-4c9a-489e-b85b-8155d1a146af",
+        "name": "elastic-agent-32951",
+        "type": "filebeat",
+        "version": "8.19.10"
+    },
+    "data_stream": {
+        "dataset": "github.teams",
+        "namespace": "70987",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "ae847fa7-4c9a-489e-b85b-8155d1a146af",
+        "snapshot": false,
+        "version": "8.19.10"
+    },
+    "entity": {
+        "id": "T_kgDOAABBCC",
+        "last_seen_timestamp": "2026-10-22T11:27:32.951Z",
+        "name": "Backend Team",
+        "reference": "https://github.com/orgs/example-org/teams/backend-team",
+        "source": "github",
+        "sub_type": "GitHub Team"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "dataset": "github.teams",
+        "ingested": "2026-10-22T11:27:35Z",
+        "kind": "asset",
+        "type": [
+            "group",
+            "info"
+        ]
+    },
+    "github": {
+        "teams": {
+            "combined_slug": "example-org/backend-team",
+            "created_at": "2020-01-15T10:00:00.000Z",
+            "database_id": 1001,
+            "description": "Backend services",
+            "id": "T_kgDOAABBCC",
+            "name": "Backend Team",
+            "privacy": "VISIBLE",
+            "slug": "backend-team",
+            "updated_at": "2026-08-01T12:00:00.000Z"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "forwarded",
+        "github-teams"
+    ]
 }
 ```

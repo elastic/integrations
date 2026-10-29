@@ -2,7 +2,19 @@
 
 The Akamai integration collects events from the Akamai API, specifically reading from the [Akamai SIEM API](https://techdocs.akamai.com/siem-integration/reference/api).
 
-> **Breaking change in 4.0.0**: The backend used to collect Akamai SIEM logs from the API has changed. This version requires Elastic Stack 9.5.0 or later. After upgrading, existing agent policies that collect Akamai SIEM logs via the API must be reconfigured for data collection to resume. If you previously set the advanced **SSL Configuration** option, it must be rewritten using the OpenTelemetry `tls` schema (`ca_file`/`ca_pem`, `cert_file`/`cert_pem`, `key_file`/`key_pem`, `insecure_skip_verify`, `min_version`, `max_version`) rather than the Beats keys (`certificate_authorities`, `verification_mode`, `supported_protocols`). The Akamai SIEM API only provides access to the previous 12 hours of events, so reconfigure the policy within 12 hours of upgrading to avoid a permanent gap in the data; the **Initial Interval** option (default and maximum `12h`) controls how far back the first fetch reaches. Collection from Google Cloud Storage is unaffected.
+> **Breaking change in 4.0.0 — CEL to OpenTelemetry migration**
+
+Starting with version 4.0.0, Akamai SIEM API collection uses the OpenTelemetry receiver instead of CEL and requires Elastic Stack 9.5.0 or later.
+
+When upgrading from a CEL-based integration, compatible API settings and credentials can be preserved through automatic input migration.
+
+**Before upgrading, review the following settings:**
+
+- **Initial Interval:** Ensure this value is `12h` or less. The previous CEL input accepted larger values and automatically limited requests to 12 hours. The OpenTelemetry receiver rejects values exceeding `12h`, preventing collection from starting.
+- **SSL Configuration:** Existing Beats SSL settings such as `certificate_authorities`, `verification_mode`, and `supported_protocols` are not automatically converted to the OpenTelemetry TLS schema. Review and rewrite custom SSL configurations using the supported options (`ca_file`, `ca_pem`, `cert_file`, `cert_pem`, `key_file`, `key_pem`, `insecure_skip_verify`, `min_version`, and `max_version`).
+- **Custom Processors:** Custom CEL/Beats processors are not migrated to the OpenTelemetry input. Any filtering, enrichment, or transformations implemented through these processors will no longer be applied. Review and reimplement the required processing before upgrading, for example using an Elasticsearch custom ingest pipeline (`logs-akamai.siem@custom`). Note that Elasticsearch ingest pipelines process events after they are transmitted from Elastic Agent, rather than filtering them at the source.
+
+The Akamai SIEM API provides access to only the previous 12 hours of events. Verify that data collection resumes promptly after upgrading to avoid permanent gaps. Collection from Google Cloud Storage is unaffected.
 
 ## Logs
 
