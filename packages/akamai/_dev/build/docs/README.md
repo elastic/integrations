@@ -47,7 +47,7 @@ API collection uses the native OpenTelemetry `akamai_siem` receiver behind the s
 - The GCS input currently only accepts a service account JSON key or a service account JSON file for authentication.
 - The GCS input currently only supports JSON data.
 
-### Collect Akamai SIEM logs from Amazon S3
+### To collect data from Amazon S3
 
 Akamai [DataStream 2 security logs](https://techdocs.akamai.com/datastream2/docs/security-logs) can be delivered to an [Amazon S3 destination](https://techdocs.akamai.com/datastream2/docs/stream-amazon-s3). The Akamai integration can collect these files using the `aws-s3` input, either by consuming S3 object notifications from Amazon SQS (recommended) or by directly polling an S3 bucket. Both methods use the existing `akamai.siem` data stream and ingest pipeline.
 
@@ -56,7 +56,7 @@ Akamai [DataStream 2 security logs](https://techdocs.akamai.com/datastream2/docs
 1. In Akamai DataStream 2, create a security logs (SIEM) stream and select the relevant security configurations. See [Create a security log stream](https://techdocs.akamai.com/datastream2/docs/create-a-security-log-stream).
 2. Select **Amazon S3** as the delivery destination and configure the bucket name, region, optional folder path, and AWS access credentials. Follow [Akamai's Amazon S3 destination instructions](https://techdocs.akamai.com/datastream2/docs/stream-amazon-s3).
 3. Choose JSON security logs. Akamai DataStream 2 delivers log files gzip-compressed by default. The AWS S3 input reads supported compressed objects and processes newline-delimited JSON records individually.
-4. Verify that files are arriving in the intended S3 bucket and prefix. Note that Akamai might also create a small access-verification file while validating the destination, use a dedicated prefix and/or filtering where appropriate to avoid ingesting non-log files.
+4. Verify that files are arriving in the intended S3 bucket and prefix. Note that Akamai might also create a small access-verification file while validating the destination. Use a dedicated prefix or filtering where appropriate to avoid ingesting non-log files.
 
 #### Collect data from AWS SQS (recommended)
 
@@ -64,14 +64,14 @@ Akamai [DataStream 2 security logs](https://techdocs.akamai.com/datastream2/docs
 2. Configure the queue's resource-based access policy to allow the `s3.amazonaws.com` service principal to perform `sqs:SendMessage`, restricted to the intended bucket ARN (`aws:SourceArn`) and AWS account (`aws:SourceAccount`). See [AWS S3 event notification permissions](https://docs.aws.amazon.com/AmazonS3/latest/userguide/grant-destinations-permissions-to-s3.html).
 3. On the S3 bucket, create an event notification for **All object create events** (`s3:ObjectCreated:*`) with the SQS queue as the destination. Set an optional prefix or suffix filter if only Akamai log objects should generate notifications.
 4. Grant the Elastic Agent's AWS identity `sqs:ReceiveMessage`, `sqs:DeleteMessage`, `sqs:ChangeMessageVisibility`, and `sqs:GetQueueAttributes` on the queue, plus `s3:GetObject` on the relevant S3 objects. If a customer-managed AWS KMS key protects the resources, include the required KMS permissions.
-5. In Fleet, enable **Collect Akamai SIEM logs via Amazon S3 / SQS**, leave **Collect via direct S3 bucket polling** disabled, and set **SQS Queue URL**. Configure the AWS region and authentication. Prefer an IAM role or the standard AWS credential chain to long-lived access keys where available.
+5. In Fleet, enable **Collect Akamai SIEM logs via AWS S3 / SQS**, leave **Collect via direct S3 bucket polling** disabled, and set **SQS Queue URL**. Configure the AWS region and authentication. Prefer an IAM role or the standard AWS credential chain to long-lived access keys where available.
 6. Adjust **SQS Visibility Timeout**, **SQS API Timeout**, and **Workers** for the expected object sizes and traffic. The API timeout must not exceed half the visibility timeout.
 
-SQS messages must contain standard S3 event notifications. Nonstandard wrappers, such as messages produced through SNS or EventBridge, might require custom notification parsing and are not configured by this integration's default input template. For a shared queue, use file selectors carefully, do not have multiple independent consumers compete for the same messages.
+SQS messages must contain standard S3 event notifications. Nonstandard wrappers, such as messages produced through SNS or EventBridge, might require custom notification parsing and are not configured by this integration's default input template. For a shared queue, use file selectors carefully. Do not have multiple independent consumers compete for the same messages.
 
 #### Collect data by direct S3 bucket polling
 
-1. In Fleet, enable **Collect Akamai SIEM logs via Amazon S3 / SQS** and turn on **Collect via direct S3 bucket polling**.
+1. In Fleet, enable **Collect Akamai SIEM logs via AWS S3 / SQS** and turn on **Collect via direct S3 bucket polling**.
 2. Enter the **S3 Bucket ARN** (`arn:aws:s3:::your-bucket`). Optionally set **S3 Bucket Prefix** and **S3 Bucket List Interval**.
 3. Grant the Elastic Agent's AWS identity `s3:ListBucket` and `s3:GetObject`, and `s3:GetBucketLocation` if required by your environment. Configure AWS credentials and region, and save the policy.
 
@@ -79,7 +79,7 @@ Use either SQS notifications or direct bucket polling for a given input, not bot
 
 **Note**:
 - These instructions cover **Amazon S3**. Although Akamai also supports [S3-compatible destinations](https://techdocs.akamai.com/datastream2/docs/stream-s3-compatible), this input currently exposes an Amazon S3 bucket ARN or an AWS SQS queue URL, not the `non_aws_bucket_name` configuration required for generic S3-compatible storage.
-- Ensure Akamai exports individual SIEM JSON records in a format supported by the `aws-s3` input. The ingest pipeline expects one JSON security event per record (with fields such as `httpMessage` and `attackData`).
+- This integration supports Akamai DataStream 2 [Security Logs (SIEM)](https://techdocs.akamai.com/datastream2/docs/security-logs) exported in JSON format to Amazon S3. Other DataStream 2 log types are not supported by the `akamai.siem` ingest pipeline.
 
 {{fields "siem"}}
 
