@@ -57,8 +57,11 @@ custom ingest pipelines that use the old root fields must use the new
 locations. Documents indexed before the upgrade keep their old layout.
 
 The dashboards whose titles do not end in "(ECS compliant)" and the
-saved searches that match them query the old fields. They are kept for data
-collected before 2.0.0 and will not show these fields for new data.
+saved searches that match them query the original root fields. They
+show data written with `map_to_ecs` disabled, which was the default
+before version 1.31.1 and which version 2.0.0 no longer writes. Data
+written with `map_to_ecs` enabled appears only in the "(ECS compliant)"
+dashboards.
 
 Users who need to retain data collected with the original mappings may need
 to re-index their older documents. Instructions for doing this are available
