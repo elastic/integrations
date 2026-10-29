@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
 
 Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
@@ -38,7 +38,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 ### Zero Trust events
 
 - `access_request`: HTTP requests to sites protected by Cloudflare Access. See [Access Requests schema](https://developers.cloudflare.com/logs/reference/log-fields/account/access_requests/).
-- `audit`: Authentication events through Cloudflare Access, plus account-level configuration and administrative actions. The data stream supports both the `audit_logs` (v1) and `audit_logs_v2` Logpush datasets; the schema is detected automatically from the fields in each event, so no setting is needed. See [Audit Logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/audit_logs/) and [Audit Logs V2 schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/audit_logs_v2/).
+- `audit`: Authentication events through Cloudflare Access, plus account-level configuration and administrative actions. See [Audit Logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/audit_logs/).
 - `casb`: Security issues detected by Cloudflare CASB in connected SaaS applications. See [CASB Findings schema](https://developers.cloudflare.com/logs/reference/log-fields/account/casb_findings/).
 - `device_posture`: Device posture status from the Cloudflare One Client (WARP). See [Device Posture Results schema](https://developers.cloudflare.com/logs/reference/log-fields/account/device_posture_results/).
 - `gateway_dns`: DNS queries inspected by Cloudflare Gateway. See [Gateway DNS schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_dns/).
@@ -50,6 +50,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 
 ### Non Zero Trust events
 
+- `audit_logs_v2`: Account and zone level configuration and administrative actions recorded by Cloudflare Audit Logs v2. See [Audit Logs v2 schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/audit_logs_v2/).
 - `dns`: Zone-scoped authoritative DNS query logs. See [DNS logs schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/dns_logs/).
 - `dns_firewall`: Cloudflare DNS Firewall query and response logs. See [DNS Firewall logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/dns_firewall_logs/).
 - `dlp_forensic_copies`: Data Loss Prevention forensic copies of content that matched a DLP profile. See [DLP Forensic Copies schema](https://developers.cloudflare.com/logs/reference/log-fields/account/dlp_forensic_copies/).
@@ -71,7 +72,7 @@ Integrating Cloudflare Logpush with Elastic provides centralized visibility acro
 - Investigating traffic, WAF, and DDoS-mitigation events from the Cloudflare edge (`http_request`, `firewall_event`, `network_analytics`).
 - Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `warp_config_changes`, `warp_toggle_changes`).
 - Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
-- Auditing administrative activity on the Cloudflare account (`audit`).
+- Auditing administrative activity on the Cloudflare account (`audit`, `audit_logs_v2`).
 - Troubleshooting DNS and client-side performance issues (`dns`, `dns_firewall`, `nel_report`, `workers_trace`).
 
 ## What do I need to use this integration?
@@ -122,6 +123,7 @@ Configure one of the following delivery pipelines before enabling the integratio
   | -------------------------- | ---------------------- |
   | Access Request             | access_request         |
   | Audit Logs                 | audit_logs             |
+  | Audit Logs v2              | audit_logs_v2          |
   | CASB findings              | casb                   |
   | Device Posture Results     | device_posture         |
   | DLP Forensic Copies        | dlp_forensic_copies    |
@@ -163,7 +165,6 @@ Configure one of the following delivery pipelines before enabling the integratio
 - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
 - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
 - It is recommended to use AWS SQS for Cloudflare Logpush.
-- To collect the `audit_logs_v2` dataset through SQS, add `audit_logs_v2/` to the **[SQS] File Selectors** of the Audit data stream, because the default selector only matches the `audit_logs/` prefix.
 
 #### Collect data from S3-Compatible Cloudflare R2 Buckets
 
@@ -305,6 +306,16 @@ This is the `audit` dataset.
 {{event "audit"}}
 
 {{fields "audit"}}
+
+#### audit_logs_v2
+
+This is the `audit_logs_v2` dataset.
+
+##### Example
+
+{{event "audit_logs_v2"}}
+
+{{fields "audit_logs_v2"}}
 
 #### casb
 

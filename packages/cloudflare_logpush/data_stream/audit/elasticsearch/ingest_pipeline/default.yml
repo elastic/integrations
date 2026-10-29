@@ -23,30 +23,6 @@ processors:
       field: event.original
       target_field: json
       if: ctx.event?.original != null
-  ## This pipeline handles two Cloudflare Logpush dataset schemas with one code path:
-  ##   - v1 `audit_logs`:    ID, When, ActorIP, ActionResult (boolean), ...
-  ##   - v2 `audit_logs_v2`: AuditLogID, ActionTimestamp, ActorIPAddress, ActionResult (string), ...
-  ## The three v2 fields below carry the same data as their v1 counterparts, so they are renamed
-  ## to the v1 names here and every downstream v1 processor works unchanged. A v1 record has none
-  ## of the v2 names (no-op) and a v2 record has none of the v1 names (rename succeeds).
-  - rename:
-      tag: rename_json_auditlogid_to_id
-      field: json.AuditLogID
-      target_field: json.ID
-      ignore_missing: true
-      description: Normalizes the v2 `AuditLogID` field to its v1 name `ID`.
-  - rename:
-      tag: rename_json_actiontimestamp_to_when
-      field: json.ActionTimestamp
-      target_field: json.When
-      ignore_missing: true
-      description: Normalizes the v2 `ActionTimestamp` field to its v1 name `When`.
-  - rename:
-      tag: rename_json_actoripaddress_to_actorip
-      field: json.ActorIPAddress
-      target_field: json.ActorIP
-      ignore_missing: true
-      description: Normalizes the v2 `ActorIPAddress` field to its v1 name `ActorIP`.
   - set:
       tag: set_event_type
       field: event.type
@@ -134,27 +110,12 @@ processors:
       tag: set_cloudflare_logpush_audit_action_result_2
       field: cloudflare_logpush.audit.action.result
       value: failure
-      if: ctx.json?.ActionResult == false
-  ## v2 `audit_logs_v2` sends ActionResult as a string. Cloudflare does not publish the value
-  ## vocabulary; only "success" has been seen in real events.
-  - lowercase:
-      tag: lowercase_json_actionresult
-      field: json.ActionResult
-      if: ctx.json?.ActionResult instanceof String
-  - set:
-      tag: set_cloudflare_logpush_audit_action_result_v2
-      field: cloudflare_logpush.audit.action.result
-      copy_from: json.ActionResult
-      ignore_empty_value: true
-      if: ctx.json?.ActionResult instanceof String
-  ## ECS only allows success, failure or unknown for event.outcome, so any other v2 text
-  ## stays in the custom field only.
+      if: ctx.json?.ActionResult != true
   - set:
       tag: set_event_outcome
       field: event.outcome
       copy_from: cloudflare_logpush.audit.action.result
       ignore_empty_value: true
-      if: "['success', 'failure'].contains(ctx.cloudflare_logpush?.audit?.action?.result)"
   - rename:
       tag: rename_json_actoremail
       field: json.ActorEmail
@@ -250,107 +211,6 @@ processors:
       field: json.ResourceType
       target_field: cloudflare_logpush.audit.resource.type
       ignore_missing: true
-  ## v2-only (`audit_logs_v2`) fields.
-  - rename:
-      tag: rename_json_accountid
-      field: json.AccountID
-      target_field: cloudflare_logpush.audit.account.id
-      ignore_missing: true
-  - rename:
-      tag: rename_json_accountname
-      field: json.AccountName
-      target_field: cloudflare_logpush.audit.account.name
-      ignore_missing: true
-  - rename:
-      tag: rename_json_zoneid
-      field: json.ZoneID
-      target_field: cloudflare_logpush.audit.zone.id
-      ignore_missing: true
-  - rename:
-      tag: rename_json_zonename
-      field: json.ZoneName
-      target_field: cloudflare_logpush.audit.zone.name
-      ignore_missing: true
-  - rename:
-      tag: rename_json_actiondescription
-      field: json.ActionDescription
-      target_field: cloudflare_logpush.audit.action.description
-      ignore_missing: true
-  - rename:
-      tag: rename_json_actorcontext
-      field: json.ActorContext
-      target_field: cloudflare_logpush.audit.actor.context
-      ignore_missing: true
-  - rename:
-      tag: rename_json_actortokendetails
-      field: json.ActorTokenDetails
-      target_field: cloudflare_logpush.audit.actor.token_details
-      ignore_missing: true
-  - rename:
-      tag: rename_json_resourceproduct
-      field: json.ResourceProduct
-      target_field: cloudflare_logpush.audit.resource.product
-      ignore_missing: true
-  - rename:
-      tag: rename_json_resourcescope
-      field: json.ResourceScope
-      target_field: cloudflare_logpush.audit.resource.scope
-      ignore_missing: true
-  - rename:
-      tag: rename_json_resourcerequest
-      field: json.ResourceRequest
-      target_field: cloudflare_logpush.audit.resource.request
-      ignore_missing: true
-  - rename:
-      tag: rename_json_resourceresponse
-      field: json.ResourceResponse
-      target_field: cloudflare_logpush.audit.resource.response
-      ignore_missing: true
-  - rename:
-      tag: rename_json_resourcevalue
-      field: json.ResourceValue
-      target_field: cloudflare_logpush.audit.resource.value
-      ignore_missing: true
-  ## Fields derived from `Raw`. Cloudflare does not document its keys; method, status_code, uri,
-  ## cf_ray_id and user_agent are seen in real events, and `Raw` can be empty. Values are
-  ## type-checked into ECS fields, and `Raw` is kept whole.
-  - set:
-      tag: set_http_request_method_from_json_raw_method
-      field: http.request.method
-      copy_from: json.Raw.method
-      ignore_empty_value: true
-  - convert:
-      tag: convert_json_raw_status_code_to_long
-      field: json.Raw.status_code
-      target_field: http.response.status_code
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            tag: append_error_message_raw_status_code
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      tag: set_url_original_from_json_raw_uri
-      field: url.original
-      copy_from: json.Raw.uri
-      ignore_empty_value: true
-  - convert:
-      tag: convert_json_raw_cf_ray_id_to_string
-      field: json.Raw.cf_ray_id
-      target_field: cloudflare_logpush.audit.ray.id
-      type: string
-      ignore_missing: true
-  - user_agent:
-      tag: user_agent_json_raw_user_agent
-      field: json.Raw.user_agent
-      target_field: user_agent
-      ignore_missing: true
-  - rename:
-      tag: rename_json_raw
-      field: json.Raw
-      target_field: cloudflare_logpush.audit.raw
-      ignore_missing: true
   - append:
       tag: append_related_user
       field: related.user
@@ -385,6 +245,7 @@ processors:
       tag: remove_others
       field:
         - cloudflare_logpush.audit.timestamp
+        - cloudflare_logpush.audit.action.result
         - cloudflare_logpush.audit.action.type
         - cloudflare_logpush.audit.id
         - cloudflare_logpush.audit.interface

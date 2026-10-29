@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
 
 Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
@@ -38,7 +38,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 ### Zero Trust events
 
 - `access_request`: HTTP requests to sites protected by Cloudflare Access. See [Access Requests schema](https://developers.cloudflare.com/logs/reference/log-fields/account/access_requests/).
-- `audit`: Authentication events through Cloudflare Access, plus account-level configuration and administrative actions. The data stream supports both the `audit_logs` (v1) and `audit_logs_v2` Logpush datasets; the schema is detected automatically from the fields in each event, so no setting is needed. See [Audit Logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/audit_logs/) and [Audit Logs V2 schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/audit_logs_v2/).
+- `audit`: Authentication events through Cloudflare Access, plus account-level configuration and administrative actions. See [Audit Logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/audit_logs/).
 - `casb`: Security issues detected by Cloudflare CASB in connected SaaS applications. See [CASB Findings schema](https://developers.cloudflare.com/logs/reference/log-fields/account/casb_findings/).
 - `device_posture`: Device posture status from the Cloudflare One Client (WARP). See [Device Posture Results schema](https://developers.cloudflare.com/logs/reference/log-fields/account/device_posture_results/).
 - `gateway_dns`: DNS queries inspected by Cloudflare Gateway. See [Gateway DNS schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_dns/).
@@ -50,6 +50,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 
 ### Non Zero Trust events
 
+- `audit_logs_v2`: Account and zone level configuration and administrative actions recorded by Cloudflare Audit Logs v2. See [Audit Logs v2 schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/audit_logs_v2/).
 - `dns`: Zone-scoped authoritative DNS query logs. See [DNS logs schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/dns_logs/).
 - `dns_firewall`: Cloudflare DNS Firewall query and response logs. See [DNS Firewall logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/dns_firewall_logs/).
 - `dlp_forensic_copies`: Data Loss Prevention forensic copies of content that matched a DLP profile. See [DLP Forensic Copies schema](https://developers.cloudflare.com/logs/reference/log-fields/account/dlp_forensic_copies/).
@@ -71,7 +72,7 @@ Integrating Cloudflare Logpush with Elastic provides centralized visibility acro
 - Investigating traffic, WAF, and DDoS-mitigation events from the Cloudflare edge (`http_request`, `firewall_event`, `network_analytics`).
 - Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `warp_config_changes`, `warp_toggle_changes`).
 - Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
-- Auditing administrative activity on the Cloudflare account (`audit`).
+- Auditing administrative activity on the Cloudflare account (`audit`, `audit_logs_v2`).
 - Troubleshooting DNS and client-side performance issues (`dns`, `dns_firewall`, `nel_report`, `workers_trace`).
 
 ## What do I need to use this integration?
@@ -122,6 +123,7 @@ Configure one of the following delivery pipelines before enabling the integratio
   | -------------------------- | ---------------------- |
   | Access Request             | access_request         |
   | Audit Logs                 | audit_logs             |
+  | Audit Logs v2              | audit_logs_v2          |
   | CASB findings              | casb                   |
   | Device Posture Results     | device_posture         |
   | DLP Forensic Copies        | dlp_forensic_copies    |
@@ -163,7 +165,6 @@ Configure one of the following delivery pipelines before enabling the integratio
 - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
 - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
 - It is recommended to use AWS SQS for Cloudflare Logpush.
-- To collect the `audit_logs_v2` dataset through SQS, add `audit_logs_v2/` to the **[SQS] File Selectors** of the Audit data stream, because the default selector only matches the `audit_logs/` prefix.
 
 #### Collect data from S3-Compatible Cloudflare R2 Buckets
 
@@ -464,9 +465,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-30T20:19:48.000Z",
     "agent": {
-        "ephemeral_id": "40e5b225-8c53-496f-ac39-3ee8e0e16f10",
-        "id": "ffc3bcbe-fb3e-4c8e-83e7-100b3ef15b22",
-        "name": "elastic-agent-88721",
+        "ephemeral_id": "7caa446a-60b4-42bd-a8be-01eab6c59082",
+        "id": "c5ea9366-b921-478c-88a3-2d6437c654b2",
+        "name": "elastic-agent-70377",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -508,14 +509,14 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.audit",
-        "namespace": "43350",
+        "namespace": "70305",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "ffc3bcbe-fb3e-4c8e-83e7-100b3ef15b22",
+        "id": "c5ea9366-b921-478c-88a3-2d6437c654b2",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -527,7 +528,7 @@ An example event for `audit` looks as following:
         ],
         "dataset": "cloudflare_logpush.audit",
         "id": "73fd39ed-5aab-4a2a-b93c-c9a4abf0c425",
-        "ingested": "2026-10-23T12:24:43Z",
+        "ingested": "2026-05-18T06:36:56Z",
         "kind": "event",
         "original": "{\"ActionResult\":true,\"ActionType\":\"token_create\",\"ActorEmail\":\"user@example.com\",\"ActorID\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ActorIP\":\"81.2.69.142\",\"ActorType\":\"user\",\"ID\":\"73fd39ed-5aab-4a2a-b93c-c9a4abf0c425\",\"Interface\":\"UI\",\"Metadata\":{\"token_name\":\"test\",\"token_tag\":\"b7261c49a793a82678d12285f0bc1401\"},\"NewValue\":{\"key1\":\"value1\",\"key2\":\"value2\"},\"OldValue\":{\"key3\":\"value4\",\"key4\":\"value4\"},\"OwnerID\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ResourceID\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ResourceType\":\"account\",\"When\":\"2021-11-30T20:19:48Z\"}",
         "outcome": "success",
@@ -575,16 +576,11 @@ An example event for `audit` looks as following:
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloudflare_logpush.audit.account.id | The Cloudflare account ID. | keyword |
-| cloudflare_logpush.audit.account.name | The Cloudflare account name. | keyword |
-| cloudflare_logpush.audit.action.description | Description of action taken. | text |
 | cloudflare_logpush.audit.action.result | Whether the action was successful. | keyword |
 | cloudflare_logpush.audit.action.type | Type of action taken. | keyword |
-| cloudflare_logpush.audit.actor.context | Context of the actor. | keyword |
 | cloudflare_logpush.audit.actor.email | Email of the actor. | keyword |
 | cloudflare_logpush.audit.actor.id | Unique identifier of the actor in Cloudflare system. | keyword |
 | cloudflare_logpush.audit.actor.ip | Physical network address of the actor. | ip |
-| cloudflare_logpush.audit.actor.token_details | Details of how the actor is authenticated. | flattened |
 | cloudflare_logpush.audit.actor.type | Type of user that started the audit trail. | keyword |
 | cloudflare_logpush.audit.id | Unique identifier of an audit log. | keyword |
 | cloudflare_logpush.audit.interface | Entry point or interface of the audit log. | text |
@@ -592,18 +588,184 @@ An example event for `audit` looks as following:
 | cloudflare_logpush.audit.new_value | Contains the new value for the audited item. | flattened |
 | cloudflare_logpush.audit.old_value | Contains the old value for the audited item. | flattened |
 | cloudflare_logpush.audit.owner.id | The identifier of the user that was acting or was acted on behalf of. | keyword |
-| cloudflare_logpush.audit.raw | Raw data. | flattened |
-| cloudflare_logpush.audit.ray.id | The Cloudflare Ray ID of the API request that produced the audit event. | keyword |
 | cloudflare_logpush.audit.resource.id | Unique identifier of the resource within Cloudflare system. | keyword |
-| cloudflare_logpush.audit.resource.product | Resource product. | keyword |
-| cloudflare_logpush.audit.resource.request | Resource request. | flattened |
-| cloudflare_logpush.audit.resource.response | Resource response. | flattened |
-| cloudflare_logpush.audit.resource.scope | Resource scope. | keyword |
 | cloudflare_logpush.audit.resource.type | The type of resource that was changed. | keyword |
-| cloudflare_logpush.audit.resource.value | Resource value. | flattened |
 | cloudflare_logpush.audit.timestamp | When the change happened. | date |
-| cloudflare_logpush.audit.zone.id | The Cloudflare zone ID. | keyword |
-| cloudflare_logpush.audit.zone.name | The Cloudflare zone name. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
+| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
+| gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
+| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+
+
+#### audit_logs_v2
+
+This is the `audit_logs_v2` dataset.
+
+##### Example
+
+An example event for `audit_v2` looks as following:
+
+```json
+{
+    "@timestamp": "2026-09-24T09:10:36.000Z",
+    "agent": {
+        "ephemeral_id": "1f0f25a7-8362-4abd-8ef9-2b84b13489ad",
+        "id": "aa775f21-c60a-4fe9-a953-5c209850c5f8",
+        "name": "elastic-agent-50416",
+        "type": "filebeat",
+        "version": "8.17.1"
+    },
+    "cloudflare_logpush": {
+        "audit_logs_v2": {
+            "account": {
+                "id": "a1b2c3d4e5f60718293a4b5c6d7e8f90",
+                "name": "Example Account"
+            },
+            "action": {
+                "description": "Validate destination",
+                "result": "success"
+            },
+            "actor": {
+                "context": "dash",
+                "type": "user"
+            },
+            "raw": {
+                "cf_ray_id": "8a1b2c3d4e5f0001",
+                "method": "POST",
+                "status_code": 200,
+                "uri": "/accounts/a1b2c3d4e5f60718293a4b5c6d7e8f90/logpush/validate/destination",
+                "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36"
+            },
+            "ray": {
+                "id": "8a1b2c3d4e5f0001"
+            },
+            "resource": {
+                "product": "logpush",
+                "response": {
+                    "valid": true
+                },
+                "scope": "accounts",
+                "type": "validate.destination"
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.audit_logs_v2",
+        "namespace": "26170",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "aa775f21-c60a-4fe9-a953-5c209850c5f8",
+        "snapshot": false,
+        "version": "8.17.1"
+    },
+    "event": {
+        "action": "create",
+        "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
+        "dataset": "cloudflare_logpush.audit_logs_v2",
+        "id": "01900000-0000-7000-8000-000000000001",
+        "ingested": "2026-10-29T09:08:41Z",
+        "kind": "event",
+        "original": "{\"AccountID\":\"a1b2c3d4e5f60718293a4b5c6d7e8f90\",\"AccountName\":\"Example Account\",\"ActionDescription\":\"Validate destination\",\"ActionResult\":\"success\",\"ActionTimestamp\":\"2026-09-24T09:10:36Z\",\"ActionType\":\"create\",\"ActorContext\":\"dash\",\"ActorEmail\":\"user@example.com\",\"ActorID\":\"f0e1d2c3b4a5968778695a4b3c2d1e0f\",\"ActorIPAddress\":\"203.0.113.10\",\"ActorTokenDetails\":{},\"ActorType\":\"user\",\"AuditLogID\":\"01900000-0000-7000-8000-000000000001\",\"Raw\":{\"cf_ray_id\":\"8a1b2c3d4e5f0001\",\"method\":\"POST\",\"status_code\":200,\"uri\":\"/accounts/a1b2c3d4e5f60718293a4b5c6d7e8f90/logpush/validate/destination\",\"user_agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36\"},\"ResourceID\":\"\",\"ResourceProduct\":\"logpush\",\"ResourceRequest\":{},\"ResourceResponse\":{\"message\":\"\",\"valid\":true},\"ResourceScope\":\"accounts\",\"ResourceType\":\"validate.destination\",\"ResourceValue\":{},\"ZoneID\":\"\",\"ZoneName\":\"\"}",
+        "outcome": "success",
+        "type": [
+            "creation"
+        ]
+    },
+    "http": {
+        "request": {
+            "method": "POST"
+        },
+        "response": {
+            "status_code": 200
+        }
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "related": {
+        "ip": [
+            "203.0.113.10"
+        ],
+        "user": [
+            "f0e1d2c3b4a5968778695a4b3c2d1e0f",
+            "user@example.com"
+        ]
+    },
+    "source": {
+        "ip": "203.0.113.10"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cloudflare_logpush-audit_logs_v2"
+    ],
+    "url": {
+        "original": "/accounts/a1b2c3d4e5f60718293a4b5c6d7e8f90/logpush/validate/destination"
+    },
+    "user": {
+        "email": "user@example.com",
+        "id": "f0e1d2c3b4a5968778695a4b3c2d1e0f"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Mac"
+        },
+        "name": "Chrome",
+        "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "os": {
+            "full": "Mac OS X 10.15.7",
+            "name": "Mac OS X",
+            "version": "10.15.7"
+        },
+        "version": "154.0.0.0"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
+| cloudflare_logpush.audit_logs_v2.account.id | The Cloudflare account ID. | keyword |
+| cloudflare_logpush.audit_logs_v2.account.name | The Cloudflare account name. | keyword |
+| cloudflare_logpush.audit_logs_v2.action.description | Description of action taken. | text |
+| cloudflare_logpush.audit_logs_v2.action.result | Whether the action was successful. | keyword |
+| cloudflare_logpush.audit_logs_v2.actor.context | Context of the actor. | keyword |
+| cloudflare_logpush.audit_logs_v2.actor.token_details | Details of how the actor is authenticated. | flattened |
+| cloudflare_logpush.audit_logs_v2.actor.type | Type of user that started the audit trail. | keyword |
+| cloudflare_logpush.audit_logs_v2.raw | Raw data. | flattened |
+| cloudflare_logpush.audit_logs_v2.ray.id | The Cloudflare Ray ID of the API request that produced the audit event. | keyword |
+| cloudflare_logpush.audit_logs_v2.resource.id | Unique identifier of the resource within Cloudflare's system. | keyword |
+| cloudflare_logpush.audit_logs_v2.resource.product | Resource product. | keyword |
+| cloudflare_logpush.audit_logs_v2.resource.request | Resource request. | flattened |
+| cloudflare_logpush.audit_logs_v2.resource.response | Resource response. | flattened |
+| cloudflare_logpush.audit_logs_v2.resource.scope | Resource scope. | keyword |
+| cloudflare_logpush.audit_logs_v2.resource.type | The type of resource that was changed. | keyword |
+| cloudflare_logpush.audit_logs_v2.resource.value | Resource value. | flattened |
+| cloudflare_logpush.audit_logs_v2.zone.id | The Cloudflare zone ID. | keyword |
+| cloudflare_logpush.audit_logs_v2.zone.name | The Cloudflare zone name. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
