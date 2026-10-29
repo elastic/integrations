@@ -159,7 +159,7 @@ The feed is polled as a snapshot and unchanged indicators are republished each i
 
 Original API payload preservation is disabled by default for TI Feed and IP Report to reduce duplicate storage. Enable **Preserve original event** when raw response content is needed for investigation.
 
-The feed key is sent as a query parameter required by the provider. Transport and decoding failures emit fixed messages without the request URL or key. Per-request automatic retries are disabled because the Agent retry logger can log query-string credentials before CEL error handling; the next configured polling interval attempts collection again. Do not enable request tracing without reviewing credential redaction.
+The feed key is sent as a query parameter required by the provider. Transport and decoding failures emit fixed messages without the request URL or key. Per-request automatic retries are disabled because the Agent retry logger can log query-string credentials before CEL error handling; the next configured polling interval attempts collection again. See [Request tracing](#request-tracing) for the security warning before enabling tracing.
 
 Review the rule's source indices before enabling it: the packaged default is `logs-*` with ECS network/IP conditions, so other network datasets can also match. Narrow the source scope to your intended firewall indices when necessary. Dashboard traffic panels include the listed firewall datasets; detection scope and displayed traffic scope must be checked together.
 
@@ -371,6 +371,8 @@ health, and detection rule execution time. No throughput benchmark is claimed;
 measure a representative event rate before increasing production traffic.
 
 ### Request tracing
+
+The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
 
 The advanced **Enable request tracing** option is off by default for each CEL data
 stream. It writes bounded, rotated files under the Agent's `logs/cel` directory.
