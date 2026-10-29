@@ -97,7 +97,7 @@ LOOKUP_RISK_FIELDS = words(
     "trace.id transaction.id span.id event.id error.id source.ip destination.ip client.ip "
     "server.ip user.name user.id url.path http.request.id host.id")
 LOOKUP_RISK_PREFIXES = ("file.hash.", "process.hash.", "process.parent.hash.", "dll.hash.")
-# ECS array fields, used when elastic-package's ECS cache is missing (no types then).
+# ECS array fields, used when elastic-package's ECS cache is missing.
 ECS_ARRAYS = words(
     "tags event.category event.type host.ip host.mac related.ip related.hash related.hosts "
     "related.user dns.answers dns.resolved_ip dns.header_flags process.args "
@@ -114,6 +114,11 @@ ECS_NO_DOC_VALUES = words(
     "threat.indicator.file.x509.public_key_exponent "
     "threat.enrichments.indicator.x509.public_key_exponent "
     "threat.enrichments.indicator.file.x509.public_key_exponent")
+# ECS types of the sort and lookup candidates (all single-valued, ECS 9.5), used when
+# elastic-package's ECS cache is missing: sort proposals and lookup review need them.
+ECS_FALLBACK_TYPES = {**dict.fromkeys(SORT_CANDIDATES + RECEIVER_SORT_FIELDS + ["host.name"], "keyword"),
+                      **dict.fromkeys(LOOKUP_RISK_FIELDS, "keyword"), "url.path": "wildcard",
+                      **dict.fromkeys(words("source.ip destination.ip client.ip server.ip"), "ip")}
 TEMP_ROOTS = words("json _temp_ _temp _tmp _conf _ingest")
 
 
@@ -169,9 +174,9 @@ def ecs():
                                   "array": "array" in (fdef.get("normalize") or []),
                                   "doc_values": fdef.get("doc_values", True)}
         _ECS_SOURCE.append(f"ECS cache {versions[-1]}" if _ECS else "no ECS cache: built-in fallback")
-        _ECS.update({} if _ECS else {f: {"type": None, "array": f in ECS_ARRAYS,
+        _ECS.update({} if _ECS else {f: {"type": ECS_FALLBACK_TYPES.get(f), "array": f in ECS_ARRAYS,
                                          "doc_values": f not in ECS_NO_DOC_VALUES}
-                                     for f in ECS_ARRAYS | ECS_NO_DOC_VALUES})
+                                     for f in ECS_ARRAYS | ECS_NO_DOC_VALUES | set(ECS_FALLBACK_TYPES)})
     return _ECS
 
 
@@ -912,6 +917,10 @@ def markdown(r):
            f"package `logsdb_columnar`: `{r.get('logsdb_columnar')}`"
            + (f"; {r['ecs']}" if r.get("ecs") else ""),
            "- Mapping errors and warnings: run `elastic-package check` (package-spec >= 3.8.0)."]
+    out += [f"- **No ECS cache** (`{ECS_CACHE}`): fields declared `external: ecs` have no type beyond "
+            "the sort and lookup candidates, so proposals can be weaker. Run `elastic-package build` on a "
+            "package with an ECS dependency once, then run this again."] \
+        if str(r.get("ecs")).startswith("no ECS") else []
     out += [f"- Out of scope: {r['out_of_scope_reason']}"] if r.get("out_of_scope_reason") else []
     out += [f"- Blocked: {r['blocked_reason']}: don't declare readiness."] if r.get("blocked_reason") else []
     out += [f"- Dashboard fields (benchmark): {', '.join(r['dashboard_fields'])}"] \

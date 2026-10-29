@@ -137,7 +137,9 @@ python3 <skill-dir>/scripts/audit.py packages/<pkg> --format json
 uv run <skill-dir>/scripts/audit.py packages/<pkg>             # installs PyYAML
 ```
 
-Flags: `--no-dashboards`, `--rules DIR` (default
+It reads ECS types from elastic-package's cache (`~/.elastic-package/cache/fields/ecs`,
+filled by any `elastic-package build` of a package with an ECS dependency) and warns when
+it is missing. Flags: `--no-dashboards`, `--rules DIR` (default
 `packages/security_detection_engine/kibana/security_rule`), `--no-rules`. Per logs
 stream it reports a status (`READY`, `NEEDS_REVIEW`, `BLOCKED`, `OUT_OF_SCOPE`; `READY`
 only means this script found nothing), the effective `logsdb_columnar`, and findings:
