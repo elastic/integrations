@@ -1,0 +1,133 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 1
+            },
+            "group_by": [
+                "source.ip",
+                "gcp.vertexai.audit.resource_name",
+                "cloud.project.id"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a single source IP making a high number of Vertex AI GenerateContent (or StreamGenerateContent) audit calls against the same model resource in the lookback window. That pattern fits model extraction, automated scraping, or a compromised caller burning prediction quota.",
+        "false_positives": [
+            "Approved batch evaluation clients or shared NAT egress. Raise the threshold or exclude known source IP prefixes."
+        ],
+        "from": "now-60m",
+        "interval": "10m",
+        "investigation_fields": {
+            "field_names": [
+                "source.ip",
+                "gcp.vertexai.audit.resource_name",
+                "cloud.project.id",
+                "Esql.event_count",
+                "Esql.event_action_values",
+                "Esql.timestamp_first_seen",
+                "Esql.timestamp_last_seen"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GCP Vertex AI High GenerateContent Volume From Single IP",
+        "note": "## Triage and analysis\n\n### Investigating GCP Vertex AI High GenerateContent Volume From Single IP\n\nA single `source.ip` issued an unusually high number of Vertex AI `GenerateContent` /\n`StreamGenerateContent` audit calls against one model resource\n(`gcp.vertexai.audit.resource_name`) in the lookback window. That pattern is consistent with\nmodel extraction, automated scraping, or a compromised caller burning prediction quota.\n\n#### Possible investigation steps\n\n- Note `source.ip`, `gcp.vertexai.audit.resource_name`, `cloud.project.id`, and `Esql.event_count`\n  on the alert. Compare the count to the project's normal peak for that model.\n- Confirm whether the IP is known egress for an approved app, CI runner, or shared NAT. Check\n  `Esql.event_action_values` for StreamGenerateContent vs GenerateContent mix.\n- Pivot to `logs-gcp_vertexai.prompt_response_logs-*` for the same time window and model: sample\n  prompts, token volume, and whether content looks like systematic extraction (repetitive probes,\n  large context dumps).\n- Pivot auditlogs for the same IP: other aiplatform methods, new service accounts, or\n  `SetPublisherModelConfig` changes that could hide or redirect logging.\n- Identify `client.user.email` on matching GenerateContent audit events to map IP \u2192 principal.\n\n### False positive analysis\n\n- Shared corporate NAT or proxy egress aggregating many legitimate users onto one IP.\n- Approved batch evaluation, load tests, or data-migration jobs. Validate with change tickets and\n  expected schedules before escalating.\n\n### Response and remediation\n\n- If unauthorized: revoke or rotate credentials for the calling principal, restrict the IP via VPC\n  Service Controls / firewall, and apply per-IP or per-principal quotas.\n- Review billing and quota usage for the model; hunt for similar volume from other IPs in the same\n  project.\n",
+        "query": "from logs-gcp_vertexai.auditlogs-*\n| where\n    data_stream.dataset == \"gcp_vertexai.auditlogs\" and\n    source.ip is not null and\n    (\n        event.action like \"*PredictionService.GenerateContent*\" or\n        event.action like \"*PredictionService.StreamGenerateContent*\"\n    ) and\n    (gcp.vertexai.audit.status.code is null or gcp.vertexai.audit.status.code == 0)\n| stats\n    Esql.event_count = count(*),\n    Esql.timestamp_first_seen = min(@timestamp),\n    Esql.timestamp_last_seen = max(@timestamp),\n    Esql.event_action_values = values(event.action)\n  by\n    source.ip,\n    gcp.vertexai.audit.resource_name,\n    cloud.project.id\n| where Esql.event_count >= 100\n| keep\n    source.ip,\n    gcp.vertexai.audit.resource_name,\n    cloud.project.id,\n    Esql.event_count,\n    Esql.timestamp_first_seen,\n    Esql.timestamp_last_seen,\n    Esql.event_action_values\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/gcp_vertexai",
+            "https://genai.owasp.org/llmrisk/llm10-model-theft"
+        ],
+        "related_integrations": [
+            {
+                "package": "gcp_vertexai",
+                "version": ">=1.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.project.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.vertexai.audit.resource_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.vertexai.audit.status.code",
+                "type": "integer"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "a9f28b66-a69e-4d5b-be8d-94e5eda6c736",
+        "setup": "## Setup\n\nRequires GCP Vertex AI `auditlogs` for `aiplatform.googleapis.com`. Raise `Esql.event_count` above your normal peak\nbefore broad enablement.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Domain: Cloud",
+            "Data Source: GCP Vertex AI",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Platform: GCP",
+            "Service: GCP Vertex AI",
+            "Use Case: Model Theft",
+            "Use Case: Threat Detection",
+            "Tactic: Collection",
+            "Threat: LLMjacking",
+            "Threat: Unauthorized AI Usage",
+            "Mitre Atlas: AML.T0024",
+            "Mitre Atlas: AML.T0024.002",
+            "Mitre Atlas: AML.T0029",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1530",
+                        "name": "Data from Cloud Storage",
+                        "reference": "https://attack.mitre.org/techniques/T1530/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "a9f28b66-a69e-4d5b-be8d-94e5eda6c736_1",
+    "type": "security-rule"
+}

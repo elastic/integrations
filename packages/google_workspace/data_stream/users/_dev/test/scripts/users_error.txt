@@ -1,0 +1,65 @@
+# The users listing returns 403. The CEL program emits one error document
+# for the failed base inventory request and ends the cycle. This cannot be a
+# system test: the single error object marks the input as Degraded, which
+# the system test agent log check rejects.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+[!exec:openssl] skip 'Skipping test requiring absent openssl command'
+
+# The deploy mock's credentials service writes its file where the script test
+# agent cannot read it, so generate a key and pass the credentials as JWT JSON.
+exec openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out key.pem
+exec jq -n --rawfile key key.pem --slurpfile creds credentials.json -f test_config.jq
+cp stdout test_config.yaml
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Reuse the package's mock service.
+exec ln -s ${PACKAGE_ROOT}/_dev/deploy/docker google_workspace
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} google_workspace
+
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 20s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+exec jq -r '.hits.hits[]._source.error.code' got_docs.json
+stdout '^403$'
+
+exec jq -r '.hits.hits[]._source.error.message' got_docs.json
+stdout '^GET http://svc-google_workspace:8080/admin/directory/v1/users: .*Not Authorized'
+
+exec jq '[.hits.hits[]._source | select(.google_workspace.users != null)] | length' got_docs.json
+stdout '^0$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down google_workspace
+
+-- credentials.json --
+{
+  "type": "service_account",
+  "project_id": "script-tests",
+  "private_key_id": "a2ef9c637b4176ec994606cb08724a1b79bc0666",
+  "client_email": "foo@bar.com",
+  "client_id": "007155790781103885639",
+  "token_uri": "http://svc-google_workspace:8080/token"
+}
+-- test_config.jq --
+{
+  "input": "cel",
+  "vars": {
+    "jwt_json": ($creds[0] | .private_key = $key | tojson),
+    "delegated_account": "test@example.com"
+  },
+  "data_stream": {
+    "vars": {
+      "directory_api_host": "http://svc-google_workspace:8080",
+      "batch_size": 3,
+      "domain": "forbidden.example.com"
+    }
+  }
+}

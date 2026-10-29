@@ -128,8 +128,8 @@ program: |
                         "api_key": state.?api_key.orValue(""),
                         "username": state.?username.orValue(""),
                         "password": state.?password.orValue(""),
-                        "want_more": has(body.next) && body.next != null && body.next != "",
-                        "next_url": (has(body.next) && body.next != null && body.next != "") ?
+                        "want_more": body.?more.orValue(false) && has(body.next) && body.next != null && body.next != "",
+                        "next_url": (body.?more.orValue(false) && has(body.next) && body.next != null && body.next != "") ?
                             (
                                 state.url.trim_right("/") + "/?" + {
                                     "next": [string(body.next)],
