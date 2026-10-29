@@ -42,6 +42,15 @@ Organization ID, Cloud API Key, Currency Rates, and Remote Project API Keys are 
 | **Chargeable Unit Rate** | No | Multiplier from chargeable units (ECU) to configured currency |
 | **Remote Project API Keys** | Yes | Optional project-specific keys (`<project_id>:<encoded_key>`) with index `monitor` privilege |
 
+#### Registering Remote Project API Keys
+
+To monitor index and data stream usage on remote Serverless projects, generate a least-privileged key on each remote project (`cluster: ["monitor"]`, `indices: ["*"] ["monitor"]`).
+
+In **Integrations → Chargeback Serverless → Settings**:
+- **Adding multiple projects:** Click **Add item** (or **+**) to add an input row for each remote project in `<project_id>:<encoded_key>` format.
+- **Updating existing keys:** Because this field is stored as an encrypted Fleet Policy Secret, Kibana masks saved keys. Click **↺ Replace remote project elasticsearch api keys** and re-enter **all** keys you want to retain (both existing and new) before saving.
+
+
 ### Alerts
 
 Create rules from the packaged templates under **Stack Management → Rules**:
