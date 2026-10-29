@@ -494,6 +494,16 @@ def pick_candidate(fields, sources, arrays, pipes, sample, allow_agent_id, rejec
     return None, ""
 
 
+def receiver_field_ok(fields, name, arrays, pipes):
+    """A receiver's device id: sortable as declared, or an undeclared single-valued ECS keyword
+    (the proposal declares it)."""
+    if name in fields:
+        return sortable(fields, name, arrays, pipes)
+    ecs_def = ecs().get(name) or {}
+    return ecs_def.get("type") in SORTABLE_STRING and not ecs_def.get("array") \
+        and not multi_valued(fields, name, arrays, pipes)
+
+
 def recommend_sort(inputs, fields, sources, filter_fields, arrays, pipes, sample):
     kinds = {"host-local": HOST_INPUTS, "receiver": RECEIVER_INPUTS, "remote/API": COLLECTOR_INPUTS}
     by_kind = {k: sorted(i for i in inputs if i in v) for k, v in kinds.items()}
@@ -524,13 +534,17 @@ def recommend_sort(inputs, fields, sources, filter_fields, arrays, pipes, sample
 
     if host and not receiver and not api and not unknown:
         return default_or_degraded("`host.name` is agent-populated and sort-compatible")
-    device = next((f for f in RECEIVER_SORT_FIELDS if f in pipes.targets), None)
+    written = [f for f in RECEIVER_SORT_FIELDS if f in pipes.targets] if receiver else []
+    rejected += [f for f in written if not receiver_field_ok(fields, f, arrays, pipes)]
+    device = next((f for f in written if f not in rejected), None)
     if receiver and not api:
         if device:
             return result("receiver_proposed", [device, "@timestamp"], f"the pipeline writes `{device}`")
         if "host.name" in pipes.unconditional:
             return default_or_degraded("the pipeline sets `host.name` from the header on every event")
-        return result("receiver_no_candidate", ["@timestamp"], "no `observer.*` device id in the pipeline",
+        why = f"the pipeline writes {', '.join(f'`{f}`' for f in written)}, which cannot be sorted on" \
+            if written else "no `observer.*` device id in the pipeline"
+        return result("receiver_no_candidate", ["@timestamp"], why,
                       recommendation="receiver input — no confident candidate; needs human choice")
     candidate, tier = pick_candidate(fields, sources, arrays, pipes, sample, not api, rejected)
     if candidate:
@@ -638,12 +652,19 @@ def scan_kibana(pkg_dir, count_fields):
     return referenced, filtered, consumers
 
 
-def latest_transforms(pkg_dir):
-    """The package's `latest` transforms: each copies the newest `_source` per key."""
+def source_transforms(pkg_dir):
+    """The package's transforms that read `_source`: every `latest` one (it copies the newest
+    `_source` per key), and any other whose scripts read it."""
     out, root = [], os.path.join(pkg_dir, "elasticsearch", "transform")
     for name in sorted(os.listdir(root)) if os.path.isdir(root) else []:
-        doc = read_yaml(os.path.join(root, name, "transform.yml"))
-        if not isinstance(doc, dict) or not isinstance(doc.get("latest"), dict):
+        path = os.path.join(root, name, "transform.yml")
+        doc = read_yaml(path)
+        if not isinstance(doc, dict):
+            continue
+        latest = isinstance(doc.get("latest"), dict)
+        text = read(path, lambda fh: fh.read(), "replace") or ""
+        hits = source_hits(text) if "_source" in text else []
+        if not latest and not hits:
             continue
         source = doc.get("source") if isinstance(doc.get("source"), dict) else {}
         indices = source.get("index")
@@ -651,29 +672,30 @@ def latest_transforms(pkg_dir):
         dest = doc.get("dest") if isinstance(doc.get("dest"), dict) else {}
         m = re.search(r'ingestPipelineName\s+"([^"]+)"', str(dest.get("pipeline") or ""))
         out.append({"name": name, "file": f"elasticsearch/transform/{name}/transform.yml",
+                    "latest": latest, "hits": hits,
                     "patterns": [p.strip() for e in indices for p in str(e).split(",") if p.strip()],
                     "dest_index": dest.get("index"),
                     "dest_pipeline": m.group(1) if m else dest.get("pipeline")})
     return out
 
 
-_CATALOG_LATEST = {}
+_CATALOG_TRANSFORMS = {}
 
 
-def foreign_latest(packages_root, own):
-    """Other packages' `latest` transforms that could read a logs stream of `own`."""
-    if packages_root not in _CATALOG_LATEST:
-        _CATALOG_LATEST[packages_root] = [
+def foreign_transforms(packages_root, own):
+    """Other packages' transforms reading `_source` that could read a logs stream of `own`."""
+    if packages_root not in _CATALOG_TRANSFORMS:
+        _CATALOG_TRANSFORMS[packages_root] = [
             dict(t, package=p) for p in sorted(os.listdir(packages_root))
             if os.path.isdir(os.path.join(packages_root, p, "elasticsearch", "transform"))
-            for t in latest_transforms(os.path.join(packages_root, p))]
+            for t in source_transforms(os.path.join(packages_root, p))]
 
     def could_match(pattern):
         literal = strip_cluster(pattern).split("*", 1)[0].split("?", 1)[0]
         if not literal or literal.startswith("-"):
             return not literal
         return f"logs-{own}".startswith(literal) or literal.startswith(f"logs-{own}")
-    return [t for t in _CATALOG_LATEST[packages_root]
+    return [t for t in _CATALOG_TRANSFORMS[packages_root]
             if t["package"] != own and any(could_match(p) for p in t["patterns"])]
 
 
@@ -820,7 +842,7 @@ def audit_package(pkg_dir, dashboards=True, rules_dir="auto"):
         return result
     pkg_name = result["package"]
     referenced, filtered, kibana = scan_kibana(pkg_dir, dashboards)
-    latest = latest_transforms(pkg_dir) + foreign_latest(packages_root, own_dir)
+    transforms = source_transforms(pkg_dir) + foreign_transforms(packages_root, own_dir)
     result["dashboard_fields"] = [f for f, _ in referenced.most_common(15)]
     result["dashboard_filter_fields"] = [f for f, _ in filtered.most_common(15)]
     rules = load_rules(os.path.join(packages_root, RULES_SUBDIR) if rules_dir == "auto" else rules_dir)
@@ -833,7 +855,7 @@ def audit_package(pkg_dir, dashboards=True, rules_dir="auto"):
     attribution = attribute_rules(rules, logs, pkg_name, {str(t["name"]): [
         str(ds) for ds in t.get("data_streams") or []] for t in templates})
     for ds_name, ds_manifest in manifests.items():
-        context = (pkg_name, own_dir, result["logsdb_columnar"], filtered, kibana, latest, bool(rules))
+        context = (pkg_name, own_dir, result["logsdb_columnar"], filtered, kibana, transforms, bool(rules))
         stream = audit_stream(pkg_dir, ds_name, ds_manifest, attribution.get(ds_name, ([], [])), *context)
         result["data_streams"].append(stream)
         result["status"] = max(result["status"], stream["status"], key=STATUS_ORDER.index)
@@ -850,7 +872,7 @@ def audit_package(pkg_dir, dashboards=True, rules_dir="auto"):
 
 
 def audit_stream(pkg_dir, ds_name, manifest, rules, pkg_name, own_dir, package_value, filtered, kibana,
-                 latest, rules_scanned):
+                 transforms, rules_scanned):
     ds_dir = os.path.join(pkg_dir, "data_stream", ds_name)
     es = manifest.get("elasticsearch") if isinstance(manifest.get("elasticsearch"), dict) else {}
     itpl = es.get("index_template") if isinstance(es.get("index_template"), dict) else {}
@@ -879,13 +901,16 @@ def audit_stream(pkg_dir, ds_name, manifest, rules, pkg_name, own_dir, package_v
     findings.extend(finding("source_consumer_kibana", "review", f"Reads `_source`: {', '.join(a['hits'])}.",
                             a["file"]) for a in kibana)
     name = index_name(pkg_name, ds_name, manifest)
-    for tr in (t for t in latest if any(pattern_matches(p, name) for p in t["patterns"])):
+    for tr in (t for t in transforms if any(pattern_matches(p, name) for p in t["patterns"])):
         owner = tr.get("package")
+        where = f"packages/{owner}/{tr['file']}" if owner and owner != own_dir else tr["file"]
         findings.append(finding(
             "source_consumer_latest_transform", "review", f"`latest` transform `{tr['name']}` copies "
             f"`_source` into `{tr['dest_index']}`" + (f" through the pipeline `{tr['dest_pipeline']}`"
-                                                     if tr["dest_pipeline"] else "") + ".",
-            f"packages/{owner}/{tr['file']}" if owner and owner != own_dir else tr["file"]))
+                                                     if tr["dest_pipeline"] else "") + ".", where)
+            if tr["latest"] else finding(
+                "source_consumer_transform", "review",
+                f"Transform `{tr['name']}` reads `_source` in a script: {', '.join(tr['hits'])}.", where))
     direct, other = rules
     findings.extend(finding("source_consumer_detection_rule", "review", f"Detection rule \"{r['name']}\" "
                             f"reads `_source` ({', '.join(r['reads_source'])}).",
@@ -902,7 +927,8 @@ def audit_stream(pkg_dir, ds_name, manifest, rules, pkg_name, own_dir, package_v
                        "by_language": dict(sorted(Counter(r["language"] for r in direct).items())),
                        "names": [r["name"] for r in direct][:25],
                        "reading_source": [r["name"] for r in direct + other if r["reads_source"]]}
-    stream["lookup_candidates"] = lookup_candidates(direct, filtered, fields, sort["fields"])
+    kept = sort["existing"]["field"] if sort["existing"] else sort["fields"]
+    stream["lookup_candidates"] = lookup_candidates(direct, filtered, fields, kept)
     severities = {f["severity"] for f in findings}
     stream["status"] = "BLOCKED" if "blocker" in severities else \
         "NEEDS_REVIEW" if "review" in severities else "READY"
