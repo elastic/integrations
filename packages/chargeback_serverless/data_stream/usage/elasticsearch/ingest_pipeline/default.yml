@@ -21,6 +21,9 @@ processors:
       lang: painless
       tag: normalize_usage_fields
       source: |
+        if (ctx.project_name == null || ctx.project_name == '') {
+          ctx.project_name = ctx.project_id;
+        }
         if (ctx['@timestamp'] != null && ctx.project_id != null) {
           ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.project_id;
         }

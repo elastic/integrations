@@ -8,6 +8,45 @@ processors:
       lang: painless
       tag: set_composite_key
       source: |
+        if (ctx.project_name instanceof Map) {
+          def buckets = ctx.project_name.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.project_name = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.project_name.keySet());
+            ctx.project_name = keys.size() > 0 ? keys[0] : ctx.project_id;
+          }
+        }
+        if (ctx.project_type instanceof Map) {
+          def buckets = ctx.project_type.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.project_type = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.project_type.keySet());
+            ctx.project_type = keys.size() > 0 ? keys[0] : 'elasticsearch';
+          }
+        }
+        if (ctx.conf_chargeable_unit_rate_unit instanceof Map) {
+          def buckets = ctx.conf_chargeable_unit_rate_unit.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.conf_chargeable_unit_rate_unit = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.conf_chargeable_unit_rate_unit.keySet());
+            ctx.conf_chargeable_unit_rate_unit = keys.size() > 0 ? keys[0] : 'USD';
+          }
+        }
+        if (ctx.conf_currency_symbol instanceof Map) {
+          def buckets = ctx.conf_currency_symbol.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.conf_currency_symbol = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.conf_currency_symbol.keySet());
+            ctx.conf_currency_symbol = keys.size() > 0 ? keys[0] : '$';
+          }
+        }
+        if (ctx.project_name == null || ctx.project_name == '') {
+          ctx.project_name = ctx.project_id;
+        }
         if (ctx['@timestamp'] != null && ctx.project_id != null) {
           ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.project_id;
         }

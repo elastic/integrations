@@ -1,5 +1,5 @@
 config_version: 2
-interval: "24h"
+interval: "1h"
 resource.url: "{{cloud_api_base}}/api/v1/serverless/projects/elasticsearch"
 state:
   api_key: !!str {{cloud_api_key}}
@@ -11,9 +11,13 @@ state:
   conf_currency_unit: !!str {{currency_unit}}
   conf_currency_symbol: !!str {{currency_symbol}}
   project_keys:
+{{#if project_api_keys}}
 {{#each project_api_keys}}
     - !!str {{this}}
 {{/each}}
+{{else}}
+    []
+{{/if}}
 redact:
   fields:
     - api_key
@@ -55,7 +59,7 @@ program: |-
                         ).as(projects,
                           {
                             "events": projects.map(p,
-                              state.project_keys.filter(k, k.startsWith(p.id + ":")).as(pkeys,
+                              (state.?project_keys.orValue([]) != null ? state.project_keys : []).filter(k, k.startsWith(p.id + ":")).as(pkeys,
                                 size(pkeys) > 0 ? pkeys[0].split(":")[1] : (
                                   state.hub_es_api_key != "" ? state.hub_es_api_key : state.api_key
                                 )
@@ -81,12 +85,12 @@ program: |-
                                           "period_start": day_ts,
                                           "doc_type": "datastream",
                                           "project_id": p.id,
-                                          "project_name": p.name,
+                                          "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
                                           "project_type": p.project_type,
                                           "datastream": row.index,
-                                          "datastream_sum_indexing_time": int(row["indexing.index_time"]),
-                                          "datastream_sum_query_time": int(row["search.query_time"]),
-                                          "datastream_sum_data_set_store_size": int(row["dataset.size"]),
+                                          "datastream_sum_indexing_time": (has(row["indexing.index_time"]) && row["indexing.index_time"] != null && row["indexing.index_time"] != "") ? int(row["indexing.index_time"]) : 0,
+                                          "datastream_sum_query_time": (has(row["search.query_time"]) && row["search.query_time"] != null && row["search.query_time"] != "") ? int(row["search.query_time"]) : 0,
+                                          "datastream_sum_data_set_store_size": (has(row["dataset.size"]) && row["dataset.size"] != null && row["dataset.size"] != "") ? int(row["dataset.size"]) : 0,
                                           "conf_chargeable_unit_rate": double(state.conf_unit_rate),
                                           "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
                                           "conf_currency_symbol": state.conf_currency_symbol,
@@ -96,10 +100,10 @@ program: |-
                                         ml_body.trained_model_stats.map(m,
                                           {
                                             "@timestamp": day_ts,
-                                          "period_start": day_ts,
+                                            "period_start": day_ts,
                                             "doc_type": "ai_model",
                                             "project_id": p.id,
-                                            "project_name": p.name,
+                                            "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
                                             "project_type": p.project_type,
                                             "model_id": m.model_id,
                                             "task_type": has(m.pipeline_count) && int(m.pipeline_count) > 0 ? "ingest_inference" : "query_inference",
@@ -118,7 +122,7 @@ program: |-
                                           "period_start": day_ts,
                                           "doc_type": "project_status",
                                           "project_id": p.id,
-                                          "project_name": p.name,
+                                          "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
                                           "project_type": p.project_type,
                                           "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
                                           "es_url": dyn(p.endpoints).elasticsearch,
@@ -136,10 +140,10 @@ program: |-
                                   [
                                     {
                                       "@timestamp": day_ts,
-                                          "period_start": day_ts,
+                                      "period_start": day_ts,
                                       "doc_type": "project_status",
                                       "project_id": p.id,
-                                      "project_name": p.name,
+                                      "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
                                       "project_type": p.project_type,
                                       "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
                                       "es_url": dyn(p.endpoints).elasticsearch,

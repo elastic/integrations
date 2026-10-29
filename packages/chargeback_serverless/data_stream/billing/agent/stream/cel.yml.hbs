@@ -1,5 +1,5 @@
 config_version: 2
-interval: "24h"
+interval: "1h"
 resource.url: "{{billing_api_base}}/api/v2/billing/organizations/{{organization_id}}/costs/instances"
 state:
   api_key: !!str {{cloud_api_key}}
@@ -52,7 +52,7 @@ program: |-
                   "@timestamp": req.from.format(time_layout.RFC3339),
                   "period_start": req.from.format(time_layout.RFC3339),
                   "project_id": instance.id,
-                  "project_name": instance.name,
+                  "project_name": (has(instance.name) && instance.name != null && instance.name != "") ? instance.name : instance.id,
                   "project_type": instance.type,
                   "sku": line_item.sku,
                   "total_ecu": double(line_item.total_ecu),

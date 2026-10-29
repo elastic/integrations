@@ -23,6 +23,9 @@ processors:
       lang: painless
       tag: set_composite_key
       source: |
+        if (ctx.project_name == null || ctx.project_name == '') {
+          ctx.project_name = ctx.project_id;
+        }
         if (ctx['@timestamp'] != null && ctx.project_id != null) {
           ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.project_id;
         }
@@ -180,7 +183,3 @@ processors:
         - "%{WORD}.%{DATA:cost_type}_%{GREEDYDATA}"
       description: Derive a readable fallback cost_type from unknown SKUs
       if: ctx.cost_type == null && ctx.sku != null
-  - set:
-      field: event.ingested
-      value: "{{{_ingest.timestamp}}}"
-      tag: set_event_ingested

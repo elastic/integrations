@@ -8,30 +8,89 @@ processors:
       lang: painless
       tag: set_realized_pool_fields
       source: |
+        if (ctx.project_name instanceof Map) {
+          def buckets = ctx.project_name.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.project_name = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.project_name.keySet());
+            ctx.project_name = keys.size() > 0 ? keys[0] : ctx.project_id;
+          }
+        }
+        if (ctx.project_type instanceof Map) {
+          def buckets = ctx.project_type.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.project_type = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.project_type.keySet());
+            ctx.project_type = keys.size() > 0 ? keys[0] : 'elasticsearch';
+          }
+        }
+        if (ctx.conf_chargeable_unit_rate_unit instanceof Map) {
+          def buckets = ctx.conf_chargeable_unit_rate_unit.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.conf_chargeable_unit_rate_unit = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.conf_chargeable_unit_rate_unit.keySet());
+            ctx.conf_chargeable_unit_rate_unit = keys.size() > 0 ? keys[0] : 'USD';
+          }
+        }
+        if (ctx.conf_currency_symbol instanceof Map) {
+          def buckets = ctx.conf_currency_symbol.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.conf_currency_symbol = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.conf_currency_symbol.keySet());
+            ctx.conf_currency_symbol = keys.size() > 0 ? keys[0] : '$';
+          }
+        }
+        if (ctx.project_name == null || ctx.project_name == '') {
+          ctx.project_name = ctx.project_id;
+        }
         if (ctx['@timestamp'] != null && ctx.project_id != null) {
           ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.project_id;
         }
         double idx = 0.0;
-        if (ctx.indexing_ecu instanceof Map && ctx.indexing_ecu.val != null) {
-          idx = ((Number)ctx.indexing_ecu.val).doubleValue();
+        if (ctx.indexing_ecu instanceof Map) {
+          def v = ctx.indexing_ecu.val;
+          if (v instanceof Map && v.value != null) {
+            idx = ((Number)v.value).doubleValue();
+          } else if (v instanceof Number) {
+            idx = ((Number)v).doubleValue();
+          }
         } else if (ctx.indexing_ecu instanceof Number) {
           idx = ((Number)ctx.indexing_ecu).doubleValue();
         }
         double qry = 0.0;
-        if (ctx.query_ecu instanceof Map && ctx.query_ecu.val != null) {
-          qry = ((Number)ctx.query_ecu.val).doubleValue();
+        if (ctx.query_ecu instanceof Map) {
+          def v = ctx.query_ecu.val;
+          if (v instanceof Map && v.value != null) {
+            qry = ((Number)v.value).doubleValue();
+          } else if (v instanceof Number) {
+            qry = ((Number)v).doubleValue();
+          }
         } else if (ctx.query_ecu instanceof Number) {
           qry = ((Number)ctx.query_ecu).doubleValue();
         }
         double stg = 0.0;
-        if (ctx.storage_ecu instanceof Map && ctx.storage_ecu.val != null) {
-          stg = ((Number)ctx.storage_ecu.val).doubleValue();
+        if (ctx.storage_ecu instanceof Map) {
+          def v = ctx.storage_ecu.val;
+          if (v instanceof Map && v.value != null) {
+            stg = ((Number)v.value).doubleValue();
+          } else if (v instanceof Number) {
+            stg = ((Number)v).doubleValue();
+          }
         } else if (ctx.storage_ecu instanceof Number) {
           stg = ((Number)ctx.storage_ecu).doubleValue();
         }
         double ai = 0.0;
-        if (ctx.ai_ecu instanceof Map && ctx.ai_ecu.val != null) {
-          ai = ((Number)ctx.ai_ecu.val).doubleValue();
+        if (ctx.ai_ecu instanceof Map) {
+          def v = ctx.ai_ecu.val;
+          if (v instanceof Map && v.value != null) {
+            ai = ((Number)v.value).doubleValue();
+          } else if (v instanceof Number) {
+            ai = ((Number)v).doubleValue();
+          }
         } else if (ctx.ai_ecu instanceof Number) {
           ai = ((Number)ctx.ai_ecu).doubleValue();
         }
