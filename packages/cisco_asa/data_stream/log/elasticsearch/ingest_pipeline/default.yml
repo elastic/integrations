@@ -574,6 +574,25 @@ processors:
         CISCO_USER_OR_SGT_DST: (?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt})\))
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?)|[^$]+)
         CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
+  # 302303 is the state-bypass "Built" counterpart of 302304. Unlike 302013/302015 it has no
+  # inbound/outbound keyword: the "from" side is the initiator (source) and the "to" side is the responder.
+  # https://www.cisco.com/c/en/us/td/docs/security/asa/syslog/asa-syslog/syslog-messages-302003-to-342008.html
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '302303'"
+      tag: parse_302303
+      field: "message"
+      description: "302303"
+      patterns:
+        - ^Built %{NOTSPACE:network.transport} state-bypass connection %{NUMBER:_temp_.cisco.connection_id} from %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port} \(%{IPORHOST:_temp_.natsrcip}/%{NUMBER:_temp_.cisco.mapped_source_port}\)(\(%{CISCO_USER_OR_SGT_SRC}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}/%{NUMBER:destination.port} \(%{NOTSPACE:_temp_.natdstip}/%{NUMBER:_temp_.cisco.mapped_destination_port}\)(\(%{CISCO_USER_OR_SGT_DST}\))?( \(%{CISCO_USER:_temp_.cisco.termination_user}\))?%{GREEDYDATA}
+      pattern_definitions:
+        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
+        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
+        NOTCOLON: "[^:]*"
+        USERNAME: "[a-zA-Z0-9._'-]+"
+        CISCO_USER_OR_SGT_SRC: (?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt})\))
+        CISCO_USER_OR_SGT_DST: (?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt})\))
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?)|[^$]+)
+        CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
   - dissect:
       if: "ctx._temp_.cisco.message_id == '303002'"
       tag: parse_303002
@@ -586,7 +605,7 @@ processors:
       field: "message"
       description: "305012"
       patterns:
-        - Teardown %{DATA} %{NOTSPACE:network.transport} translation from %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port}(\s*\(%{CISCO_USER:_temp_.cisco.source_username}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port} duration %{DURATION:_temp_.duration_hms}
+        - Teardown %{DATA} %{NOTSPACE:network.transport} translation from %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port}(\s*\(%{CISCO_USER:_temp_.cisco.source_username}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port} duration\s+%{DURATION:_temp_.duration_hms}
       pattern_definitions:
         USERNAME: "[^@$]*"
         NOTCOLON: "[^:]*"
@@ -1405,14 +1424,14 @@ processors:
       if: '["302014", "302016", "302018", "302021", "302036", "302304", "302306"].contains(ctx._temp_.cisco.message_id)'
       description: "302014, 302016, 302018, 302021, 302036, 302304, 302306"
       patterns:
-        - ^Teardown %{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_SRC}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_DST}\)? )?duration (?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) %{NOTCOLON:event.reason} from %{NOTCOLON:_temp_.cisco.termination_initiator} \(%{CISCO_USER:_temp_.cisco.termination_user}\)
-        - ^Teardown %{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_SRC}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_DST}\)? )?duration (?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) %{NOTCOLON:event.reason} from %{NOTCOLON:_temp_.cisco.termination_initiator}
-        - ^Teardown %{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_SRC}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_DST}\)? )?duration (?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) %{NOTCOLON:event.reason} \(%{CISCO_USER:_temp_.cisco.termination_user}\)
-        - ^Teardown %{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_SRC}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_DST}\)? )?duration (?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) \(%{CISCO_USER:_temp_.cisco.termination_user}\)
-        - ^Teardown %{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_SRC}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_DST}\)? )?duration (?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) %{NOTCOLON:event.reason}
-        - ^Teardown %{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_SRC}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_DST}\)? )?duration (?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes})
+        - ^Teardown %{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_SRC}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_DST}\)? )?duration\s+(?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) %{NOTCOLON:event.reason} from %{NOTCOLON:_temp_.cisco.termination_initiator} \(%{CISCO_USER:_temp_.cisco.termination_user}\)
+        - ^Teardown %{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_SRC}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_DST}\)? )?duration\s+(?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) %{NOTCOLON:event.reason} from %{NOTCOLON:_temp_.cisco.termination_initiator}
+        - ^Teardown %{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_SRC}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_DST}\)? )?duration\s+(?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) %{NOTCOLON:event.reason} \(%{CISCO_USER:_temp_.cisco.termination_user}\)
+        - ^Teardown %{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_SRC}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_DST}\)? )?duration\s+(?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) \(%{CISCO_USER:_temp_.cisco.termination_user}\)
+        - ^Teardown %{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_SRC}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_DST}\)? )?duration\s+(?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}) %{NOTCOLON:event.reason}
+        - ^Teardown %{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_SRC}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER_OR_SGT_DST}\)? )?duration\s+(?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes})
         - ^Teardown %{NOTSPACE:network.transport} connection for faddr (?:%{ECSDESTIPORHOST}|%{NOTCOLON:_temp_.cisco.source_interface}:%{ECSDESTIPORHOST})/%{NUMBER}\s*(?:\(?%{CISCO_USER_OR_SGT_DST}\)? )?gaddr (?:%{MAPPEDSRC}|%{NOTCOLON:_temp_.cisco.gaddr_interface}:%{MAPPEDSRC})/%{NUMBER} laddr (?:%{ECSSOURCEIPORHOST}|%{NOTCOLON:_temp_.cisco.source_interface}:%{ECSSOURCEIPORHOST})/%{NUMBER}\s*(?:\(%{CISCO_USER_OR_SGT_SRC}\))?(\s*type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?
-        - ^Teardown %{NOTSPACE:network.transport} connection %{NOTSPACE:_temp_.cisco.connection_id} from %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address} to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int} duration %{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}(?:%{NUMBER} %{NUMBER})?
+        - ^Teardown %{NOTSPACE:network.transport} connection %{NOTSPACE:_temp_.cisco.connection_id} from %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address} to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int} duration\s+%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes}(?:%{NUMBER} %{NUMBER})?
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
@@ -2880,6 +2899,10 @@ processors:
           outcome: failure
           action: client-vpn-error
         "302013":
+          type: [connection, start]
+          outcome: success
+          action: flow-creation
+        "302303":
           type: [connection, start]
           outcome: success
           action: flow-creation
