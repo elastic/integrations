@@ -71,10 +71,16 @@ processors:
   # Required for Traefik request-duration histograms: the Prometheus receiver emits cumulative-temporality histograms,
   # but the Elasticsearch exporter in `otel` mapping mode expects delta-temporality histograms.
   # Without this, you’ll see logs like "dropping cumulative temporality histogram traefik_*_request_duration_seconds".
+  #
+  # Scope this to the duration histograms only. Counter metrics (`traefik_*_total`, `process_cpu_seconds_total`)
+  # must reach Elasticsearch with cumulative temporality so that they are mapped as counters, which is what the
+  # `RATE()` and `INCREASE()` functions in this package’s dashboards and alert rules require. Widening this
+  # filter to `traefik_.*` or `process_.*` converts those counters to delta sums, which are mapped as gauges
+  # and cause the panels to fail with "must be [counter_long, counter_integer or counter_double], found ... gauge".
   cumulativetodelta:
     include:
       match_type: regexp
-      metrics: ['traefik_.*', 'go_.*', 'process_.*']
+      metrics: ['traefik_.*_request_duration_seconds']
   # Ensures metrics land in the dataset this package’s dashboards/alerts expect.
   # Sets `data_stream.dataset=traefik` (upsert); the Elasticsearch exporter appends `.otel`, so it becomes `traefik.otel`.
   resource/dataset:
@@ -97,6 +103,30 @@ service:
       processors: [resourcedetection/system, cumulativetodelta, resource/dataset]
       exporters: [elasticsearch/otel]
 ```
+
+### Troubleshooting
+
+If dashboard panels or alert rules fail with an error such as `first argument of [RATE(traefik_entrypoint_requests_total)] must be [counter_long, counter_integer or counter_double]`, the counter metrics were ingested as gauges. This happens when `cumulativetodelta` is applied to them, so verify that its `include` filter matches only `traefik_.*_request_duration_seconds`.
+
+A field's time-series type is fixed when the backing index is created, so correcting the collector configuration alone does not repair existing data. Roll the data stream over so that a new backing index picks up the counter type:
+
+```console
+POST /metrics-traefik.otel-default/_rollover
+```
+
+Because these are time-series data streams, documents are routed by `@timestamp` rather than to the newest index. The previous backing index keeps accepting writes until its `index.time_series.end_time` has passed, so allow that window to elapse before the panels recover. Check it with:
+
+```console
+GET /.ds-metrics-traefik.otel-default-*/_settings/index.time_series.end_time?flat_settings=true
+```
+
+To confirm which type a metric has in each backing index:
+
+```console
+GET /metrics-traefik.otel-default/_mapping/field/*requests_total*
+```
+
+The `time_series_metric` value should be `counter` for `traefik_*_total` and `process_cpu_seconds_total`. Panels remain affected for as long as gauge-mapped indices are still within the dashboard's time range.
 
 ## Reference
 
