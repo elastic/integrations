@@ -3,6 +3,21 @@ description: >-
   Chargeback Serverless: build composite_key, classify Serverless SKUs, and set
   allocation_driver (indexing | query | storage | none) for showback.
 processors:
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_event_ingested
+  - date:
+      field: period_start
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+      if: ctx.period_start != null
+      ignore_failure: true
+      tag: restore_period_start_timestamp
+  - remove:
+      field: period_start
+      ignore_missing: true
   - script:
       ignore_failure: true
       lang: painless
