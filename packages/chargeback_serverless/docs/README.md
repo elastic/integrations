@@ -39,7 +39,7 @@ Organization ID, Cloud API Key, Currency Rates, and Remote Project API Keys are 
 | **Elastic Cloud API Key** | Yes | Elastic Cloud API key with billing read and Serverless project read access |
 | **Hub Project Elasticsearch API Key** | Yes | Optional Elasticsearch API key for the local Hub project (`_cat/indices` and ML stats) |
 | **Remote Project Elasticsearch API Keys** | Yes | Optional project-specific keys (`<project_id>:<encoded_key>`) with `monitor` privilege |
-| **Billing Lookbehind Days** | No | Number of historical completed UTC days of billing data to backfill (default: `30`) |
+| **Billing Lookbehind Days** | No | Number of historical completed UTC days of billing data to backfill (default: `60`) |
 | **Currency Unit** | No | Currency label (e.g. `USD`, `EUR`, `ZAR`) |
 | **Currency Symbol** | No | Currency symbol (e.g. `$`, `€`, `R`) |
 | **Chargeable Unit Rate** | No | Multiplier from chargeable units (ECU) to configured currency |
