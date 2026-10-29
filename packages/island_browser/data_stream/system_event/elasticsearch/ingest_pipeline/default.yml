@@ -1,0 +1,273 @@
+---
+description: Pipeline for processing Island Browser system events routed from SIEM Events.
+processors:
+  - drop:
+      if: ctx.message == 'retry'
+      tag: drop_retry_events
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+  - fingerprint:
+      fields:
+        - event.original
+      tag: fingerprint_island_browser_system_event
+      target_field: _id
+      ignore_missing: true
+  - date:
+      field: json.timestamp
+      tag: date_timestamp
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
+      on_failure:
+        - append:
+            tag: append_error_message_date_timestamp
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.id
+      tag: rename_id_to_event_id
+      target_field: event.id
+      ignore_missing: true
+  - rename:
+      field: json.tenant_id
+      tag: rename_tenant_id
+      target_field: island_browser.system_event.tenant_id
+      ignore_missing: true
+  - rename:
+      field: json.type
+      tag: rename_type_to_event_action
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.category
+      tag: rename_category
+      target_field: island_browser.system_event.category
+      ignore_missing: true
+  - script:
+      tag: script_set_event_category_and_type
+      lang: painless
+      description: Map the Island system event category to ECS event.category and event.type.
+      if: ctx.island_browser?.system_event?.category instanceof String
+      params:
+        DeviceManagement:
+          category:
+            - host
+          type:
+            - change
+        UserManagement:
+          category:
+            - iam
+          type:
+            - user
+            - change
+        IPA:
+          category:
+            - network
+          type:
+            - info
+      source: |-
+        def m = params.get(ctx.island_browser.system_event.category);
+        if (m == null) {
+          return;
+        }
+        if (ctx.event == null) {
+          ctx.event = new HashMap();
+        }
+        ctx.event.category = new ArrayList(m.category);
+        ctx.event.type = new ArrayList(m.type);
+  - rename:
+      field: json.sub_category
+      tag: rename_sub_category
+      target_field: island_browser.system_event.sub_category
+      ignore_missing: true
+  - rename:
+      field: json.severity
+      tag: rename_severity
+      target_field: island_browser.system_event.severity
+      ignore_missing: true
+  - script:
+      tag: script_set_event_severity
+      lang: painless
+      description: Map the Island system event severity to a numeric ECS event.severity.
+      if: ctx.island_browser?.system_event?.severity instanceof String
+      params:
+        Info: 1
+        Warning: 2
+        Medium: 3
+        High: 4
+        Critical: 5
+      source: |-
+        def s = params.get(ctx.island_browser.system_event.severity);
+        if (s == null) {
+          return;
+        }
+        if (ctx.event == null) {
+          ctx.event = new HashMap();
+        }
+        ctx.event.severity = s;
+  - rename:
+      field: json.primary_entity_id
+      tag: rename_primary_entity_id
+      target_field: island_browser.system_event.primary_entity_id
+      ignore_missing: true
+  - rename:
+      field: json.primary_entity_name
+      tag: rename_primary_entity_name
+      target_field: island_browser.system_event.primary_entity_name
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_primary_entity_name_into_related_hosts
+      value: '{{{island_browser.system_event.primary_entity_name}}}'
+      allow_duplicates: false
+      if: >-
+        ctx.island_browser?.system_event?.primary_entity_name != null &&
+        ctx.island_browser.system_event.category == 'DeviceManagement'
+  - append:
+      field: related.user
+      tag: append_primary_entity_id_into_related_user
+      value: '{{{island_browser.system_event.primary_entity_id}}}'
+      allow_duplicates: false
+      if: >-
+        ctx.island_browser?.system_event?.primary_entity_id != null &&
+        ctx.island_browser.system_event.category == 'UserManagement'
+  - append:
+      field: related.user
+      tag: append_primary_entity_name_into_related_user
+      value: '{{{island_browser.system_event.primary_entity_name}}}'
+      allow_duplicates: false
+      if: >-
+        ctx.island_browser?.system_event?.primary_entity_name != null &&
+        ctx.island_browser.system_event.category == 'UserManagement'
+  - rename:
+      field: json.source
+      tag: rename_source
+      target_field: island_browser.system_event.source
+      ignore_missing: true
+  - rename:
+      field: json.details
+      tag: rename_details
+      target_field: island_browser.system_event.details
+      if: ctx.json?.details instanceof Map
+  - json:
+      field: json.details
+      tag: json_details
+      target_field: island_browser.system_event.details
+      if: ctx.json?.details instanceof String && ctx.json.details != ''
+      on_failure:
+        - append:
+            tag: append_error_message_json_details
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: island_browser.system_event.details.ip_address
+      tag: convert_details_ip_address_to_ip
+      target_field: _temp.ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.island_browser?.system_event?.details instanceof Map
+      on_failure:
+        - append:
+            tag: append_error_message_convert_details_ip_address
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_details_ip_address_into_related_ip
+      value: '{{{_temp.ip_address}}}'
+      allow_duplicates: false
+      if: ctx._temp?.ip_address != null
+  - append:
+      field: related.hosts
+      tag: append_details_hostname_into_related_hosts
+      value: '{{{island_browser.system_event.details.hostname}}}'
+      allow_duplicates: false
+      if: ctx.island_browser?.system_event?.details instanceof Map && ctx.island_browser.system_event.details.hostname instanceof String
+  - remove:
+      field:
+        - json
+        - _temp
+      tag: remove_json_and_temp
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_tags_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      tag: append_error_message_global
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_preserve_original_event_global
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
