@@ -8,7 +8,6 @@ processors:
       lang: painless
       tag: project_fields_and_composite_key
       source: |
-        // Normalize project_* and total_chargeable_units into concrete deployment_* and total_ecu.
         if (ctx.deployment_id == null && ctx.project_id != null) {
           ctx.deployment_id = ctx.project_id;
         }
@@ -21,10 +20,6 @@ processors:
         if (ctx.total_ecu == null && ctx.total_chargeable_units != null) {
           ctx.total_ecu = ctx.total_chargeable_units;
         }
-        ctx.remove('project_id');
-        ctx.remove('project_name');
-        ctx.remove('project_type');
-        ctx.remove('total_chargeable_units');
         if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
           ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.deployment_id;
         }
@@ -186,19 +181,3 @@ processors:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       tag: set_event_ingested
-  - pipeline:
-      description: '[Fleet] Global pipeline for all data streams'
-      ignore_missing_pipeline: true
-      name: global@custom
-  - pipeline:
-      description: '[Fleet] Pipeline for all data streams of type `logs`'
-      ignore_missing_pipeline: true
-      name: logs@custom
-  - pipeline:
-      description: '[Fleet] Pipeline for all data streams of type `logs` defined by the `chargeback_serverless` integration'
-      ignore_missing_pipeline: true
-      name: logs-chargeback_serverless.integration@custom
-  - pipeline:
-      description: '[Fleet] Pipeline for the `chargeback_serverless.lookup` dataset'
-      ignore_missing_pipeline: true
-      name: logs-chargeback_serverless.lookup@custom

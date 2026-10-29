@@ -1,0 +1,90 @@
+config_version: 2
+interval: "24h"
+resource.url: "{{billing_api_base}}/api/v2/billing/organizations/{{organization_id}}/costs/instances"
+state:
+  api_key: !!str {{cloud_api_key}}
+  organization_id: !!str {{organization_id}}
+  billing_api_base: !!str {{billing_api_base}}
+  cloud_api_base: !!str {{cloud_api_base}}
+  lookbehind: !!int {{lookbehind}}
+  conf_unit_rate: !!str {{unit_rate}}
+  conf_currency_unit: !!str {{currency_unit}}
+  conf_currency_symbol: !!str {{currency_symbol}}
+redact:
+  fields:
+    - api_key
+    - cloud_api_key
+program: |-
+  state.with(
+    state.?cursor.last_to.optMap(ts, timestamp(ts)).orValue(
+      now - duration(string(int(state.lookbehind) * 24) + "h")
+    ).format(
+      time_layout.DateOnly
+    ).parse_time(time_layout.DateOnly).as(from,
+      max(from, timestamp("2023-01-01T00:00:00Z"))
+    ).as(from,
+      {
+        "from": from,
+        "to": from + duration("24h"),
+      }
+    ).as(req, (req.to > now) ?
+      {
+        "events": [],
+        "cursor": { "last_to": req.to },
+        "want_more": false,
+      }
+    :
+      get_request(
+        state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/instances?" + {
+          "from": [req.from.format(time_layout.RFC3339)],
+          "to": [req.to.format(time_layout.RFC3339)],
+        }.format_query()
+      ).with(
+        { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+      ).do_request().as(resp, (resp.StatusCode == 200) ?
+        bytes(resp.Body).decode_json().as(body, (has(body.instances) && body.instances != null && size(body.instances) > 0) ?
+          {
+            "events": body.instances.filter(instance,
+              instance.type == "elasticsearch" || instance.type == "observability" || instance.type == "security"
+            ).map(instance,
+              instance.product_line_items.map(line_item,
+                {
+                  "@timestamp": req.from.format(time_layout.RFC3339),
+                  "deployment_id": instance.id,
+                  "deployment_name": instance.name,
+                  "deployment_type": instance.type,
+                  "project_id": instance.id,
+                  "project_name": instance.name,
+                  "project_type": instance.type,
+                  "sku": line_item.sku,
+                  "type": line_item.type,
+                  "kind": line_item.kind,
+                  "total_ecu": double(line_item.total_ecu),
+                  "quantity_value": (has(line_item.quantity) && line_item.quantity != null && has(line_item.quantity.value) && line_item.quantity.value != null) ? double(line_item.quantity.value) : 0.0,
+                  "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                  "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                  "conf_currency_symbol": state.conf_currency_symbol,
+                }
+              )
+            ).flatten(),
+            "cursor": { "last_to": req.to },
+            "want_more": req.to < now - duration("24h"),
+          }
+        :
+          {
+            "events": [ { "fake": true } ],
+            "cursor": { "last_to": req.to },
+            "want_more": req.to < now - duration("24h"),
+          }
+        )
+      :
+        {
+          "events": { "error": { "code": string(resp.StatusCode), "id": string(resp.Status), "message": "GET " + resp.Request.URL + ": " + ( (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status) + " (" + string(resp.StatusCode) + ")" ) } },
+          "want_more": false,
+        }
+      )
+    )
+  )
+
+processors:
+- drop_event.when.equals.fake: true

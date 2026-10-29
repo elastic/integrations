@@ -1,0 +1,199 @@
+config_version: 2
+interval: "1h"
+resource.url: "{{cloud_api_base}}/api/v1/serverless/projects/elasticsearch"
+state:
+  api_key: !!str {{cloud_api_key}}
+  organization_id: !!str {{organization_id}}
+  cloud_api_base: !!str {{cloud_api_base}}
+  billing_api_base: !!str {{billing_api_base}}
+  hub_es_api_key: !!str {{hub_es_api_key}}
+  conf_unit_rate: !!str {{unit_rate}}
+  conf_currency_unit: !!str {{currency_unit}}
+  conf_currency_symbol: !!str {{currency_symbol}}
+  project_keys:
+{{#each project_api_keys}}
+    - !!str {{this}}
+{{/each}}
+redact:
+  fields:
+    - api_key
+    - cloud_api_key
+    - hub_es_api_key
+program: |-
+  state.with(
+    get_request(
+      state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch"
+    ).with(
+      { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+    ).do_request().as(es_resp, (es_resp.StatusCode == 200) ?
+      bytes(es_resp.Body).decode_json().as(es_body,
+        get_request(
+          state.cloud_api_base + "/api/v1/serverless/projects/observability"
+        ).with(
+          { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+        ).do_request().as(obs_resp, (obs_resp.StatusCode == 200) ?
+          bytes(obs_resp.Body).decode_json().as(obs_body,
+            get_request(
+              state.cloud_api_base + "/api/v1/serverless/projects/security"
+            ).with(
+              { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+            ).do_request().as(sec_resp, (sec_resp.StatusCode == 200) ?
+              bytes(sec_resp.Body).decode_json().as(sec_body,
+                get_request(
+                  state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/instances?" + {
+                    "from": [(now - duration("24h")).format(time_layout.RFC3339)],
+                    "to": [now.format(time_layout.RFC3339)],
+                  }.format_query()
+                ).with(
+                  { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+                ).do_request().as(costs_resp,
+                  ((costs_resp.StatusCode == 200) ? bytes(costs_resp.Body).decode_json() : { "instances": [] }).as(costs_body,
+                    (es_body.items.map(p, p.with({ "project_type": "elasticsearch" })) +
+                     obs_body.items.map(p, p.with({ "project_type": "observability" })) +
+                     sec_body.items.map(p, p.with({ "project_type": "security" }))
+                    ).as(projects,
+                      {
+                        "events": projects.map(p,
+                          costs_body.instances.filter(inst, inst.id == p.id).as(p_costs,
+                            (size(p_costs) > 0 ? p_costs[0] : { "product_line_items": [] }).as(cost_inst,
+                              cost_inst.product_line_items.filter(li, li.sku.contains("ingest")).map(li, double(li.total_ecu)).as(idx_ecus,
+                                cost_inst.product_line_items.filter(li, li.sku.contains("search")).map(li, double(li.total_ecu)).as(qry_ecus,
+                                  cost_inst.product_line_items.filter(li, li.sku.contains("retained") || li.sku.contains("storage")).map(li, double(li.total_ecu)).as(stg_ecus,
+                                    cost_inst.product_line_items.filter(li, li.sku.contains("ml-vcu") || li.sku.contains("inference")).map(li, double(li.total_ecu)).as(ai_ecus,
+                                      {
+                                        "indexing_ecu": size(idx_ecus) > 0 ? idx_ecus.sum() : 0.0,
+                                        "query_ecu": size(qry_ecus) > 0 ? qry_ecus.sum() : 0.0,
+                                        "storage_ecu": size(stg_ecus) > 0 ? stg_ecus.sum() : 0.0,
+                                        "ai_ecu": size(ai_ecus) > 0 ? ai_ecus.sum() : 0.0,
+                                        "total_ecu": (size(idx_ecus) > 0 ? idx_ecus.sum() : 0.0) + (size(qry_ecus) > 0 ? qry_ecus.sum() : 0.0) + (size(stg_ecus) > 0 ? stg_ecus.sum() : 0.0) + (size(ai_ecus) > 0 ? ai_ecus.sum() : 0.0),
+                                      }.as(pool,
+                                        state.project_keys.filter(k, k.startsWith(p.id + ":")).optMap(k, k.split(":")[1]).orValue(
+                                          state.hub_es_api_key != "" ? state.hub_es_api_key : state.api_key
+                                        ).as(target_key,
+                                          get_request(
+                                            p.endpoints.elasticsearch + "/_cat/indices?h=index,dataset.size,indexing.index_time,search.query_time&format=json&bytes=b&time=ms&expand_wildcards=open,hidden"
+                                          ).with(
+                                            { "Header": { "Authorization": ["ApiKey " + target_key] } }
+                                          ).do_request().as(cat_resp, (cat_resp.StatusCode == 200) ?
+                                            bytes(cat_resp.Body).decode_json().as(rows,
+                                              get_request(
+                                                p.endpoints.elasticsearch + "/_ml/trained_models/_stats"
+                                              ).with(
+                                                { "Header": { "Authorization": ["ApiKey " + target_key] } }
+                                              ).do_request().as(ml_resp,
+                                                (ml_resp.StatusCode == 200) ? bytes(ml_resp.Body).decode_json() : { "trained_model_stats": [] }
+                                              ).as(ml_body,
+                                                rows.filter(row,
+                                                  !row.index.startsWith(".") || row.index.startsWith(".ds-")
+                                                ).map(row,
+                                                  {
+                                                    "@timestamp": now.format(time_layout.RFC3339),
+                                                    "doc_type": "datastream",
+                                                    "project_id": p.id,
+                                                    "project_name": p.name,
+                                                    "project_type": p.project_type,
+                                                    "cluster_name": p.id,
+                                                    "datastream": row.index.startsWith(".ds-") ? row.index.split("-")[1] : row.index,
+                                                    "ds_type": row.index.startsWith(".ds-") ? row.index.split("-")[1].split("-")[0] : (row.index.contains("-") ? row.index.split("-")[0] : "other"),
+                                                    "ds_namespace": row.index.startsWith(".ds-") ? row.index.split("-")[1].split("-")[size(row.index.split("-")[1].split("-")) - 1] : (row.index.contains("-") ? row.index.split("-")[size(row.index.split("-")) - 1] : "other"),
+                                                    "datastream_sum_indexing_time": int(row["indexing.index_time"]),
+                                                    "datastream_sum_query_time": int(row["search.query_time"]),
+                                                    "datastream_sum_data_set_store_size": int(row["dataset.size"]),
+                                                    "indexing_ecu": pool.indexing_ecu,
+                                                    "query_ecu": pool.query_ecu,
+                                                    "storage_ecu": pool.storage_ecu,
+                                                    "ai_ecu": pool.ai_ecu,
+                                                    "total_ecu": pool.total_ecu,
+                                                    "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                    "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                    "conf_currency_symbol": state.conf_currency_symbol,
+                                                  }
+                                                ) +
+                                                (has(ml_body.trained_model_stats) && ml_body.trained_model_stats != null ?
+                                                  ml_body.trained_model_stats.map(m,
+                                                    {
+                                                      "@timestamp": now.format(time_layout.RFC3339),
+                                                      "doc_type": "ai_model",
+                                                      "project_id": p.id,
+                                                      "project_name": p.name,
+                                                      "project_type": p.project_type,
+                                                      "cluster_name": p.id,
+                                                      "model_id": m.model_id,
+                                                      "task_type": has(m.pipeline_count) && int(m.pipeline_count) > 0 ? "ingest_inference" : "query_inference",
+                                                      "inference_count": has(m.inference_stats) && has(m.inference_stats.inference_count) ? int(m.inference_stats.inference_count) : 0,
+                                                      "average_inference_time_ms": has(m.deployment_stats) && has(m.deployment_stats.nodes) && size(m.deployment_stats.nodes) > 0 && has(m.deployment_stats.nodes[0].average_inference_time_ms) ? double(m.deployment_stats.nodes[0].average_inference_time_ms) : 0.0,
+                                                      "total_inference_time_ms": int((has(m.inference_stats) && has(m.inference_stats.inference_count) ? double(m.inference_stats.inference_count) : 0.0) * (has(m.deployment_stats) && has(m.deployment_stats.nodes) && size(m.deployment_stats.nodes) > 0 && has(m.deployment_stats.nodes[0].average_inference_time_ms) ? double(m.deployment_stats.nodes[0].average_inference_time_ms) : 0.0)),
+                                                      "failure_count": has(m.inference_stats) && has(m.inference_stats.failure_count) ? int(m.inference_stats.failure_count) : 0,
+                                                      "pipeline_count": has(m.pipeline_count) ? int(m.pipeline_count) : 0,
+                                                      "ai_ecu": pool.ai_ecu,
+                                                      "query_ecu": pool.query_ecu,
+                                                      "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                      "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                      "conf_currency_symbol": state.conf_currency_symbol,
+                                                    }
+                                                  ) : []
+                                                ) +
+                                                [
+                                                  {
+                                                    "@timestamp": now.format(time_layout.RFC3339),
+                                                    "doc_type": "project_status",
+                                                    "project_id": p.id,
+                                                    "project_name": p.name,
+                                                    "project_type": p.project_type,
+                                                    "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
+                                                    "es_url": p.endpoints.elasticsearch,
+                                                    "last_status": "ok",
+                                                    "index_count": size(rows),
+                                                    "updated_at": now.format(time_layout.RFC3339),
+                                                    "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                    "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                    "conf_currency_symbol": state.conf_currency_symbol,
+                                                  }
+                                                ]
+                                              )
+                                            )
+                                          :
+                                            [
+                                              {
+                                                "@timestamp": now.format(time_layout.RFC3339),
+                                                "doc_type": "project_status",
+                                                "project_id": p.id,
+                                                "project_name": p.name,
+                                                "project_type": p.project_type,
+                                                "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
+                                                "es_url": p.endpoints.elasticsearch,
+                                                "last_status": "empty_or_unauthorized",
+                                                "index_count": 0,
+                                                "updated_at": now.format(time_layout.RFC3339),
+                                                "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                "conf_currency_symbol": state.conf_currency_symbol,
+                                              }
+                                            ]
+                                          )
+                                        )
+                                      )
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        ).flatten(),
+                        "cursor": { "last_poll": now.format(time_layout.RFC3339) },
+                        "want_more": false,
+                      }
+                    )
+                  )
+                )
+              :
+                { "events": [], "want_more": false }
+            ) :
+              { "events": [], "want_more": false }
+          ) :
+            { "events": [], "want_more": false }
+        )
+      ) :
+      { "events": [], "want_more": false }
+    )
+  )

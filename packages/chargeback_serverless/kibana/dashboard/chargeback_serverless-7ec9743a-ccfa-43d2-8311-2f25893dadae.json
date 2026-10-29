@@ -74,9 +74,9 @@
             {
                 "embeddableConfig": {
                     "esql_query": [
-                        "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit, conf_currency_symbol\n| SORT conf_start_date DESC\n| LIMIT 1"
+                        "FROM metrics-chargeback_serverless.billing-*\n| KEEP conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit, conf_currency_symbol\n| SORT @timestamp DESC\n| LIMIT 1"
                     ],
-                    "template": "<style>\n  .cb-dsl { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--cc-space-m); font-size: 0.85rem; }\n  .cb-dsl h4 { margin: 0 0 4px 0; font-size: 0.9rem; font-weight: 600; }\n  .cb-dsl p { margin: 0 0 6px 0; font-size: 0.75rem; color: var(--cc-color-text-secondary); }\n  .cb-dsl pre {\n    background: var(--cc-color-surface);\n    border: 1px solid var(--cc-color-border);\n    border-radius: var(--cc-radius-s);\n    padding: var(--cc-space-s);\n    margin: 0;\n    font-family: monospace;\n    font-size: 0.74rem;\n    overflow-x: auto;\n  }\n</style>\n{% assign r = rows[0] %}\n<div class=\"cb-dsl\">\n  <div>\n    <h4>1. Currency Rate Window (Dev Tools)</h4>\n    <p>Set active rate, currency, and date bounds in chargeback_conf_lookup.</p>\n    <pre>PUT chargeback_conf_lookup/_doc/config\n{\n  \"@timestamp\": \"1970-01-01T00:00:00.000Z\",\n  \"config_join_key\": \"config\",\n  \"conf_start_date\": \"{{ r[\"conf_start_date\"].value | default: \"2020-01-01T00:00:00.000Z\" }}\",\n  \"conf_end_date\": \"{{ r[\"conf_end_date\"].value | default: \"2099-12-31T23:59:59.999Z\" }}\",\n  \"conf_chargeable_unit_rate\": {{ r[\"conf_chargeable_unit_rate\"].value | default: 1.0 }},\n  \"conf_chargeable_unit_rate_unit\": \"{{ r[\"conf_chargeable_unit_rate_unit\"].value | default: \"USD\" }}\",\n  \"conf_currency_symbol\": \"{{ r[\"conf_currency_symbol\"].value | default: \"$\" }}\"\n}</pre>\n  </div>\n  <div>\n    <h4>2. Remote Least-Privilege Key (Dev Tools)</h4>\n    <p>Run on remote project. Grants index metadata read only (no data access).</p>\n    <pre>POST _security/api_key\n{\n  \"name\": \"chargeback-usage-harvesting\",\n  \"role_descriptors\": {\n    \"chargeback_usage\": {\n      \"cluster\": [\"monitor\"],\n      \"indices\": [\n        {\n          \"names\": [\"*\"],\n          \"privileges\": [\"monitor\"]\n        }\n      ]\n    }\n  }\n}</pre>\n  </div>\n  <div>\n    <h4>3. Register Remote Key on Hub (Dev Tools)</h4>\n    <p>Run on Hub to register encoded key for remote project ID.</p>\n    <pre>POST chargeback-serverless-config/_update/config\n{\n  \"doc\": {\n    \"project_api_keys\": {\n      \"&lt;REMOTE_PROJECT_ID&gt;\": \"&lt;ENCODED_API_KEY&gt;\"\n    }\n  }\n}</pre>\n  </div>\n</div>\n"
+                    "template": "<style>\n  .cb-dsl { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--cc-space-m); font-size: 0.85rem; }\n  .cb-dsl h4 { margin: 0 0 4px 0; font-size: 0.9rem; font-weight: 600; }\n  .cb-dsl p { margin: 0 0 6px 0; font-size: 0.75rem; color: var(--cc-color-text-secondary); }\n  .cb-dsl pre {\n    background: var(--cc-color-surface);\n    border: 1px solid var(--cc-color-border);\n    border-radius: var(--cc-radius-s);\n    padding: var(--cc-space-s);\n    margin: 0;\n    font-family: monospace;\n    font-size: 0.74rem;\n    overflow-x: auto;\n  }\n</style>\n<div class=\"cb-dsl\">\n  <div>\n    <h4>1. Fleet Integration Settings</h4>\n    <p>Set Organization ID, API keys, and Currency in Integrations \u2192 Chargeback Serverless \u2192 Settings.</p>\n    <pre># Configured in Kibana Fleet UI:\nOrganization ID:  &lt;YOUR_ORG_ID&gt;\nCloud API Key:    \u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\nCurrency Unit:    USD (or EUR, ZAR, etc.)\nCurrency Symbol:  $ (or \u20ac, R, \u00a3, etc.)\nUnit Rate:        1.0</pre>\n  </div>\n  <div>\n    <h4>2. Remote Least-Privilege Key (Dev Tools)</h4>\n    <p>Run on remote project to grant index metadata monitor only (no data read access).</p>\n    <pre>POST _security/api_key\n{\n  \"name\": \"chargeback-usage-harvesting\",\n  \"role_descriptors\": {\n    \"chargeback_usage\": {\n      \"cluster\": [\"monitor\"],\n      \"indices\": [\n        {\n          \"names\": [\"*\"],\n          \"privileges\": [\"monitor\"]\n        }\n      ]\n    }\n  }\n}</pre>\n  </div>\n  <div>\n    <h4>3. Add Key to Integration Policy</h4>\n    <p>Add key under Remote Project API Keys in Settings (<project_id>:<encoded_key>).</p>\n    <pre># In Integration Settings:\nRemote Project API Keys:\n  - &lt;PROJECT_ID&gt;:&lt;ENCODED_KEY&gt;\n\nFleet masks and encrypts all keys.\nNo secrets are stored in indices.</pre>\n  </div>\n</div>\n"
                 },
                 "gridData": {
                     "h": 13,
@@ -86,7 +86,7 @@
                     "y": 2
                 },
                 "panelIndex": "921cacc3-dd42-5989-b53d-f4bb2f414391",
-                "title": "Dev Tools DSL \u2014 Configuration",
+                "title": "Fleet Configuration Guide",
                 "type": "custom_content"
             },
             {
@@ -96,17 +96,17 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "6a4f7eba9ea0f9ab52eeba32fcc712df646596507d47b8c892451b6400029d6b": {
+                                "1b883ecf969895fb5458229a227c56d1f5d9d22c4b178112abfcebcd02bf7fa2": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "6a4f7eba9ea0f9ab52eeba32fcc712df646596507d47b8c892451b6400029d6b",
+                                    "id": "1b883ecf969895fb5458229a227c56d1f5d9d22c4b178112abfcebcd02bf7fa2",
                                     "managed": false,
-                                    "name": "chargeback_conf_lookup",
+                                    "name": "metrics-chargeback_serverless.billing-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": null,
-                                    "title": "chargeback_conf_lookup",
+                                    "title": "metrics-chargeback_serverless.billing-*",
                                     "type": "esql"
                                 }
                             },
@@ -114,34 +114,14 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "6a4f7eba9ea0f9ab52eeba32fcc712df646596507d47b8c892451b6400029d6b",
+                                            "id": "1b883ecf969895fb5458229a227c56d1f5d9d22c4b178112abfcebcd02bf7fa2",
                                             "timeField": null,
-                                            "title": "chargeback_conf_lookup"
+                                            "title": "metrics-chargeback_serverless.billing-*"
                                         }
                                     ],
                                     "layers": {
                                         "d9c6059e-dd3b-54e7-a7de-f0ce6278385e": {
                                             "columns": [
-                                                {
-                                                    "columnId": "conf_start_date",
-                                                    "customLabel": true,
-                                                    "fieldName": "conf_start_date",
-                                                    "label": "Start date",
-                                                    "meta": {
-                                                        "esType": "date",
-                                                        "type": "date"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "conf_end_date",
-                                                    "customLabel": true,
-                                                    "fieldName": "conf_end_date",
-                                                    "label": "End date",
-                                                    "meta": {
-                                                        "esType": "date",
-                                                        "type": "date"
-                                                    }
-                                                },
                                                 {
                                                     "columnId": "conf_chargeable_unit_rate",
                                                     "customFormat": {
@@ -179,9 +159,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "6a4f7eba9ea0f9ab52eeba32fcc712df646596507d47b8c892451b6400029d6b",
+                                            "index": "1b883ecf969895fb5458229a227c56d1f5d9d22c4b178112abfcebcd02bf7fa2",
                                             "query": {
-                                                "esql": "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit, conf_currency_symbol\n| SORT conf_start_date DESC"
+                                                "esql": "FROM metrics-chargeback_serverless.billing-*\n| KEEP conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit, conf_currency_symbol\n| SORT @timestamp DESC\n| LIMIT 10"
                                             },
                                             "timeField": null
                                         }
@@ -190,16 +170,10 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit, conf_currency_symbol\n| SORT conf_start_date DESC"
+                                "esql": "FROM metrics-chargeback_serverless.billing-*\n| KEEP conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit, conf_currency_symbol\n| SORT @timestamp DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "columns": [
-                                    {
-                                        "columnId": "conf_start_date"
-                                    },
-                                    {
-                                        "columnId": "conf_end_date"
-                                    },
                                     {
                                         "columnId": "conf_chargeable_unit_rate"
                                     },
@@ -214,7 +188,7 @@
                                 "layerType": "data"
                             }
                         },
-                        "title": "Configured currency rates by date window",
+                        "title": "Configured currency settings from Fleet policy",
                         "type": "lens",
                         "version": 1,
                         "visualizationType": "lnsDatatable"
@@ -226,12 +200,12 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit, conf_currency_symbol\n| SORT conf_start_date DESC"
+                        "esql": "FROM metrics-chargeback_serverless.billing-*\n| KEEP conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit, conf_currency_symbol\n| SORT @timestamp DESC\n| LIMIT 10"
                     },
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false,
-                    "title": "Configured currency rates by date window"
+                    "title": "Configured currency settings from Fleet policy"
                 },
                 "gridData": {
                     "h": 10,
@@ -241,7 +215,7 @@
                     "y": 13
                 },
                 "panelIndex": "ade88a54-34c2-5b84-9b0c-8c4209945af3",
-                "title": "Configured currency rates by date window",
+                "title": "Configured currency settings from Fleet policy",
                 "type": "lens"
             },
             {
@@ -251,17 +225,17 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "dda14876d0db9f8c0c854499c13077c0ee010585c18afbde345cd5c8de3f7e61": {
+                                "109e3b4cdb2d3a84b7f3e0d558baa43b4d1918a7c0d80868ecac8a0331671cbd": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "dda14876d0db9f8c0c854499c13077c0ee010585c18afbde345cd5c8de3f7e61",
+                                    "id": "109e3b4cdb2d3a84b7f3e0d558baa43b4d1918a7c0d80868ecac8a0331671cbd",
                                     "managed": false,
-                                    "name": "chargeback-serverless-projects",
+                                    "name": "metrics-chargeback_serverless.usage-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": null,
-                                    "title": "chargeback-serverless-projects",
+                                    "title": "metrics-chargeback_serverless.usage-*",
                                     "type": "esql"
                                 }
                             },
@@ -269,9 +243,9 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "dda14876d0db9f8c0c854499c13077c0ee010585c18afbde345cd5c8de3f7e61",
+                                            "id": "109e3b4cdb2d3a84b7f3e0d558baa43b4d1918a7c0d80868ecac8a0331671cbd",
                                             "timeField": null,
-                                            "title": "chargeback-serverless-projects"
+                                            "title": "metrics-chargeback_serverless.usage-*"
                                         }
                                     ],
                                     "layers": {
@@ -326,11 +300,37 @@
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
+                                                },
+                                                {
+                                                    "columnId": "Last status",
+                                                    "customLabel": false,
+                                                    "fieldName": "Last status",
+                                                    "label": "Last status",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Discovered indices",
+                                                    "customFormat": {
+                                                        "id": "number",
+                                                        "params": {
+                                                            "decimals": 0
+                                                        }
+                                                    },
+                                                    "customLabel": false,
+                                                    "fieldName": "Discovered indices",
+                                                    "label": "Discovered indices",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
                                                 }
                                             ],
-                                            "index": "dda14876d0db9f8c0c854499c13077c0ee010585c18afbde345cd5c8de3f7e61",
+                                            "index": "109e3b4cdb2d3a84b7f3e0d558baa43b4d1918a7c0d80868ecac8a0331671cbd",
                                             "query": {
-                                                "esql": "FROM chargeback-serverless-projects\n| KEEP project_name, project_id, project_type, optimized_for, es_url\n| RENAME project_name AS `Project`, project_id AS `Project ID`, project_type AS `Type`, optimized_for AS `Optimized for`, es_url AS `Elasticsearch endpoint`\n| SORT `Project` ASC\n| LIMIT 200"
+                                                "esql": "FROM metrics-chargeback_serverless.usage-*\n| WHERE doc_type == \"project_status\"\n| STATS `Type` = MAX(project_type), `Optimized for` = MAX(optimized_for), `Elasticsearch endpoint` = MAX(es_url), `Last status` = MAX(last_status), `Discovered indices` = MAX(index_count) BY `Project` = project_name, `Project ID` = project_id\n| SORT `Project` ASC\n| LIMIT 200"
                                             },
                                             "timeField": null
                                         }
@@ -339,7 +339,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM chargeback-serverless-projects\n| KEEP project_name, project_id, project_type, optimized_for, es_url\n| RENAME project_name AS `Project`, project_id AS `Project ID`, project_type AS `Type`, optimized_for AS `Optimized for`, es_url AS `Elasticsearch endpoint`\n| SORT `Project` ASC\n| LIMIT 200"
+                                "esql": "FROM metrics-chargeback_serverless.usage-*\n| WHERE doc_type == \"project_status\"\n| STATS `Type` = MAX(project_type), `Optimized for` = MAX(optimized_for), `Elasticsearch endpoint` = MAX(es_url), `Last status` = MAX(last_status), `Discovered indices` = MAX(index_count) BY `Project` = project_name, `Project ID` = project_id\n| SORT `Project` ASC\n| LIMIT 200"
                             },
                             "visualization": {
                                 "columns": [
@@ -357,6 +357,12 @@
                                     },
                                     {
                                         "columnId": "Elasticsearch endpoint"
+                                    },
+                                    {
+                                        "columnId": "Last status"
+                                    },
+                                    {
+                                        "columnId": "Discovered indices"
                                     }
                                 ],
                                 "layerId": "14f8694b-4dba-57db-8479-6eda9cd341f1",
@@ -375,7 +381,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM chargeback-serverless-projects\n| KEEP project_name, project_id, project_type, optimized_for, es_url\n| RENAME project_name AS `Project`, project_id AS `Project ID`, project_type AS `Type`, optimized_for AS `Optimized for`, es_url AS `Elasticsearch endpoint`\n| SORT `Project` ASC\n| LIMIT 200"
+                        "esql": "FROM metrics-chargeback_serverless.usage-*\n| WHERE doc_type == \"project_status\"\n| STATS `Type` = MAX(project_type), `Optimized for` = MAX(optimized_for), `Elasticsearch endpoint` = MAX(es_url), `Last status` = MAX(last_status), `Discovered indices` = MAX(index_count) BY `Project` = project_name, `Project ID` = project_id\n| SORT `Project` ASC\n| LIMIT 200"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -396,7 +402,7 @@
             {
                 "embeddableConfig": {
                     "esql_query": [
-                        "FROM chargeback-serverless-state\n| SORT updated_at DESC NULLS LAST\n| LIMIT 100\n| EVAL health = CASE(COALESCE(last_status, \"\") == \"empty_or_unauthorized\", \"empty_or_unauthorized\", updated_at IS NOT NULL AND updated_at > NOW() - 2 hours, \"ok\", \"stale\")\n| KEEP project_id, project_name, project_type, index_count, health, day, updated_at"
+                        "FROM metrics-chargeback_serverless.usage-*\n| WHERE doc_type == \"project_status\"\n| STATS project_type = MAX(project_type), index_count = MAX(index_count), last_status = MAX(last_status), updated_at = MAX(updated_at) BY project_id, project_name\n| EVAL health = CASE(last_status == \"empty_or_unauthorized\", \"empty_or_unauthorized\", updated_at IS NOT NULL AND updated_at > NOW() - 2 hours, \"ok\", \"stale\")\n| SORT updated_at DESC NULLS LAST\n| LIMIT 100\n| KEEP project_id, project_name, project_type, index_count, health, updated_at"
                     ],
                     "template": "<style>\n  .cb-paged-wrap {\n    display: flex;\n    flex-direction: column;\n    justify-content: space-between;\n    height: 100%;\n    min-height: 0;\n    box-sizing: border-box;\n    overflow: hidden;\n  }\n  .cb-content-wrap {\n    flex: 1 1 auto;\n    min-height: 0;\n    overflow-x: auto;\n    overflow-y: hidden;\n  }\n  .cb-pg-bar {\n    display: flex;\n    align-items: center;\n    justify-content: flex-end;\n    gap: 4px;\n    padding: 6px 2px 2px 2px;\n    border-top: 1px solid var(--cc-color-border, #e0e0e0);\n    font-size: 0.76rem;\n    color: var(--cc-color-text, #333);\n    user-select: none;\n    flex-shrink: 0;\n  }\n  .cb-pg-info {\n    margin-right: auto;\n    opacity: 0.75;\n    font-size: 0.74rem;\n  }\n  .cb-pg-btn {\n    display: inline-flex;\n    align-items: center;\n    justify-content: center;\n    min-width: 22px;\n    height: 22px;\n    padding: 0 5px;\n    border-radius: 4px;\n    border: 1px solid var(--cc-color-border, #ccc);\n    background: var(--cc-color-surface, #fff);\n    color: var(--cc-color-text, #333);\n    cursor: pointer;\n    font-size: 0.75rem;\n    font-weight: 500;\n    text-decoration: none;\n    box-sizing: border-box;\n    transition: background 0.15s, border-color 0.15s;\n    user-select: none;\n  }\n  .cb-pg-btn:hover {\n    background: var(--cc-color-hover, #f0f0f0);\n    border-color: var(--cc-color-primary, #0077cc);\n  }\n  .cb-pg-dir {\n    display: none !important;\n    font-weight: 700;\n  }\n  .cb-prev-disabled, .cb-next-disabled {\n    opacity: 0.35 !important;\n    cursor: not-allowed !important;\n    pointer-events: none !important;\n  }\n\n  .cb-pg-radio-statbrd { display: none !important; position: absolute; opacity: 0; pointer-events: none; }\n  .cb-pg-row-statbrd { display: none !important; }\n  #statbrd_pg_1:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-1 { display: grid !important; }\n  #statbrd_pg_1:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-1 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_1:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"1\"; }\n  #statbrd_pg_1:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-1 { display: inline-flex !important; }\n  #statbrd_pg_1:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-1 { display: inline-flex !important; }\n  #statbrd_pg_2:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-2 { display: grid !important; }\n  #statbrd_pg_2:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-2 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_2:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"2\"; }\n  #statbrd_pg_2:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-2 { display: inline-flex !important; }\n  #statbrd_pg_2:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-2 { display: inline-flex !important; }\n  #statbrd_pg_3:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-3 { display: grid !important; }\n  #statbrd_pg_3:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-3 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_3:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"3\"; }\n  #statbrd_pg_3:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-3 { display: inline-flex !important; }\n  #statbrd_pg_3:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-3 { display: inline-flex !important; }\n  #statbrd_pg_4:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-4 { display: grid !important; }\n  #statbrd_pg_4:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-4 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_4:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"4\"; }\n  #statbrd_pg_4:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-4 { display: inline-flex !important; }\n  #statbrd_pg_4:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-4 { display: inline-flex !important; }\n  #statbrd_pg_5:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-5 { display: grid !important; }\n  #statbrd_pg_5:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-5 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_5:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"5\"; }\n  #statbrd_pg_5:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-5 { display: inline-flex !important; }\n  #statbrd_pg_5:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-5 { display: inline-flex !important; }\n  #statbrd_pg_6:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-6 { display: grid !important; }\n  #statbrd_pg_6:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-6 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_6:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"6\"; }\n  #statbrd_pg_6:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-6 { display: inline-flex !important; }\n  #statbrd_pg_6:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-6 { display: inline-flex !important; }\n  #statbrd_pg_7:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-7 { display: grid !important; }\n  #statbrd_pg_7:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-7 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_7:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"7\"; }\n  #statbrd_pg_7:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-7 { display: inline-flex !important; }\n  #statbrd_pg_7:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-7 { display: inline-flex !important; }\n  #statbrd_pg_8:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-8 { display: grid !important; }\n  #statbrd_pg_8:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-8 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_8:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"8\"; }\n  #statbrd_pg_8:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-8 { display: inline-flex !important; }\n  #statbrd_pg_8:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-8 { display: inline-flex !important; }\n  #statbrd_pg_9:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-9 { display: grid !important; }\n  #statbrd_pg_9:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-9 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_9:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"9\"; }\n  #statbrd_pg_9:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-9 { display: inline-flex !important; }\n  #statbrd_pg_9:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-9 { display: inline-flex !important; }\n  #statbrd_pg_10:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-10 { display: grid !important; }\n  #statbrd_pg_10:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-10 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_10:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"10\"; }\n  #statbrd_pg_10:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-10 { display: inline-flex !important; }\n  #statbrd_pg_10:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-10 { display: inline-flex !important; }\n  #statbrd_pg_11:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-11 { display: grid !important; }\n  #statbrd_pg_11:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-11 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_11:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"11\"; }\n  #statbrd_pg_11:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-11 { display: inline-flex !important; }\n  #statbrd_pg_11:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-11 { display: inline-flex !important; }\n  #statbrd_pg_12:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-12 { display: grid !important; }\n  #statbrd_pg_12:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-12 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_12:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"12\"; }\n  #statbrd_pg_12:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-12 { display: inline-flex !important; }\n  #statbrd_pg_12:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-12 { display: inline-flex !important; }\n  #statbrd_pg_13:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-13 { display: grid !important; }\n  #statbrd_pg_13:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-13 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_13:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"13\"; }\n  #statbrd_pg_13:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-13 { display: inline-flex !important; }\n  #statbrd_pg_13:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-13 { display: inline-flex !important; }\n  #statbrd_pg_14:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-14 { display: grid !important; }\n  #statbrd_pg_14:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-14 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_14:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"14\"; }\n  #statbrd_pg_14:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-14 { display: inline-flex !important; }\n  #statbrd_pg_14:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-14 { display: inline-flex !important; }\n  #statbrd_pg_15:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-15 { display: grid !important; }\n  #statbrd_pg_15:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-15 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_15:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"15\"; }\n  #statbrd_pg_15:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-15 { display: inline-flex !important; }\n  #statbrd_pg_15:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-15 { display: inline-flex !important; }\n  #statbrd_pg_16:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-16 { display: grid !important; }\n  #statbrd_pg_16:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-16 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_16:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"16\"; }\n  #statbrd_pg_16:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-16 { display: inline-flex !important; }\n  #statbrd_pg_16:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-16 { display: inline-flex !important; }\n  #statbrd_pg_17:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-17 { display: grid !important; }\n  #statbrd_pg_17:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-17 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_17:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"17\"; }\n  #statbrd_pg_17:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-17 { display: inline-flex !important; }\n  #statbrd_pg_17:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-17 { display: inline-flex !important; }\n  #statbrd_pg_18:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-18 { display: grid !important; }\n  #statbrd_pg_18:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-18 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_18:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"18\"; }\n  #statbrd_pg_18:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-18 { display: inline-flex !important; }\n  #statbrd_pg_18:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-18 { display: inline-flex !important; }\n  #statbrd_pg_19:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-19 { display: grid !important; }\n  #statbrd_pg_19:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-19 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_19:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"19\"; }\n  #statbrd_pg_19:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-19 { display: inline-flex !important; }\n  #statbrd_pg_19:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-19 { display: inline-flex !important; }\n  #statbrd_pg_20:checked ~ .cb-content-wrap-statbrd .cb-pg-statbrd-20 { display: grid !important; }\n  #statbrd_pg_20:checked ~ .cb-pg-bar-statbrd .cb-btn-statbrd-20 { background: var(--cc-color-primary, #0077cc); color: #ffffff !important; border-color: var(--cc-color-primary, #0077cc); pointer-events: none; font-weight: 700; }\n  #statbrd_pg_20:checked ~ .cb-pg-bar-statbrd .cb-pg-cur::after { content: \"20\"; }\n  #statbrd_pg_20:checked ~ .cb-pg-bar-statbrd .cb-prev-statbrd-20 { display: inline-flex !important; }\n  #statbrd_pg_20:checked ~ .cb-pg-bar-statbrd .cb-next-statbrd-20 { display: inline-flex !important; }\n  .cb-status { display: flex; flex-direction: column; gap: var(--cc-space-xs); }\n  .cb-item {\n    display: grid; grid-template-columns: 18px 1.4fr 0.9fr 0.8fr 1.1fr 1.2fr; gap: var(--cc-space-s);\n    align-items: center; padding: 4px var(--cc-space-s);\n    background: var(--cc-color-surface); border-radius: var(--cc-radius-s);\n    border: 1px solid var(--cc-color-border);\n  }\n  .cb-dot { width: 10px; height: 10px; border-radius: 50%; }\n  .cb-ok { background: var(--cc-vis-1, #54b399); }\n  .cb-warn { background: var(--cc-vis-8, #da8b45); }\n  .cb-err { background: var(--cc-vis-7, #c9404f); }\n  .cb-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n  .cb-meta { opacity: 0.8; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n</style>\n{% assign _total_items = rows.size | default: 0 | round %}\n{% assign _total_pages = _total_items | minus: 1 | divided_by: 10 | floor | plus: 1 %}\n{% if _total_pages < 1 %}{% assign _total_pages = 1 %}{% endif %}\n{% if _total_pages > 20 %}{% assign _total_pages = 20 %}{% endif %}\n<div class=\"cb-paged-wrap cb-paged-wrap-statbrd\">\n{% for _p_i in (1.._total_pages) %}\n  <input type=\"radio\" name=\"statbrd_pg\" id=\"statbrd_pg_{{ _p_i }}\" class=\"cb-pg-radio-statbrd\" {% if _p_i == 1 %}checked{% endif %}>\n{% endfor %}\n<div class=\"cb-content-wrap cb-content-wrap-statbrd\">\n<div class=\"cb-status\">\n{% for row in rows %}\n  {% assign _row_pg = forloop.index0 | divided_by: 10 | floor | plus: 1 %}\n  {% assign h = row[\"health\"].value | default: \"stale\" %}\n  <div class=\"cb-item cb-pg-row-statbrd cb-pg-statbrd-{{ _row_pg }}\">\n    <div class=\"cb-dot {% if h == \"ok\" %}cb-ok{% elsif h == \"empty_or_unauthorized\" %}cb-err{% else %}cb-warn{% endif %}\"></div>\n    <div class=\"cb-name\">{{ row[\"project_name\"].value | default: row[\"project_id\"].value }}</div>\n    <div class=\"cb-meta\">{{ row[\"project_type\"].value | default: \"unknown\" }}</div>\n    <div class=\"cb-meta\">{{ row[\"index_count\"].value | default: 0 }} indices</div>\n    <div class=\"cb-meta\">{{ h }} \u00b7 day {{ row[\"day\"].value | default: \"\u2014\" }}</div>\n    <div class=\"cb-meta\">{{ row[\"updated_at\"].value | default: \"never\" | slice: 0, 19 }}</div>\n  </div>\n{% endfor %}\n</div>\n</div>\n{% if _total_pages > 1 %}\n<div class=\"cb-pg-bar cb-pg-bar-statbrd\">\n  <span class=\"cb-pg-info\">Page <span class=\"cb-pg-cur\"></span> of {{ _total_pages }} ({{ _total_items }} items)</span>\n  <span class=\"cb-pg-btn cb-pg-dir cb-prev-disabled cb-prev-statbrd-1\" title=\"Previous page\">&lsaquo;</span>\n  {% for _p_i in (2.._total_pages) %}\n    {% assign _p_prev = _p_i | minus: 1 %}\n    <label for=\"statbrd_pg_{{ _p_prev }}\" class=\"cb-pg-btn cb-pg-dir cb-prev-statbrd-{{ _p_i }}\" title=\"Previous page\">&lsaquo;</label>\n  {% endfor %}\n  {% for _p_i in (1.._total_pages) %}\n    <label for=\"statbrd_pg_{{ _p_i }}\" class=\"cb-pg-btn cb-btn-statbrd-{{ _p_i }}\">{{ _p_i }}</label>\n  {% endfor %}\n  {% for _p_i in (1.._total_pages) %}\n    {% if _p_i < _total_pages %}\n      {% assign _p_next = _p_i | plus: 1 %}\n      <label for=\"statbrd_pg_{{ _p_next }}\" class=\"cb-pg-btn cb-pg-dir cb-next-statbrd-{{ _p_i }}\" title=\"Next page\">&rsaquo;</label>\n    {% else %}\n      <span class=\"cb-pg-btn cb-pg-dir cb-next-disabled cb-next-statbrd-{{ _p_i }}\" title=\"Next page\">&rsaquo;</span>\n    {% endif %}\n  {% endfor %}\n</div>\n{% endif %}\n</div>\n"
                 },

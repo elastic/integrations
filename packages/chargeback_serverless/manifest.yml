@@ -1,8 +1,8 @@
 format_version: 3.5.0
 name: chargeback_serverless
 title: "Chargeback Serverless"
-version: 0.1.6
-description: "Allocate Elastic Cloud Serverless billing to projects on a Serverless hub. Agentless Fleet integration: set organization ID and API keys in the Integration UI; Kibana Workflows collect billing and usage (no Elastic Agent)."
+version: 0.2.0
+description: "Allocate Elastic Cloud Serverless billing to projects and data streams on a Serverless hub. Native Fleet integration: scheduled collection via Elastic Agent CEL streams for billing and usage (no Kibana Workflows or config indices)."
 type: integration
 categories:
   - cloud
@@ -21,60 +21,110 @@ policy_templates:
   - name: chargeback_serverless
     title: Chargeback Serverless
     description: >-
-      Agentless configuration for Elastic Cloud organization credentials.
-      Billing and usage collection runs in Kibana Workflows — no Elastic Agent.
-      Set secrets here (not on dashboards).
-    # Custom (upload) packages cannot deploy as agentless on Fleet — default mode
-    # is required so Integrations → Settings can store org ID and API keys.
-    # Agentless stays declared for when the package is published to EPR.
+      Collect Elastic Cloud Serverless billing and project usage metrics on a schedule.
+      All credentials, project harvesting keys, and currency conversions are configured
+      here. Secrets are encrypted and never stored in Elasticsearch indices.
     deployment_modes:
       default:
         enabled: true
       agentless:
         enabled: true
-        is_default: false
+        is_default: true
         organization: elastic
         division: field
         team: csg
     inputs:
       - type: cel
-        title: Elastic Cloud credentials
+        title: Elastic Cloud Configuration
         description: >-
-          Organization ID and API keys for billing and project usage collection.
-          After saving, sync values into chargeback-serverless-config for Workflows
-          (see package README). API keys never appear on dashboards.
+          Configure organization credentials, remote project harvesting keys, and currency rates.
         vars:
           - name: organization_id
             type: text
             title: Organization ID
             description: >-
-              Elastic Cloud organization ID (Cloud Console → Organization).
-              Non-secret; used by the billing Workflow.
+              Elastic Cloud organization ID (found on Cloud Console → Organization).
             multi: false
             required: true
             show_user: true
             secret: false
-          - name: billing_api_key
+          - name: cloud_api_key
             type: password
-            title: Billing API key
+            title: Elastic Cloud API Key
             description: >-
-              Elastic Cloud API key with organization billing read access.
-              Used by the Chargeback Serverless Billing Workflow.
+              Elastic Cloud API key with billing read access and Serverless project read access.
             multi: false
             required: true
             show_user: true
             secret: true
-          - name: usage_api_key
+          - name: hub_es_api_key
             type: password
-            title: Usage API key
+            title: Hub Project Elasticsearch API Key
             description: >-
-              Elastic Cloud API key that can list Serverless projects.
-              Used by the Chargeback Serverless Usage Workflow (not a substitute
-              for per-project Elasticsearch API keys).
+              Optional Elasticsearch API key for the Hub project if harvesting local _cat/indices.
+            multi: false
+            required: false
+            show_user: true
+            secret: true
+          - name: project_api_keys
+            type: password
+            title: Remote Project Elasticsearch API Keys
+            description: >-
+              Optional least-privileged Elasticsearch API keys for remote projects in <project_id>:<encoded_api_key> format.
+            multi: true
+            required: false
+            show_user: true
+            secret: true
+          - name: lookbehind
+            type: integer
+            title: Billing Lookbehind Days
+            description: >-
+              Number of historical days of billing data to backfill on initial install (default: 30).
             multi: false
             required: true
             show_user: true
-            secret: true
+            default: 30
+          - name: currency_unit
+            type: text
+            title: Currency Unit
+            description: >-
+              Target display currency unit code (e.g., USD, EUR, ZAR, GBP, ECU).
+            multi: false
+            required: false
+            show_user: true
+            default: "USD"
+          - name: currency_symbol
+            type: text
+            title: Currency Symbol
+            description: >-
+              Target display currency symbol (e.g., $, €, R, £, ECU).
+            multi: false
+            required: false
+            show_user: true
+            default: "$"
+          - name: unit_rate
+            type: text
+            title: Chargeable Unit Rate
+            description: >-
+              Multiplier from chargeable units (ECU) to target currency (e.g., 1.0, 18.5).
+            multi: false
+            required: false
+            show_user: true
+            default: "1.0"
+          - name: billing_api_base
+            type: text
+            title: Billing API Base URL
+            description: Base URL of the Elastic Cloud Billing API.
+            required: false
+            show_user: false
+            default: "https://billing.elastic-cloud.com"
+          - name: cloud_api_base
+            type: text
+            title: Cloud Control Plane API Base URL
+            description: Base URL of the Elastic Cloud Serverless API.
+            required: false
+            show_user: false
+            default: "https://api.elastic-cloud.com"
 owner:
   github: elastic/customer-architects
   type: elastic

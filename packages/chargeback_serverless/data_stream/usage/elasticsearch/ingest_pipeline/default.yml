@@ -1,0 +1,15 @@
+---
+description: "Ingest pipeline for Chargeback Serverless usage data stream."
+processors:
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_event_ingested
+  - script:
+      ignore_failure: true
+      lang: painless
+      tag: set_composite_key
+      source: |
+        if (ctx['@timestamp'] != null && ctx.project_id != null) {
+          ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.project_id;
+        }
