@@ -3,7 +3,7 @@
         "name": "[Chargeback Serverless] Billed project missing from registry",
         "params": {
             "esqlQuery": {
-                "esql": "FROM metrics-chargeback_serverless.billing-*\n| WHERE project_id IS NOT NULL AND project_id != \"\" AND (project_name IS NULL OR project_name == \"\" OR project_name == project_id)\n| STATS ecu = ROUND(SUM(COALESCE(total_ecu, 0.0)), 2) BY project_id, project_type\n| EVAL result = CONCAT(\"Billed project `\", project_id, \"` (\", COALESCE(project_type, \"unknown\"), \", \", TO_STRING(ecu), \" ECU) has no resolved project_name.\")\n| STATS result = VALUES(result)\n| MV_EXPAND result"
+                "esql": "FROM serverless_billing_cost_lookup\n| WHERE project_id IS NOT NULL AND project_id != \"\" AND (project_name IS NULL OR project_name == \"\" OR project_name == project_id)\n| STATS ecu = ROUND(SUM(COALESCE(total_ecu, 0.0)), 2) BY project_id, project_type\n| EVAL result = CONCAT(\"Billed project `\", project_id, \"` (\", COALESCE(project_type, \"unknown\"), \", \", TO_STRING(ecu), \" ECU) has no resolved project_name.\")\n| STATS result = VALUES(result)\n| MV_EXPAND result"
             },
             "excludeHitsFromPreviousRun": true,
             "searchType": "esqlQuery",
@@ -13,12 +13,12 @@
             ],
             "thresholdComparator": ">",
             "timeField": "@timestamp",
-            "timeWindowSize": 1,
+            "timeWindowSize": 2,
             "timeWindowUnit": "d"
         },
         "ruleTypeId": ".es-query",
         "schedule": {
-            "interval": "12h"
+            "interval": "24h"
         },
         "tags": [
             "Chargeback",

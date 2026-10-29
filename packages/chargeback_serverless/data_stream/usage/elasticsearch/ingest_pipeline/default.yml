@@ -8,8 +8,22 @@ processors:
   - script:
       ignore_failure: true
       lang: painless
-      tag: set_composite_key
+      tag: normalize_usage_fields
       source: |
         if (ctx['@timestamp'] != null && ctx.project_id != null) {
           ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.project_id;
+        }
+        if (ctx.doc_type == 'datastream' && ctx.datastream != null && ctx.datastream != '') {
+          def m = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:\.ds-)?([a-zA-Z_0-9\-.]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/.matcher(ctx.datastream);
+          if (m.matches()) {
+            ctx.datastream = m.group(1);
+          }
+          def parts = ctx.datastream.splitOnToken('-');
+          if (parts.length >= 2) {
+            ctx.ds_type = parts[0];
+            ctx.ds_namespace = parts[parts.length - 1];
+          } else {
+            ctx.ds_type = 'other';
+            ctx.ds_namespace = 'other';
+          }
         }

@@ -1,0 +1,57 @@
+description: Aggregates daily total chargeable units (ECU) per Serverless project and SKU into a single daily figure.
+source:
+  index:
+    - metrics-chargeback_serverless.billing-*
+  query:
+    range:
+      total_ecu:
+        gt: 0
+dest:
+  index: serverless_billing_cost_lookup
+  pipeline: logs-chargeback_serverless.lookup-0.3.0-billing
+frequency: 60m
+sync:
+  time:
+    field: "@timestamp"
+    delay: 1h
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    project_id:
+      terms:
+        field: project_id
+    project_name:
+      terms:
+        field: project_name
+    project_type:
+      terms:
+        field: project_type
+    sku:
+      terms:
+        field: sku
+    conf_chargeable_unit_rate_unit:
+      terms:
+        field: conf_chargeable_unit_rate_unit
+    conf_currency_symbol:
+      terms:
+        field: conf_currency_symbol
+  aggregations:
+    total_ecu:
+      max:
+        field: total_ecu
+    quantity_value:
+      max:
+        field: quantity_value
+    conf_chargeable_unit_rate:
+      max:
+        field: conf_chargeable_unit_rate
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.3.0

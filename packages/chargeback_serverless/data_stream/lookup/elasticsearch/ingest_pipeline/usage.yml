@@ -1,0 +1,77 @@
+---
+description: >-
+  Chargeback Serverless: set composite_key and extract ds_type and ds_namespace
+  for usage lookup indices.
+processors:
+  - script:
+      ignore_failure: true
+      lang: painless
+      tag: set_usage_lookup_keys
+      source: |
+        if (ctx.project_id == null && ctx.cluster_name != null) {
+          ctx.project_id = ctx.cluster_name;
+        }
+        if (ctx['@timestamp'] != null && ctx.project_id != null) {
+          def date = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString();
+          ctx.composite_key = date + '_' + ctx.project_id;
+          if (ctx.datastream != null) {
+            ctx.composite_datastream_key = ctx.composite_key + '_' + ctx.datastream;
+          }
+        }
+        if (ctx.datastream != null && ctx.datastream != '') {
+          def m = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:\.ds-)?([a-zA-Z_0-9\-.]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/.matcher(ctx.datastream);
+          if (m.matches()) {
+            ctx.datastream = m.group(1);
+          }
+          def parts = ctx.datastream.splitOnToken('-');
+          if (parts.length >= 2) {
+            ctx.ds_type = parts[0];
+            ctx.ds_namespace = parts[parts.length - 1];
+          } else {
+            ctx.ds_type = 'other';
+            ctx.ds_namespace = 'other';
+          }
+        }
+        if (ctx.conf_chargeable_unit_rate_unit instanceof Map) {
+          def keys = new ArrayList(ctx.conf_chargeable_unit_rate_unit.keySet());
+          ctx.conf_chargeable_unit_rate_unit = keys.size() > 0 ? keys[0] : 'USD';
+        }
+        if (ctx.conf_currency_symbol instanceof Map) {
+          def keys = new ArrayList(ctx.conf_currency_symbol.keySet());
+          ctx.conf_currency_symbol = keys.size() > 0 ? keys[0] : '$';
+        }
+        if (ctx.last_status instanceof Map) {
+          def keys = new ArrayList(ctx.last_status.keySet());
+          ctx.last_status = keys.size() > 0 ? keys[0] : 'ok';
+        }
+        if (ctx.optimized_for instanceof Map) {
+          def keys = new ArrayList(ctx.optimized_for.keySet());
+          ctx.optimized_for = keys.size() > 0 ? keys[0] : 'general_purpose';
+        }
+        if (ctx.es_url instanceof Map) {
+          def keys = new ArrayList(ctx.es_url.keySet());
+          ctx.es_url = keys.size() > 0 ? keys[0] : '';
+        }
+        if (ctx.updated_at instanceof Number) {
+          ctx.updated_at = Instant.ofEpochMilli(((Number)ctx.updated_at).longValue()).toString();
+        }
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_event_ingested
+  - pipeline:
+      description: '[Fleet] Global pipeline for all data streams'
+      ignore_missing_pipeline: true
+      name: global@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for all data streams of type `metrics`'
+      ignore_missing_pipeline: true
+      name: metrics@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for all data streams of type `metrics` defined by the `chargeback_serverless` integration'
+      ignore_missing_pipeline: true
+      name: metrics-chargeback_serverless.integration@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for the `chargeback_serverless.usage` dataset'
+      ignore_missing_pipeline: true
+      name: metrics-chargeback_serverless.usage@custom

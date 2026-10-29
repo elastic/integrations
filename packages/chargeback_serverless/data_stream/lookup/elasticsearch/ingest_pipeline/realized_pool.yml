@@ -1,0 +1,61 @@
+---
+description: >-
+  Chargeback Serverless: realized pool lookup — set composite_key and compute
+  daily allocatable ECU pools (indexing_ecu, query_ecu, storage_ecu, ai_ecu).
+processors:
+  - script:
+      ignore_failure: true
+      lang: painless
+      tag: set_realized_pool_fields
+      source: |
+        if (ctx['@timestamp'] != null && ctx.project_id != null) {
+          ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.project_id;
+        }
+        double idx = 0.0;
+        if (ctx.indexing_ecu instanceof Map && ctx.indexing_ecu.val != null) {
+          idx = ((Number)ctx.indexing_ecu.val).doubleValue();
+        } else if (ctx.indexing_ecu instanceof Number) {
+          idx = ((Number)ctx.indexing_ecu).doubleValue();
+        }
+        double qry = 0.0;
+        if (ctx.query_ecu instanceof Map && ctx.query_ecu.val != null) {
+          qry = ((Number)ctx.query_ecu.val).doubleValue();
+        } else if (ctx.query_ecu instanceof Number) {
+          qry = ((Number)ctx.query_ecu).doubleValue();
+        }
+        double stg = 0.0;
+        if (ctx.storage_ecu instanceof Map && ctx.storage_ecu.val != null) {
+          stg = ((Number)ctx.storage_ecu.val).doubleValue();
+        } else if (ctx.storage_ecu instanceof Number) {
+          stg = ((Number)ctx.storage_ecu).doubleValue();
+        }
+        double ai = 0.0;
+        if (ctx.ai_ecu instanceof Map && ctx.ai_ecu.val != null) {
+          ai = ((Number)ctx.ai_ecu.val).doubleValue();
+        } else if (ctx.ai_ecu instanceof Number) {
+          ai = ((Number)ctx.ai_ecu).doubleValue();
+        }
+        ctx.indexing_ecu = idx;
+        ctx.query_ecu = qry;
+        ctx.storage_ecu = stg;
+        ctx.ai_ecu = ai;
+        double cap = idx + qry + stg;
+        ctx.data_tier_capacity_ecu = cap;
+        ctx.realized_chargeable_units = cap;
+        ctx.total_chargeable_units = cap + ai;
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_event_ingested
+  - pipeline:
+      description: '[Fleet] Global pipeline for all data streams'
+      ignore_missing_pipeline: true
+      name: global@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for all data streams of type `metrics`'
+      ignore_missing_pipeline: true
+      name: metrics@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for all data streams of type `metrics` defined by the `chargeback_serverless` integration'
+      ignore_missing_pipeline: true
+      name: metrics-chargeback_serverless.integration@custom

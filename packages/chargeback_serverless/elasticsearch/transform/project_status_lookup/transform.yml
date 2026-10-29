@@ -1,0 +1,67 @@
+description: Aggregates daily Serverless project harvest status into a single daily figure per project.
+source:
+  index:
+    - metrics-chargeback_serverless.usage-*
+  query:
+    term:
+      doc_type: "project_status"
+dest:
+  index: serverless_project_status_lookup
+  pipeline: logs-chargeback_serverless.lookup-0.3.0-usage
+frequency: 60m
+sync:
+  time:
+    field: "@timestamp"
+    delay: 1h
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    project_id:
+      terms:
+        field: project_id
+    project_name:
+      terms:
+        field: project_name
+    project_type:
+      terms:
+        field: project_type
+  aggregations:
+    index_count:
+      max:
+        field: index_count
+    updated_at:
+      max:
+        field: updated_at
+    last_status:
+      terms:
+        field: last_status
+        size: 1
+    optimized_for:
+      terms:
+        field: optimized_for
+        size: 1
+    es_url:
+      terms:
+        field: es_url
+        size: 1
+    conf_chargeable_unit_rate:
+      max:
+        field: conf_chargeable_unit_rate
+    conf_chargeable_unit_rate_unit:
+      terms:
+        field: conf_chargeable_unit_rate_unit
+        size: 1
+    conf_currency_symbol:
+      terms:
+        field: conf_currency_symbol
+        size: 1
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.3.0

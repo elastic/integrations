@@ -1,0 +1,78 @@
+description: Aggregates daily allocatable ECU pools (indexing, query, storage, AI) per Serverless project into a single daily figure for LOOKUP JOIN attribution.
+source:
+  index:
+    - serverless_billing_cost_lookup
+dest:
+  index: serverless_billing_realized_pool_lookup
+  pipeline: logs-chargeback_serverless.lookup-0.3.0-realized_pool
+frequency: 60m
+sync:
+  time:
+    field: "@timestamp"
+    delay: 1h
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    project_id:
+      terms:
+        field: project_id
+    project_name:
+      terms:
+        field: project_name
+    project_type:
+      terms:
+        field: project_type
+    conf_chargeable_unit_rate_unit:
+      terms:
+        field: conf_chargeable_unit_rate_unit
+    conf_currency_symbol:
+      terms:
+        field: conf_currency_symbol
+  aggregations:
+    indexing_ecu:
+      filter:
+        term:
+          allocation_driver: "indexing"
+      aggs:
+        val:
+          sum:
+            field: total_ecu
+    query_ecu:
+      filter:
+        term:
+          allocation_driver: "query"
+      aggs:
+        val:
+          sum:
+            field: total_ecu
+    storage_ecu:
+      filter:
+        term:
+          allocation_driver: "storage"
+      aggs:
+        val:
+          sum:
+            field: total_ecu
+    ai_ecu:
+      filter:
+        terms:
+          cost_type:
+            - "ml-vcu"
+            - "inference"
+      aggs:
+        val:
+          sum:
+            field: total_ecu
+    conf_chargeable_unit_rate:
+      max:
+        field: conf_chargeable_unit_rate
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.3.0

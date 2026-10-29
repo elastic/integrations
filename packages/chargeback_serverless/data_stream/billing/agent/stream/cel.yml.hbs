@@ -27,10 +27,10 @@ program: |-
         "from": from,
         "to": from + duration("24h"),
       }
-    ).as(req, (req.to > now) ?
+    ).as(req, (req.to + duration("2h") > now) ?
       {
         "events": [],
-        "cursor": { "last_to": req.to.format(time_layout.RFC3339) },
+        "cursor": { "last_to": req.from.format(time_layout.RFC3339) },
         "want_more": false,
       }
     :
@@ -63,13 +63,13 @@ program: |-
               )
             ).flatten(),
             "cursor": { "last_to": req.to.format(time_layout.RFC3339) },
-            "want_more": req.to < now - duration("24h"),
+            "want_more": req.to + duration("26h") <= now,
           }
         :
           {
             "events": [ { "fake": true } ],
             "cursor": { "last_to": req.to.format(time_layout.RFC3339) },
-            "want_more": req.to < now - duration("24h"),
+            "want_more": req.to + duration("26h") <= now,
           }
         )
       :

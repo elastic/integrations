@@ -1,0 +1,187 @@
+---
+description: >-
+  Chargeback Serverless: build composite_key, classify Serverless SKUs, and set
+  allocation_driver (indexing | query | storage | none) on billing lookup rows.
+processors:
+  - script:
+      ignore_failure: true
+      lang: painless
+      tag: set_composite_key
+      source: |
+        if (ctx['@timestamp'] != null && ctx.project_id != null) {
+          ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.project_id;
+        }
+  - set:
+      field: cost_type
+      value: 'data-transfer'
+      if: ctx.sku != null && ctx.sku =~ /^(aws|gcp|azure)\.(data-transfer|data-out).*/
+  - set:
+      field: cost_type
+      value: 'snapshots'
+      if: ctx.sku != null && ctx.sku =~ /^(aws|gcp|azure)\.snapshot-storage.*/
+  - set:
+      field: cost_type
+      value: 'inference'
+      if: ctx.sku == 'global.inference-chat-input'
+  - script:
+      ignore_failure: true
+      lang: painless
+      description: >-
+        Serverless-only classification. Sets cost_type, cost_category, is_allocatable,
+        and allocation_driver. Drivers: indexing (ingest VCU / Observability-Security
+        ingest GB), query (search VCU), storage (retained), none (unallocated).
+      source: |
+        def sku = ctx.sku;
+        if (sku == null) {
+          ctx.cost_type = 'other';
+          ctx.cost_category = 'other';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+
+        // Observability / Security SKUs (ingest GB vs retained storage).
+        if (sku.startsWith('observability.') || sku.startsWith('security.')) {
+          if (sku.contains('retained') || sku.contains('storage') || sku.contains('retention')) {
+            ctx.cost_type = 'retained';
+            ctx.cost_category = 'data_tier';
+            ctx.is_allocatable = true;
+            ctx.allocation_driver = 'storage';
+            return;
+          }
+          if (sku.contains('ingest') || sku.contains('logs') || sku.contains('metrics')
+              || sku.contains('traces') || sku.contains('apm') || sku.contains('siem')) {
+            ctx.cost_type = 'ingest';
+            ctx.cost_category = 'data_tier';
+            ctx.is_allocatable = true;
+            ctx.allocation_driver = 'indexing';
+            return;
+          }
+        }
+
+        // Elasticsearch and Vector Database capacity (VCU + retained).
+        if (sku.startsWith('elasticsearch.') || sku.startsWith('vector.')
+            || sku.startsWith('elasticsearch-vector.')) {
+          if (sku.contains('-ingest-vcu_') || sku.contains('ingest-vcu')) {
+            ctx.cost_type = 'ingest-vcu';
+            ctx.cost_category = 'data_tier';
+            ctx.is_allocatable = true;
+            ctx.allocation_driver = 'indexing';
+            return;
+          }
+          if (sku.contains('-search-vcu_') || sku.contains('search-vcu')) {
+            ctx.cost_type = 'search-vcu';
+            ctx.cost_category = 'data_tier';
+            ctx.is_allocatable = true;
+            ctx.allocation_driver = 'query';
+            return;
+          }
+          if (sku.startsWith('elasticsearch.retained_') || sku.contains('retained_')
+              || sku.contains('storage')) {
+            ctx.cost_type = 'retained';
+            ctx.cost_category = 'data_tier';
+            ctx.is_allocatable = true;
+            ctx.allocation_driver = 'storage';
+            return;
+          }
+          if (sku.contains('-ml-vcu_') || sku.contains('ml-vcu')) {
+            ctx.cost_type = 'ml-vcu';
+            ctx.cost_category = 'platform';
+            ctx.is_allocatable = false;
+            ctx.allocation_driver = 'none';
+            return;
+          }
+        }
+
+        if (sku.startsWith('serverless.support-')) {
+          ctx.cost_type = 'serverless_premium_support';
+          ctx.cost_category = 'support';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+
+        if (ctx.cost_type == 'data-transfer' || sku.contains('data-transfer')
+            || sku.contains('data-out') || sku.contains('egress')) {
+          ctx.cost_type = 'data-transfer';
+          ctx.cost_category = 'transfer';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+        if (ctx.cost_type == 'snapshots' || sku.contains('snapshot')) {
+          ctx.cost_type = 'snapshots';
+          ctx.cost_category = 'snapshot';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+        if (ctx.cost_type == 'inference' || sku.contains('inference') || sku.contains('llm')) {
+          ctx.cost_type = 'inference';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+        if (sku.contains('synthetics')) {
+          ctx.cost_type = 'synthetics';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+        if (sku.contains('workflow')) {
+          ctx.cost_type = 'workflows';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+        if (sku.contains('agent-builder')) {
+          ctx.cost_type = 'agent-builder';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+        if (sku.contains('cross-project') || sku.contains('cps')) {
+          ctx.cost_type = 'cross-project-search';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+
+        ctx.cost_category = 'other';
+        ctx.is_allocatable = false;
+        ctx.allocation_driver = 'none';
+  - grok:
+      field: sku
+      ignore_failure: true
+      patterns:
+        - "%{WORD}.es.%{WORD:cost_type}.%{GREEDYDATA}"
+        - "%{WORD}.%{DATA:cost_type}-vcu_%{GREEDYDATA}"
+        - "%{WORD}.%{WORD:cost_type}.%{GREEDYDATA}"
+        - "%{WORD}.%{DATA:cost_type}_%{GREEDYDATA}"
+      description: Derive a readable fallback cost_type from unknown SKUs
+      if: ctx.cost_type == null && ctx.sku != null
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_event_ingested
+  - pipeline:
+      description: '[Fleet] Global pipeline for all data streams'
+      ignore_missing_pipeline: true
+      name: global@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for all data streams of type `metrics`'
+      ignore_missing_pipeline: true
+      name: metrics@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for all data streams of type `metrics` defined by the `chargeback_serverless` integration'
+      ignore_missing_pipeline: true
+      name: metrics-chargeback_serverless.integration@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for the `chargeback_serverless.billing` dataset'
+      ignore_missing_pipeline: true
+      name: metrics-chargeback_serverless.billing@custom

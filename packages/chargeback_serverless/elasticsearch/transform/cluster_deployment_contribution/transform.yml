@@ -1,0 +1,44 @@
+description: Aggregates daily total indexing time, query time, and dataset storage size per Serverless project into a single daily figure for LOOKUP JOIN attribution.
+source:
+  index:
+    - serverless_datastream_contribution_lookup
+dest:
+  index: serverless_project_contribution_lookup
+  pipeline: logs-chargeback_serverless.lookup-0.3.0-usage
+frequency: 60m
+sync:
+  time:
+    field: "@timestamp"
+    delay: 1h
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    project_id:
+      terms:
+        field: project_id
+    project_name:
+      terms:
+        field: project_name
+    project_type:
+      terms:
+        field: project_type
+  aggregations:
+    deployment_sum_indexing_time:
+      sum:
+        field: datastream_sum_indexing_time
+    deployment_sum_query_time:
+      sum:
+        field: datastream_sum_query_time
+    deployment_sum_data_set_store_size:
+      sum:
+        field: datastream_sum_data_set_store_size
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.3.0

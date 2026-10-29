@@ -1,0 +1,64 @@
+- name: "@timestamp"
+  type: date
+  description: Daily timestamp representing the UTC day of the billing data.
+- name: composite_key
+  type: keyword
+  description: Date and project ID composite key (YYYY-MM-DD_project_id).
+- name: project_id
+  type: keyword
+  description: Serverless project identifier.
+- name: project_name
+  type: keyword
+  description: Serverless project name.
+- name: project_type
+  type: keyword
+  description: Serverless project type (elasticsearch, observability, security).
+- name: deployment_id
+  type: alias
+  path: project_id
+  description: Legacy compatibility alias for project_id.
+- name: deployment_name
+  type: alias
+  path: project_name
+  description: Legacy compatibility alias for project_name.
+- name: deployment_type
+  type: alias
+  path: project_type
+  description: Legacy compatibility alias for project_type.
+- name: sku
+  type: keyword
+  description: Elastic Cloud billing SKU.
+- name: cost_category
+  type: keyword
+  description: High-level cost category (data_tier, platform, transfer, snapshot, support, other).
+- name: cost_type
+  type: keyword
+  description: Specific cost component (ingest-vcu, search-vcu, retained, ml-vcu, inference, etc.).
+- name: allocation_driver
+  type: keyword
+  description: Workload allocation driver (indexing, query, storage, none).
+- name: is_allocatable
+  type: boolean
+  description: True if charge is allocatable to project data streams.
+- name: total_ecu
+  type: double
+  description: Daily billed Elasticsearch Compute Units (ECU) for this project and SKU.
+- name: total_chargeable_units
+  type: alias
+  path: total_ecu
+  description: Alias of total_ecu.
+- name: quantity_value
+  type: double
+  description: Raw billing quantity.
+- name: conf_chargeable_unit_rate
+  type: double
+  description: Configured currency conversion multiplier.
+- name: conf_chargeable_unit_rate_unit
+  type: keyword
+  description: Configured currency unit label (e.g. USD, EUR, ZAR).
+- name: conf_currency_symbol
+  type: keyword
+  description: Configured currency display symbol (e.g. $, €, R, £).
+- name: event.ingested
+  type: date
+  description: Timestamp when this lookup document was written to Elasticsearch.

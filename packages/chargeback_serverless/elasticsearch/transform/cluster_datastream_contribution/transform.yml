@@ -1,0 +1,61 @@
+description: Aggregates daily indexing time, query time, and dataset storage size per Serverless project and data stream into a single daily figure.
+source:
+  index:
+    - metrics-chargeback_serverless.usage-*
+  query:
+    term:
+      doc_type: "datastream"
+dest:
+  index: serverless_datastream_contribution_lookup
+  pipeline: logs-chargeback_serverless.lookup-0.3.0-usage
+frequency: 60m
+sync:
+  time:
+    field: "@timestamp"
+    delay: 1h
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    project_id:
+      terms:
+        field: project_id
+    project_name:
+      terms:
+        field: project_name
+    project_type:
+      terms:
+        field: project_type
+    datastream:
+      terms:
+        field: datastream
+  aggregations:
+    datastream_sum_indexing_time:
+      sum:
+        field: datastream_sum_indexing_time
+    datastream_sum_query_time:
+      sum:
+        field: datastream_sum_query_time
+    datastream_sum_data_set_store_size:
+      sum:
+        field: datastream_sum_data_set_store_size
+    conf_chargeable_unit_rate:
+      max:
+        field: conf_chargeable_unit_rate
+    conf_chargeable_unit_rate_unit:
+      terms:
+        field: conf_chargeable_unit_rate_unit
+        size: 1
+    conf_currency_symbol:
+      terms:
+        field: conf_currency_symbol
+        size: 1
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.3.0
