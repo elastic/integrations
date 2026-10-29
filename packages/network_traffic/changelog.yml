@@ -9,6 +9,8 @@
         The `dns`, `http` and `tls` field sets stay where they are, since ECS defines them, including non-ECS subfields such as
         `dns.additionals`, `dns.opt.*` and `http.request.headers`. Only some non-ECS `dns` fields (such as `dns.flags` and the counts)
         and HTTP's `query` move, and HTTP's `method` is dropped (use `http.request.method`).
+        The raw `request` and `response` messages move to `network_traffic.<protocol>.request.original` and `.response.original`,
+        and MySQL's `params` moves to `network_traffic.mysql.params`.
         Policies that set `map_to_ecs` to `false` produce the new layout after the upgrade.
         Update rules, saved searches, visualisations, ML jobs and custom ingest pipelines that use the old fields.
         The dashboards that are not marked ECS compliant do not show these fields for new data.

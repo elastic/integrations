@@ -44,8 +44,12 @@ to `network_traffic.dns`, including `method`, `query` and `resource`;
 moves to `network_traffic.http.query`, `method` is dropped (use
 `http.request.method`) and the `http.*` fields stay. TLS keeps its
 fields. In every data stream `status` goes to `network_traffic.status`
-and `type` is dropped; use `network.protocol`. `request`, `response` and
-`params` are not moved.
+and `type` is dropped; use `network.protocol`. The raw `request` and
+`response` messages, which are present only when sending them is enabled,
+go to `network_traffic.<protocol>.request.original` and
+`network_traffic.<protocol>.response.original` for AMQP, DNS, HTTP,
+MongoDB, MySQL, PostgreSQL, Redis and Thrift, and the MySQL `params` field
+goes to `network_traffic.mysql.params`.
 
 Version 2.0.0 removed the `map_to_ecs` option and the original field
 mappings, so this always happens. Rules, searches, visualisations, ML jobs and

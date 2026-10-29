@@ -44,8 +44,12 @@ to `network_traffic.dns`, including `method`, `query` and `resource`;
 moves to `network_traffic.http.query`, `method` is dropped (use
 `http.request.method`) and the `http.*` fields stay. TLS keeps its
 fields. In every data stream `status` goes to `network_traffic.status`
-and `type` is dropped; use `network.protocol`. `request`, `response` and
-`params` are not moved.
+and `type` is dropped; use `network.protocol`. The raw `request` and
+`response` messages, which are present only when sending them is enabled,
+go to `network_traffic.<protocol>.request.original` and
+`network_traffic.<protocol>.response.original` for AMQP, DNS, HTTP,
+MongoDB, MySQL, PostgreSQL, Redis and Thrift, and the MySQL `params` field
+goes to `network_traffic.mysql.params`.
 
 Version 2.0.0 removed the `map_to_ecs` option and the original field
 mappings, so this always happens. Rules, searches, visualisations, ML jobs and
@@ -540,6 +544,8 @@ Fields published for AMQP packets.
 | network_traffic.amqp.reply-code | AMQP reply code to an error, similar to http reply-code | long |
 | network_traffic.amqp.reply-text | Text explaining the error. | keyword |
 | network_traffic.amqp.reply-to | Address to reply to. | keyword |
+| network_traffic.amqp.request.original | The request as seen on the wire (application layer only), or Packetbeat's representation of it for binary protocols. Only present when sending the request is enabled. | text |
+| network_traffic.amqp.response.original | The response as seen on the wire (application layer only), or Packetbeat's representation of it for binary protocols. Only present when sending the response is enabled. | text |
 | network_traffic.amqp.routing-key | Message routing key. | keyword |
 | network_traffic.amqp.timestamp | Message timestamp. | keyword |
 | network_traffic.amqp.type | Message type name. | keyword |
@@ -549,7 +555,6 @@ Fields published for AMQP packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -560,8 +565,6 @@ Fields published for AMQP packets.
 | process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
 | server.geo.continent_name | Name of the continent. | keyword |
@@ -881,7 +884,6 @@ Fields published for Apache Cassandra packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -892,8 +894,6 @@ Fields published for Apache Cassandra packets.
 | process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
 | server.geo.continent_name | Name of the continent. | keyword |
@@ -1170,7 +1170,6 @@ Fields published for DHCPv4 packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -1181,8 +1180,6 @@ Fields published for DHCPv4 packets.
 | process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
 | server.geo.continent_name | Name of the continent. | keyword |
@@ -1475,13 +1472,14 @@ Fields published for DNS packets.
 | network_traffic.dns.opt.version | The EDNS version. | keyword |
 | network_traffic.dns.query | The query in a human readable format. | keyword |
 | network_traffic.dns.question.etld_plus_one | The effective top-level domain (eTLD) plus one more label. For example, the eTLD+1 for "foo.bar.golang.org." is "golang.org.". The data for determining the eTLD comes from an embedded copy of the data from http://publicsuffix.org. | keyword |
+| network_traffic.dns.request.original | The request as seen on the wire (application layer only), or Packetbeat's representation of it for binary protocols. Only present when sending the request is enabled. | text |
 | network_traffic.dns.resource | The logical resource that this transaction refers to. | keyword |
+| network_traffic.dns.response.original | The response as seen on the wire (application layer only), or Packetbeat's representation of it for binary protocols. Only present when sending the response is enabled. | text |
 | network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -1492,8 +1490,6 @@ Fields published for DNS packets.
 | process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
 | server.geo.continent_name | Name of the continent. | keyword |
@@ -1912,14 +1908,15 @@ Fields published for HTTP packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | network_traffic.http.query | The query in a human readable format, be something like `GET /users/_search?name=test`. | keyword |
 | network_traffic.http.request.headers | A map containing the captured header fields from the request. Which headers to capture is configurable. If headers with the same header name are present in the message, they will be separated by commas. | flattened |
+| network_traffic.http.request.original | The request as seen on the wire (application layer only). Only present when sending the request is enabled. | text |
 | network_traffic.http.response.headers | A map containing the captured header fields from the response. Which headers to capture is configurable. If headers with the same header name are present in the message, they will be separated by commas. | flattened |
+| network_traffic.http.response.original | The response as seen on the wire (application layer only). Only present when sending the response is enabled. | text |
 | network_traffic.http.response.status_phrase | The HTTP status phrase. | keyword |
 | network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -1930,8 +1927,6 @@ Fields published for HTTP packets.
 | process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | server.geo.city_name | City name. | keyword |
@@ -2214,7 +2209,6 @@ Fields published for ICMP packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -2225,8 +2219,6 @@ Fields published for ICMP packets.
 | process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
 | server.geo.continent_name | Name of the continent. | keyword |
@@ -2532,7 +2524,6 @@ Fields published for Memcached packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -2543,8 +2534,6 @@ Fields published for Memcached packets.
 | process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
 | server.geo.continent_name | Name of the continent. | keyword |
@@ -2802,7 +2791,9 @@ Fields published for MongoDB packets.
 | network_traffic.mongodb.numberToReturn | The requested maximum number of documents to be returned. | long |
 | network_traffic.mongodb.numberToSkip | Sets the number of documents to omit - starting from the first document in the resulting dataset - when returning the result of the query. | long |
 | network_traffic.mongodb.query | A JSON document that represents the query. The query will contain one or more elements, all of which must match for a document to be included in the result set. Possible elements include $query, $orderby, $hint, $explain, and $snapshot. | keyword |
+| network_traffic.mongodb.request.original | The request as seen on the wire (application layer only), or Packetbeat's representation of it for binary protocols. Only present when sending the request is enabled. | text |
 | network_traffic.mongodb.resource | The logical resource that this transaction refers to. | keyword |
+| network_traffic.mongodb.response.original | The response as seen on the wire (application layer only), or Packetbeat's representation of it for binary protocols. Only present when sending the response is enabled. | text |
 | network_traffic.mongodb.returnFieldsSelector | A JSON document that limits the fields in the returned documents. The returnFieldsSelector contains one or more elements, each of which is the name of a field that should be returned, and the integer value 1. | keyword |
 | network_traffic.mongodb.selector | A BSON document that specifies the query for selecting the document to update or delete. | keyword |
 | network_traffic.mongodb.startingFrom | Where in the cursor this reply is starting. | keyword |
@@ -2812,7 +2803,6 @@ Fields published for MongoDB packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -2823,8 +2813,6 @@ Fields published for MongoDB packets.
 | process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
 | server.geo.continent_name | Name of the continent. | keyword |
@@ -3069,14 +3057,16 @@ Fields published for MySQL packets.
 | network_traffic.mysql.method | The command/verb/method of the transaction. | keyword |
 | network_traffic.mysql.num_fields | If the SELECT query is successful, this field is set to the number of fields returned. | long |
 | network_traffic.mysql.num_rows | If the SELECT query is successful, this field is set to the number of rows returned. | long |
+| network_traffic.mysql.params | The request parameters, for prepared statements. | text |
 | network_traffic.mysql.path | The table name the transaction refers to. | keyword |
 | network_traffic.mysql.query | The row mysql query as read from the transaction's request. | keyword |
+| network_traffic.mysql.request.original | The request as seen on the wire (application layer only), or Packetbeat's representation of it for binary protocols. Only present when sending the request is enabled. | text |
+| network_traffic.mysql.response.original | The response as seen on the wire (application layer only), or Packetbeat's representation of it for binary protocols. Only present when sending the response is enabled. | text |
 | network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -3087,8 +3077,6 @@ Fields published for MySQL packets.
 | process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
 | server.geo.continent_name | Name of the continent. | keyword |
@@ -3329,7 +3317,6 @@ Fields published for NFS packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -3340,8 +3327,6 @@ Fields published for NFS packets.
 | process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
 | server.geo.continent_name | Name of the continent. | keyword |
@@ -3606,12 +3591,13 @@ Fields published for PostgreSQL packets.
 | network_traffic.pgsql.num_fields | If the SELECT query if successful, this field is set to the number of fields returned. | long |
 | network_traffic.pgsql.num_rows | If the SELECT query if successful, this field is set to the number of rows returned. | long |
 | network_traffic.pgsql.query | The query in a human readable format. | keyword |
+| network_traffic.pgsql.request.original | The request as seen on the wire (application layer only), or Packetbeat's representation of it for binary protocols. Only present when sending the request is enabled. | text |
+| network_traffic.pgsql.response.original | The response as seen on the wire (application layer only), or Packetbeat's representation of it for binary protocols. Only present when sending the response is enabled. | text |
 | network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -3622,8 +3608,6 @@ Fields published for PostgreSQL packets.
 | process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
 | server.geo.continent_name | Name of the continent. | keyword |
@@ -3854,14 +3838,15 @@ Fields published for Redis packets.
 | network_traffic.redis.error | If the Redis command has resulted in an error, this field contains the error message returned by the Redis server. | keyword |
 | network_traffic.redis.method | The command/verb/method of the transaction. | keyword |
 | network_traffic.redis.query | The query in a human readable format. | keyword |
+| network_traffic.redis.request.original | The request as seen on the wire (application layer only), or Packetbeat's representation of it for binary protocols. Only present when sending the request is enabled. | text |
 | network_traffic.redis.resource | The logical resource that this transaction refers to. For Redis, this is the key. | keyword |
+| network_traffic.redis.response.original | The response as seen on the wire (application layer only), or Packetbeat's representation of it for binary protocols. Only present when sending the response is enabled. | text |
 | network_traffic.redis.return_value | The return value of the Redis command in a human readable format. | keyword |
 | network_traffic.status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -3872,8 +3857,6 @@ Fields published for Redis packets.
 | process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
 | server.geo.continent_name | Name of the continent. | keyword |
@@ -4187,7 +4170,6 @@ Fields published for SIP packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -4199,8 +4181,6 @@ Fields published for SIP packets.
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
-| request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
 | server.geo.continent_name | Name of the continent. | keyword |
@@ -4595,13 +4575,14 @@ Fields published for Thrift packets.
 | network_traffic.thrift.params | The RPC method call parameters in a human readable format. If the IDL files are available, the parameters use names whenever possible. Otherwise, the IDs from the message are used. | keyword |
 | network_traffic.thrift.path | The path the transaction refers to. | keyword |
 | network_traffic.thrift.query | The query in a human readable format. | keyword |
+| network_traffic.thrift.request.original | The request as seen on the wire (application layer only), or Packetbeat's representation of it for binary protocols. Only present when sending the request is enabled. | text |
+| network_traffic.thrift.response.original | The response as seen on the wire (application layer only), or Packetbeat's representation of it for binary protocols. Only present when sending the response is enabled. | text |
 | network_traffic.thrift.return_value | The value returned by the Thrift-RPC call. This is encoded in a human readable format. | keyword |
 | network_traffic.thrift.service | The name of the Thrift-RPC service as defined in the IDL files. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -4612,8 +4593,6 @@ Fields published for Thrift packets.
 | process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
 | server.geo.continent_name | Name of the continent. | keyword |
@@ -4900,7 +4879,6 @@ Fields published for TLS packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -4912,8 +4890,6 @@ Fields published for TLS packets.
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | server.geo.city_name | City name. | keyword |
