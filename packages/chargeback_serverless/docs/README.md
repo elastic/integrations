@@ -23,7 +23,7 @@ This package is designed for **Serverless-only** organizations. For Hosted monit
 | --- | --- |
 | **[Chargeback Serverless] Billing Components Overview** | Organization spend KPIs, daily cost by project and cost category, spend flow (`cost_category → cost_type → project_type`), unallocatable & pass-through charges, and invoice reconciliation detail |
 | **[Chargeback Serverless] Usage & Cost Allocation** | Workload pool KPIs (Indexing, Search & Query, Storage), daily allocatable cost by workload driver, cost allocation by project, data stream cost attribution, and harvested `_cat/indices` usage metrics |
-| **[Chargeback Serverless] Configuration** | Fleet policy settings guide, active currency settings, discovered Serverless projects registry, and hourly usage harvest status |
+| **[Chargeback Serverless] Configuration** | Fleet policy settings guide, active currency settings, discovered Serverless projects registry, and daily usage harvest status |
 
 Open **Analytics → Dashboards** and filter by the **Chargeback** tag. Use the top Links bar to navigate between the three dashboards, and use the filter controls (`Project type`, `Project name`, `Cost category`, `Cost type`, `Allocation driver`) to slice spend.
 
@@ -36,11 +36,13 @@ Organization ID, Cloud API Key, Currency Rates, and Remote Project API Keys are 
 | Setting | Secret | Purpose |
 | --- | --- | --- |
 | **Organization ID** | No | Elastic Cloud organization ID |
-| **Cloud API Key** | Yes | Elastic Cloud API key with billing read access |
+| **Elastic Cloud API Key** | Yes | Elastic Cloud API key with billing read and Serverless project read access |
+| **Hub Project Elasticsearch API Key** | Yes | Optional Elasticsearch API key for the local Hub project (`_cat/indices` and ML stats) |
+| **Remote Project Elasticsearch API Keys** | Yes | Optional project-specific keys (`<project_id>:<encoded_key>`) with `monitor` privilege |
+| **Billing Lookbehind Days** | No | Number of historical completed UTC days of billing data to backfill (default: `30`) |
 | **Currency Unit** | No | Currency label (e.g. `USD`, `EUR`, `ZAR`) |
 | **Currency Symbol** | No | Currency symbol (e.g. `$`, `€`, `R`) |
 | **Chargeable Unit Rate** | No | Multiplier from chargeable units (ECU) to configured currency |
-| **Remote Project API Keys** | Yes | Optional project-specific keys (`<project_id>:<encoded_key>`) with index `monitor` privilege |
 
 #### Registering Remote Project API Keys
 

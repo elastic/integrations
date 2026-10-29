@@ -7,7 +7,7 @@ source:
       doc_type: "ai_model"
 dest:
   index: serverless_ai_model_contribution_lookup
-  pipeline: logs-chargeback_serverless.lookup-0.3.2-usage
+  pipeline: logs-chargeback_serverless.lookup-0.3.3-usage
 frequency: 5m
 sync:
   time:
@@ -22,12 +22,6 @@ pivot:
     project_id:
       terms:
         field: project_id
-    project_name:
-      terms:
-        field: project_name
-    project_type:
-      terms:
-        field: project_type
     model_id:
       terms:
         field: model_id
@@ -35,6 +29,14 @@ pivot:
       terms:
         field: task_type
   aggregations:
+    project_name:
+      terms:
+        field: project_name
+        size: 1
+    project_type:
+      terms:
+        field: project_type
+        size: 1
     inference_count:
       max:
         field: inference_count
@@ -61,4 +63,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.3.2
+  fleet_transform_version: 0.3.3

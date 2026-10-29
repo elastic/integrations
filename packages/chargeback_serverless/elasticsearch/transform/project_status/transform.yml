@@ -7,7 +7,7 @@ source:
       doc_type: "project_status"
 dest:
   index: serverless_project_status_lookup
-  pipeline: logs-chargeback_serverless.lookup-0.3.2-usage
+  pipeline: logs-chargeback_serverless.lookup-0.3.3-usage
 frequency: 5m
 sync:
   time:
@@ -22,13 +22,15 @@ pivot:
     project_id:
       terms:
         field: project_id
+  aggregations:
     project_name:
       terms:
         field: project_name
+        size: 1
     project_type:
       terms:
         field: project_type
-  aggregations:
+        size: 1
     index_count:
       max:
         field: index_count
@@ -64,4 +66,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.3.2
+  fleet_transform_version: 0.3.3

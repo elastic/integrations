@@ -7,7 +7,7 @@ source:
       doc_type: "datastream"
 dest:
   index: serverless_datastream_contribution_lookup
-  pipeline: logs-chargeback_serverless.lookup-0.3.2-usage
+  pipeline: logs-chargeback_serverless.lookup-0.3.3-usage
 frequency: 5m
 sync:
   time:
@@ -22,16 +22,18 @@ pivot:
     project_id:
       terms:
         field: project_id
-    project_name:
-      terms:
-        field: project_name
-    project_type:
-      terms:
-        field: project_type
     datastream:
       terms:
         field: datastream
   aggregations:
+    project_name:
+      terms:
+        field: project_name
+        size: 1
+    project_type:
+      terms:
+        field: project_type
+        size: 1
     datastream_sum_indexing_time:
       sum:
         field: datastream_sum_indexing_time
@@ -58,4 +60,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.3.2
+  fleet_transform_version: 0.3.3
