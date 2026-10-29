@@ -16,7 +16,7 @@ check that no dashboard or rule runs a `nested` query on the inner path, then:
    change of `nested_object_children` below;
 3. or build a single-level `nested` array in the pipeline, one entry per (outer, inner)
    pair;
-4. or mark the stream `unsupported`.
+4. or leave the package undeclared until one of these fits.
 
 On an existing stream the type change applies at the next rollover.
 
@@ -53,7 +53,7 @@ for good and runtime fields would have nothing to load from. Map the subfields t
 matter, use `dynamic: true` (unmapped leaves become cheap non-indexed doc values; watch
 the field limit) or `dynamic: strict`, or `type: flattened` for open-ended objects; for
 `enabled: false`, prefer `flattened`. Say in the PR which fields you mapped. If none of
-that fits yet, mark the stream `unsupported`.
+that fits yet, the package stays undeclared.
 
 **`index.sort`** (errors; `SVR00016` warning). Sort fields must be defined in the
 stream's fields (only `@timestamp` is implicit; a custom sort must map `host.name`),
@@ -101,7 +101,8 @@ On columnar, an object sent as JSON inside an element is indexed apart from it: 
 record it: a `script` at the end of the default pipeline (tag
 `columnar_nested_dotted_<field>`) that rewrites each element's objects as dotted keys
 (regenerate expectations with `-g`); accept it when nothing combines those fields in one
-`nested` query or reads that `_source`; map the objects `flattened`; or `unsupported`.
+`nested` query or reads that `_source`; or map the objects `flattened`. Otherwise the
+package stays undeclared.
 
 **`_source` consumers.** Columnar `_source` has dotted keys, scalar single-element
 arrays and parallel object arrays. Field-level reads (`doc[...]`, KQL, aggregations,
@@ -127,7 +128,7 @@ not, and they fail silently.
   `METADATA _source` / `JSON_EXTRACT(_source, …)`. Move it to doc values or columns.
 - `source_consumer_detection_rule`: a shipped rule reading `_source`.
   `JSON_EXTRACT(_source, "a.b")` returns null on dotted keys, so the rule stops
-  matching. Hold the stream back until the rule is fixed in `elastic/detection-rules`:
+  matching. Hold the package back until the rule is fixed in `elastic/detection-rules`:
   read the column (`COALESCE(network_traffic.sip.method, sip.method)` when patterns name
   it differently), or `FIELD_EXTRACT(<flattened field>, "sub.key")` for a `flattened`
   field (tech preview). `SET unmapped_fields = "nullify"` only when a field is mapped

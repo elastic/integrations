@@ -832,6 +832,14 @@ def audit_package(pkg_dir, dashboards=True, rules_dir="auto"):
         stream = audit_stream(pkg_dir, ds_name, ds_manifest, attribution.get(ds_name, ([], [])), *context)
         result["data_streams"].append(stream)
         result["status"] = max(result["status"], stream["status"], key=STATUS_ORDER.index)
+    # Fleet switches an integration only when every logs stream is ready.
+    otel = [s["data_stream"] for s in result["data_streams"]
+            if s.get("type") == "logs" and s["status"] == "OUT_OF_SCOPE"]
+    if otel:
+        result["status"] = "BLOCKED"
+        result["blocked_reason"] = (f"OpenTelemetry-input logs stream(s) {', '.join(f'`{d}`' for d in otel)} "
+                                    "stay on LogsDB, and Fleet only switches an integration whose logs "
+                                    "streams are all ready")
     result["ecs"] = ecs() and _ECS_SOURCE[0]
     return result
 
@@ -853,8 +861,7 @@ def audit_stream(pkg_dir, ds_name, manifest, rules, pkg_name, own_dir, package_v
     stream["inputs"] = inputs = sorted({s.get("input") for s in manifest.get("streams") or []
                                         if isinstance(s, dict) and s.get("input")})
     if "otelcol" in inputs:
-        stream["out_of_scope_reason"] = "OpenTelemetry input: OTel log streams stay on LogsDB" + (
-            "; mark it `logsdb_columnar: unsupported`" if effective in ("opt_in", "default") else "")
+        stream["out_of_scope_reason"] = "OpenTelemetry input: OTel log streams stay on LogsDB"
         return stream
     findings, fields, sources = stream["findings"], {}, {}
     entries = read_fields(os.path.join(ds_dir, "fields"), pkg_dir)
@@ -906,6 +913,7 @@ def markdown(r):
            + (f"; {r['ecs']}" if r.get("ecs") else ""),
            "- Mapping errors and warnings: run `elastic-package check` (package-spec >= 3.8.0)."]
     out += [f"- Out of scope: {r['out_of_scope_reason']}"] if r.get("out_of_scope_reason") else []
+    out += [f"- Blocked: {r['blocked_reason']}: don't declare readiness."] if r.get("blocked_reason") else []
     out += [f"- Dashboard fields (benchmark): {', '.join(r['dashboard_fields'])}"] \
         if r.get("dashboard_fields") else []
     for s in r["data_streams"]:

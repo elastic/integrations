@@ -26,6 +26,8 @@ Last reviewed 2026-10-23; update these facts here when they change.
   github.com/elastic/package-spec/v3=/path/to/package-spec`).
 - **Fleet** (elastic/kibana#292285, Kibana 9.7, unmerged) offers one toggle per
   integration and only sets the index mode: the package's mappings go in as they are.
+  The toggle needs every logs stream ready: one that is `unsupported`, undeclared or
+  fed by an OpenTelemetry input keeps the whole integration on LogsDB.
 - **`doc_values: false` and `store: true`** are rejected by Elasticsearch in columnar
   modes (9.6 and 9.7 snapshots, 2026-10-22), including the `event.original` about 50
   packages import from ECS. Elasticsearch plans to accept `doc_values: false`; until then
@@ -52,8 +54,10 @@ profile adds the default sort `host.name asc, @timestamp desc` (Elasticsearch ma
    stream's dashboards and rules run; "none" is valid. Never add `index: true` without
    a named query that needs it.
 3. **Index sorting is the first lever.** A field in the sort key needs no index.
-4. **Declare per package, with per-stream exceptions:** `opt_in` in the root manifest,
-   `unsupported` on each stream that stays on LogsDB.
+4. **Every logs stream, or none.** Declare `opt_in` in the root manifest only when all
+   logs streams pass. One stream that has to stay on LogsDB (a blocker you cannot fix
+   yet, an OpenTelemetry input) leaves the package undeclared and reported as blocked.
+   Readiness, once released, is never withdrawn.
 5. **Only for the chosen tech-preview targets**, never catalog-wide: declaring raises
    the package's minimum stack to 9.7, so older stacks need a backport line. Tell the
    user before writing the change.
@@ -61,16 +65,18 @@ profile adds the default sort `host.name asc, @timestamp desc` (Elasticsearch ma
 ## The setting (package-spec 3.8.0)
 
 ```yaml
-# manifest.yml (package)          # data_stream/<ds>/manifest.yml (exceptions only)
-elasticsearch:                    elasticsearch:
-  logsdb_columnar: opt_in           logsdb_columnar: unsupported
+# manifest.yml (package)
+elasticsearch:
+  logsdb_columnar: opt_in
 ```
+
+A data stream manifest can override it with its own `elasticsearch.logsdb_columnar`.
 
 | Value | Effect |
 | --- | --- |
 | `opt_in` | Fleet offers the integration's toggle; LogsDB stays the default. Write this for the tech preview. |
-| `default` | New installations get columnar; existing streams keep their mode, also on an `opt_in` → `default` upgrade. |
-| `unsupported` (stream only) | The stream stays on LogsDB. Marking a stream `unsupported` in a later version moves it back at the next rollover: a breaking change (major bump, `breaking-change` entry). |
+| `default` | When every logs stream defaults to it, new installations get columnar; existing streams keep their mode, also on an `opt_in` → `default` upgrade. |
+| `unsupported` (stream only) | The stream stays on LogsDB, and so does the whole integration: Fleet's toggle needs every logs stream ready, so this is no partial migration. Never put it on a stream a released version declared ready: Fleet assumes readiness is kept. Users go back to LogsDB by turning the toggle off, at the next rollover. |
 
 - `type: logs` streams only: the package value is ignored elsewhere, and a non-logs
   stream that sets it fails validation.
@@ -93,9 +99,9 @@ In the root `manifest.yml`:
 - `conditions.kibana.version: "^9.7.0"`, replacing the whole range (every `||` branch
   must be 9.7+), and a **major** version bump.
 - `elasticsearch.logsdb_columnar: opt_in`, merged into an existing `elasticsearch:` key.
-- `logsdb_columnar: unsupported` on every stream that stays on LogsDB: OTel-input
-  streams, and streams that steps 2 or 3 leave blocked. A manifest has one
-  `elasticsearch:` key: merge, never paste a second one (YAML keeps only one).
+- No stream may stay on LogsDB. With an OTel-input logs stream, or one that steps 2 or
+  3 leave blocked, revert the declaration and report the package blocked. A manifest
+  has one `elasticsearch:` key: merge, never paste a second one (YAML keeps only one).
 - Changelog: one `enhancement` entry with a placeholder link, for example "Add opt-in
   LogsDB columnar support, which requires Kibana 9.7.0." Name the index sort in the same
   entry when step 4 adds one. The major bump stays, to keep the old major free for
@@ -111,15 +117,15 @@ says how:
   runtime field, `nested` inside `nested`, `dynamic: false`, `dynamic: runtime`,
   `enabled: false`, an invalid `index.sort`, `logsdb_columnar` on a non-logs stream or
   together with `index_mode`. Elasticsearch rejects them in columnar modes: fix the
-  mapping, or mark the stream `unsupported`;
+  mapping; one you cannot fix leaves the package undeclared;
 - errors on `doc_values: false` and `store: true`, also from ECS imports and the dynamic
   templates `import_mappings` adds (only the built package has those, so `check` reports
   them and `lint` does not): the integration stays blocked, so don't declare readiness;
 - warning: a custom `index.sort` without `@timestamp` (`SVR00016`).
 
 Never exclude a columnar finding in `validation.yml`, except `SVR00016` with a comment
-when the dataset is never queried by time range. A stream you cannot fix now gets
-`unsupported`.
+when the dataset is never queried by time range. A stream you cannot fix now keeps the
+package undeclared: revert the declaration and report the finding.
 
 ### 3. Run the script for what the validator cannot see
 
@@ -144,7 +150,7 @@ only means this script found nothing), the effective `logsdb_columnar`, and find
   `_source`. Nothing fails; they silently get the flat shape. Review each one;
 - `nested_object_children`: objects inside a `nested` field (the Elasticsearch bug).
 
-A stream keeps `unsupported` until its `_source` consumers are reviewed. Quote the
+Declare readiness only once every stream's `_source` consumers are reviewed. Quote the
 **Detection rules** line in the PR even when it is zero; rules users wrote are not
 covered.
 
