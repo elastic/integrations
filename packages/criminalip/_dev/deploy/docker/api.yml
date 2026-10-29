@@ -43,7 +43,9 @@ rules:
     headers:
       Content-Type:
       - application/json
-    body: '{{ $ip := .request.url.Query.Get "ip" }}{"status":200,"ip":{{ printf "%q" $ip }},"score":{"inbound":"Critical","outbound":"Low"},"issues":{"is_scanner":true}}'
+    body: >-
+      {{- $ip := .request.url.Query.Get "ip" -}}
+      {"status":200,"ip":{{ printf "%q" $ip }},"score":{"inbound":"Critical","outbound":"Low"},"issues":{"is_scanner":true}}
 - path: /v1/asset/ip/report/query
   methods:
   - GET
@@ -88,10 +90,19 @@ rules:
     headers:
       Content-Type:
       - application/json
-    body: '{{if and (eq (.request.url.Query.Get "tenant") "a b") (eq (len (index .request.url.Query "tenant")) 2)
-      (eq (index (index .request.url.Query "tenant") 1) "second") (eq (len (index .request.url.Query "empty")) 1)
-      (eq (.request.url.Query.Get "empty") "")}}{{ $ip := .request.url.Query.Get "ip" }}{"status":200,"ip":{{ printf
-      "%q" $ip }},"score":{"inbound":"Critical","outbound":"Low"},"issues":{"is_scanner":true}}{{else}}{"status":400}{{end}}'
+    body: >-
+      {{- if and
+        (eq (.request.url.Query.Get "tenant") "a b")
+        (eq (len (index .request.url.Query "tenant")) 2)
+        (eq (index (index .request.url.Query "tenant") 1) "second")
+        (eq (len (index .request.url.Query "empty")) 1)
+        (eq (.request.url.Query.Get "empty") "")
+      -}}
+        {{- $ip := .request.url.Query.Get "ip" -}}
+        {"status":200,"ip":{{ printf "%q" $ip }},"score":{"inbound":"Critical","outbound":"Low"},"issues":{"is_scanner":true}}
+      {{- else -}}
+        {"status":400}
+      {{- end -}}
 - path: /ti/v1/feed/response-error
   methods:
   - GET
@@ -114,10 +125,40 @@ rules:
     headers:
       Content-Type:
       - application/json
-    body: '{"body": {"data": [{"ip": "192.0.2.10", "confidence": 80, "score": 95, "reason": "Synthetic integration
-      system-test indicator", "first_seen": "2026-01-01 00:00:00", "last_seen": "2026-01-01 01:00:00"}, {"reason":
-      "Missing IP must not discard the valid indicators"}, null, "invalid feed entry", {"ip": null}, {"ip": ""},
-      {"ip": "   "}, {"ip": "\t 198.51.100.20 \r\n"}]}}'
+    body: >-
+      {{ minify_json `
+        {
+            "body": {
+                "data": [
+                    {
+                        "ip": "192.0.2.10",
+                        "confidence": 80,
+                        "score": 95,
+                        "reason": "Synthetic integration system-test indicator",
+                        "first_seen": "2026-01-01 00:00:00",
+                        "last_seen": "2026-01-01 01:00:00"
+                    },
+                    {
+                        "reason": "Missing IP must not discard the valid indicators"
+                    },
+                    null,
+                    "invalid feed entry",
+                    {
+                        "ip": null
+                    },
+                    {
+                        "ip": ""
+                    },
+                    {
+                        "ip": "   "
+                    },
+                    {
+                        "ip": "\t 198.51.100.20 \r\n"
+                    }
+                ]
+            }
+        }
+      ` }}
 - path: /ti/v1/feed/outbound/query
   methods:
   - GET
@@ -131,9 +172,18 @@ rules:
     headers:
       Content-Type:
       - application/json
-    body: '{{if and (eq (.request.url.Query.Get "tenant") "a b") (eq (len (index .request.url.Query "tenant")) 2)
-      (eq (index (index .request.url.Query "tenant") 1) "second") (eq (len (index .request.url.Query "empty")) 1)
-      (eq (.request.url.Query.Get "empty") "")}}{"body": {"data": [{"ip": "192.0.2.10", "confidence": 80, "score":
-      95, "reason": "Synthetic integration system-test indicator", "first_seen": "2026-01-01 00:00:00", "last_seen":
-      "2026-01-01 01:00:00"}, {"reason": "Missing IP must not discard the valid indicators"}, null, "invalid feed
-      entry", {"ip": null}, {"ip": ""}, {"ip": "   "}, {"ip": "\t 198.51.100.20 \r\n"}]}}{{else}}{"status":400}{{end}}'
+    body: >-
+      {{- if and
+        (eq (.request.url.Query.Get "tenant") "a b")
+        (eq (len (index .request.url.Query "tenant")) 2)
+        (eq (index (index .request.url.Query "tenant") 1) "second")
+        (eq (len (index .request.url.Query "empty")) 1)
+        (eq (.request.url.Query.Get "empty") "")
+      -}}
+        {"body": {"data": [{"ip": "192.0.2.10", "confidence": 80, "score": 95, "reason":
+        "Synthetic integration system-test indicator", "first_seen": "2026-01-01 00:00:00", "last_seen":
+        "2026-01-01 01:00:00"}, {"reason": "Missing IP must not discard the valid indicators"}, null, "invalid feed
+        entry", {"ip": null}, {"ip": ""}, {"ip": "   "}, {"ip": "\t 198.51.100.20 \r\n"}]}}
+      {{- else -}}
+        {"status":400}
+      {{- end -}}'
