@@ -8,11 +8,11 @@ cannot see.
 
 `elastic-package check` (package-spec >= 3.8.0) reports the mappings and index sort
 settings Elasticsearch rejects in `logsdb_columnar`. This script covers the rest, per logs
-data stream: scope and effective readiness, `doc_values: false` and `store: true` before
-readiness is declared (the validator reports them once it is), `_source` consumers,
-objects inside `nested` fields, the index sort proposal, the detection rules and
-dashboards to benchmark, and the lookup candidates for `index: true`. See
-references/columnar.md.
+data stream: scope and effective readiness (Fleet needs every logs stream ready),
+`doc_values: false` and `store: true` before readiness is declared (the validator reports
+them once it is), `_source` consumers, objects inside `nested` fields, the index sort
+proposal, the detection rules and dashboards to benchmark, and the lookup candidates for
+`index: true`. See references/columnar.md.
 
     python3 <skill-dir>/scripts/audit.py packages/<pkg> [--format markdown|json|both]
 """
@@ -859,6 +859,23 @@ def audit_package(pkg_dir, dashboards=True, rules_dir="auto"):
         stream = audit_stream(pkg_dir, ds_name, ds_manifest, attribution.get(ds_name, ([], [])), *context)
         result["data_streams"].append(stream)
         result["status"] = max(result["status"], stream["status"], key=STATUS_ORDER.index)
+    # Fleet switches an integration only when every logs stream is ready. An `unsupported` stream
+    # blocks it, and so does, once readiness is declared, any other logs stream that is not ready;
+    # package-spec skips the columnar checks of both.
+    ready = ("opt_in", "default")
+    declared = any(s.get("logsdb_columnar_effective") in ready for s in result["data_streams"])
+    for s in result["data_streams"]:
+        effective = s.get("logsdb_columnar_effective")
+        if s.get("type") != "logs" or s["status"] == "OUT_OF_SCOPE" or effective in ready \
+                or (effective != "unsupported" and not declared):
+            continue
+        why = "`logsdb_columnar: unsupported` keeps it on LogsDB" if effective == "unsupported" \
+            else f"`index_mode: {s['index_mode']}` keeps it off columnar" if s.get("index_mode") \
+            else "neither it nor the package declares `logsdb_columnar`"
+        s["findings"].append(finding(
+            "stream_not_ready", "blocker", f"Not ready: {why}. Fleet only switches an integration whose "
+            "logs streams are all ready.", f"data_stream/{s['data_stream']}/manifest.yml"))
+        s["status"] = result["status"] = "BLOCKED"
     # Fleet switches an integration only when every logs stream is ready.
     otel = [s["data_stream"] for s in result["data_streams"]
             if s.get("type") == "logs" and s["status"] == "OUT_OF_SCOPE"]

@@ -144,6 +144,9 @@ it is missing. Flags: `--no-dashboards`, `--rules DIR` (default
 stream it reports a status (`READY`, `NEEDS_REVIEW`, `BLOCKED`, `OUT_OF_SCOPE`; `READY`
 only means this script found nothing), the effective `logsdb_columnar`, and findings:
 
+- `stream_not_ready`: an `unsupported` logs stream, or, once readiness is declared, one
+  left undeclared or with a fixed `index_mode`. Fleet keeps the whole integration off
+  (`BLOCKED`);
 - `doc_values_false`, `store_true`, `import_mappings`: the validator's `doc_values` and
   `store` errors, found before readiness is declared (`BLOCKED`): the integration stays
   blocked;
