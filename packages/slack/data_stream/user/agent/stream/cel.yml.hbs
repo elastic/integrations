@@ -1,0 +1,202 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.rate_limit.limit: 2
+resource.rate_limit.burst: 5
+resource.url: {{api_url}}
+state:
+  oauth_token: {{oauth_token}}
+  limit: {{limit}}
+  is_active: {{is_active}}
+redact:
+  fields:
+    - oauth_token
+max_executions: 10000
+program: |-
+  {
+    "phase": state.?cursor.phase.orValue("users"),
+    "page_cursor": state.?cursor.page_cursor.orValue(""),
+    "workspace_ids": state.?cursor.workspace_ids.orValue([]),
+    "groups": state.?cursor.groups.orValue([]),
+    "users": state.?cursor.users.orValue([]),
+  }.as(ctx,
+    state.with(
+      (ctx.phase == "groups" && ctx.workspace_ids.size() > 0) ?
+        request(
+          "GET",
+          state.url.trim_right("/") + "/api/usergroups.list?" + {
+            "include_users": ["true"],
+            "team_id": [ctx.workspace_ids[0]],
+          }.format_query()
+        ).with(
+          {
+            "Header": {
+              "Authorization": ["Bearer " + state.oauth_token],
+              "Accept": ["application/json"],
+            },
+          }
+        ).do_request().as(resp,
+          (resp.StatusCode != 200) ?
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": resp.Status,
+                  "message": "GET /api/usergroups.list: " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
+                },
+              },
+              "want_more": false,
+            }
+          :
+            resp.Body.decode_json().as(body,
+              (body.?ok.orValue(false) != true) ?
+                {
+                  "events": {
+                    "error": {
+                      "code": string(body.?error.orValue("slack_error")),
+                      "id": string(body.?error.orValue("slack_error")),
+                      "message": "GET /api/usergroups.list: " + string(body.?error.orValue("ok=false")),
+                    },
+                  },
+                  "want_more": false,
+                }
+              :
+                {
+                  "events": [{"message": "retry"}],
+                  "want_more": true,
+                  "cursor": {
+                    "phase": (size(tail(ctx.workspace_ids)) > 0) ? "groups" : "emit",
+                    "page_cursor": "",
+                    "workspace_ids": tail(ctx.workspace_ids),
+                    "groups": ctx.groups + body.?usergroups.orValue([]),
+                    "users": ctx.users,
+                  },
+                }
+            )
+        )
+      : (ctx.phase == "emit") ?
+        {
+          "events": (ctx.users.size() > 0) ?
+            dyn(
+              ctx.users.map(u,
+                {
+                  "message": u.with(
+                    {
+                      "groups": ctx.groups.map(g, g.?users.orValue([]).exists(id, id == u.id), g.drop(["users"])),
+                    }
+                  ).encode_json(),
+                }
+              )
+            )
+          :
+            dyn([{"message": "retry"}]),
+          "want_more": false,
+          "cursor": {
+            "phase": "users",
+            "page_cursor": "",
+            "workspace_ids": [],
+            "groups": [],
+            "users": [],
+          },
+        }
+      :
+        request(
+          "GET",
+          state.url.trim_right("/") + "/api/admin.users.list?" + {
+            "limit": [string(int(state.limit))],
+            "is_active": [state.is_active ? "true" : "false"],
+            "include_deactivated_user_workspaces": ["true"],
+          }.with((ctx.page_cursor != "") ? {"cursor": [ctx.page_cursor]} : {}).format_query()
+        ).with(
+          {
+            "Header": {
+              "Authorization": ["Bearer " + state.oauth_token],
+              "Accept": ["application/json"],
+            },
+          }
+        ).do_request().as(resp,
+          (resp.StatusCode != 200) ?
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": resp.Status,
+                  "message": "GET /api/admin.users.list: " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
+                },
+              },
+              "want_more": false,
+            }
+          :
+            resp.Body.decode_json().as(body,
+              (body.?ok.orValue(false) != true) ?
+                {
+                  "events": {
+                    "error": {
+                      "code": string(body.?error.orValue("slack_error")),
+                      "id": string(body.?error.orValue("slack_error")),
+                      "message": "GET /api/admin.users.list: " + string(body.?error.orValue("ok=false")),
+                    },
+                  },
+                  "want_more": false,
+                }
+              :
+                (
+                  (has(body.next_cursor) && string(body.next_cursor) != "") ?
+                    string(body.next_cursor)
+                  : (
+                    has(body.response_metadata) && has(body.response_metadata.next_cursor) &&
+                    string(body.response_metadata.next_cursor) != ""
+                  ) ?
+                    string(body.response_metadata.next_cursor)
+                  :
+                    ""
+                ).as(next_cursor,
+                  {
+                    "workspace_ids": zip(
+                      ctx.workspace_ids + body.?users.orValue([]).map(u, u.?workspaces.orValue([])).flatten(),
+                      ctx.workspace_ids + body.?users.orValue([]).map(u, u.?workspaces.orValue([])).flatten()
+                    ).keys(),
+                    "users": ctx.users + body.?users.orValue([]),
+                  }.as(page,
+                    {
+                      "events": [{"message": "retry"}],
+                      "want_more": true,
+                      "cursor": {
+                        "phase": (next_cursor != "") ? "users" : ((page.workspace_ids.size() > 0) ? "groups" : "emit"),
+                        "page_cursor": next_cursor,
+                        "workspace_ids": page.workspace_ids,
+                        "groups": ctx.groups,
+                        "users": page.users,
+                      },
+                    }
+                  )
+                )
+            )
+        )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+{{#if processors}}
+{{processors}}
+{{/if}}
