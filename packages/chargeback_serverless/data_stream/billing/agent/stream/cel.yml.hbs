@@ -16,7 +16,7 @@ redact:
     - cloud_api_key
 program: |-
   state.with(
-    state.?cursor.last_to.optMap(ts, timestamp(ts)).orValue(
+    state.?cursor.last_to.optMap(ts, (type(ts) == string) ? timestamp(ts) : ts).orValue(
       now - duration(string(int(state.lookbehind) * 24) + "h")
     ).format(
       time_layout.DateOnly
@@ -30,7 +30,7 @@ program: |-
     ).as(req, (req.to > now) ?
       {
         "events": [],
-        "cursor": { "last_to": req.to },
+        "cursor": { "last_to": req.to.format(time_layout.RFC3339) },
         "want_more": false,
       }
     :
@@ -62,13 +62,13 @@ program: |-
                 }
               )
             ).flatten(),
-            "cursor": { "last_to": req.to },
+            "cursor": { "last_to": req.to.format(time_layout.RFC3339) },
             "want_more": req.to < now - duration("24h"),
           }
         :
           {
             "events": [ { "fake": true } ],
-            "cursor": { "last_to": req.to },
+            "cursor": { "last_to": req.to.format(time_layout.RFC3339) },
             "want_more": req.to < now - duration("24h"),
           }
         )
