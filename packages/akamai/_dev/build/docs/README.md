@@ -67,7 +67,7 @@ Akamai [DataStream 2 security logs](https://techdocs.akamai.com/datastream2/docs
 5. In Fleet, enable **Collect Akamai SIEM logs via AWS S3 / SQS**, leave **Collect via direct S3 bucket polling** disabled, and set **SQS Queue URL**. Configure the AWS region and authentication. Prefer an IAM role or the standard AWS credential chain to long-lived access keys where available.
 6. Adjust **SQS Visibility Timeout**, **SQS API Timeout**, and **Workers** for the expected object sizes and traffic. The API timeout must not exceed half the visibility timeout.
 
-SQS messages must contain standard S3 event notifications. Nonstandard wrappers, such as messages produced through SNS or EventBridge, might require custom notification parsing and are not configured by this integration's default input template. For a shared queue, use file selectors carefully. Do not have multiple independent consumers compete for the same messages.
+SQS messages must contain S3 `ObjectCreated` event notifications. They can be sent directly by S3 or routed through SNS or EventBridge; the `aws-s3` input supports all three without custom notification parsing. For a shared queue, use file selectors carefully. Do not have multiple independent consumers compete for the same messages.
 
 #### Collect data by direct S3 bucket polling
 
