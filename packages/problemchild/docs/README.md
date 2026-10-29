@@ -46,9 +46,6 @@ The following blogs and webinar provide additional context. For the most current
         "template": {
           "mappings": {
             "properties": {
-              "blocklist_label": {
-                "type": "long"
-              },
               "problemchild": {
                 "type": "object",
                 "properties": {
@@ -67,13 +64,11 @@ The following blogs and webinar provide additional context. For the most current
       ```
     - If the `@custom` component template already exists, you will need to edit it to add mappings for data to be properly enriched. Click the three dots next to it and select **Edit**. 
     ![Component Templates](../img/component-templates-edit.png)
-    - Proceed to the mappings step in the UI. Click **Add Field** at the bottom of the page and create a `blocklist_label` field of type `Long`:
-    ![Component Templates](../img/field1.png)
-    - Then create an `Object` field for `problemchild`. 
+    - Proceed to the mappings step in the UI. Click **Add Field** at the bottom of the page and create an `Object` field for `problemchild`. 
     ![Component Templates](../img/field2.png)
-    - Finally create two properties under ProblemChild.
+    - Finally create two properties under `problemchild`.
     ![Component Templates](../img/field2a.png)
-    - The first for `prediction` of type `Long` and then for `prediction_probability` or type `Float`.
+    - The first for `prediction` of type `Long` and then for `prediction_probability` of type `Float`.
     ![Component Templates](../img/field3.png)
     - Your component mappings should look like the following:
     ![Component Templates](../img/fields-complete.png)
@@ -87,9 +82,6 @@ The following blogs and webinar provide additional context. For the most current
         "template": {
           "mappings": {
             "properties": {
-              "blocklist_label": {
-                "type": "long"
-              },
               "problemchild": {
                 "type": "object",
                 "properties": {
@@ -113,11 +105,11 @@ The following blogs and webinar provide additional context. For the most current
       ```
     - Then, after creating the component template, you will need to add it to the appropriate index template. Navigate to **Stack Management > Data > Index Management > Index Templates**. Find the index template `winlogbeat-{WINLOGBEAT_VERSION}` for the Winlogbeat version that you are using and click **Edit**. Then click on **Component templates**. Add the `winlogbeat-problemchild-<VERSION>` component template that was created in the previous step. Click **Review template** then **Save template**. 
 
-1. **Rollover** Depending on your environment, you may need to [rollover](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-rollover-index.html) in order for these mappings to get picked up. The deault index pattern for Elastic Defend is `logs-endpoint.events.process-default` and `winlogbeat-<WINLOGBEAT_VERSION>` for Winlogbeat.
+1. **Rollover** Depending on your environment, you may need to [rollover](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-rollover-index.html) in order for these mappings to get picked up. The default index pattern for Elastic Defend is `logs-endpoint.events.process-default` and `winlogbeat-<WINLOGBEAT_VERSION>` for Winlogbeat.
     ```
     POST INDEX_NAME/_rollover
     ```
-1. **(Optional) [Create a data view](https://www.elastic.co/guide/en/kibana/current/data-views.html) specificially for your windows process logs (index pattern or data stream name)**
+1. **(Optional) [Create a data view](https://www.elastic.co/guide/en/kibana/current/data-views.html) specifically for your windows process logs (index pattern or data stream name)**
 1. **Add preconfigured anomaly detection jobs**: In **Stack Management -> Anomaly Detection Jobs**, you will see **Select data view or saved search**. Select the data view created in the previous step. Then under `Use preconfigured jobs` you will see `Living off the Land Attack Detection`. When you select the card, you will see several pre-configured anomaly detection jobs that you can create depending on what makes the most sense for your environment. **Warning**: if the ingest pipeline hasn't run for some reason, such as no eligible data has come in yet, or the required mapping has not been added, _you won't be able to see this card yet_. If that is the case, try troubleshooting the ingest pipeline, and if any predictions have been populated yet.
 ### Enable detection rules
 

@@ -163,9 +163,12 @@ spec:
           properties:
             version:
               type: string
+              deprecated: true
               description: >
-                Elastic Agent versions compatible with this package.
-                If specified, Agents incompatible with the version condition will not run the integration.
+                Elastic Agent versions compatible with this package (deprecated since 3.6.7,
+                disallowed since 3.7.0). A policy manages agents on multiple versions at once,
+                so gate agent-version-specific configuration inside input templates with a
+                working fallback instead of excluding older agents at the package level.
               examples:
                 - "^8.13.0"
                 - "^9.3.0"
