@@ -277,7 +277,8 @@ older agents collected, and those rows carry neither a fetch ID nor the queried 
 transforms then group them by the agent process (`agent.ephemeral_id`) and the minute in which
 they were created, which cannot guarantee correct deduplication: a fetch whose rows cross a minute
 boundary is split and only its later part counts, and two fetches of one process inside the same
-minute are summed. For a department or billing account policy, the days that both the older and
+minute are summed. Agents before 8.4 send no `usage_date`; their `usage_start`, the row's own day,
+is used instead. For a department or billing account policy, the days that both the older and
 the upgraded agent fetched also keep a meter or resource that only the older agent's fetch
 contains. Forecast rows from older agents are not read: those agents stamp them with the configured
 `Subscription ID` even for a department or billing account scope, so they cannot be told apart

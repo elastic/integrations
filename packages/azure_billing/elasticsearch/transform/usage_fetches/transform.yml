@@ -3,14 +3,32 @@ source:
     - "metrics-azure.billing-*"
   # Only the usage detail rows. The forecast rows produced by the same metricset
   # have no `pretax_cost` and are handled by the `latest_forecast` transform.
+  # Rows need a usage day: `usage_date`, or `usage_start` for agents before 8.4.
   query:
     bool:
       filter:
         - exists:
             field: azure.billing.pretax_cost
-        - exists:
-            field: azure.billing.usage_date
+        - bool:
+            should:
+              - exists:
+                  field: azure.billing.usage_date
+              - exists:
+                  field: azure.billing.usage_start
+            minimum_should_match: 1
   runtime_mappings:
+    # The day of the usage row. Agents before 8.4 send no `usage_date`, and their
+    # `usage_start` is the row's own day. From 8.4 on, `usage_start` is the start
+    # of the query window, so it is only the fallback.
+    azure.billing.usage_day:
+      type: date
+      script:
+        source: |-
+          if (doc.containsKey('azure.billing.usage_date') && doc['azure.billing.usage_date'].size() > 0) {
+            emit(doc['azure.billing.usage_date'].value.toInstant().toEpochMilli());
+          } else if (doc.containsKey('azure.billing.usage_start') && doc['azure.billing.usage_start'].size() > 0) {
+            emit(doc['azure.billing.usage_start'].value.toInstant().toEpochMilli());
+          }
     # Identity of the fetch a row belongs to. Agents that emit
     # `azure.billing.fetch_id` (Elastic Agent 9.6 and later) identify it exactly:
     # every row of a run carries the same ID and the same `@timestamp`. Rows from
@@ -46,8 +64,14 @@ source:
           } else if (doc.containsKey('azure.subscription_id') && doc['azure.subscription_id'].size() > 0) {
             scope = 'subscriptions/' + doc['azure.subscription_id'].value;
           }
-          if (scope != null && doc['azure.billing.usage_date'].size() > 0) {
-            emit(doc['azure.billing.usage_date'].value.toLocalDate().toString() + '|' + scope);
+          def day = null;
+          if (doc.containsKey('azure.billing.usage_date') && doc['azure.billing.usage_date'].size() > 0) {
+            day = doc['azure.billing.usage_date'].value;
+          } else if (doc.containsKey('azure.billing.usage_start') && doc['azure.billing.usage_start'].size() > 0) {
+            day = doc['azure.billing.usage_start'].value;
+          }
+          if (scope != null && day != null) {
+            emit(day.toLocalDate().toString() + '|' + scope);
           }
 # First of three chained transforms that deduplicate usage details without
 # scripted aggregations, so that they also run on Elasticsearch Serverless.
@@ -66,9 +90,10 @@ source:
 # scope, so that the dashboard counts only the buckets of that fetch.
 pivot:
   group_by:
+    # The usage day (see runtime_mappings), written as `azure.billing.usage_date`.
     azure.billing.usage_date:
       date_histogram:
-        field: azure.billing.usage_date
+        field: azure.billing.usage_day
         calendar_interval: 1d
     azure.billing.billing_period_id:
       terms:
