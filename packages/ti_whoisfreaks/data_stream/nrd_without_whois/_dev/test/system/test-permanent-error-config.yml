@@ -1,0 +1,17 @@
+wait_for_data_timeout: 1m
+input: cel
+service: ti_whoisfreaks
+vars:
+  # The mock answers the gTLD request for this key with 404 and serves one ccTLD row.
+  api_key: bad_date_api_key
+data_stream:
+  vars:
+    url: "http://{{Hostname}}:{{Port}}/v3.3/stream/domainer"
+    status_url: "http://{{Hostname}}:{{Port}}/v3.4/status"
+    page_limit: 2
+    interval: 1h
+    enable_request_tracer: true
+# One gTLD error event plus the ccTLD row: the permanent error records the gTLD
+# date as done and continues with the pending ccTLD file in the same poll.
+assert:
+  hit_count: 2
