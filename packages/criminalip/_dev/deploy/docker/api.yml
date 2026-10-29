@@ -43,7 +43,9 @@ rules:
     headers:
       Content-Type:
       - application/json
-    body: '{{ $ip := .request.url.Query.Get "ip" }}{"status":200,"ip":{{ printf "%q" $ip }},"score":{"inbound":"Critical","outbound":"Low"},"issues":{"is_scanner":true}}'
+    body: >-
+      {{- $ip := .request.url.Query.Get "ip" -}}
+      {"status":200,"ip":{{ printf "%q" $ip }},"score":{"inbound":"Critical","outbound":"Low"},"issues":{"is_scanner":true}}
 - path: /v1/asset/ip/report/query
   methods:
   - GET
