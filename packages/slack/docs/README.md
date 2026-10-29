@@ -64,11 +64,13 @@ Audit logs summarize the history of changes made within the Slack Enterprise.
 | slack.audit.context.name | The name of the workspace or enterprise | keyword |
 | slack.audit.context.session_id | The identifier that is unique to each authenticated session. | keyword |
 | slack.audit.context.type | The type of account. Either `Workspace` or `Enterprise` | keyword |
+| slack.audit.details.arguments | The arguments an AI app passed to a Slack MCP server tool when event.action ends in `_tool_called`. The shape depends on the tool, so nested keys are stored as dotted leaf fields. | object |
 | slack.audit.details.location | The location the activity occured in when event.action is anomaly | keyword |
 | slack.audit.details.md5 | The md5 hash of a file associated with a `file_malicious_content_detected` event. | keyword |
 | slack.audit.details.previous_ip_address | The IP address previously observed for the entity in the event when event.action is anomaly | ip |
 | slack.audit.details.previous_user_agent | The User-Agent string previously observed for the entity in the event when event.action is anomaly | keyword |
 | slack.audit.details.reason | The anomaly rule triggered to generate the event when event.action is anomaly: asn, excessive_downloads, ip_address, session_fingerprint, tor, user_agent | keyword |
+| slack.audit.details.tool | The Slack MCP server tool an AI app called when event.action ends in `_tool_called`. | keyword |
 | slack.audit.details.url_private | URL associated with the action. | keyword |
 | slack.audit.entity.barriered_from_usergroup | The user group barrier when entity_type is barrier | keyword |
 | slack.audit.entity.channel | The channel the entity is within when entity_type is message | keyword |
