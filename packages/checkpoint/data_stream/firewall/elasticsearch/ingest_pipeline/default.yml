@@ -234,19 +234,28 @@ processors:
       pattern: '([+-])([0-9]):?([0-9]{2})'
       replacement: '$10$2:$3'
       ignore_missing: true
+  # The script context cannot read _ingest metadata. Copy it first so a
+  # document with no @timestamp still has a reference instant.
+  - set:
+      tag: set_rfc3164_ingest_ts
+      field: _temp_.ingest_ts
+      copy_from: _ingest.timestamp
+      ignore_empty_value: true
+      if: ctx._temp_?.syslog3164_ts != null && ctx.event?.created == null
   # BSD timestamps omit the year. The year is the calendar year of the ingest
   # time in the event timezone, rolled back one year when that local time is
-  # still after the ingest instant.
+  # more than one day after the ingest instant.
   - script:
       tag: script_pin_rfc3164_year
       description: >-
         RFC 3164 timestamps have no year. The year is the calendar year of the
         ingest time in the event timezone, rolled back one year when that local
-        time is still after the ingest instant.
+        time is more than one day after the ingest instant. An invalid timezone
+        is treated as UTC.
       lang: painless
       if: ctx._temp_?.syslog3164_ts != null
       source: |
-        ZonedDateTime reference;
+        ZonedDateTime reference = null;
         def created = ctx.event != null ? ctx.event.created : null;
         if (created != null) {
           if (created instanceof String) {
@@ -254,23 +263,30 @@ processors:
           } else {
             reference = created;
           }
-        } else {
-          def ingestTs = ctx._ingest.timestamp;
+        } else if (ctx._temp_ != null && ctx._temp_.ingest_ts != null) {
+          def ingestTs = ctx._temp_.ingest_ts;
           if (ingestTs instanceof String) {
             reference = ZonedDateTime.parse(ingestTs);
           } else {
             reference = ingestTs;
           }
         }
+        if (reference == null) {
+          throw new IllegalArgumentException('RFC 3164 year inference has no ingest timestamp');
+        }
         ZoneId zone = ZoneId.of('UTC');
         if (ctx.event != null && ctx.event.timezone != null && ctx.event.timezone.length() > 0) {
-          zone = ZoneId.of(ctx.event.timezone);
+          try {
+            zone = ZoneId.of(ctx.event.timezone);
+          } catch (Exception e) {
+            zone = ZoneId.of('UTC');
+          }
         }
         String normalized = ctx._temp_.syslog3164_ts.replace('  ', ' ');
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern('MMM d HH:mm:ss yyyy', Locale.ENGLISH);
         int year = reference.withZoneSameInstant(zone).getYear();
         LocalDateTime local = LocalDateTime.parse(normalized + ' ' + year, formatter);
-        if (local.atZone(zone).toInstant().isAfter(reference.toInstant())) {
+        if (local.atZone(zone).toInstant().isAfter(reference.plusDays(1).toInstant())) {
           year = year - 1;
         }
         ctx._temp_.syslog3164_ts = normalized + ' ' + year;
