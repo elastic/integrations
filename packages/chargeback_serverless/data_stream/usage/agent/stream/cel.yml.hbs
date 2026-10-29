@@ -48,9 +48,9 @@ program: |-
                   { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
                 ).do_request().as(costs_resp,
                   ((costs_resp.StatusCode == 200) ? bytes(costs_resp.Body).decode_json() : { "instances": [] }).as(costs_body,
-                    (es_body.items.map(p, p.with({ "project_type": "elasticsearch" })) +
-                     obs_body.items.map(p, p.with({ "project_type": "observability" })) +
-                     sec_body.items.map(p, p.with({ "project_type": "security" }))
+                    (es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) +
+                     obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) +
+                     sec_body.items.map(p, dyn(p.with({ "project_type": "security" })))
                     ).as(projects,
                       {
                         "events": projects.map(p,
@@ -67,17 +67,19 @@ program: |-
                                         "ai_ecu": size(ai_ecus) > 0 ? ai_ecus.sum() : 0.0,
                                         "total_ecu": (size(idx_ecus) > 0 ? idx_ecus.sum() : 0.0) + (size(qry_ecus) > 0 ? qry_ecus.sum() : 0.0) + (size(stg_ecus) > 0 ? stg_ecus.sum() : 0.0) + (size(ai_ecus) > 0 ? ai_ecus.sum() : 0.0),
                                       }.as(pool,
-                                        state.project_keys.filter(k, k.startsWith(p.id + ":")).optMap(k, k.split(":")[1]).orValue(
-                                          state.hub_es_api_key != "" ? state.hub_es_api_key : state.api_key
+                                        state.project_keys.filter(k, k.startsWith(p.id + ":")).as(pkeys,
+                                          size(pkeys) > 0 ? pkeys[0].split(":")[1] : (
+                                            state.hub_es_api_key != "" ? state.hub_es_api_key : state.api_key
+                                          )
                                         ).as(target_key,
                                           get_request(
-                                            p.endpoints.elasticsearch + "/_cat/indices?h=index,dataset.size,indexing.index_time,search.query_time&format=json&bytes=b&time=ms&expand_wildcards=open,hidden"
+                                            dyn(p.endpoints).elasticsearch + "/_cat/indices?h=index,dataset.size,indexing.index_time,search.query_time&format=json&bytes=b&time=ms&expand_wildcards=open,hidden"
                                           ).with(
                                             { "Header": { "Authorization": ["ApiKey " + target_key] } }
                                           ).do_request().as(cat_resp, (cat_resp.StatusCode == 200) ?
                                             bytes(cat_resp.Body).decode_json().as(rows,
                                               get_request(
-                                                p.endpoints.elasticsearch + "/_ml/trained_models/_stats"
+                                                dyn(p.endpoints).elasticsearch + "/_ml/trained_models/_stats"
                                               ).with(
                                                 { "Header": { "Authorization": ["ApiKey " + target_key] } }
                                               ).do_request().as(ml_resp,
@@ -137,7 +139,7 @@ program: |-
                                                     "project_name": p.name,
                                                     "project_type": p.project_type,
                                                     "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
-                                                    "es_url": p.endpoints.elasticsearch,
+                                                    "es_url": dyn(p.endpoints).elasticsearch,
                                                     "last_status": "ok",
                                                     "index_count": size(rows),
                                                     "updated_at": now.format(time_layout.RFC3339),
@@ -157,7 +159,7 @@ program: |-
                                                 "project_name": p.name,
                                                 "project_type": p.project_type,
                                                 "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
-                                                "es_url": p.endpoints.elasticsearch,
+                                                "es_url": dyn(p.endpoints).elasticsearch,
                                                 "last_status": "empty_or_unauthorized",
                                                 "index_count": 0,
                                                 "updated_at": now.format(time_layout.RFC3339),
