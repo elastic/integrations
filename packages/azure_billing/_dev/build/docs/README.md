@@ -267,6 +267,9 @@ API does not give every row a unique ID: rows for the same day, meter, and resou
 set. The fields that tell those rows apart are not part of the document, so the only safe unit
 of deduplication is the fetch. Each fetch is a complete snapshot of a day for the queried scope,
 and the newest snapshot replaces the previous ones.
+A fetch that returns no rows for a day writes nothing, because the metricset sends no event for
+an empty result, so the previous snapshot of that day stays. Azure revises a day with adjusting
+rows rather than emptying it, so this only matters when every row of a day is removed.
 
 This also makes a longer `Billing Usage Lookback` safe: with `72h`, every fetch re-reads the last
 three days and picks up Azure's late revisions, and the transforms replace each day with the
