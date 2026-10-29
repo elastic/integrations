@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudstorage_otel-egress-surge-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud Storage OTel] Unexpected egress growth on a bucket",
+        "description": "Fires when a bucket's outbound byte rate steps up at least three-fold against its own 18-hour baseline and exceeds an absolute floor. Egress is normally the most expensive axis of a Cloud Storage bill and the one that moves without warning, so this rule covers both the cost-incident and the data-exfiltration case. Reports bytes per request so the responder can immediately tell more requests from bigger objects.",
+        "tags": [
+          "observability",
+          "gcp_cloudstorage_otel",
+          "otel"
+        ]
+      },
+      "schedule": {
+        "every": "1h",
+        "lookback": "24h"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudstorage.otel-default\n// Scope to Cloud Storage; this data stream carries every GCP service the receiver collects.\n| WHERE resource.attributes.gcp.resource_type == \"gcs_bucket\"\n    AND (`metrics.storage.googleapis.com/network/sent_bytes_count` IS NOT NULL\n         OR `metrics.storage.googleapis.com/api/request_count` IS NOT NULL)\n// Split the rule's 24h window into a 6h \"recent\" slice and an 18h baseline.\n| EVAL is_recent = @timestamp >= NOW() - 6 hours\n// Both metrics are ~60s delta counters stored as gauges. SUM_OVER_TIME totals each series and SUM\n// adds the series together: the collector can split one bucket's metric across several series\n// (_metric_names_hash is a dimension), and each sample is still counted once. Never RATE() them.\n// The two do not reliably share a document, so bytes-per-request must be SUM(a)/SUM(b) in a\n// single STATS and must never be computed per document with EVAL.\n| STATS recent_sent_bytes   = SUM(SUM_OVER_TIME(`metrics.storage.googleapis.com/network/sent_bytes_count`)) WHERE is_recent,\n        baseline_sent_bytes = SUM(SUM_OVER_TIME(`metrics.storage.googleapis.com/network/sent_bytes_count`)) WHERE NOT is_recent,\n        recent_requests     = SUM(SUM_OVER_TIME(`metrics.storage.googleapis.com/api/request_count`)) WHERE is_recent,\n        baseline_requests   = SUM(SUM_OVER_TIME(`metrics.storage.googleapis.com/api/request_count`)) WHERE NOT is_recent,\n        recent_methods      = VALUES(attributes.method) WHERE is_recent\n    BY resource.attributes.bucket_name, resource.attributes.location\n| EVAL recent_sent_bytes = COALESCE(recent_sent_bytes, 0), baseline_sent_bytes = COALESCE(baseline_sent_bytes, 0)",
+        "breach": {
+          "segment": "// Absolute floor: 32 GiB egressed in the recent slice. Set this to the point where an unexplained\n// transfer is worth a human looking at it in your environment; it is the main cost-control knob.\nWHERE recent_sent_bytes >= 34359738368\n// 6.0 and 18.0 are the two slice widths in hours \u2014 keep them in sync with is_recent/timeWindowSize.\n// Cast before dividing: the byte counters are longs and `a / b` would be integer division.\n| EVAL recent_egress_gib_per_hour   = ROUND(recent_sent_bytes::DOUBLE / 1073741824.0 / 6.0, 2),\n       baseline_egress_gib_per_hour = ROUND(baseline_sent_bytes::DOUBLE / 1073741824.0 / 18.0, 2)\n// Context, not a condition: a jump in bytes-per-request means object sizes changed, while a flat\n// bytes-per-request with far more requests means a read storm. They need different remediations.\n| EVAL recent_bytes_per_request   = ROUND(recent_sent_bytes::DOUBLE / recent_requests, 0),\n       baseline_bytes_per_request = ROUND(baseline_sent_bytes::DOUBLE / baseline_requests, 0)\n// Step-change test on the unrounded hourly rates. A bucket with no baseline egress at all is\n// compared against 1 GiB/hour instead, so the ratio stays finite; the volume floor above already\n// makes such a bucket significant.\n| EVAL egress_growth_factor = ROUND((recent_sent_bytes::DOUBLE / 6.0)\n      / CASE(baseline_sent_bytes > 0, baseline_sent_bytes::DOUBLE / 18.0, 1073741824.0), 2)\n| WHERE egress_growth_factor >= 3.0\n| SORT egress_growth_factor DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.bucket_name",
+          "resource.attributes.location"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudstorage_otel-egress-surge-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Unexpected egress growth on a Cloud Storage bucket\n\nOutbound bytes from this bucket have stepped up at least three-fold against its own 18-hour baseline\nand crossed the absolute floor. Egress is usually the most expensive line on a Cloud Storage bill\nand it contends against per-location and per-project bandwidth limits, so this alert is both a cost\ncontrol and a security signal.\n\n### Triage\n\n1. **More requests, or bigger objects?** Compare `recent_bytes_per_request` with\n   `baseline_bytes_per_request`.\n   - Bytes per request roughly flat, request count far higher: a read storm. Look for a cache that\n     stopped working, a retry loop, a new consumer, or a job that lost its incremental checkpoint\n     and is re-reading everything.\n   - Bytes per request much higher: object sizes changed, or ranged reads became whole-object reads.\n     Check for a client change that dropped `Range` headers or a producer writing larger objects.\n2. **Is it expected?** Match the start of the ramp against backfills, migrations, disaster-recovery\n   rehearsals, CDN cache purges and analytics jobs. Most alerts of this shape are a known batch job\n   that nobody told the on-call about.\n3. **If nothing explains it, treat it as a data-egress incident.** Cloud Audit Logs for\n   `storage.googleapis.com` identify the principal and caller IP; this metric does not carry a caller\n   dimension. Check for reads from unexpected networks or regions and review the bucket's public\n   access and IAM configuration.\n4. **Check the bandwidth envelope.** `resource.attributes.location` tells you which location's\n   bandwidth is being consumed. Egress limits are shared by every bucket in the same location and\n   project, so a surge on one bucket can degrade its neighbours.\n\n### Remediation\n\n- Put a CDN or cache in front of hot read paths; egress from cache is far cheaper than from the\n  bucket.\n- Co-locate compute with the bucket's location so reads do not leave the region.\n- Where a batch job is the cause, schedule it and rate-limit it rather than letting it run flat out.\n\n### Tuning\n\n- `recent_sent_bytes >= 34359738368` (32 GiB over 6 hours) is the absolute floor and the main knob.\n  Set it where an unexplained transfer becomes worth investigating in your environment.\n- `egress_growth_factor >= 3.0` controls sensitivity. Lower to `2.0` for buckets with very steady\n  traffic; raise for bursty analytics buckets.\n- The `6.0` and `18.0` divisors must be kept in sync with the `is_recent` slice and `timeWindowSize`."
+          }
+        },
+        {
+          "id": "gcp_cloudstorage_otel-egress-surge-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudstorage_otel-ffad2d3a-43f6-482a-a35c-97f6df9e0479"
+          }
+        },
+        {
+          "id": "gcp_cloudstorage_otel-egress-surge-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudstorage_otel-61c5320c-19f7-4676-a8ae-5d2d889d99a7"
+          }
+        }
+      ]
+    }
+  }
+}

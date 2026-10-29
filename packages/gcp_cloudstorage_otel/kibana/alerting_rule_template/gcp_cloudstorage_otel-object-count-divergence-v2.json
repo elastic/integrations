@@ -1,0 +1,73 @@
+{
+  "id": "gcp_cloudstorage_otel-object-count-divergence-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud Storage OTel] Object count outpacing stored bytes on a bucket",
+        "description": "Fires when a bucket's object count grows substantially while its average object size falls by more than a quarter over 14 days. This is small-object sprawl: cost shifts from storage to per-operation charges and list performance degrades, and neither is visible on a capacity view that only tracks bytes.",
+        "tags": [
+          "observability",
+          "gcp_cloudstorage_otel",
+          "otel"
+        ]
+      },
+      "schedule": {
+        "every": "12h",
+        "lookback": "14d"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "SET unmapped_fields=\"NULLIFY\";\n// A cluster that has only ever collected one metric generation has no mapping for the other.\n// NULLIFY reads a never-mapped field as null instead of failing the query, so the fallback below\n// works whichever generation is collected.\nTS metrics-gcp.cloudstorage.otel-default\n// Scope to Cloud Storage; this data stream carries every GCP service the receiver collects.\n| WHERE resource.attributes.gcp.resource_type == \"gcs_bucket\"\n    AND (`metrics.storage.googleapis.com/storage/v2/total_count` IS NOT NULL\n         OR `metrics.storage.googleapis.com/storage/v2/total_bytes` IS NOT NULL\n         OR `metrics.storage.googleapis.com/storage/object_count` IS NOT NULL\n         OR `metrics.storage.googleapis.com/storage/total_bytes` IS NOT NULL)\n//\n// --- Metric generations ------------------------------------------------------------------------\n// Cloud Storage publishes object counts and stored bytes twice: storage/v2/total_count and\n// storage/v2/total_bytes, split by object type, and the legacy storage/object_count and\n// storage/total_bytes, which cover live and noncurrent objects only. Only those two v2 types are\n// read, so the result is the same whichever generation is collected and switching from one to the\n// other does not look like sprawl. Soft-deleted objects and incomplete multipart uploads are\n// excluded. Legacy documents carry no type.\n    AND (attributes.type IS NULL OR attributes.type IN (\"live-object\", \"noncurrent-object\"))\n//\n// --- Snapshot handling -------------------------------------------------------------------------\n// Both metrics are point-in-time snapshots recomputed roughly once per day and re-reported on every\n// poll. They must NEVER be summed over time. Only the 2-day head and tail slices of the window are\n// compared; both always contain a daily snapshot.\n| WHERE @timestamp >= NOW() - 2 days OR @timestamp < NOW() - 12 days\n// Object counts and bytes do not reliably share a document, so each is aggregated independently and\n// the ratio is taken afterwards \u2014 never with per-document EVAL arithmetic.\n// A bucket can hold several storage classes at once. Both metrics and all classes are aligned on the\n// same hour before summing, so every bucket total comes from one coherent set of polls: summing\n// per-class maxima taken across a whole slice would count data twice if it changed class inside it.\n// Within each hour, MAX_OVER_TIME reads each series and MAX collapses the series of one class and\n// type: the collector can split a metric across several series (_metric_names_hash is a\n// dimension), and those report the same snapshot, so they must never be added together.\n| STATS v2_series_objects     = MAX(MAX_OVER_TIME(`metrics.storage.googleapis.com/storage/v2/total_count`)),\n        v2_series_bytes       = MAX(MAX_OVER_TIME(`metrics.storage.googleapis.com/storage/v2/total_bytes`)),\n        legacy_series_objects = MAX(MAX_OVER_TIME(`metrics.storage.googleapis.com/storage/object_count`)),\n        legacy_series_bytes   = MAX(MAX_OVER_TIME(`metrics.storage.googleapis.com/storage/total_bytes`))\n    BY resource.attributes.bucket_name, attributes.storage_class, attributes.type, hour = TBUCKET(1 hour)\n| EVAL slice = CASE(hour >= NOW() - 2 days, \"latest\", hour < NOW() - 12 days, \"earliest\", null)\n| WHERE slice IS NOT NULL\n| STATS v2_objects     = SUM(v2_series_objects),\n        v2_bytes       = SUM(v2_series_bytes),\n        legacy_objects = SUM(legacy_series_objects),\n        legacy_bytes   = SUM(legacy_series_bytes),\n        hour_classes   = VALUES(attributes.storage_class)\n    BY resource.attributes.bucket_name, slice, hour\n// Use one generation per bucket-hour for both metrics, preferring v2, so the two are never added\n// together and the size ratio never mixes them.\n| EVAL use_v2 = v2_objects IS NOT NULL AND v2_bytes IS NOT NULL\n| EVAL bucket_objects = CASE(use_v2, v2_objects, legacy_objects),\n       bucket_bytes   = CASE(use_v2, v2_bytes, legacy_bytes)\n// Cast before dividing: object counts are longs and `a / b` would be integer division.\n| EVAL bucket_avg_object_bytes = CASE(bucket_objects > 0, bucket_bytes / bucket_objects::DOUBLE, null)\n// The median hourly value ignores the odd hour that straddles a class change or misses a poll.\n| STATS latest_objects            = MEDIAN(bucket_objects) WHERE slice == \"latest\",\n        earliest_objects          = MEDIAN(bucket_objects) WHERE slice == \"earliest\",\n        latest_bytes              = MEDIAN(bucket_bytes) WHERE slice == \"latest\",\n        earliest_bytes            = MEDIAN(bucket_bytes) WHERE slice == \"earliest\",\n        latest_avg_object_bytes   = MEDIAN(bucket_avg_object_bytes) WHERE slice == \"latest\",\n        earliest_avg_object_bytes = MEDIAN(bucket_avg_object_bytes) WHERE slice == \"earliest\",\n        storage_classes           = VALUES(hour_classes)\n    BY resource.attributes.bucket_name",
+        "breach": {
+          "segment": "// Guard every denominator, and ignore buckets too small for operation costs to matter.\n// Latest bytes are not a denominator and may be zero: zero-byte objects still cost an operation each.\n// 100,000 objects; raise it in estates where small buckets are normal and uninteresting.\nWHERE earliest_objects > 0 AND earliest_bytes > 0 AND earliest_avg_object_bytes > 0\n    AND latest_objects >= 100000\n| EVAL object_growth_pct = ROUND((latest_objects - earliest_objects) / earliest_objects * 100.0, 2),\n       byte_growth_pct   = ROUND((latest_bytes - earliest_bytes) / earliest_bytes * 100.0, 2),\n       avg_object_size_change_pct = ROUND((latest_avg_object_bytes - earliest_avg_object_bytes) / earliest_avg_object_bytes * 100.0, 2)\n// Divergence test: materially more objects, each materially smaller. Both clauses are needed \u2014\n// average size alone would fire on a bucket that merely deleted its largest objects.\n// Loosen to -15 / 10 to catch sprawl earlier, tighten for buckets that churn by design.\n| WHERE object_growth_pct > 20.0 AND avg_object_size_change_pct < -25.0\n| SORT avg_object_size_change_pct ASC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.bucket_name"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudstorage_otel-object-count-divergence-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Object count is outpacing stored bytes\n\nThis bucket gained a significant number of objects over 14 days while its average object size fell\nby more than a quarter. That is small-object sprawl, and it matters for two reasons that a\nbytes-only capacity view cannot show.\n\n- **Cost shifts from storage to operations.** Class A operations (writes, lists) cost an order of\n  magnitude more per call than Class B (reads, metadata). A bucket with modest bytes but an enormous\n  object count can cost far more in operations than it does in storage.\n- **Enumeration degrades.** `ListObjects` gets slower and more expensive as the key space grows, and\n  anything that walks the bucket \u2014 lifecycle evaluation, inventory jobs, backup tooling \u2014 slows with\n  it.\n\n### Triage\n\n1. **What started writing small objects?** The usual causes are a log or event shipper that lost its\n   batching configuration, a streaming job whose flush interval or file-size target was reduced, or\n   a checkpointing framework writing per-record files instead of per-batch.\n2. **Are the objects temporary?** Staging and scratch objects accumulate silently. Check for a\n   lifecycle rule that expires them. Incomplete multipart uploads are not counted by this rule, but\n   they are billed: with `storage/v2` collection they appear under the `multipart-upload` type.\n3. **Check versioning.** With versioning enabled, noncurrent versions count towards the object count.\n   A bucket that rewrites many small objects frequently will sprawl even if the visible object set is\n   stable.\n4. **Compare the two growth figures.** `object_growth_pct` far above `byte_growth_pct` confirms the\n   diagnosis. If both grew together, this is ordinary growth and\n   `gcp_cloudstorage_otel-storage-growth-surge` is the relevant rule instead.\n\n### Remediation\n\n- Restore batching at the producer: fewer, larger objects are cheaper to write, store, list and read.\n- Compact small objects into archives on a schedule where the access pattern allows it.\n- Add lifecycle rules to abort incomplete multipart uploads and to expire noncurrent versions.\n- Be careful about moving a sprawling bucket to a colder class: archival classes carry minimum\n  storage durations and per-object retrieval costs, which can make many small objects more expensive\n  rather than less.\n\n### Tuning\n\n- `object_growth_pct > 20.0` and `avg_object_size_change_pct < -25.0` must both hold. Loosen them to\n  `10` and `-15` to catch sprawl earlier; tighten them for buckets that churn by design.\n- `latest_objects >= 100000` excludes buckets too small for operation costs to matter.\n- Storage metrics are daily snapshots, so this rule runs on a slow clock. Shortening\n  `timeWindowSize` below a few days will leave it with too few samples to compare."
+          }
+        },
+        {
+          "id": "gcp_cloudstorage_otel-object-count-divergence-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudstorage_otel-ffad2d3a-43f6-482a-a35c-97f6df9e0479"
+          }
+        },
+        {
+          "id": "gcp_cloudstorage_otel-object-count-divergence-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudstorage_otel-61c5320c-19f7-4676-a8ae-5d2d889d99a7"
+          }
+        }
+      ]
+    }
+  }
+}
