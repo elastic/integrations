@@ -6,22 +6,10 @@ processors:
   - script:
       ignore_failure: true
       lang: painless
-      tag: project_fields_and_composite_key
+      tag: set_composite_key
       source: |
-        if (ctx.deployment_id == null && ctx.project_id != null) {
-          ctx.deployment_id = ctx.project_id;
-        }
-        if ((ctx.deployment_name == null || ctx.deployment_name == '') && ctx.project_name != null && ctx.project_name != '') {
-          ctx.deployment_name = ctx.project_name;
-        }
-        if (ctx.deployment_type == null && ctx.project_type != null) {
-          ctx.deployment_type = ctx.project_type;
-        }
-        if (ctx.total_ecu == null && ctx.total_chargeable_units != null) {
-          ctx.total_ecu = ctx.total_chargeable_units;
-        }
-        if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
-          ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.deployment_id;
+        if (ctx['@timestamp'] != null && ctx.project_id != null) {
+          ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.project_id;
         }
   - set:
       field: cost_type
