@@ -261,7 +261,6 @@ The default value is 10s.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -272,8 +271,6 @@ The default value is 10s.
 | process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
-| response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.geo.city_name | City name. | keyword |
 | server.geo.continent_name | Name of the continent. | keyword |
