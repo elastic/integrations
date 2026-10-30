@@ -1,0 +1,128 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a successful Microsoft Entra ID Register device audit event for an Azure AD join or Azure AD register whose user agent is a Dsreg client string hardcoded by device-registration tooling. \"Dsreg/10.0 (Windows 10.0.19045.2006)\" is the frozen user agent used by device code and adversary-in-the-middle (AiTM) phishing-as-a-service kits such as Tycoon2FA and Kali365 when they register a device after capturing a victim session. \"Dsreg/10.0 (Windows 10.0.19041.928)\" is the default user agent used by ROADtools (roadtx) for Windows device registration. Adversaries register these devices to obtain a Primary Refresh Token (PRT) and persist access that survives password resets and user-level session revocation.",
+        "false_positives": [
+            "A legitimate, never-patched Windows 10 host at build `10.0.19041.928` (20H1) or `10.0.19045.2006` (22H2) can present the same Dsreg user agent during a genuine Azure AD join or register. Validate the device name, owner, and patch level against your device inventory before escalating.",
+            "Authorized red team or penetration testing that uses ROADtools or phishing-kit infrastructure to register devices will match this rule. If this is expected, add exceptions for the specific user principal names, source IPs, or device names involved."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-azure.auditlogs-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "event.outcome",
+                "azure.auditlogs.properties.userAgent",
+                "azure.auditlogs.properties.additional_details.value",
+                "azure.auditlogs.properties.initiated_by.user.userPrincipalName",
+                "azure.auditlogs.properties.initiated_by.user.ipAddress",
+                "source.ip",
+                "azure.auditlogs.properties.target_resources.0.display_name",
+                "azure.auditlogs.properties.target_resources.0.id",
+                "azure.correlation_id"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Entra ID Register Device with Phishing Kit or ROADtools User Agent",
+        "note": "## Triage and analysis\nDevice code and AiTM phishing kits, including Tycoon2FA and Kali365, and dual-use tooling such as ROADtools (roadtx)\nregister a device in Entra ID so they can obtain a device-bound Primary Refresh Token (PRT). The registration client\nspoofs the Windows device-registration user agent, but the OS build inside that string is a tool default rather than the\nbuild of a current, patched host:\n\n- `Dsreg/10.0 (Windows 10.0.19045.2006)`: frozen default used by Tycoon2FA and Kali365.\n- `Dsreg/10.0 (Windows 10.0.19041.928)`: default used by ROADtools (roadtx) for Windows device registration.\n\nThis rule matches a successful `Register device` audit event where that user agent is recorded and\n`azure.auditlogs.properties.additional_details.value` is `Azure AD join` or `Azure AD register`. A genuine Windows\nenrollment uses the same `Dsreg/10.0 (Windows <build>)` format, but a patched host reports a much higher revision than\nthese two frozen values. Rogue device registration is typically a precursor to PRT acquisition, MFA and Conditional\nAccess bypass, and persistent token-based access. Device-bound PRTs survive `revokeSignInSessions` and password resets.\n\n### Possible investigation steps\n\n- Confirm the registering identity via `azure.auditlogs.properties.initiated_by.user.userPrincipalName` and determine whether that user is expected to join or register a new device.\n- Confirm the user agent in `azure.auditlogs.properties.userAgent` and the join type in `azure.auditlogs.properties.additional_details.value` (`Azure AD join` versus `Azure AD register`).\n- Inspect the device name in `azure.auditlogs.properties.target_resources.0.display_name`. Kit-registered names are commonly `DESKTOP-` followed by 6 alphanumeric (Tycoon2FA) or 6 hexadecimal (Kali365) characters. ROADtools defaults to `DESKTOP-` followed by 8 random characters.\n- Use `azure.correlation_id` to pivot across the full registration flow (`Register device`, `Add device`, `Add registered users to device`, `Add registered owner to device`). On the paired `Add device` event, compare `CloudDeviceOSVersion` with the build embedded in the user agent (`10.0.19045.2006` or `10.0.19041.928`).\n- Review `azure.auditlogs.properties.initiated_by.user.ipAddress` and geolocation for the registration source. Flag unexpected IPs, hosting or VPS ASNs, or impossible travel relative to the user's normal activity.\n- Check whether the same user registered multiple devices in a short window. A single piece of kit infrastructure registering several devices is common for PRT persistence at scale.\n- Pivot to `azure.signinlogs` for the same user and timeframe. Look for a preceding device-code or AiTM sign-in, and for follow-on sign-ins where the incoming token type is a `primaryRefreshToken`.\n\n### False positive analysis\n\n- Unmanaged or never-patched Windows 10 20H1 or 22H2 hosts may legitimately present these exact Dsreg user agents during Azure AD join or register. Validate against device inventory, naming conventions, and known provisioning programs.\n- Authorized security assessments that register devices with ROADtools or phishing-kit tooling will match. Document the engagement and add scoped exceptions.\n\n### Response and remediation\n\n- If confirmed malicious, remove the registered device from Entra ID and revoke the user's refresh tokens and primary refresh tokens. Remove the device BEFORE revoking sessions, because device-bound PRTs survive `revokeSignInSessions`.\n- Disable the account or reset credentials per policy and review for additional persistence (attacker-registered MFA methods, added owners, app registrations, or service principal credentials).\n- Conduct historical analysis using `azure.correlation_id` and the registering user to determine the scope of access.\n- Tighten device registration and join controls via Conditional Access (restrict who can register or join devices and require MFA for registration).\n",
+        "query": "data_stream.dataset:\"azure.auditlogs\" and event.action:\"Register device\" and\nevent.outcome:(success or Success) and\nazure.auditlogs.properties.userAgent:(\n    \"Dsreg/10.0 (Windows 10.0.19041.928)\" or\n    \"Dsreg/10.0 (Windows 10.0.19045.2006)\"\n) and\nazure.auditlogs.properties.additional_details.value:(\"Azure AD join\" or \"Azure AD register\")\n",
+        "references": [
+            "https://www.huntress.com/blog/kali365-device-code-phishing-kit",
+            "https://arcticwolf.com/resources/blog/token-bingo-dont-let-your-code-be-the-winner/",
+            "https://www.ic3.gov/PSA/2026/PSA260521",
+            "https://www.volexity.com/blog/2025/04/22/phishing-for-codes-russian-threat-actors-target-microsoft-365-oauth-workflows/",
+            "https://github.com/dirkjanm/ROADtools",
+            "https://dirkjanm.io/introducing-roadtools-token-exchange-roadtx/",
+            "https://unit42.paloaltonetworks.com/roadtools-cloud-attacks/",
+            "https://learn.microsoft.com/en-us/entra/identity/devices/concept-directory-join"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure",
+                "version": ">=1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.auditlogs.properties.additional_details.value",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.auditlogs.properties.userAgent",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "63dc7e10-705c-41a3-8b2b-c5ae0c01399e",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: Azure",
+            "Data Source: Microsoft Entra ID",
+            "Data Source: Microsoft Entra ID Audit Logs",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Threat: Tycoon2FA",
+            "Threat: Kali365",
+            "Threat: Device Code Phishing",
+            "Threat: AiTM Phishing",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide",
+            "Rule Type: Custom Query (KQL)",
+            "Platform: Entra ID"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.005",
+                                "name": "Device Registration",
+                                "reference": "https://attack.mitre.org/techniques/T1098/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "63dc7e10-705c-41a3-8b2b-c5ae0c01399e_1",
+    "type": "security-rule"
+}

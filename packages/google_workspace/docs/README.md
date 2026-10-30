@@ -66,7 +66,7 @@ The Reports API data streams use the following *oauth2 scope*:
 
 - `https://www.googleapis.com/auth/admin.reports.audit.readonly`
 
-The `users` data stream needs different scopes. See [Google Workspace Users](#google-workspace-users).
+The `users` data stream needs different scopes. See the Google Workspace Users section.
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
@@ -479,7 +479,7 @@ An example event for `saml` looks as following:
 
 ### Users
 
-This is the `users` dataset. It contains an inventory of user accounts, not events. See [Google Workspace Users](#google-workspace-users).
+This is the `users` dataset. It contains an inventory of user accounts, not events. See the Google Workspace Users section.
 
 An example event for `users` looks as following:
 
