@@ -1,0 +1,39 @@
+source:
+  index:
+    - "logs-shodan.host*"
+  query:
+    bool:
+      must_not:
+        - exists:
+            field: error.message
+dest:
+  index: "logs-shodan_latest.host-1"
+  aliases:
+    - alias: "logs-shodan_latest.host"
+      move_on_creation: true
+latest:
+  unique_key:
+    - threat.indicator.ip
+    - threat.indicator.port
+  sort: "@timestamp"
+description: >-
+  Latest state of each Shodan host indicator, unique by IP and port. Keeps
+  only the most recently seen document per indicator, and drops indicators
+  not re-confirmed within the retention window, so this index reflects
+  current exposure rather than accumulating unbounded history.
+frequency: 30s
+settings:
+  deduce_mappings: false
+  num_failure_retries: -1
+sync:
+  time:
+    field: "event.ingested"
+    delay: 120s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 7d
+_meta:
+  managed: false
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false
