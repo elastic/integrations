@@ -51,6 +51,8 @@ The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
 - **True** for source index
 
+> **Deprecated:** `labels.is_transform_source` is deprecated in favor of `labels.is_ioc_transform_source` (`"true"` on the raw source data streams, `"false"` on the transformed destination indices). New queries, dashboards, and detection rules should use `labels.is_ioc_transform_source`; this is the field Elastic's built-in Threat Intel Indicator Match rules rely on to exclude raw source documents. `labels.is_transform_source` continues to work and will be removed in a future major version. On upgrade, only newly written source documents and newly built destination indices carry `labels.is_ioc_transform_source`; documents in backing indices created before the upgrade keep their original mapping until they roll over or age out of the detection rules' 30-day window.
+
 Currently, one transform is running for the IP datastream:
 
 | Transform Name | Description |
