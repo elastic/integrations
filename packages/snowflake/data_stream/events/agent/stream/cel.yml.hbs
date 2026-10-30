@@ -1,0 +1,307 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if resource_retry_max_attempts}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
+{{/if}}
+{{#if resource_retry_wait_min}}
+resource.retry.wait_min: {{resource_retry_wait_min}}
+{{/if}}
+{{#if resource_retry_wait_max}}
+resource.retry.wait_max: {{resource_retry_wait_max}}
+{{/if}}
+resource.rate_limit.limit: 1
+resource.rate_limit.burst: 1
+resource.url: {{url}}
+resource.headers:
+  Accept:
+    - application/json
+  Content-Type:
+    - application/json
+  User-Agent:
+    - elastic-snowflake/1.0
+state:
+  token: {{token}}
+  role: {{role}}
+  warehouse: {{warehouse}}
+  batch_size: {{batch_size}}
+  initial_interval: {{initial_interval}}
+  lag_time: {{lag_time}}
+  event_table: {{event_table}}
+  want_more: false
+redact:
+  fields:
+    - token
+program: |-
+  // Event table rows have no unique id. Tie-break is TIMESTAMP + RECORD_TYPE + ROW_KEY.
+  // ROW_KEY is an MD5 of the remaining columns, including VALUE, so VARIANT cell formatting
+  // cannot stall the cursor. The source subquery keeps RECORD_TYPE = 'LOG'.
+  // Statements are submitted synchronously. HTTP 202 (still running) is polled by handle.
+  // fetch_partition: GET only when want_more and a handle exist. A full statement continues via POST.
+  state.event_table.matches("^[A-Za-z_][A-Za-z0-9_$]*(\\.[A-Za-z_][A-Za-z0-9_$]*){0,2}$") ?
+    {
+      "fetch_partition": state.?want_more.orValue(false) && string(state.?cursor.handle.orValue("")) != "",
+      "last_timestamp": state.?cursor.last_timestamp.orValue(""),
+      "last_record_type": state.?cursor.last_record_type.orValue(""),
+      "last_row_key": state.?cursor.last_row_key.orValue(""),
+      "apply_lag": state.?cursor.apply_lag.orValue(false),
+    }.as(page,
+      {
+        "cur_partition": page.fetch_partition ? int(state.?cursor.next_partition.orValue(0)) : 0,
+        "http_method": page.fetch_partition ? "GET" : "POST",
+        "watermark": (page.last_timestamp != "") ?
+          (
+            page.apply_lag ?
+              (
+                (
+                  page.last_timestamp.matches("^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{9}") ?
+                    page.last_timestamp.parse_time("2006-01-02 15:04:05.000000000 Z0700")
+                  :
+                    page.last_timestamp.parse_time("2006-01-02 15:04:05.000 Z0700")
+                ) - duration(state.lag_time)
+              ).format("2006-01-02 15:04:05.000000000 -0700")
+            :
+              page.last_timestamp
+          )
+        :
+          (now - duration(state.initial_interval)).format("2006-01-02 15:04:05.000000000 -0700"),
+        "last_timestamp": page.last_timestamp,
+        "last_record_type": page.last_record_type,
+        "last_row_key": page.last_row_key,
+        "apply_lag": page.apply_lag,
+        "request_url": page.fetch_partition ?
+          (
+            state.url.trim_right("/") + "/api/v2/statements/" + string(state.cursor.handle) + (
+              (page.fetch_partition && int(state.?cursor.next_partition.orValue(0)) > 0) ? ("?" + {"partition": [string(int(state.cursor.next_partition))]}.format_query()) : ""
+            )
+          )
+        :
+          state.url.trim_right("/") + "/api/v2/statements?" + {
+            "requestId": [uuid()],
+          }.format_query(),
+      }.as(req,
+        state.with(
+          request(req.http_method, req.request_url).with(
+            {
+              "Header": {
+                "Authorization": ["Bearer " + state.token],
+                "X-Snowflake-Authorization-Token-Type": ["PROGRAMMATIC_ACCESS_TOKEN"],
+                "Accept": ["application/json"],
+                "Content-Type": ["application/json"],
+              },
+              ?"Body": (req.http_method == "POST") ?
+                optional.of(
+                  {
+                    "statement": "SELECT TIMESTAMP, START_TIMESTAMP, OBSERVED_TIMESTAMP, TRACE, " + "RESOURCE_ATTRIBUTES, SCOPE, RECORD_TYPE, RECORD, " + "RECORD_ATTRIBUTES, VALUE, ROW_KEY " + "FROM (" + "SELECT TIMESTAMP, START_TIMESTAMP, OBSERVED_TIMESTAMP, TRACE, " + "RESOURCE_ATTRIBUTES, SCOPE, RECORD_TYPE, RECORD, " + "RECORD_ATTRIBUTES, VALUE, " + "MD5(CONCAT_WS('|', COALESCE(TO_VARCHAR(TRACE), ''), COALESCE(TO_VARCHAR(RESOURCE_ATTRIBUTES), ''), COALESCE(TO_VARCHAR(SCOPE), ''), COALESCE(TO_VARCHAR(RECORD), ''), COALESCE(TO_VARCHAR(RECORD_ATTRIBUTES), ''), COALESCE(TO_VARCHAR(VALUE), ''), COALESCE(TO_VARCHAR(START_TIMESTAMP), ''), COALESCE(TO_VARCHAR(OBSERVED_TIMESTAMP), ''))) AS ROW_KEY " + "FROM " + state.event_table + " " + "WHERE RECORD_TYPE = 'LOG') " + "WHERE TIMESTAMP > ? OR (TIMESTAMP = ? AND (COALESCE(RECORD_TYPE, '') > ? OR (COALESCE(RECORD_TYPE, '') = ? AND ROW_KEY > ?))) " + "ORDER BY TIMESTAMP ASC, COALESCE(RECORD_TYPE, '') ASC, ROW_KEY ASC " + "LIMIT " + string(state.batch_size),
+                    "warehouse": state.warehouse,
+                    "role": state.role,
+                    "bindings": {
+                      "1": {
+                        "type": "TEXT",
+                        "value": req.watermark,
+                      },
+                      "2": {
+                        "type": "TEXT",
+                        "value": (req.last_timestamp != "") ? req.last_timestamp : req.watermark,
+                      },
+                      "3": {
+                        "type": "TEXT",
+                        "value": req.last_record_type,
+                      },
+                      "4": {
+                        "type": "TEXT",
+                        "value": req.last_record_type,
+                      },
+                      "5": {
+                        "type": "TEXT",
+                        "value": req.last_row_key,
+                      },
+                    },
+                    "parameters": {
+                      "TIMEZONE": "UTC",
+                      "TIMESTAMP_LTZ_OUTPUT_FORMAT": "YYYY-MM-DD HH24:MI:SS.FF9 TZHTZM",
+                      "TIMESTAMP_NTZ_OUTPUT_FORMAT": "YYYY-MM-DD HH24:MI:SS.FF9 TZHTZM",
+                    },
+                  }.encode_json()
+                )
+              :
+                optional.none(),
+            }
+          ).do_request().as(resp,
+            (resp.StatusCode == 202 || resp.StatusCode == 429 && req.http_method == "GET") ?
+              resp.Body.decode_json().as(body,
+                (is_error(body) || string(body.?statementHandle.orValue("")) == "") ?
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": resp.Status,
+                        "message": req.http_method + " " + req.request_url + ": HTTP " + string(resp.StatusCode) + " without statementHandle",
+                      },
+                    },
+                    "want_more": false,
+                  }
+                :
+                  {
+                    "events": [{"retry": true}],
+                    "cursor": {
+                      "last_timestamp": req.last_timestamp,
+                      "last_record_type": req.last_record_type,
+                      "last_row_key": req.last_row_key,
+                      "apply_lag": req.apply_lag,
+                      "handle": string(body.statementHandle),
+                      "next_partition": 0,
+                    },
+                    "want_more": true,
+                  }
+              )
+            : (resp.StatusCode == 200) ?
+              resp.Body.decode_json().as(body,
+                is_error(body) ?
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": resp.Status,
+                        "message": req.http_method + " " + req.request_url + ": failed to decode JSON",
+                      },
+                    },
+                    "want_more": false,
+                  }
+                :
+                  {
+                    "names": (size(body.?resultSetMetaData.rowType.orValue([])) > 0) ?
+                      body.resultSetMetaData.rowType.map(column, column.name)
+                    :
+                      state.?cursor.row_type.orValue([]),
+                    "rows": body.?data.orValue([]),
+                    "partition_count": (size(body.?resultSetMetaData.partitionInfo.orValue([])) > 0) ?
+                      size(body.resultSetMetaData.partitionInfo)
+                    :
+                      int(state.?cursor.partition_count.orValue(0)),
+                    "handle": string(body.?statementHandle.orValue(string(state.?cursor.handle.orValue("")))),
+                    // numRows is present on the first response. Later partition GETs carry it on the cursor.
+                    "rows_in_statement": (size(body.?resultSetMetaData.partitionInfo.orValue([])) > 0) ?
+                      int(body.?resultSetMetaData.numRows.orValue(size(body.?data.orValue([]))))
+                    :
+                      int(state.?cursor.rows_in_statement.orValue(size(body.?data.orValue([])))),
+                  }.as(result,
+                    {
+                      "events": (size(result.rows) > 0) ?
+                        dyn(result.rows.map(row, {"message": result.names.zip(row).encode_json()}))
+                      :
+                        dyn([{"retry": true}]),
+                      "cursor": {
+                        "last_timestamp": (size(result.rows) > 0) ?
+                          (
+                            (string(result.names.zip(result.rows[int(size(result.rows) - 1)]).?TIMESTAMP.orValue("")) != "") ?
+                              string(result.names.zip(result.rows[int(size(result.rows) - 1)]).TIMESTAMP)
+                            :
+                              req.last_timestamp
+                          )
+                        :
+                          req.last_timestamp,
+                        "last_record_type": (size(result.rows) > 0) ?
+                          (
+                            (result.names.zip(result.rows[int(size(result.rows) - 1)]).?RECORD_TYPE.orValue(null) == null) ?
+                              ""
+                            :
+                              string(result.names.zip(result.rows[int(size(result.rows) - 1)]).RECORD_TYPE)
+                          )
+                        :
+                          req.last_record_type,
+                        "last_row_key": (size(result.rows) > 0) ?
+                          (
+                            (result.names.zip(result.rows[int(size(result.rows) - 1)]).?ROW_KEY.orValue(null) == null) ?
+                              ""
+                            :
+                              string(result.names.zip(result.rows[int(size(result.rows) - 1)]).ROW_KEY)
+                          )
+                        :
+                          req.last_row_key,
+                        "apply_lag": !(req.cur_partition + 1 < result.partition_count) &&
+                        !(size(result.rows) >= int(state.batch_size) || result.rows_in_statement >= int(state.batch_size)),
+                      }.with(
+                        (req.cur_partition + 1 < result.partition_count) ?
+                          {
+                            "handle": result.handle,
+                            "next_partition": req.cur_partition + 1,
+                            "row_type": result.names,
+                            "partition_count": result.partition_count,
+                            "rows_in_statement": result.rows_in_statement,
+                          }
+                        :
+                          {}
+                      ),
+                      "want_more": req.cur_partition + 1 < result.partition_count ||
+                      size(result.rows) >= int(state.batch_size) || result.rows_in_statement >= int(state.batch_size),
+                    }
+                  )
+              )
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": resp.Status,
+                    "message": req.http_method + " " + req.request_url + ": " + (
+                      (size(resp.Body) != 0) ?
+                        string(resp.Body)
+                      :
+                        resp.Status + " (" + string(resp.StatusCode) + ")"
+                    ),
+                  },
+                }.as(err, (resp.StatusCode == 429 || resp.StatusCode >= 500) ?
+                  dyn(err)
+                :
+                  dyn([err])
+                ),
+                "cursor": {
+                  "last_timestamp": req.last_timestamp,
+                  "last_record_type": req.last_record_type,
+                  "last_row_key": req.last_row_key,
+                  "apply_lag": req.apply_lag,
+                },
+                "want_more": false,
+              }
+          )
+        )
+      )
+    )
+  :
+    {
+      "events": {
+        "error": {
+          "code": "invalid_event_table",
+          "id": "invalid_event_table",
+          "message": "event_table must be a 1- to 3-part identifier: " + string(state.event_table),
+        },
+      },
+      "want_more": false,
+    }
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}
