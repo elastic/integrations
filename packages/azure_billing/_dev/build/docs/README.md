@@ -277,6 +277,10 @@ This also makes a longer `Billing Usage Lookback` safe: with `72h`, every fetch 
 three days and picks up Azure's late revisions, and the transforms replace each day with the
 newest snapshot instead of adding the re-read rows to the total.
 
+The transforms check for new documents every 5 minutes. A fetch whose rows are still being indexed
+when a check runs is already the newest one, so until the next check the dashboard shows only its
+rows indexed so far.
+
 **Documents collected before Elastic Agent 9.6.** The transforms also read the history that
 older agents collected, and those rows carry neither a fetch ID nor the queried scope. The usage
 transforms then group them by the agent process (`agent.ephemeral_id`) and the minute in which

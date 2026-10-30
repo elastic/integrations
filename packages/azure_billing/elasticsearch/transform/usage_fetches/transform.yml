@@ -169,9 +169,9 @@ dest:
       move_on_creation: true
 description: >-
   Azure billing usage details summed per day, meter, resource, and fetch. First stage of the deduplication, read by the dashboard together with the usage_latest_fetch lookup index.
-# Billing data arrives once a day, so there is nothing to gain from a faster
-# checkpoint interval.
-frequency: 1h
+# A check without new documents is cheap, and a short interval bounds how long
+# the dashboard waits after an install, or shows a fetch that a checkpoint split.
+frequency: 5m
 settings:
   # This is required to prevent the transform from clobbering the Fleet-managed
   # mappings.

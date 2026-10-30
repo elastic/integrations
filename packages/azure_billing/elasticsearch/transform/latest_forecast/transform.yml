@@ -66,9 +66,8 @@ dest:
       move_on_creation: true
 description: >-
   Deduplicated Azure billing forecast. The Azure billing metricset re-fetches recent days on every run, which creates duplicate documents in the metrics-azure.billing-* data stream. This transform keeps only the most recently collected actual and forecast cost row per queried scope, usage date, and currency.
-# Billing data arrives once a day, so there is nothing to gain from a faster
-# checkpoint interval.
-frequency: 1h
+# Same interval as `usage_fetches`, for the same reasons.
+frequency: 5m
 settings:
   # This is required to prevent the transform from clobbering the Fleet-managed
   # mappings.
