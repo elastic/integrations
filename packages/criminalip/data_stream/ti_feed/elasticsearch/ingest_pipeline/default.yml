@@ -1,0 +1,254 @@
+---
+description: Normalize TI Feed metadata and retain original events for Fleet final processing.
+processors:
+  - dot_expander:
+      tag: expand_cel_dotted_fields
+      field: '*'
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: 9.5.0
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: enrichment
+  - append:
+      tag: append_event_category
+      field: event.category
+      value: threat
+      allow_duplicates: false
+  - append:
+      tag: append_event_type
+      field: event.type
+      value: indicator
+      allow_duplicates: false
+  - rename:
+      tag: preserve_feed_message
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: "ctx.event?.original == null"
+  - remove:
+      tag: remove_feed_message
+      field: message
+      ignore_missing: true
+      if: "ctx.event?.original != null"
+  - json:
+      tag: parse_feed_record
+      field: event.original
+      target_field: _temp.feed
+      if: "ctx.event?.original != null && ctx.event?.outcome != 'failure'"
+  - set:
+      tag: set_feed_module
+      field: event.module
+      value: criminalip
+  - set:
+      tag: set_feed_dataset
+      field: event.dataset
+      value: criminalip.ti_feed
+  - set:
+      tag: copy_feed_ip
+      field: threat.indicator.ip
+      copy_from: _temp.feed.ip
+      ignore_empty_value: true
+  - set:
+      tag: copy_feed_reason
+      field: threat.indicator.description
+      copy_from: _temp.feed.reason
+      ignore_empty_value: true
+  - set:
+      tag: copy_feed_confidence
+      field: criminalip.ti_feed.confidence
+      copy_from: _temp.feed.confidence
+      ignore_empty_value: true
+  - set:
+      tag: copy_feed_score
+      field: criminalip.ti_feed.score
+      copy_from: _temp.feed.score
+      ignore_empty_value: true
+  - set:
+      tag: copy_feed_first_seen
+      field: criminalip.ti_feed.first_seen
+      copy_from: _temp.feed.first_seen
+      ignore_empty_value: true
+  - set:
+      tag: copy_feed_last_seen
+      field: criminalip.ti_feed.last_seen
+      copy_from: _temp.feed.last_seen
+      ignore_empty_value: true
+  - convert:
+      tag: convert_feed_confidence
+      field: criminalip.ti_feed.confidence
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_invalid_feed_confidence
+            field: criminalip.ti_feed.confidence
+            ignore_missing: true
+        - append:
+            tag: flag_invalid_feed_confidence
+            field: error.message
+            value: Could not parse TI Feed confidence as a numeric value.
+        - append:
+            tag: preserve_invalid_feed_confidence
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
+  - script:
+      tag: normalize_feed_confidence
+      description: Convert numeric confidence to the ECS STIX confidence bands while retaining the source value.
+      lang: painless
+      if: "ctx.criminalip?.ti_feed?.confidence != null"
+      source: >-
+        def value = ctx.criminalip.ti_feed.confidence;
+        def label = 'Not Specified';
+        if (value == 0) { label = 'None'; }
+        else if (value > 0 && value < 30) { label = 'Low'; }
+        else if (value >= 30 && value < 70) { label = 'Medium'; }
+        else if (value >= 70 && value <= 100) { label = 'High'; }
+        if (ctx.threat == null) { ctx.threat = [:]; }
+        if (ctx.threat.indicator == null) { ctx.threat.indicator = [:]; }
+        ctx.threat.indicator.confidence = label;
+  - date:
+      tag: parse_feed_first_seen
+      field: criminalip.ti_feed.first_seen
+      target_field: criminalip.ti_feed.first_seen
+      formats:
+        - ISO8601
+        - yyyy-MM-dd HH:mm:ss
+      timezone: UTC
+      if: "ctx['criminalip.ti_feed.first_seen'] != null || ctx.criminalip?.ti_feed?.first_seen != null"
+      on_failure:
+        - remove:
+            tag: remove_invalid_feed_first_seen
+            field: criminalip.ti_feed.first_seen
+            ignore_missing: true
+        - append:
+            tag: flag_invalid_feed_first_seen
+            field: error.message
+            value: Could not parse TI Feed first_seen timestamp.
+        - append:
+            tag: preserve_invalid_feed_first_seen
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
+  - date:
+      tag: parse_feed_last_seen
+      field: criminalip.ti_feed.last_seen
+      target_field: criminalip.ti_feed.last_seen
+      formats:
+        - ISO8601
+        - yyyy-MM-dd HH:mm:ss
+      timezone: UTC
+      if: "ctx['criminalip.ti_feed.last_seen'] != null || ctx.criminalip?.ti_feed?.last_seen != null"
+      on_failure:
+        - remove:
+            tag: remove_invalid_feed_last_seen
+            field: criminalip.ti_feed.last_seen
+            ignore_missing: true
+        - append:
+            tag: flag_invalid_feed_last_seen
+            field: error.message
+            value: Could not parse TI Feed last_seen timestamp.
+        - append:
+            tag: preserve_invalid_feed_last_seen
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
+  - set:
+      tag: copy_indicator_first_seen
+      field: threat.indicator.first_seen
+      copy_from: criminalip.ti_feed.first_seen
+      ignore_empty_value: true
+  - set:
+      tag: copy_indicator_last_seen
+      field: threat.indicator.last_seen
+      copy_from: criminalip.ti_feed.last_seen
+      ignore_empty_value: true
+  - trim:
+      tag: trim_indicator_ip
+      field: threat.indicator.ip
+      ignore_missing: true
+  - convert:
+      tag: validate_indicator_ip
+      field: threat.indicator.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_invalid_indicator_ip
+            field:
+              - threat.indicator.ip
+              - threat.indicator.type
+            ignore_missing: true
+        - append:
+            tag: flag_invalid_indicator_ip
+            field: error.message
+            value: TI Feed indicator IP is not a valid IPv4 or IPv6 address.
+        - append:
+            tag: preserve_invalid_indicator_ip_event
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
+        - set:
+            tag: mark_invalid_indicator_ip_outcome
+            field: event.outcome
+            value: failure
+        - set:
+            tag: mark_invalid_indicator_ip_kind
+            field: event.kind
+            value: pipeline_error
+  - script:
+      tag: classify_feed_indicator_ip
+      description: Set the ECS indicator type from the validated IPv4 or IPv6 address.
+      if: 'ctx.threat?.indicator?.ip != null'
+      lang: painless
+      source: >-
+        ctx.threat.indicator.type = ctx.threat.indicator.ip.toString().indexOf(':') >= 0 ? 'ipv6-addr' : 'ipv4-addr';
+  - set:
+      tag: set_feed_indicator_provider
+      field: threat.indicator.provider
+      value: Criminal IP
+      if: 'ctx.threat?.indicator?.ip != null'
+  - set:
+      tag: set_feed_success
+      field: event.outcome
+      value: success
+      if: "ctx.threat?.indicator?.ip != null && ctx.event?.outcome != 'failure'"
+  - append:
+      tag: append_related_indicator_ip
+      field: related.ip
+      value: '{{{threat.indicator.ip}}}'
+      allow_duplicates: false
+      if: 'ctx.threat?.indicator?.ip != null'
+  - remove:
+      tag: remove_feed_temporary_fields
+      field: _temp
+      ignore_missing: true
+on_failure:
+  - append:
+      tag: append_feed_pipeline_error_message
+      field: error.message
+      value: "Processor '{{{ _ingest.on_failure_processor_type }}}' with tag '{{{ _ingest.on_failure_processor_tag }}}' in pipeline '{{{ _ingest.pipeline }}}' failed: {{{ _ingest.on_failure_message }}}"
+  - set:
+      tag: set_feed_pipeline_error_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: preserve_failed_feed_original
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - set:
+      tag: set_feed_pipeline_error_outcome
+      field: event.outcome
+      value: failure
+  - remove:
+      tag: remove_failed_feed_temporary_fields
+      field:
+        - _temp
+        - threat.indicator.ip
+        - threat.indicator.type
+        - related.ip
+      ignore_missing: true

@@ -1,0 +1,182 @@
+---
+description: Normalize Criminal IP reports without merging vendor fields into ECS.
+processors:
+  - dot_expander:
+      tag: expand_cel_dotted_fields
+      field: '*'
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: 9.5.0
+  - rename:
+      tag: rename_message_to_event_original
+      if: 'ctx.event?.original == null'
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - remove:
+      tag: remove_message
+      if: 'ctx.event?.original != null'
+      field: message
+      ignore_missing: true
+  - json:
+      tag: parse_criminalip_response
+      field: event.original
+      target_field: _temp.report
+      if: 'ctx.event?.outcome != "failure" && ctx.event?.original != null'
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: enrichment
+  - append:
+      tag: append_event_category
+      field: event.category
+      value: threat
+      allow_duplicates: false
+  - append:
+      tag: append_event_type
+      field: event.type
+      value: indicator
+      allow_duplicates: false
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: criminalip
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: criminalip.ip_report
+  - set:
+      tag: set_threat_indicator_provider
+      field: threat.indicator.provider
+      value: Criminal IP
+  - trim:
+      tag: trim_report_indicator_ip
+      field: _temp.report.ip
+      ignore_missing: true
+  - convert:
+      tag: validate_report_indicator_ip
+      field: _temp.report.ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      tag: convert_report_status
+      field: _temp.report.status
+      type: long
+      ignore_missing: true
+  - rename:
+      tag: rename_report_ip
+      field: _temp.report.ip
+      target_field: threat.indicator.ip
+      ignore_missing: true
+  - script:
+      tag: classify_report_indicator_ip
+      description: Set the ECS indicator type from the validated IP address family.
+      if: 'ctx.threat?.indicator?.ip != null'
+      lang: painless
+      source: >-
+        def ip = ctx.threat.indicator.ip.toString();
+        ctx.threat.indicator.type = ip.indexOf(':') >= 0 ? 'ipv6-addr' : 'ipv4-addr';
+  - rename:
+      tag: rename_report_status
+      field: _temp.report.status
+      target_field: criminalip.status
+      ignore_missing: true
+  - rename:
+      tag: rename_report_score_inbound
+      field: _temp.report.score.inbound
+      target_field: criminalip.score.inbound
+      ignore_missing: true
+  - rename:
+      tag: rename_report_score_outbound
+      field: _temp.report.score.outbound
+      target_field: criminalip.score.outbound
+      ignore_missing: true
+  - rename:
+      tag: rename_report_issues_is_vpn
+      field: _temp.report.issues.is_vpn
+      target_field: criminalip.issues.is_vpn
+      ignore_missing: true
+  - rename:
+      tag: rename_report_issues_is_tor
+      field: _temp.report.issues.is_tor
+      target_field: criminalip.issues.is_tor
+      ignore_missing: true
+  - rename:
+      tag: rename_report_issues_is_proxy
+      field: _temp.report.issues.is_proxy
+      target_field: criminalip.issues.is_proxy
+      ignore_missing: true
+  - rename:
+      tag: rename_report_issues_is_scanner
+      field: _temp.report.issues.is_scanner
+      target_field: criminalip.issues.is_scanner
+      ignore_missing: true
+  - rename:
+      tag: rename_report_issues_is_darkweb
+      field: _temp.report.issues.is_darkweb
+      target_field: criminalip.issues.is_darkweb
+      ignore_missing: true
+  - rename:
+      tag: rename_report_issues_is_hosting
+      field: _temp.report.issues.is_hosting
+      target_field: criminalip.issues.is_hosting
+      ignore_missing: true
+  - rename:
+      tag: rename_report_issues_is_cloud
+      field: _temp.report.issues.is_cloud
+      target_field: criminalip.issues.is_cloud
+      ignore_missing: true
+  - append:
+      tag: append_related_indicator_ip
+      field: related.ip
+      value: '{{{threat.indicator.ip}}}'
+      allow_duplicates: false
+      if: 'ctx.threat?.indicator?.ip != null'
+  - set:
+      tag: set_report_outcome
+      field: event.outcome
+      value: success
+      if: "ctx.threat?.indicator?.ip != null && ctx.error?.message == null && (ctx.criminalip?.status == null || ctx.criminalip.status == 200)"
+  - set:
+      tag: set_failed_report_outcome
+      field: event.outcome
+      value: failure
+      if: "ctx.event?.outcome != 'success'"
+  - append:
+      tag: append_invalid_report_message
+      field: error.message
+      value: Criminal IP did not return a usable IP report. Check API access, quota, and the requested IP.
+      if: "ctx.event?.outcome == 'failure' && ctx.error?.message == null"
+  - append:
+      tag: preserve_unsuccessful_report_original
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: "ctx.event?.outcome == 'failure' && ctx.event?.original != null"
+  - remove:
+      tag: remove_report_temporary_fields
+      field: _temp
+      ignore_missing: true
+on_failure:
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: "Processor '{{{ _ingest.on_failure_processor_type }}}' with tag '{{{ _ingest.on_failure_processor_tag }}}' in pipeline '{{{ _ingest.pipeline }}}' failed: {{{ _ingest.on_failure_message }}}"
+  - set:
+      tag: set_pipeline_error_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: preserve_failed_report_original
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - set:
+      tag: set_pipeline_error_outcome
+      field: event.outcome
+      value: failure
+  - remove:
+      tag: remove_failed_report_temporary_fields
+      field: _temp
+      ignore_missing: true

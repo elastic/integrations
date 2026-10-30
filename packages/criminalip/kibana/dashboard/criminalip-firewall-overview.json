@@ -1,0 +1,1453 @@
+{
+    "attributes": {
+        "description": "Firewall communications, threat intelligence matches, and investigation context. Synthetic test events are excluded; a match alone is not proof of compromise.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncCursor": true,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "content": "## Firewall Threat Detection & Investigation\n[Investigate alerts](/app/security/alerts) · [Explore events](/app/discover) · [Manage rules](/app/security/rules) · [Optional IP lookups](/app/dashboards#/view/criminalip-ip-report-overview)\n\n\nCompare firewall communications with TI match evidence. A TI match is not proof of compromise. Cortex is a separate optional investigation path.",
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "criminalip-brand-header",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "criminalip-brand-header",
+                "type": "markdown"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "## 01 · Firewall Traffic\nReview communications across supported ECS firewall datasets. Vendor collectors must be configured separately; one listener does not automatically recognize every raw log format.",
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 4,
+                    "i": "criminalip-firewall-heading",
+                    "w": 48,
+                    "x": 0,
+                    "y": 9
+                },
+                "panelIndex": "criminalip-firewall-heading",
+                "type": "markdown"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": true,
+                                    "fieldFormats": {},
+                                    "id": "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02",
+                                    "managed": false,
+                                    "name": "logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "criminalip-log-summary-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "log_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "log_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Event Count",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "source_ip_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "source_ip_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Unique Source IPs",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "destination_ip_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "destination_ip_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Unique Destination IPs",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*\n| WHERE data_stream.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\", \"panw.panos\", \"juniper_srx.log\", \"cisco_asa.log\", \"cisco_ftd.log\")\n| WHERE MV_CONTAINS(event.category, \"network\")\n| WHERE (data_stream.namespace IS NULL OR data_stream.namespace != \"firewall_lab\")\n    AND NOT COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| STATS log_count = COUNT(*), source_ip_count = COUNT_DISTINCT(source.ip), destination_ip_count = COUNT_DISTINCT(destination.ip)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*\n| WHERE data_stream.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\", \"panw.panos\", \"juniper_srx.log\", \"cisco_asa.log\", \"cisco_ftd.log\")\n| WHERE MV_CONTAINS(event.category, \"network\")\n| WHERE (data_stream.namespace IS NULL OR data_stream.namespace != \"firewall_lab\")\n    AND NOT COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| STATS log_count = COUNT(*), source_ip_count = COUNT_DISTINCT(source.ip), destination_ip_count = COUNT_DISTINCT(destination.ip)"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "log_count"
+                                    },
+                                    {
+                                        "columnId": "source_ip_count"
+                                    },
+                                    {
+                                        "columnId": "destination_ip_count"
+                                    }
+                                ],
+                                "layerId": "criminalip-log-summary-layer",
+                                "layerType": "data",
+                                "showRowNumbers": true
+                            }
+                        },
+                        "title": "Firewall Log Summary",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "drilldowns": [],
+                    "enhancements": {},
+                    "type": "vis"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "criminalip-log-summary",
+                    "w": 48,
+                    "x": 0,
+                    "y": 13
+                },
+                "panelIndex": "criminalip-log-summary",
+                "title": "Firewall Log Summary",
+                "type": "vis",
+                "version": "8.9.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": true,
+                                    "fieldFormats": {},
+                                    "id": "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02",
+                                    "managed": false,
+                                    "name": "logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "criminalip-decisions-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "log_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "log_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Event Count",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "traffic_result",
+                                                    "customLabel": true,
+                                                    "fieldName": "traffic_result",
+                                                    "label": "Action / Session State",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*\n| WHERE data_stream.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\", \"panw.panos\", \"juniper_srx.log\", \"cisco_asa.log\", \"cisco_ftd.log\")\n| WHERE MV_CONTAINS(event.category, \"network\")\n| WHERE (data_stream.namespace IS NULL OR data_stream.namespace != \"firewall_lab\")\n    AND NOT COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| WHERE destination.ip IS NULL OR NOT CIDR_MATCH(destination.ip, \"ff00::/8\")\n| EVAL traffic_result = CASE(MV_CONTAINS(event.type, \"allowed\") AND MV_CONTAINS(event.type, \"denied\"), \"Unclassified\", MV_CONTAINS(event.type, \"denied\"), \"Denied\", MV_CONTAINS(event.type, \"allowed\"), \"Allowed\", event.dataset == \"criminalip.fortigate\" AND event.action IN (\"deny\", \"block\"), \"Denied\", event.dataset == \"criminalip.fortigate\" AND event.action IN (\"accept\", \"allow\"), \"Allowed\", event.action IN (\"start\", \"flow_started\"), \"Session Started\", event.action IN (\"close\", \"end\", \"flow_terminated\"), \"Session Ended\", event.action == \"timeout\", \"Timed Out\", \"Unclassified\")\n| STATS log_count = COUNT(*) BY traffic_result\n| SORT log_count DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*\n| WHERE data_stream.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\", \"panw.panos\", \"juniper_srx.log\", \"cisco_asa.log\", \"cisco_ftd.log\")\n| WHERE MV_CONTAINS(event.category, \"network\")\n| WHERE (data_stream.namespace IS NULL OR data_stream.namespace != \"firewall_lab\")\n    AND NOT COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| WHERE destination.ip IS NULL OR NOT CIDR_MATCH(destination.ip, \"ff00::/8\")\n| EVAL traffic_result = CASE(MV_CONTAINS(event.type, \"allowed\") AND MV_CONTAINS(event.type, \"denied\"), \"Unclassified\", MV_CONTAINS(event.type, \"denied\"), \"Denied\", MV_CONTAINS(event.type, \"allowed\"), \"Allowed\", event.dataset == \"criminalip.fortigate\" AND event.action IN (\"deny\", \"block\"), \"Denied\", event.dataset == \"criminalip.fortigate\" AND event.action IN (\"accept\", \"allow\"), \"Allowed\", event.action IN (\"start\", \"flow_started\"), \"Session Started\", event.action IN (\"close\", \"end\", \"flow_terminated\"), \"Session Ended\", event.action == \"timeout\", \"Timed Out\", \"Unclassified\")\n| STATS log_count = COUNT(*) BY traffic_result\n| SORT log_count DESC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "log_count"
+                                        ],
+                                        "layerId": "criminalip-decisions-layer",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "traffic_result"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Firewall Events by Action and Session State",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "drilldowns": [],
+                    "enhancements": {},
+                    "type": "vis"
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "criminalip-decisions",
+                    "w": 24,
+                    "x": 0,
+                    "y": 20
+                },
+                "panelIndex": "criminalip-decisions",
+                "title": "Firewall Events by Action and Session State",
+                "type": "vis",
+                "version": "8.9.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": true,
+                                    "fieldFormats": {},
+                                    "id": "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02",
+                                    "managed": false,
+                                    "name": "logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "criminalip-top-sources-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "log_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "log_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Event Count",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "source_ip",
+                                                    "customLabel": true,
+                                                    "fieldName": "source_ip",
+                                                    "label": "Source IP",
+                                                    "meta": {
+                                                        "esType": "ip",
+                                                        "type": "ip"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*\n| WHERE data_stream.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\", \"panw.panos\", \"juniper_srx.log\", \"cisco_asa.log\", \"cisco_ftd.log\")\n| WHERE MV_CONTAINS(event.category, \"network\")\n| WHERE (data_stream.namespace IS NULL OR data_stream.namespace != \"firewall_lab\")\n    AND NOT COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| WHERE destination.ip IS NULL OR NOT CIDR_MATCH(destination.ip, \"ff00::/8\")\n| WHERE source.ip IS NOT NULL\n| STATS log_count = COUNT(*) BY source_ip = source.ip\n| SORT log_count DESC, source_ip ASC\n| LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*\n| WHERE data_stream.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\", \"panw.panos\", \"juniper_srx.log\", \"cisco_asa.log\", \"cisco_ftd.log\")\n| WHERE MV_CONTAINS(event.category, \"network\")\n| WHERE (data_stream.namespace IS NULL OR data_stream.namespace != \"firewall_lab\")\n    AND NOT COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| WHERE destination.ip IS NULL OR NOT CIDR_MATCH(destination.ip, \"ff00::/8\")\n| WHERE source.ip IS NOT NULL\n| STATS log_count = COUNT(*) BY source_ip = source.ip\n| SORT log_count DESC, source_ip ASC\n| LIMIT 10"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "log_count"
+                                        ],
+                                        "layerId": "criminalip-top-sources-layer",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "source_ip"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Top 10 Source IPs",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "drilldowns": [],
+                    "enhancements": {},
+                    "type": "vis"
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "criminalip-top-sources",
+                    "w": 24,
+                    "x": 24,
+                    "y": 20
+                },
+                "panelIndex": "criminalip-top-sources",
+                "title": "Top 10 Source IPs",
+                "type": "vis",
+                "version": "8.9.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": true,
+                                    "fieldFormats": {},
+                                    "id": "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02",
+                                    "managed": false,
+                                    "name": "logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "criminalip-vendor-trend-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "log_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "log_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Event Count",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "event_hour",
+                                                    "customLabel": true,
+                                                    "fieldName": "event_hour",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "vendor",
+                                                    "customLabel": true,
+                                                    "fieldName": "vendor",
+                                                    "label": "Vendor",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*\n| WHERE data_stream.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\", \"panw.panos\", \"juniper_srx.log\", \"cisco_asa.log\", \"cisco_ftd.log\")\n| WHERE MV_CONTAINS(event.category, \"network\")\n| WHERE (data_stream.namespace IS NULL OR data_stream.namespace != \"firewall_lab\")\n    AND NOT COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| WHERE destination.ip IS NULL OR NOT CIDR_MATCH(destination.ip, \"ff00::/8\")\n| EVAL vendor = COALESCE(observer.vendor, \"Unknown\")\n| STATS log_count = COUNT(*) BY event_hour = BUCKET(@timestamp, 50, ?_tstart, ?_tend), vendor\n| SORT event_hour DESC, vendor ASC\n| LIMIT 10000\n| SORT event_hour ASC, vendor ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*\n| WHERE data_stream.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\", \"panw.panos\", \"juniper_srx.log\", \"cisco_asa.log\", \"cisco_ftd.log\")\n| WHERE MV_CONTAINS(event.category, \"network\")\n| WHERE (data_stream.namespace IS NULL OR data_stream.namespace != \"firewall_lab\")\n    AND NOT COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| WHERE destination.ip IS NULL OR NOT CIDR_MATCH(destination.ip, \"ff00::/8\")\n| EVAL vendor = COALESCE(observer.vendor, \"Unknown\")\n| STATS log_count = COUNT(*) BY event_hour = BUCKET(@timestamp, 50, ?_tstart, ?_tend), vendor\n| SORT event_hour DESC, vendor ASC\n| LIMIT 10000\n| SORT event_hour ASC, vendor ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "log_count"
+                                        ],
+                                        "layerId": "criminalip-vendor-trend-layer",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessors": [
+                                            "vendor"
+                                        ],
+                                        "xAccessor": "event_hour"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Firewall Log Trends by Vendor",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "drilldowns": [],
+                    "enhancements": {},
+                    "type": "vis"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "criminalip-vendor-trend",
+                    "w": 48,
+                    "x": 0,
+                    "y": 33
+                },
+                "panelIndex": "criminalip-vendor-trend",
+                "title": "Firewall Log Trends by Vendor",
+                "type": "vis",
+                "version": "8.9.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": true,
+                                    "fieldFormats": {},
+                                    "id": "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02",
+                                    "managed": false,
+                                    "name": "logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "criminalip-product-actions-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "log_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "log_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Event Count",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "firewall",
+                                                    "customLabel": true,
+                                                    "fieldName": "firewall",
+                                                    "label": "Vendor / Product",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "action",
+                                                    "customLabel": true,
+                                                    "fieldName": "action",
+                                                    "label": "Raw Action",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*\n| WHERE data_stream.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\", \"panw.panos\", \"juniper_srx.log\", \"cisco_asa.log\", \"cisco_ftd.log\")\n| WHERE MV_CONTAINS(event.category, \"network\")\n| WHERE (data_stream.namespace IS NULL OR data_stream.namespace != \"firewall_lab\")\n    AND NOT COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| WHERE destination.ip IS NULL OR NOT CIDR_MATCH(destination.ip, \"ff00::/8\")\n| EVAL firewall_vendor = COALESCE(observer.vendor, CASE(event.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\"), \"Fortinet\", event.dataset == \"panw.panos\", \"Palo Alto Networks\", event.dataset == \"juniper_srx.log\", \"Juniper\", event.dataset IN (\"cisco_asa.log\", \"cisco_ftd.log\"), \"Cisco\", \"Unknown\")), firewall_product = COALESCE(observer.product, CASE(event.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\"), \"FortiGate\", event.dataset == \"panw.panos\", \"PAN-OS\", event.dataset == \"juniper_srx.log\", \"SRX\", event.dataset == \"cisco_asa.log\", \"ASA\", event.dataset == \"cisco_ftd.log\", \"FTD\", \"Unknown\"))\n| EVAL firewall = CONCAT(firewall_vendor, \" / \", firewall_product)\n| EVAL action = COALESCE(event.action, \"No Action\")\n| STATS log_count = COUNT(*) BY firewall, action\n| SORT firewall ASC, action ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*\n| WHERE data_stream.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\", \"panw.panos\", \"juniper_srx.log\", \"cisco_asa.log\", \"cisco_ftd.log\")\n| WHERE MV_CONTAINS(event.category, \"network\")\n| WHERE (data_stream.namespace IS NULL OR data_stream.namespace != \"firewall_lab\")\n    AND NOT COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| WHERE destination.ip IS NULL OR NOT CIDR_MATCH(destination.ip, \"ff00::/8\")\n| EVAL firewall_vendor = COALESCE(observer.vendor, CASE(event.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\"), \"Fortinet\", event.dataset == \"panw.panos\", \"Palo Alto Networks\", event.dataset == \"juniper_srx.log\", \"Juniper\", event.dataset IN (\"cisco_asa.log\", \"cisco_ftd.log\"), \"Cisco\", \"Unknown\")), firewall_product = COALESCE(observer.product, CASE(event.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\"), \"FortiGate\", event.dataset == \"panw.panos\", \"PAN-OS\", event.dataset == \"juniper_srx.log\", \"SRX\", event.dataset == \"cisco_asa.log\", \"ASA\", event.dataset == \"cisco_ftd.log\", \"FTD\", \"Unknown\"))\n| EVAL firewall = CONCAT(firewall_vendor, \" / \", firewall_product)\n| EVAL action = COALESCE(event.action, \"No Action\")\n| STATS log_count = COUNT(*) BY firewall, action\n| SORT firewall ASC, action ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "log_count"
+                                        ],
+                                        "layerId": "criminalip-product-actions-layer",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessors": [
+                                            "action"
+                                        ],
+                                        "xAccessor": "firewall"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Raw Actions by Firewall Vendor and Product",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "drilldowns": [],
+                    "enhancements": {},
+                    "type": "vis"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "criminalip-product-actions",
+                    "w": 48,
+                    "x": 0,
+                    "y": 45
+                },
+                "panelIndex": "criminalip-product-actions",
+                "title": "Raw Actions by Firewall Vendor and Product",
+                "type": "vis",
+                "version": "8.9.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": true,
+                                    "fieldFormats": {},
+                                    "id": "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02",
+                                    "managed": false,
+                                    "name": "logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "criminalip-recent-traffic-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "event_date",
+                                                    "customLabel": true,
+                                                    "fieldName": "event_date",
+                                                    "label": "Event Date",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "event_time",
+                                                    "customLabel": true,
+                                                    "fieldName": "event_time",
+                                                    "label": "Event Time",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "traffic_result",
+                                                    "customLabel": true,
+                                                    "fieldName": "traffic_result",
+                                                    "label": "Action / Session State",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "event.action",
+                                                    "customLabel": true,
+                                                    "fieldName": "event.action",
+                                                    "label": "Raw Action",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "source.ip",
+                                                    "customLabel": true,
+                                                    "fieldName": "source.ip",
+                                                    "label": "Source IP",
+                                                    "meta": {
+                                                        "esType": "ip",
+                                                        "type": "ip"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "destination.ip",
+                                                    "customLabel": true,
+                                                    "fieldName": "destination.ip",
+                                                    "label": "Destination IP",
+                                                    "meta": {
+                                                        "esType": "ip",
+                                                        "type": "ip"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "protocol",
+                                                    "customLabel": true,
+                                                    "fieldName": "protocol",
+                                                    "label": "Protocol",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "firewall",
+                                                    "customLabel": true,
+                                                    "fieldName": "firewall",
+                                                    "label": "Vendor / Product",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "traffic_scope",
+                                                    "customLabel": true,
+                                                    "fieldName": "traffic_scope",
+                                                    "label": "Traffic Type",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "source_port_text",
+                                                    "customLabel": true,
+                                                    "fieldName": "source_port_text",
+                                                    "label": "Source Port",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "destination_port_text",
+                                                    "customLabel": true,
+                                                    "fieldName": "destination_port_text",
+                                                    "label": "Destination Port",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "4fa739741efc95f91116a56fb53d0e4133a493170f3b6f94ed7ce2af4cb9dd02",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*\n| WHERE data_stream.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\", \"panw.panos\", \"juniper_srx.log\", \"cisco_asa.log\", \"cisco_ftd.log\")\n| WHERE MV_CONTAINS(event.category, \"network\")\n| WHERE (data_stream.namespace IS NULL OR data_stream.namespace != \"firewall_lab\")\n    AND NOT COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| EVAL traffic_result = CASE(MV_CONTAINS(event.type, \"allowed\") AND MV_CONTAINS(event.type, \"denied\"), \"Unclassified\", MV_CONTAINS(event.type, \"denied\"), \"Denied\", MV_CONTAINS(event.type, \"allowed\"), \"Allowed\", event.dataset == \"criminalip.fortigate\" AND event.action IN (\"deny\", \"block\"), \"Denied\", event.dataset == \"criminalip.fortigate\" AND event.action IN (\"accept\", \"allow\"), \"Allowed\", event.action IN (\"start\", \"flow_started\"), \"Session Started\", event.action IN (\"close\", \"end\", \"flow_terminated\"), \"Session Ended\", event.action == \"timeout\", \"Timed Out\", \"Unclassified\")\n| EVAL firewall_vendor = COALESCE(observer.vendor, CASE(event.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\"), \"Fortinet\", event.dataset == \"panw.panos\", \"Palo Alto Networks\", event.dataset == \"juniper_srx.log\", \"Juniper\", event.dataset IN (\"cisco_asa.log\", \"cisco_ftd.log\"), \"Cisco\", \"Unknown\")), firewall_product = COALESCE(observer.product, CASE(event.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\"), \"FortiGate\", event.dataset == \"panw.panos\", \"PAN-OS\", event.dataset == \"juniper_srx.log\", \"SRX\", event.dataset == \"cisco_asa.log\", \"ASA\", event.dataset == \"cisco_ftd.log\", \"FTD\", \"Unknown\"))\n| EVAL firewall = CONCAT(firewall_vendor, \" / \", firewall_product)\n| EVAL protocol_message = COALESCE(message, event.original)\n| GROK protocol_message \"proto=%{NUMBER:protocol_number}\"\n| EVAL protocol = COALESCE(network.transport, CASE(protocol_number == \"6\", \"tcp\", protocol_number == \"17\", \"udp\", protocol_number == \"1\", \"icmp\", protocol_number == \"58\", \"ipv6-icmp\", null)), event_date = DATE_FORMAT(\"yyyy-MM-dd\", @timestamp), event_time = DATE_FORMAT(\"HH:mm:ss\", @timestamp), traffic_scope = CASE(destination.ip IS NOT NULL AND CIDR_MATCH(destination.ip, \"ff00::/8\"), \"IPv6 Multicast\", (source.ip IS NOT NULL AND CIDR_MATCH(source.ip, \"fe80::/10\")) OR (destination.ip IS NOT NULL AND CIDR_MATCH(destination.ip, \"fe80::/10\")), \"IPv6 Link-Local\", \"Other Traffic\"), source_port_text = TO_STRING(source.port), destination_port_text = TO_STRING(destination.port)\n| SORT @timestamp DESC\n| KEEP @timestamp, event_date, event_time, traffic_result, event.action, source.ip, destination.ip, protocol, firewall, traffic_scope, source_port_text, destination_port_text\n| LIMIT 50"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.fortigate-*, logs-fortinet_fortigate.log-*, logs-panw.panos-*, logs-juniper_srx.log-*, logs-cisco_asa.log-*, logs-cisco_ftd.log-*\n| WHERE data_stream.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\", \"panw.panos\", \"juniper_srx.log\", \"cisco_asa.log\", \"cisco_ftd.log\")\n| WHERE MV_CONTAINS(event.category, \"network\")\n| WHERE (data_stream.namespace IS NULL OR data_stream.namespace != \"firewall_lab\")\n    AND NOT COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| EVAL traffic_result = CASE(MV_CONTAINS(event.type, \"allowed\") AND MV_CONTAINS(event.type, \"denied\"), \"Unclassified\", MV_CONTAINS(event.type, \"denied\"), \"Denied\", MV_CONTAINS(event.type, \"allowed\"), \"Allowed\", event.dataset == \"criminalip.fortigate\" AND event.action IN (\"deny\", \"block\"), \"Denied\", event.dataset == \"criminalip.fortigate\" AND event.action IN (\"accept\", \"allow\"), \"Allowed\", event.action IN (\"start\", \"flow_started\"), \"Session Started\", event.action IN (\"close\", \"end\", \"flow_terminated\"), \"Session Ended\", event.action == \"timeout\", \"Timed Out\", \"Unclassified\")\n| EVAL firewall_vendor = COALESCE(observer.vendor, CASE(event.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\"), \"Fortinet\", event.dataset == \"panw.panos\", \"Palo Alto Networks\", event.dataset == \"juniper_srx.log\", \"Juniper\", event.dataset IN (\"cisco_asa.log\", \"cisco_ftd.log\"), \"Cisco\", \"Unknown\")), firewall_product = COALESCE(observer.product, CASE(event.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\"), \"FortiGate\", event.dataset == \"panw.panos\", \"PAN-OS\", event.dataset == \"juniper_srx.log\", \"SRX\", event.dataset == \"cisco_asa.log\", \"ASA\", event.dataset == \"cisco_ftd.log\", \"FTD\", \"Unknown\"))\n| EVAL firewall = CONCAT(firewall_vendor, \" / \", firewall_product)\n| EVAL protocol_message = COALESCE(message, event.original)\n| GROK protocol_message \"proto=%{NUMBER:protocol_number}\"\n| EVAL protocol = COALESCE(network.transport, CASE(protocol_number == \"6\", \"tcp\", protocol_number == \"17\", \"udp\", protocol_number == \"1\", \"icmp\", protocol_number == \"58\", \"ipv6-icmp\", null)), event_date = DATE_FORMAT(\"yyyy-MM-dd\", @timestamp), event_time = DATE_FORMAT(\"HH:mm:ss\", @timestamp), traffic_scope = CASE(destination.ip IS NOT NULL AND CIDR_MATCH(destination.ip, \"ff00::/8\"), \"IPv6 Multicast\", (source.ip IS NOT NULL AND CIDR_MATCH(source.ip, \"fe80::/10\")) OR (destination.ip IS NOT NULL AND CIDR_MATCH(destination.ip, \"fe80::/10\")), \"IPv6 Link-Local\", \"Other Traffic\"), source_port_text = TO_STRING(source.port), destination_port_text = TO_STRING(destination.port)\n| SORT @timestamp DESC\n| KEEP @timestamp, event_date, event_time, traffic_result, event.action, source.ip, destination.ip, protocol, firewall, traffic_scope, source_port_text, destination_port_text\n| LIMIT 50"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "event_date"
+                                    },
+                                    {
+                                        "columnId": "event_time"
+                                    },
+                                    {
+                                        "columnId": "traffic_result"
+                                    },
+                                    {
+                                        "columnId": "event.action"
+                                    },
+                                    {
+                                        "columnId": "source.ip"
+                                    },
+                                    {
+                                        "columnId": "destination.ip"
+                                    },
+                                    {
+                                        "columnId": "protocol"
+                                    },
+                                    {
+                                        "columnId": "firewall"
+                                    },
+                                    {
+                                        "columnId": "traffic_scope"
+                                    },
+                                    {
+                                        "columnId": "source_port_text"
+                                    },
+                                    {
+                                        "columnId": "destination_port_text"
+                                    }
+                                ],
+                                "layerId": "criminalip-recent-traffic-layer",
+                                "layerType": "data",
+                                "showRowNumbers": true
+                            }
+                        },
+                        "title": "Recent Firewall Events · Details",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "drilldowns": [],
+                    "enhancements": {},
+                    "type": "vis"
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "criminalip-recent-traffic",
+                    "w": 48,
+                    "x": 0,
+                    "y": 57
+                },
+                "panelIndex": "criminalip-recent-traffic",
+                "title": "Recent Firewall Events · Details",
+                "type": "vis",
+                "version": "8.9.0"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "## 02 · Threat Intelligence Matches\nWhich endpoints communicated, what did the firewall do, and which IP actually matched? Use alert details for indicator evidence and the original event. Default Space only.",
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 4,
+                    "i": "criminalip-ti-heading",
+                    "w": 48,
+                    "x": 0,
+                    "y": 73
+                },
+                "panelIndex": "criminalip-ti-heading",
+                "type": "markdown"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5": {
+                                    "allowHidden": true,
+                                    "allowNoIndex": true,
+                                    "fieldFormats": {},
+                                    "id": "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5",
+                                    "managed": false,
+                                    "name": ".alerts-security.alerts-default",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": ".alerts-security.alerts-default",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5",
+                                            "timeField": "@timestamp",
+                                            "title": ".alerts-security.alerts-default"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "criminalip-alert-summary-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "alert_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "alert_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Total Alerts",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "open_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "open_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Open",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "investigating_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "investigating_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Acknowledged",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "closed_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "closed_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Closed",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM .alerts-security.alerts-default\n| WHERE kibana.alert.rule.rule_id == \"66f68655-8d93-4f42-824e-e6048b386207\"\n| WHERE (data_stream.namespace IS NULL OR data_stream.namespace != \"firewall_lab\")\n    AND NOT COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| STATS alert_count = COUNT(*), open_count = COUNT(*) WHERE kibana.alert.workflow_status == \"open\", investigating_count = COUNT(*) WHERE kibana.alert.workflow_status == \"acknowledged\", closed_count = COUNT(*) WHERE kibana.alert.workflow_status == \"closed\""
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM .alerts-security.alerts-default\n| WHERE kibana.alert.rule.rule_id == \"66f68655-8d93-4f42-824e-e6048b386207\"\n| WHERE (data_stream.namespace IS NULL OR data_stream.namespace != \"firewall_lab\")\n    AND NOT COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| STATS alert_count = COUNT(*), open_count = COUNT(*) WHERE kibana.alert.workflow_status == \"open\", investigating_count = COUNT(*) WHERE kibana.alert.workflow_status == \"acknowledged\", closed_count = COUNT(*) WHERE kibana.alert.workflow_status == \"closed\""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "alert_count"
+                                    },
+                                    {
+                                        "columnId": "open_count"
+                                    },
+                                    {
+                                        "columnId": "investigating_count"
+                                    },
+                                    {
+                                        "columnId": "closed_count"
+                                    }
+                                ],
+                                "layerId": "criminalip-alert-summary-layer",
+                                "layerType": "data",
+                                "showRowNumbers": true
+                            }
+                        },
+                        "title": "Indicator Match Alert Summary",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "drilldowns": [],
+                    "enhancements": {},
+                    "type": "vis"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "criminalip-alert-summary",
+                    "w": 48,
+                    "x": 0,
+                    "y": 77
+                },
+                "panelIndex": "criminalip-alert-summary",
+                "title": "Indicator Match Alert Summary",
+                "type": "vis",
+                "version": "8.9.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5": {
+                                    "allowHidden": true,
+                                    "allowNoIndex": true,
+                                    "fieldFormats": {},
+                                    "id": "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5",
+                                    "managed": false,
+                                    "name": ".alerts-security.alerts-default",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": ".alerts-security.alerts-default",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5",
+                                            "timeField": "@timestamp",
+                                            "title": ".alerts-security.alerts-default"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "criminalip-alert-trend-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "alert_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "alert_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Alert Count",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "alert_hour",
+                                                    "customLabel": true,
+                                                    "fieldName": "alert_hour",
+                                                    "label": "Alert Creation Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM .alerts-security.alerts-default\n| WHERE kibana.alert.rule.rule_id == \"66f68655-8d93-4f42-824e-e6048b386207\"\n| WHERE (data_stream.namespace IS NULL OR data_stream.namespace != \"firewall_lab\")\n    AND NOT COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| STATS alert_count = COUNT(*) BY alert_hour = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT alert_hour DESC\n| LIMIT 1000\n| SORT alert_hour ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM .alerts-security.alerts-default\n| WHERE kibana.alert.rule.rule_id == \"66f68655-8d93-4f42-824e-e6048b386207\"\n| WHERE (data_stream.namespace IS NULL OR data_stream.namespace != \"firewall_lab\")\n    AND NOT COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| STATS alert_count = COUNT(*) BY alert_hour = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT alert_hour DESC\n| LIMIT 1000\n| SORT alert_hour ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "alert_count"
+                                        ],
+                                        "layerId": "criminalip-alert-trend-layer",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "alert_hour"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Indicator Match Alerts over Time",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "drilldowns": [],
+                    "enhancements": {},
+                    "type": "vis"
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "criminalip-alert-trend",
+                    "w": 24,
+                    "x": 0,
+                    "y": 84
+                },
+                "panelIndex": "criminalip-alert-trend",
+                "title": "Indicator Match Alerts over Time",
+                "type": "vis",
+                "version": "8.9.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "aggs": [],
+                        "data": {
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": "kibana.alert.rule.rule_id: \"66f68655-8d93-4f42-824e-e6048b386207\""
+                                }
+                            }
+                        },
+                        "params": {
+                            "spec": "{\"$schema\": \"https://vega.github.io/schema/vega/v5.json\", \"description\": \"Actual IP match evidence from this rule's threat.enrichments; not endpoint IP guesses.\", \"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}, \"padding\": {\"left\": 150, \"right\": 20, \"top\": 15, \"bottom\": 45}, \"data\": [{\"name\": \"matched_ips\", \"url\": {\"index\": \".alerts-security.alerts-default\", \"body\": {\"size\": 0, \"query\": {\"bool\": {\"must\": [\"%dashboard_context-must_clause%\"], \"filter\": [\"%dashboard_context-filter_clause%\", {\"term\": {\"kibana.alert.rule.rule_id\": \"66f68655-8d93-4f42-824e-e6048b386207\"}}, {\"range\": {\"@timestamp\": {\"%timefilter%\": true}}}], \"must_not\": [\"%dashboard_context-must_not_clause%\", {\"term\": {\"data_stream.namespace\": \"firewall_lab\"}}, {\"term\": {\"tags\": \"synthetic\"}}]}}, \"aggs\": {\"enrichments\": {\"nested\": {\"path\": \"threat.enrichments\"}, \"aggs\": {\"ip_matches\": {\"filter\": {\"bool\": {\"filter\": [{\"terms\": {\"threat.enrichments.matched.field\": [\"source.ip\", \"destination.ip\"]}}, {\"term\": {\"threat.enrichments.matched.type\": \"indicator_match_rule\"}}]}}, \"aggs\": {\"ips\": {\"terms\": {\"field\": \"threat.enrichments.matched.atomic\", \"size\": 10, \"shard_size\": 100, \"order\": {\"alerts\": \"desc\"}}, \"aggs\": {\"alerts\": {\"reverse_nested\": {}}}}}}}}}}}, \"format\": {\"property\": \"aggregations.enrichments.ip_matches.ips.buckets\"}, \"transform\": [{\"type\": \"formula\", \"expr\": \"datum.alerts.doc_count\", \"as\": \"alert_count\"}, {\"type\": \"collect\", \"sort\": {\"field\": \"alert_count\", \"order\": \"descending\"}}]}], \"scales\": [{\"name\": \"y\", \"type\": \"band\", \"domain\": {\"data\": \"matched_ips\", \"field\": \"key\"}, \"range\": \"height\", \"padding\": 0.2}, {\"name\": \"x\", \"type\": \"linear\", \"range\": \"width\", \"zero\": true, \"nice\": true, \"domain\": {\"signal\": \"length(data('matched_ips')) ? [0, max(1, extent(pluck(data('matched_ips'), 'alert_count'))[1])] : [0, 1]\"}}], \"axes\": [{\"orient\": \"left\", \"scale\": \"y\", \"title\": \"Matched IP\", \"labelLimit\": 145, \"labelColor\": \"#cbd5e1\", \"titleColor\": \"#94a3b8\"}, {\"orient\": \"bottom\", \"scale\": \"x\", \"title\": \"Related Alerts\", \"tickMinStep\": 1, \"labelColor\": \"#cbd5e1\", \"titleColor\": \"#94a3b8\"}], \"marks\": [{\"type\": \"rect\", \"from\": {\"data\": \"matched_ips\"}, \"encode\": {\"update\": {\"x\": {\"scale\": \"x\", \"value\": 0}, \"x2\": {\"scale\": \"x\", \"field\": \"alert_count\"}, \"y\": {\"scale\": \"y\", \"field\": \"key\"}, \"height\": {\"scale\": \"y\", \"band\": 1}, \"fill\": {\"value\": \"#5487e0\"}, \"tooltip\": {\"signal\": \"{'Matched IP': datum.key, 'Related Alerts': datum.alert_count}\"}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"fill\": {\"value\": \"#94a3b8\"}, \"fontSize\": {\"value\": 14}, \"text\": {\"signal\": \"length(data('matched_ips')) ? '' : 'No alerts with matched IP evidence'\"}}}}], \"background\": \"#111827\"}"
+                        },
+                        "title": "Top 10 Matched IPs · Alert Evidence",
+                        "type": "vega",
+                        "uiState": {}
+                    },
+                    "type": "visualization"
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "criminalip-ti-matched-ips",
+                    "w": 24,
+                    "x": 24,
+                    "y": 84
+                },
+                "panelIndex": "criminalip-ti-matched-ips",
+                "title": "Top 10 Matched IPs · Alert Evidence",
+                "type": "visualization",
+                "version": "8.9.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5": {
+                                    "allowHidden": true,
+                                    "allowNoIndex": true,
+                                    "fieldFormats": {},
+                                    "id": "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5",
+                                    "managed": false,
+                                    "name": ".alerts-security.alerts-default",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": ".alerts-security.alerts-default",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5",
+                                            "timeField": "@timestamp",
+                                            "title": ".alerts-security.alerts-default"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "criminalip-recent-alerts-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "@timestamp",
+                                                    "customLabel": true,
+                                                    "fieldName": "@timestamp",
+                                                    "label": "Alert Creation Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "kibana.alert.original_time",
+                                                    "customLabel": true,
+                                                    "fieldName": "kibana.alert.original_time",
+                                                    "label": "Original Event Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "source.ip",
+                                                    "customLabel": true,
+                                                    "fieldName": "source.ip",
+                                                    "label": "Source IP",
+                                                    "meta": {
+                                                        "esType": "ip",
+                                                        "type": "ip"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "source.port",
+                                                    "customLabel": true,
+                                                    "fieldName": "source.port",
+                                                    "label": "Source Port",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "destination.ip",
+                                                    "customLabel": true,
+                                                    "fieldName": "destination.ip",
+                                                    "label": "Destination IP",
+                                                    "meta": {
+                                                        "esType": "ip",
+                                                        "type": "ip"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "destination.port",
+                                                    "customLabel": true,
+                                                    "fieldName": "destination.port",
+                                                    "label": "Destination Port",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "firewall",
+                                                    "customLabel": true,
+                                                    "fieldName": "firewall",
+                                                    "label": "Vendor / Product",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "traffic_result",
+                                                    "customLabel": true,
+                                                    "fieldName": "traffic_result",
+                                                    "label": "Action / Session State",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "event.action",
+                                                    "customLabel": true,
+                                                    "fieldName": "event.action",
+                                                    "label": "Raw Action",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "network.transport",
+                                                    "customLabel": true,
+                                                    "fieldName": "network.transport",
+                                                    "label": "Transport",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "kibana.alert.workflow_status",
+                                                    "customLabel": true,
+                                                    "fieldName": "kibana.alert.workflow_status",
+                                                    "label": "Alert Status",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "26d0b4d79d079b9b275fdc1da1fc9de22db4d7b46c3254c151d4d7e397c08cf5",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM .alerts-security.alerts-default\n| WHERE kibana.alert.rule.rule_id == \"66f68655-8d93-4f42-824e-e6048b386207\"\n| WHERE (data_stream.namespace IS NULL OR data_stream.namespace != \"firewall_lab\")\n    AND NOT COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| EVAL traffic_result = CASE(MV_CONTAINS(event.type, \"allowed\") AND MV_CONTAINS(event.type, \"denied\"), \"Unclassified\", MV_CONTAINS(event.type, \"denied\"), \"Denied\", MV_CONTAINS(event.type, \"allowed\"), \"Allowed\", event.dataset == \"criminalip.fortigate\" AND event.action IN (\"deny\", \"block\"), \"Denied\", event.dataset == \"criminalip.fortigate\" AND event.action IN (\"accept\", \"allow\"), \"Allowed\", event.action IN (\"start\", \"flow_started\"), \"Session Started\", event.action IN (\"close\", \"end\", \"flow_terminated\"), \"Session Ended\", event.action == \"timeout\", \"Timed Out\", \"Unclassified\")\n| EVAL firewall_vendor = COALESCE(observer.vendor, CASE(event.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\"), \"Fortinet\", event.dataset == \"panw.panos\", \"Palo Alto Networks\", event.dataset == \"juniper_srx.log\", \"Juniper\", event.dataset IN (\"cisco_asa.log\", \"cisco_ftd.log\"), \"Cisco\", \"Unknown\")), firewall_product = COALESCE(observer.product, CASE(event.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\"), \"FortiGate\", event.dataset == \"panw.panos\", \"PAN-OS\", event.dataset == \"juniper_srx.log\", \"SRX\", event.dataset == \"cisco_asa.log\", \"ASA\", event.dataset == \"cisco_ftd.log\", \"FTD\", \"Unknown\"))\n| EVAL firewall = CONCAT(firewall_vendor, \" / \", firewall_product)\n| SORT @timestamp DESC\n| KEEP @timestamp, kibana.alert.original_time, source.ip, source.port, destination.ip, destination.port, firewall, traffic_result, event.action, network.transport, kibana.alert.workflow_status\n| LIMIT 50"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM .alerts-security.alerts-default\n| WHERE kibana.alert.rule.rule_id == \"66f68655-8d93-4f42-824e-e6048b386207\"\n| WHERE (data_stream.namespace IS NULL OR data_stream.namespace != \"firewall_lab\")\n    AND NOT COALESCE(MV_CONTAINS(tags, \"synthetic\"), false)\n| EVAL traffic_result = CASE(MV_CONTAINS(event.type, \"allowed\") AND MV_CONTAINS(event.type, \"denied\"), \"Unclassified\", MV_CONTAINS(event.type, \"denied\"), \"Denied\", MV_CONTAINS(event.type, \"allowed\"), \"Allowed\", event.dataset == \"criminalip.fortigate\" AND event.action IN (\"deny\", \"block\"), \"Denied\", event.dataset == \"criminalip.fortigate\" AND event.action IN (\"accept\", \"allow\"), \"Allowed\", event.action IN (\"start\", \"flow_started\"), \"Session Started\", event.action IN (\"close\", \"end\", \"flow_terminated\"), \"Session Ended\", event.action == \"timeout\", \"Timed Out\", \"Unclassified\")\n| EVAL firewall_vendor = COALESCE(observer.vendor, CASE(event.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\"), \"Fortinet\", event.dataset == \"panw.panos\", \"Palo Alto Networks\", event.dataset == \"juniper_srx.log\", \"Juniper\", event.dataset IN (\"cisco_asa.log\", \"cisco_ftd.log\"), \"Cisco\", \"Unknown\")), firewall_product = COALESCE(observer.product, CASE(event.dataset IN (\"criminalip.fortigate\", \"fortinet_fortigate.log\"), \"FortiGate\", event.dataset == \"panw.panos\", \"PAN-OS\", event.dataset == \"juniper_srx.log\", \"SRX\", event.dataset == \"cisco_asa.log\", \"ASA\", event.dataset == \"cisco_ftd.log\", \"FTD\", \"Unknown\"))\n| EVAL firewall = CONCAT(firewall_vendor, \" / \", firewall_product)\n| SORT @timestamp DESC\n| KEEP @timestamp, kibana.alert.original_time, source.ip, source.port, destination.ip, destination.port, firewall, traffic_result, event.action, network.transport, kibana.alert.workflow_status\n| LIMIT 50"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "@timestamp",
+                                        "width": 240
+                                    },
+                                    {
+                                        "columnId": "kibana.alert.original_time",
+                                        "width": 240
+                                    },
+                                    {
+                                        "columnId": "source.ip",
+                                        "width": 170
+                                    },
+                                    {
+                                        "columnId": "source.port"
+                                    },
+                                    {
+                                        "columnId": "destination.ip",
+                                        "width": 170
+                                    },
+                                    {
+                                        "columnId": "destination.port"
+                                    },
+                                    {
+                                        "columnId": "firewall",
+                                        "width": 210
+                                    },
+                                    {
+                                        "columnId": "traffic_result",
+                                        "width": 170
+                                    },
+                                    {
+                                        "columnId": "event.action",
+                                        "width": 160
+                                    },
+                                    {
+                                        "columnId": "network.transport"
+                                    },
+                                    {
+                                        "columnId": "kibana.alert.workflow_status"
+                                    }
+                                ],
+                                "layerId": "criminalip-recent-alerts-layer",
+                                "layerType": "data",
+                                "showRowNumbers": true
+                            }
+                        },
+                        "title": "Matched Communications · Alert Details",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "drilldowns": [],
+                    "enhancements": {},
+                    "type": "vis"
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "criminalip-recent-alerts",
+                    "w": 48,
+                    "x": 0,
+                    "y": 97
+                },
+                "panelIndex": "criminalip-recent-alerts",
+                "title": "Matched Communications · Alert Details",
+                "type": "vis",
+                "version": "8.9.0"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "## 03 · Optional Cortex Results\n\nThe separately distributed Criminal IP analyzer can write reports to its configured `criminalip-cortex-results` index. This integration does not install a Cortex data stream or result visualizations. Use Discover with a matching data view to inspect analyzer output.",
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "criminalip-cortex-help",
+                    "w": 48,
+                    "x": 0,
+                    "y": 110
+                },
+                "panelIndex": "criminalip-cortex-help",
+                "type": "markdown"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "### Setup and Reading Notes\n\nReview stored events from supported firewalls and alerts from the Criminal IP rule. Configure the Agent, TI Feed, and firewall log forwarding to collect data.\n\n- Install `Criminal IP Firewall Indicator Match` from **Rules → Add Elastic rules**, verify collection and TI data, then enable it. Automatic blocking is outside the current scope.\n- Events in the `firewall_lab` namespace or tagged `synthetic` are excluded. Verify the origin and significance of other events during investigation.\n- Comparison charts exclude IPv6 multicast destinations (`ff00::/8`); summary and recent-event tables retain them, so totals may differ.\n- Event, connection, attack, and alert counts describe different things. `start`/`close`/`timeout` are shown as session start/end/timeout.\n- Dates and times follow the Kibana time zone. Missing protocol or port values appear blank.\n- TI alert panels target the **default Space**. For another Space, duplicate the managed dashboard in the target Space and edit the copy. Change the copy's alert ES|QL `FROM` clauses and the matched IP chart's `index` to `.alerts-security.alerts-<space-id>`. A missing index before the first alert may produce a panel error.\n- The matched IP chart uses actual alert evidence and counts duplicate indicators for the same IP once per alert. Multiple matched IPs can make IP-specific totals exceed total alerts. Check provider and match fields in alert details.\n\n[View rules](/app/security/rules) · [View source events](/app/discover)",
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "criminalip-install-help",
+                    "w": 48,
+                    "x": 0,
+                    "y": 118
+                },
+                "panelIndex": "criminalip-install-help",
+                "type": "markdown"
+            }
+        ],
+        "timeFrom": "now-24h",
+        "timeRestore": true,
+        "timeTo": "now",
+        "title": "[Logs Criminal IP] Firewall Threat Detection and Threat Intelligence"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-10-28T05:23:48.049Z",
+    "id": "criminalip-firewall-overview",
+    "references": [],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0"
+}

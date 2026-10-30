@@ -1,0 +1,618 @@
+{
+    "attributes": {
+        "description": "Optional reports for explicitly configured IPs. Not observed network activity, automatic log enrichment, or detection alerts. Use the firewall TI dashboard for the primary investigation workflow.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncCursor": true,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "content": "## Optional Investigation · Configured IP Reports\n[Explore reports](/app/discover) · [Firewall TI investigation](/app/dashboards#/view/criminalip-firewall-overview)\n\nEnable **Criminal IP API** on an Elastic Agent and configure your key, IPs, and interval. Each distinct IP consumes quota. This input does not select IPs from logs or automatically enrich alerts.\n\nCounts are stored reports, not attacks. Times show collection, not provider observation. See reading notes below for limitations and troubleshooting.",
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "criminalip-api-intro",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "criminalip-api-intro",
+                "type": "markdown"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "1893a2c338478ed87f4f18495644112ee29cabd6f8b06591bdf251f2eb129ba5": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": true,
+                                    "fieldFormats": {},
+                                    "id": "1893a2c338478ed87f4f18495644112ee29cabd6f8b06591bdf251f2eb129ba5",
+                                    "managed": false,
+                                    "name": "logs-criminalip.ip_report-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-criminalip.ip_report-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "1893a2c338478ed87f4f18495644112ee29cabd6f8b06591bdf251f2eb129ba5",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-criminalip.ip_report-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "criminalip-api-summary-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "report_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "report_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Stored Reports",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "unique_ips",
+                                                    "customLabel": true,
+                                                    "fieldName": "unique_ips",
+                                                    "inMetricDimension": true,
+                                                    "label": "Investigated IPs",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "last_collected",
+                                                    "customLabel": true,
+                                                    "fieldName": "last_collected",
+                                                    "inMetricDimension": true,
+                                                    "label": "Last Collection",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "1893a2c338478ed87f4f18495644112ee29cabd6f8b06591bdf251f2eb129ba5",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.ip_report-*\n| WHERE event.dataset == \"criminalip.ip_report\"\n| WHERE threat.indicator.ip IS NOT NULL AND (event.kind IS NULL OR event.kind != \"pipeline_error\")\n| WHERE event.outcome IS NULL OR event.outcome != \"failure\"\n| WHERE error.message IS NULL\n| STATS report_count = COUNT(*), unique_ips = COUNT_DISTINCT(threat.indicator.ip), last_collected = MAX(@timestamp)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.ip_report-*\n| WHERE event.dataset == \"criminalip.ip_report\"\n| WHERE threat.indicator.ip IS NOT NULL AND (event.kind IS NULL OR event.kind != \"pipeline_error\")\n| WHERE event.outcome IS NULL OR event.outcome != \"failure\"\n| WHERE error.message IS NULL\n| STATS report_count = COUNT(*), unique_ips = COUNT_DISTINCT(threat.indicator.ip), last_collected = MAX(@timestamp)"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "report_count"
+                                    },
+                                    {
+                                        "columnId": "unique_ips"
+                                    },
+                                    {
+                                        "columnId": "last_collected"
+                                    }
+                                ],
+                                "layerId": "criminalip-api-summary-layer",
+                                "layerType": "data",
+                                "showRowNumbers": true
+                            }
+                        },
+                        "title": "Report Collection Summary",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "drilldowns": [],
+                    "enhancements": {},
+                    "type": "vis"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "criminalip-api-summary",
+                    "w": 48,
+                    "x": 0,
+                    "y": 11
+                },
+                "panelIndex": "criminalip-api-summary",
+                "title": "Report Collection Summary",
+                "type": "vis",
+                "version": "8.9.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "1893a2c338478ed87f4f18495644112ee29cabd6f8b06591bdf251f2eb129ba5": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": true,
+                                    "fieldFormats": {},
+                                    "id": "1893a2c338478ed87f4f18495644112ee29cabd6f8b06591bdf251f2eb129ba5",
+                                    "managed": false,
+                                    "name": "logs-criminalip.ip_report-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-criminalip.ip_report-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "1893a2c338478ed87f4f18495644112ee29cabd6f8b06591bdf251f2eb129ba5",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-criminalip.ip_report-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "criminalip-api-risk-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "report_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "report_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Reports",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "risk",
+                                                    "customLabel": true,
+                                                    "fieldName": "risk",
+                                                    "label": "Inbound Risk",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "1893a2c338478ed87f4f18495644112ee29cabd6f8b06591bdf251f2eb129ba5",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.ip_report-*\n| WHERE event.dataset == \"criminalip.ip_report\"\n| WHERE threat.indicator.ip IS NOT NULL AND (event.kind IS NULL OR event.kind != \"pipeline_error\")\n| WHERE event.outcome IS NULL OR event.outcome != \"failure\"\n| WHERE error.message IS NULL\n| EVAL risk = COALESCE(criminalip.score.inbound, \"Not Available\")\n| STATS report_count = COUNT(*) BY risk\n| SORT report_count DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.ip_report-*\n| WHERE event.dataset == \"criminalip.ip_report\"\n| WHERE threat.indicator.ip IS NOT NULL AND (event.kind IS NULL OR event.kind != \"pipeline_error\")\n| WHERE event.outcome IS NULL OR event.outcome != \"failure\"\n| WHERE error.message IS NULL\n| EVAL risk = COALESCE(criminalip.score.inbound, \"Not Available\")\n| STATS report_count = COUNT(*) BY risk\n| SORT report_count DESC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "report_count"
+                                        ],
+                                        "layerId": "criminalip-api-risk-layer",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "risk"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Inbound Risk · Stored Report Distribution",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "drilldowns": [],
+                    "enhancements": {},
+                    "type": "vis"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "criminalip-api-risk",
+                    "w": 24,
+                    "x": 0,
+                    "y": 18
+                },
+                "panelIndex": "criminalip-api-risk",
+                "title": "Inbound Risk · Stored Report Distribution",
+                "type": "vis",
+                "version": "8.9.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "1893a2c338478ed87f4f18495644112ee29cabd6f8b06591bdf251f2eb129ba5": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": true,
+                                    "fieldFormats": {},
+                                    "id": "1893a2c338478ed87f4f18495644112ee29cabd6f8b06591bdf251f2eb129ba5",
+                                    "managed": false,
+                                    "name": "logs-criminalip.ip_report-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-criminalip.ip_report-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "1893a2c338478ed87f4f18495644112ee29cabd6f8b06591bdf251f2eb129ba5",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-criminalip.ip_report-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "criminalip-api-trend-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "report_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "report_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Reports",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "collected_hour",
+                                                    "customLabel": true,
+                                                    "fieldName": "collected_hour",
+                                                    "label": "Collection Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "1893a2c338478ed87f4f18495644112ee29cabd6f8b06591bdf251f2eb129ba5",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.ip_report-*\n| WHERE event.dataset == \"criminalip.ip_report\"\n| WHERE threat.indicator.ip IS NOT NULL AND (event.kind IS NULL OR event.kind != \"pipeline_error\")\n| WHERE event.outcome IS NULL OR event.outcome != \"failure\"\n| WHERE error.message IS NULL\n| STATS report_count = COUNT(*) BY collected_hour = BUCKET(@timestamp, 1 hour)\n| SORT collected_hour ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.ip_report-*\n| WHERE event.dataset == \"criminalip.ip_report\"\n| WHERE threat.indicator.ip IS NOT NULL AND (event.kind IS NULL OR event.kind != \"pipeline_error\")\n| WHERE event.outcome IS NULL OR event.outcome != \"failure\"\n| WHERE error.message IS NULL\n| STATS report_count = COUNT(*) BY collected_hour = BUCKET(@timestamp, 1 hour)\n| SORT collected_hour ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "report_count"
+                                        ],
+                                        "layerId": "criminalip-api-trend-layer",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "collected_hour"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Report Collections over Time",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "drilldowns": [],
+                    "enhancements": {},
+                    "type": "vis"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "criminalip-api-trend",
+                    "w": 24,
+                    "x": 24,
+                    "y": 18
+                },
+                "panelIndex": "criminalip-api-trend",
+                "title": "Report Collections over Time",
+                "type": "vis",
+                "version": "8.9.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "aggs": [],
+                        "data": {
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": "event.dataset: \"criminalip.ip_report\""
+                                }
+                            }
+                        },
+                        "params": {
+                            "spec": "{\n  \"$schema\": \"https://vega.github.io/schema/vega/v5.json\",\n  \"description\": \"Real API report snapshots collected by Elastic Agent. Times are collection times in UTC, not the provider's observation times. Up to 100 entries, ten per page; counts apply to the selected period.\",\n  \"autosize\": {\n    \"type\": \"fit\",\n    \"contains\": \"padding\"\n  },\n  \"padding\": 5,\n  \"signals\": [\n    {\n      \"name\": \"pageCount\",\n      \"update\": \"max(1, ceil(length(data('rows')) / 10))\"\n    },\n    {\n      \"name\": \"requestedPage\",\n      \"value\": 0,\n      \"on\": [\n        {\n          \"events\": \"@next:click\",\n          \"update\": \"min(page + 1, pageCount - 1)\"\n        },\n        {\n          \"events\": \"@previous:click\",\n          \"update\": \"max(0, min(page - 1, pageCount - 1))\"\n        },\n        {\n          \"events\": {\n            \"signal\": \"pageCount\"\n          },\n          \"update\": \"0\",\n          \"force\": true\n        }\n      ],\n      \"bind\": {\n        \"input\": \"select\",\n        \"name\": \"Page (see available range): \",\n        \"options\": [\n          0,\n          1,\n          2,\n          3,\n          4,\n          5,\n          6,\n          7,\n          8,\n          9\n        ],\n        \"labels\": [\n          \"1\",\n          \"2\",\n          \"3\",\n          \"4\",\n          \"5\",\n          \"6\",\n          \"7\",\n          \"8\",\n          \"9\",\n          \"10\"\n        ]\n      }\n    },\n    {\n      \"name\": \"page\",\n      \"update\": \"requestedPage\"\n    },\n    {\n      \"name\": \"rowHeight\",\n      \"update\": \"max(18, min(36, (height - 62) / 10))\"\n    },\n    {\n      \"name\": \"pageValid\",\n      \"update\": \"page >= 0 && page < pageCount\"\n    }\n  ],\n  \"data\": [\n    {\n      \"name\": \"rows\",\n      \"url\": {\n        \"index\": \"logs-criminalip.ip_report-*\",\n        \"body\": {\n          \"size\": 0,\n          \"query\": {\n            \"bool\": {\n              \"must\": [\n                \"%dashboard_context-must_clause%\"\n              ],\n              \"filter\": [\n                \"%dashboard_context-filter_clause%\",\n                {\n                  \"term\": {\n                    \"event.dataset\": \"criminalip.ip_report\"\n                  }\n                },\n                {\n                  \"range\": {\n                    \"@timestamp\": {\n                      \"%timefilter%\": true\n                    }\n                  }\n                },\n                {\n                  \"exists\": {\n                    \"field\": \"threat.indicator.ip\"\n                  }\n                }\n              ],\n              \"must_not\": [\n                \"%dashboard_context-must_not_clause%\",\n                {\n                  \"term\": {\n                    \"event.outcome\": \"failure\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"event.kind\": \"pipeline_error\"\n                  }\n                },\n                {\n                  \"exists\": {\n                    \"field\": \"error.message\"\n                  }\n                }\n              ]\n            }\n          },\n          \"aggs\": {\n            \"ips\": {\n              \"terms\": {\n                \"field\": \"threat.indicator.ip\",\n                \"size\": 100,\n                \"order\": {\n                  \"_key\": \"asc\"\n                }\n              },\n              \"aggs\": {\n                \"latest\": {\n                  \"top_hits\": {\n                    \"size\": 1,\n                    \"sort\": [\n                      {\n                        \"@timestamp\": {\n                          \"order\": \"desc\",\n                          \"unmapped_type\": \"date\"\n                        }\n                      }\n                    ],\n                    \"_source\": [\n                      \"@timestamp\",\n                      \"criminalip\",\n                      \"threat.indicator.ip\"\n                    ]\n                  }\n                }\n              }\n            }\n          }\n        }\n      },\n      \"format\": {\n        \"type\": \"json\"\n      },\n      \"transform\": [\n        {\n          \"type\": \"formula\",\n          \"expr\": \"datum.aggregations && datum.aggregations.ips ? datum.aggregations.ips.buckets : []\",\n          \"as\": \"records\"\n        },\n        {\n          \"type\": \"flatten\",\n          \"fields\": [\n            \"records\"\n          ],\n          \"as\": [\n            \"record\"\n          ]\n        },\n        {\n          \"type\": \"filter\",\n          \"expr\": \"isValid(datum.record)\"\n        },\n        {\n          \"type\": \"formula\",\n          \"expr\": \"datum.record.latest.hits.hits[0]._source\",\n          \"as\": \"doc\"\n        },\n        {\n          \"type\": \"formula\",\n          \"expr\": \"datum.record.doc_count\",\n          \"as\": \"doc_count\"\n        },\n        {\n          \"type\": \"formula\",\n          \"expr\": \"merge(datum.doc.criminalip || {}, {ip: (isValid((datum.doc || {})[\\\"threat.indicator.ip\\\"]) ? (datum.doc || {})[\\\"threat.indicator.ip\\\"] : (isValid(((datum.doc || {})[\\\"threat\\\"] || {})[\\\"indicator.ip\\\"]) ? ((datum.doc || {})[\\\"threat\\\"] || {})[\\\"indicator.ip\\\"] : (((datum.doc || {})[\\\"threat\\\"] || {})[\\\"indicator\\\"] || {})[\\\"ip\\\"])), score: {inbound: (isValid((datum.doc || {})[\\\"criminalip.score.inbound\\\"]) ? (datum.doc || {})[\\\"criminalip.score.inbound\\\"] : (isValid(((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"score.inbound\\\"]) ? ((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"score.inbound\\\"] : (((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"score\\\"] || {})[\\\"inbound\\\"])), outbound: (isValid((datum.doc || {})[\\\"criminalip.score.outbound\\\"]) ? (datum.doc || {})[\\\"criminalip.score.outbound\\\"] : (isValid(((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"score.outbound\\\"]) ? ((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"score.outbound\\\"] : (((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"score\\\"] || {})[\\\"outbound\\\"]))}, issues: {is_vpn: (isValid((datum.doc || {})[\\\"criminalip.issues.is_vpn\\\"]) ? (datum.doc || {})[\\\"criminalip.issues.is_vpn\\\"] : (isValid(((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_vpn\\\"]) ? ((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_vpn\\\"] : (((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues\\\"] || {})[\\\"is_vpn\\\"])), is_tor: (isValid((datum.doc || {})[\\\"criminalip.issues.is_tor\\\"]) ? (datum.doc || {})[\\\"criminalip.issues.is_tor\\\"] : (isValid(((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_tor\\\"]) ? ((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_tor\\\"] : (((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues\\\"] || {})[\\\"is_tor\\\"])), is_proxy: (isValid((datum.doc || {})[\\\"criminalip.issues.is_proxy\\\"]) ? (datum.doc || {})[\\\"criminalip.issues.is_proxy\\\"] : (isValid(((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_proxy\\\"]) ? ((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_proxy\\\"] : (((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues\\\"] || {})[\\\"is_proxy\\\"])), is_scanner: (isValid((datum.doc || {})[\\\"criminalip.issues.is_scanner\\\"]) ? (datum.doc || {})[\\\"criminalip.issues.is_scanner\\\"] : (isValid(((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_scanner\\\"]) ? ((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_scanner\\\"] : (((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues\\\"] || {})[\\\"is_scanner\\\"])), is_darkweb: (isValid((datum.doc || {})[\\\"criminalip.issues.is_darkweb\\\"]) ? (datum.doc || {})[\\\"criminalip.issues.is_darkweb\\\"] : (isValid(((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_darkweb\\\"]) ? ((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_darkweb\\\"] : (((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues\\\"] || {})[\\\"is_darkweb\\\"])), is_hosting: (isValid((datum.doc || {})[\\\"criminalip.issues.is_hosting\\\"]) ? (datum.doc || {})[\\\"criminalip.issues.is_hosting\\\"] : (isValid(((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_hosting\\\"]) ? ((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_hosting\\\"] : (((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues\\\"] || {})[\\\"is_hosting\\\"])), is_cloud: (isValid((datum.doc || {})[\\\"criminalip.issues.is_cloud\\\"]) ? (datum.doc || {})[\\\"criminalip.issues.is_cloud\\\"] : (isValid(((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_cloud\\\"]) ? ((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_cloud\\\"] : (((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues\\\"] || {})[\\\"is_cloud\\\"]))}})\",\n          \"as\": \"cip\"\n        },\n        {\n          \"type\": \"window\",\n          \"ops\": [\n            \"row_number\"\n          ],\n          \"as\": [\n            \"row_number\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"visible_rows\",\n      \"source\": \"rows\",\n      \"transform\": [\n        {\n          \"type\": \"filter\",\n          \"expr\": \"pageValid && datum.row_number > page * 10 && datum.row_number <= (page + 1) * 10\"\n        }\n      ]\n    }\n  ],\n  \"marks\": [\n    {\n      \"type\": \"rect\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"value\": 0\n          },\n          \"y\": {\n            \"value\": 0\n          },\n          \"width\": {\n            \"signal\": \"width\"\n          },\n          \"height\": {\n            \"value\": 32\n          },\n          \"fill\": {\n            \"value\": \"#172438\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"rect\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"value\": 0\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10) * rowHeight\"\n          },\n          \"width\": {\n            \"signal\": \"width\"\n          },\n          \"height\": {\n            \"signal\": \"rowHeight - 1\"\n          },\n          \"fill\": {\n            \"signal\": \"datum.row_number % 2 ? '#1e2c40' : '#132035'\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.000000 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Collected At (UTC)\"\n          },\n          \"tooltip\": {\n            \"value\": \"Collected At (UTC)\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.169492 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.000000 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(utcFormat(toDate(datum.doc['@timestamp']), '%Y-%m-%d %H:%M:%S')) ? toString(utcFormat(toDate(datum.doc['@timestamp']), '%Y-%m-%d %H:%M:%S')) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.169492 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.169492 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"IP Address\"\n          },\n          \"tooltip\": {\n            \"value\": \"IP Address\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.127119 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.169492 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.ip) ? toString(datum.cip.ip) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.127119 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.296610 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Inbound Risk\"\n          },\n          \"tooltip\": {\n            \"value\": \"Inbound Risk\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.101695 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.296610 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.score ? datum.cip.score.inbound : null) ? toString(datum.cip.score ? datum.cip.score.inbound : null) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.101695 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.398305 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Outbound Risk\"\n          },\n          \"tooltip\": {\n            \"value\": \"Outbound Risk\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.101695 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.398305 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.score ? datum.cip.score.outbound : null) ? toString(datum.cip.score ? datum.cip.score.outbound : null) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.101695 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.500000 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"VPN\"\n          },\n          \"tooltip\": {\n            \"value\": \"VPN\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.059322 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.500000 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.issues && isValid(datum.cip.issues.is_vpn) ? (datum.cip.issues.is_vpn ? 'Yes' : 'No') : null) ? toString(datum.cip.issues && isValid(datum.cip.issues.is_vpn) ? (datum.cip.issues.is_vpn ? 'Yes' : 'No') : null) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.059322 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.559322 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Tor\"\n          },\n          \"tooltip\": {\n            \"value\": \"Tor\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.059322 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.559322 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.issues && isValid(datum.cip.issues.is_tor) ? (datum.cip.issues.is_tor ? 'Yes' : 'No') : null) ? toString(datum.cip.issues && isValid(datum.cip.issues.is_tor) ? (datum.cip.issues.is_tor ? 'Yes' : 'No') : null) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.059322 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.618644 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Proxy\"\n          },\n          \"tooltip\": {\n            \"value\": \"Proxy\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.059322 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.618644 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.issues && isValid(datum.cip.issues.is_proxy) ? (datum.cip.issues.is_proxy ? 'Yes' : 'No') : null) ? toString(datum.cip.issues && isValid(datum.cip.issues.is_proxy) ? (datum.cip.issues.is_proxy ? 'Yes' : 'No') : null) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.059322 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.677966 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Scanner\"\n          },\n          \"tooltip\": {\n            \"value\": \"Scanner\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.059322 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.677966 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.issues && isValid(datum.cip.issues.is_scanner) ? (datum.cip.issues.is_scanner ? 'Yes' : 'No') : null) ? toString(datum.cip.issues && isValid(datum.cip.issues.is_scanner) ? (datum.cip.issues.is_scanner ? 'Yes' : 'No') : null) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.059322 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.737288 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Dark Web\"\n          },\n          \"tooltip\": {\n            \"value\": \"Dark Web\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.059322 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.737288 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.issues && isValid(datum.cip.issues.is_darkweb) ? (datum.cip.issues.is_darkweb ? 'Yes' : 'No') : null) ? toString(datum.cip.issues && isValid(datum.cip.issues.is_darkweb) ? (datum.cip.issues.is_darkweb ? 'Yes' : 'No') : null) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.059322 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.796610 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Hosting\"\n          },\n          \"tooltip\": {\n            \"value\": \"Hosting\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.059322 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.796610 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.issues && isValid(datum.cip.issues.is_hosting) ? (datum.cip.issues.is_hosting ? 'Yes' : 'No') : null) ? toString(datum.cip.issues && isValid(datum.cip.issues.is_hosting) ? (datum.cip.issues.is_hosting ? 'Yes' : 'No') : null) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.059322 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.855932 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Cloud\"\n          },\n          \"tooltip\": {\n            \"value\": \"Cloud\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.059322 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.855932 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.issues && isValid(datum.cip.issues.is_cloud) ? (datum.cip.issues.is_cloud ? 'Yes' : 'No') : null) ? toString(datum.cip.issues && isValid(datum.cip.issues.is_cloud) ? (datum.cip.issues.is_cloud ? 'Yes' : 'No') : null) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.059322 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.915254 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Reports in Period\"\n          },\n          \"tooltip\": {\n            \"value\": \"Reports in Period\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.084746 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.915254 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.doc_count) ? toString(datum.doc_count) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.084746 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width / 2\"\n          },\n          \"y\": {\n            \"signal\": \"height / 2\"\n          },\n          \"text\": {\n            \"signal\": \"length(data('rows')) ? (pageValid ? '' : 'Choose page 1\\u2013' + pageCount) : 'No IP reports in selected period \\u00b7 Configure the API input and check Agent status'\"\n          },\n          \"align\": {\n            \"value\": \"center\"\n          },\n          \"fill\": {\n            \"value\": \"#94a3b8\"\n          },\n          \"fontSize\": {\n            \"value\": 13\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"value\": 6\n          },\n          \"y\": {\n            \"signal\": \"height - 9\"\n          },\n          \"text\": {\n            \"signal\": \"length(data('rows')) && !pageValid ? 'Choose page 1\\u2013' + pageCount : (length(data('rows')) ? 'Page ' + (page + 1) + ' / ' + max(1, ceil(length(data('rows')) / 10)) + ' \\u00b7 Up to 100 entries \\u00b7 Times in UTC \\u00b7 Full history in Discover' : '')\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width - 175)\"\n          },\n          \"fill\": {\n            \"value\": \"#94a3b8\"\n          },\n          \"fontSize\": {\n            \"value\": 11\n          }\n        }\n      }\n    },\n    {\n      \"name\": \"previous\",\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width - 150\"\n          },\n          \"y\": {\n            \"signal\": \"height - 9\"\n          },\n          \"text\": {\n            \"value\": \"\\u25c0 Previous\"\n          },\n          \"cursor\": {\n            \"value\": \"pointer\"\n          },\n          \"fill\": {\n            \"signal\": \"page > 0 ? '#60a5fa' : '#64748b'\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          }\n        }\n      }\n    },\n    {\n      \"name\": \"next\",\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width - 65\"\n          },\n          \"y\": {\n            \"signal\": \"height - 9\"\n          },\n          \"text\": {\n            \"value\": \"Next \\u25b6\"\n          },\n          \"cursor\": {\n            \"value\": \"pointer\"\n          },\n          \"fill\": {\n            \"signal\": \"(page + 1) * 10 < length(data('rows')) ? '#60a5fa' : '#64748b'\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          }\n        }\n      }\n    }\n  ]\n}"
+                        },
+                        "title": "IP Report · Latest Results by IP",
+                        "type": "vega",
+                        "uiState": {}
+                    },
+                    "type": "visualization"
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "criminalip-ip-report-latest",
+                    "w": 48,
+                    "x": 0,
+                    "y": 30
+                },
+                "panelIndex": "criminalip-ip-report-latest",
+                "title": "IP Report · Latest Results by IP",
+                "type": "visualization",
+                "version": "8.9.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "aggs": [],
+                        "data": {
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": "event.dataset: \"criminalip.ip_report\""
+                                }
+                            }
+                        },
+                        "params": {
+                            "spec": "{\n  \"$schema\": \"https://vega.github.io/schema/vega/v5.json\",\n  \"description\": \"Real API report snapshots collected by Elastic Agent. Times are collection times in UTC, not the provider's observation times. Up to 100 entries, ten per page; counts apply to the selected period.\",\n  \"autosize\": {\n    \"type\": \"fit\",\n    \"contains\": \"padding\"\n  },\n  \"padding\": 5,\n  \"signals\": [\n    {\n      \"name\": \"pageCount\",\n      \"update\": \"max(1, ceil(length(data('rows')) / 10))\"\n    },\n    {\n      \"name\": \"requestedPage\",\n      \"value\": 0,\n      \"on\": [\n        {\n          \"events\": \"@next:click\",\n          \"update\": \"min(page + 1, pageCount - 1)\"\n        },\n        {\n          \"events\": \"@previous:click\",\n          \"update\": \"max(0, min(page - 1, pageCount - 1))\"\n        },\n        {\n          \"events\": {\n            \"signal\": \"pageCount\"\n          },\n          \"update\": \"0\",\n          \"force\": true\n        }\n      ],\n      \"bind\": {\n        \"input\": \"select\",\n        \"name\": \"Page (see available range): \",\n        \"options\": [\n          0,\n          1,\n          2,\n          3,\n          4,\n          5,\n          6,\n          7,\n          8,\n          9\n        ],\n        \"labels\": [\n          \"1\",\n          \"2\",\n          \"3\",\n          \"4\",\n          \"5\",\n          \"6\",\n          \"7\",\n          \"8\",\n          \"9\",\n          \"10\"\n        ]\n      }\n    },\n    {\n      \"name\": \"page\",\n      \"update\": \"requestedPage\"\n    },\n    {\n      \"name\": \"rowHeight\",\n      \"update\": \"max(18, min(36, (height - 62) / 10))\"\n    },\n    {\n      \"name\": \"pageValid\",\n      \"update\": \"page >= 0 && page < pageCount\"\n    }\n  ],\n  \"data\": [\n    {\n      \"name\": \"rows\",\n      \"url\": {\n        \"index\": \"logs-criminalip.ip_report-*\",\n        \"body\": {\n          \"size\": 100,\n          \"query\": {\n            \"bool\": {\n              \"must\": [\n                \"%dashboard_context-must_clause%\"\n              ],\n              \"filter\": [\n                \"%dashboard_context-filter_clause%\",\n                {\n                  \"term\": {\n                    \"event.dataset\": \"criminalip.ip_report\"\n                  }\n                },\n                {\n                  \"range\": {\n                    \"@timestamp\": {\n                      \"%timefilter%\": true\n                    }\n                  }\n                },\n                {\n                  \"exists\": {\n                    \"field\": \"threat.indicator.ip\"\n                  }\n                }\n              ],\n              \"must_not\": [\n                \"%dashboard_context-must_not_clause%\",\n                {\n                  \"term\": {\n                    \"event.outcome\": \"failure\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"event.kind\": \"pipeline_error\"\n                  }\n                },\n                {\n                  \"exists\": {\n                    \"field\": \"error.message\"\n                  }\n                }\n              ]\n            }\n          },\n          \"sort\": [\n            {\n              \"@timestamp\": {\n                \"order\": \"desc\",\n                \"unmapped_type\": \"date\"\n              }\n            }\n          ],\n          \"_source\": [\n            \"@timestamp\",\n            \"criminalip\",\n            \"threat.indicator.ip\"\n          ]\n        }\n      },\n      \"format\": {\n        \"type\": \"json\"\n      },\n      \"transform\": [\n        {\n          \"type\": \"formula\",\n          \"expr\": \"datum.hits && datum.hits.hits ? datum.hits.hits : []\",\n          \"as\": \"records\"\n        },\n        {\n          \"type\": \"flatten\",\n          \"fields\": [\n            \"records\"\n          ],\n          \"as\": [\n            \"record\"\n          ]\n        },\n        {\n          \"type\": \"filter\",\n          \"expr\": \"isValid(datum.record)\"\n        },\n        {\n          \"type\": \"formula\",\n          \"expr\": \"datum.record._source\",\n          \"as\": \"doc\"\n        },\n        {\n          \"type\": \"formula\",\n          \"expr\": \"merge(datum.doc.criminalip || {}, {ip: (isValid((datum.doc || {})[\\\"threat.indicator.ip\\\"]) ? (datum.doc || {})[\\\"threat.indicator.ip\\\"] : (isValid(((datum.doc || {})[\\\"threat\\\"] || {})[\\\"indicator.ip\\\"]) ? ((datum.doc || {})[\\\"threat\\\"] || {})[\\\"indicator.ip\\\"] : (((datum.doc || {})[\\\"threat\\\"] || {})[\\\"indicator\\\"] || {})[\\\"ip\\\"])), score: {inbound: (isValid((datum.doc || {})[\\\"criminalip.score.inbound\\\"]) ? (datum.doc || {})[\\\"criminalip.score.inbound\\\"] : (isValid(((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"score.inbound\\\"]) ? ((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"score.inbound\\\"] : (((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"score\\\"] || {})[\\\"inbound\\\"])), outbound: (isValid((datum.doc || {})[\\\"criminalip.score.outbound\\\"]) ? (datum.doc || {})[\\\"criminalip.score.outbound\\\"] : (isValid(((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"score.outbound\\\"]) ? ((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"score.outbound\\\"] : (((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"score\\\"] || {})[\\\"outbound\\\"]))}, issues: {is_vpn: (isValid((datum.doc || {})[\\\"criminalip.issues.is_vpn\\\"]) ? (datum.doc || {})[\\\"criminalip.issues.is_vpn\\\"] : (isValid(((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_vpn\\\"]) ? ((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_vpn\\\"] : (((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues\\\"] || {})[\\\"is_vpn\\\"])), is_tor: (isValid((datum.doc || {})[\\\"criminalip.issues.is_tor\\\"]) ? (datum.doc || {})[\\\"criminalip.issues.is_tor\\\"] : (isValid(((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_tor\\\"]) ? ((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_tor\\\"] : (((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues\\\"] || {})[\\\"is_tor\\\"])), is_proxy: (isValid((datum.doc || {})[\\\"criminalip.issues.is_proxy\\\"]) ? (datum.doc || {})[\\\"criminalip.issues.is_proxy\\\"] : (isValid(((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_proxy\\\"]) ? ((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_proxy\\\"] : (((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues\\\"] || {})[\\\"is_proxy\\\"])), is_scanner: (isValid((datum.doc || {})[\\\"criminalip.issues.is_scanner\\\"]) ? (datum.doc || {})[\\\"criminalip.issues.is_scanner\\\"] : (isValid(((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_scanner\\\"]) ? ((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_scanner\\\"] : (((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues\\\"] || {})[\\\"is_scanner\\\"])), is_darkweb: (isValid((datum.doc || {})[\\\"criminalip.issues.is_darkweb\\\"]) ? (datum.doc || {})[\\\"criminalip.issues.is_darkweb\\\"] : (isValid(((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_darkweb\\\"]) ? ((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_darkweb\\\"] : (((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues\\\"] || {})[\\\"is_darkweb\\\"])), is_hosting: (isValid((datum.doc || {})[\\\"criminalip.issues.is_hosting\\\"]) ? (datum.doc || {})[\\\"criminalip.issues.is_hosting\\\"] : (isValid(((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_hosting\\\"]) ? ((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_hosting\\\"] : (((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues\\\"] || {})[\\\"is_hosting\\\"])), is_cloud: (isValid((datum.doc || {})[\\\"criminalip.issues.is_cloud\\\"]) ? (datum.doc || {})[\\\"criminalip.issues.is_cloud\\\"] : (isValid(((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_cloud\\\"]) ? ((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues.is_cloud\\\"] : (((datum.doc || {})[\\\"criminalip\\\"] || {})[\\\"issues\\\"] || {})[\\\"is_cloud\\\"]))}})\",\n          \"as\": \"cip\"\n        },\n        {\n          \"type\": \"window\",\n          \"ops\": [\n            \"row_number\"\n          ],\n          \"as\": [\n            \"row_number\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"visible_rows\",\n      \"source\": \"rows\",\n      \"transform\": [\n        {\n          \"type\": \"filter\",\n          \"expr\": \"pageValid && datum.row_number > page * 10 && datum.row_number <= (page + 1) * 10\"\n        }\n      ]\n    }\n  ],\n  \"marks\": [\n    {\n      \"type\": \"rect\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"value\": 0\n          },\n          \"y\": {\n            \"value\": 0\n          },\n          \"width\": {\n            \"signal\": \"width\"\n          },\n          \"height\": {\n            \"value\": 32\n          },\n          \"fill\": {\n            \"value\": \"#172438\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"rect\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"value\": 0\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10) * rowHeight\"\n          },\n          \"width\": {\n            \"signal\": \"width\"\n          },\n          \"height\": {\n            \"signal\": \"rowHeight - 1\"\n          },\n          \"fill\": {\n            \"signal\": \"datum.row_number % 2 ? '#1e2c40' : '#132035'\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.000000 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Collected At (UTC)\"\n          },\n          \"tooltip\": {\n            \"value\": \"Collected At (UTC)\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.185185 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.000000 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(utcFormat(toDate(datum.doc['@timestamp']), '%Y-%m-%d %H:%M:%S')) ? toString(utcFormat(toDate(datum.doc['@timestamp']), '%Y-%m-%d %H:%M:%S')) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.185185 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.185185 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"IP Address\"\n          },\n          \"tooltip\": {\n            \"value\": \"IP Address\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.138889 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.185185 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.ip) ? toString(datum.cip.ip) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.138889 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.324074 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Inbound Risk\"\n          },\n          \"tooltip\": {\n            \"value\": \"Inbound Risk\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.111111 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.324074 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.score ? datum.cip.score.inbound : null) ? toString(datum.cip.score ? datum.cip.score.inbound : null) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.111111 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.435185 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Outbound Risk\"\n          },\n          \"tooltip\": {\n            \"value\": \"Outbound Risk\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.111111 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.435185 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.score ? datum.cip.score.outbound : null) ? toString(datum.cip.score ? datum.cip.score.outbound : null) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.111111 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.546296 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"VPN\"\n          },\n          \"tooltip\": {\n            \"value\": \"VPN\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.064815 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.546296 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.issues && isValid(datum.cip.issues.is_vpn) ? (datum.cip.issues.is_vpn ? 'Yes' : 'No') : null) ? toString(datum.cip.issues && isValid(datum.cip.issues.is_vpn) ? (datum.cip.issues.is_vpn ? 'Yes' : 'No') : null) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.064815 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.611111 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Tor\"\n          },\n          \"tooltip\": {\n            \"value\": \"Tor\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.064815 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.611111 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.issues && isValid(datum.cip.issues.is_tor) ? (datum.cip.issues.is_tor ? 'Yes' : 'No') : null) ? toString(datum.cip.issues && isValid(datum.cip.issues.is_tor) ? (datum.cip.issues.is_tor ? 'Yes' : 'No') : null) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.064815 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.675926 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Proxy\"\n          },\n          \"tooltip\": {\n            \"value\": \"Proxy\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.064815 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.675926 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.issues && isValid(datum.cip.issues.is_proxy) ? (datum.cip.issues.is_proxy ? 'Yes' : 'No') : null) ? toString(datum.cip.issues && isValid(datum.cip.issues.is_proxy) ? (datum.cip.issues.is_proxy ? 'Yes' : 'No') : null) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.064815 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.740741 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Scanner\"\n          },\n          \"tooltip\": {\n            \"value\": \"Scanner\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.064815 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.740741 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.issues && isValid(datum.cip.issues.is_scanner) ? (datum.cip.issues.is_scanner ? 'Yes' : 'No') : null) ? toString(datum.cip.issues && isValid(datum.cip.issues.is_scanner) ? (datum.cip.issues.is_scanner ? 'Yes' : 'No') : null) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.064815 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.805556 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Dark Web\"\n          },\n          \"tooltip\": {\n            \"value\": \"Dark Web\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.064815 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.805556 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.issues && isValid(datum.cip.issues.is_darkweb) ? (datum.cip.issues.is_darkweb ? 'Yes' : 'No') : null) ? toString(datum.cip.issues && isValid(datum.cip.issues.is_darkweb) ? (datum.cip.issues.is_darkweb ? 'Yes' : 'No') : null) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.064815 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.870370 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Hosting\"\n          },\n          \"tooltip\": {\n            \"value\": \"Hosting\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.064815 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.870370 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.issues && isValid(datum.cip.issues.is_hosting) ? (datum.cip.issues.is_hosting ? 'Yes' : 'No') : null) ? toString(datum.cip.issues && isValid(datum.cip.issues.is_hosting) ? (datum.cip.issues.is_hosting ? 'Yes' : 'No') : null) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.064815 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.935185 + 6\"\n          },\n          \"y\": {\n            \"value\": 16\n          },\n          \"text\": {\n            \"value\": \"Cloud\"\n          },\n          \"tooltip\": {\n            \"value\": \"Cloud\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": \"bold\"\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.064815 - 10)\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"visible_rows\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width * 0.935185 + 6\"\n          },\n          \"y\": {\n            \"signal\": \"34 + ((datum.row_number - 1) % 10 + 0.5) * rowHeight\"\n          },\n          \"text\": {\n            \"signal\": \"isValid(datum.cip.issues && isValid(datum.cip.issues.is_cloud) ? (datum.cip.issues.is_cloud ? 'Yes' : 'No') : null) ? toString(datum.cip.issues && isValid(datum.cip.issues.is_cloud) ? (datum.cip.issues.is_cloud ? 'Yes' : 'No') : null) : 'Not Available'\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#cbd5e1\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width * 0.064815 - 10)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{'IP': datum.cip.ip, 'Collected At (UTC)': datum.doc['@timestamp'], 'Inbound Risk': datum.cip.score ? datum.cip.score.inbound : null, 'Outbound Risk': datum.cip.score ? datum.cip.score.outbound : null}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width / 2\"\n          },\n          \"y\": {\n            \"signal\": \"height / 2\"\n          },\n          \"text\": {\n            \"signal\": \"length(data('rows')) ? (pageValid ? '' : 'Choose page 1\\u2013' + pageCount) : 'No IP reports in selected period \\u00b7 Configure the API input and check Agent status'\"\n          },\n          \"align\": {\n            \"value\": \"center\"\n          },\n          \"fill\": {\n            \"value\": \"#94a3b8\"\n          },\n          \"fontSize\": {\n            \"value\": 13\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"value\": 6\n          },\n          \"y\": {\n            \"signal\": \"height - 9\"\n          },\n          \"text\": {\n            \"signal\": \"length(data('rows')) && !pageValid ? 'Choose page 1\\u2013' + pageCount : (length(data('rows')) ? 'Page ' + (page + 1) + ' / ' + max(1, ceil(length(data('rows')) / 10)) + ' \\u00b7 Up to 100 entries \\u00b7 Times in UTC \\u00b7 Full history in Discover' : '')\"\n          },\n          \"limit\": {\n            \"signal\": \"max(0, width - 175)\"\n          },\n          \"fill\": {\n            \"value\": \"#94a3b8\"\n          },\n          \"fontSize\": {\n            \"value\": 11\n          }\n        }\n      }\n    },\n    {\n      \"name\": \"previous\",\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width - 150\"\n          },\n          \"y\": {\n            \"signal\": \"height - 9\"\n          },\n          \"text\": {\n            \"value\": \"\\u25c0 Previous\"\n          },\n          \"cursor\": {\n            \"value\": \"pointer\"\n          },\n          \"fill\": {\n            \"signal\": \"page > 0 ? '#60a5fa' : '#64748b'\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          }\n        }\n      }\n    },\n    {\n      \"name\": \"next\",\n      \"type\": \"text\",\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width - 65\"\n          },\n          \"y\": {\n            \"signal\": \"height - 9\"\n          },\n          \"text\": {\n            \"value\": \"Next \\u25b6\"\n          },\n          \"cursor\": {\n            \"value\": \"pointer\"\n          },\n          \"fill\": {\n            \"signal\": \"(page + 1) * 10 < length(data('rows')) ? '#60a5fa' : '#64748b'\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          }\n        }\n      }\n    }\n  ]\n}"
+                        },
+                        "title": "IP Report · Recent Lookup History",
+                        "type": "vega",
+                        "uiState": {}
+                    },
+                    "type": "visualization"
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "criminalip-ip-report-history",
+                    "w": 48,
+                    "x": 0,
+                    "y": 46
+                },
+                "panelIndex": "criminalip-ip-report-history",
+                "title": "IP Report · Recent Lookup History",
+                "type": "visualization",
+                "version": "8.9.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "1893a2c338478ed87f4f18495644112ee29cabd6f8b06591bdf251f2eb129ba5": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": true,
+                                    "fieldFormats": {},
+                                    "id": "1893a2c338478ed87f4f18495644112ee29cabd6f8b06591bdf251f2eb129ba5",
+                                    "managed": false,
+                                    "name": "logs-criminalip.ip_report-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-criminalip.ip_report-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "1893a2c338478ed87f4f18495644112ee29cabd6f8b06591bdf251f2eb129ba5",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-criminalip.ip_report-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "criminalip-api-errors-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "@timestamp",
+                                                    "customLabel": true,
+                                                    "fieldName": "@timestamp",
+                                                    "label": "Collection Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "criminalip.query_ip",
+                                                    "customLabel": true,
+                                                    "fieldName": "criminalip.query_ip",
+                                                    "label": "Configured IP",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "http.response.status_code",
+                                                    "customLabel": true,
+                                                    "fieldName": "http.response.status_code",
+                                                    "label": "HTTP Status",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "error.message",
+                                                    "customLabel": true,
+                                                    "fieldName": "error.message",
+                                                    "label": "Error",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "1893a2c338478ed87f4f18495644112ee29cabd6f8b06591bdf251f2eb129ba5",
+                                            "query": {
+                                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.ip_report-*\n| WHERE event.outcome == \"failure\" OR event.kind == \"pipeline_error\" OR error.message IS NOT NULL\n| SORT @timestamp DESC\n| KEEP @timestamp, criminalip.query_ip, http.response.status_code, error.message\n| LIMIT 20"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "SET unmapped_fields = \"nullify\";\nFROM logs-criminalip.ip_report-*\n| WHERE event.outcome == \"failure\" OR event.kind == \"pipeline_error\" OR error.message IS NOT NULL\n| SORT @timestamp DESC\n| KEEP @timestamp, criminalip.query_ip, http.response.status_code, error.message\n| LIMIT 20"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "@timestamp",
+                                        "width": 230
+                                    },
+                                    {
+                                        "columnId": "criminalip.query_ip",
+                                        "width": 170
+                                    },
+                                    {
+                                        "columnId": "http.response.status_code",
+                                        "width": 110
+                                    },
+                                    {
+                                        "columnId": "error.message"
+                                    }
+                                ],
+                                "headerRowHeight": "auto",
+                                "layerId": "criminalip-api-errors-layer",
+                                "layerType": "data",
+                                "rowHeight": "auto",
+                                "showRowNumbers": true
+                            }
+                        },
+                        "title": "Recent Collection Errors · Troubleshooting",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "drilldowns": [],
+                    "enhancements": {},
+                    "type": "vis"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "criminalip-api-errors",
+                    "w": 48,
+                    "x": 0,
+                    "y": 62
+                },
+                "panelIndex": "criminalip-api-errors",
+                "title": "Recent Collection Errors · Troubleshooting",
+                "type": "vis",
+                "version": "8.9.0"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "### Reading Notes and Troubleshooting\n- Reports cover explicitly configured IPs; no firewall, TheHive, Cortex, or detection rule is required.\n- Configure a primary IP and optional additional IP rows in the integration settings.\n- Counts apply to the selected period, not unique connections. Flags alone do not prove malicious activity.\n- Missing attributes display as Not Available.\n- The errors table includes HTTP response, ingest-pipeline, and handled request/JSON failures. Check Elastic Agent logs/status for other input errors.",
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "criminalip-api-notes",
+                    "w": 48,
+                    "x": 0,
+                    "y": 72
+                },
+                "panelIndex": "criminalip-api-notes",
+                "type": "markdown"
+            }
+        ],
+        "timeFrom": "now-24h",
+        "timeRestore": true,
+        "timeTo": "now",
+        "title": "[Logs Criminal IP] IP Intelligence Overview"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-10-28T05:23:48.049Z",
+    "id": "criminalip-ip-report-overview",
+    "references": [],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0"
+}

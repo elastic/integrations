@@ -1,0 +1,29 @@
+description: Keep the most recently collected active TI Feed indicator for each IP.
+source:
+  index: logs-criminalip.ti_feed-*
+  query:
+    term:
+      event.outcome: success
+latest:
+  unique_key:
+    - threat.indicator.ip
+  sort: "@timestamp"
+dest:
+  index: logs-criminalip_latest.dest_ti_feed-1
+  aliases:
+    - alias: logs-criminalip_latest.ti_feed
+      move_on_creation: true
+frequency: 5m
+settings:
+  unattended: true
+sync:
+  time:
+    field: event.ingested
+    delay: 1m
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 30d
+_meta:
+  managed: true
+  fleet_transform_version: 0.1.0

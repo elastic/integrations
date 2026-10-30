@@ -1,0 +1,44 @@
+format_version: 3.6.6
+name: criminalip
+title: "Criminal IP"
+version: 0.1.0
+source:
+  license: "Apache-2.0"
+description: "Match ECS firewall events against Criminal IP TI indicators and investigate communications in Elastic Security, with optional Cortex and configured IP lookups."
+type: integration
+categories:
+  - threat_intel
+  - security
+conditions:
+  kibana:
+    version: "^9.5.3"
+  elastic:
+    subscription: "basic"
+    capabilities:
+      - security
+icons:
+  - src: /img/criminalip-logo.svg
+    title: Criminal IP
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: criminalip
+    title: Criminal IP
+    description: Collect Criminal IP threat intelligence and correlate ECS-normalized firewall events.
+    data_streams:
+      - fortigate
+      - ti_feed
+      - ip_report
+    inputs:
+      - type: cel
+        title: Collect Criminal IP data
+        description: Collect IP threat intelligence data from Criminal IP API.
+      - type: tcp
+        title: FortiGate logs (TCP)
+        description: Collect RFC 6587 octet-counted or newline-delimited FortiGate syslog messages over TCP.
+      - type: udp
+        title: FortiGate logs (UDP)
+        description: Collect newline-delimited FortiGate syslog messages over UDP.
+owner:
+  github: elastic/security-service-integrations
+  type: community

@@ -1,0 +1,106 @@
+# Failure-path regressions (pipeline tests reject error.message).
+[!external_stack] skip 'Requires a running Elastic stack.'
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-0.json
+! stderr .
+stdout 'GET /v1/asset/ip/report: 403 Forbidden \(403\)'
+stdout '"code": "403"'
+! stdout '"http":'
+! stdout '&lt;|&gt;|&amp;'
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-1.json
+! stderr .
+stdout 'Criminal IP request or JSON decoding failed; check endpoint and connectivity\.'
+! stdout '&lt;|&gt;|&amp;'
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-2.json
+! stderr .
+stdout '"original":'
+stdout 'preserve_original_event'
+stdout 'Earlier error (<|\\u003c)keep (&|\\u0026) preserve(>|\\u003e)'
+! stdout '&lt;|&gt;|&amp;'
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-3.json
+! stderr .
+stdout '"original":'
+! stdout '"spoofed"|"unexpected":|"authentication"'
+stdout 'success'
+! stdout '&lt;|&gt;|&amp;'
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-4.json
+! stderr .
+stdout '"original":'
+stdout 'did not return a usable IP report'
+! stdout '&lt;|&gt;|&amp;'
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-5.json
+! stderr .
+stdout '"original":'
+stdout 'preserve_original_event'
+! stdout '&lt;|&gt;|&amp;'
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default case-6.json
+! stderr .
+stdout '"original":'
+stdout 'preserve_original_event'
+! stdout '&lt;|&gt;|&amp;'
+
+uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+-- case-0.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "event.outcome": "failure",
+  "error": {
+    "code": "403",
+    "message": "GET /v1/asset/ip/report: 403 Forbidden (403)"
+  },
+  "criminalip.query_ip": "192.0.2.10"
+}
+
+-- case-1.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "event.outcome": "failure",
+  "error.message": "Criminal IP request or JSON decoding failed; check endpoint and connectivity.",
+  "criminalip.query_ip": "192.0.2.10"
+}
+
+-- case-2.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "message": "{not-json <&>",
+  "error": {
+    "message": [
+      "Earlier error <keep & preserve>"
+    ]
+  }
+}
+
+-- case-3.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "message": "{\"status\":200,\"ip\":\"192.0.2.10\",\"tags\":[\"spoofed\"],\"event\":{\"category\":\"authentication\"},\"error\":{\"message\":\"spoofed\"},\"unexpected\":{\"key\":\"not exported\"}}"
+}
+
+-- case-4.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "message": "{\"status\":403}"
+}
+
+-- case-5.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "message": "{\"status\":200,\"ip\":\"not-an-ip\"}"
+}
+
+-- case-6.json --
+{
+  "@timestamp": "2026-01-08T00:00:00.000Z",
+  "message": "{\"status\":\"invalid\",\"ip\":\"192.0.2.10\"}"
+}
