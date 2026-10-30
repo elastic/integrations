@@ -23,15 +23,24 @@ processors:
         TIMESTAMP: "%{TIMESTAMP_ISO8601:syslog5424_ts}(?:-?%{ISO8601_TIMEZONE:_temp_.tz})?"
         TIMESTAMP_ISO8601: "%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?"
       on_failure:
-        - append:
-            tag: append_error_message_69be271a
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            tag: fail_25aa32ed
-            message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
+        # Log Exporter events are RFC 5424. The same syslog source can also emit
+        # device/OS lines in RFC 3164. Try that before failing the document.
+        - grok:
+            tag: grok_rfc3164_line
+            field: event.original
+            patterns:
+              - '^<%{NONNEGINT:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:_temp_.syslog3164_ts} (?:%{IP:_temp_.host_ip}|%{HOSTNAME:_temp_.host_hostname}) %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYDATA:message}$'
+            on_failure:
+              - append:
+                  tag: append_error_message_69be271a
+                  field: error.message
+                  value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+              - fail:
+                  tag: fail_25aa32ed
+                  message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - kv:
       tag: "kv_syslog_structured_semicolon_colon"
+      if: ctx.syslog5424_sd != null
       field: syslog5424_sd
       field_split: '(?<!\\")(?<="); (?=\w)'
       value_split: '(?i)(?<=[0-9a-z]):{1,2}(?=")'
@@ -59,12 +68,12 @@ processors:
   - grok:
       tag: grok_syslog5424_sd_71bdffb9
       field: syslog5424_sd
-      if: ctx.checkpoint == null
+      if: ctx.checkpoint == null && ctx.syslog5424_sd != null
       patterns:
         - '(?:%{NOTSPACE} +)?%{GREEDYDATA:syslog5424_sd}'
   - kv:
       tag: "kv_syslog_structured_space_equals"
-      if: ctx.checkpoint == null
+      if: ctx.checkpoint == null && ctx.syslog5424_sd != null
       field: syslog5424_sd
       field_split: '(?<=") '
       value_split: '(?i)(?<=[0-9a-z])=(?=")'
@@ -113,6 +122,74 @@ processors:
         - syslog5424_ver
         - host
       ignore_missing: true
+  # The remove above drops the temporary host object created while parsing
+  # RFC 5424. RFC 3164 host fields are copied from temps after that remove.
+  - convert:
+      tag: convert_rfc3164_host_ip
+      field: _temp_.host_ip
+      target_field: host.ip
+      type: ip
+      ignore_missing: true
+      if: ctx._temp_?.host_ip != null
+  - set:
+      tag: set_rfc3164_host_hostname
+      field: host.hostname
+      copy_from: _temp_.host_hostname
+      ignore_empty_value: true
+      if: ctx._temp_?.host_ip == null && ctx._temp_?.host_hostname != null
+  - set:
+      tag: set_rfc3164_observer_hostname
+      field: observer.hostname
+      copy_from: _temp_.host_hostname
+      override: false
+      ignore_empty_value: true
+      if: ctx._temp_?.host_ip == null && ctx._temp_?.host_hostname != null
+  # observer.ip is an array in ECS. append writes [host.ip] and does not
+  # replace a value already present. related.ip is appended separately.
+  - append:
+      tag: append_rfc3164_observer_ip
+      field: observer.ip
+      value: '{{{host.ip}}}'
+      allow_duplicates: false
+      if: ctx.host?.ip != null && ctx._temp_?.syslog3164_ts != null
+  - append:
+      tag: append_rfc3164_host_ip_to_related
+      field: related.ip
+      value: '{{{host.ip}}}'
+      allow_duplicates: false
+      if: ctx.host?.ip != null && ctx._temp_?.syslog3164_ts != null
+  - script:
+      tag: script_rfc3164_syslog_priority
+      description: Derive syslog facility and severity codes from the RFC 3164 priority.
+      lang: painless
+      if: ctx._temp_?.syslog3164_ts != null && ctx.log?.syslog?.priority != null
+      source: |
+        if (ctx.log.syslog.facility == null) {
+          ctx.log.syslog.facility = new HashMap();
+        }
+        if (ctx.log.syslog.severity == null) {
+          ctx.log.syslog.severity = new HashMap();
+        }
+        ctx.log.syslog.facility.code = ctx.log.syslog.priority >> 3;
+        ctx.log.syslog.severity.code = ctx.log.syslog.priority & 0x7;
+  - append:
+      tag: append_rfc3164_event_category
+      field: event.category
+      value: process
+      allow_duplicates: false
+      if: ctx._temp_?.syslog3164_ts != null
+  - append:
+      tag: append_rfc3164_event_type
+      field: event.type
+      value: info
+      allow_duplicates: false
+      if: ctx._temp_?.syslog3164_ts != null
+  - set:
+      tag: set_rfc3164_event_kind
+      field: event.kind
+      value: event
+      override: false
+      if: ctx._temp_?.syslog3164_ts != null
   - rename:
       tag: rename_@timestamp_to_event_created_d44f61ca
       field: "@timestamp"
@@ -157,12 +234,85 @@ processors:
       pattern: '([+-])([0-9]):?([0-9]{2})'
       replacement: '$10$2:$3'
       ignore_missing: true
+  # The script context cannot read _ingest metadata. Copy it first so a
+  # document with no @timestamp still has a reference instant.
+  - set:
+      tag: set_rfc3164_ingest_ts
+      field: _temp_.ingest_ts
+      copy_from: _ingest.timestamp
+      ignore_empty_value: true
+      if: ctx._temp_?.syslog3164_ts != null && ctx.event?.created == null
+  # BSD timestamps omit the year. The year is the calendar year of the ingest
+  # time in the event timezone. Roll back one year when that local time is
+  # more than one day after the ingest instant. Roll forward one year when
+  # the candidate is more than one day before the ingest instant and the next
+  # year is still within one day after it (a January line while the collector
+  # is still in December).
+  - script:
+      tag: script_pin_rfc3164_year
+      description: >-
+        RFC 3164 timestamps have no year. The year is the calendar year of the
+        ingest time in the event timezone. It rolls back one year when that
+        local time is more than one day after the ingest instant, and forward
+        one year when the candidate is more than one day before the ingest
+        instant and the next year is at most one day after it. An invalid
+        timezone is stored and applied as UTC.
+      lang: painless
+      if: ctx._temp_?.syslog3164_ts != null
+      source: |
+        ZonedDateTime reference = null;
+        def created = ctx.event != null ? ctx.event.created : null;
+        if (created != null) {
+          if (created instanceof String) {
+            reference = ZonedDateTime.parse(created);
+          } else {
+            reference = created;
+          }
+        } else if (ctx._temp_ != null && ctx._temp_.ingest_ts != null) {
+          def ingestTs = ctx._temp_.ingest_ts;
+          if (ingestTs instanceof String) {
+            reference = ZonedDateTime.parse(ingestTs);
+          } else {
+            reference = ingestTs;
+          }
+        }
+        if (reference == null) {
+          throw new IllegalArgumentException('RFC 3164 year inference has no ingest timestamp');
+        }
+        ZoneId zone = ZoneId.of('UTC');
+        if (ctx.event != null && ctx.event.timezone != null && ctx.event.timezone.length() > 0) {
+          try {
+            zone = ZoneId.of(ctx.event.timezone);
+          } catch (Exception e) {
+            zone = ZoneId.of('UTC');
+            ctx.event.timezone = 'UTC';
+          }
+        }
+        String normalized = ctx._temp_.syslog3164_ts.replace('  ', ' ');
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern('MMM d HH:mm:ss yyyy', Locale.ENGLISH);
+        int year = reference.withZoneSameInstant(zone).getYear();
+        LocalDateTime local = LocalDateTime.parse(normalized + ' ' + year, formatter);
+        Instant localInstant = local.atZone(zone).toInstant();
+        if (localInstant.isAfter(reference.plusDays(1).toInstant())) {
+          year = year - 1;
+        } else if (localInstant.isBefore(reference.minusDays(1).toInstant())) {
+          Instant nextInstant = local.plusYears(1).atZone(zone).toInstant();
+          if (!nextInstant.isAfter(reference.plusDays(1).toInstant())) {
+            year = year + 1;
+          }
+        }
+        ctx._temp_.syslog3164_ts = normalized + ' ' + year;
+      on_failure:
+        - append:
+            tag: append_error_message_rfc3164_year
+            field: error.message
+            value: '{{{ _ingest.on_failure_message }}}'
   - date:
       tag: date_syslog5424_ts_a23f7813
       field: "syslog5424_ts"
       timezone: "{{{ event.timezone }}}"
       formats: ["ISO8601", "UNIX"]
-      if: "ctx.checkpoint?.time == null"
+      if: ctx.checkpoint?.time == null && ctx.syslog5424_ts != null
       on_failure:
         - remove:
             tag: remove_event_timezone_2443fee3
@@ -181,18 +331,60 @@ processors:
               - fail:
                   tag: fail_a0671c65
                   message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
+  - date:
+      tag: date_rfc3164_ts
+      field: _temp_.syslog3164_ts
+      target_field: '@timestamp'
+      timezone: '{{{ event.timezone }}}'
+      formats:
+        - MMM d HH:mm:ss yyyy
+        - MMM dd HH:mm:ss yyyy
+      if: ctx._temp_?.syslog3164_ts != null
+      on_failure:
+        - date:
+            tag: date_rfc3164_ts_utc
+            field: _temp_.syslog3164_ts
+            target_field: '@timestamp'
+            formats:
+              - MMM d HH:mm:ss yyyy
+              - MMM dd HH:mm:ss yyyy
+            on_failure:
+              - append:
+                  tag: append_error_message_rfc3164_ts
+                  field: error.message
+                  value: 'fail-{{{ _ingest.on_failure_processor_tag }}}'
+              # @timestamp was renamed to event.created before this date parse.
+              # Put a timestamp back before failing so the data stream can keep
+              # the pipeline_error document.
+              - set:
+                  tag: set_rfc3164_timestamp_from_created
+                  field: '@timestamp'
+                  copy_from: event.created
+                  ignore_empty_value: true
+                  override: false
+              - set:
+                  tag: set_rfc3164_timestamp_from_ingest
+                  field: '@timestamp'
+                  copy_from: _ingest.timestamp
+                  ignore_empty_value: true
+                  override: false
+              - fail:
+                  tag: fail_rfc3164_ts
+                  message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   # Some log events lack loguid and time, so to avoid potential
   # collisions hash the complete line in those rare cases.
+  # RFC 3164 lines share no loguid or time, but identical lines in the same
+  # second must not collapse onto one _id, so skip these fingerprints for them.
   - fingerprint:
       tag: fingerprint_8ae007da
-      if: ctx.checkpoint?.loguid == null && ctx.checkpoint?.time == null
+      if: ctx._temp_?.syslog3164_ts == null && ctx.checkpoint?.loguid == null && ctx.checkpoint?.time == null
       fields:
         - event.original
       target_field: "_id"
       ignore_missing: true
   - fingerprint:
       tag: fingerprint_93b78c95
-      if: ctx._id == null
+      if: ctx._id == null && ctx._temp_?.syslog3164_ts == null
       fields:
         - checkpoint.loguid
         - checkpoint.time
@@ -206,7 +398,7 @@ processors:
       tag: append_event_category_50e341d3
       field: event.category
       value: network
-      if: "!['Log In','Log Out'].contains(ctx.checkpoint?.operation) && !['Log In','Log Out'].contains(ctx.checkpoint?.action)"
+      if: "ctx._temp_?.syslog3164_ts == null && !['Log In','Log Out'].contains(ctx.checkpoint?.operation) && !['Log In','Log Out'].contains(ctx.checkpoint?.action)"
       allow_duplicates: false
   - set:
       tag: set_observer_vendor_922d3f8e
@@ -216,7 +408,7 @@ processors:
       tag: set_observer_type_816af994
       field: observer.type
       value: firewall
-      if: ctx.checkpoint?.type == null
+      if: ctx.checkpoint != null && ctx.checkpoint?.type == null
   - set:
       tag: set_observer_product_dc0f4418
       field: observer.product
@@ -560,6 +752,7 @@ processors:
       tag: set_host_name
       copy_from: checkpoint.hostname
       ignore_empty_value: true
+      if: ctx._temp_?.syslog3164_ts == null
   - convert:
       type: ip
       tag: convert_host_ip
