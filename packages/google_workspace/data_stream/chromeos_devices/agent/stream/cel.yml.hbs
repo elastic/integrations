@@ -46,8 +46,13 @@ program: |-
         state.url.trim_right("/") + "/admin/directory/v1/customer/" + state.customer + "/devices/chromeos?" + {
           "projection": ["FULL"],
           "maxResults": [string(int(state.batch_size))],
-          ?"orgUnitPath": (state.?org_unit_path.orValue("") != "") ? optional.of([state.org_unit_path]) : optional.none(),
-          ?"includeChildOrgunits": (state.?org_unit_path.orValue("") != "") ? optional.of(["true"]) : optional.none(),
+          // The API takes the path without its leading "/". The root path
+          // "/" becomes empty, which lists every device.
+          ?"orgUnitPath": (state.?org_unit_path.orValue("").trim_prefix("/") != "") ?
+            optional.of([state.org_unit_path.trim_prefix("/")])
+          :
+            optional.none(),
+          ?"includeChildOrgunits": (state.?org_unit_path.orValue("").trim_prefix("/") != "") ? optional.of(["true"]) : optional.none(),
           ?"pageToken": (page_token != "") ? optional.of([page_token]) : optional.none(),
         }.format_query()
       ).do_request().as(resp,

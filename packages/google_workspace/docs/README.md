@@ -276,7 +276,7 @@ The data stream is turned off by default.
 
 The Directory API has no filter for changed devices, so each cycle reads the whole device inventory again. The default interval is `24h`. Each request returns up to 100 devices (the **Page Size** setting, which Google allows up to 300).
 
-To collect only part of the inventory, set **Organizational Unit** under the data stream's advanced options. The data stream then collects the devices in that organizational unit and all its children. Use the full path, for example `/Sales`, or `id:` followed by the organizational unit ID.
+To collect only part of the inventory, set **Organizational Unit** under the data stream's advanced options. The data stream then collects the devices in that organizational unit and all its children. Use the full path, for example `/Sales` (the leading `/` is optional), or `id:` followed by the organizational unit ID.
 
 ## Requirements
 
@@ -3700,17 +3700,17 @@ An example event for `chromeos_devices` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-30T10:20:58.022Z",
+    "@timestamp": "2026-10-30T15:52:40.654Z",
     "agent": {
-        "ephemeral_id": "6b2e7564-6744-4f60-9ebd-347a8f71b075",
-        "id": "f8c36536-14ec-4203-8d34-0cc65063b199",
-        "name": "elastic-agent-92562",
+        "ephemeral_id": "4b6c11f3-10aa-417c-9daa-f9f333eebc1a",
+        "id": "036d188d-9189-4066-b31d-f84e44696c3e",
+        "name": "elastic-agent-42853",
         "type": "filebeat",
         "version": "9.5.5"
     },
     "data_stream": {
         "dataset": "google_workspace.chromeos_devices",
-        "namespace": "54801",
+        "namespace": "69883",
         "type": "logs"
     },
     "device": {
@@ -3721,7 +3721,7 @@ An example event for `chromeos_devices` looks as following:
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "f8c36536-14ec-4203-8d34-0cc65063b199",
+        "id": "036d188d-9189-4066-b31d-f84e44696c3e",
         "snapshot": false,
         "version": "9.5.5"
     },
@@ -3731,7 +3731,7 @@ An example event for `chromeos_devices` looks as following:
             "host"
         ],
         "dataset": "google_workspace.chromeos_devices",
-        "ingested": "2026-10-30T10:21:01Z",
+        "ingested": "2026-10-30T15:52:44Z",
         "kind": "asset",
         "module": "google_workspace",
         "original": "{\"activeTimeRanges\":[{\"activeTime\":\"3600000\",\"date\":\"2012-04-05\"}],\"annotatedAssetId\":\"1234567890\",\"annotatedLocation\":\"Example Corp help desk Chromebook\",\"annotatedUser\":\"help desk\",\"bootMode\":\"validated\",\"deviceId\":\"def45600-0000-4000-8000-000000000003\",\"etag\":\"1234567890\",\"firmwareVersion\":\"Firmware Version 1.2.3.4\",\"kind\":\"directory#chromeosdevice\",\"lastEnrollmentTime\":\"2012-04-05T17:30:04.325Z\",\"lastSync\":\"2013-03-05T17:30:04.325Z\",\"notes\":\"Loaned from support\",\"orderNumber\":\"1234\",\"orgUnitPath\":\"corp/engineering\",\"osVersion\":\"Browser Version 18.0\",\"platformVersion\":\"Platform Version 1415.2.0\",\"recentUsers\":[{\"email\":\"user@example.com\",\"type\":\"USER_TYPE_MANAGED\"}],\"serialNumber\":\"234567\",\"status\":\"ACTIVE\",\"supportEndDate\":\"2014-04-05T17:30:04.325Z\",\"willAutoRenew\":true}",
@@ -3773,7 +3773,7 @@ An example event for `chromeos_devices` looks as following:
             },
             "display_name": "1234567890",
             "id": "def45600-0000-4000-8000-000000000003",
-            "last_seen_timestamp": "2026-10-30T10:20:58.022Z",
+            "last_seen_timestamp": "2026-10-30T15:52:40.654Z",
             "lifecycle": {
                 "last_activity": "2013-03-05T17:30:04.325Z"
             },

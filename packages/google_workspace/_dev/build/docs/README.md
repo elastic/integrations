@@ -276,7 +276,7 @@ The data stream is turned off by default.
 
 The Directory API has no filter for changed devices, so each cycle reads the whole device inventory again. The default interval is `24h`. Each request returns up to 100 devices (the **Page Size** setting, which Google allows up to 300).
 
-To collect only part of the inventory, set **Organizational Unit** under the data stream's advanced options. The data stream then collects the devices in that organizational unit and all its children. Use the full path, for example `/Sales`, or `id:` followed by the organizational unit ID.
+To collect only part of the inventory, set **Organizational Unit** under the data stream's advanced options. The data stream then collects the devices in that organizational unit and all its children. Use the full path, for example `/Sales` (the leading `/` is optional), or `id:` followed by the organizational unit ID.
 
 ## Requirements
 

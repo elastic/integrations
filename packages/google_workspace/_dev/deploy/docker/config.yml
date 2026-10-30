@@ -4936,14 +4936,15 @@ rules:
           }
           `}}
   # ChromeOS devices limited to one organizational unit (the org_unit_path
-  # setting): orgUnitPath and includeChildOrgunits=true must both be sent.
+  # setting): orgUnitPath and includeChildOrgunits=true must both be sent. The
+  # setting is "/Lobby Kiosks"; the API takes the path without the leading "/".
   - path: /admin/directory/v1/customer/my_customer/devices/chromeos
     methods: [GET]
     query_params:
       projection: FULL
       maxResults: "3"
       pageToken: null
-      orgUnitPath: "/Lobby Kiosks"
+      orgUnitPath: "Lobby Kiosks"
       includeChildOrgunits: "true"
     request_headers:
       Authorization:
@@ -4979,6 +4980,34 @@ rules:
                 "lastKnownNetwork": [{"ipAddress": "192.0.2.90", "wanIpAddress": "203.0.113.42"}]
               }
             ]
+          }
+          `}}
+  # [CONSTRUCTED EXAMPLE] ChromeOS devices error-path script test
+  # (chromeos_devices_error.txt): the delegated admin cannot list devices.
+  - path: /admin/directory/v1/customer/C0forbidden/devices/chromeos
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 403
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "error": {
+              "code": 403,
+              "message": "Not Authorized to access this resource/api",
+              "errors": [
+                {
+                  "message": "Not Authorized to access this resource/api",
+                  "domain": "global",
+                  "reason": "forbidden"
+                }
+              ]
+            }
           }
           `}}
   # Directory API routes for the users entity data stream
