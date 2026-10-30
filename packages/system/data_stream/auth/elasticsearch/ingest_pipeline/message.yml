@@ -637,12 +637,12 @@ processors:
       tag: set_outcome-success
       field: event.outcome
       value: success
-      if: ctx.process?.name != null && (ctx.message == null || !ctx.message.contains("fail")) && ['groupadd', 'groupdel', 'groupmod', 'useradd', 'userdel', 'usermod'].contains(ctx.process.name)
+      if: ctx.process?.name != null && (ctx.message == null || !ctx.message.startsWith("fail")) && ['groupadd', 'groupdel', 'groupmod', 'useradd', 'userdel', 'usermod'].contains(ctx.process.name)
   - set:
       tag: set_outcome-failure
       field: event.outcome
       value: failure
-      if: ctx.process?.name != null && (ctx.message != null && ctx.message.contains("fail")) && ['groupadd', 'groupdel', 'groupmod', 'useradd', 'userdel', 'usermod'].contains(ctx.process.name)
+      if: ctx.process?.name != null && (ctx.message != null && ctx.message.startsWith("fail")) && ['groupadd', 'groupdel', 'groupmod', 'useradd', 'userdel', 'usermod'].contains(ctx.process.name)
   - append:
       tag: append_type-user
       field: event.type
