@@ -1,7 +1,7 @@
 format_version: 3.1.2
 name: kubernetes
 title: Kubernetes
-version: 1.85.5
+version: 1.86.0
 description: Collect logs and metrics from Kubernetes clusters with Elastic Agent.
 type: integration
 categories:
@@ -237,6 +237,22 @@ policy_templates:
       - type: filestream
         title: Collect Kubernetes container logs
         description: Collect Kubernetes container logs
+        template_path: container_logs.yml.hbs
+        vars:
+          - name: single_input
+            type: bool
+            title: Single input
+            multi: false
+            required: true
+            show_user: true
+            default: true
+            description: >-
+              Let Elastic Agent 9.6 and later collect the logs of all containers on the node with a single
+              filestream input watching a glob path, instead of one input per container. Elastic Agent converts the
+              configuration of this integration automatically and keeps the file read positions, so logs are not
+              re-ingested when the setting changes. Disable it to keep one input per container. A condition
+              that uses `${kubernetes.*}` variables always keeps one input per container. Earlier Elastic Agent
+              versions always use one input per container.
     icons:
       - src: /img/logo_kubernetes.svg
         title: Logo Kubernetes
