@@ -534,7 +534,8 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Host and device identity. The record has no hostname, so host.name uses
-  # the first non-empty of the asset ID, the serial number and the device ID.
+  # the serial number, or else the device ID. The asset ID is admin free text
+  # and need not be unique, so it only goes in host.entity.display_name.
   - set:
       field: host.id
       tag: set_host_id_from_device_id
@@ -552,15 +553,9 @@ processors:
       ignore_empty_value: true
   - set:
       field: host.name
-      tag: set_host_name_from_annotated_asset_id
-      copy_from: google_workspace.chromeos_devices.annotated_asset_id
-      ignore_empty_value: true
-  - set:
-      field: host.name
       tag: set_host_name_from_serial_number
       copy_from: google_workspace.chromeos_devices.serial_number
       ignore_empty_value: true
-      override: false
   - set:
       field: host.name
       tag: set_host_name_from_device_id
@@ -786,7 +781,8 @@ processors:
         ctx.host.entity.attributes.managed = managed;
 
   # Assigned user. annotatedUser is admin free text; map it to user.* only
-  # when it is an email address.
+  # when it is a bare email address: one '@' with text on both sides, and no
+  # whitespace, quotes, or address wrappers such as `<...>` or `(...)`.
   - set:
       field: user.email
       tag: set_user_email_from_annotated_user
@@ -797,7 +793,20 @@ processors:
           return false;
         }
         int at = u.indexOf('@');
-        return at > 0 && at == u.lastIndexOf('@') && at < u.length() - 1 && !u.contains(' ');
+        if (at <= 0 || at != u.lastIndexOf('@') || at >= u.length() - 1) {
+          return false;
+        }
+        for (int i = 0; i < u.length(); i++) {
+          if (Character.isWhitespace(u.charAt(i))) {
+            return false;
+          }
+        }
+        for (String c : ['<', '>', '(', ')', '[', ']', ',', ';', ':', '"', '\\']) {
+          if (u.contains(c)) {
+            return false;
+          }
+        }
+        return true;
   - dissect:
       field: user.email
       tag: dissect_user_name_and_domain_from_user_email

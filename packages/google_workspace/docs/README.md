@@ -315,7 +315,7 @@ The data stream calls `https://admin.googleapis.com`. You can change this with t
   | `DEPROVISIONED`, `INACTIVE`, `DELINQUENT`, `PRE_PROVISIONED` | `false` |
   | `RETURN_REQUESTED`, `RETURN_ARRIVED`, `SHIPPED`, `UNKNOWN`, absent or any other value | not set |
 
-- ChromeOS devices have no hostname. `host.name` is the asset ID set by an administrator, or else the serial number, or else the device ID.
+- ChromeOS devices have no hostname. `host.name` is the serial number, or else the device ID. The asset ID set by an administrator goes in `host.entity.display_name`.
 - The assigned user (`google_workspace.chromeos_devices.annotated_user`) is free text that administrators can edit. It is copied to `user.email`, `user.name` and `user.domain` only when it is an email address.
 - `host.ip` holds the devices' local IP addresses. The public (WAN) addresses are shared by many devices behind the same NAT, so they are only in `related.ip` and `google_workspace.chromeos_devices.last_known_network.wan_ip_address`.
 - Google returns some values in either camelCase or upper case, for example `chromeOs` or `CHROME_OS`. They are kept as received.
@@ -3700,17 +3700,17 @@ An example event for `chromeos_devices` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-13T15:46:28.988Z",
+    "@timestamp": "2026-10-30T10:20:58.022Z",
     "agent": {
-        "ephemeral_id": "ce4552fe-8c12-42c4-8258-b284feb6fd19",
-        "id": "be0aa37d-1af5-4a5a-8e87-63c2074be9c0",
-        "name": "elastic-agent-67407",
+        "ephemeral_id": "6b2e7564-6744-4f60-9ebd-347a8f71b075",
+        "id": "f8c36536-14ec-4203-8d34-0cc65063b199",
+        "name": "elastic-agent-92562",
         "type": "filebeat",
-        "version": "9.5.3"
+        "version": "9.5.5"
     },
     "data_stream": {
         "dataset": "google_workspace.chromeos_devices",
-        "namespace": "45763",
+        "namespace": "54801",
         "type": "logs"
     },
     "device": {
@@ -3721,9 +3721,9 @@ An example event for `chromeos_devices` looks as following:
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "be0aa37d-1af5-4a5a-8e87-63c2074be9c0",
+        "id": "f8c36536-14ec-4203-8d34-0cc65063b199",
         "snapshot": false,
-        "version": "9.5.3"
+        "version": "9.5.5"
     },
     "event": {
         "agent_id_status": "verified",
@@ -3731,7 +3731,7 @@ An example event for `chromeos_devices` looks as following:
             "host"
         ],
         "dataset": "google_workspace.chromeos_devices",
-        "ingested": "2026-10-13T15:46:32Z",
+        "ingested": "2026-10-30T10:21:01Z",
         "kind": "asset",
         "module": "google_workspace",
         "original": "{\"activeTimeRanges\":[{\"activeTime\":\"3600000\",\"date\":\"2012-04-05\"}],\"annotatedAssetId\":\"1234567890\",\"annotatedLocation\":\"Example Corp help desk Chromebook\",\"annotatedUser\":\"help desk\",\"bootMode\":\"validated\",\"deviceId\":\"def45600-0000-4000-8000-000000000003\",\"etag\":\"1234567890\",\"firmwareVersion\":\"Firmware Version 1.2.3.4\",\"kind\":\"directory#chromeosdevice\",\"lastEnrollmentTime\":\"2012-04-05T17:30:04.325Z\",\"lastSync\":\"2013-03-05T17:30:04.325Z\",\"notes\":\"Loaned from support\",\"orderNumber\":\"1234\",\"orgUnitPath\":\"corp/engineering\",\"osVersion\":\"Browser Version 18.0\",\"platformVersion\":\"Platform Version 1415.2.0\",\"recentUsers\":[{\"email\":\"user@example.com\",\"type\":\"USER_TYPE_MANAGED\"}],\"serialNumber\":\"234567\",\"status\":\"ACTIVE\",\"supportEndDate\":\"2014-04-05T17:30:04.325Z\",\"willAutoRenew\":true}",
@@ -3773,11 +3773,11 @@ An example event for `chromeos_devices` looks as following:
             },
             "display_name": "1234567890",
             "id": "def45600-0000-4000-8000-000000000003",
-            "last_seen_timestamp": "2026-10-13T15:46:28.988Z",
+            "last_seen_timestamp": "2026-10-30T10:20:58.022Z",
             "lifecycle": {
                 "last_activity": "2013-03-05T17:30:04.325Z"
             },
-            "name": "1234567890",
+            "name": "234567",
             "source": "google_workspace",
             "sub_type": "chrome_os_device",
             "type": [
@@ -3788,7 +3788,7 @@ An example event for `chromeos_devices` looks as following:
             "name": "Example Corp help desk Chromebook"
         },
         "id": "def45600-0000-4000-8000-000000000003",
-        "name": "1234567890",
+        "name": "234567",
         "os": {
             "family": "chromeos",
             "full": "ChromeOS Browser Version 18.0",
@@ -3839,7 +3839,7 @@ An example event for `chromeos_devices` looks as following:
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |  |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
-| google_workspace.chromeos_devices.annotated_asset_id | The asset identifier noted by an administrator or entered during enrollment. Used for `host.name` and `host.entity.display_name` when present. | keyword |  |
+| google_workspace.chromeos_devices.annotated_asset_id | The asset identifier noted by an administrator or entered during enrollment. Used for `host.entity.display_name` when present. | keyword |  |
 | google_workspace.chromeos_devices.annotated_location | The address or location of the device as noted by an administrator. Copied to `host.geo.name`. | keyword |  |
 | google_workspace.chromeos_devices.annotated_user | The user of the device as noted by an administrator. This is admin free text (up to 100 characters), pre-filled with the account that enrolled the device, and is not necessarily an email address. It is copied to `user.email`, `user.name` (local part) and `user.domain` only when it is an email address. | keyword |  |
 | google_workspace.chromeos_devices.auto_update_expiration | The time after which the device stops receiving Chrome updates or support. Deprecated by Google in favour of `auto_update_through`. | date |  |
@@ -3888,7 +3888,7 @@ An example event for `chromeos_devices` looks as following:
 | google_workspace.chromeos_devices.platform_version | The Chrome device's platform version (the ChromeOS build). | keyword |  |
 | google_workspace.chromeos_devices.recent_users.email | The user's email address. Only present for `USER_TYPE_MANAGED` users. Added to `related.user`. | keyword |  |
 | google_workspace.chromeos_devices.recent_users.type | The type of the user, `USER_TYPE_MANAGED` or `USER_TYPE_UNMANAGED`. | keyword |  |
-| google_workspace.chromeos_devices.serial_number | The Chrome device serial number entered when the device was enabled. Copied to `device.serial_number`. | keyword |  |
+| google_workspace.chromeos_devices.serial_number | The Chrome device serial number entered when the device was enabled. Copied to `device.serial_number` and used for `host.name`. | keyword |  |
 | google_workspace.chromeos_devices.status | The status of the device, for example `ACTIVE`, `DEPROVISIONED` or `DISABLED`. It sets `host.entity.attributes.managed`, compared case-insensitively: `true` for `ACTIVE` and `DISABLED`; `false` for `DEPROVISIONED`, `INACTIVE`, `DELINQUENT` and `PRE_PROVISIONED`; not set for `RETURN_REQUESTED`, `RETURN_ARRIVED`, `SHIPPED`, `UNKNOWN`, any other value or when the status is absent. | keyword |  |
 | google_workspace.chromeos_devices.support_end_date | The final date the device will be supported. | date |  |
 | google_workspace.chromeos_devices.system_ram_total | Total RAM on the device, in bytes. | long | byte |

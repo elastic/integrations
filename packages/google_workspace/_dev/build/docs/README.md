@@ -315,7 +315,7 @@ The data stream calls `https://admin.googleapis.com`. You can change this with t
   | `DEPROVISIONED`, `INACTIVE`, `DELINQUENT`, `PRE_PROVISIONED` | `false` |
   | `RETURN_REQUESTED`, `RETURN_ARRIVED`, `SHIPPED`, `UNKNOWN`, absent or any other value | not set |
 
-- ChromeOS devices have no hostname. `host.name` is the asset ID set by an administrator, or else the serial number, or else the device ID.
+- ChromeOS devices have no hostname. `host.name` is the serial number, or else the device ID. The asset ID set by an administrator goes in `host.entity.display_name`.
 - The assigned user (`google_workspace.chromeos_devices.annotated_user`) is free text that administrators can edit. It is copied to `user.email`, `user.name` and `user.domain` only when it is an email address.
 - `host.ip` holds the devices' local IP addresses. The public (WAN) addresses are shared by many devices behind the same NAT, so they are only in `related.ip` and `google_workspace.chromeos_devices.last_known_network.wan_ip_address`.
 - Google returns some values in either camelCase or upper case, for example `chromeOs` or `CHROME_OS`. They are kept as received.
