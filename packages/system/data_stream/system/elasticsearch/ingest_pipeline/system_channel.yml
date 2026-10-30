@@ -1,5 +1,5 @@
 ---
-description: Pipeline for forwarded Windows System channel events
+description: Pipeline for Windows System channel events 6005 and 7045
 processors:
   - script:
       lang: painless
@@ -30,9 +30,25 @@ processors:
         def code = ctx.event.code.toString();
         if (code == "6005") {
           def provider = ctx.winlog?.provider_name;
-          if (!(provider instanceof String) || provider != "EventLog") {
-            return;
+          if (provider == "EventLog") {
+            params.get(code).forEach((k, v) -> {
+              if (v instanceof List) {
+                ctx.event[k] = new ArrayList(v);
+              } else {
+                ctx.event[k] = v;
+              }
+            });
+          } else if (provider == "Microsoft-Windows-Winlogon") {
+            def categories = new ArrayList();
+            categories.add("session");
+            def types = new ArrayList();
+            types.add("info");
+            ctx.event.kind = "event";
+            ctx.event.category = categories;
+            ctx.event.type = types;
+            ctx.event.action = "winlogon-notification-slow";
           }
+          return;
         }
         if (params.get(code) == null) {
           return;
@@ -51,8 +67,7 @@ processors:
       description: >
         Map Windows System event 7045 (a service was installed) into ECS.
         Named event_data fields are preferred. param1 through param5 are the
-        unnamed equivalents from older events. No customer sample was available
-        for 7045; the field positions follow the Service Control Manager schema.
+        unnamed equivalents from older events.
       params:
         service_types:
           "1": "Kernel Driver"
@@ -149,7 +164,7 @@ processors:
             ctx.process.put("name", parts[-1]);
           }
         }
-        if (ctx.user == null && (ctx.winlog?.user?.name != null || ctx.winlog?.user?.domain != null || ctx.winlog?.user?.identifier != null)) {
+        if (ctx.user == null && (ctx.winlog?.user?.name != null || ctx.winlog?.user?.domain != null || ctx.winlog?.user?.identifier != null || accountName != null)) {
           ctx.put("user", new HashMap());
         }
         if (ctx.user?.name == null && ctx.winlog?.user?.name != null && ctx.winlog.user.name != "") {
@@ -161,23 +176,35 @@ processors:
         if (ctx.user?.id == null && ctx.winlog?.user?.identifier != null && ctx.winlog.user.identifier != "") {
           ctx.user.put("id", ctx.winlog.user.identifier.toString());
         }
-        if (ctx.user?.name == null && ctx.user?.id == null && ctx.user?.domain == null && accountName != null) {
+        if (accountName != null) {
           if (ctx.user == null) {
             ctx.put("user", new HashMap());
           }
-          def userName = accountName;
+          if (ctx.user.target == null) {
+            ctx.user.put("target", new HashMap());
+          }
+          def targetName = accountName;
+          def targetDomain = null;
           if (accountName.contains("\\")) {
             def domainParts = accountName.splitOnToken("\\");
             if (domainParts.length > 1 && domainParts[0].length() > 0 && domainParts[-1].length() > 0) {
-              ctx.user.put("domain", domainParts[0]);
-              userName = domainParts[-1];
+              targetDomain = domainParts[0];
+              targetName = domainParts[-1];
             }
           }
-          ctx.user.put("name", userName);
+          if (ctx.user.target.name == null) {
+            ctx.user.target.put("name", targetName);
+          }
+          if (targetDomain != null && ctx.user.target.domain == null) {
+            ctx.user.target.put("domain", targetDomain);
+          }
         }
         def names = new ArrayList();
         if (ctx.user?.name != null && ctx.user.name != "") {
           names.add(ctx.user.name);
+        }
+        if (ctx.user?.target?.name != null && ctx.user.target.name != "" && !names.contains(ctx.user.target.name)) {
+          names.add(ctx.user.target.name);
         }
         if (accountName != null && !names.contains(accountName)) {
           names.add(accountName);
