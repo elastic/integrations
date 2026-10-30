@@ -32,6 +32,20 @@ The **Cluster ID** is displayed in the upper-right corner of the management inte
 4. Add all the required integration configuration parameters, including Cluster ID and Access Token.
 5. Save the integration.
 
+### WebSocket keep-alive
+
+Keep Alive is disabled by default. When enabled for an Audit, Mail, or Message
+stream, the default **Keep Alive Interval** is 10 seconds and the default
+**Write Control Deadline** is 10 seconds. The streaming input derives its read
+deadline as three times the write control deadline. Keep the ping interval
+**strictly shorter** than that read deadline to avoid repeated disconnects.
+
+For example, an interval of 1 minute requires a write control deadline greater
+than 20 seconds. When using a non-default interval, set both values in the
+integration policy; changing the interval alone can cause a client-side timeout.
+See the [Filebeat streaming input](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-streaming#keep-alive-configuration)
+for further keep-alive configuration guidance.
+
 ## Logs Reference
 
 ### Audit
