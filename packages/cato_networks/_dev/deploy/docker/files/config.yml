@@ -1,4 +1,79 @@
 rules:
+  # Event Datastream with filters (account 33333)
+  # Second Matching Rule
+  - path: /api/v1/graphql2
+    methods: ["POST"]
+    request_body: /.*"accountIDs":\["33333"\],"filters":\[\{"fieldName":"event_sub_type","operator":"in","values":\["WAN Firewall"\]\}\].*"marker":"filtermarker1".*/
+    request_headers:
+      X-Api-Key:
+        - "xxxx"
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+            {
+              "data": {
+                "eventsFeed": {
+                  "fetchedCount": 1,
+                  "marker": "filtermarker2",
+                  "accounts": [
+                    {
+                      "errorString": "",
+                      "records": [
+                        {
+                          "fieldsMap": {
+                            "account_id": "33333",
+                            "account_name": "Demo-Mode",
+                            "action": "Allow",
+                            "dest_ip": "81.2.69.142",
+                            "dest_port": "443",
+                            "event_count": "1",
+                            "event_id": "c3f1a2b4d5e60718",
+                            "event_sub_type": "WAN Firewall",
+                            "event_type": "Security",
+                            "internalId": "c3f1a2b4d5e60718",
+                            "internal_id": "c3f1a2b4d5e60718",
+                            "ip_protocol": "TCP",
+                            "rule_name": "Allow WAN",
+                            "src_ip": "1.128.0.0",
+                            "src_port": "50321",
+                            "time": "1772693100000",
+                            "time_str": "2026-03-05T06:45:00Z"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          `}}
+  # First Matching Rule
+  - path: /api/v1/graphql2
+    methods: ["POST"]
+    request_body: /.*"accountIDs":\["33333"\],"filters":\[\{"fieldName":"event_sub_type","operator":"in","values":\["WAN Firewall"\]\}\].*/
+    request_headers:
+      X-Api-Key:
+        - "xxxx"
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+            {
+              "data": {
+                "eventsFeed": {
+                  "fetchedCount": 0,
+                  "marker": "filtermarker1",
+                  "accounts": [
+                    {
+                      "errorString": "",
+                      "records": []
+                    }
+                  ]
+                }
+              }
+            }
+          `}}
   # Event Datastream
   # Fourth Matching Rule
   - path: /api/v1/graphql2

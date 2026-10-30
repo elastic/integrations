@@ -114,9 +114,54 @@ For example, at about 1.4 seconds per request the integration can collect roughl
 
 - **`Maximum Pages Per Cycle` (`max_executions`)**: limits how many pages the integration requests back to back in one cycle (default `1000`, up to 3,000,000 events). When the limit is reached, the Elastic Agent logs a warning containing `maximum number of CEL executions`, and the next cycle starts at the next `Interval` tick, which is immediately if the cycle took longer than the `Interval`. A full-`Interval` pause therefore only happens on the first cycle after the input starts or restarts (for example after a policy change or an Elastic Agent restart), or when cycles are shorter than the `Interval`. Raising this value does not raise the throughput ceiling described above.
 - **Processors such as `drop_event`** run after events have been fetched. They reduce the volume indexed in Elasticsearch, but not the number of events fetched per second, so they do not reduce the delay.
+- **`Filters`** are applied by the Cato Networks API before events are returned, so they reduce the volume fetched by an instance. Combined with several integration instances, they let you split collection (see [Splitting collection across multiple instances](#splitting-collection-across-multiple-instances)).
 - **Elasticsearch and Elastic Agent output tuning** does not help when the bottleneck is retrieval from the Cato Networks API.
 
 A delay that keeps growing should be addressed promptly: the marker expires after 3 days (see [Limitation](#limitation)), after which events that were not yet collected are permanently lost.
+
+#### Splitting collection across multiple instances
+
+Each integration instance keeps its own marker and receives up to 3000 events per request, so several instances that collect disjoint sets of events can run in parallel. To split collection, add the integration several times, each on its own agent policy, and set the `Filters` advanced option of the `event` data stream to a different filter. The value is a list of `EventFeedFieldFilterInput` objects sent as the `filters` argument of the EventsFeed query:
+
+- `fieldName`: `event_type` or `event_sub_type`.
+- `operator`: `in`, `not_in`, `is`, or `is_not`.
+- `values`: exact event type or subtype strings, as returned by Cato Networks.
+
+For example, to collect WAN Firewall events, Internet Firewall events, and all remaining events with three instances:
+
+Instance 1:
+
+```yaml
+- fieldName: event_sub_type
+  operator: in
+  values:
+    - WAN Firewall
+```
+
+Instance 2:
+
+```yaml
+- fieldName: event_sub_type
+  operator: in
+  values:
+    - Internet Firewall
+```
+
+Instance 3:
+
+```yaml
+- fieldName: event_sub_type
+  operator: not_in
+  values:
+    - WAN Firewall
+    - Internet Firewall
+```
+
+Keep the following in mind:
+
+- Filters across instances must be exclusive and together cover every event you want. Overlapping filters ingest duplicates, and gaps lose events.
+- When filters are applied, Cato Networks scans its event queue until matching events are found or a search limit is reached, so a request can return fewer than 3000 events even when more matching events are pending.
+- All instances share the account rate limit described in [Rate Limiting](#rate-limiting). Lower `Resource Rate Limit` on each instance so that the total stays under 100 requests per minute.
 
 ## Limitation:
 
