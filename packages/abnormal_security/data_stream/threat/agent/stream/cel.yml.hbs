@@ -36,14 +36,18 @@ program: |
           state.with({
             "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
             "end_time": now.format(time_layout.RFC3339),
+            // Each poll makes two passes over the same window: threats received
+            // in it, then threats remediated in it, to catch status changes.
+            "filter_field": "receivedTime",
           })
-      ).as(state, state.with(
+      // Drop the exhausted worklist so that a failed list request exits early below.
+      ).as(state, state.drop("worklist").with(
         request(
           "GET",
           state.url.trim_right("/") + "/v1/threats?" + {
             "pageSize": [string(state.page_size)],
             "pageNumber": [string(state.next_page)],
-            "filter":["receivedTime gte " + state.start_time + " lte " + state.end_time]
+            "filter":[state.filter_field + " gte " + state.start_time + " lte " + state.end_time]
           }.format_query()
         ).with({
           "Header":{
@@ -74,6 +78,7 @@ program: |
       ))
   ).as(state, state.with(
     !has(state.worklist) ? state : // Exit early due to GET failure.
+    (
       has(state.worklist.threats) && size(state.worklist.threats) > 0 ?
         request("GET",
           state.url.trim_right("/") + "/v1/threats/" + string(state.worklist.threats[state.next].threatId) + "?" + {
@@ -131,9 +136,6 @@ program: |
               :
                 e.encode_json()
             }),
-            "cursor": {
-              "last_timestamp": state.end_time
-            },
             "worklist": int(state.next) + 1 < size(state.worklist.threats) || has(body.nextPageNumber) ? state.worklist : {},
             "child_next_page": has(body.nextPageNumber) ? body.nextPageNumber : 1,
             "next": (
@@ -152,9 +154,6 @@ program: |
           // Threat deleted before detail fetch: skip.
           {
             "events": [{"retry": true}],
-            "cursor": {
-              "last_timestamp": state.end_time
-            },
             "worklist": int(state.next) + 1 < size(state.worklist.threats) ? state.worklist : {},
             "child_next_page": 1,
             "next": (
@@ -180,9 +179,6 @@ program: |
                 ),
               },
             }],
-            "cursor": {
-              "last_timestamp": state.end_time
-            },
             "worklist": int(state.next) + 1 < size(state.worklist.threats) ? state.worklist : {},
             "child_next_page": 1,
             "next": (
@@ -201,8 +197,29 @@ program: |
           "want_more": false,
           "next_page": 1
         }
+    ).as(result,
+      result.want_more ?
+        result
+      : state.filter_field == "receivedTime" ?
+        // Received pass done: start the remediated pass over the same window.
+        // An empty events list stops evaluation, so emit a placeholder.
+        result.with({
+          "events": size(result.events) > 0 ? result.events : [{"retry": true}],
+          "filter_field": "latestTimeRemediated",
+          "next_page": 1,
+          "want_more": true,
+        })
+      :
+        // Both passes done: advance the cursor. A placeholder event is needed
+        // for the cursor to be stored.
+        result.with({
+          "events": size(result.events) > 0 ? result.events : [{"retry": true}],
+          "cursor": {
+            "last_timestamp": state.end_time
+          },
+        })
     )
-  )
+  ))
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
