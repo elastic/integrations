@@ -4,7 +4,7 @@ source:
     - serverless_billing_cost_lookup
 dest:
   index: serverless_billing_realized_pool_lookup
-  pipeline: logs-chargeback_serverless.lookup-0.3.4-realized_pool
+  pipeline: logs-chargeback_serverless.lookup-0.3.5-realized_pool
 frequency: 5m
 sync:
   time:
@@ -54,10 +54,21 @@ pivot:
         val:
           sum:
             field: total_ecu
+    conf_chargeable_unit_rate:
+      max:
+        field: conf_chargeable_unit_rate
+    conf_chargeable_unit_rate_unit:
+      terms:
+        field: conf_chargeable_unit_rate_unit
+        size: 1
+    conf_currency_symbol:
+      terms:
+        field: conf_currency_symbol
+        size: 1
 settings:
   deduce_mappings: false
   unattended: true
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.3.4
+  fleet_transform_version: 0.3.5

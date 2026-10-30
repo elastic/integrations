@@ -63,6 +63,28 @@ processors:
         ctx.data_tier_capacity_ecu = cap;
         ctx.realized_chargeable_units = cap;
         ctx.total_chargeable_units = cap + ai;
+        if (ctx.conf_chargeable_unit_rate_unit instanceof Map) {
+          def buckets = ctx.conf_chargeable_unit_rate_unit.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.conf_chargeable_unit_rate_unit = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.conf_chargeable_unit_rate_unit.keySet());
+            ctx.conf_chargeable_unit_rate_unit = keys.size() > 0 ? keys[0] : null;
+          }
+        }
+        if (ctx.conf_currency_symbol instanceof Map) {
+          def buckets = ctx.conf_currency_symbol.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.conf_currency_symbol = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.conf_currency_symbol.keySet());
+            ctx.conf_currency_symbol = keys.size() > 0 ? keys[0] : null;
+          }
+        }
+        if (ctx.conf_chargeable_unit_rate instanceof Map) {
+          def v = ctx.conf_chargeable_unit_rate.value;
+          ctx.conf_chargeable_unit_rate = v != null ? ((Number)v).doubleValue() : 1.0;
+        }
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
