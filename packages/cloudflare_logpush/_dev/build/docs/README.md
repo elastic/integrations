@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Browser Isolation User Actions, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Email Security Post Delivery Events, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
 
 Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
@@ -39,6 +39,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 
 - `access_request`: HTTP requests to sites protected by Cloudflare Access. See [Access Requests schema](https://developers.cloudflare.com/logs/reference/log-fields/account/access_requests/).
 - `audit`: Authentication events through Cloudflare Access, plus account-level configuration and administrative actions. See [Audit Logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/audit_logs/).
+- `biso_user_actions`: User actions (copy, paste, download, upload, and print) performed in Cloudflare Browser Isolation sessions, with the decision applied by isolation policies. See [Browser Isolation User Actions schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/biso_user_actions/).
 - `casb`: Security issues detected by Cloudflare CASB in connected SaaS applications. See [CASB Findings schema](https://developers.cloudflare.com/logs/reference/log-fields/account/casb_findings/).
 - `device_posture`: Device posture status from the Cloudflare One Client (WARP). See [Device Posture Results schema](https://developers.cloudflare.com/logs/reference/log-fields/account/device_posture_results/).
 - `gateway_dns`: DNS queries inspected by Cloudflare Gateway. See [Gateway DNS schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_dns/).
@@ -54,6 +55,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 - `dns_firewall`: Cloudflare DNS Firewall query and response logs. See [DNS Firewall logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/dns_firewall_logs/).
 - `dlp_forensic_copies`: Data Loss Prevention forensic copies of content that matched a DLP profile. See [DLP Forensic Copies schema](https://developers.cloudflare.com/logs/reference/log-fields/account/dlp_forensic_copies/).
 - `email_security_alerts`: Cloudflare Email Security alerts for phishing, malware, and other email-based threats. See [Email Security Alerts schema](https://developers.cloudflare.com/logs/reference/log-fields/account/email_security_alerts/).
+- `email_security_post_delivery_events`: Post-delivery actions (move, submission, and quarantine release) taken by Cloudflare Email Security on already delivered email messages. See [Email Security Post Delivery Events schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/email_security_post_delivery_events/).
 - `firewall_event`: Zone-level Firewall events for requests mitigated by Cloudflare security products (WAF, Rate Limiting, Firewall Rules, etc.). See [Firewall Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/firewall_events/).
 - `http_request`: HTTP/HTTPS request logs served at the Cloudflare edge. See [HTTP Requests schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/http_requests/).
 - `magic_ids`: Magic Network Monitoring IDS detection logs. See [Magic IDS Detections schema](https://developers.cloudflare.com/logs/reference/log-fields/account/magic_ids_detections/).
@@ -69,8 +71,8 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 Integrating Cloudflare Logpush with Elastic provides centralized visibility across Cloudflare's edge, Zero Trust, and network-layer products. Common use cases include:
 
 - Investigating traffic, WAF, and DDoS-mitigation events from the Cloudflare edge (`http_request`, `firewall_event`, `network_analytics`).
-- Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `warp_config_changes`, `warp_toggle_changes`).
-- Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
+- Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `warp_config_changes`, `warp_toggle_changes`, `biso_user_actions`).
+- Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`, `email_security_post_delivery_events`).
 - Auditing administrative activity on the Cloudflare account (`audit`).
 - Troubleshooting DNS and client-side performance issues (`dns`, `dns_firewall`, `nel_report`, `workers_trace`).
 
@@ -89,7 +91,7 @@ To use this integration, you must be able to create and manage [Cloudflare Logpu
 Creating and managing Logpush jobs requires an API token or user role with the `Logs Write` permission (or a role that includes it, such as **Super Administrator**, **Administrator**, or **Log Share** with edit permissions). Refer to [Cloudflare Logpush permissions](https://developers.cloudflare.com/logs/logpush/permissions/) for details.
 
 - **Zone-scoped datasets** (for example, `http_requests`, `firewall_events`, `dns_logs`, `spectrum_events`, `nel_reports`, `page_shield_events`) require a **zone-scoped token**.
-- **Account-scoped datasets** (for example, `audit_logs`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
+- **Account-scoped datasets** (for example, `audit_logs`, `access_requests`, `biso_user_actions`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `email_security_post_delivery_events`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
 - Zero Trust datasets (Access, Gateway, DEX) additionally require `Zero Trust: PII Read`.
 
 **Destination-specific credentials**
@@ -118,31 +120,33 @@ Configure one of the following delivery pipelines before enabling the integratio
 - Configure [Cloudflare Logpush to Amazon S3](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/aws-s3/) to send Cloudflare's data to an AWS S3 bucket.
 - The default values of the **Bucket Prefix** are listed below. However, users can set the parameter **Bucket Prefix** according to their requirements.
 
-  | Data Stream Name           | Bucket Prefix          |
-  | -------------------------- | ---------------------- |
-  | Access Request             | access_request         |
-  | Audit Logs                 | audit_logs             |
-  | CASB findings              | casb                   |
-  | Device Posture Results     | device_posture         |
-  | DLP Forensic Copies        | dlp_forensic_copies    |
-  | DNS                        | dns                    |
-  | DNS Firewall               | dns_firewall           |
-  | Email Security Alerts      | email_security_alerts  |
-  | Firewall Event             | firewall_event         |
-  | Gateway DNS                | gateway_dns            |
-  | Gateway HTTP               | gateway_http           |
-  | Gateway Network            | gateway_network        |
-  | HTTP Request               | http_request           |
-  | Magic IDS                  | magic_ids              |
-  | NEL Report                 | nel_report             |
-  | Network Analytics          | network_analytics_logs |
-  | Page Shield Events         | page_shield_events     |
-  | Zero Trust Network Session | network_session        |
-  | Sinkhole HTTP              | sinkhole_http          |
-  | Spectrum Event             | spectrum_event         |
-  | WARP Config Changes        | warp_config_changes    |
-  | WARP Toggle Changes        | warp_toggle_changes    |
-  | Workers Trace Events       | workers_trace          |
+  | Data Stream Name                    | Bucket Prefix                       |
+  | ----------------------------------- | ----------------------------------- |
+  | Access Request                      | access_request                      |
+  | Audit Logs                          | audit_logs                          |
+  | Browser Isolation User Actions      | biso_user_actions                   |
+  | CASB findings                       | casb                                |
+  | Device Posture Results              | device_posture                      |
+  | DLP Forensic Copies                 | dlp_forensic_copies                 |
+  | DNS                                 | dns                                 |
+  | DNS Firewall                        | dns_firewall                        |
+  | Email Security Alerts               | email_security_alerts               |
+  | Email Security Post Delivery Events | email_security_post_delivery_events |
+  | Firewall Event                      | firewall_event                      |
+  | Gateway DNS                         | gateway_dns                         |
+  | Gateway HTTP                        | gateway_http                        |
+  | Gateway Network                     | gateway_network                     |
+  | HTTP Request                        | http_request                        |
+  | Magic IDS                           | magic_ids                           |
+  | NEL Report                          | nel_report                          |
+  | Network Analytics                   | network_analytics_logs              |
+  | Page Shield Events                  | page_shield_events                  |
+  | Zero Trust Network Session          | network_session                     |
+  | Sinkhole HTTP                       | sinkhole_http                       |
+  | Spectrum Event                      | spectrum_event                      |
+  | WARP Config Changes                 | warp_config_changes                 |
+  | WARP Toggle Changes                 | warp_toggle_changes                 |
+  | Workers Trace Events                | workers_trace                       |
 
 #### Collect data from AWS SQS
 
@@ -305,6 +309,16 @@ This is the `audit` dataset.
 
 {{fields "audit"}}
 
+#### biso_user_actions
+
+This is the `biso_user_actions` dataset.
+
+##### Example
+
+{{event "biso_user_actions"}}
+
+{{fields "biso_user_actions"}}
+
 #### casb
 
 This is the `casb` dataset.
@@ -364,6 +378,16 @@ This is the `email_security_alerts` dataset.
 {{event "email_security_alerts"}}
 
 {{fields "email_security_alerts"}}
+
+#### email_security_post_delivery_events
+
+This is the `email_security_post_delivery_events` dataset.
+
+##### Example
+
+{{event "email_security_post_delivery_events"}}
+
+{{fields "email_security_post_delivery_events"}}
 
 #### firewall_event
 
