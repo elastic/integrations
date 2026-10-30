@@ -173,9 +173,6 @@ An example event for `inventory` looks as following:
     "host": {
         "id": "5982CE36-4526-580B-B4B9-ECC6782535BB",
         "name": "acme-C07DM3AZQ6NV",
-        "address": [
-            "10.122.26.87"
-        ],
         "ip": [
             "10.122.26.87"
         ]
@@ -465,9 +462,6 @@ An example event for `events` looks as following:
         ]
     },
     "host": {
-        "address": [
-            "89.160.20.156"
-        ],
         "entity": {
             "lifecycle": {
                 "last_activity": "2024-09-04T09:57:52.001Z"
