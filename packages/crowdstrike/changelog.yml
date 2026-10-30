@@ -1,4 +1,16 @@
 # newer versions go on top
+- version: "5.0.0"
+  changes:
+    - description: |
+        Remove the deprecated FDR ingest-time cache enrichment and its `enrich_metadata`, `enrich_host_metadata`, `keep_metadata`, `metadata_ttl`, `metadata_cache_capacity` and `metadata_cache_write_interval` settings.
+        `aidmaster` and `userinfo` events are now always indexed.
+        `crowdstrike.info.*` is no longer stored on FDR events, and `host.ip` is no longer set from the `aidmaster` external IP.
+        Rewrite rules that filter on stored `crowdstrike.info.*` fields as ES|QL queries that use `LOOKUP JOIN` against `crowdstrike_lookup.aidmaster` and `crowdstrike_lookup.userinfo`.
+      type: breaking-change
+      link: https://github.com/elastic/integrations/pull/99999
+    - description: Remove metadata file sorting from the FDR SQS notification parsing script.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/99999
 - version: "4.10.0"
   changes:
     - description: Add support for APIActivityAuditEvent in the Falcon data stream.
