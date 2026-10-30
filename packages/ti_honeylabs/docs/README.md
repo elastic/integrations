@@ -136,24 +136,24 @@ An example event for `exploiter` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-29T20:46:30.899Z",
+    "@timestamp": "2026-10-30T13:34:51.048Z",
     "agent": {
-        "ephemeral_id": "80791c8e-4be4-4161-86c1-7b683a30f50a",
-        "id": "7b86c944-c526-46b3-a53e-7ae2ebe90d56",
-        "name": "elastic-agent-37910",
+        "ephemeral_id": "0f7369f0-2593-4da6-974b-38e16027f548",
+        "id": "e8667f29-f815-4135-88e0-63b7cc233503",
+        "name": "elastic-agent-63458",
         "type": "filebeat",
         "version": "9.5.5"
     },
     "data_stream": {
         "dataset": "ti_honeylabs.exploiter",
-        "namespace": "29961",
+        "namespace": "22094",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.17.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "7b86c944-c526-46b3-a53e-7ae2ebe90d56",
+        "id": "e8667f29-f815-4135-88e0-63b7cc233503",
         "snapshot": false,
         "version": "9.5.5"
     },
@@ -163,7 +163,7 @@ An example event for `exploiter` looks as following:
             "threat"
         ],
         "dataset": "ti_honeylabs.exploiter",
-        "ingested": "2026-10-29T20:46:34Z",
+        "ingested": "2026-10-30T13:34:55Z",
         "kind": "enrichment",
         "module": "ti_honeylabs",
         "original": "{\"confidence\":90,\"created\":\"2026-10-22T20:38:45.000Z\",\"description\":\"Ran exploit or loader commands against HoneyLabs honeypot sensors from AS206264 (DE): 327 events between 2026-10-22T20:38:45.000Z and 2026-10-29T19:59:29.000Z. 327 of them were interactive sessions in which it logged in and ran commands or named a download. Its interactive sessions showed MITRE ATT\\u0026CK T1190 Exploit Public-Facing Application, T1105 Ingress Tool Transfer.\",\"external_references\":[{\"source_name\":\"HoneyLabs\",\"url\":\"https://honeylabs.net/lookup/89.160.20.112\"},{\"external_id\":\"T1190\",\"source_name\":\"mitre-attack\",\"url\":\"https://attack.mitre.org/techniques/T1190/\"},{\"external_id\":\"T1105\",\"source_name\":\"mitre-attack\",\"url\":\"https://attack.mitre.org/techniques/T1105/\"}],\"id\":\"indicator--8f77131c-ddce-5b4b-8e49-49763da60072\",\"indicator_types\":[\"malicious-activity\"],\"kill_chain_phases\":[{\"kill_chain_name\":\"lockheed-martin-cyber-kill-chain\",\"phase_name\":\"exploitation\"},{\"kill_chain_name\":\"mitre-attack\",\"phase_name\":\"initial-access\"},{\"kill_chain_name\":\"mitre-attack\",\"phase_name\":\"command-and-control\"}],\"labels\":[\"honeylabs\",\"exploitation\",\"interactive-session\",\"asn:AS206264\",\"country:DE\",\"mitre-attack:T1190\",\"mitre-attack:T1105\"],\"modified\":\"2026-10-29T19:59:29.000Z\",\"name\":\"Exploitation source: 89.160.20.112\",\"pattern\":\"[ipv4-addr:value = '89.160.20.112']\",\"pattern_type\":\"stix\",\"spec_version\":\"2.1\",\"type\":\"indicator\",\"valid_from\":\"2026-10-22T20:38:45.000Z\",\"valid_until\":\"2026-11-05T19:59:29.000Z\"}",
@@ -271,24 +271,24 @@ An example event for `malware_infrastructure` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-29T20:47:50.527Z",
+    "@timestamp": "2026-10-30T13:36:22.313Z",
     "agent": {
-        "ephemeral_id": "16f29d25-cb66-4dec-8898-c8eaee3890a1",
-        "id": "1fe29e3a-47a8-4804-b064-2ec4bc26fcd7",
-        "name": "elastic-agent-50800",
+        "ephemeral_id": "1bd46cde-c6b8-4c63-b3e4-c8e78dab55d0",
+        "id": "0c44e5db-950c-45e3-a033-194318249931",
+        "name": "elastic-agent-48114",
         "type": "filebeat",
         "version": "9.5.5"
     },
     "data_stream": {
         "dataset": "ti_honeylabs.malware_infrastructure",
-        "namespace": "95529",
+        "namespace": "91090",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.17.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "1fe29e3a-47a8-4804-b064-2ec4bc26fcd7",
+        "id": "0c44e5db-950c-45e3-a033-194318249931",
         "snapshot": false,
         "version": "9.5.5"
     },
@@ -298,7 +298,7 @@ An example event for `malware_infrastructure` looks as following:
             "threat"
         ],
         "dataset": "ti_honeylabs.malware_infrastructure",
-        "ingested": "2026-10-29T20:47:54Z",
+        "ingested": "2026-10-30T13:36:26Z",
         "kind": "enrichment",
         "module": "ti_honeylabs",
         "original": "{\"confidence\":50,\"created\":\"2026-10-29T17:08:35.000Z\",\"description\":\"Mozi botnet download served by an infected device on a random port. Mozi's operators shut it down in 2023; its remaining infected peers keep passing the payload on. Useful for spotting an infected device on your own network, not as attacker-run infrastructure. 1 sighting, last 2026-10-29T17:08:35.000Z.\",\"external_references\":[{\"source_name\":\"HoneyLabs\",\"url\":\"https://honeylabs.net/lookup/175.16.199.1\"}],\"id\":\"indicator--e146e905-27ec-5c73-869d-18da5d851214\",\"indicator_types\":[\"malicious-activity\"],\"kill_chain_phases\":[{\"kill_chain_name\":\"lockheed-martin-cyber-kill-chain\",\"phase_name\":\"installation\"}],\"labels\":[\"honeylabs\",\"malware-infrastructure\",\"loader-url\",\"interactive-session\",\"mozi-peer\",\"malware:mozi\"],\"modified\":\"2026-10-29T17:08:35.000Z\",\"name\":\"Mozi peer download: http://175.16.199.1:60373/Mozi.m\",\"pattern\":\"[url:value = 'http://175.16.199.1:60373/Mozi.m']\",\"pattern_type\":\"stix\",\"spec_version\":\"2.1\",\"type\":\"indicator\",\"valid_from\":\"2026-10-29T17:08:35.000Z\",\"valid_until\":\"2026-11-12T17:08:35.000Z\"}",
