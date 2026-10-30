@@ -273,6 +273,11 @@ metricset sends no event for rows it did not get, so the previous snapshot of th
 and day stays. Azure revises a day with adjusting rows rather than emptying it, so this only
 matters when every row of a subscription's day is removed.
 
+`azure_billing.usage_fetches` keeps every fetch and has no retention, because it also holds the
+history of days that are no longer fetched. Summing the rows of each fetch keeps it much smaller
+than the raw data stream, which the dashboard would otherwise have to read. Its runtime fields also
+keep the history of agents before 9.6 in the deduplicated view.
+
 This also makes a longer `Billing Usage Lookback` safe: with `72h`, every fetch re-reads the last
 three days and picks up Azure's late revisions, and the transforms replace each day with the
 newest snapshot instead of adding the re-read rows to the total.
@@ -287,7 +292,8 @@ transforms then group them by the agent process (`agent.ephemeral_id`) and the m
 they were created, which cannot guarantee correct deduplication: a fetch whose rows cross a minute
 boundary is split and only its later part counts, and two fetches of one process inside the same
 minute are summed. Agents before 8.4 send no `usage_date`; their `usage_start`, the row's own day,
-is used instead. Forecast rows from older agents are not read: those agents stamp them with the configured
+is used instead. The dashboard does not count their rows without a subscription ID, because those
+rows carry no scope to fall back to. Forecast rows from older agents are not read: those agents stamp them with the configured
 `Subscription ID` even for a department or billing account scope, so they cannot be told apart
 from the forecast that the upgraded agent collects for the same scope.
 
@@ -324,10 +330,15 @@ Usage days are UTC days, while Kibana builds the time range in its display time 
 days, set **Stack Management > Advanced Settings > Timezone for date formatting**
 (`dateFormat:tz`) to `UTC`, otherwise a selected day can take in a neighbouring UTC day. Its actual costs come from the usage
 details, and its forecast from the `azure_billing.forecast_latest` alias, where it keeps each
-scope's newest forecast from today on: a forecast for a day that has passed, or that a newer fetch
-no longer returns, is not shown. Forecasts of overlapping scopes, such as a department and a
-subscription inside it, are added together, because the forecast API returns one total per scope
-that cannot be split by subscription. All cost panels are
+scope's newest forecast from today on, so it shows no forecast for a day that has passed. A newer
+fetch may no longer return a forecast day, for example after someone shortens the forecast window.
+That day's forecast stays in the index until its three-day retention ends, and the dashboard shows
+it when the time range covers only such days. When several policies query the same scope, the
+dashboard shows the forecast of the policy that fetched last, so give them the same forecast window.
+The dashboard adds up the forecasts of overlapping scopes, such as a department and a subscription
+inside it, because the forecast API returns one total per scope and that total cannot be split by
+subscription. Forecast rows carry no department,
+account, or resource, so selecting one of those controls hides the forecast. All cost panels are
 broken down by `azure.billing.currency`, so amounts in different currencies are never added
 together. When you collect more than one currency, pick one with the **Currency** control, so
 that the donut proportions compare amounts in a single currency. The controls list values from the
@@ -335,7 +346,8 @@ that the donut proportions compare amounts in a single currency. The controls li
 panels, so they only offer billing data.
 
 The transforms must be running for the dashboard to show data. You can check their status
-in Kibana under **Stack Management > Transforms**. If you prefer to query the raw,
+in Kibana under **Stack Management > Transforms**. Users of the dashboard need read access to the
+`azure_billing.*` indices, besides `metrics-azure.billing-*`. If you prefer to query the raw,
 non-deduplicated documents, use the `metrics-azure.billing-*` data stream directly.
 
 ## Metrics Reference

@@ -73,9 +73,11 @@ retention_policy:
     max_age: 3d
 _meta:
   # Bump this version to delete, reinstall, and restart the transform during
-  # package installation. The source has no `@timestamp` range filter on purpose:
-  # Fleet rebuilds the destination index from scratch on a version bump, and a
-  # relative range filter would silently drop all history.
+  # package installation. Fleet keeps the destination index, and the new
+  # transform re-reads the whole source into it: the source has no `@timestamp`
+  # range filter on purpose, as it would drop that history. When the output
+  # changes shape, also rename the destination index (`-v2`), so that old and
+  # new documents do not mix.
   fleet_transform_version: 0.1.0
   # Independent of the usage transforms; installed last.
   order: 2
