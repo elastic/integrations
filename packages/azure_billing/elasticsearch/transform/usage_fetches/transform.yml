@@ -41,7 +41,8 @@ source:
       type: keyword
       script:
         source: |-
-          if (doc.containsKey('azure.billing.fetch_id') && doc['azure.billing.fetch_id'].size() > 0) {
+          if (doc.containsKey('azure.billing.fetch_id') && doc['azure.billing.fetch_id'].size() > 0
+              && doc['azure.billing.fetch_id'].value != '') {
             emit(doc['azure.billing.fetch_id'].value);
           } else if (doc.containsKey('agent.ephemeral_id') && doc['agent.ephemeral_id'].size() > 0) {
             emit(doc['agent.ephemeral_id'].value + '|' + String.valueOf(doc['@timestamp'].value.toInstant().toEpochMilli() / 60000L));
