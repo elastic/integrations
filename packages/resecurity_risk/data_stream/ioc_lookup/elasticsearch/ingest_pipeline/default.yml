@@ -44,11 +44,11 @@ processors:
       value: resecurity_risk.ioc_lookup
   - fingerprint:
       fields:
-        - resecurity_risk.ioc.hash_query
-      tag: fingerprint_hash_query
+        - event.original
+      tag: fingerprint_event_original
       target_field: _id
-      if: ctx.resecurity_risk?.ioc?.hash_query != null
-      description: Documents are keyed by the queried hash so that repeated lookups update the same document.
+      if: ctx.event?.original != null
+      description: Documents are keyed by the content of the record so that identical re-collections are deduplicated while a changed record is indexed as a new document; keying by the record identifier alone would make data stream create-only writes reject the update.
   - date:
       field: resecurity_risk.ioc.add_date
       tag: date_add_date

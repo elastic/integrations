@@ -12,7 +12,7 @@ This integration is compatible with the Resecurity RISK REST API as exposed by b
 
 ### How it works
 
-The integration periodically polls the Resecurity RISK REST API using the Common Expression Language (CEL) input. Each data stream requests one endpoint, walks the paginated result set, and publishes each record as a document. Documents are keyed by the record's own identifier, so re-collecting a record updates the existing document rather than creating a duplicate.
+The integration periodically polls the Resecurity RISK REST API using the Common Expression Language (CEL) input. Each data stream requests one endpoint, walks the paginated result set, and publishes each record as a document. Document IDs are derived from the content of each record, so re-collecting an unchanged record does not create a duplicate, while a record that has changed since the last poll is indexed as a new document.
 
 ## What data does this integration collect?
 
@@ -86,7 +86,7 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 None of the Resecurity RISK list endpoints used by this integration expose a "since timestamp" filter, so every poll re-walks pages from the start rather than fetching only new records. To bound the work done per poll, each list data stream has a **Max Pages per Poll** setting, which defaults to 10.
 
-Document IDs are derived from the source record's own identifier, so re-ingesting the same record on a later poll overwrites the existing document rather than creating a duplicate. If your feed produces more genuinely new records per interval than `max_pages_per_poll * 100` (the API's default page size), increase **Max Pages per Poll** or shorten the **Collection Interval** to keep up.
+Document IDs are derived from the content of each record, so re-ingesting an unchanged record on a later poll does not create a duplicate. A record that has changed (for example an updated alert, or a hash lookup that starts returning a match) is indexed as a new document, and the previous version is kept; filter on the record's `id` and sort by `@timestamp` to find its latest state. If your feed produces more genuinely new records per interval than `max_pages_per_poll * 100` (the API's default page size), increase **Max Pages per Poll** or shorten the **Collection Interval** to keep up.
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 

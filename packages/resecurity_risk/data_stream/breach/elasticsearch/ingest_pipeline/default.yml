@@ -44,10 +44,11 @@ processors:
       value: resecurity_risk.breach
   - fingerprint:
       fields:
-        - resecurity_risk.breach.id
-      tag: fingerprint_id
+        - event.original
+      tag: fingerprint_event_original
       target_field: _id
-      if: ctx.resecurity_risk?.breach?.id != null
+      if: ctx.event?.original != null
+      description: Documents are keyed by the content of the record so that identical re-collections are deduplicated while a changed record is indexed as a new document; keying by the record identifier alone would make data stream create-only writes reject the update.
   - date:
       field: resecurity_risk.breach.source.add_date
       tag: date_source_add_date
