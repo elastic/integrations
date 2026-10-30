@@ -243,15 +243,20 @@ processors:
       ignore_empty_value: true
       if: ctx._temp_?.syslog3164_ts != null && ctx.event?.created == null
   # BSD timestamps omit the year. The year is the calendar year of the ingest
-  # time in the event timezone, rolled back one year when that local time is
-  # more than one day after the ingest instant.
+  # time in the event timezone. Roll back one year when that local time is
+  # more than one day after the ingest instant. Roll forward one year when
+  # the candidate is more than one day before the ingest instant and the next
+  # year is still within one day after it (a January line while the collector
+  # is still in December).
   - script:
       tag: script_pin_rfc3164_year
       description: >-
         RFC 3164 timestamps have no year. The year is the calendar year of the
-        ingest time in the event timezone, rolled back one year when that local
-        time is more than one day after the ingest instant. An invalid timezone
-        is treated as UTC.
+        ingest time in the event timezone. It rolls back one year when that
+        local time is more than one day after the ingest instant, and forward
+        one year when the candidate is more than one day before the ingest
+        instant and the next year is at most one day after it. An invalid
+        timezone is stored and applied as UTC.
       lang: painless
       if: ctx._temp_?.syslog3164_ts != null
       source: |
@@ -280,14 +285,21 @@ processors:
             zone = ZoneId.of(ctx.event.timezone);
           } catch (Exception e) {
             zone = ZoneId.of('UTC');
+            ctx.event.timezone = 'UTC';
           }
         }
         String normalized = ctx._temp_.syslog3164_ts.replace('  ', ' ');
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern('MMM d HH:mm:ss yyyy', Locale.ENGLISH);
         int year = reference.withZoneSameInstant(zone).getYear();
         LocalDateTime local = LocalDateTime.parse(normalized + ' ' + year, formatter);
-        if (local.atZone(zone).toInstant().isAfter(reference.plusDays(1).toInstant())) {
+        Instant localInstant = local.atZone(zone).toInstant();
+        if (localInstant.isAfter(reference.plusDays(1).toInstant())) {
           year = year - 1;
+        } else if (localInstant.isBefore(reference.minusDays(1).toInstant())) {
+          Instant nextInstant = local.plusYears(1).atZone(zone).toInstant();
+          if (!nextInstant.isAfter(reference.plusDays(1).toInstant())) {
+            year = year + 1;
+          }
         }
         ctx._temp_.syslog3164_ts = normalized + ' ' + year;
       on_failure:
@@ -341,6 +353,24 @@ processors:
                   tag: append_error_message_rfc3164_ts
                   field: error.message
                   value: 'fail-{{{ _ingest.on_failure_processor_tag }}}'
+              # @timestamp was renamed to event.created before this date parse.
+              # Put a timestamp back before failing so the data stream can keep
+              # the pipeline_error document.
+              - set:
+                  tag: set_rfc3164_timestamp_from_created
+                  field: '@timestamp'
+                  copy_from: event.created
+                  ignore_empty_value: true
+                  override: false
+              - set:
+                  tag: set_rfc3164_timestamp_from_ingest
+                  field: '@timestamp'
+                  copy_from: _ingest.timestamp
+                  ignore_empty_value: true
+                  override: false
+              - fail:
+                  tag: fail_rfc3164_ts
+                  message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   # Some log events lack loguid and time, so to avoid potential
   # collisions hash the complete line in those rare cases.
   # RFC 3164 lines share no loguid or time, but identical lines in the same
