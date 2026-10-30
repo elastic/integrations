@@ -1,0 +1,158 @@
+format_version: 3.3.1
+name: crawler
+title: "Elastic Web Crawler"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Crawl websites and index their content into Elasticsearch with the Elastic Open Web Crawler."
+type: integration
+categories:
+  - web
+  - enterprise_search
+conditions:
+  kibana:
+    version: "^9.2.0"
+icons:
+  - src: /img/crawler-logo.svg
+    title: Elastic Web Crawler logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: crawler
+    title: Web Crawler
+    description: Crawl one or more websites and index the extracted content into an Elasticsearch index.
+    deployment_modes:
+      default:
+        enabled: false
+      agentless:
+        enabled: true
+        organization: elastic
+        division: engineering
+        team: search-extract-and-transform
+    multiple: true
+    inputs:
+      - type: crawler
+        title: Web Crawler
+        description: >-
+          The crawler discovers pages starting from the configured domains, extracts their content and writes documents to the configured Elasticsearch index.
+        vars:
+          - name: output_index
+            type: text
+            title: Index name
+            required: true
+            show_user: true
+            description: Elasticsearch index that receives the crawled documents.
+          - name: api_key
+            type: password
+            title: Elasticsearch API key
+            required: false
+            show_user: false
+            secret: true
+            description: >-
+              API key the crawler uses to write to the index (`id:api_key` or base64 encoded). Kibana creates a key scoped to the index for Elastic managed crawlers. Without it, the crawler uses the credentials of the agent's Elasticsearch output, which cannot grant access to arbitrary indices.
+          - name: api_key_id
+            type: text
+            title: Elasticsearch API key id
+            required: false
+            show_user: false
+            secret: false
+            description: Id of the API key above, so that it can be invalidated when the crawler is updated or deleted.
+          - name: domains
+            type: yaml
+            title: Domains
+            required: true
+            show_user: true
+            description: >-
+              Domains to crawl, with optional seed URLs, sitemap URLs, crawl rules and extraction rules. Uses the `domains` format of the crawler configuration file.
+            default: |
+              - url: https://www.example.com
+                seed_urls:
+                  - https://www.example.com/
+          - name: schedule
+            type: text
+            title: Crawl schedule
+            required: false
+            show_user: true
+            description: >-
+              Cron expression (for example `0 2 * * *`) that starts a crawl periodically. Without a schedule, crawls only run when started from Kibana.
+          - name: max_crawl_depth
+            type: integer
+            title: Maximum crawl depth
+            required: false
+            show_user: true
+            default: 10
+            description: How many links deep the crawler follows from the seed URLs.
+          - name: max_unique_url_count
+            type: integer
+            title: Maximum number of URLs
+            required: false
+            show_user: false
+            default: 100000
+            description: Maximum number of unique URLs processed during a single crawl.
+          - name: max_duration
+            type: integer
+            title: Maximum crawl duration (seconds)
+            required: false
+            show_user: false
+            default: 86400
+            description: A crawl is stopped once it has been running for this long.
+          - name: user_agent
+            type: text
+            title: User agent
+            required: false
+            show_user: false
+            description: User-Agent header sent with every request.
+          - name: purge_crawl_enabled
+            type: bool
+            title: Purge outdated documents
+            required: false
+            show_user: false
+            default: true
+            description: Remove documents from the index that were not seen during the latest crawl.
+          - name: binary_content_extraction_enabled
+            type: bool
+            title: Extract binary content
+            required: false
+            show_user: false
+            default: false
+            description: Extract text from binary files (PDF, DOCX, ...) found during the crawl.
+          - name: binary_content_extraction_mime_types
+            type: text
+            title: Binary content MIME types
+            required: false
+            show_user: false
+            multi: true
+            description: MIME types to extract when binary content extraction is enabled.
+          - name: elasticsearch_pipeline
+            type: text
+            title: Ingest pipeline
+            required: false
+            show_user: false
+            description: Ingest pipeline applied to every indexed document.
+          - name: log_level
+            type: select
+            title: Log level
+            required: false
+            show_user: false
+            default: info
+            options:
+              - value: debug
+                text: debug
+              - value: info
+                text: info
+              - value: warn
+                text: warn
+              - value: error
+                text: error
+            description: Verbosity of the crawler logs.
+          - name: advanced_settings
+            type: yaml
+            title: Advanced settings
+            required: false
+            show_user: false
+            description: >-
+              Additional crawler settings in the format of the crawler configuration file, for example `max_title_size` or `threads_per_crawl`. They override the settings above.
+        template_path: crawler.yml.hbs
+owner:
+  github: elastic/search-extract-and-transform
+  type: elastic
