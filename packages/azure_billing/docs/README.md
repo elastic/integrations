@@ -35,6 +35,7 @@ To use this integration you will need:
 
 * **Azure App Registration**: You need to set up an Azure App Registration to allow the Agent to access the Azure APIs. The App Registration requires a role to access the billing information. The required role is different depending on the subscription, department, or billing account scope. Check the [Setup section](#setup) for more details.
 * **Elasticsearch and Kibana**: You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, the [Native Azure Integration](https://azuremarketplace.microsoft.com/en/marketplace/apps/elastic.ec-azure-pp?tab=overview), or self-manage the Elastic Stack on your hardware.
+* **Elastic Agent 9.6.0 or later**: The agent stamps every billing row with the ID of the fetch it belongs to and the scope it was queried for, which the [deduplication transforms](#deduplication-and-transforms) rely on.
 * **Payment method**: Azure Billing Metrics integration queries are charged based on the number of standard API calls. One integration makes two calls every 24 hours in the standard configuration.
 
 ## Setup
@@ -236,6 +237,124 @@ To change the scope, expand the data stream section named **Collect Azure Billin
 * `Billing Scope Department ID` : Collect user details and forecast data for the given department ID.
 * `Billing Scope Account ID` : Collect user details and forecast data for the given billing account ID.
 
+## Deduplication and transforms
+
+### Why duplicates happen
+
+The Azure billing metricset re-fetches the most recent days on every run, and it starts
+over whenever the Elastic Agent restarts. Azure also keeps revising cost rows for about
+72 hours after they first appear, so re-fetching them is intentional and must keep
+happening. The consequence is that `metrics-azure.billing-*` holds several copies of the
+same cost row, and any visualization that sums `azure.billing.pretax_cost` over the raw
+data stream over-reports the cost.
+
+### The transforms
+
+To solve this, the integration installs three Elasticsearch [transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview)
+that maintain a deduplicated view of the raw data stream. They use no scripted aggregations, so
+they also run on Elasticsearch Serverless.
+
+| Transform | Alias | Role |
+| --- | --- | --- |
+| `usage_fetches` | `azure_billing.usage_fetches` | Sums the usage detail rows per usage day, meter (`azure.billing.billing_period_id`), resource, product, currency, and **fetch**, and keeps every fetch. A fetch is identified by `azure.billing.fetch_id`, which Elastic Agent 9.6 and later stamps on every row of a run. |
+| `usage_latest_fetch` | `azure_billing.usage_latest_fetch` | Records, for every usage day and subscription (`azure.billing.subscription_day`), which fetch is the newest, in a lookup index. The dashboard joins `azure_billing.usage_fetches` with it and counts only the rows of that fetch, so a bucket that a newer fetch no longer contains, or carries under a corrected key, does not survive from an older fetch. |
+| `latest_forecast` | `azure_billing.forecast_latest` | A `latest` transform over the rows of the Cost Management forecast API that hold a forecast, keyed on the queried scope (`azure.billing.scope`), `azure.billing.usage_date`, and `azure.billing.currency`. It reads only rows that carry the scope, which Elastic Agent 9.6 and later stamps on them. Documents that are not refreshed for three days are dropped, so the index always holds the current forecast window. |
+
+The usage transforms do not deduplicate individual rows on purpose. The Azure Usage Details
+API does not give every row a unique ID: rows for the same day, meter, and resource share one
+`id` and legitimately appear more than once, for example one row per VM instance of a scale
+set. The fields that tell those rows apart are not part of the document, so the only safe unit
+of deduplication is the fetch. Each fetch is a complete snapshot of a day for the queried scope,
+and so for every subscription in that scope: per usage day and subscription, the newest fetch of
+any scope replaces the previous ones. A department policy and a subscription policy inside it
+never count that subscription twice, even with different lookbacks.
+A fetch that returns no rows for a subscription and day writes nothing for them, because the
+metricset sends no event for rows it did not get, so the previous snapshot of that subscription
+and day stays. Azure revises a day with adjusting rows rather than emptying it, so this only
+matters when every row of a subscription's day is removed.
+
+`azure_billing.usage_fetches` keeps every fetch and has no retention, because it also holds the
+history of days that are no longer fetched. Summing the rows of each fetch keeps it much smaller
+than the raw data stream, which the dashboard would otherwise have to read. Its runtime fields also
+keep the history of agents before 9.6 in the deduplicated view.
+
+This also makes a longer `Billing Usage Lookback` safe: with `72h`, every fetch re-reads the last
+three days and picks up Azure's late revisions, and the transforms replace each day with the
+newest snapshot instead of adding the re-read rows to the total.
+
+The transforms check for new documents every 5 minutes. A fetch whose rows are still being indexed
+when a check runs is already the newest one, so until the next check the dashboard shows only its
+rows indexed so far.
+
+**Documents collected before Elastic Agent 9.6.** The transforms also read the history that
+older agents collected, and those rows carry neither a fetch ID nor the queried scope. The usage
+transforms then group them by the agent process (`agent.ephemeral_id`) and the minute in which
+they were created, which cannot guarantee correct deduplication: a fetch whose rows cross a minute
+boundary is split and only its later part counts, and two fetches of one process inside the same
+minute are summed. Agents before 8.4 send no `usage_date`; their `usage_start`, the row's own day,
+is used instead. The dashboard does not count their rows without a subscription ID, because those
+rows carry no scope to fall back to. Forecast rows from older agents are not read: those agents stamp them with the configured
+`Subscription ID` even for a department or billing account scope, so they cannot be told apart
+from the forecast that the upgraded agent collects for the same scope.
+
+```text
+                                                  ┌─────────────────────────────┐    ┌──────────────────────────────┐
+                                            ┌────▶│ azure_billing.usage_fetches │───▶│ azure_billing.               │
+┌────────────┐  ┌───────┐  ┌───────────────┐│     │ (sum per day, every fetch)  │    │   usage_latest_fetch         │
+│ Azure APIs │─▶│ Agent │─▶│ metrics-azure.││     └──────────────┬──────────────┘    │ (newest fetch per day and    │
+│            │  │       │  │    billing    │┤                    │                   │  subscription, lookup index) │
+└────────────┘  └───────┘  │<<data stream>>││                    ▼                   └──────────────┬───────────────┘
+                           └───────────────┘│         the dashboard joins both and counts ◀───────────┘
+                                            │         only the newest fetch of every day and subscription
+                                            │     ┌─────────────────────────────┐
+                                            └────▶│azure_billing.forecast_latest│
+                                                  │   (forecast per scope)      │
+                                                  └─────────────────────────────┘
+```
+
+The raw `metrics-azure.billing-*` data stream is **not** modified and remains the system
+of record: nothing is deleted from it. The transforms simply maintain a second, deduplicated
+copy of the data. The destination indices are `azure_billing.usage_fetches-v1`,
+`azure_billing.usage_latest_fetch-v1`, and `azure_billing.forecast-v1`;
+they are deliberately named so they do **not** match `metrics-*`, otherwise a `metrics-*` data
+view would count both the raw and the deduplicated documents.
+
+### Dashboard
+
+The **[Azure Billing] Billing overview** dashboard reads from the `azure_billing.usage_fetches`
+alias joined with the `azure_billing.usage_latest_fetch` lookup index, so its cost figures are
+deduplicated and reflect the newest fetch of every day. The lookup index is not narrowed by the
+dashboard's controls and time range, so they cannot bring an older fetch back. The time picker
+selects **usage days** (`azure.billing.usage_date`), and the dashboard opens on the current month.
+Usage days are UTC days, while Kibana builds the time range in its display time zone: for exact
+days, set **Stack Management > Advanced Settings > Timezone for date formatting**
+(`dateFormat:tz`) to `UTC`, otherwise a selected day can take in a neighbouring UTC day. Its actual costs come from the usage
+details, and its forecast from the `azure_billing.forecast_latest` alias, where it keeps each
+scope's newest forecast from today on, collected in the last three days, so it shows no forecast for
+a day that has passed, nor one that has not been refreshed for three days, even when collection has
+stopped. A newer
+fetch may no longer return a forecast day, for example after someone shortens the forecast window.
+That day's forecast stays in the index until its three-day retention ends, and the dashboard shows
+it when the time range and the controls select only such days. When several policies query the same
+scope, the dashboard shows the forecast of the policy that fetched last, so give them the same
+forecast window.
+The dashboard adds up the forecasts of overlapping scopes, such as a department and a subscription
+inside it, because the forecast API returns one total per scope and that total cannot be split by
+subscription. Forecast rows carry the subscription configured in the policy, even for a department or
+billing account scope, so the **Subscription** control shows a department's whole forecast for that
+subscription and none for the others. Forecast rows carry no department, account, or resource, so
+selecting one of those controls hides the forecast. All cost panels are
+broken down by `azure.billing.currency`, so amounts in different currencies are never added
+together. When you collect more than one currency, pick one with the **Currency** control, so
+that the donut proportions compare amounts in a single currency. The controls list values from the
+`metrics-azure.billing-*` data view that the integration installs, filtered by usage day like the
+panels, so they only offer billing data.
+
+The transforms must be running for the dashboard to show data. You can check their status
+in Kibana under **Stack Management > Transforms**. Users of the dashboard need read access to the
+`azure_billing.*` indices, besides `metrics-azure.billing-*`. If you prefer to query the raw,
+non-deduplicated documents, use the `metrics-azure.billing-*` data stream directly.
+
 ## Metrics Reference
 
 ### Azure Billing Metrics
@@ -350,9 +469,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.billing.billing_period_id | The billing period id | keyword |
 | azure.billing.currency | The currency | keyword |
 | azure.billing.department_name | The department name | keyword |
+| azure.billing.fetch_id | Identifier of the metricset run that produced the event. All usage detail and forecast events of one run share it. | keyword |
 | azure.billing.forecast_cost | The forecast cost | float |
 | azure.billing.pretax_cost | Cost | float |
 | azure.billing.product | The product type | keyword |
+| azure.billing.scope | The Azure scope the data was queried for: the subscription, department, or billing account. | keyword |
 | azure.billing.usage_date | The usage date | date |
 | azure.billing.usage_end | The usage end date | date |
 | azure.billing.usage_start | The usage start date | date |
