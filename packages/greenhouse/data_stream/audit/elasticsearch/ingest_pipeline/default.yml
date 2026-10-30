@@ -42,6 +42,12 @@ processors:
       field: json
       target_field: greenhouse.audit
       ignore_missing: true
+  - rename:
+      tag: rename_rejection_to_greenhouse_audit_event_rejection_c81f3a2d
+      description: The CEL input emits the Harvest rejection enrichment beside the raw audit event (so event.original is unchanged); move it under the parsed event.
+      field: rejection
+      target_field: greenhouse.audit.event.rejection
+      ignore_missing: true
   - remove:
       tag: remove_non_object_performer_meta_9f2a6c4d
       description: Remove non-object performer.meta values that conflict with the integration mapping
@@ -219,6 +225,21 @@ processors:
             tag: append_error_message_d3bb095c
             field: error.message
             value: 'Failed to convert target_id to string: {{{ _ingest.on_failure_message }}}'
+
+  # Rejection enrichment (Harvest API, requires enrich_rejections)
+  - set:
+      tag: set_event_reason_from_rejection_reason_name
+      field: event.reason
+      copy_from: greenhouse.audit.event.rejection.reason.name
+      ignore_empty_value: true
+  - append:
+      field: tags
+      value: greenhouse-rejection-enrichment-failed
+      allow_duplicates: false
+      if: >-
+        ctx.greenhouse?.audit?.event?.rejection?.error != null ||
+        ctx.greenhouse?.audit?.event?.rejection?.reason?.error != null ||
+        ctx.greenhouse?.audit?.event?.rejection?.notes_error != null
 
   # Related fields
   - append:
