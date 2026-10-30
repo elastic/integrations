@@ -392,14 +392,22 @@ processors:
   - script:
       lang: painless
       tag: painless_set_user_entity_relationships_owns
-      description: Build user.entity.relationships.owns from enrolled device list.
+      description: >
+        Build user.entity.relationships.owns from enrolled device list.
+        Also writes user.entity.relationships.owns.entity.id as host:<device id>,
+        the entity-store id of the device card. Extraction copies that field
+        onto entity.relationships.owns.ids. The display name is not an id.
       if: ctx.entityanalytics_okta?.user?.devices instanceof List
       source: |
         def ids = new ArrayList();
         def names = new ArrayList();
+        def euids = new ArrayList();
         for (def device : ctx.entityanalytics_okta.user.devices) {
           if (device == null) { continue; }
-          if (device.id != null) { ids.add(device.id); }
+          if (device.id != null) {
+            ids.add(device.id);
+            euids.add("host:" + device.id);
+          }
           def displayName = device?.profile?.displayName;
           if (displayName != null) { names.add(displayName); }
         }
@@ -407,10 +415,17 @@ processors:
         if (!ids.isEmpty()) { hostObj.put("id", ids); }
         if (!names.isEmpty()) { hostObj.put("name", names); }
         if (!hostObj.isEmpty()) {
+          def owns = new HashMap();
+          owns.put("host", hostObj);
+          if (!euids.isEmpty()) {
+            def entityObj = new HashMap();
+            entityObj.put("id", euids);
+            owns.put("entity", entityObj);
+          }
           ctx.user = ctx.user ?: new HashMap();
           ctx.user.entity = ctx.user.entity ?: new HashMap();
           ctx.user.entity.relationships = ctx.user.entity.relationships ?: new HashMap();
-          ctx.user.entity.relationships.put("owns", ["host": hostObj]);
+          ctx.user.entity.relationships.put("owns", owns);
         }
   - rename:
       field: supervises
@@ -420,12 +435,18 @@ processors:
   - script:
       lang: painless
       tag: painless_set_user_entity_relationships_supervises
-      description: Build user.entity.relationships.supervises from supervised user list.
+      description: >
+        Build user.entity.relationships.supervises from supervised user list.
+        Also writes user.entity.relationships.supervises.entity.id as
+        user:<email>@okta, the entity-store id of the supervised user.
+        Extraction copies that field onto entity.relationships.supervises.ids.
+        The Okta user id (00u...) is not that id, so it stays in user.id only.
       if: ctx.entityanalytics_okta?.user?.supervises instanceof List
       source: |
         def ids = new ArrayList();
         def names = new ArrayList();
         def emails = new ArrayList();
+        def euids = new ArrayList();
         def renamedSupervises = new ArrayList();
         for (def supervised : ctx.entityanalytics_okta.user.supervises) {
           if (supervised == null) { continue; }
@@ -438,9 +459,11 @@ processors:
             names.add(supervised.username);
             raw.put("user.name", supervised.username);
           }
-          if (supervised?.email != null) {
+          if (supervised?.email != null && supervised.email != "") {
             emails.add(supervised.email);
             raw.put("user.email", supervised.email);
+            def euid = "user:" + supervised.email + "@okta";
+            if (!euids.contains(euid)) { euids.add(euid); }
           }
           renamedSupervises.add(raw);
         }
@@ -450,10 +473,17 @@ processors:
         if (!names.isEmpty()) { userObj.put("name", names); }
         if (!emails.isEmpty()) { userObj.put("email", emails); }
         if (!userObj.isEmpty()) {
+          def supervises = new HashMap();
+          supervises.put("user", userObj);
+          if (!euids.isEmpty()) {
+            def entityObj = new HashMap();
+            entityObj.put("id", euids);
+            supervises.put("entity", entityObj);
+          }
           ctx.user = ctx.user ?: new HashMap();
           ctx.user.entity = ctx.user.entity ?: new HashMap();
           ctx.user.entity.relationships = ctx.user.entity.relationships ?: new HashMap();
-          ctx.user.entity.relationships.put("supervises", ["user": userObj]);
+          ctx.user.entity.relationships.put("supervises", supervises);
         }
   - rename:
       field: okta.transitioningToStatus

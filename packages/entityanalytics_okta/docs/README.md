@@ -404,8 +404,10 @@ This is the `User` dataset.
 | user.entity.attributes.mfa_enabled | Indicates whether multi-factor authentication is enabled for this entity. Typically applicable to User entities. | boolean |
 | user.entity.attributes.permissions | Action-level permissions associated with this entity (not roles or groups). Typically applicable to User, Host, and Service entities. | keyword |
 | user.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
+| user.entity.relationships.owns.entity.id | Entity-store id of each owned device, `host:<device id>`. | keyword |
 | user.entity.relationships.owns.host.id | Referenced host ids. | keyword |
 | user.entity.relationships.owns.host.name | Referenced host names. | keyword |
+| user.entity.relationships.supervises.entity.id | Entity-store id of each supervised user, `user:<email>@okta`. | keyword |
 | user.entity.relationships.supervises.user.email | Referenced user email addresses. | keyword |
 | user.entity.relationships.supervises.user.id | Referenced user ids. | keyword |
 | user.entity.relationships.supervises.user.name | Referenced user short names or logins. | keyword |
