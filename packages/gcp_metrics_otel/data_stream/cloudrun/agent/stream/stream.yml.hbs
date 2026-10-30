@@ -1,0 +1,22 @@
+receivers:
+  googlecloudmonitoring:
+    # The input package's template also emits metrics_list, and its value wins
+    # over this one whenever it is non-empty. The default set below therefore
+    # survives only because the inherited metrics_list var is left unset, which
+    # is why additional metrics use a separate var rendered here instead.
+    metrics_list:
+      - metric_name: run.googleapis.com/request_count
+      - metric_name: run.googleapis.com/request_latencies
+      - metric_name: run.googleapis.com/container/startup_latencies
+      - metric_name: run.googleapis.com/container/instance_count
+      - metric_name: run.googleapis.com/container/cpu/utilizations
+      - metric_name: run.googleapis.com/container/memory/utilizations
+      - metric_name: run.googleapis.com/container/max_request_concurrencies
+      - metric_name: run.googleapis.com/container/billable_instance_time
+      - metric_name: run.googleapis.com/container/cpu/allocation_time
+      - metric_name: run.googleapis.com/container/memory/allocation_time
+      - metric_name: run.googleapis.com/container/network/received_bytes_count
+      - metric_name: run.googleapis.com/container/network/sent_bytes_count
+{{#each additional_metrics}}
+      - metric_name: {{this}}
+{{/each}}
