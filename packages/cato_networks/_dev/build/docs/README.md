@@ -78,6 +78,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
         - Configure **URL** (the base URL of the Cato Networks API, for example, `https://api.catonetworks.com`).
         - Configure **Account IDs**.
         - Configure **API Key**.
+        - Choose an EventsFeed **Collection Strategy**. **Combined** preserves the existing single-feed behavior and is the default. **Split** independently paginates Internet Firewall, WAN Firewall, and other events to improve throughput when one subtype has a large backlog.
         - Adjust the integration configuration parameters if required, including the **Interval**, **Preserve original event** etc. to enable data collection.
 
 6. Select **Save and continue** to save the integration.
@@ -106,13 +107,20 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 ### Throughput and ingestion delay
 
-The `event` data stream collects events sequentially: each request returns at most **3000 events** (a limit of the Cato Networks API that automatically enables pagination when more than 3000 events are present in the API server queue, see [Cato API - EventsFeed](https://knowledge.catonetworks.com/docs/cato-api-eventsfeed-large-scale-event-monitoring#understanding-fetched-events)), and the next request needs the marker from the previous response, so requests cannot be issued in parallel. The maximum sustained collection rate is therefore bounded by:
+The `event` data stream offers two collection strategies:
 
-`3000 events / (API response time + processing time)`
+- **Combined** (default) uses one unfiltered EventsFeed query and one marker. Each operation can return at most **3000 events total**. Existing installations continue in this mode after upgrading, using their existing marker.
+- **Split** uses three `event_sub_type` groups: **Internet Firewall**, **WAN Firewall**, and all other subtypes. One GraphQL operation requests all three filtered feeds, and each feed has its own marker. Each feed can return at most **3000 events** per operation (see [Cato API - EventsFeed](https://knowledge.catonetworks.com/docs/cato-api-eventsfeed-large-scale-event-monitoring#understanding-fetched-events)), for up to 9000 events when all three groups have full pages.
 
-For example, at about 1.4 seconds per request the integration can collect roughly 2,100 events per second. If your Cato Networks account produces events faster than that, the integration falls behind and the difference between `@timestamp` and `event.ingested` keeps growing, without any errors in Fleet or Elasticsearch. Slower API response times, for example during busy periods, lower this ceiling.
+Changing an existing input from **Combined** to **Split** is supported: the combined marker initializes all three split feeds. Changing that input back to **Combined** is rejected because three independent markers cannot be safely converted into one marker. To return to Combined collection, create a new integration policy so it can establish a new baseline marker.
 
-- **`Maximum Pages Per Cycle` (`max_executions`)**: limits how many pages the integration requests back to back in one cycle (default `1000`, up to 3,000,000 events). When the limit is reached, the Elastic Agent logs a warning containing `maximum number of CEL executions`, and the next cycle starts at the next `Interval` tick, which is immediately if the cycle took longer than the `Interval`. A full-`Interval` pause therefore only happens on the first cycle after the input starts or restarts (for example after a policy change or an Elastic Agent restart), or when cycles are shorter than the `Interval`. Raising this value does not raise the throughput ceiling described above.
+In Split mode, the maximum sustained collection rate is bounded by:
+
+`combined events returned by the three feeds / (API response time + processing time)`
+
+The actual gain depends on the account's subtype distribution and on how Cato executes the aliased feeds. If your Cato Networks account still produces events faster than the API returns them, the integration falls behind and the difference between `@timestamp` and `event.ingested` keeps growing, without any errors in Fleet or Elasticsearch. Slower API response times, for example during busy periods, lower this ceiling.
+
+- **`Maximum Pages Per Cycle` (`max_executions`)**: limits how many GraphQL operations the integration requests back to back in one cycle (default `1000`). When the limit is reached, the Elastic Agent logs a warning containing `maximum number of CEL executions`, and the next cycle starts at the next `Interval` tick, which is immediately if the cycle took longer than the `Interval`. A full-`Interval` pause therefore only happens on the first cycle after the input starts or restarts (for example after a policy change or an Elastic Agent restart), or when cycles are shorter than the `Interval`. Raising this value does not raise the throughput ceiling described above.
 - **Processors such as `drop_event`** run after events have been fetched. They reduce the volume indexed in Elasticsearch, but not the number of events fetched per second, so they do not reduce the delay.
 - **Elasticsearch and Elastic Agent output tuning** does not help when the bottleneck is retrieval from the Cato Networks API.
 
