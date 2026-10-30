@@ -41,28 +41,29 @@ program: |-
               state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch"
             ).with(
               { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-            ).do_request().as(es_resp, (es_resp.StatusCode == 200) ?
-              bytes(es_resp.Body).decode_json().as(es_body,
+            ).do_request().as(es_resp,
+              ((es_resp.StatusCode == 200) ? bytes(es_resp.Body).decode_json() : { "items": [] }).as(es_body,
                 get_request(
                   state.cloud_api_base + "/api/v1/serverless/projects/observability"
                 ).with(
                   { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-                ).do_request().as(obs_resp, (obs_resp.StatusCode == 200) ?
-                  bytes(obs_resp.Body).decode_json().as(obs_body,
+                ).do_request().as(obs_resp,
+                  ((obs_resp.StatusCode == 200) ? bytes(obs_resp.Body).decode_json() : { "items": [] }).as(obs_body,
                     get_request(
                       state.cloud_api_base + "/api/v1/serverless/projects/security"
                     ).with(
                       { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-                    ).do_request().as(sec_resp, (sec_resp.StatusCode == 200) ?
-                      bytes(sec_resp.Body).decode_json().as(sec_body,
-                        (es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) +
-                         obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) +
-                         sec_body.items.map(p, dyn(p.with({ "project_type": "security" })))
+                    ).do_request().as(sec_resp,
+                      ((sec_resp.StatusCode == 200) ? bytes(sec_resp.Body).decode_json() : { "items": [] }).as(sec_body,
+                        ((has(es_body.items) && es_body.items != null ? es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : []) +
+                         (has(obs_body.items) && obs_body.items != null ? obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) : []) +
+                         (has(sec_body.items) && sec_body.items != null ? sec_body.items.map(p, dyn(p.with({ "project_type": "security" }))) : [])
                         ).as(projects,
+                          size(projects) > 0 ?
                           {
                             "events": projects.map(p,
                               (state.?project_keys.orValue([]) != null ? state.project_keys : []).filter(k, k.startsWith(p.id + ":")).as(pkeys,
-                                size(pkeys) > 0 ? pkeys[0].split(":")[1] : (
+                                size(pkeys) > 0 ? pkeys[0].substring(size(p.id) + 1) : (
                                   state.hub_es_api_key != "" ? state.hub_es_api_key : state.api_key
                                 )
                               ).as(target_key,
@@ -163,15 +164,14 @@ program: |-
                             "cursor": { "last_day": day_ts },
                             "want_more": false,
                           }
+                          :
+                          { "events": [], "want_more": false }
                         )
-                      ) :
-                        { "events": [], "want_more": false }
+                      )
                     )
-                  ) :
-                    { "events": [], "want_more": false }
+                  )
                 )
-              ) :
-                { "events": [], "want_more": false }
+              )
             )
         )
       )

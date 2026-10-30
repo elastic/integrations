@@ -23,7 +23,7 @@ This package is designed for **Serverless-only** organizations. For Hosted monit
 | --- | --- |
 | **[Chargeback Serverless] Billing Components Overview** | Organization spend KPIs, daily cost by project and cost category, spend flow (`cost_category → cost_type → project_type`), unallocatable & pass-through charges, and invoice reconciliation detail |
 | **[Chargeback Serverless] Usage & Cost Allocation** | Workload pool KPIs (Indexing, Search & Query, Storage), daily allocatable cost by workload driver, cost allocation by project, data stream cost attribution, and harvested `_cat/indices` usage metrics |
-| **[Chargeback Serverless] Configuration** | Fleet policy settings guide, active currency settings, discovered Serverless projects registry, and hourly usage harvest status |
+| **[Chargeback Serverless] Configuration** | Fleet policy settings guide, active currency settings, discovered Serverless projects registry, and daily usage harvest status |
 
 Open **Analytics → Dashboards** and filter by the **Chargeback** tag. Use the top Links bar to navigate between the three dashboards, and use the filter controls (`Project type`, `Project name`, `Cost category`, `Cost type`, `Allocation driver`) to slice spend.
 

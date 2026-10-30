@@ -3,7 +3,7 @@
         "name": "[Chargeback Serverless] Stale project usage harvest",
         "params": {
             "esqlQuery": {
-                "esql": "FROM serverless_project_status_lookup\n| WHERE COALESCE(last_status, \"\") != \"ok\" OR updated_at IS NULL OR updated_at < NOW() - 26 hours\n| EVAL result = CONCAT(\"Project `\", COALESCE(project_name, project_id, \"unknown\"), \"` (\", COALESCE(project_id, \"unknown\"), \") status=\", COALESCE(last_status, \"stale\"), \" last updated \", COALESCE(TO_STRING(updated_at), \"never\"), \".\")\n| STATS result = VALUES(result)\n| MV_EXPAND result"
+                "esql": "FROM serverless_project_status_lookup\n| INLINE STATS latest_ts = MAX(@timestamp) BY project_id\n| WHERE @timestamp == latest_ts\n| WHERE COALESCE(last_status, \"\") != \"ok\" OR updated_at IS NULL OR updated_at < NOW() - 26 hours\n| EVAL result = CONCAT(\"Project `\", COALESCE(project_name, project_id, \"unknown\"), \"` (\", COALESCE(project_id, \"unknown\"), \") status=\", COALESCE(last_status, \"stale\"), \" last updated \", COALESCE(TO_STRING(updated_at), \"never\"), \".\")\n| STATS result = VALUES(result)\n| MV_EXPAND result"
             },
             "excludeHitsFromPreviousRun": true,
             "searchType": "esqlQuery",
