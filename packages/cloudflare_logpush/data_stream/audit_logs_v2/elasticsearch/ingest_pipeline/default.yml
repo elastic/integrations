@@ -23,11 +23,6 @@ processors:
       field: event.original
       target_field: json
       if: ctx.event?.original != null
-  - append:
-      tag: append_configuration_into_event_category
-      field: event.category
-      value: configuration
-      allow_duplicates: false
   - set:
       tag: set_event_kind
       field: event.kind
@@ -96,24 +91,52 @@ processors:
       field: json.ActionType
       target_field: event.action
       ignore_missing: true
+  ## Cloudflare documents create, update, delete and view as the action types, and gives
+  ## SSO_LOGIN as an example action description, so logins are detected from either field.
+  - append:
+      tag: append_authentication_into_event_category
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+      if: >-
+        (ctx.event?.action != null && ctx.event.action.toLowerCase().contains('login')) ||
+        (ctx.json?.ActionDescription != null && ctx.json.ActionDescription.toLowerCase().contains('login'))
+  - append:
+      tag: append_start_into_event_type
+      field: event.type
+      value: start
+      allow_duplicates: false
+      if: ctx.event?.category instanceof List && ctx.event.category.contains('authentication')
+  - append:
+      tag: append_configuration_into_event_category
+      field: event.category
+      value: configuration
+      allow_duplicates: false
+      if: ctx.event?.category == null
   - append:
       tag: append_creation_into_event_type
       field: event.type
       value: creation
       allow_duplicates: false
-      if: ctx.event?.action == 'create'
+      if: ctx.event.category.contains('configuration') && ctx.event.action != null && ctx.event.action.toLowerCase().contains('create')
   - append:
       tag: append_change_into_event_type
       field: event.type
       value: change
       allow_duplicates: false
-      if: ctx.event?.action == 'update'
+      if: ctx.event.category.contains('configuration') && ctx.event.action != null && ctx.event.action.toLowerCase().contains('update')
   - append:
       tag: append_deletion_into_event_type
       field: event.type
       value: deletion
       allow_duplicates: false
-      if: ctx.event?.action == 'delete'
+      if: ctx.event.category.contains('configuration') && ctx.event.action != null && ctx.event.action.toLowerCase().contains('delete')
+  - append:
+      tag: append_access_into_event_type
+      field: event.type
+      value: access
+      allow_duplicates: false
+      if: ctx.event.category.contains('configuration') && ctx.event.action != null && ctx.event.action.toLowerCase().contains('view')
   - append:
       tag: append_info_into_event_type
       field: event.type

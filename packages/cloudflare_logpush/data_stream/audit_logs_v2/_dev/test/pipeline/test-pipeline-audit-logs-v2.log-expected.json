@@ -64,7 +64,7 @@
                 "original": "{\"AccountID\":\"a1b2c3d4e5f60718293a4b5c6d7e8f90\",\"AccountName\":\"Example Account\",\"ActionDescription\":\"Create an API token\",\"ActionResult\":\"success\",\"ActionTimestamp\":\"2026-09-20T10:15:30Z\",\"ActionType\":\"token_create\",\"ActorContext\":\"user\",\"ActorEmail\":\"user@example.com\",\"ActorID\":\"f0e1d2c3b4a5968778695a4b3c2d1e0f\",\"ActorIPAddress\":\"203.0.113.10\",\"ActorTokenDetails\":{\"id\":\"tok-0001\",\"name\":\"example-token\"},\"ActorType\":\"user\",\"AuditLogID\":\"11111111-2222-4333-8444-555555555551\",\"Raw\":{\"cf_ray_id\":\"8a1b2c3d4e5f6a7b\",\"method\":\"POST\",\"status_code\":200,\"uri\":\"/client/v4/user/tokens\"},\"ResourceID\":\"tok-0001\",\"ResourceProduct\":\"api_tokens\",\"ResourceRequest\":{\"name\":\"example-token\",\"policies\":\"read\"},\"ResourceResponse\":{\"success\":true},\"ResourceScope\":\"user\",\"ResourceType\":\"token\",\"ResourceValue\":{\"status\":\"active\"},\"ZoneID\":\"z1b2c3d4e5f60718293a4b5c6d7e8f90\",\"ZoneName\":\"example.com\"}",
                 "outcome": "success",
                 "type": [
-                    "info"
+                    "creation"
                 ]
             },
             "http": {
@@ -148,7 +148,7 @@
                 "original": "{\"AccountID\":\"a1b2c3d4e5f60718293a4b5c6d7e8f90\",\"AccountName\":\"Example Account\",\"ActionDescription\":\"Delete a DNS record\",\"ActionResult\":\"failure\",\"ActionTimestamp\":1790000000,\"ActionType\":\"dns_record_delete\",\"ActorContext\":\"api_token\",\"ActorEmail\":\"admin@example.com\",\"ActorID\":\"f0e1d2c3b4a5968778695a4b3c2d1e0f\",\"ActorIPAddress\":\"2001:db8::1\",\"ActorType\":\"user\",\"AuditLogID\":\"11111111-2222-4333-8444-555555555552\",\"Raw\":{\"cf_ray_id\":\"8a1b2c3d4e5f6a7c\",\"method\":\"DELETE\",\"status_code\":\"403\",\"uri\":\"/client/v4/zones/z1b2c3d4e5f60718293a4b5c6d7e8f90/dns_records/rec-1\"},\"ResourceID\":\"rec-1\",\"ResourceProduct\":\"dns\",\"ResourceScope\":\"zone\",\"ResourceType\":\"dns_record\",\"ZoneID\":\"z1b2c3d4e5f60718293a4b5c6d7e8f90\",\"ZoneName\":\"example.com\"}",
                 "outcome": "failure",
                 "type": [
-                    "info"
+                    "deletion"
                 ]
             },
             "http": {
@@ -210,14 +210,14 @@
             "event": {
                 "action": "Login",
                 "category": [
-                    "configuration"
+                    "authentication"
                 ],
                 "id": "11111111-2222-4333-8444-555555555553",
                 "kind": "event",
                 "original": "{\"ActionResult\":\"Success\",\"ActionTimestamp\":1790000000000,\"ActionType\":\"Login\",\"ActorEmail\":\"user@example.com\",\"ActorID\":\"f0e1d2c3b4a5968778695a4b3c2d1e0f\",\"ActorIPAddress\":\"198.51.100.7\",\"ActorType\":\"user\",\"AuditLogID\":\"11111111-2222-4333-8444-555555555553\",\"Raw\":{\"method\":\"GET\",\"uri\":\"/login\"},\"ResourceID\":\"f0e1d2c3b4a5968778695a4b3c2d1e0f\",\"ResourceProduct\":\"access\",\"ResourceScope\":\"account\",\"ResourceType\":\"user\"}",
                 "outcome": "success",
                 "type": [
-                    "info"
+                    "start"
                 ]
             },
             "http": {
@@ -294,7 +294,7 @@
                 "kind": "event",
                 "original": "{\"ActionResult\":\"pending\",\"ActionTimestamp\":\"1790000000000000000\",\"ActionType\":\"zone_setting_update\",\"ActorEmail\":\"user@example.com\",\"ActorID\":\"f0e1d2c3b4a5968778695a4b3c2d1e0f\",\"ActorIPAddress\":\"203.0.113.20\",\"ActorType\":\"user\",\"AuditLogID\":\"11111111-2222-4333-8444-555555555554\",\"Raw\":{\"cf_ray_id\":\"8a1b2c3d4e5f6a7d\"},\"ResourceID\":\"z1b2c3d4e5f60718293a4b5c6d7e8f90\",\"ResourceProduct\":\"zone_settings\",\"ResourceRequest\":{\"value\":\"on\"},\"ResourceScope\":\"zone\",\"ResourceType\":\"zone\",\"ResourceValue\":{\"value\":\"on\"},\"ZoneID\":\"z1b2c3d4e5f60718293a4b5c6d7e8f90\",\"ZoneName\":\"example.com\"}",
                 "type": [
-                    "info"
+                    "change"
                 ]
             },
             "related": {
@@ -397,7 +397,7 @@
                 "original": "{\"ActionResult\":\"success\",\"ActionTimestamp\":\"2026-09-21T08:00:00Z\",\"ActionType\":\"account_update\",\"ActorEmail\":\"user@example.com\",\"ActorID\":\"f0e1d2c3b4a5968778695a4b3c2d1e0f\",\"ActorIPAddress\":\"198.51.100.9\",\"ActorType\":\"user\",\"AuditLogID\":\"11111111-2222-4333-8444-555555555556\",\"Raw\":{\"cf_ray_id\":\"8a1b2c3d4e5f6a7e\",\"method\":\"PUT\",\"status_code\":204,\"uri\":\"/client/v4/accounts/a1b2c3d4e5f60718293a4b5c6d7e8f90\"},\"ResourceID\":\"a1b2c3d4e5f60718293a4b5c6d7e8f90\",\"ResourceType\":\"account\"}",
                 "outcome": "success",
                 "type": [
-                    "info"
+                    "change"
                 ]
             },
             "http": {
@@ -1174,6 +1174,292 @@
             "tags": [
                 "preserve_original_event"
             ]
+        },
+        {
+            "@timestamp": "2026-09-24T09:40:00.000Z",
+            "cloudflare_logpush": {
+                "audit_logs_v2": {
+                    "account": {
+                        "id": "a1b2c3d4e5f60718293a4b5c6d7e8f90",
+                        "name": "Example Account"
+                    },
+                    "action": {
+                        "description": "Delete Logpush job",
+                        "result": "success"
+                    },
+                    "actor": {
+                        "context": "dash",
+                        "type": "user"
+                    },
+                    "raw": {
+                        "cf_ray_id": "8a1b2c3d4e5f0008",
+                        "method": "DELETE",
+                        "status_code": 200,
+                        "uri": "/zones/0f1e2d3c4b5a69788796a5b4c3d2e1f0/logpush/jobs/1000002",
+                        "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36"
+                    },
+                    "ray": {
+                        "id": "8a1b2c3d4e5f0008"
+                    },
+                    "resource": {
+                        "id": "1000002",
+                        "product": "logpush",
+                        "scope": "zones",
+                        "type": "jobs"
+                    },
+                    "zone": {
+                        "id": "0f1e2d3c4b5a69788796a5b4c3d2e1f0",
+                        "name": "example.com"
+                    }
+                }
+            },
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "delete",
+                "category": [
+                    "configuration"
+                ],
+                "id": "01900000-0000-7000-8000-000000000008",
+                "kind": "event",
+                "original": "{\"AccountID\":\"a1b2c3d4e5f60718293a4b5c6d7e8f90\",\"AccountName\":\"Example Account\",\"ActionDescription\":\"Delete Logpush job\",\"ActionResult\":\"success\",\"ActionTimestamp\":\"2026-09-24T09:40:00Z\",\"ActionType\":\"delete\",\"ActorContext\":\"dash\",\"ActorEmail\":\"user@example.com\",\"ActorID\":\"f0e1d2c3b4a5968778695a4b3c2d1e0f\",\"ActorIPAddress\":\"203.0.113.10\",\"ActorTokenDetails\":{},\"ActorType\":\"user\",\"AuditLogID\":\"01900000-0000-7000-8000-000000000008\",\"Raw\":{\"cf_ray_id\":\"8a1b2c3d4e5f0008\",\"method\":\"DELETE\",\"status_code\":200,\"uri\":\"/zones/0f1e2d3c4b5a69788796a5b4c3d2e1f0/logpush/jobs/1000002\",\"user_agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36\"},\"ResourceID\":\"1000002\",\"ResourceProduct\":\"logpush\",\"ResourceRequest\":{},\"ResourceResponse\":{},\"ResourceScope\":\"zones\",\"ResourceType\":\"jobs\",\"ResourceValue\":{},\"ZoneID\":\"0f1e2d3c4b5a69788796a5b4c3d2e1f0\",\"ZoneName\":\"example.com\"}",
+                "outcome": "success",
+                "type": [
+                    "deletion"
+                ]
+            },
+            "http": {
+                "request": {
+                    "method": "DELETE"
+                },
+                "response": {
+                    "status_code": 200
+                }
+            },
+            "related": {
+                "ip": [
+                    "203.0.113.10"
+                ],
+                "user": [
+                    "f0e1d2c3b4a5968778695a4b3c2d1e0f",
+                    "user@example.com"
+                ]
+            },
+            "source": {
+                "ip": "203.0.113.10"
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "url": {
+                "original": "/zones/0f1e2d3c4b5a69788796a5b4c3d2e1f0/logpush/jobs/1000002"
+            },
+            "user": {
+                "email": "user@example.com",
+                "id": "f0e1d2c3b4a5968778695a4b3c2d1e0f"
+            },
+            "user_agent": {
+                "device": {
+                    "name": "Mac"
+                },
+                "name": "Chrome",
+                "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+                "os": {
+                    "full": "Mac OS X 10.15.7",
+                    "name": "Mac OS X",
+                    "version": "10.15.7"
+                },
+                "version": "154.0.0.0"
+            }
+        },
+        {
+            "@timestamp": "2026-09-24T09:41:00.000Z",
+            "cloudflare_logpush": {
+                "audit_logs_v2": {
+                    "account": {
+                        "id": "a1b2c3d4e5f60718293a4b5c6d7e8f90",
+                        "name": "Example Account"
+                    },
+                    "action": {
+                        "description": "Get Logpush job",
+                        "result": "success"
+                    },
+                    "actor": {
+                        "context": "dash",
+                        "type": "user"
+                    },
+                    "raw": {
+                        "cf_ray_id": "8a1b2c3d4e5f0009",
+                        "method": "GET",
+                        "status_code": 200,
+                        "uri": "/accounts/a1b2c3d4e5f60718293a4b5c6d7e8f90/logpush/jobs/1000001",
+                        "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36"
+                    },
+                    "ray": {
+                        "id": "8a1b2c3d4e5f0009"
+                    },
+                    "resource": {
+                        "id": "1000001",
+                        "product": "logpush",
+                        "scope": "accounts",
+                        "type": "jobs"
+                    }
+                }
+            },
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "view",
+                "category": [
+                    "configuration"
+                ],
+                "id": "01900000-0000-7000-8000-000000000009",
+                "kind": "event",
+                "original": "{\"AccountID\":\"a1b2c3d4e5f60718293a4b5c6d7e8f90\",\"AccountName\":\"Example Account\",\"ActionDescription\":\"Get Logpush job\",\"ActionResult\":\"success\",\"ActionTimestamp\":\"2026-09-24T09:41:00Z\",\"ActionType\":\"view\",\"ActorContext\":\"dash\",\"ActorEmail\":\"user@example.com\",\"ActorID\":\"f0e1d2c3b4a5968778695a4b3c2d1e0f\",\"ActorIPAddress\":\"203.0.113.10\",\"ActorTokenDetails\":{},\"ActorType\":\"user\",\"AuditLogID\":\"01900000-0000-7000-8000-000000000009\",\"Raw\":{\"cf_ray_id\":\"8a1b2c3d4e5f0009\",\"method\":\"GET\",\"status_code\":200,\"uri\":\"/accounts/a1b2c3d4e5f60718293a4b5c6d7e8f90/logpush/jobs/1000001\",\"user_agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36\"},\"ResourceID\":\"1000001\",\"ResourceProduct\":\"logpush\",\"ResourceRequest\":{},\"ResourceResponse\":{},\"ResourceScope\":\"accounts\",\"ResourceType\":\"jobs\",\"ResourceValue\":{},\"ZoneID\":\"\",\"ZoneName\":\"\"}",
+                "outcome": "success",
+                "type": [
+                    "access"
+                ]
+            },
+            "http": {
+                "request": {
+                    "method": "GET"
+                },
+                "response": {
+                    "status_code": 200
+                }
+            },
+            "related": {
+                "ip": [
+                    "203.0.113.10"
+                ],
+                "user": [
+                    "f0e1d2c3b4a5968778695a4b3c2d1e0f",
+                    "user@example.com"
+                ]
+            },
+            "source": {
+                "ip": "203.0.113.10"
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "url": {
+                "original": "/accounts/a1b2c3d4e5f60718293a4b5c6d7e8f90/logpush/jobs/1000001"
+            },
+            "user": {
+                "email": "user@example.com",
+                "id": "f0e1d2c3b4a5968778695a4b3c2d1e0f"
+            },
+            "user_agent": {
+                "device": {
+                    "name": "Mac"
+                },
+                "name": "Chrome",
+                "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+                "os": {
+                    "full": "Mac OS X 10.15.7",
+                    "name": "Mac OS X",
+                    "version": "10.15.7"
+                },
+                "version": "154.0.0.0"
+            }
+        },
+        {
+            "@timestamp": "2026-09-24T09:00:00.000Z",
+            "cloudflare_logpush": {
+                "audit_logs_v2": {
+                    "account": {
+                        "id": "a1b2c3d4e5f60718293a4b5c6d7e8f90",
+                        "name": "Example Account"
+                    },
+                    "action": {
+                        "description": "SSO_LOGIN",
+                        "result": "success"
+                    },
+                    "actor": {
+                        "context": "dash",
+                        "type": "user"
+                    },
+                    "raw": {
+                        "cf_ray_id": "8a1b2c3d4e5f0010",
+                        "method": "POST",
+                        "status_code": 200,
+                        "uri": "/user/sso/login",
+                        "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36"
+                    },
+                    "ray": {
+                        "id": "8a1b2c3d4e5f0010"
+                    },
+                    "resource": {
+                        "id": "f0e1d2c3b4a5968778695a4b3c2d1e0f",
+                        "product": "user",
+                        "scope": "user",
+                        "type": "user"
+                    }
+                }
+            },
+            "ecs": {
+                "version": "9.3.0"
+            },
+            "event": {
+                "action": "create",
+                "category": [
+                    "authentication"
+                ],
+                "id": "01900000-0000-7000-8000-000000000010",
+                "kind": "event",
+                "original": "{\"AccountID\":\"a1b2c3d4e5f60718293a4b5c6d7e8f90\",\"AccountName\":\"Example Account\",\"ActionDescription\":\"SSO_LOGIN\",\"ActionResult\":\"success\",\"ActionTimestamp\":\"2026-09-24T09:00:00Z\",\"ActionType\":\"create\",\"ActorContext\":\"dash\",\"ActorEmail\":\"user@example.com\",\"ActorID\":\"f0e1d2c3b4a5968778695a4b3c2d1e0f\",\"ActorIPAddress\":\"203.0.113.10\",\"ActorTokenDetails\":{},\"ActorType\":\"user\",\"AuditLogID\":\"01900000-0000-7000-8000-000000000010\",\"Raw\":{\"cf_ray_id\":\"8a1b2c3d4e5f0010\",\"method\":\"POST\",\"status_code\":200,\"uri\":\"/user/sso/login\",\"user_agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36\"},\"ResourceID\":\"f0e1d2c3b4a5968778695a4b3c2d1e0f\",\"ResourceProduct\":\"user\",\"ResourceRequest\":{},\"ResourceResponse\":{},\"ResourceScope\":\"user\",\"ResourceType\":\"user\",\"ResourceValue\":{},\"ZoneID\":\"\",\"ZoneName\":\"\"}",
+                "outcome": "success",
+                "type": [
+                    "start"
+                ]
+            },
+            "http": {
+                "request": {
+                    "method": "POST"
+                },
+                "response": {
+                    "status_code": 200
+                }
+            },
+            "related": {
+                "ip": [
+                    "203.0.113.10"
+                ],
+                "user": [
+                    "f0e1d2c3b4a5968778695a4b3c2d1e0f",
+                    "user@example.com"
+                ]
+            },
+            "source": {
+                "ip": "203.0.113.10"
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "url": {
+                "original": "/user/sso/login"
+            },
+            "user": {
+                "email": "user@example.com",
+                "id": "f0e1d2c3b4a5968778695a4b3c2d1e0f"
+            },
+            "user_agent": {
+                "device": {
+                    "name": "Mac"
+                },
+                "name": "Chrome",
+                "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+                "os": {
+                    "full": "Mac OS X 10.15.7",
+                    "name": "Mac OS X",
+                    "version": "10.15.7"
+                },
+                "version": "154.0.0.0"
+            }
         }
     ]
 }

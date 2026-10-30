@@ -146,6 +146,8 @@ Configure one of the following delivery pipelines before enabling the integratio
   | WARP Toggle Changes        | warp_toggle_changes    |
   | Workers Trace Events       | workers_trace          |
 
+**Note:** Upgrading the integration does not change a Bucket Prefix that is already saved in a policy. Before version 2.3.0, the default prefix of the Audit Logs data stream was `audit_logs`, which also matches `audit_logs_v2/` objects. If your existing policy uses `audit_logs` and you enable Audit Logs v2 on the same bucket, set the **[S3] Bucket Prefix** of the Audit Logs data stream to `audit_logs/` first, so that Audit Logs v2 objects are not collected twice.
+
 #### Collect data from AWS SQS
 
 1. If Logpush forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
