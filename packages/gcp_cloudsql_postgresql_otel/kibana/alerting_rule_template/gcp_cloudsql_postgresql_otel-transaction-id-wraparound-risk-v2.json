@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_postgresql_otel-transaction-id-wraparound-risk-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL PostgreSQL OTel] Transaction ID wraparound risk",
+        "description": "Alerts when transaction ID utilization of a PostgreSQL instance reaches 70% (about 1.5 billion XIDs since the last freeze), the threshold Google suggests for this metric; Google's recommender flags instances at 80%. Near 100%, PostgreSQL forces a read-only shutdown to prevent wraparound. Uses the window peak over 30 minutes; PostgreSQL-only metric, so no engine marker is needed. Some replicas do not report this metric and are not covered. Grouped by database_id.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "postgresql"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "30m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_postgresql.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// PostgreSQL-only metric: no engine marker needed.\n// Fraction (0-1) of the ~2 billion usable transaction IDs consumed since the last freeze.\n// MAX(MAX_OVER_TIME) is exact across fragments; the value moves slowly, so the\n// window peak is effectively the current value.\n| STATS xid_util = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/postgresql/transaction_id_utilization`))\n    BY database_id",
+        "breach": {
+          "segment": "WHERE xid_util IS NOT NULL\n| EVAL xid_used_pct = ROUND(xid_util * 100.0, 2)\n// Alert threshold (percent). 70% follows Google's Cloud SQL guidance for this metric\n// (example alert threshold in Google's transaction ID utilization monitoring guide);\n// Google's recommender flags instances at 80%. Near 100% PostgreSQL stops accepting\n// writes to prevent wraparound. Healthy instances usually sit at a low, sawtoothed level.\n// Lower (e.g. 50) for an earlier warning, raise (e.g. 80) to match the recommender.\n| WHERE xid_used_pct >= 70\n| KEEP database_id, xid_used_pct\n| SORT xid_used_pct DESC\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_postgresql_otel-transaction-id-wraparound-risk-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL PostgreSQL transaction ID wraparound risk\n\nVacuum is not freezing old transaction IDs fast enough. If utilization reaches 100%, PostgreSQL stops accepting writes.\n\n### Triage\n1. Find what blocks freezing, on the Instance Detail dashboard (`vacuum/oldest_transaction_age` by type) or in SQL:\n   - `running`: long-running or idle-in-transaction sessions (`pg_stat_activity`). Terminate them.\n   - `prepared`: orphaned prepared transactions (`pg_prepared_xacts`). Commit or roll back.\n   - `replication_slot`: inactive slots (`pg_replication_slots`). Drop unused slots.\n   - `replica`: a replica with `hot_standby_feedback` holding back the horizon.\n2. Find the oldest databases/tables: `SELECT datname, age(datfrozenxid) FROM pg_database ORDER BY 2 DESC;`.\n3. Once unblocked, run `VACUUM (FREEZE)` on the oldest tables. See Google's high transaction ID utilization recommender.\n\n### Tuning\n- The 70% default follows Google's guidance for this metric. Lower to 50% for an earlier warning; raise to 80% to match Google's recommender."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-transaction-id-wraparound-risk-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-86472830-c83c-4f8b-8753-5d275d1d9391"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-transaction-id-wraparound-risk-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-b8e67303-561a-4a0c-9acf-b35357a26541"
+          }
+        }
+      ]
+    }
+  }
+}

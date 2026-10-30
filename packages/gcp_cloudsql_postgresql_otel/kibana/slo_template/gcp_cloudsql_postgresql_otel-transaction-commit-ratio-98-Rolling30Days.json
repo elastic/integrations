@@ -1,0 +1,61 @@
+{
+  "attributes": {
+    "name": "[GCP Cloud SQL PostgreSQL OTel] Transaction commit ratio 98% rolling 30 days",
+    "description": "Tracks the share of PostgreSQL transactions that commit rather than roll back on each Cloud SQL for PostgreSQL instance. Good events are committed transactions and total events are committed plus rolled-back transactions, both summed from the PostgreSQL-only DELTA metric cloudsql.googleapis.com/database/postgresql/transaction_count (per-minute counts, summed across databases). The objective is that 98% of transactions commit over a rolling 30-day window. A rising rollback share usually means application errors, serialization or constraint failures, statement timeouts or aborted transactions. Caveats: rollbacks are not always failures. Connection-pool resets (for example SQLAlchemy reset-on-return) and read-only sessions that end in ROLLBACK can keep the ratio permanently low with no user impact, so check the baseline and tune the target per workload. The SLO only uses PostgreSQL-only metrics, so no engine marker is needed. It has no data while the instance is stopped or down and does not measure availability; instance-down alerts cover that.",
+    "indicator": {
+      "type": "sli.metric.custom",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"gcp.cloudsql_postgresql.otel\" and attributes.transaction_type: *",
+        "good": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "field": "cloudsql.googleapis.com/database/postgresql/transaction_count",
+              "filter": "attributes.transaction_type: \"commit\""
+            }
+          ],
+          "equation": "A"
+        },
+        "total": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "field": "cloudsql.googleapis.com/database/postgresql/transaction_count",
+              "filter": "attributes.transaction_type: (\"commit\" or \"rollback\")"
+            }
+          ],
+          "equation": "A"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.98
+    },
+    "tags": [
+      "gcp",
+      "cloudsql",
+      "postgresql",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.database_id"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {"id": "gcp_cloudsql_postgresql_otel-86472830-c83c-4f8b-8753-5d275d1d9391"},
+        {"id": "gcp_cloudsql_postgresql_otel-b8e67303-561a-4a0c-9acf-b35357a26541"}
+      ]
+    }
+  },
+  "id": "gcp_cloudsql_postgresql_otel-transaction-commit-ratio-98-Rolling30Days",
+  "type": "slo_template"
+}

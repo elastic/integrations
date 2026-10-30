@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_postgresql_otel-ha-failover-degraded-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL PostgreSQL OTel] HA standby not available for failover",
+        "description": "Alerts when the latest available_for_failover sample of a high-availability (regional) PostgreSQL instance is 0 (the standby cannot take over), for 2 consecutive checks. For fleets with HA instances: available_for_failover is only reported for HA instances, so zonal instances never alert, and if no HA instance has ever reported, the field is unmapped and the rule fails with an \"Unknown column\" error. Automatic failover events (auto_failover_request_count) are not used because that metric only appears around failovers; a failover can show here while the standby is rebuilt. Applies the PostgreSQL engine marker. Grouped by database_id.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "postgresql"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_postgresql.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// For fleets with HA (regional) instances. available_for_failover (GAUGE, >0 = standby\n// ready) is reported only for HA instances, so zonal instances never alert. If no HA\n// instance has ever reported, the field is unmapped and the query fails with\n// \"Unknown column\": the rule does not apply to that fleet.\n// Resolve per minute first (fragmentation-safe).\n| STATS failover_ready = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/available_for_failover`)),\n        pg = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/postgresql/num_backends`))\n    BY `@timestamp` = TBUCKET(1 minute), database_id\n// PostgreSQL engine marker: excludes MySQL / SQL Server HA instances\n| INLINE STATS pg_total = SUM(pg) BY database_id\n| WHERE pg_total > 0 AND failover_ready IS NOT NULL\n// Latest readiness sample per instance\n| STATS failover_ready = LAST(failover_ready, `@timestamp`),\n        ready_minutes = COUNT(*)\n    BY database_id",
+        "breach": {
+          "segment": "// Breach: the standby cannot take over (HA protection lost). After an automatic failover\n// this can also show while the standby is rebuilt.\nWHERE failover_ready == 0\n| KEEP database_id, failover_ready, ready_minutes\n| SORT database_id\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_postgresql_otel-ha-failover-degraded-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL PostgreSQL HA standby not available for failover\n\nThe instance has lost its ability to fail over: HA protection is lost.\n\n### Triage\n1. This is expected briefly during maintenance or right after an automatic failover while the standby is rebuilt. Check the Cloud SQL operations log for a failover or maintenance event, and Google Cloud status for the region. After a failover, verify application error rates and connection storms.\n2. If it persists, check the operations log and open a support case.\n3. Check the instance down and restarted alerts for the same instance.\n\n### Tuning\n- Increase the alert delay if maintenance regularly causes short readiness gaps."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-ha-failover-degraded-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-86472830-c83c-4f8b-8753-5d275d1d9391"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-ha-failover-degraded-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-b8e67303-561a-4a0c-9acf-b35357a26541"
+          }
+        }
+      ]
+    }
+  }
+}

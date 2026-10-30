@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_postgresql_otel-memory-utilization-high-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL PostgreSQL OTel] Memory utilization high",
+        "description": "Alerts when the average memory utilization (excluding buffer/cache) of a PostgreSQL instance is at or above 90%, averaged over the 15-minute rule window, for 2 consecutive checks. Sustained memory pressure precedes OOM restarts. Requires at least 5 samples and applies the PostgreSQL engine marker. Grouped by database_id. Instances that report a memory quota under 1 GB (shared-core db-f1-micro) are excluded because they report memory pinned at the quota; instances without memory/quota data are still evaluated.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "postgresql"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_postgresql.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// Exact mean across fragments: SUM(SUM_OVER_TIME) / SUM(COUNT_OVER_TIME), not AVG(AVG_OVER_TIME)\n| STATS mem_sum = SUM(SUM_OVER_TIME(`cloudsql.googleapis.com/database/memory/utilization`)),\n        mem_n = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/memory/utilization`)),\n        mem_peak = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/memory/utilization`)),\n        quota = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/memory/quota`)),\n        pg = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/postgresql/num_backends`))\n    BY database_id",
+        "breach": {
+          "segment": "// PostgreSQL engine marker: excludes MySQL / SQL Server instances that share these metrics\nWHERE pg > 0 AND mem_n > 0\n// memory/utilization excludes buffer/cache, so sustained values near 1 are real pressure\n| EVAL mem_avg_pct = ROUND(mem_sum / mem_n * 100.0, 1),\n       mem_peak_pct = ROUND(mem_peak * 100.0, 1)\n// Shared-core db-f1-micro instances (~0.6 GB) report memory/usage pinned at the quota,\n// which reads as a permanent 100% regardless of load, so they are excluded.\n// Instances with no memory/quota sample in the window are kept, so a missing quota\n// never silences the rule.\n| WHERE quota IS NULL OR quota >= 1000000000\n// Minimum samples: require ~5 minutes of data so a single late sample cannot trigger\n| WHERE mem_n >= 5\n// Alert threshold: average memory utilization (percent) over the rule window\n| WHERE mem_avg_pct >= 90\n| KEEP database_id, mem_avg_pct, mem_peak_pct, mem_n\n| SORT mem_avg_pct DESC\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_postgresql_otel-memory-utilization-high-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL PostgreSQL memory utilization high\n\n`memory/utilization` excludes buffer/cache, so a sustained value near 100% is real memory pressure and risks an OOM restart.\n\n### Triage\n1. On the Instance Detail dashboard, check connections (`num_backends`) and temp spill: many connections times a large `work_mem` is the most common cause.\n2. Look for large queries, sorts or hash joins (Query Insights if enabled).\n3. Reduce connections (use a pooler), lower `work_mem` / `maintenance_work_mem`, or move to a larger tier.\n4. If the instance already restarted, see the instance restarted alert.\n\n### Tuning\n- Shared-core db-f1-micro instances (under 1 GB) report memory pinned at the quota and are excluded by the `quota IS NULL OR quota >= 1000000000` filter. Instances without `memory/quota` data are still evaluated. Remove the filter to include db-f1-micro instances."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-memory-utilization-high-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-86472830-c83c-4f8b-8753-5d275d1d9391"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_postgresql_otel-memory-utilization-high-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_postgresql_otel-b8e67303-561a-4a0c-9acf-b35357a26541"
+          }
+        }
+      ]
+    }
+  }
+}
