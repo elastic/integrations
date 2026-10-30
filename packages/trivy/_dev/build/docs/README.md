@@ -24,7 +24,7 @@ The Trivy integration collects vulnerability findings, one per event. Each event
 
 ### Supported use cases
 
-* Vulnerability management dashboards and the Elastic Security vulnerability app
+* Vulnerability management dashboards and the Elastic Security Findings page
 * Continuous scanning pipelines that export Trivy reports to disk on CI runners, container hosts, or Kubernetes nodes
 * Correlating findings with the host or workload that carries them
 
@@ -86,6 +86,14 @@ Rotate or size the NDJSON files as needed. Elastic Agent tracks read offsets per
 ### Validation
 
 After the agent applies the policy, check that documents arrive in the `logs-trivy.vulnerability-*` data stream. A typical finding has `vulnerability.id` set to a CVE identifier, `vulnerability.severity` populated, and `vulnerability.package.name` matching the scanned package. The raw Trivy keys, for example `vulnerability.VulnerabilityID` and `artifact.Reference`, are available in the same document.
+
+#### Support for the Elastic Vulnerability Findings page
+
+The integration adds support for the [Elastic Cloud Security workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data), which displays findings in the Elastic [Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3). An [Elastic Latest Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) copies the latest vulnerability findings from source indices matching the pattern `logs-trivy.vulnerability-*` into destination indices matching the pattern `security_solution-trivy.vulnerability_latest-*`. The Findings page displays vulnerabilities based on the destination indices.
+
+For this to work, findings must carry the ECS fields the workflow groups and deduplicates on: `vulnerability.id`, `package.name`, `package.version`, `package.path`, `package.fixed_version`, and `resource.id`. The ingest pipeline derives `resource.id` from the Kubernetes workload for cluster scans (cluster, namespace, kind, and name) and from the image reference or artifact name otherwise, so flattened reports should keep the `resource` and `artifact` objects of the Trivy report intact.
+
+The transform runs every 5 minutes and keeps 90 days of findings. Findings older than 90 days or documents with `error.message` set are excluded.
 
 ## Troubleshooting
 

@@ -25,7 +25,7 @@ The Trivy integration collects vulnerability findings, one per event. Each event
 
 ### Supported use cases
 
-* Vulnerability management dashboards and the Elastic Security vulnerability app
+* Vulnerability management dashboards and the Elastic Security Findings page
 * Continuous scanning pipelines that export Trivy reports to disk on CI runners, container hosts, or Kubernetes nodes
 * Correlating findings with the host or workload that carries them
 
@@ -88,6 +88,14 @@ Rotate or size the NDJSON files as needed. Elastic Agent tracks read offsets per
 
 After the agent applies the policy, check that documents arrive in the `logs-trivy.vulnerability-*` data stream. A typical finding has `vulnerability.id` set to a CVE identifier, `vulnerability.severity` populated, and `vulnerability.package.name` matching the scanned package. The raw Trivy keys, for example `vulnerability.VulnerabilityID` and `artifact.Reference`, are available in the same document.
 
+#### Support for the Elastic Vulnerability Findings page
+
+The integration adds support for the [Elastic Cloud Security workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data), which displays findings in the Elastic [Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3). An [Elastic Latest Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) copies the latest vulnerability findings from source indices matching the pattern `logs-trivy.vulnerability-*` into destination indices matching the pattern `security_solution-trivy.vulnerability_latest-*`. The Findings page displays vulnerabilities based on the destination indices.
+
+For this to work, findings must carry the ECS fields the workflow groups and deduplicates on: `vulnerability.id`, `package.name`, `package.version`, `package.path`, `package.fixed_version`, and `resource.id`. The ingest pipeline derives `resource.id` from the Kubernetes workload for cluster scans (cluster, namespace, kind, and name) and from the image reference or artifact name otherwise, so flattened reports should keep the `resource` and `artifact` objects of the Trivy report intact.
+
+The transform runs every 5 minutes and keeps 90 days of findings. Findings older than 90 days or documents with `error.message` set are excluded.
+
 ## Troubleshooting
 
 - No data is being collected: Verify the Paths glob matches the report files and that Elastic Agent has read permission on the directory.
@@ -149,6 +157,7 @@ The `vulnerability` data stream provides vulnerability findings from Trivy scan 
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.id | Unique ID to describe the event. | keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
@@ -167,9 +176,16 @@ The `vulnerability` data stream provides vulnerability findings from Trivy scan 
 | log.file.path | Path to the file that the event was read from. | keyword |
 | log.file.vol | The volume identifier (used on Windows). | long |
 | log.offset | Log offset. | long |
+| package.fixed_version | Version that fixes the vulnerability, if available. | keyword |
+| package.name | Package name | keyword |
+| package.path | Path where the package is installed. | keyword |
+| package.version | Package version | keyword |
 | resource.Kind | Kubernetes resource kind of the scanned workload, for example Deployment. | keyword |
 | resource.Name | Kubernetes resource name of the scanned workload. | keyword |
 | resource.Namespace | Kubernetes namespace of the scanned workload. | keyword |
+| resource.id | Unique identifier of the scanned resource, used by the Elastic Vulnerability Findings page. | keyword |
+| resource.name | Name of the scanned resource. | keyword |
+| resource.type | Type or kind of the scanned resource. | keyword |
 | result.Class | Class of the Trivy scan result, for example os-pkgs or lang-pkgs. | keyword |
 | result.Target | Scan target of the Trivy result. | keyword |
 | result.Type | Type of the scanned target, for example ubuntu or npm. | keyword |
@@ -207,6 +223,7 @@ The `vulnerability` data stream provides vulnerability findings from Trivy scan 
 | vulnerability.VendorSeverity.\* | Severity rating per advisory source, using Trivy's numeric scale. | object |
 | vulnerability.VulnerabilityID | CVE or advisory identifier reported by Trivy. | keyword |
 | vulnerability.classification | The classification of the vulnerability scoring system. For example (https://www.first.org/cvss/) | keyword |
+| vulnerability.cve | The CVE identifier of the vulnerability, when the Trivy ID is a CVE. | keyword |
 | vulnerability.description | The description of the vulnerability that provides additional context of the vulnerability. For example (https://cve.mitre.org/about/faqs.html#cve_entry_descriptions_created) | keyword |
 | vulnerability.description.text | Multi-field of `vulnerability.description`. | match_only_text |
 | vulnerability.enumeration | The type of identifier used for this vulnerability. For example (https://cve.mitre.org/about/) | keyword |
@@ -220,9 +237,11 @@ The `vulnerability` data stream provides vulnerability findings from Trivy scan 
 | vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | keyword |
 | vulnerability.score.base | Scores can range from 0.0 to 10.0, with 10.0 being the most severe. Base scores cover an assessment for exploitability metrics (attack vector, complexity, privileges, and user interaction), impact metrics (confidentiality, integrity, and availability), and scope. For example (https://www.first.org/cvss/specification-document) | float |
 | vulnerability.severity | The severity of the vulnerability can help with metrics and internal prioritization regarding remediation. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
+| vulnerability.status | Status of the vulnerability, for example fixed or affected. | keyword |
 | vulnerability.timeline.discovered | Time the scan that surfaced this finding was executed. | date |
 | vulnerability.timeline.modified | Date the vulnerability entry was last modified. | date |
 | vulnerability.timeline.published | Date the vulnerability was published. | date |
+| vulnerability.title | Human-readable title of the vulnerability. | keyword |
 
 
 ##### vulnerability sample event
@@ -366,4 +385,116 @@ An example event for `vulnerability` looks as following:
 
 
 
+
+### Transforms used
+
+#### latest_cdr_vulnerabilities
+* Description: Latest Vulnerability Findings from Trivy.
+* Source Index: logs-trivy.vulnerability-\*
+* Destination Index: security_solution-trivy.vulnerability_latest-v1
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| artifact.ArtifactName | Name of the scanned artifact (image reference, repository, or filesystem path). | keyword |
+| artifact.ArtifactType | Type of the scanned artifact, for example container_image or k8s. | keyword |
+| artifact.ImageID | Image ID of the scanned container image. | keyword |
+| artifact.OS.Family | Operating system family of the scanned artifact. | keyword |
+| artifact.OS.Name | Operating system name or version of the scanned artifact. | keyword |
+| artifact.Reference | Image reference of the scanned container image. | keyword |
+| artifact.RepoDigests | Repository digests of the scanned container image. | keyword |
+| artifact.RepoTags | Repository tags of the scanned container image. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
+| input.type | Type of filebeat input. | keyword |
+| k8s.deployment.name | Kubernetes deployment name of the scanned workload. | keyword |
+| k8s.namespace.name | Kubernetes namespace of the scanned workload. | keyword |
+| log.file.device_id | The ID of the device containing the file that the event was read from. | long |
+| log.file.fingerprint | The fingerprint hash of the file that the event was read from. | keyword |
+| log.file.idxhi | The high-order file identifier (used on Windows). | long |
+| log.file.idxlo | The low-order file identifier (used on Windows). | long |
+| log.file.inode | The inode number of the file that the event was read from. | long |
+| log.file.path | Path to the file that the event was read from. | keyword |
+| log.file.vol | The volume identifier (used on Windows). | long |
+| log.offset | Log offset. | long |
+| package.fixed_version | Version that fixes the vulnerability, if available. | keyword |
+| package.name | Package name | keyword |
+| package.path | Path where the package is installed. | keyword |
+| package.version | Package version | keyword |
+| resource.Kind | Kubernetes resource kind of the scanned workload, for example Deployment. | keyword |
+| resource.Name | Kubernetes resource name of the scanned workload. | keyword |
+| resource.Namespace | Kubernetes namespace of the scanned workload. | keyword |
+| resource.id | Unique identifier of the scanned resource, used by the Elastic Vulnerability Findings page. | keyword |
+| resource.name | Name of the scanned resource. | keyword |
+| resource.type | Type or kind of the scanned resource. | keyword |
+| result.Class | Class of the Trivy scan result, for example os-pkgs or lang-pkgs. | keyword |
+| result.Target | Scan target of the Trivy result. | keyword |
+| result.Type | Type of the scanned target, for example ubuntu or npm. | keyword |
+| scan.cluster_name | Name of the scanned Kubernetes cluster, when scanning a cluster. | keyword |
+| scan.schema_version | Schema version of the Trivy JSON report. | long |
+| scan.time | Timestamp when the Trivy scan was executed. | date |
+| scan.trivy_version | Version of Trivy that produced the scan report. | keyword |
+| vulnerability.CVSS.\*.V3Score | CVSS v3 base score per advisory source (for example nvd, redhat, ghsa). | object |
+| vulnerability.CVSS.\*.V3Vector | CVSS v3 vector string per advisory source. | object |
+| vulnerability.CVSS.\*.V40Score | CVSS v4.0 base score per advisory source. | object |
+| vulnerability.CVSS.\*.V40Vector | CVSS v4.0 vector string per advisory source. | object |
+| vulnerability.CweIDs | CWE identifiers of the vulnerability. | keyword |
+| vulnerability.DataSource.ID | Identifier of the vulnerability data source. | keyword |
+| vulnerability.DataSource.Name | Name of the vulnerability data source. | keyword |
+| vulnerability.DataSource.URL | URL of the vulnerability data source. | keyword |
+| vulnerability.Description | Full description of the vulnerability. | match_only_text |
+| vulnerability.Fingerprint | Trivy fingerprint of the finding. | keyword |
+| vulnerability.FixedVersion | Version that fixes the vulnerability, if available. | keyword |
+| vulnerability.InstalledVersion | Installed version of the affected package. | keyword |
+| vulnerability.LastModifiedDate | Date the vulnerability entry was last modified. | date |
+| vulnerability.Layer.DiffID | Layer diff ID in which the affected package was introduced. | keyword |
+| vulnerability.Layer.Digest | Layer digest in which the affected package was introduced. | keyword |
+| vulnerability.PkgID | Package identifier as reported by Trivy. | keyword |
+| vulnerability.PkgIdentifier.PURL | Package URL (PURL) of the affected package. | keyword |
+| vulnerability.PkgIdentifier.UID | Trivy unique identifier of the affected package. | keyword |
+| vulnerability.PkgName | Name of the affected package as reported by Trivy. | keyword |
+| vulnerability.PkgPath | Path of the affected package or lockfile inside the scanned artifact. | keyword |
+| vulnerability.PrimaryURL | Primary reference URL of the vulnerability. | keyword |
+| vulnerability.PublishedDate | Date the vulnerability was published. | date |
+| vulnerability.Severity | Severity as reported by Trivy. | keyword |
+| vulnerability.SeveritySource | Data source the severity was taken from. | keyword |
+| vulnerability.Status | Fix status of the vulnerability, for example fixed or affected. | keyword |
+| vulnerability.Title | Short title of the vulnerability. | keyword |
+| vulnerability.VendorIDs | Advisory identifiers assigned by the vendor or ecosystem, for example GHSA IDs. | keyword |
+| vulnerability.VendorSeverity.\* | Severity rating per advisory source, using Trivy's numeric scale. | object |
+| vulnerability.VulnerabilityID | CVE or advisory identifier reported by Trivy. | keyword |
+| vulnerability.classification | The classification of the vulnerability scoring system. For example (https://www.first.org/cvss/) | keyword |
+| vulnerability.cve | The CVE identifier of the vulnerability, when the Trivy ID is a CVE. | keyword |
+| vulnerability.description | The description of the vulnerability that provides additional context of the vulnerability. For example (https://cve.mitre.org/about/faqs.html#cve_entry_descriptions_created) | keyword |
+| vulnerability.description.text | Multi-field of `vulnerability.description`. | match_only_text |
+| vulnerability.enumeration | The type of identifier used for this vulnerability. For example (https://cve.mitre.org/about/) | keyword |
+| vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id) | keyword |
+| vulnerability.package.fixed | Version that fixes the vulnerability, if available. | keyword |
+| vulnerability.package.name | Name of the affected package, mapped from the Trivy report. | keyword |
+| vulnerability.package.path | Path of the affected package or lockfile inside the scanned artifact. | keyword |
+| vulnerability.package.version | Installed version of the affected package, mapped from the Trivy report. | keyword |
+| vulnerability.reference | A resource that provides additional information, context, and mitigations for the identified vulnerability. | keyword |
+| vulnerability.report_id | The report or scan identification number. | keyword |
+| vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | keyword |
+| vulnerability.score.base | Scores can range from 0.0 to 10.0, with 10.0 being the most severe. Base scores cover an assessment for exploitability metrics (attack vector, complexity, privileges, and user interaction), impact metrics (confidentiality, integrity, and availability), and scope. For example (https://www.first.org/cvss/specification-document) | float |
+| vulnerability.severity | The severity of the vulnerability can help with metrics and internal prioritization regarding remediation. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
+| vulnerability.status | Status of the vulnerability, for example fixed or affected. | keyword |
+| vulnerability.timeline.discovered | Time the scan that surfaced this finding was executed. | date |
+| vulnerability.timeline.modified | Date the vulnerability entry was last modified. | date |
+| vulnerability.timeline.published | Date the vulnerability was published. | date |
+| vulnerability.title | Human-readable title of the vulnerability. | keyword |
 
