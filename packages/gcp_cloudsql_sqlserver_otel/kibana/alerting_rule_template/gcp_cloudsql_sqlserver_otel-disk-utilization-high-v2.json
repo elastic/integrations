@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_sqlserver_otel-disk-utilization-high-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL SQL Server OTel] Disk utilization high",
+        "description": "Alerts when the latest disk utilization of a SQL Server instance is at or above 90% of its disk quota for 2 consecutive checks. A full disk stops writes and can take the instance down. Uses the latest per-minute value in a 15-minute window and the SQL Server engine marker. Grouped by database_id.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "sqlserver"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_sqlserver.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// Resolve each gauge per minute first (fragmentation-safe), then pick the latest minute.\n| STATS disk_util = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/disk/utilization`)),\n        bytes_used = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/disk/bytes_used`)),\n        quota = MAX(MAX_OVER_TIME(`cloudsql.googleapis.com/database/disk/quota`)),\n        ss = SUM(COUNT_OVER_TIME(`cloudsql.googleapis.com/database/sqlserver/memory/page_life_expectancy`))\n    BY `@timestamp` = TBUCKET(1 minute), database_id\n// SQL Server engine marker: excludes MySQL / PostgreSQL instances that share these metrics.\n// The marker lives in different documents than disk metrics, so it is evaluated after aggregation.\n| INLINE STATS ss_total = SUM(ss) BY database_id\n| WHERE ss_total > 0 AND disk_util IS NOT NULL\n| STATS disk_util = LAST(disk_util, `@timestamp`),\n        bytes_used = LAST(bytes_used, `@timestamp`),\n        quota = LAST(quota, `@timestamp`)\n    BY database_id\n| EVAL disk_used_pct = ROUND(disk_util * 100.0, 1),\n       free_gib = ROUND((quota - bytes_used) / 1073741824.0, 1)",
+        "breach": {
+          "segment": "// Alert threshold (percent of disk quota). Lower to 80 for an earlier warning; raise it\n// if automatic storage increase is enabled and you only want to catch it failing to keep up.\nWHERE disk_used_pct >= 90\n| KEEP database_id, disk_used_pct, free_gib, bytes_used, quota\n| SORT disk_used_pct DESC\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-disk-utilization-high-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL for SQL Server disk utilization high\n\nThe data disk is at or above 90% of its quota. When it fills, SQL Server can no longer write data or transaction log and the instance may become unavailable; recovery can require downtime.\n\n### Triage\n1. Open the Instance Detail dashboard and check the disk usage trend: steady growth, or a sudden jump?\n2. Common SQL Server causes: transaction log growth (long-running or open transactions, log backups not truncating), tempdb growth from large sorts/hash spills or version store, unbounded tables, and audit files (`sqlserver/audits_size`).\n3. Check whether automatic storage increase is enabled for the instance. If not, increase the disk size (this cannot be reduced later) or free space.\n4. See also the disk exhaustion forecast alert for growth-rate based warnings.\n\n### Tuning\n- Change `disk_used_pct >= 90` to adjust sensitivity (e.g. 80 for a warning-level rule).\n- The latest per-minute value in the 15-minute window is used, so a single late sample does not hide recent growth.\n\n### Behaviour notes\n- Healthy: latest utilization below 90%. Breaching: latest utilization at or above 90% (exactly 90.0% breaches) for 2 consecutive checks.\n- Missing data: an instance with no disk samples in the window is not evaluated (no alert)."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-disk-utilization-high-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_sqlserver_otel-46d11bef-3642-4b3f-b979-d748c687acd6"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-disk-utilization-high-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_sqlserver_otel-0953c329-69c9-4605-9c7c-b2c2d5b10846"
+          }
+        }
+      ]
+    }
+  }
+}
