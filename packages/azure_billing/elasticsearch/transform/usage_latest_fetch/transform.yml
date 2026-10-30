@@ -15,10 +15,10 @@ pivot:
     azure.billing.subscription_day:
       terms:
         field: azure.billing.subscription_day
+  # Only the join key and `latest.*`: a LOOKUP JOIN copies every field of the
+  # lookup index into the joined row and would overwrite the columns it shares
+  # with `usage_fetches`, such as `@timestamp`.
   aggregations:
-    "@timestamp":
-      max:
-        field: "@timestamp"
     # Fetch key of the newest fetch for the day and subscription, written as
     # `latest.azure.billing.fetch_key`.
     latest:
@@ -46,7 +46,9 @@ sync:
   time:
     # Set by the usage_fetches destination pipeline when a document is written.
     field: "event.ingested"
-    delay: 60s
+    # 120s like the other transforms, because of the index refresh delay in
+    # Serverless.
+    delay: 120s
 _meta:
   # Bump this version to delete, reinstall, and restart the transform during
   # package installation.
