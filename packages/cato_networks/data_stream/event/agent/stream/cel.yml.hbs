@@ -31,8 +31,8 @@ state:
   --}}
   max_page_limit: 3000
   query: >-
-    query EventsFeed($accountIDs: [ID!] $marker: String) {
-      eventsFeed(accountIDs: $accountIDs marker: $marker) {
+    query EventsFeed($accountIDs: [ID!] $marker: String $filters: [EventFeedFieldFilterInput!]) {
+      eventsFeed(accountIDs: $accountIDs marker: $marker filters: $filters) {
         fetchedCount
         marker
         accounts {
@@ -43,6 +43,10 @@ state:
         }
       }
     }
+{{#if filters}}
+state.filters:
+{{filters}}
+{{/if}}
 redact:
   fields:
     - api_key
@@ -62,6 +66,7 @@ program: |
           "variables": {
             "accountIDs": state.account_ids,
             ?"marker": state.?cursor.marker,
+            ?"filters": state.?filters,
           },
         }.encode_json(),
       }

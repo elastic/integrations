@@ -1,0 +1,19 @@
+input: cel
+service: cato_networks
+wait_for_data_timeout: 1m
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  api_key: xxxx
+data_stream:
+  vars:
+    account_ids:
+      - 33333
+    interval: 5s
+    filters: |-
+      - fieldName: event_sub_type
+        operator: in
+        values:
+          - WAN Firewall
+    preserve_original_event: true
+assert:
+  hit_count: 1
