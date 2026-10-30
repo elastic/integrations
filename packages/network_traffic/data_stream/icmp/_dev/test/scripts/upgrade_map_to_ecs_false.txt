@@ -1,0 +1,74 @@
+# Test that a policy created on the last release that had the map_to_ecs
+# option (1.34.3) with the legacy mapping (map_to_ecs: false) upgrades to
+# the current version, which removes the option, and that data collected
+# afterwards uses the ECS layout.
+#
+# TODO: Remove this test once upgrades from 1.34.x are no longer a concern,
+# and replace it with a general-purpose upgrade test that installs the
+# latest released version, upgrades to the current one and checks that data
+# collection continues. The pinned version and the legacy-layout assertions
+# below only make sense for the 1.x to 2.0.0 upgrade.
+#
+# This deliberately does not skip when the current changelog entry is a
+# breaking change: crossing that change is what is being tested.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+[!exec:docker] skip 'Skipping test requiring absent docker command'
+
+# Connect to the running stack and install an agent.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME -container_name AGENT_CONTAINER
+
+# Packetbeat reads the capture from the agent's service logs directory.
+# Put it there before the policy exists so the input finds it on start.
+exec docker cp ${PACKAGE_ROOT}/_dev/deploy/docker/pcaps/icmp4_ping.pcap ${AGENT_CONTAINER}:/tmp/service_logs/icmp4_ping.pcap
+
+# Install the last release that has map_to_ecs and create a policy that uses the legacy mapping.
+install_package_from_registry -profile ${CONFIG_PROFILES}/${PROFILE} ${PACKAGE_NAME} 1.34.3
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} -version 1.34.3 test_config.yaml DATA_STREAM_NAME
+
+# One transaction in the capture. The legacy mapping leaves the protocol
+# fields at the root of the document.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs_before.json
+
+exec jq '[.hits.hits[]._source | (has("icmp") and (has("network_traffic") | not))] | all' got_docs_before.json
+stdout '^true$'
+
+# Install the current version from disk and upgrade the policy to it.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+upgrade_package_latest -profile ${CONFIG_PROFILES}/${PROFILE}
+stdout 'upgraded package '${PACKAGE_NAME}
+
+# The restarted input reads the capture again, which gives a second document
+# with the ECS layout. The first document stays as it was indexed.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs_after.json
+
+exec jq '[.hits.hits[]._source | select(has("network_traffic"))] | length' got_docs_after.json
+stdout '^1$'
+
+exec jq '[.hits.hits[]._source | select(has("network_traffic")) | (has("icmp") or has("type") or has("status"))] | any' got_docs_after.json
+stdout '^false$'
+
+exec jq '[.hits.hits[]._source | select(has("network_traffic")) | .network_traffic.icmp.request.type] | .[0]' got_docs_after.json
+stdout '^8$'
+
+exec jq '[.hits.hits[]._source | select(has("network_traffic")) | .network_traffic.status] | .[0]' got_docs_after.json
+stdout '^"OK"$'
+
+exec jq '[.hits.hits[]._source | select(has("network_traffic")) | .event.dataset] | .[0]' got_docs_after.json
+stdout '^"network_traffic.icmp"$'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+
+-- test_config.yaml --
+vars:
+  interface: /tmp/service_logs/icmp4_ping.pcap
+input: packet
+data_stream:
+  vars:
+    map_to_ecs: false
