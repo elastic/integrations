@@ -122,7 +122,7 @@ Configure one of the following delivery pipelines before enabling the integratio
   | Data Stream Name           | Bucket Prefix          |
   | -------------------------- | ---------------------- |
   | Access Request             | access_request         |
-  | Audit Logs                 | audit_logs             |
+  | Audit Logs                 | audit_logs/            |
   | Audit Logs v2              | audit_logs_v2          |
   | CASB findings              | casb                   |
   | Device Posture Results     | device_posture         |

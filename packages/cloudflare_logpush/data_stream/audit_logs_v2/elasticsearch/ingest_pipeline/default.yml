@@ -23,10 +23,11 @@ processors:
       field: event.original
       target_field: json
       if: ctx.event?.original != null
-  - set:
-      tag: set_event_category
+  - append:
+      tag: append_configuration_into_event_category
       field: event.category
-      value: [configuration]
+      value: configuration
+      allow_duplicates: false
   - set:
       tag: set_event_kind
       field: event.kind
@@ -95,25 +96,29 @@ processors:
       field: json.ActionType
       target_field: event.action
       ignore_missing: true
-  - set:
-      tag: set_event_type_to_creation
+  - append:
+      tag: append_creation_into_event_type
       field: event.type
-      value: [creation]
+      value: creation
+      allow_duplicates: false
       if: ctx.event?.action == 'create'
-  - set:
-      tag: set_event_type_to_change
+  - append:
+      tag: append_change_into_event_type
       field: event.type
-      value: [change]
+      value: change
+      allow_duplicates: false
       if: ctx.event?.action == 'update'
-  - set:
-      tag: set_event_type_to_deletion
+  - append:
+      tag: append_deletion_into_event_type
       field: event.type
-      value: [deletion]
+      value: deletion
+      allow_duplicates: false
       if: ctx.event?.action == 'delete'
-  - set:
-      tag: set_event_type_to_info
+  - append:
+      tag: append_info_into_event_type
       field: event.type
-      value: [info]
+      value: info
+      allow_duplicates: false
       if: ctx.event?.type == null
   ## Cloudflare does not publish the ActionResult value vocabulary; only "success" has been seen
   ## in real events. The value is always kept in the custom field, and event.outcome is only set
