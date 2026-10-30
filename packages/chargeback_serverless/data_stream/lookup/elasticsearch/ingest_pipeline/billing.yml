@@ -9,13 +9,33 @@ processors:
       tag: set_composite_key
       source: |
         if (ctx.project_name instanceof Map) {
+          def picked = null;
           def buckets = ctx.project_name.buckets;
-          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
-            ctx.project_name = buckets[0].key;
+          if (buckets instanceof List && buckets.size() > 0) {
+            for (def b : buckets) {
+              if (b.key != null && b.key != '' && b.key != ctx.project_id) {
+                picked = b.key;
+                break;
+              }
+            }
+            if (picked == null && buckets[0].key != null) {
+              picked = buckets[0].key;
+            }
           } else {
-            def keys = new ArrayList(ctx.project_name.keySet());
-            ctx.project_name = keys.size() > 0 ? keys[0] : ctx.project_id;
+            for (def k : ctx.project_name.keySet()) {
+              if (k != null && k != '' && k != ctx.project_id) {
+                picked = k;
+                break;
+              }
+            }
+            if (picked == null) {
+              def keys = new ArrayList(ctx.project_name.keySet());
+              if (keys.size() > 0) {
+                picked = keys[0];
+              }
+            }
           }
+          ctx.project_name = picked != null ? picked : ctx.project_id;
         }
         if (ctx.project_type instanceof Map) {
           def buckets = ctx.project_type.buckets;
@@ -46,6 +66,18 @@ processors:
         }
         if (ctx.project_name == null || ctx.project_name == '') {
           ctx.project_name = ctx.project_id;
+        }
+        if (ctx.project_id != null) {
+          ctx.deployment_id = ctx.project_id;
+        }
+        if (ctx.project_name != null) {
+          ctx.deployment_name = ctx.project_name;
+        }
+        if (ctx.project_type != null) {
+          ctx.deployment_type = ctx.project_type;
+        }
+        if (ctx.total_ecu instanceof Number) {
+          ctx.total_chargeable_units = ((Number)ctx.total_ecu).doubleValue();
         }
         if (ctx['@timestamp'] != null && ctx.project_id != null) {
           ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.project_id;

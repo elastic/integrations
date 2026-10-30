@@ -33,13 +33,36 @@ processors:
           }
         }
         if (ctx.project_name instanceof Map) {
+          def picked = null;
           def buckets = ctx.project_name.buckets;
-          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
-            ctx.project_name = buckets[0].key;
+          if (buckets instanceof List && buckets.size() > 0) {
+            for (def b : buckets) {
+              if (b.key != null && b.key != '' && b.key != ctx.project_id) {
+                picked = b.key;
+                break;
+              }
+            }
+            if (picked == null && buckets[0].key != null) {
+              picked = buckets[0].key;
+            }
           } else {
-            def keys = new ArrayList(ctx.project_name.keySet());
-            ctx.project_name = keys.size() > 0 ? keys[0] : ctx.project_id;
+            for (def k : ctx.project_name.keySet()) {
+              if (k != null && k != '' && k != ctx.project_id) {
+                picked = k;
+                break;
+              }
+            }
+            if (picked == null) {
+              def keys = new ArrayList(ctx.project_name.keySet());
+              if (keys.size() > 0) {
+                picked = keys[0];
+              }
+            }
           }
+          ctx.project_name = picked != null ? picked : ctx.project_id;
+        }
+        if (ctx.datastream != null && ctx.project_id != null) {
+          ctx.cluster_name = ctx.project_id;
         }
         if (ctx.project_type instanceof Map) {
           def buckets = ctx.project_type.buckets;
