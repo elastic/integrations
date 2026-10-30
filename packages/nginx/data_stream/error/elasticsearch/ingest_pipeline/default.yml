@@ -2,17 +2,27 @@
 description: Pipeline for parsing the Nginx error logs
 processors:
   - set:
+      tag: set_event_ingested_dd40264a
       field: event.ingested
       value: '{{_ingest.timestamp}}'
   - set:
+      tag: set_ecs_version_bd897681
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_2468a65b
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_01f3d978
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: The `message` field is no longer needed once the document has an `event.original` field.
   - grok:
+      tag: grok_event_original_9f06d772
       field: event.original
       patterns:
       - '%{DATA:nginx.error.time} \[%{DATA:log.level}\] %{NUMBER:process.pid:long}#%{NUMBER:process.thread.id:long}:
@@ -23,13 +33,16 @@ processors:
           |	)*
       ignore_missing: true
   - remove:
+      tag: remove_event_created_9c749c15
       field: event.created
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_timestamp_4d2a468b
       field: '@timestamp'
       target_field: event.created
   - date:
+      tag: date_nginx_error_time_7fac5a4f
       if: ctx.event.timezone == null
       field: nginx.error.time
       target_field: '@timestamp'
@@ -37,9 +50,11 @@ processors:
       - yyyy/MM/dd H:m:s
       on_failure:
       - append:
+          tag: append_error_message_d646b193
           field: error.message
           value: '{{ _ingest.on_failure_message }}'
   - date:
+      tag: date_nginx_error_time_1e229450
       if: ctx.event.timezone != null
       field: nginx.error.time
       target_field: '@timestamp'
@@ -48,20 +63,34 @@ processors:
       timezone: '{{ event.timezone }}'
       on_failure:
       - append:
+          tag: append_error_message_0eb795ac
           field: error.message
           value: '{{ _ingest.on_failure_message }}'
   - remove:
+      tag: remove_nginx_error_time_734b5658
       field: nginx.error.time
   - set:
+      tag: set_event_kind_aa4005fb
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_0769bd74
       field: event.category
       value: web
   - append:
+      tag: append_event_type_799c2cf2
       field: event.type
       value: error
 on_failure:
   - set:
+      tag: set_event_kind_c3dcf2a5
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_bfb7afc9
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
