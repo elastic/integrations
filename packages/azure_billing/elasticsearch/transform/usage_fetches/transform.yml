@@ -46,23 +46,23 @@ source:
           } else if (doc.containsKey('agent.ephemeral_id') && doc['agent.ephemeral_id'].size() > 0) {
             emit(doc['agent.ephemeral_id'].value + '|' + String.valueOf(doc['@timestamp'].value.toInstant().toEpochMilli() / 60000L));
           }
-    # The usage day together with the scope it was fetched for. A fetch is a
-    # complete snapshot of a day for one scope, so this is the unit the
-    # dashboard selects the newest fetch for. Agents that
-    # emit `azure.billing.scope` provide the scope; older agents fall back to the
-    # row's subscription in the same form. For a department or billing account
-    # policy the fallback differs from the scope the upgraded agent emits, so on
-    # the days both agents fetched, a bucket that only the older fetch contains
-    # is still counted.
-    azure.billing.day_scope:
+    # The usage day together with the subscription of the row: the unit the
+    # `usage_latest_fetch` transform selects the newest fetch for. A fetch is a
+    # complete snapshot of a day for the scope it queried, so it is also complete
+    # for every subscription in that scope. Keying on the subscription instead of
+    # the scope lets a newer fetch of any scope replace an older one: a
+    # department policy and a subscription policy inside it, or an agent upgrade
+    # that changes a department policy's scope, never count a subscription's day
+    # twice. Rows without a subscription fall back to the queried scope.
+    azure.billing.subscription_day:
       type: keyword
       script:
         source: |-
-          String scope = null;
-          if (doc.containsKey('azure.billing.scope') && doc['azure.billing.scope'].size() > 0) {
-            scope = doc['azure.billing.scope'].value;
-          } else if (doc.containsKey('azure.subscription_id') && doc['azure.subscription_id'].size() > 0) {
-            scope = 'subscriptions/' + doc['azure.subscription_id'].value;
+          String key = null;
+          if (doc.containsKey('azure.subscription_id') && doc['azure.subscription_id'].size() > 0) {
+            key = 'subscriptions/' + doc['azure.subscription_id'].value;
+          } else if (doc.containsKey('azure.billing.scope') && doc['azure.billing.scope'].size() > 0) {
+            key = doc['azure.billing.scope'].value;
           }
           def day = null;
           if (doc.containsKey('azure.billing.usage_date') && doc['azure.billing.usage_date'].size() > 0) {
@@ -70,10 +70,10 @@ source:
           } else if (doc.containsKey('azure.billing.usage_start') && doc['azure.billing.usage_start'].size() > 0) {
             day = doc['azure.billing.usage_start'].value;
           }
-          if (scope != null && day != null) {
-            emit(day.toLocalDate().toString() + '|' + scope);
+          if (key != null && day != null) {
+            emit(day.toLocalDate().toString() + '|' + key);
           }
-# First of two chained transforms that deduplicate usage details without
+# First of two transforms that deduplicate usage details without
 # scripted aggregations, so that they also run on Elasticsearch Serverless.
 #
 # The Azure Usage Details API does not give every cost row a unique ID. Rows for
@@ -84,9 +84,12 @@ source:
 #
 # What is unique is the collection run: the metricset re-fetches whole days, and
 # every fetch is a complete snapshot of a day at that moment. This transform
-# therefore sums the rows per day, meter, resource, and fetch. The chained
-# `usage` transform keeps the newest document per bucket, and the dashboard
-# counts, per day and scope, only the buckets of the newest fetch.
+# therefore sums the rows per day, meter, resource, and fetch, and keeps every
+# fetch. The `usage_latest_fetch` transform, which reads this index, records the
+# newest fetch per day and subscription, and the dashboard joins this index with
+# it to count only the rows of that fetch. Reading every fetch here, rather than
+# a per-bucket copy that another transform maintains, means the newest fetch the
+# lookup names is always present, even while one checkpoint is behind the other.
 pivot:
   group_by:
     # The usage day (see runtime_mappings), written as `azure.billing.usage_date`.
@@ -135,17 +138,16 @@ pivot:
         field: cloud.region
         missing_bucket: true
     # Fetch identity, see the runtime mappings above.
-    azure.billing.day_scope:
+    azure.billing.subscription_day:
       terms:
-        field: azure.billing.day_scope
+        field: azure.billing.subscription_day
         missing_bucket: true
     azure.billing.fetch_key:
       terms:
         field: azure.billing.fetch_key
         missing_bucket: true
   aggregations:
-    # Newest row of the fetch. The chained transforms sort on it, and Kibana
-    # applies the dashboard time picker to it.
+    # Newest row of the fetch. The `usage_latest_fetch` transform sorts on it.
     "@timestamp":
       max:
         field: "@timestamp"
@@ -160,13 +162,13 @@ dest:
   # The destination index must not match `metrics-*`, so that a `metrics-*` data
   # view never counts both the raw and the deduplicated documents.
   index: "azure_billing.usage_fetches-v1"
-  # Stamps `event.ingested`, the sync field of the chained transforms.
+  # Stamps `event.ingested`, the sync field of the `usage_latest_fetch` transform.
   pipeline: '{{ ingestPipelineName "usage_fetches_ingested" }}'
   aliases:
     - alias: "azure_billing.usage_fetches"
       move_on_creation: true
 description: >-
-  Azure billing usage details summed per day, meter, resource, and fetch. First stage of the deduplication; the chained usage transform reads it.
+  Azure billing usage details summed per day, meter, resource, and fetch. First stage of the deduplication, read by the dashboard together with the usage_latest_fetch lookup index.
 # Billing data arrives once a day, so there is nothing to gain from a faster
 # checkpoint interval.
 frequency: 1h
@@ -190,6 +192,6 @@ _meta:
   # Fleet rebuilds the destination index from scratch on a version bump, and a
   # relative range filter would silently drop all history.
   fleet_transform_version: 0.1.0
-  # Installed before the chained transforms that read its output.
+  # Installed before the `usage_latest_fetch` transform that reads its output.
   order: 0
   run_as_kibana_system: false

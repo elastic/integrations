@@ -256,8 +256,8 @@ they also run on Elasticsearch Serverless.
 
 | Transform | Alias | Role |
 | --- | --- | --- |
-| `usage_fetches` | `azure_billing.usage_fetches` | Sums the usage detail rows per usage day, meter (`azure.billing.billing_period_id`), resource, product, currency, and **fetch**. A fetch is identified by `azure.billing.fetch_id`, which Elastic Agent 9.6 and later stamps on every row of a run. |
-| `usage` | `azure_billing.usage_latest` | Keeps, for every usage day, meter, and resource, the document of the most recent fetch. A bucket that a newer fetch no longer contains, or carries under a corrected key, stays from the older fetch, so the dashboard counts per usage day and scope only the buckets of the newest fetch (`azure.billing.day_scope`, `azure.billing.fetch_key`). |
+| `usage_fetches` | `azure_billing.usage_fetches` | Sums the usage detail rows per usage day, meter (`azure.billing.billing_period_id`), resource, product, currency, and **fetch**, and keeps every fetch. A fetch is identified by `azure.billing.fetch_id`, which Elastic Agent 9.6 and later stamps on every row of a run. |
+| `usage_latest_fetch` | `azure_billing.usage_latest_fetch` | Records, for every usage day and subscription (`azure.billing.subscription_day`), which fetch is the newest, in a lookup index. The dashboard joins `azure_billing.usage_fetches` with it and counts only the rows of that fetch, so a bucket that a newer fetch no longer contains, or carries under a corrected key, does not survive from an older fetch. |
 | `latest_forecast` | `azure_billing.forecast_latest` | A `latest` transform over the forecast rows of the Cost Management forecast API, keyed on the queried scope (`azure.billing.scope`), `azure.billing.usage_date`, `azure.billing.currency`, and a derived `azure.billing.cost_status`. It reads only rows that carry the scope, which Elastic Agent 9.6 and later stamps on them. Documents that are not refreshed for three days are dropped, so the index always holds the current forecast window. |
 
 The usage transforms do not deduplicate individual rows on purpose. The Azure Usage Details
@@ -265,10 +265,13 @@ API does not give every row a unique ID: rows for the same day, meter, and resou
 `id` and legitimately appear more than once, for example one row per VM instance of a scale
 set. The fields that tell those rows apart are not part of the document, so the only safe unit
 of deduplication is the fetch. Each fetch is a complete snapshot of a day for the queried scope,
-and the newest snapshot replaces the previous ones.
-A fetch that returns no rows for a day writes nothing, because the metricset sends no event for
-an empty result, so the previous snapshot of that day stays. Azure revises a day with adjusting
-rows rather than emptying it, so this only matters when every row of a day is removed.
+and so for every subscription in that scope: per usage day and subscription, the newest fetch of
+any scope replaces the previous ones. A department policy and a subscription policy inside it
+never count that subscription twice, even with different lookbacks.
+A fetch that returns no rows for a subscription and day writes nothing for them, because the
+metricset sends no event for rows it did not get, so the previous snapshot of that subscription
+and day stays. Azure revises a day with adjusting rows rather than emptying it, so this only
+matters when every row of a subscription's day is removed.
 
 This also makes a longer `Billing Usage Lookback` safe: with `72h`, every fetch re-reads the last
 three days and picks up Azure's late revisions, and the transforms replace each day with the
@@ -280,36 +283,38 @@ transforms then group them by the agent process (`agent.ephemeral_id`) and the m
 they were created, which cannot guarantee correct deduplication: a fetch whose rows cross a minute
 boundary is split and only its later part counts, and two fetches of one process inside the same
 minute are summed. Agents before 8.4 send no `usage_date`; their `usage_start`, the row's own day,
-is used instead. For a department or billing account policy, the days that both the older and
-the upgraded agent fetched also keep a meter or resource that only the older agent's fetch
-contains. Forecast rows from older agents are not read: those agents stamp them with the configured
+is used instead. Forecast rows from older agents are not read: those agents stamp them with the configured
 `Subscription ID` even for a department or billing account scope, so they cannot be told apart
 from the forecast that the upgraded agent collects for the same scope.
 
 ```text
-                                                  ┌─────────────────────────────┐    ┌────────────────────────────┐
-                                            ┌────▶│ azure_billing.usage_fetches │───▶│ azure_billing.usage_latest │──▶ the dashboard keeps
-┌────────────┐  ┌───────┐  ┌───────────────┐│     │  (sum per day and fetch)    │    │  (newest doc per bucket)   │    the newest fetch of
-│ Azure APIs │─▶│ Agent │─▶│ metrics-azure.││     └─────────────────────────────┘    └────────────────────────────┘    every day and scope
-│            │  │       │  │    billing    │┤
-└────────────┘  └───────┘  │<<data stream>>││     ┌─────────────────────────────┐
-                           └───────────────┘└────▶│azure_billing.forecast_latest│
-                                                  │  (current forecast window)  │
+                                                  ┌─────────────────────────────┐    ┌──────────────────────────────┐
+                                            ┌────▶│ azure_billing.usage_fetches │───▶│ azure_billing.               │
+┌────────────┐  ┌───────┐  ┌───────────────┐│     │ (sum per day, every fetch)  │    │   usage_latest_fetch         │
+│ Azure APIs │─▶│ Agent │─▶│ metrics-azure.││     └──────────────┬──────────────┘    │ (newest fetch per day and    │
+│            │  │       │  │    billing    │┤                    │                   │  subscription, lookup index) │
+└────────────┘  └───────┘  │<<data stream>>││                    ▼                   └──────────────┬───────────────┘
+                           └───────────────┘│         the dashboard joins both and counts ◀───────────┘
+                                            │         only the newest fetch of every day and subscription
+                                            │     ┌─────────────────────────────┐
+                                            └────▶│azure_billing.forecast_latest│
+                                                  │   (forecast per scope)      │
                                                   └─────────────────────────────┘
 ```
 
 The raw `metrics-azure.billing-*` data stream is **not** modified and remains the system
 of record: nothing is deleted from it. The transforms simply maintain a second, deduplicated
 copy of the data. The destination indices are `azure_billing.usage_fetches-v1`,
-`azure_billing.usage-v1`, and `azure_billing.forecast-v1`;
+`azure_billing.usage_latest_fetch-v1`, and `azure_billing.forecast-v1`;
 they are deliberately named so they do **not** match `metrics-*`, otherwise a `metrics-*` data
 view would count both the raw and the deduplicated documents.
 
 ### Dashboard
 
-The **[Azure Billing] Billing overview** dashboard reads from the `azure_billing.usage_latest`
-alias and keeps, for every usage day and scope, the documents of the newest fetch, so its cost
-figures are deduplicated and reflect the newest fetch of every day. Its actual costs come from the usage
+The **[Azure Billing] Billing overview** dashboard reads from the `azure_billing.usage_fetches`
+alias joined with the `azure_billing.usage_latest_fetch` lookup index, so its cost figures are
+deduplicated and reflect the newest fetch of every day. The lookup index is not narrowed by the
+dashboard's controls and time range, so they cannot bring an older fetch back. Its actual costs come from the usage
 details, and its forecast from the `azure_billing.forecast_latest` alias. All cost panels are
 broken down by `azure.billing.currency`, so amounts in different currencies are never added
 together. When you collect more than one currency, pick one with the **Currency** control, so
