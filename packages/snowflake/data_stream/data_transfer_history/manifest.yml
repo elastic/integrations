@@ -3,14 +3,13 @@ type: logs
 streams:
   - input: cel
     title: Collect Snowflake data transfer history
-    description: Collect hourly aggregated cross-cloud and cross-region data transfer volumes from SNOWFLAKE.ACCOUNT_USAGE.DATA_TRANSFER_HISTORY via the SQL API. Requires the USAGE_VIEWER database role (or equivalent) on the SNOWFLAKE database.
+    description: Hourly cross-cloud and cross-region transfer volumes. Requires USAGE_VIEWER (or equivalent) on the SNOWFLAKE database.
     template_path: cel.yml.hbs
     vars:
       - name: interval
         type: text
         title: Interval
-        description: >-
-          How often to query DATA_TRANSFER_HISTORY. Rows are aggregated into hourly windows and the view can lag by up to 2 hours, so polling faster than that does not make data fresher.
+        description: "How often to poll. Rows are hourly and the view can lag by up to 2 hours. Units: h, m, s."
         multi: false
         required: true
         show_user: true
@@ -18,8 +17,7 @@ streams:
       - name: initial_interval
         type: text
         title: Initial interval
-        description: >-
-          How far back to query on the first run when no cursor exists. Supported units are h/m/s.
+        description: "How far back to collect on the first poll. Units: h, m, s."
         multi: false
         required: true
         show_user: true
@@ -27,8 +25,7 @@ streams:
       - name: lag_time
         type: text
         title: Lag time
-        description: >-
-          Snowflake documents that DATA_TRANSFER_HISTORY can lag by up to 120 minutes (2 hours). On each new SQL statement, the integration subtracts this duration from the stored START_TIME watermark so hourly windows that reach the view late are included. Actual latency can be less. See Snowflake [DATA_TRANSFER_HISTORY usage notes](https://docs.snowflake.com/en/sql-reference/account-usage/data_transfer_history). Supported units are h/m/s.
+        description: "How far before the last event to read again so late hourly windows are included. Snowflake can lag by up to 2 hours. Units: h, m, s."
         multi: false
         required: true
         show_user: true
