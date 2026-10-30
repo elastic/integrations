@@ -1,12 +1,11 @@
 source:
   index:
     - "metrics-azure.billing-*"
-  # Forecast rows come from a different Azure API than the usage details: they have
-  # no `azure.billing.billing_period_id` and carry exactly one of
-  # `azure.billing.actual_cost` or `azure.billing.forecast_cost`. A `latest`
-  # transform uses `missing_bucket: true` for every unique key field, so documents
-  # without the key are not skipped: they all collapse into a single shared
-  # "missing" bucket. Narrow the source down to the forecast rows only.
+  # The rows of the Cost Management forecast API that hold a forecast. Its rows
+  # with an actual cost are left out: the dashboard takes actual costs from the
+  # usage details. A `latest` transform uses `missing_bucket: true` for every
+  # unique key field, so documents without the key would all collapse into one
+  # shared "missing" bucket; the filters below keep them out.
   #
   # Only rows that carry the queried scope (Elastic Agent 9.6 and later) are read.
   # Older agents stamp forecasts with the configured subscription ID even for a
@@ -21,30 +20,12 @@ source:
             field: azure.billing.usage_date
         - exists:
             field: azure.billing.scope
-        - bool:
-            should:
-              - exists:
-                  field: azure.billing.actual_cost
-              - exists:
-                  field: azure.billing.forecast_cost
-            minimum_should_match: 1
-  runtime_mappings:
-    # The forecast API has no status field: the status is implied by which cost
-    # field is populated. Deriving it keeps actual and forecast rows for the same
-    # day in separate buckets instead of overwriting each other.
-    azure.billing.cost_status:
-      type: keyword
-      script:
-        source: |-
-          if (doc.containsKey('azure.billing.actual_cost') && doc['azure.billing.actual_cost'].size() > 0) {
-            emit('actual');
-          } else {
-            emit('forecast');
-          }
+        - exists:
+            field: azure.billing.forecast_cost
 latest:
   # Forecast rows have no per-record ID, so the natural key is the scope the
-  # forecast was queried for, the day, the currency, and whether the row is an
-  # actual or a forecast. The subscription ID and the Fleet namespace are left out
+  # forecast was queried for, the day, and the currency. The subscription ID and
+  # the Fleet namespace are left out
   # on purpose: forecast rows carry the configured subscription ID even when the
   # policy queries a department or billing account, and two policies that query
   # the same scope fetch the same forecast.
@@ -52,7 +33,6 @@ latest:
     - azure.billing.scope
     - azure.billing.usage_date
     - azure.billing.currency
-    - azure.billing.cost_status
   # Azure keeps revising cost rows for up to ~72h, so the most recently collected
   # copy of a row is the authoritative one.
   sort: "@timestamp"
@@ -65,7 +45,7 @@ dest:
     - alias: "azure_billing.forecast_latest"
       move_on_creation: true
 description: >-
-  Deduplicated Azure billing forecast. The Azure billing metricset re-fetches recent days on every run, which creates duplicate documents in the metrics-azure.billing-* data stream. This transform keeps only the most recently collected actual and forecast cost row per queried scope, usage date, and currency.
+  Deduplicated Azure billing forecast. The Azure billing metricset re-fetches recent days on every run, which creates duplicate documents in the metrics-azure.billing-* data stream. This transform keeps only the most recently collected forecast row per queried scope, usage date, and currency.
 # Same interval as `usage_fetches`, for the same reasons.
 frequency: 5m
 settings:
