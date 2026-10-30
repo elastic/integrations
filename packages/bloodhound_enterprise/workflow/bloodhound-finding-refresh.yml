@@ -1,0 +1,221 @@
+version: "1"
+name: BloodHound Enterprise finding refresh
+description: >
+  Scheduled companion to the finding-case workflow. It does not open a new
+  alert and it does not change case text. For each open BloodHound alert, it
+  checks whether that event.id is still in the latest collection batch.
+  When it is missing, the alert is removed from every Security case that
+  holds it, and then the alert itself is deleted, so the case alert count
+  goes down. New alerts are still added by the finding-case workflow, which
+  is what makes the count go up. BloodHound only returns unaccepted findings,
+  so an accepted finding stops arriving and its alert leaves the case.
+  Save this disabled, enable it only after the finding-case workflow is
+  already attaching alerts. Deleting an alert ends its suppression window
+  unless Kibana is set to keep suppressing until that window ends.
+  Change how often it runs by editing the scheduled trigger every value and
+  saving again.   Change how far back it reads open alerts with consts.lookback,
+  or pass lookback on a manual run. Both use ES|QL date math, for example
+  24 hours or 7 days. Detaching an alert scans case user actions with
+  perPage 100 and pages until the attachment comment is found or pages
+  are exhausted (up to 15 pages, aligned with 1000 alerts per case).
+enabled: false
+tags:
+  - bloodhound_enterprise
+consts:
+  lookback: "24 hours"
+inputs:
+  - name: lookback
+    type: string
+    description: How far back to read open alerts. ES|QL date math, for example 24 hours or 7 days.
+    default: "24 hours"
+triggers:
+  - type: scheduled
+    with:
+      every: "30m"
+  - type: manual
+steps:
+  - name: settings
+    type: data.set
+    with:
+      lookback: "{{ inputs.lookback | default: consts.lookback }}"
+  - name: latest_poll
+    type: elasticsearch.esql.query
+    with:
+      query: |
+        FROM logs-bloodhound_enterprise.finding-*
+        | WHERE event.dataset == "bloodhound_enterprise.finding" AND event.kind == "event" AND event.id IS NOT NULL
+        | STATS latest = MAX(@timestamp)
+        | EVAL cutoff = DATE_FORMAT("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", latest - 2 minutes)
+        | KEEP cutoff
+  - name: remember_cutoff
+    type: data.set
+    with:
+      cutoff: "{{ steps.latest_poll.output.values[0][0] | default: '' }}"
+  - name: has_a_poll
+    type: if
+    condition: "${{ variables.cutoff != '' }}"
+    steps:
+      - name: open_alerts
+        type: elasticsearch.esql.query
+        with:
+          query: |
+            FROM .alerts-security.alerts-default METADATA _id
+            | WHERE kibana.alert.rule.rule_id == "a7c3e1b0-4d2f-4a6e-9c11-6b8f0e2d4a91"
+                AND kibana.alert.workflow_status == "open"
+                AND event.id IS NOT NULL
+                AND @timestamp >= NOW() - {{ variables.lookback }}
+            | SORT @timestamp ASC
+            | KEEP _id, event.id
+      - name: count_open_alerts
+        type: data.set
+        with:
+          open_alert_count: "${{ steps.open_alerts.output.values | size }}"
+      - name: has_open_alerts
+        type: if
+        condition: "${{ variables.open_alert_count > 0 }}"
+        steps:
+          - name: each_open_alert
+            type: foreach
+            foreach: "${{ steps.open_alerts.output.values }}"
+            steps:
+              - name: remember_alert
+                type: data.set
+                with:
+                  alert_id: "{{ foreach.item[0] | default: '' }}"
+                  finding_id: "{{ foreach.item[1] | default: '' }}"
+                  in_latest: "no"
+              - name: has_ids
+                type: if
+                condition: "${{ variables.alert_id != '' and variables.finding_id != '' }}"
+                steps:
+                  - name: latest_for_id
+                    type: elasticsearch.esql.query
+                    with:
+                      query: |
+                        FROM logs-bloodhound_enterprise.finding-*
+                        | WHERE event.dataset == "bloodhound_enterprise.finding"
+                            AND event.kind == "event"
+                            AND event.id == "{{ variables.finding_id }}"
+                        | SORT @timestamp DESC
+                        | LIMIT 1
+                        | EVAL in_latest = CASE(@timestamp >= TO_DATETIME("{{ variables.cutoff }}"), "yes", "no")
+                        | KEEP in_latest
+                  - name: count_finding_rows
+                    type: data.set
+                    with:
+                      finding_row_count: "${{ steps.latest_for_id.output.values | size }}"
+                  - name: has_finding_row
+                    type: if
+                    condition: "${{ variables.finding_row_count > 0 }}"
+                    steps:
+                      - name: remember_finding
+                        type: data.set
+                        with:
+                          in_latest: "{{ steps.latest_for_id.output.values[0][0] | default: 'no' }}"
+                  - name: absent_from_latest_poll
+                    type: if
+                    condition: "${{ variables.in_latest != 'yes' }}"
+                    steps:
+                      - name: case_for_alert
+                        type: cases.getCasesByAlertId
+                        with:
+                          alert_id: "{{ variables.alert_id }}"
+                          owner: "securitySolution"
+                      - name: count_cases
+                        type: data.set
+                        with:
+                          case_count: "${{ steps.case_for_alert.output.cases | size }}"
+                      - name: has_cases
+                        type: if
+                        condition: "${{ variables.case_count > 0 }}"
+                        steps:
+                          - name: each_case
+                            type: foreach
+                            foreach: "${{ steps.case_for_alert.output.cases }}"
+                            steps:
+                              - name: remember_case
+                                type: data.set
+                                with:
+                                  detach_case_id: "{{ foreach.item.id }}"
+                              - name: init_detach_search
+                                type: data.set
+                                with:
+                                  action_page: "${{ 1 }}"
+                                  attachment_comment_id: ""
+                                  more_action_pages: "yes"
+                              - name: page_user_actions
+                                type: while
+                                max-iterations: 15
+                                condition: "${{ variables.attachment_comment_id == '' and variables.more_action_pages == 'yes' }}"
+                                steps:
+                                  - name: case_activity
+                                    type: kibana.request
+                                    with:
+                                      method: GET
+                                      path: "/api/cases/{{ variables.detach_case_id }}/user_actions/_find"
+                                      query:
+                                        perPage: "100"
+                                        page: "{{ variables.action_page }}"
+                                      fetcher:
+                                        skip_ssl_verification: true
+                                  - name: count_actions
+                                    type: data.set
+                                    with:
+                                      action_count: "${{ steps.case_activity.output.userActions | size }}"
+                                  - name: has_actions
+                                    type: if
+                                    condition: "${{ variables.action_count > 0 }}"
+                                    steps:
+                                      - name: each_action
+                                        type: foreach
+                                        foreach: "${{ steps.case_activity.output.userActions }}"
+                                        steps:
+                                          - name: is_comment
+                                            type: if
+                                            condition: "${{ foreach.item.type == 'comment' and foreach.item.action == 'create' }}"
+                                            steps:
+                                              - name: is_alert_attachment
+                                                type: if
+                                                condition: "${{ foreach.item.payload.comment.type == 'alert' }}"
+                                                steps:
+                                                  - name: matches_alert
+                                                    type: if
+                                                    condition: "${{ foreach.item.payload.comment.alertId contains variables.alert_id }}"
+                                                    steps:
+                                                      - name: remember_attachment_comment
+                                                        type: data.set
+                                                        with:
+                                                          attachment_comment_id: "{{ foreach.item.comment_id }}"
+                                                          more_action_pages: "no"
+                                                      - name: detach_alert
+                                                        type: kibana.request
+                                                        with:
+                                                          method: DELETE
+                                                          path: "/api/cases/{{ variables.detach_case_id }}/comments/{{ variables.attachment_comment_id }}"
+                                                          fetcher:
+                                                            skip_ssl_verification: true
+                                  - name: continue_paging
+                                    type: if
+                                    condition: "${{ variables.attachment_comment_id == '' }}"
+                                    steps:
+                                      - name: stop_if_short_page
+                                        type: if
+                                        condition: "${{ variables.action_count < 100 }}"
+                                        steps:
+                                          - name: no_more_pages
+                                            type: data.set
+                                            with:
+                                              more_action_pages: "no"
+                                      - name: next_page_if_full
+                                        type: if
+                                        condition: "${{ variables.action_count == 100 }}"
+                                        steps:
+                                          - name: bump_page
+                                            type: data.set
+                                            with:
+                                              action_page: "${{ variables.action_page | plus: 1 }}"
+                      - name: remove_alert
+                        type: elasticsearch.request
+                        with:
+                          method: DELETE
+                          path: "/.alerts-security.alerts-default/_doc/{{ variables.alert_id }}"

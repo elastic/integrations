@@ -1,0 +1,246 @@
+version: "1"
+name: BloodHound Enterprise finding case
+description: >
+  Opens one Security case per environment, zone, and finding type. The first
+  case uses that group name with no number. Each run uses the highest
+  iteration. When that case already holds 1000 alerts, the next alert opens
+  [2], then [3], and later alerts for the group go there.
+enabled: true
+tags:
+  - bloodhound_enterprise
+triggers:
+  - type: alert
+steps:
+  - name: init_group_cache
+    type: data.set
+    with:
+      last_title: ""
+      last_case_id: ""
+      last_alert_count: "${{ 0 }}"
+      last_iteration: "${{ 0 }}"
+  - name: group_alerts
+    type: foreach
+    foreach: "${{ event.alerts }}"
+    steps:
+      - name: remember_group
+        type: data.set
+        with:
+          case_title_base: "BloodHound Enterprise | {{ foreach.item.source.domain | default: 'unknown' }} | {{ foreach.item.bloodhound_enterprise.category | default: 'default' }} | {{ foreach.item.event.action | default: 'unknown' }}"
+          case_id: ""
+          alert_count: "${{ 0 }}"
+          iteration: "${{ 0 }}"
+          latest_iteration: "${{ 0 }}"
+          latest_case_id: ""
+          alert_id: "{{ foreach.item._id }}"
+          alert_index: "{{ foreach.item._index }}"
+          finding_action: "{{ foreach.item.event.action | default: 'unknown' }}"
+          finding_domain: "{{ foreach.item.source.domain | default: 'unknown' }}"
+          finding_zone: "{{ foreach.item.bloodhound_enterprise.category | default: 'default' }}"
+          finding_url: "{{ foreach.item.event.url | default: 'n/a' }}"
+          finding_title: "{{ foreach.item.bloodhound_enterprise.title | default: '' }}"
+          finding_short_remediation: "{{ foreach.item.bloodhound_enterprise.short_remediation | default: foreach.item.bloodhound_enterprise.remediation | default: 'n/a' }}"
+          finding_long_remediation: "{{ foreach.item.bloodhound_enterprise.long_remediation | default: 'n/a' }}"
+          finding_short_description: "{{ foreach.item.bloodhound_enterprise.short_description | default: 'n/a' }}"
+          finding_long_description: "{{ foreach.item.bloodhound_enterprise.long_description | default: 'n/a' }}"
+          finding_references: "{{ foreach.item.bloodhound_enterprise.references | default: 'n/a' }}"
+          finding_remediation: "{{ foreach.item.bloodhound_enterprise.remediation | default: 'n/a' }}"
+          finding_severity: "{{ foreach.item.kibana.alert.severity | default: 'medium' }}"
+      - name: reuse_latest_with_room
+        type: if
+        condition: "${{ variables.case_title_base == variables.last_title and variables.last_alert_count < 1000 and variables.last_case_id != '' }}"
+        steps:
+          - name: copy_previous_case
+            type: data.set
+            with:
+              case_id: "{{ variables.last_case_id }}"
+              alert_count: "${{ variables.last_alert_count }}"
+              iteration: "${{ variables.last_iteration }}"
+      - name: next_iteration_after_full_case
+        type: if
+        condition: "${{ variables.case_id == '' and variables.case_title_base == variables.last_title and variables.last_iteration > 0 and variables.last_alert_count >= 1000 }}"
+        steps:
+          - name: bump_cached_iteration
+            type: data.set
+            with:
+              iteration: "${{ variables.last_iteration | plus: 1 }}"
+      - name: resolve_case
+        type: if
+        condition: "${{ variables.case_id == '' and variables.iteration == 0 }}"
+        steps:
+          - name: find_case
+            type: cases.findCases
+            with:
+              owner: "securitySolution"
+              search: "\"{{ variables.case_title_base }}\""
+              searchFields: title
+              defaultSearchOperator: AND
+              perPage: 100
+              sortField: updatedAt
+              sortOrder: desc
+          - name: scan_iterations
+            type: foreach
+            foreach: "${{ steps.find_case.output.cases }}"
+            steps:
+              - name: parse_title
+                type: data.set
+                with:
+                  candidate_prefix: "{{ foreach.item.title | split: ' [' | first }}"
+                  candidate_iteration: "${{ foreach.item.title | split: ' [' | last | split: ']' | first | plus: 0 }}"
+                  candidate_case_id: "{{ foreach.item.id }}"
+              - name: legacy_unsuffixed_title
+                type: if
+                condition: "${{ foreach.item.title == variables.case_title_base }}"
+                steps:
+                  - name: mark_legacy_as_first
+                    type: data.set
+                    with:
+                      candidate_prefix: "{{ variables.case_title_base }}"
+                      candidate_iteration: "${{ 1 }}"
+              - name: keep_highest_iteration
+                type: if
+                condition: "${{ variables.candidate_prefix == variables.case_title_base and variables.candidate_iteration > variables.latest_iteration }}"
+                steps:
+                  - name: store_latest
+                    type: data.set
+                    with:
+                      latest_iteration: "${{ variables.candidate_iteration }}"
+                      latest_case_id: "{{ variables.candidate_case_id }}"
+          - name: no_prior_case
+            type: if
+            condition: "${{ variables.latest_iteration == 0 }}"
+            steps:
+              - name: start_at_one
+                type: data.set
+                with:
+                  iteration: "${{ 1 }}"
+          - name: inspect_latest
+            type: if
+            condition: "${{ variables.latest_iteration > 0 and variables.latest_case_id != '' }}"
+            steps:
+              - name: read_case
+                type: cases.getCase
+                with:
+                  case_id: "{{ variables.latest_case_id }}"
+                  include_comments: false
+              - name: remember_count
+                type: data.set
+                with:
+                  alert_count: "${{ steps.read_case.output.case.totalAlerts | default: 0 }}"
+                  iteration: "${{ variables.latest_iteration }}"
+              - name: latest_has_room
+                type: if
+                condition: "${{ variables.alert_count < 1000 }}"
+                steps:
+                  - name: use_latest_case
+                    type: data.set
+                    with:
+                      case_id: "{{ variables.latest_case_id }}"
+              - name: latest_is_full
+                type: if
+                condition: "${{ variables.alert_count >= 1000 }}"
+                steps:
+                  - name: open_next_iteration
+                    type: data.set
+                    with:
+                      case_id: ""
+                      alert_count: "${{ 0 }}"
+                      iteration: "${{ variables.latest_iteration | plus: 1 }}"
+      - name: open_case_if_missing
+        type: if
+        condition: "${{ variables.case_id == '' }}"
+        steps:
+          - name: plain_title
+            type: data.set
+            with:
+              case_title: "{{ variables.case_title_base }}"
+          - name: numbered_title
+            type: if
+            condition: "${{ variables.iteration > 1 }}"
+            steps:
+              - name: append_iteration
+                type: data.set
+                with:
+                  case_title: "{{ variables.case_title_base }} [{{ variables.iteration }}]"
+          - name: portal_text
+            type: data.set
+            with:
+              finding_portal: "{{ variables.finding_url }}"
+          - name: portal_link
+            type: if
+            condition: "${{ variables.finding_url != 'n/a' and variables.finding_url != '' }}"
+            steps:
+              - name: portal_markdown
+                type: data.set
+                with:
+                  finding_portal: "[View on portal]({{ variables.finding_url }})"
+          - name: create_case
+            type: cases.createCase
+            with:
+              title: "{{ variables.case_title }}"
+              description: |
+                # {{ variables.finding_title | default: variables.finding_action }}
+
+                {{ variables.finding_portal }}
+
+                ## Type
+
+                {{ variables.finding_action }}
+
+                ## Environment
+
+                {{ variables.finding_domain }}
+
+                ## Zone
+
+                {{ variables.finding_zone }}
+
+                ## Short Remediation
+
+                {{ variables.finding_short_remediation }}
+
+                ## Long Remediation
+
+                {{ variables.finding_long_remediation }}
+
+                ## Short Description
+
+                {{ variables.finding_short_description }}
+
+                ## Long Description
+
+                {{ variables.finding_long_description }}
+
+                ## References
+
+                {{ variables.finding_references }}
+              owner: "securitySolution"
+              severity: "{{ variables.finding_severity }}"
+              category: "{{ variables.finding_domain }}"
+              tags:
+                - "BloodHound Enterprise"
+                - "{{ variables.finding_zone }}"
+                - "{{ variables.finding_action }}"
+              settings:
+                syncAlerts: false
+          - name: remember_created
+            type: data.set
+            with:
+              case_id: "${{ steps.create_case.output.case.id }}"
+              alert_count: "${{ 0 }}"
+      - name: attach_alert
+        type: cases.addAlerts
+        with:
+          case_id: "{{ variables.case_id }}"
+          alerts:
+            - alertId: "{{ variables.alert_id }}"
+              index: "{{ variables.alert_index }}"
+              rule:
+                id: "{{ event.rule.id }}"
+                name: "{{ event.rule.name }}"
+      - name: remember_for_next
+        type: data.set
+        with:
+          last_title: "{{ variables.case_title_base }}"
+          last_case_id: "{{ variables.case_id }}"
+          last_alert_count: "${{ variables.alert_count | plus: 1 }}"
+          last_iteration: "${{ variables.iteration }}"

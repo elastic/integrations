@@ -1,0 +1,96 @@
+format_version: 3.5.6
+name: bloodhound_enterprise
+title: "SpecterOps BloodHound Enterprise"
+version: 1.0.0
+source:
+  license: "Elastic-2.0"
+description: "Collect SpecterOps BloodHound Enterprise attack-path findings into Elastic. The detection rule creates one alert per finding. A workflow groups those alerts into one Security case per environment, zone, and finding type. Authentication and request failures are stored separately and do not become alerts."
+type: integration
+categories:
+  - security
+conditions:
+  kibana:
+    version: "^9.4.0"
+  elastic:
+    subscription: "basic"
+    capabilities:
+      - security
+screenshots:
+  - src: /img/elastic-dashboard-screenshot.png
+    title: BloodHound Enterprise Attack Path Overview
+    type: image/png
+icons:
+  - src: /img/BHE-logo-64.svg
+    title: BloodHound Enterprise Logo
+    size: 64x64
+    type: image/svg+xml
+policy_templates:
+  - name: BloodHound
+    title: Collect BloodHound Enterprise attack paths
+    description: >-
+      Poll BloodHound Enterprise for attack-path findings and store them in Elastic. The detection rule creates the alerts. Attach the BloodHound finding workflow to that rule to open one Security case per environment, zone, and finding type. Add this integration to an Elastic Agent policy (not Fleet Server), configure credentials, then Save.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: security
+        division: engineering
+        team: security-service-integrations
+    inputs:
+      - type: cel
+        title: Collect BloodHound Enterprise findings
+        description: >-
+          Polls the BloodHound Enterprise API and publishes attack-path finding documents. Failures are written to the error data stream. The detection rule creates alerts from finding documents only.
+        vars:
+          - name: base_url
+            type: text
+            title: Base URL
+            description: BloodHound Enterprise tenant URL, for example https://yourtenant.bloodhoundenterprise.io. Do not include a trailing slash.
+            multi: false
+            required: true
+            show_user: true
+          - name: selected_environment
+            type: text
+            title: Selected environment
+            description: Comma-separated environment/domain names to collect (for example PHANTOM.CORP,GHOST.CORP). Leave empty or use All/* to fetch all. Unrecognized values are treated as all. Spaces and quotes are tolerated. Matching is exact.
+            default: ""
+            multi: false
+            required: false
+            show_user: true
+          - name: bhe_zones
+            type: text
+            title: BloodHound Enterprise zones
+            description: Comma-separated BloodHound Enterprise zone names to collect (for example Tier Zero,Tier One). Leave empty or use All/* to fetch all. Unrecognized values are treated as all. Spaces and quotes are tolerated. Matching is exact.
+            default: ""
+            multi: false
+            required: false
+            show_user: true
+          - name: token_id
+            type: text
+            title: Token ID
+            description: BloodHound Enterprise API Token ID
+            multi: false
+            required: true
+            show_user: true
+            secret: false
+          - name: token_key
+            type: password
+            title: Token Key
+            description: This is a secret value. Once saved, you won't be able to see this value again.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: ssl
+            type: yaml
+            title: SSL configuration
+            description: Certificate authorities, supported protocols, and verification_mode for the BloodHound Enterprise HTTPS connection.
+            required: false
+            show_user: false
+            default: |
+              #verification_mode: none
+owner:
+  github: elastic/security-service-integrations
+  type: elastic

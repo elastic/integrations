@@ -1,0 +1,161 @@
+{
+    "id": "a7c3e1b0-4d2f-4a6e-9c11-6b8f0e2d4a91_10",
+    "type": "security-rule",
+    "attributes": {
+        "name": "BloodHound Enterprise Attack Path Finding",
+        "tags": [
+            "BloodHound Enterprise",
+            "Data Source: SpecterOps BloodHound Enterprise",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide"
+        ],
+        "interval": "5m",
+        "enabled": false,
+        "revision": 0,
+        "description": "Creates an Elastic Security alert for each BloodHound Enterprise finding collected in the latest poll. The same finding id does not create another alert for one year. Error documents do not match this rule. Attach the BloodHound finding workflow to group alerts into one Security case per environment, zone, and finding type.",
+        "risk_score": 47,
+        "severity": "medium",
+        "license": "Elastic License v2",
+        "output_index": "",
+        "author": [
+            "SpecterOps"
+        ],
+        "false_positives": [
+            "Accepted or inherited relationships that BloodHound Enterprise still returns as open findings.",
+            "Lab or tier-zero audit activity that is expected in the selected environment."
+        ],
+        "from": "now-6m",
+        "rule_id": "a7c3e1b0-4d2f-4a6e-9c11-6b8f0e2d4a91",
+        "max_signals": 1000,
+        "risk_score_mapping": [
+            {
+                "field": "log.level",
+                "value": "critical",
+                "operator": "equals",
+                "risk_score": 99
+            },
+            {
+                "field": "log.level",
+                "value": "high",
+                "operator": "equals",
+                "risk_score": 73
+            },
+            {
+                "field": "log.level",
+                "value": "medium",
+                "operator": "equals",
+                "risk_score": 47
+            },
+            {
+                "field": "log.level",
+                "value": "low",
+                "operator": "equals",
+                "risk_score": 21
+            }
+        ],
+        "severity_mapping": [
+            {
+                "field": "log.level",
+                "value": "critical",
+                "operator": "equals",
+                "severity": "critical"
+            },
+            {
+                "field": "log.level",
+                "value": "high",
+                "operator": "equals",
+                "severity": "high"
+            },
+            {
+                "field": "log.level",
+                "value": "medium",
+                "operator": "equals",
+                "severity": "medium"
+            },
+            {
+                "field": "log.level",
+                "value": "low",
+                "operator": "equals",
+                "severity": "low"
+            }
+        ],
+        "threat": [],
+        "timestamp_override": "@timestamp",
+        "to": "now",
+        "references": [
+            "https://bloodhoundenterprise.io/"
+        ],
+        "version": 10,
+        "exceptions_list": [],
+        "immutable": true,
+        "related_integrations": [
+            {
+                "package": "bloodhound_enterprise",
+                "version": "^1.0.0"
+            }
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "event.action",
+                "event.id",
+                "source.domain",
+                "log.level",
+                "user.name",
+                "destination.user.name",
+                "event.url",
+                "bloodhound_enterprise.finding_type",
+                "bloodhound_enterprise.category",
+                "bloodhound_enterprise.domain_sid",
+                "bloodhound_enterprise.impact_count",
+                "bloodhound_enterprise.impact_percentage",
+                "bloodhound_enterprise.exposure_count",
+                "bloodhound_enterprise.exposure_percentage",
+                "bloodhound_enterprise.remediation",
+                "bloodhound_enterprise.title",
+                "bloodhound_enterprise.short_description",
+                "bloodhound_enterprise.long_description",
+                "bloodhound_enterprise.short_remediation",
+                "bloodhound_enterprise.long_remediation",
+                "bloodhound_enterprise.references",
+                "host.name",
+                "message",
+                "bloodhound_enterprise.accepted",
+                "bloodhound_enterprise.principal.kind",
+                "bloodhound_enterprise.target.kind"
+            ]
+        },
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.id",
+                "type": "keyword"
+            }
+        ],
+        "setup": "Add the SpecterOps BloodHound Enterprise integration and confirm documents in logs-bloodhound_enterprise.finding-*. Enable this rule. It alerts on findings from the latest poll. The same event.id does not raise another alert for one year. Authentication and request failures are in logs-bloodhound_enterprise.error-* and do not match this rule. To open cases, save the BloodHound finding workflow and add it on this rule's Actions tab. This rule does not create cases by itself.",
+        "rule_name_override": "bloodhound_enterprise.title",
+        "type": "query",
+        "alert_suppression": {
+            "group_by": [
+                "event.id"
+            ],
+            "duration": {
+                "value": 8760,
+                "unit": "h"
+            },
+            "missing_fields_strategy": "doNotSuppress"
+        },
+        "language": "kuery",
+        "index": [
+            "logs-bloodhound_enterprise.finding-*"
+        ],
+        "query": "event.dataset:\"bloodhound_enterprise.finding\" and event.kind:event and event.id:* and not error.message:*",
+        "filters": [],
+        "actions": [],
+        "note": "## Triage\n\nEach document is one BloodHound Enterprise finding instance collected by the integration.\n\n- `event.action` is the finding type.\n- `event.id` is the BloodHound finding instance.\n- `source.domain` is the BloodHound environment.\n- `user.name` and `destination.user.name` are the principals on the edge.\n- `event.url` opens this finding in BloodHound Enterprise.\n- `bloodhound_enterprise.remediation` is the vendor remediation text.\n\nThe same instance is collected again on the next poll. Use `event.id` to tie snapshots of one instance together. This rule alerts that id once, then suppresses another alert for one year."
+    }
+}
