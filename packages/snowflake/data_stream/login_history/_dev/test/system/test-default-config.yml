@@ -1,0 +1,17 @@
+wait_for_data_timeout: 1m
+input: cel
+service: snowflake
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  role: ELASTIC_SNOWFLAKE_ROLE
+  warehouse: SECURITY_WH
+  token: test-snowflake-pat
+data_stream:
+  vars:
+    interval: 2s
+    initial_interval: 24h
+    batch_size: 10000
+    http_client_timeout: 90s
+    preserve_original_event: true
+assert:
+  hit_count: 6

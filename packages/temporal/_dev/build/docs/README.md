@@ -1,12 +1,14 @@
-# Temporal (OpenTelemetry)
+# Temporal OpenTelemetry Integration
 
-Collect operational metrics from [Temporal Cloud](https://temporal.io/cloud/) using the Temporal (OpenTelemetry) integration.
+Collect operational metrics from [Temporal Cloud](https://temporal.io/cloud/) using the Temporal OpenTelemetry Integration.
 
 ## Overview
 
 This integration scrapes Temporal Cloud OpenMetrics using the [Prometheus (OTel) Input Package](https://www.elastic.co/docs/reference/integrations/prometheus_input_otel) into the **Cloud Metrics** data stream (`temporal.cloud_metrics.otel`): workflow lifecycle, task queues and polling, service latency and errors, namespace limits and throttles, schedules, and replication lag.
 
 Metrics are stored with native OTel schema — no field renaming or custom mapping is applied.
+
+Once data starts flowing, the **[Temporal OpenTelemetry Assets](https://www.elastic.co/docs/reference/integrations/temporal_otel)** package provides a Cloud Metrics dashboard, alerting rule templates, and SLO templates.
 
 ## Prerequisites
 
@@ -16,6 +18,7 @@ Metrics are stored with native OTel schema — no field renaming or custom mappi
 | **API key role** | Service Account with **Metrics Read-Only** account-level role |
 | **Elastic Stack** | 9.5.0+ |
 | **Input package** | `prometheus_input_otel` (installed automatically as a dependency) |
+| **Content package** | `temporal_otel` (installed automatically as a dependency) |
 
 ## Setup
 
@@ -25,16 +28,34 @@ Metrics are stored with native OTel schema — no field renaming or custom mappi
    - Generate an API key for that Service Account and store it securely
 
 2. **Add the integration in Kibana**:
-   - Go to **Management** → **Integrations** → search for "Temporal (OpenTelemetry)"
-   - Click **Add Temporal (OpenTelemetry)**
+   - Go to **Management** → **Integrations** → search for "Temporal(OpenTelemetry) Integration"
+   - Click **Add Temporal(OpenTelemetry) Integration**
    - Fill in:
      - **Temporal Cloud Metrics Endpoint**: `metrics.temporal.io:443` (default)
-     - **Metrics Path**: `/v1/metrics` (optionally append `?namespaces=<namespace>` to filter)
+     - **Metrics Path**: `/v1/metrics` (default — set query parameters in **Query Parameters**, not here)
      - **Temporal Cloud API Key**: paste the Metrics Read-Only API key
 
 3. **Verify data**:
    - Discover filter `data_stream.dataset: "temporal.cloud_metrics.otel"`
 
+## Filtering metrics with query parameters
+
+Temporal Cloud's OpenMetrics endpoint accepts query parameters that scope the response —
+useful for reducing scrape size and staying within Temporal's per-scrape limits.
+
+Set them in the **Query Parameters** field in the Fleet UI, as a YAML map of parameter
+name to a list of values:
+
+```yaml
+<parameter-name>:
+  - <value>
+  - <value>
+```
+
+Do **not** append query parameters to the **Metrics Path** field.
+
+For the parameters Temporal Cloud supports and their accepted values, see the
+[Temporal Cloud OpenMetrics API reference](https://docs.temporal.io/cloud/metrics/openmetrics/api-reference).
 
 ## Metrics Reference
 

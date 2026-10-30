@@ -71,6 +71,26 @@ To configure the integration to pull threat intelligence from an ISAC feed, foll
 
 Once the integration is running and pulling data, it automatically maps threat indicator fields from STIX to ECS. Verify that the imported indicators (e.g. IPs, domains, hashes) align with your detection rules.
 
+### Collecting from TAXII servers that use an API key/secret pair
+
+Some TAXII 2.1 servers issue an API key and secret instead of a username and password, and expect them to be sent as HTTP Basic credentials rather than as a bearer token. The steps below use [IsMalicious](https://ismalicious.com/api-docs) as an example, but apply to any server with the same model.
+
+1. Obtain the API key and secret from your provider account, and confirm the account has feed access.
+2. Call the server's TAXII discovery endpoint (for example `https://api.ismalicious.com/taxii`) to find the API root, then list its collections (`https://api.ismalicious.com/taxii/api-root/collections`). Authenticate with HTTP Basic using the key as username and the secret as password. Note the ID of each collection you can read.
+3. Add the **Custom Threat Intelligence** integration in Fleet, enable the RESTful API stream, and configure:
+
+   | Setting | Value |
+   | --- | --- |
+   | URL API endpoint | `https://<server>/<api-root>/collections/<COLLECTION_ID>/objects/` |
+   | Enable TAXII 2.1 | Enabled |
+   | Basic Auth Username | Your API key |
+   | Basic Auth Password | Your API secret |
+   | API Key / API Key Type | Leave unset |
+
+   Leave **Accept header value** and **Content-Type header value** at their defaults. Configure one stream per collection. For example, the `malicious-ips` collection on IsMalicious uses `https://api.ismalicious.com/taxii/api-root/collections/malicious-ips/objects/`.
+4. Set **Initial Interval** and **Interval** according to collection size. Pagination follows the server's `next` token while the server reports `more: true`, as defined by TAXII 2.1. Use **Limit** to bound the page size, and raise **Maximum Pages Per Interval** if a large initial import hits the [CEL execution limit](#exceeding-maximum-number-of-cel-executions).
+5. Verify indicators arrive with the expected values, types and timestamps, and use the `logs-ti_custom_latest.indicator` alias for indicator match rules. See [Expiration of Indicators of Compromise](#expiration-of-indicators-of-compromise-iocs) for how `valid_until`, `revoked` and the `IOC Expiration Duration` fail-safe are applied.
+
 ### Expiration of Indicators of Compromise (IOCs)
 
 The Custom Threat Intelligence integration supports IOC expiration. The ingested IOCs expire after certain duration. Based on the [STIX 2.1 reference](https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html), the following options are available to determine the expiration of indicators:
@@ -86,9 +106,22 @@ An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/c
 
 Some IOCs may never expire and will continue to stay in the latest destination indices `logs-ti_custom_latest.dest_indicator-*`. To avoid any false positives from such orphaned IOCs, users are allowed to configure `IOC Expiration Duration` parameter while setting up the integration. This parameter deletes any indicator ingested into destination indices `logs-ti_custom_latest.dest_indicator-*` after this specified duration is reached, defaults to `90d` from source's `@timestamp` field. Note that `IOC Expiration Duration` parameter only exists to add a fail-safe default expiration in case IOCs never expire.
 
-#### ILM Policy
+#### Data retention
 
-To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_custom.indicator-*` are allowed to contain duplicates from each polling interval. ILM policy is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date.
+Threat indicators are re-collected across polling intervals, and the latest transform keeps the active, deduplicated view in its destination index. The source data streams therefore hold repeated copies of the same indicators.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-ti_custom.indicator-*` | `logs-ti_custom.indicator-default_policy`: roll over after 1d, delete 2d after rollover | delete 5d after rollover |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-ti_custom.indicator-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
 
 ## Troubleshooting
 

@@ -37,13 +37,55 @@ processors:
             target_field: cisco_ise.log.log_details
             field_split: ', (?=[^,=]+=)'
             value_split: =
-  - kv:
-      tag: kv_cisco_ise_log_log_details_raw_to_cisco_ise_log_log_details_08f93f23
+  - grok:
+      tag: grok_cisco_ise_log_log_details_raw_5f2c91ab
+      description: >-
+        ConfigChangeData carries free-form text whose commas are not field
+        separators, so lift it out whole before the key-value split. ISE
+        appends further fields after it that must stay parsed, and the set of
+        keys it appends is not fixed, so an unlisted one such as AcsInstance
+        must not be swallowed into the value. Appended keys are recognisable
+        because their names never contain spaces, unlike the "Name = Value"
+        text inside ConfigChangeData itself.
       field: cisco_ise.log.log_details_raw
       if: ctx.cisco_ise?.log?.message?.code == "52001"
+      ignore_failure: true
+      patterns:
+        - '^%{DATA:_tmp.kv_head}, ConfigChangeData=%{DATA:_tmp.config_change_data}, (?<_tmp.kv_tail>(?:ObjectType|ObjectName|Component|ObjectInternalID|OperationMessageText)=%{GREEDYDATA})$'
+        - '^%{DATA:_tmp.kv_head}, ConfigChangeData=%{DATA:_tmp.config_change_data}, (?<_tmp.kv_tail>[A-Za-z][A-Za-z0-9_]*=%{GREEDYDATA})$'
+        - '^%{DATA:_tmp.kv_head}, ConfigChangeData=%{GREEDYDATA:_tmp.config_change_data}$'
+  - kv:
+      tag: kv__tmp_kv_head_to_cisco_ise_log_log_details_7c1d40e6
+      field: _tmp.kv_head
+      if: ctx.cisco_ise?.log?.message?.code == "52001"
       target_field: cisco_ise.log.log_details
-      field_split: '(?<!\\), '
+      field_split: '(?<!\\), (?=[^,=]+=)'
       value_split: =
+      ignore_missing: true
+      ignore_failure: true
+  - kv:
+      tag: kv__tmp_kv_tail_to_cisco_ise_log_log_details_3ab8f215
+      field: _tmp.kv_tail
+      if: ctx.cisco_ise?.log?.message?.code == "52001"
+      target_field: cisco_ise.log.log_details
+      field_split: '(?<!\\), (?=[^,=]+=)'
+      value_split: =
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      tag: set_cisco_ise_log_log_details_ConfigChangeData_9e4b7c30
+      field: cisco_ise.log.log_details.ConfigChangeData
+      copy_from: _tmp.config_change_data
+      if: ctx._tmp?.config_change_data != null
+  - kv:
+      tag: kv_cisco_ise_log_log_details_raw_to_cisco_ise_log_log_details_08f93f23
+      description: Fallback for 52001 records that carry no ConfigChangeData.
+      field: cisco_ise.log.log_details_raw
+      if: ctx.cisco_ise?.log?.message?.code == "52001" && ctx._tmp?.kv_head == null
+      target_field: cisco_ise.log.log_details
+      field_split: '(?<!\\), (?=[^,=]+=)'
+      value_split: =
+      ignore_failure: true
   - grok:
       tag: grok_cisco_ise_log_log_details_log_detail_f4f57bc6
       field: cisco_ise.log.log_details.log_detail
@@ -204,13 +246,13 @@ processors:
       tag: append_event_category_297dcf3e
       field: event.category
       value: iam
-      if: ctx.cisco_ise?.log?.message?.code != null && ['51001','51002','51020','51021','52000','52001','52002','60077','60078','60461','61077','58005','60094','60093','60134','60188','60116','60080','60115','60081','60084'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['51000','51001','51002','51008','51020','51021','51023','51025','51100','51101','51102','51103','51104','51105','51106','51107','51115','51116','52000','52001','52002','60077','60078','60461','61077','58005','60094','60093','60134','60188','60116','60080','60115','60081','60084'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - append:
       tag: append_event_category_ef7b5f9f
       field: event.category
       value: authentication
-      if: ctx.cisco_ise?.log?.message?.code != null && ['51001','51002','51020','51021','60077','60078','61077','60188','60116','60080','60115','60081'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['51000','51001','51002','51008','51020','51021','51025','51106','60077','60078','61077','60188','60116','60080','60115','60081'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - append:
       tag: append_event_category_012e1a79
@@ -234,13 +276,13 @@ processors:
       tag: append_event_type_5d9c5257
       field: event.type
       value: admin
-      if: ctx.cisco_ise?.log?.message?.code != null && ['51001','51002','51020','51021'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['51000','51001','51002','51008','51020','51021','51023'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - append:
       tag: append_event_type_e76aa382
       field: event.type
       value: change
-      if: ctx.cisco_ise?.log?.message?.code != null && ['52001','60084'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['51023','51100','51101','51102','51103','51104','51105','51107','51115','51116','52001','60084'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - append:
       tag: append_event_type_138f3e6b
@@ -270,13 +312,13 @@ processors:
       tag: append_event_type_c8f598eb
       field: event.type
       value: user
-      if: ctx.cisco_ise?.log?.message?.code != null && ['60116','60080','60115','60081'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['51025','51100','51101','51102','51103','51104','51105','51106','51107','51115','51116','60116','60080','60115','60081'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - append:
       tag: append_event_type_4b5bb9b7
       field: event.type
       value: info
-      if: ctx.cisco_ise?.log?.message?.code != null && ['51001','51002','51020','51021','52000','52001','52002','60067','60070','60077','60078','60456','60461','61025','61026','61077','58005','60094','60093','60134','60188','60116','60080','60115','60081','60084'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['51000','51001','51002','51008','51020','51021','51023','51025','51100','51101','51102','51103','51104','51105','51106','51107','51115','51116','52000','52001','52002','60067','60070','60077','60078','60456','60461','61025','61026','61077','58005','60094','60093','60134','60188','60116','60080','60115','60081','60084'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - append:
       tag: append_event_type_7106400e
@@ -288,13 +330,13 @@ processors:
       tag: set_event_outcome_success_administrative_audit
       field: event.outcome
       value: success
-      if: ctx.cisco_ise?.log?.message?.code != null && ['51001','51002','60078','60080','60115','60116','61077'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['51001','51002','51023','51100','60078','60080','60115','60116','61077'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - set:
       tag: set_event_outcome_failure_administrative_audit
       field: event.outcome
       value: failure
-      if: ctx.cisco_ise?.log?.message?.code != null && ['51000','51020','51021','60077','60081','60188'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['51000','51008','51020','51021','51025','51101','51102','51103','51104','51105','51106','51107','51115','51116','60077','60081','60188'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - set:
       tag: set_event_outcome_success_60084_adf14b2c
@@ -322,21 +364,21 @@ processors:
         def eventCategory = new ArrayList();
         def eventType = new ArrayList();
         def categoryReferenceTable = [
-          ["messageCodeArray": ["51001","51002","51020","51021","52000","52001","52002","60077","60078","60461","61077","58005","60094","60093","60134","60188","60116","60080","60115","60081","60084"], "name": "iam"],
-          ["messageCodeArray": ["51001","51002","51020","51021","60077","60078","61077","60188","60116","60080","60115","60081"], "name": "authentication"],
+          ["messageCodeArray": ["51000","51001","51002","51008","51020","51021","51023","51025","51100","51101","51102","51103","51104","51105","51106","51107","51115","51116","52000","52001","52002","60077","60078","60461","61077","58005","60094","60093","60134","60188","60116","60080","60115","60081","60084"], "name": "iam"],
+          ["messageCodeArray": ["51000","51001","51002","51008","51020","51021","51025","51106","60077","60078","61077","60188","60116","60080","60115","60081"], "name": "authentication"],
           ["messageCodeArray": ["61025","61026","60134"], "name": "network"],
           ["messageCodeArray": ["60067","60070","60456","58005"], "name": "process"],
           ["messageCodeArray": ["52000","52001","52002","60084"], "name": "configuration"]
         ];
         def typeReferenceTable = [
-          ["messageCodeArray": ["51001","51002","51020","51021"], "name": "admin"],
-          ["messageCodeArray": ["52001","60084"], "name": "change"],
+          ["messageCodeArray": ["51000","51001","51002","51008","51020","51021","51023"], "name": "admin"],
+          ["messageCodeArray": ["51023","51100","51101","51102","51103","51104","51105","51107","51115","51116","52001","60084"], "name": "change"],
           ["messageCodeArray": ["61025", "61026"], "name": "connection"],
           ["messageCodeArray": ["52000"], "name": "creation"],
           ["messageCodeArray": ["52002"], "name": "deletion"],
           ["messageCodeArray": ["61026"], "name": "end"],
-          ["messageCodeArray": ["60116","60080","60115","60081"], "name": "user"],
-          ["messageCodeArray": ["51001","51002","51020","51021","52000","52001","52002","60067","60070","60077","60078","60456","60461","61025","61026","61077","58005","60094","60093","60134","60188","60116","60080","60115","60081","60084"], "name": "info"],
+          ["messageCodeArray": ["51025","51100","51101","51102","51103","51104","51105","51106","51107","51115","51116","60116","60080","60115","60081"], "name": "user"],
+          ["messageCodeArray": ["51000","51001","51002","51008","51020","51021","51023","51025","51100","51101","51102","51103","51104","51105","51106","51107","51115","51116","52000","52001","52002","60067","60070","60077","60078","60456","60461","61025","61026","61077","58005","60094","60093","60134","60188","60116","60080","60115","60081","60084"], "name": "info"],
           ["messageCodeArray": ["60067","60456","61025"], "name": "start"]
         ];
 
@@ -412,6 +454,68 @@ processors:
       field: cisco_ise.log.log_details.ConfigChangeData
       target_field: cisco_ise.log.config_change.data
       ignore_missing: true
+  - script:
+      tag: script_parse_config_change_attributes
+      lang: painless
+      description: >-
+        Endpoint imports render their attributes into ConfigChangeData as
+        "\<tab>Attribute:NAME<tab> value:VALUE" runs. Expose them as a nested
+        name/value list so they can be queried. Attribute names are unbounded
+        (they include UUIDs and port labels) so they must not become fields.
+        ConfigChangeData itself is left untouched, and any other shape simply
+        yields no attributes.
+      if: ctx.cisco_ise?.log?.config_change?.data != null
+      source: |
+        def value = ctx.cisco_ise.log.config_change.data;
+        if (!(value instanceof String)) {
+          return;
+        }
+        String raw = (String)value;
+        if (raw.indexOf("Attribute:") < 0) {
+          return;
+        }
+        // Painless string literals support only \\, \" and \', so the tab
+        // separating an attribute name from its value is built explicitly.
+        String tab = "" + (char)9;
+        def attributes = [];
+        String[] parts = raw.splitOnToken("\\" + tab);
+        for (int i = 1; i < parts.length; ++i) {
+          String part = parts[i];
+          if (!part.startsWith("Attribute:")) {
+            continue;
+          }
+          int sep = part.indexOf(tab);
+          if (sep < 0) {
+            continue;
+          }
+          String name = part.substring(10, sep).trim();
+          if (name.isEmpty()) {
+            continue;
+          }
+          String attrValue = part.substring(sep + 1).trim();
+          if (attrValue.startsWith("value:")) {
+            attrValue = attrValue.substring(6);
+          }
+          // ISE escapes commas that belong inside a value (X.500 DNs arrive as
+          // CN=host\,OU=...), so an unescaped ", " separates list members.
+          if (attrValue.contains(", ")) {
+            def members = new ArrayList();
+            for (String member : /(?<!\\), /.split(attrValue)) {
+              members.add(member);
+            }
+            attributes.add(["name": name, "value": members]);
+          } else {
+            attributes.add(["name": name, "value": attrValue]);
+          }
+        }
+        if (!attributes.isEmpty()) {
+          ctx.cisco_ise.log.config_change.attributes = attributes;
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_7b2e05c1
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_cisco_ise_log_log_details_Component_to_cisco_ise_log_component_e40bde28
       field: cisco_ise.log.log_details.Component
@@ -454,6 +558,18 @@ processors:
       tag: remove_cisco_ise_log_log_details_FailureFlag_0b0d9480
       field: cisco_ise.log.log_details.FailureFlag
       ignore_missing: true
+  - set:
+      tag: set_event_outcome_failure_config_change_failure_flag
+      field: event.outcome
+      value: failure
+      if: ctx.cisco_ise?.log?.message?.code == '52001' && ctx.cisco_ise?.log?.failure?.flag == true
+      ignore_failure: true
+  - set:
+      tag: set_event_outcome_success_config_change
+      field: event.outcome
+      value: success
+      if: ctx.cisco_ise?.log?.message?.code != null && ['52000','52001','52002'].contains(ctx.cisco_ise.log.message.code) && ctx.event?.outcome == null
+      ignore_failure: true
   - rename:
       tag: rename_cisco_ise_log_log_details_LocalLogging_to_cisco_ise_log_local_logging_0498cf4c
       field: cisco_ise.log.log_details.LocalLogging

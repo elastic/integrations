@@ -1,0 +1,31 @@
+---
+description: >-
+  Validate a single address from the forwarded-for header value BIG-IP reports, and collect the ones
+  that parse. Forwarded headers are set by the client, so a value that the ip mapping would reject is
+  dropped instead of failing the event or reaching an ip field, where it would make Elasticsearch
+  refuse the whole document. Called per array element from a foreach processor. This duplicates
+  pipeline_forwarded_ip_request rather than sharing one pipeline because Fleet rewrites only the
+  first reference to a given pipeline name in a file.
+processors:
+  - remove:
+      field: _tmp.valid_ip
+      tag: remove_stale_tmp_valid_ip
+      ignore_missing: true
+  - convert:
+      field: _ingest._value
+      tag: convert_header_value_to_ip
+      target_field: _tmp.valid_ip
+      type: ip
+      ignore_failure: true
+  - append:
+      field: _tmp.valid_ips
+      tag: append_tmp_valid_ips
+      value: '{{{_tmp.valid_ip}}}'
+      allow_duplicates: false
+      if: ctx._tmp?.valid_ip != null
+  - append:
+      field: related.ip
+      tag: append_header_value_ip_into_related_ip
+      value: '{{{_tmp.valid_ip}}}'
+      allow_duplicates: false
+      if: ctx._tmp?.valid_ip != null

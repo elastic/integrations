@@ -1,0 +1,75 @@
+{
+  "id": "gcp_cloudrun_otel-high-cpu-utilization-by-service-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud Run OTel] High CPU utilization by service",
+        "description": "Fires when the p95 per-instance CPU utilisation of a Cloud Run service is 90% or higher over a 30-minute window. The autoscaler targets 60% CPU; sustained readings this high mean instances are CPU-bound and scale-out is lagging or capped.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudrun"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "30m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudrun.otel-*\n// Services only: cloud_run_job documents have no service_name\n| WHERE `metrics.run.googleapis.com/container/cpu/utilizations` IS NOT NULL\n  AND resource.attributes.service_name IS NOT NULL\n// Utilisation is a fraction 0-1 of allocated vCPU; GCP bins are 1 percentage point wide\n| STATS\n    cpu_p95 = PERCENTILE(`metrics.run.googleapis.com/container/cpu/utilizations`::exponential_histogram, 95),\n    cpu_samples = COUNT(`metrics.run.googleapis.com/container/cpu/utilizations`::exponential_histogram)\n  BY resource.attributes.project_id, resource.attributes.location, resource.attributes.service_name",
+        "breach": {
+          "segment": "// Minimum sample guard: ignore services that ran only briefly in the window\nWHERE cpu_samples >= 5\n| EVAL cpu_p95_pct = ROUND(cpu_p95 * 100.0, 1)\n// Alert threshold in percent (healthy services stay below ~80%)\n| WHERE cpu_p95_pct >= 90.0\n| KEEP resource.attributes.project_id, resource.attributes.location, resource.attributes.service_name,\n    cpu_p95_pct, cpu_samples\n| SORT cpu_p95_pct DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.location",
+          "resource.attributes.service_name"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudrun_otel-high-cpu-utilization-by-service-v2-overview-dashboard",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudrun_otel-a22d34c2-3c04-47a0-bf52-cf1e20a36f1d"
+          }
+        },
+        {
+          "id": "gcp_cloudrun_otel-high-cpu-utilization-by-service-v2-details-dashboard",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudrun_otel-7d96ccf8-44dc-4987-8835-7ec93a922d04"
+          }
+        },
+        {
+          "id": "gcp_cloudrun_otel-high-cpu-utilization-by-service-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud Run high CPU utilisation\n\nThe p95 per-instance CPU utilisation was 90% or higher over the last 30 minutes. The Cloud Run autoscaler targets 60% CPU, and Adaptive Concurrency Tuning lowers per-instance concurrency to keep CPU under 90%. Sustained readings this high mean instances are CPU-bound.\n\n### Triage\n1. Check request latency p95 for the same service. CPU saturation usually shows up as rising latency.\n2. Check the active instance count. If it has plateaued while CPU stays high, the max-instances limit may be preventing scale-out. Requests may then be rejected with 429s, which do not appear in `request_count`. Confirm in the Cloud Run request logs.\n3. Check for a new revision (`resource.attributes.revision_name`) that introduced a CPU regression.\n4. Remediate by raising the vCPU allocation, lowering the concurrency setting, raising max instances, or optimising the hot code path.\n\n### Caveats\n- Under request-based billing, CPU is only allocated while requests are being processed, so readings can look low even when throughput is high. This alert is most reliable for CPU-intensive workloads and instance-based billing.\n- Configured vCPU and concurrency limits are not in the telemetry.\n\n### Tuning\n- Adjust `cpu_p95_pct >= 90.0`. GCP reports utilisation in 1-point bins, so thresholds finer than 1% have no effect.\n- Adjust the `cpu_samples >= 5` guard."
+          }
+        }
+      ]
+    }
+  }
+}

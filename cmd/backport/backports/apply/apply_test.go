@@ -232,7 +232,7 @@ func TestResolveManifestVersionConflict(t *testing.T) {
 				"<<<<<<< HEAD\n" +
 				"version: 6.14.2\n" +
 				"owner:\n" +
-				"  github: elastic/obs-infraobs-integrations\n" +
+				"  github: elastic/obs-signals-integrations-team\n" +
 				"=======\n" +
 				"version: 6.15.0\n" +
 				">>>>>>> abc1234 (Add feature)\n" +
@@ -241,7 +241,7 @@ func TestResolveManifestVersionConflict(t *testing.T) {
 				"<<<<<<< HEAD\n" +
 				"version: 6.14.2\n" +
 				"owner:\n" +
-				"  github: elastic/obs-infraobs-integrations\n" +
+				"  github: elastic/obs-signals-integrations-team\n" +
 				"=======\n" +
 				"version: 6.15.0\n" +
 				">>>>>>> abc1234 (Add feature)\n" +
@@ -392,7 +392,7 @@ func TestSetManifestOwner(t *testing.T) {
 }
 
 // The CODEOWNERS-rewriting logic itself is tested directly in
-// dev/backports/owners (owners.ApplyUpdates) — writeOwnerSyncPlan is a thin
+// cmd/backport/backports/owners (owners.ApplyUpdates) — writeOwnerSyncPlan is a thin
 // file-I/O wrapper around it plus setManifestOwner, tested here.
 func TestWriteOwnerSyncPlan(t *testing.T) {
 	workDir := t.TempDir()

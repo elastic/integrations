@@ -4,15 +4,17 @@
 
 Use this package to get a dashboard which displays metrics from your web applications instrumented by Opentelemetry JS SDK. The metrics diplayed are:
 
-- page load and visits: these metrics are calculated from the telemetry captured by [`@opentelemetry/instrumentation-document-load`](https://www.npmjs.com/package/@opentelemetry/instrumentation-document-load) instrumentation.
-- errors: the top errors are calculated from the telemetry captured by [`@opentelemetry/instrumentation-web-exception`](https://www.npmjs.com/package/@opentelemetry/instrumentation-web-exception) instrumentation.
+- page load and visits: these metrics are calculated from the telemetry captured by `NavigationTimingInstrumentation` within [`@opentelemetry/browser-instrumentation`](https://www.npmjs.com/package/@opentelemetry/browser-instrumentation) package. For
+backwards compatibility it also queries for data collected by [`@opentelemetry/instrumentation-document-load`](https://www.npmjs.com/package/@opentelemetry/instrumentation-document-load) instrumentation.
+- errors: the top errors are calculated from the telemetry captured by `ErrorsInstrumentation` within [`@opentelemetry/browser-instrumentation`](https://www.npmjs.com/package/@opentelemetry/browser-instrumentation) package. For backwards compatibility
+it also queries for data collected by [`@opentelemetry/instrumentation-web-exception`](https://www.npmjs.com/package/@opentelemetry/instrumentation-web-exception) instrumentation.
 - web vitals: the web vitals are calculated from the telemetry captured by `WebVitalsInstrumentation` within [`@opentelemetry/browser-instrumentation`](https://www.npmjs.com/package/@opentelemetry/browser-instrumentation) package.
 
 You should have all instrumentations enabled in your web application to get the metrics populated in this dashboard.
 
 ### Compatibility
 
-This package has been tested with OpenTelemetry JS SDK `2.2.0` and with OpenTelemetry semantic conventions `1.38.0`. It should work with later versions as long as there are no breaking changes in `browser.*` namespace of semantic conventions.
+This package has been tested with OpenTelemetry Browser SDK `0.3.0` and with OpenTelemetry semantic conventions `1.38.0`. It should work with later versions as long as there are no breaking changes in `browser.*` namespace of semantic conventions.
 
 This package requires that your log record and trace exports contain a resource attribute named `user_agent.original` as defined in [semantic conventions](https://github.com/open-telemetry/semantic-conventions/blob/8faf5c44488667d2a819fc349c5997be7070caac/model/browser/entities.yaml#L15). Such field is used to resolve which browser and OS the data is coming from.
 
@@ -35,7 +37,7 @@ If you do not see data in the dashboard make sure that:
 
 - Elastic search has recevied the documents from Opentelemetry JS SDK. You can search for them in discover with the filter `telemetry.sdk.language : "webjs"`
 - You can run more detailed searches to ensure the data is available for specific sections of the dashboard:
-  - use the filter `scope.name : "@opentelemetry/instrumentation-document-load"` to check if the data for page load metrics is present.
-  - use the filter `scope.name : "@opentelemetry/instrumentation-web-exception"` to check if the data for error metrics is present.
+  - use the filter `scope.name : "@opentelemetry/instrumentation-document-load" or scope.name : "@opentelemetry/browser-instrumentation/navigation-timing"` to check if the data for page load metrics is present.
+  - use the filter `scope.name : "@opentelemetry/instrumentation-web-exception" or scope.name : "@opentelemetry/browser-instrumentation/errors"` to check if the data for error metrics is present.
   - use the filter `scope.name : "@opentelemetry/browser-instrumentation/web-vitals"` to check if the data for web vitals metrics is present.
   - use the filter `resource.attributes.user_agent.original : *` to check if the logs/traces contain the right resource attribute.
