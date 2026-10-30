@@ -64,6 +64,36 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
 
+  - script:
+      tag: hoist_preparsed_eve_under_json
+      lang: painless
+      description: >-
+        Direct ingestion delivers an already-parsed EVE object. Move vendor
+        root fields under json so the rest of this pipeline can map them. A
+        string host (the probe name) moves with those fields and never hits
+        the ECS host object. Elastic Agent documents already have
+        event.original, so this script does not run for them.
+      if: ctx.event?.original == null && ctx.json == null && (ctx.event_type != null || ctx.host instanceof String)
+      source: |
+        def keep = new HashSet();
+        keep.add('@timestamp');
+        keep.add('agent');
+        keep.add('elastic_agent');
+        keep.add('ecs');
+        keep.add('data_stream');
+        keep.add('event');
+        keep.add('tags');
+        keep.add('observer');
+        def vendor = new HashMap();
+        for (def key : new ArrayList(ctx.keySet())) {
+          if (keep.contains(key) || key.startsWith('_')) {
+            continue;
+          }
+          vendor[key] = ctx[key];
+          ctx.remove(key);
+        }
+        ctx.json = vendor;
+
   - json:
       field: event.original
       target_field: json
@@ -75,6 +105,22 @@ processors:
             field: error.message
             tag: append_error_parse_json
             value: '{{{_ingest.on_failure_message}}}'
+
+  - script:
+      tag: relocate_string_host
+      lang: painless
+      description: >-
+        Drop a root string host left beside a JSON string. The probe name is
+        kept on json.host when that field is empty.
+      if: ctx.host instanceof String
+      source: |
+        if (ctx.json == null) {
+          ctx.json = new HashMap();
+        }
+        if (ctx.json.host == null) {
+          ctx.json.host = ctx.host;
+        }
+        ctx.remove('host');
 
   - date:
       field: json.timestamp
@@ -700,6 +746,13 @@ processors:
       ignore_missing: true
       description: Request headers embedded on file-identification and sightings alerts.
 
+  - set:
+      field: observer.name
+      copy_from: json.host
+      ignore_empty_value: true
+      if: ctx.observer?.name == null && ctx.json?.host instanceof String
+      tag: set_observer_name_from_probe_host
+      description: Probe name from the EVE host string.
   - remove:
       field: json
       tag: remove_json_temp
