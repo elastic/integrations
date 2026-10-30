@@ -106,6 +106,9 @@ An example event for `aadgraphactivitylogs` looks as following:
                 "token_issued_at": "2026-05-07T13:50:39.000Z"
             }
         },
+        "tenant": {
+            "id": "ab30785b-417f-42a4-b5dc-8f9051718acb"
+        },
         "tenant_id": "ab30785b-417f-42a4-b5dc-8f9051718acb"
     },
     "client": {
@@ -227,6 +230,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.aadgraphactivitylogs.category | Azure Event Category. For Azure AD Graph Activity Logs, this is `AzureADGraphActivityLogs`. | keyword |
+| azure.aadgraphactivitylogs.correlation_id | Correlation ID from the log envelope. Also copied to `azure.correlation.id`. | keyword |
 | azure.aadgraphactivitylogs.operation_name | Operation name. For this category the value is always the literal string `AAD Graph Activity`; rely on the derived `event.action` (HTTP method + directory collection from `requestUri`) for detection. | keyword |
 | azure.aadgraphactivitylogs.properties.actor_type | Type of identity that issued the request, for example `User`, `ServicePrincipal`. | keyword |
 | azure.aadgraphactivitylogs.properties.api_version | The API version of the event. | keyword |
@@ -250,17 +254,24 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | azure.aadgraphactivitylogs.properties.type | The name of the table. | keyword |
 | azure.aadgraphactivitylogs.properties.user_agent | The user agent information related to request. | keyword |
 | azure.aadgraphactivitylogs.properties.wids | Denotes the tenant-wide roles assigned to this user. | keyword |
-| azure.correlation_id | Correlation ID. | keyword |
+| azure.aadgraphactivitylogs.resource_id | Resource ID from the log envelope. Also copied to `azure.resource_id` for ARM resource ID parsing. | keyword |
+| azure.correlation.id | Correlation ID for grouping related operations. | keyword |
+| azure.correlation_id | [Deprecated] Legacy flat name for the correlation ID. Populated only in data streams that set it before 1.41.0. Planned to become an alias of `azure.correlation.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.correlation.id` instead. | keyword |
 | azure.resource.authorization_rule | Authorization rule. | keyword |
-| azure.resource.group | Resource group. | keyword |
-| azure.resource.id | Resource ID. | keyword |
-| azure.resource.name | Name. | keyword |
-| azure.resource.namespace | Resource type/namespace. | keyword |
-| azure.resource.provider | Resource type/namespace. | keyword |
-| azure.subscription_id | Azure subscription ID. | keyword |
-| azure.tenant_id | tenant ID. | keyword |
+| azure.resource.group | [Deprecated] Legacy name for the resource group. Still populated. Planned to become an alias of `azure.resource_group.name` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.resource_group.name` instead. | keyword |
+| azure.resource.id | [Deprecated] Legacy name for the ARM resource ID. Still populated. Planned to become an alias of `cloud.resource_id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `cloud.resource_id` instead. | keyword |
+| azure.resource.name | Resource name. | keyword |
+| azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
+| azure.resource.provider | [Deprecated] Legacy name for the resource provider namespace. Still populated. Unlike `azure.resource_provider.namespace`, it includes the resource type (for example `Microsoft.KeyVault/vaults`). Planned to become an alias of `azure.resource_provider.namespace` about six months after 1.41.0, after which it is no longer stored in `_source` and returns the namespace only. Use `azure.resource_provider.namespace` instead. | keyword |
+| azure.resource_group.name | Azure resource group name. | keyword |
+| azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
+| azure.subscription.id | Azure subscription ID. | keyword |
+| azure.subscription_id | [Deprecated] Legacy flat name for the subscription ID. Still populated. Planned to become an alias of `azure.subscription.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.subscription.id` instead. | keyword |
+| azure.tenant.id | Azure tenant ID. | keyword |
+| azure.tenant_id | [Deprecated] Legacy flat name for the tenant ID. Populated only in data streams that set it before 1.41.0. Planned to become an alias of `azure.tenant.id` about six months after 1.41.0, after which it is no longer stored in `_source`. Use `azure.tenant.id` instead. | keyword |
 | client.geo.location | Longitude and latitude. | geo_point |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
