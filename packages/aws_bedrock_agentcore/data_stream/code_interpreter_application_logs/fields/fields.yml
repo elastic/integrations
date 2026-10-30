@@ -1,0 +1,136 @@
+- name: aws.bedrock_agentcore
+  type: group
+  fields:
+    - name: provider_name
+      type: keyword
+      description: Name of the AI provider or platform.
+    - name: operation_name
+      type: keyword
+      description: Normalized name of the AgentCore operation performed.
+    - name: code_interpreter
+      type: group
+      fields:
+        - name: resource_arn
+          type: keyword
+          description: Amazon Resource Name (ARN) of the Code Interpreter resource.
+        - name: code_interpreter_id
+          type: keyword
+          description: Identifier of the Code Interpreter, extracted from the resource ARN.
+        - name: session_id
+          type: keyword
+          description: Unique identifier for the Code Interpreter tool session.
+        - name: request_id
+          type: keyword
+          description: ID of the processed request.
+        - name: operation
+          type: keyword
+          description: Name of the AgentCore API operation that produced the record.
+        - name: service_name
+          type: keyword
+          description: Service emitting the log record.
+        - name: resource_type
+          type: keyword
+          description: AWS resource type of the Code Interpreter, from the OTel attributes.
+        - name: severity_number
+          type: integer
+          description: Numeric OTel severity level associated with the event.
+        # severityText → ECS log.level
+        - name: tool
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: Code Interpreter tool name from the request payload.
+        - name: task
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Identifier of the asynchronous Code Interpreter task.
+            - name: status
+              type: keyword
+              description: Asynchronous task status.
+        - name: request_payload
+          type: group
+          fields:
+            - name: code
+              type: text
+              description: Source code submitted for execution in the sandbox.
+            - name: language
+              type: keyword
+              description: Programming language of the submitted code.
+            - name: runtime
+              type: keyword
+              description: Runtime requested for code execution.
+            - name: clear_context
+              type: boolean
+              description: Whether the execution context was cleared before running.
+            - name: paths
+              type: keyword
+              description: File paths targeted by a file operation.
+            - name: directory_path
+              type: keyword
+              description: Directory path targeted by a file listing operation.
+            - name: content
+              type: group
+              description: Write-operation content blocks.
+              fields:
+                - name: path
+                  type: keyword
+                  description: Target file path for a write block.
+                - name: text
+                  type: wildcard
+                  description: File contents for a write block.
+        - name: response_payload
+          type: group
+          fields:
+            - name: stdout
+              type: text
+              description: Sandbox stdout.
+            - name: stderr
+              type: text
+              description: Standard error captured from the sandbox execution.
+            - name: execution_time
+              type: double
+              description: Execution time reported by the Code Interpreter.
+            - name: content
+              type: group
+              description: MCP-style content blocks returned by the Code Interpreter result (one array element per block).
+              fields:
+                - name: type
+                  type: keyword
+                  description: Content block type (for example text, resource, or resource_link).
+                - name: text
+                  type: wildcard
+                  description: Text payload when the block type is text.
+                - name: path
+                  type: keyword
+                  description: File path when returned as part of a content block.
+                - name: name
+                  type: keyword
+                  description: Resource name for resource_link blocks.
+                - name: description
+                  type: keyword
+                  description: Resource description for resource_link blocks.
+                - name: uri
+                  type: keyword
+                  description: Resource URI for resource_link blocks.
+                - name: mimeType
+                  type: keyword
+                  description: MIME type for resource_link or embedded resource blocks.
+                - name: resource
+                  type: group
+                  description: Embedded resource for resource blocks.
+                  fields:
+                    - name: mimeType
+                      type: keyword
+                      description: MIME type of the embedded resource.
+                    - name: text
+                      type: wildcard
+                      description: Text or file contents of the embedded resource.
+                    - name: type
+                      type: keyword
+                      description: Embedded resource type (for example text).
+                    - name: uri
+                      type: keyword
+                      description: URI of the embedded resource.

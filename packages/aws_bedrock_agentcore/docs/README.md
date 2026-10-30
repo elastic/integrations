@@ -19,6 +19,11 @@ The Amazon Bedrock AgentCore integration collects runtime metrics and observabil
 
 Data streams:
  - `metrics`: Collects Amazon Bedrock AgentCore runtime metrics including invocations, sessions, latency, performance indicators, error rates, throttling metrics, token counts, target execution metrics, and authorization metrics from the following AgentCore components: Agent runtime, Gateway, Memory, Identity, Browser Tool and Code Interpreter.
+ - `runtime_application_logs`: Collects agent runtime application logs (vended `APPLICATION_LOGS`) describing `InvokeAgentRuntime` operations.
+ - `memory_application_logs`: Collects AgentCore Memory application logs (vended `APPLICATION_LOGS`).
+ - `gateway_application_logs`: Collects AgentCore Gateway application logs (vended `APPLICATION_LOGS`).
+ - `code_interpreter_application_logs`: Collects Code Interpreter application logs (vended `APPLICATION_LOGS`) with one record per `InvokeCodeInterpreter` invocation, including the executed code or shell command and its stdout, stderr, and exit code.
+ - `runtime_logs`: Collects agent runtime container logs (stdout/stderr) from the auto-created `/aws/bedrock-agentcore/runtimes/*` CloudWatch log groups, including the service-written audit line for `InvokeAgentRuntimeCommand` shell command executions.
 
 ## What do I need to use this integration?
 
@@ -613,6 +618,281 @@ An example event for `gateway_application` looks as following:
 | aws.bedrock_agentcore.gateway.severity_number | Numeric severity level associated with the event. | integer |
 | aws.bedrock_agentcore.gateway.target | Target system or resource identifier for the tool invocation. | keyword |
 | aws.bedrock_agentcore.gateway.tool.name | Name of the tool operation being invoked by the gateway. | keyword |
+| aws.cloudwatch.message | CloudWatch log message. | text |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset | long |
+
+
+### Code Interpreter Application Logs
+
+Vended Code Interpreter `APPLICATION_LOGS` (`InvokeCodeInterpreter`). Enable log delivery on custom interpreters in the AgentCore console. See [Configure observability](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-configure.html).
+
+An example event for `code_interpreter_application` looks as following:
+
+```json
+{
+    "@timestamp": "2025-12-22T13:22:00.877Z",
+    "agent": {
+        "ephemeral_id": "d5a1fd3e-1411-4730-8b9a-e237d8000186",
+        "id": "8f26c9ae-e204-484b-aef5-38a8988e0a62",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.19.0"
+    },
+    "aws": {
+        "bedrock_agentcore": {
+            "code_interpreter": {
+                "code_interpreter_id": "dataAnalysisSandbox-aB3dE5fG7h",
+                "operation": "InvokeCodeInterpreter",
+                "request_id": "3b9c2d1e-7f8a-4b6c-9d0e-5a4f3e2d1c0b",
+                "resource_arn": "arn:aws:bedrock-agentcore:us-east-1:111122223333:code-interpreter-custom/dataAnalysisSandbox-aB3dE5fG7h",
+                "resource_type": "AWS::BedrockAgentCore::CodeInterpreterCustom",
+                "response_payload": {
+                    "content": [
+                        {
+                            "text": "execution_role\n{\"Code\":\"Success\",\"LastUpdated\":\"2025-12-22T11:58:01Z\",\"Type\":\"AWS-HMAC\",\"AccessKeyId\":\"ASIAEXAMPLE1234567A\",\"SecretAccessKey\":\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\",\"Token\":\"IQoJb3JpZ2luX2VjEXAMPLE...\",\"Expiration\":\"2025-12-22T17:58:01Z\"}\n",
+                            "type": "text"
+                        }
+                    ],
+                    "execution_time": 0.2137,
+                    "stdout": "execution_role\n{\"Code\":\"Success\",\"LastUpdated\":\"2025-12-22T11:58:01Z\",\"Type\":\"AWS-HMAC\",\"AccessKeyId\":\"ASIAEXAMPLE1234567A\",\"SecretAccessKey\":\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\",\"Token\":\"IQoJb3JpZ2luX2VjEXAMPLE...\",\"Expiration\":\"2025-12-22T17:58:01Z\"}\n"
+                },
+                "service_name": "AgentCoreCodeInterpreter",
+                "session_id": "01K8ZQ5R3Y8V2M6N9P4T7W1X0A",
+                "severity_number": 9,
+                "tool": {
+                    "name": "executeCommand"
+                }
+            },
+            "operation_name": "invoke_code_interpreter",
+            "provider_name": "aws_bedrock_agentcore"
+        }
+    },
+    "cloud": {
+        "account": {
+            "id": "111122223333"
+        },
+        "provider": "aws",
+        "service": {
+            "name": "bedrock-agentcore"
+        }
+    },
+    "data_stream": {
+        "dataset": "aws_bedrock_agentcore.code_interpreter_application_logs",
+        "namespace": "default",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "8f26c9ae-e204-484b-aef5-38a8988e0a62",
+        "snapshot": false,
+        "version": "8.19.0"
+    },
+    "event": {
+        "action": "execute-command",
+        "agent_id_status": "verified",
+        "category": [
+            "process"
+        ],
+        "ingested": "2025-11-17T12:27:05Z",
+        "kind": "event",
+        "outcome": "success",
+        "type": [
+            "start"
+        ]
+    },
+    "input": {
+        "type": "aws-cloudwatch"
+    },
+    "log": {
+        "level": "INFO"
+    },
+    "process": {
+        "command_line": "curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ && curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/execution_role",
+        "exit_code": 0
+    },
+    "service": {
+        "name": "dataAnalysisSandbox-aB3dE5fG7h"
+    },
+    "span": {
+        "id": "5e6f708192a3b4c5"
+    },
+    "tags": [
+        "forwarded"
+    ],
+    "trace": {
+        "id": "1a2b3c4d5e6f708192a3b4c5d6e7f809"
+    }
+}
+```
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.bedrock_agentcore.code_interpreter.code_interpreter_id | Identifier of the Code Interpreter, extracted from the resource ARN. | keyword |
+| aws.bedrock_agentcore.code_interpreter.operation | Name of the AgentCore API operation that produced the record. | keyword |
+| aws.bedrock_agentcore.code_interpreter.request_id | ID of the processed request. | keyword |
+| aws.bedrock_agentcore.code_interpreter.request_payload.clear_context | Whether the execution context was cleared before running. | boolean |
+| aws.bedrock_agentcore.code_interpreter.request_payload.code | Source code submitted for execution in the sandbox. | text |
+| aws.bedrock_agentcore.code_interpreter.request_payload.content.path | Target file path for a write block. | keyword |
+| aws.bedrock_agentcore.code_interpreter.request_payload.content.text | File contents for a write block. | wildcard |
+| aws.bedrock_agentcore.code_interpreter.request_payload.directory_path | Directory path targeted by a file listing operation. | keyword |
+| aws.bedrock_agentcore.code_interpreter.request_payload.language | Programming language of the submitted code. | keyword |
+| aws.bedrock_agentcore.code_interpreter.request_payload.paths | File paths targeted by a file operation. | keyword |
+| aws.bedrock_agentcore.code_interpreter.request_payload.runtime | Runtime requested for code execution. | keyword |
+| aws.bedrock_agentcore.code_interpreter.resource_arn | Amazon Resource Name (ARN) of the Code Interpreter resource. | keyword |
+| aws.bedrock_agentcore.code_interpreter.resource_type | AWS resource type of the Code Interpreter, from the OTel attributes. | keyword |
+| aws.bedrock_agentcore.code_interpreter.response_payload.content.description | Resource description for resource_link blocks. | keyword |
+| aws.bedrock_agentcore.code_interpreter.response_payload.content.mimeType | MIME type for resource_link or embedded resource blocks. | keyword |
+| aws.bedrock_agentcore.code_interpreter.response_payload.content.name | Resource name for resource_link blocks. | keyword |
+| aws.bedrock_agentcore.code_interpreter.response_payload.content.path | File path when returned as part of a content block. | keyword |
+| aws.bedrock_agentcore.code_interpreter.response_payload.content.resource.mimeType | MIME type of the embedded resource. | keyword |
+| aws.bedrock_agentcore.code_interpreter.response_payload.content.resource.text | Text or file contents of the embedded resource. | wildcard |
+| aws.bedrock_agentcore.code_interpreter.response_payload.content.resource.type | Embedded resource type (for example text). | keyword |
+| aws.bedrock_agentcore.code_interpreter.response_payload.content.resource.uri | URI of the embedded resource. | keyword |
+| aws.bedrock_agentcore.code_interpreter.response_payload.content.text | Text payload when the block type is text. | wildcard |
+| aws.bedrock_agentcore.code_interpreter.response_payload.content.type | Content block type (for example text, resource, or resource_link). | keyword |
+| aws.bedrock_agentcore.code_interpreter.response_payload.content.uri | Resource URI for resource_link blocks. | keyword |
+| aws.bedrock_agentcore.code_interpreter.response_payload.execution_time | Execution time reported by the Code Interpreter. | double |
+| aws.bedrock_agentcore.code_interpreter.response_payload.stderr | Standard error captured from the sandbox execution. | text |
+| aws.bedrock_agentcore.code_interpreter.response_payload.stdout | Sandbox stdout. | text |
+| aws.bedrock_agentcore.code_interpreter.service_name | Service emitting the log record. | keyword |
+| aws.bedrock_agentcore.code_interpreter.session_id | Unique identifier for the Code Interpreter tool session. | keyword |
+| aws.bedrock_agentcore.code_interpreter.severity_number | Numeric OTel severity level associated with the event. | integer |
+| aws.bedrock_agentcore.code_interpreter.task.id | Identifier of the asynchronous Code Interpreter task. | keyword |
+| aws.bedrock_agentcore.code_interpreter.task.status | Asynchronous task status. | keyword |
+| aws.bedrock_agentcore.code_interpreter.tool.name | Code Interpreter tool name from the request payload. | keyword |
+| aws.bedrock_agentcore.operation_name | Normalized name of the AgentCore operation performed. | keyword |
+| aws.bedrock_agentcore.provider_name | Name of the AI provider or platform. | keyword |
+| aws.cloudwatch.ingestion_time | Time the event was ingested by CloudWatch Logs. | date |
+| aws.cloudwatch.log_group | The CloudWatch log group the event belongs to, as a name or an ARN depending on how the input was configured. | keyword |
+| aws.cloudwatch.log_stream | Name of the CloudWatch log stream the event was read from. | keyword |
+| aws.cloudwatch.message | CloudWatch log message. | text |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset | long |
+
+
+### Runtime Container Logs
+
+Auto-created runtime container log groups under `/aws/bedrock-agentcore/runtimes/*`. See the [Observability guide](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-view.html).
+
+An example event for `runtime` looks as following:
+
+```json
+{
+    "@timestamp": "2026-07-01T19:07:08.962Z",
+    "agent": {
+        "ephemeral_id": "d5a1fd3e-1411-4730-8b9a-e237d8000186",
+        "id": "8f26c9ae-e204-484b-aef5-38a8988e0a62",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.19.0"
+    },
+    "aws": {
+        "bedrock_agentcore": {
+            "runtime_logs": {
+                "agent_runtime_id": "imds_lab_agent-Qr5TuVw8Xy",
+                "endpoint_name": "DEFAULT",
+                "log_stream_type": "runtime-logs",
+                "request_id": "b7e3f2a1-4c5d-4e6f-8a9b-1c2d3e4f5a60",
+                "session_id": "a1-imds-0f1e2d3c4b5a69788796a5b4c3d2e1f0"
+            }
+        },
+        "cloudwatch": {
+            "ingestion_time": "2026-07-01T12:27:15.000Z",
+            "log_group": "arn:aws:logs:us-east-1:111122223333:log-group:/aws/bedrock-agentcore/runtimes/imds_lab_agent-Qr5TuVw8Xy-DEFAULT:*",
+            "log_stream": "2026/07/01/[runtime-logs-a1-imds-0f1e2d3c4b5a69788796a5b4c3d2e1f0]7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c0d"
+        }
+    },
+    "cloud": {
+        "account": {
+            "id": "111122223333"
+        },
+        "provider": "aws",
+        "region": "us-east-1",
+        "service": {
+            "name": "bedrock-agentcore"
+        }
+    },
+    "data_stream": {
+        "dataset": "aws_bedrock_agentcore.runtime_logs",
+        "namespace": "default",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "8f26c9ae-e204-484b-aef5-38a8988e0a62",
+        "snapshot": false,
+        "version": "8.19.0"
+    },
+    "event": {
+        "action": "invoke-agent-runtime-command",
+        "agent_id_status": "verified",
+        "category": [
+            "process"
+        ],
+        "ingested": "2025-11-17T12:27:05Z",
+        "kind": "event",
+        "original": "[1782932828962] awsRequestId=b7e3f2a1-4c5d-4e6f-8a9b-1c2d3e4f5a60 command=bash -c 'TOKEN=$(curl -sX PUT http://169.254.169.254/latest/api/token -H \"X-aws-ec2-metadata-token-ttl-seconds: 60\"); curl -s -H \"X-aws-ec2-metadata-token: $TOKEN\" http://169.254.169.254/latest/meta-data/iam/security-credentials/execution_role'",
+        "type": [
+            "start"
+        ]
+    },
+    "input": {
+        "type": "aws-cloudwatch"
+    },
+    "log": {
+        "file": {
+            "path": "arn:aws:logs:us-east-1:111122223333:log-group:/aws/bedrock-agentcore/runtimes/imds_lab_agent-Qr5TuVw8Xy-DEFAULT/2026/07/01/[runtime-logs-a1-imds-0f1e2d3c4b5a69788796a5b4c3d2e1f0]7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c0d"
+        }
+    },
+    "message": "[1782932828962] awsRequestId=b7e3f2a1-4c5d-4e6f-8a9b-1c2d3e4f5a60 command=bash -c 'TOKEN=$(curl -sX PUT http://169.254.169.254/latest/api/token -H \"X-aws-ec2-metadata-token-ttl-seconds: 60\"); curl -s -H \"X-aws-ec2-metadata-token: $TOKEN\" http://169.254.169.254/latest/meta-data/iam/security-credentials/execution_role'",
+    "process": {
+        "command_line": "bash -c 'TOKEN=$(curl -sX PUT http://169.254.169.254/latest/api/token -H \"X-aws-ec2-metadata-token-ttl-seconds: 60\"); curl -s -H \"X-aws-ec2-metadata-token: $TOKEN\" http://169.254.169.254/latest/meta-data/iam/security-credentials/execution_role'"
+    },
+    "tags": [
+        "preserve_original_event"
+    ]
+}
+```
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.bedrock_agentcore.runtime_logs.agent_runtime_id | Identifier of the agent runtime, extracted from the log group name. | keyword |
+| aws.bedrock_agentcore.runtime_logs.endpoint_name | Name of the agent runtime endpoint, extracted from the log group name. | keyword |
+| aws.bedrock_agentcore.runtime_logs.error_message | Error message reported by the AgentCore SDK log line. | keyword |
+| aws.bedrock_agentcore.runtime_logs.location | Source code location that emitted the log line. | keyword |
+| aws.bedrock_agentcore.runtime_logs.log_stream_type | Log stream kind within the runtime log group. | keyword |
+| aws.bedrock_agentcore.runtime_logs.request_id | Request ID of the invocation that produced the line. Correlates with the CloudTrail `requestID` of the same API call. | keyword |
+| aws.bedrock_agentcore.runtime_logs.session_id | Runtime session identifier. | keyword |
+| aws.cloudwatch.ingestion_time | Time the event was ingested by CloudWatch Logs. | date |
+| aws.cloudwatch.log_group | The CloudWatch log group the event belongs to, as a name or an ARN depending on how the input was configured. | keyword |
+| aws.cloudwatch.log_stream | Name of the CloudWatch log stream the event was read from. | keyword |
 | aws.cloudwatch.message | CloudWatch log message. | text |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |

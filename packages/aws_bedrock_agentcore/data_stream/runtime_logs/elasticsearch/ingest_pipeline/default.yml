@@ -1,0 +1,179 @@
+---
+description: Pipeline for Amazon Bedrock AgentCore runtime container logs
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '8.11.0'
+
+  - rename:
+      tag: rename_message_to_event_original
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+
+  - remove:
+      tag: remove_message
+      field: message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  # --- derive metadata from the CloudWatch log group and stream names ---
+  # `aws.cloudwatch.log_group` is the log group name (name mode) or the log
+  # group ARN (ARN / prefix mode) depending on how the input was configured.
+  - grok:
+      tag: grok_log_group
+      field: aws.cloudwatch.log_group
+      description: Extract the log group name (and, in ARN mode, the account ID and region) from the log group value, which is a name or an ARN depending on the input mode.
+      patterns:
+        - '^arn:[^:]+:logs:(?<_tmp.region>[a-z0-9-]+):(?<_tmp.account_id>[0-9]+):log-group:(?<_tmp.log_group_name>[^:]+)(?::\*)?$'
+        - '^%{GREEDYDATA:_tmp.log_group_name}$'
+      if: ctx.aws?.cloudwatch?.log_group != null
+
+  - set:
+      tag: set_cloud_account_id
+      field: cloud.account.id
+      copy_from: _tmp.account_id
+      if: ctx._tmp?.account_id != null
+
+  - set:
+      tag: set_cloud_region
+      field: cloud.region
+      copy_from: _tmp.region
+      if: ctx.cloud?.region == null && ctx._tmp?.region != null
+
+  - grok:
+      tag: grok_agent_runtime_id_and_endpoint
+      field: _tmp.log_group_name
+      description: Split the trailing `<agent_runtime_id>-<endpoint_name>` log group segment on the last `-`; the agent runtime ID itself contains `-`.
+      patterns:
+        - '^/aws/bedrock-agentcore/runtimes/(?<aws.bedrock_agentcore.runtime_logs.agent_runtime_id>.+)-(?<aws.bedrock_agentcore.runtime_logs.endpoint_name>[^-/]+)$'
+        - '^%{GREEDYDATA}$'
+      if: ctx._tmp?.log_group_name != null
+
+  # --- stream kind: container stdout, OTel log records, or OTel spans ---
+  - set:
+      tag: set_log_stream_type_runtime_logs
+      field: aws.bedrock_agentcore.runtime_logs.log_stream_type
+      value: runtime-logs
+      if: ctx.aws?.cloudwatch?.log_stream != null && ctx.aws.cloudwatch.log_stream.contains('[runtime-logs')
+
+  - set:
+      tag: set_log_stream_type_otel_rt_logs
+      field: aws.bedrock_agentcore.runtime_logs.log_stream_type
+      value: otel-rt-logs
+      if: ctx.aws?.cloudwatch?.log_stream == 'otel-rt-logs'
+
+  - set:
+      tag: set_log_stream_type_spans
+      field: aws.bedrock_agentcore.runtime_logs.log_stream_type
+      value: spans
+      if: ctx.aws?.cloudwatch?.log_stream == 'spans'
+
+  - dissect:
+      tag: dissect_runtime_session_id
+      field: aws.cloudwatch.log_stream
+      pattern: '%{}[runtime-logs-%{aws.bedrock_agentcore.runtime_logs.session_id}]%{}'
+      description: Direct-code deployment streams embed the runtime session ID in the stream name.
+      if: ctx.aws?.cloudwatch?.log_stream != null && ctx.aws.cloudwatch.log_stream.contains('[runtime-logs-')
+
+  # --- parse stdout/stderr lines; otel-rt-logs and spans streams stay raw ---
+  - pipeline:
+      tag: route_runtime_stdout_line
+      name: '{{ IngestPipeline "pipeline-runtime-logs" }}'
+      description: Parse the line formats found in `[runtime-logs]` stdout/stderr streams. Streams of unknown kind are also attempted.
+      if: ctx.aws?.bedrock_agentcore?.runtime_logs?.log_stream_type == null || ctx.aws.bedrock_agentcore.runtime_logs.log_stream_type == 'runtime-logs'
+
+  - set:
+      tag: set_message_from_event_original
+      field: message
+      copy_from: event.original
+      description: Keep the raw line as the message when no structured message was extracted (free text, OTel record streams, unparsed lines).
+      if: ctx.message == null && ctx.event?.original != null
+
+  # --- ECS categorization ---
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+      if: ctx.event?.kind == null
+
+  - append:
+      tag: append_event_type_info
+      field: event.type
+      value: info
+      allow_duplicates: false
+      if: ctx.event?.type == null && ctx.event?.kind == 'event'
+
+  # --- static package metadata ---
+  - set:
+      tag: set_cloud_provider
+      field: cloud.provider
+      value: aws
+
+  - set:
+      tag: set_cloud_service_name
+      field: cloud.service.name
+      value: bedrock-agentcore
+
+  # --- cleanup ---
+  - remove:
+      tag: remove_tmp
+      field: _tmp
+      ignore_missing: true
+
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values_153dfbd1
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
