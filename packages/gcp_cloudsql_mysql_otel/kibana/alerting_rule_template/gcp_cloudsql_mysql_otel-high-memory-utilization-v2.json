@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_mysql_otel-high-memory-utilization-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL MySQL OTel] High memory utilization",
+        "description": "Alerts when the average memory utilization of a Cloud SQL for MySQL instance over the last 15 minutes is at least 95% of its memory quota (database/memory/utilization taken once per minute and averaged over at least 5 observed minutes, so duplicate points don't skew it). A warm InnoDB buffer pool keeps memory high but flat, which is normal. This threshold sits above that steady state, close to the point where MySQL risks an out-of-memory restart.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "mysql"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_mysql.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\"\n// Per instance and minute: memory utilization (fraction of the instance memory quota), plus the MySQL marker.\n// One value per minute collapses duplicate points from overlapping series, so every observed minute counts once.\n| STATS memory = AVG(AVG_OVER_TIME(`metrics.cloudsql.googleapis.com/database/memory/utilization`)),\n        memory_max = MAX(MAX_OVER_TIME(`metrics.cloudsql.googleapis.com/database/memory/utilization`)),\n        marker = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/queries`))\n  BY `@timestamp` = TBUCKET(1 minute), database_id\n// Mean and peak over the observed minutes\n| STATS avg_memory = AVG(memory),\n        mem_peak = MAX(memory_max),\n        observed_minutes = COUNT(memory),\n        marker = SUM(marker)\n  BY database_id",
+        "breach": {
+          "segment": "// MySQL instances with at least 5 observed minutes in the window\nWHERE marker > 0 AND observed_minutes >= 5\n// Threshold: average at or above 95% of the memory quota across the window. A warm InnoDB buffer pool\n// keeps utilization high but flat; sustained values this close to the quota risk an out-of-memory restart\n| WHERE avg_memory >= 0.95\n| EVAL avg_memory_pct = ROUND(avg_memory * 100, 1),\n       peak_memory_pct = ROUND(mem_peak * 100, 1)\n| SORT avg_memory_pct DESC, database_id ASC\n// Up to 1000 breaching instances per run (the ES|QL default row limit); raise it for larger fleets\n| LIMIT 1000\n| KEEP database_id, avg_memory_pct, peak_memory_pct, observed_minutes"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_mysql_otel-high-memory-utilization-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL MySQL high memory utilization\n\nMemory use has averaged at least 95% of the instance's quota for about 15 minutes. Cloud SQL can restart the instance when it runs out of memory.\n\n### Triage\n1. Open **[GCP OTel] Cloud SQL MySQL Instance Detail**, then *Memory usage vs quota*. Steady growth toward the quota is the risk; a high but flat line is the normal buffer pool.\n2. Correlate with connections (*Connections vs max connections*): each connection allocates per-thread buffers, so connection surges drive memory up.\n3. Look for large sorts, joins or temporary tables, and for recently raised flags such as `innodb_buffer_pool_size`, `sort_buffer_size`, `join_buffer_size` or `tmp_table_size`.\n\n### Actions\nReduce the connection count (pooling), lower oversized per-session buffers, kill memory-heavy queries, or move to a tier with more memory.\n\n### Tuning\nChange `avg_memory >= 0.95` to adjust the threshold. A value of 0.9 gives an earlier warning on instances whose steady state is lower."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-high-memory-utilization-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-244a7e1a-2f13-4f93-b534-20a10a5158a7"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-high-memory-utilization-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-deda1e6a-80e7-49cd-ba2e-fff6be787503"
+          }
+        }
+      ]
+    }
+  }
+}

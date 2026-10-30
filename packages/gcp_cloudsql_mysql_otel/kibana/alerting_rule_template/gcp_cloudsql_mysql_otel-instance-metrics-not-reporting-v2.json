@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_mysql_otel-instance-metrics-not-reporting-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL MySQL OTel] Instance metrics not reporting",
+        "description": "Alerts when a Cloud SQL for MySQL instance that reported metrics in the last 2 hours has sent no Cloud SQL metric (MySQL metrics, database/up or database/instance_state) for at least 20 minutes, about four times the normal 3-5 minute delivery delay. The other rules can't evaluate an instance that has no data, so this rule is what catches a stopped collector, failing Cloud Monitoring API access or a deleted instance. One missing data point never triggers it. The alert recovers when data resumes. It also recovers after 2 hours of silence while the instance is still silent, because the instance then leaves the 2-hour window. Raise the rule's lookback to keep alerts open through longer outages.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "mysql"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "120m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_mysql.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\"\n// Per instance and minute: samples of the MySQL marker, database/up and database/instance_state. up and\n// instance_state keep arriving when an outage or a stop by the owner ends the MySQL metrics, and those cases\n// belong to the \"Instance not serving\" rule.\n| STATS marker = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/queries`)),\n        up_samples = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/up`)),\n        state_samples = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/instance_state`))\n  BY `@timestamp` = TBUCKET(1 minute), database_id\n// Newest minute with any of these samples\n| STATS last_sample = MAX(`@timestamp`) WHERE marker > 0 OR up_samples > 0 OR state_samples > 0,\n        marker = SUM(marker)\n  BY database_id",
+        "breach": {
+          "segment": "WHERE marker > 0\n| EVAL minutes_since_last_sample = DATE_DIFF(\"minute\", last_sample, NOW())\n// Threshold: 20 minutes, about four times the normal 3-5 minute Cloud Monitoring delivery delay.\n// Raise it if the receiver collection_interval is longer than 5 minutes.\n| WHERE minutes_since_last_sample >= 20\n| SORT minutes_since_last_sample DESC, database_id ASC\n// Up to 1000 breaching instances per run (the ES|QL default row limit); raise it for larger fleets\n| LIMIT 1000\n| KEEP database_id, last_sample, minutes_since_last_sample"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_mysql_otel-instance-metrics-not-reporting-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL MySQL instance metrics not reporting\n\nNo Cloud SQL metric has arrived for this instance for `minutes_since_last_sample` minutes. While data is missing, every other rule is blind for this instance. Their alerts recover because no data means no breach.\n\n### Triage\n1. Check whether **all** instances are affected (look at the *List of instances* in **[GCP OTel] Cloud SQL MySQL Overview**) or only this one.\n2. All or many instances: check the OpenTelemetry collector running the `googlecloudmonitoring` receiver. Look at its health, its logs for Cloud Monitoring API errors (permissions, quota, expired credentials) and its exporter errors to Elasticsearch.\n3. One instance: check whether the instance was deleted, renamed or moved to another project, and whether the receiver's project list or metric filters changed.\n4. Check that the instance still exists and is publishing metrics in Cloud Monitoring (Metrics Explorer, `cloudsql.googleapis.com/database/up`).\n\n### Notes\n- An alert recovers after 2 hours of silence, even if data never resumes, because the instance drops out of the lookback window. Treat that recovery with care. To keep alerts open through longer outages, raise the rule's lookback, for example to 6 hours. The query groups samples per minute, so its cost grows with the lookback, and a deliberately deleted instance stays in alert for that long.\n- Raise the 20-minute threshold if the receiver's `collection_interval` is longer than 5 minutes."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-instance-metrics-not-reporting-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-244a7e1a-2f13-4f93-b534-20a10a5158a7"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-instance-metrics-not-reporting-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-deda1e6a-80e7-49cd-ba2e-fff6be787503"
+          }
+        }
+      ]
+    }
+  }
+}
