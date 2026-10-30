@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, Zero Trust Network Session, and Workers Trace Events logs.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
 
 Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
@@ -45,6 +45,8 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 - `gateway_http`: HTTP requests inspected by Cloudflare Gateway. See [Gateway HTTP schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_http/).
 - `gateway_network`: Network packets inspected by Cloudflare Gateway. See [Gateway Network schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_network/).
 - `network_session`: Network session logs for traffic proxied by Cloudflare Gateway. See [Zero Trust Network Session schema](https://developers.cloudflare.com/logs/reference/log-fields/account/zero_trust_network_sessions/).
+- `warp_config_changes`: WARP configuration switch events from the Cloudflare One Client (WARP), recording the account and configuration a device switched from and to. See [WARP Config Changes schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/warp_config_changes/).
+- `warp_toggle_changes`: WARP on/off toggle events from the Cloudflare One Client (WARP) per device. See [WARP Toggle Changes schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/warp_toggle_changes/).
 
 ### Non Zero Trust events
 
@@ -67,7 +69,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 Integrating Cloudflare Logpush with Elastic provides centralized visibility across Cloudflare's edge, Zero Trust, and network-layer products. Common use cases include:
 
 - Investigating traffic, WAF, and DDoS-mitigation events from the Cloudflare edge (`http_request`, `firewall_event`, `network_analytics`).
-- Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`).
+- Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `warp_config_changes`, `warp_toggle_changes`).
 - Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
 - Auditing administrative activity on the Cloudflare account (`audit`).
 - Troubleshooting DNS and client-side performance issues (`dns`, `dns_firewall`, `nel_report`, `workers_trace`).
@@ -138,6 +140,8 @@ Configure one of the following delivery pipelines before enabling the integratio
   | Zero Trust Network Session | network_session        |
   | Sinkhole HTTP              | sinkhole_http          |
   | Spectrum Event             | spectrum_event         |
+  | WARP Config Changes        | warp_config_changes    |
+  | WARP Toggle Changes        | warp_toggle_changes    |
   | Workers Trace Events       | workers_trace          |
 
 #### Collect data from AWS SQS
@@ -480,6 +484,26 @@ This is the `spectrum_event` dataset.
 {{event "spectrum_event"}}
 
 {{fields "spectrum_event"}}
+
+#### warp_config_changes
+
+This is the `warp_config_changes` dataset.
+
+##### Example
+
+{{event "warp_config_changes"}}
+
+{{fields "warp_config_changes"}}
+
+#### warp_toggle_changes
+
+This is the `warp_toggle_changes` dataset.
+
+##### Example
+
+{{event "warp_toggle_changes"}}
+
+{{fields "warp_toggle_changes"}}
 
 #### workers_trace
 
