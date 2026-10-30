@@ -318,7 +318,11 @@ view would count both the raw and the deduplicated documents.
 The **[Azure Billing] Billing overview** dashboard reads from the `azure_billing.usage_fetches`
 alias joined with the `azure_billing.usage_latest_fetch` lookup index, so its cost figures are
 deduplicated and reflect the newest fetch of every day. The lookup index is not narrowed by the
-dashboard's controls and time range, so they cannot bring an older fetch back. Its actual costs come from the usage
+dashboard's controls and time range, so they cannot bring an older fetch back. The time picker
+selects **usage days** (`azure.billing.usage_date`), and the dashboard opens on the current month.
+Usage days are UTC days, while Kibana builds the time range in its display time zone: for exact
+days, set **Stack Management > Advanced Settings > Timezone for date formatting**
+(`dateFormat:tz`) to `UTC`, otherwise a selected day can take in a neighbouring UTC day. Its actual costs come from the usage
 details, and its forecast from the `azure_billing.forecast_latest` alias. All cost panels are
 broken down by `azure.billing.currency`, so amounts in different currencies are never added
 together. When you collect more than one currency, pick one with the **Currency** control, so
