@@ -35,7 +35,8 @@ program: |
             "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
             "end_time": now.format(time_layout.RFC3339),
           })
-      ).as(state, state.with(
+      // Drop the exhausted worklist so that a failed list request exits early below.
+      ).as(state, state.drop("worklist").with(
         request(
           "GET",
           state.url.trim_right("/") + "/v1/cases?" + {
@@ -49,7 +50,7 @@ program: |
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
             bytes(resp.Body).decode_json().as(body, {
-              "worklist": body.cases.map(e, e.caseId),
+              "worklist": body.cases,
               "next": 0,
             })
           :
@@ -74,7 +75,7 @@ program: |
     !has(state.worklist) ? state : // Exit early due to GET failure.
       state.next < size(state.worklist) ?
         request("GET",
-          state.url.trim_right("/") + "/v1/cases/" + string(int(state.worklist[state.next]))
+          state.url.trim_right("/") + "/v1/cases/" + string(int(state.worklist[state.next].caseId))
         ).with({
           "Header":{
             "Authorization": ["Bearer " + string(state.access_token)],
@@ -82,7 +83,13 @@ program: |
         }).do_request().as(resp, resp.StatusCode == 200 ?
           bytes(resp.Body).decode_json().as(body,{
             "events": [{
-              "message": body.encode_json(),
+              // The detail response has no modification time, so take it from the list.
+              "message": (
+                has(state.worklist[state.next].last_modified) ?
+                  body.with({"last_modified": state.worklist[state.next].last_modified})
+                :
+                  body
+              ).encode_json(),
             }],
             "cursor": {
               "last_timestamp": state.end_time
