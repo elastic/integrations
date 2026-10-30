@@ -106,18 +106,23 @@ processors:
       copy_from: resecurity_risk.ioc.update_date
       if: ctx.resecurity_risk?.ioc?.update_date != null
   - set:
-      field: file.name
-      tag: set_file_name
+      field: threat.indicator.type
+      tag: set_threat_indicator_type
+      value: file
+      if: ctx.resecurity_risk?.ioc?.md5 != null || ctx.resecurity_risk?.ioc?.sha256 != null
+  - set:
+      field: threat.indicator.file.name
+      tag: set_threat_indicator_file_name
       copy_from: resecurity_risk.ioc.file_name
       if: ctx.resecurity_risk?.ioc?.file_name != null
   - set:
-      field: file.hash.md5
-      tag: set_file_hash_md5
+      field: threat.indicator.file.hash.md5
+      tag: set_threat_indicator_file_hash_md5
       copy_from: resecurity_risk.ioc.md5
       if: ctx.resecurity_risk?.ioc?.md5 != null
   - set:
-      field: file.hash.sha256
-      tag: set_file_hash_sha256
+      field: threat.indicator.file.hash.sha256
+      tag: set_threat_indicator_file_hash_sha256
       copy_from: resecurity_risk.ioc.sha256
       if: ctx.resecurity_risk?.ioc?.sha256 != null
   - append:

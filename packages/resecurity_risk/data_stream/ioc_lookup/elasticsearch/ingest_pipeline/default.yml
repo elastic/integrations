@@ -45,10 +45,12 @@ processors:
   - fingerprint:
       fields:
         - event.original
+        - '@timestamp'
       tag: fingerprint_event_original
       target_field: _id
+      ignore_missing: true
       if: ctx.event?.original != null
-      description: Documents are keyed by the content of the record so that identical re-collections are deduplicated while a changed record is indexed as a new document; keying by the record identifier alone would make data stream create-only writes reject the update.
+      description: Each lookup is an observation, so documents are keyed by the result and the time it was collected; a result that recurs on a later poll (for example a miss after a hit) is indexed rather than rejected by data stream create-only writes, while an agent retry of the same event is deduplicated.
   - date:
       field: resecurity_risk.ioc.add_date
       tag: date_add_date
@@ -101,23 +103,23 @@ processors:
             tag: append_error_update_date
             value: 'failed to parse update_date: {{{_ingest.on_failure_message}}}'
   - set:
-      field: '@timestamp'
-      tag: set_timestamp
-      copy_from: resecurity_risk.ioc.update_date
-      if: ctx.resecurity_risk?.ioc?.update_date != null
+      field: threat.indicator.type
+      tag: set_threat_indicator_type
+      value: file
+      if: ctx.resecurity_risk?.ioc?.md5 != null || ctx.resecurity_risk?.ioc?.sha256 != null
   - set:
-      field: file.name
-      tag: set_file_name
+      field: threat.indicator.file.name
+      tag: set_threat_indicator_file_name
       copy_from: resecurity_risk.ioc.file_name
       if: ctx.resecurity_risk?.ioc?.file_name != null
   - set:
-      field: file.hash.md5
-      tag: set_file_hash_md5
+      field: threat.indicator.file.hash.md5
+      tag: set_threat_indicator_file_hash_md5
       copy_from: resecurity_risk.ioc.md5
       if: ctx.resecurity_risk?.ioc?.md5 != null
   - set:
-      field: file.hash.sha256
-      tag: set_file_hash_sha256
+      field: threat.indicator.file.hash.sha256
+      tag: set_threat_indicator_file_hash_sha256
       copy_from: resecurity_risk.ioc.sha256
       if: ctx.resecurity_risk?.ioc?.sha256 != null
   - append:

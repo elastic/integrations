@@ -86,7 +86,7 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 None of the Resecurity RISK list endpoints used by this integration expose a "since timestamp" filter, so every poll re-walks pages from the start rather than fetching only new records. To bound the work done per poll, each list data stream has a **Max Pages per Poll** setting, which defaults to 10.
 
-Document IDs are derived from the content of each record, so re-ingesting an unchanged record on a later poll does not create a duplicate. A record that has changed (for example an updated alert, or a hash lookup that starts returning a match) is indexed as a new document, and the previous version is kept; filter on the record's `id` and sort by `@timestamp` to find its latest state. If your feed produces more genuinely new records per interval than `max_pages_per_poll * 100` (the API's default page size), increase **Max Pages per Poll** or shorten the **Collection Interval** to keep up.
+Document IDs are derived from the content of each record, so re-ingesting an unchanged record on a later poll does not create a duplicate. A record that has changed (for example an updated alert) is indexed as a new document, and the previous version is kept; filter on the record's `id` and sort by `@timestamp` to find its latest state. If your feed produces more genuinely new records per interval than `max_pages_per_poll * 100` (the API's default page size), increase **Max Pages per Poll** or shorten the **Collection Interval** to keep up.
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
@@ -249,9 +249,6 @@ The `ioc` data stream provides indicators of compromise from Resecurity RISK.
 | event.module | Event module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| file.hash.md5 | MD5 hash. | keyword |
-| file.hash.sha256 | SHA256 hash. | keyword |
-| file.name | Name of the file including the extension, without the directory. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | resecurity_risk.ioc.actor_name | Threat actor associated with the IOC. | keyword |
 | resecurity_risk.ioc.add_date | Timestamp the IOC was added. | date |
@@ -266,6 +263,10 @@ The `ioc` data stream provides indicators of compromise from Resecurity RISK.
 | resecurity_risk.ioc.sha256 | SHA-256 hash of the observed file. | keyword |
 | resecurity_risk.ioc.update_date | Timestamp the IOC was last updated. | date |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.indicator.file.hash.md5 | MD5 hash. | keyword |
+| threat.indicator.file.hash.sha256 | SHA256 hash. | keyword |
+| threat.indicator.file.name | Name of the file including the extension, without the directory. | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 
 
 An example event for `ioc` looks as following:
@@ -285,13 +286,6 @@ An example event for `ioc` looks as following:
         "type": [
             "indicator"
         ]
-    },
-    "file": {
-        "hash": {
-            "md5": "84c82835a5d21bbcf75a61706d8ab549",
-            "sha256": "ed01ebfbc9eb5bbea545af4d01bf5f1071661840480439c6e5babe8e080e41aa"
-        },
-        "name": "WannaCry.infected"
     },
     "related": {
         "hash": [
@@ -314,13 +308,25 @@ An example event for `ioc` looks as following:
             "sha256": "ed01ebfbc9eb5bbea545af4d01bf5f1071661840480439c6e5babe8e080e41aa",
             "update_date": "2017-05-22T09:06:50.000Z"
         }
+    },
+    "threat": {
+        "indicator": {
+            "file": {
+                "hash": {
+                    "md5": "84c82835a5d21bbcf75a61706d8ab549",
+                    "sha256": "ed01ebfbc9eb5bbea545af4d01bf5f1071661840480439c6e5babe8e080e41aa"
+                },
+                "name": "WannaCry.infected"
+            },
+            "type": "file"
+        }
     }
 }
 ```
 
 ### IOC Lookup
 
-The `ioc_lookup` data stream provides the result of looking up each configured hash against Resecurity RISK. A match ingests the full IOC record with `resecurity_risk.ioc.found: true`; a miss ingests a compact record with `resecurity_risk.ioc.found: false`.
+The `ioc_lookup` data stream provides the result of looking up each configured hash against Resecurity RISK. A match ingests the full IOC record with `resecurity_risk.ioc.found: true`; a miss ingests a compact record with `resecurity_risk.ioc.found: false`. Every poll records one document per configured hash, with `@timestamp` set to the time of the lookup, so the history of hits and misses for each hash is preserved; the IOC's own timestamps remain available in `resecurity_risk.ioc.add_date`, `resecurity_risk.ioc.analysis_date` and `resecurity_risk.ioc.update_date`. Matching hashes are also mapped to `threat.indicator.file.hash.*` for use in indicator match rules.
 
 #### ioc_lookup fields
 
@@ -342,9 +348,6 @@ The `ioc_lookup` data stream provides the result of looking up each configured h
 | event.module | Event module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| file.hash.md5 | MD5 hash. | keyword |
-| file.hash.sha256 | SHA256 hash. | keyword |
-| file.name | Name of the file including the extension, without the directory. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | resecurity_risk.ioc.actor_name | Threat actor associated with the IOC. | keyword |
 | resecurity_risk.ioc.add_date | Timestamp the IOC was added. | date |
@@ -361,13 +364,17 @@ The `ioc_lookup` data stream provides the result of looking up each configured h
 | resecurity_risk.ioc.sha256 | SHA-256 hash of the observed file. | keyword |
 | resecurity_risk.ioc.update_date | Timestamp the IOC was last updated. | date |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.indicator.file.hash.md5 | MD5 hash. | keyword |
+| threat.indicator.file.hash.sha256 | SHA256 hash. | keyword |
+| threat.indicator.file.name | Name of the file including the extension, without the directory. | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 
 
 An example event for `ioc_lookup` looks as following:
 
 ```json
 {
-    "@timestamp": "2017-05-22T09:06:50.000Z",
+    "@timestamp": "2026-10-30T09:00:00.000Z",
     "ecs": {
         "version": "9.4.0"
     },
@@ -380,13 +387,6 @@ An example event for `ioc_lookup` looks as following:
         "type": [
             "indicator"
         ]
-    },
-    "file": {
-        "hash": {
-            "md5": "84c82835a5d21bbcf75a61706d8ab549",
-            "sha256": "ed01ebfbc9eb5bbea545af4d01bf5f1071661840480439c6e5babe8e080e41aa"
-        },
-        "name": "WannaCry.infected"
     },
     "related": {
         "hash": [
@@ -410,6 +410,18 @@ An example event for `ioc_lookup` looks as following:
             "md5": "84c82835a5d21bbcf75a61706d8ab549",
             "sha256": "ed01ebfbc9eb5bbea545af4d01bf5f1071661840480439c6e5babe8e080e41aa",
             "update_date": "2017-05-22T09:06:50.000Z"
+        }
+    },
+    "threat": {
+        "indicator": {
+            "file": {
+                "hash": {
+                    "md5": "84c82835a5d21bbcf75a61706d8ab549",
+                    "sha256": "ed01ebfbc9eb5bbea545af4d01bf5f1071661840480439c6e5babe8e080e41aa"
+                },
+                "name": "WannaCry.infected"
+            },
+            "type": "file"
         }
     }
 }
