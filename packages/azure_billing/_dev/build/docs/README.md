@@ -313,7 +313,8 @@ figures are deduplicated and reflect the newest fetch of every day. Its actual c
 details, and its forecast from the `azure_billing.forecast_latest` alias. All cost panels are
 broken down by `azure.billing.currency`, so amounts in different currencies are never added
 together. When you collect more than one currency, pick one with the **Currency** control, so
-that the donut proportions compare amounts in a single currency.
+that the donut proportions compare amounts in a single currency. The controls list values from the
+`metrics-azure.billing-*` data view that the integration installs, so they only offer billing data.
 
 The transforms must be running for the dashboard to show data. You can check their status
 in Kibana under **Stack Management > Transforms**. If you prefer to query the raw,
