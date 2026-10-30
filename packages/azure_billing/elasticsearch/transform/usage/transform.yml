@@ -3,15 +3,16 @@ source:
   # resource, and fetch.
   index:
     - "azure_billing.usage_fetches"
-# Second of three chained transforms that deduplicate usage details without
+# Second of two chained transforms that deduplicate usage details without
 # scripted aggregations. For every day, meter, and resource bucket this keeps the
 # document of the newest fetch, so older fetches of the same day, agent restarts,
 # and short collection periods never inflate the cost.
 #
 # A newer fetch can also omit a bucket that an older fetch had, or carry it under
 # a corrected key. The older document then stays here, so the dashboard does not
-# read this index on its own: it joins it with the `usage_latest_fetch` output and
-# counts only the buckets whose fetch is the newest one for their day and scope.
+# sum this index as it is: per day and scope it keeps only the documents of the
+# newest fetch (ES|QL INLINE STATS on `azure.billing.day_scope`). Doing that on this
+# one index means the newest fetch it picks is always one this index holds.
 latest:
   unique_key:
     - azure.billing.usage_date

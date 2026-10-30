@@ -48,7 +48,7 @@ source:
           }
     # The usage day together with the scope it was fetched for. A fetch is a
     # complete snapshot of a day for one scope, so this is the unit the
-    # `usage_latest_fetch` transform selects the newest fetch for. Agents that
+    # dashboard selects the newest fetch for. Agents that
     # emit `azure.billing.scope` provide the scope; older agents fall back to the
     # row's subscription in the same form. For a department or billing account
     # policy the fallback differs from the scope the upgraded agent emits, so on
@@ -73,7 +73,7 @@ source:
           if (scope != null && day != null) {
             emit(day.toLocalDate().toString() + '|' + scope);
           }
-# First of three chained transforms that deduplicate usage details without
+# First of two chained transforms that deduplicate usage details without
 # scripted aggregations, so that they also run on Elasticsearch Serverless.
 #
 # The Azure Usage Details API does not give every cost row a unique ID. Rows for
@@ -85,9 +85,8 @@ source:
 # What is unique is the collection run: the metricset re-fetches whole days, and
 # every fetch is a complete snapshot of a day at that moment. This transform
 # therefore sums the rows per day, meter, resource, and fetch. The chained
-# `usage` transform keeps the newest document per bucket, and the chained
-# `usage_latest_fetch` transform records which fetch is the newest per day and
-# scope, so that the dashboard counts only the buckets of that fetch.
+# `usage` transform keeps the newest document per bucket, and the dashboard
+# counts, per day and scope, only the buckets of the newest fetch.
 pivot:
   group_by:
     # The usage day (see runtime_mappings), written as `azure.billing.usage_date`.
@@ -167,7 +166,7 @@ dest:
     - alias: "azure_billing.usage_fetches"
       move_on_creation: true
 description: >-
-  Azure billing usage details summed per day, meter, resource, and fetch. First stage of the deduplication; the chained usage and usage_latest_fetch transforms read it.
+  Azure billing usage details summed per day, meter, resource, and fetch. First stage of the deduplication; the chained usage transform reads it.
 # Billing data arrives once a day, so there is nothing to gain from a faster
 # checkpoint interval.
 frequency: 1h
