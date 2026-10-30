@@ -1,0 +1,783 @@
+---
+description: >-
+  Pipeline for processing Stamus Networks Clear NDR alert events, including Suricata IDS/IPS
+  signature matches (`event_type: alert`) and Declaration of Compromise / Declaration of Policy
+  Violation correlation records (`event_type: stamus`). Both event types share the same `alert.*`
+  shape; the `stamus.*` sub-object, `discovery.*` (Sightings), `files[]` (File Identification), and
+  `stamus_novel` (Outlier Alert) fields are handled conditionally when present on either event type.
+  The Suricata EVE `flow.*` byte/packet counters and flow-start time are mapped to ECS
+  (`source.bytes`/`destination.bytes`/`source.packets`/`destination.packets`/`event.start`); the
+  raw `flow.src_ip`/`src_port`/`dest_ip`/`dest_port` duplicate fields are discarded along with the
+  rest of `json.*` since the authoritative 5-tuple is already captured via `alert.source`/
+  `alert.target`/`json.src_ip`/`json.dest_ip` above. `flow.bytes_toserver`/`bytes_toclient`/
+  `pkts_toserver`/`pkts_toclient` are oriented relative to the flow's OWN `flow.src_ip` ->
+  `flow.dest_ip` direction (the flow's fixed client/server orientation), which is NOT always the
+  same as the final `source.ip`/`destination.ip` -- a single EVE alert record's top-level
+  `src_ip`/`dest_ip` can report either packet direction of the flow, and `alert.source`/
+  `alert.target` can additionally replace them with attacker/victim attribution when a Suricata
+  rule uses the `target` keyword. The pipeline detects any such mismatch by comparing the
+  finalized `source.ip` against `flow.src_ip` and swaps the byte/packet counter targets
+  accordingly, so `source.bytes`/`source.packets` always reflect the traffic actually sent by
+  whichever endpoint ends up as `source.ip`. The vendor fields `tunnel.*` (GRE
+  tunnel endpoints), `ether.*` (MAC addresses), `packet_info.linktype`, `pkt_src`, `in_iface`, and
+  `app_proto_tc` are intentionally NOT mapped in this version -- they are capture/L2 metadata with
+  no clean ECS home (MAC format normalization and a new vendor field group would add complexity)
+  and lower incremental analytic value than the 5-tuple, `network.community_id`, and the flow
+  byte/packet counters already captured. Revisit if a future use case needs GRE tunnel detection
+  or L2 attribution.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+
+  # --- CEL input only ---
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  # --- end CEL-only ---
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the original `message` field to `event.original` to store a copy of the original
+        message. The `event.original` field is not touched if the document already has one.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  - script:
+      tag: hoist_preparsed_eve_under_json
+      lang: painless
+      description: >-
+        Direct ingestion delivers an already-parsed EVE object. Move vendor
+        root fields under json so the rest of this pipeline can map them. A
+        string host (the probe name) moves with those fields and never hits
+        the ECS host object. Elastic Agent documents already have
+        event.original, so this script does not run for them.
+      if: ctx.event?.original == null && ctx.json == null && (ctx.event_type != null || ctx.host instanceof String)
+      source: |
+        def keep = new HashSet();
+        keep.add('@timestamp');
+        keep.add('agent');
+        keep.add('elastic_agent');
+        keep.add('ecs');
+        keep.add('data_stream');
+        keep.add('event');
+        keep.add('tags');
+        keep.add('observer');
+        def vendor = new HashMap();
+        for (def key : new ArrayList(ctx.keySet())) {
+          if (keep.contains(key) || key.startsWith('_')) {
+            continue;
+          }
+          vendor[key] = ctx[key];
+          ctx.remove(key);
+        }
+        ctx.json = vendor;
+
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+      description: Parses the raw Stamus/Suricata EVE-style JSON document.
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_json
+            value: '{{{_ingest.on_failure_message}}}'
+
+  - script:
+      tag: relocate_string_host
+      lang: painless
+      description: >-
+        Drop a root string host left beside a JSON string. The probe name is
+        kept on json.host when that field is empty.
+      if: ctx.host instanceof String
+      source: |
+        if (ctx.json == null) {
+          ctx.json = new HashMap();
+        }
+        if (ctx.json.host == null) {
+          ctx.json.host = ctx.host;
+        }
+        ctx.remove('host');
+
+  - date:
+      field: json.timestamp
+      target_field: '@timestamp'
+      tag: parse_timestamp
+      formats:
+        - ISO8601
+      if: ctx.json?.timestamp != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_timestamp
+            value: '{{{_ingest.on_failure_message}}}'
+
+  ###
+  # Relocate top-level nested objects from `json.*` to their final document paths. These are
+  # plain structural moves (vendor field names preserved) — ECS extraction happens afterwards.
+  ###
+  - rename:
+      field: json.alert
+      target_field: alert
+      tag: rename_alert_object
+      ignore_missing: true
+  - rename:
+      field: json.stamus
+      target_field: stamus
+      tag: rename_stamus_object
+      ignore_missing: true
+      description: "Only present on `event_type: stamus` Declaration of Compromise/Policy Violation records."
+  - rename:
+      field: json.discovery
+      target_field: discovery
+      tag: rename_discovery_object
+      ignore_missing: true
+      description: Only present on Stamus Sightings alerts.
+  - rename:
+      field: json.files
+      target_field: files
+      tag: rename_files_array
+      ignore_missing: true
+      description: Only present on Stamus File Identification alerts.
+  - rename:
+      field: json.stamus_novel
+      target_field: stamus_novel
+      tag: rename_stamus_novel
+      ignore_missing: true
+      description: Outlier Alert flag; can co-occur with any alert.
+  - rename:
+      field: json.metadata.flowbits
+      target_field: metadata.flowbits
+      tag: rename_metadata_flowbits
+      ignore_missing: true
+      description: >-
+        Cross-cutting flowbits enrichment at the event root — distinct from `alert.metadata.*`.
+  - rename:
+      field: json.hostname_info
+      target_field: hostname_info
+      tag: rename_hostname_info
+      ignore_missing: true
+  - rename:
+      field: json.net_info
+      target_field: net_info
+      tag: rename_net_info
+      ignore_missing: true
+  - rename:
+      field: json.flow_id
+      target_field: flow_id
+      tag: rename_flow_id
+      ignore_missing: true
+  - convert:
+      field: flow_id
+      type: string
+      tag: convert_flow_id_to_string
+      ignore_missing: true
+      description: >-
+        flow_id is mapped as keyword (an opaque correlation key, not a metric), but
+        the CEL program's decode_json() call parses it as a JSON number (float64),
+        which can lose trailing-digit precision for values >= 2^53 (see fields.yml
+        for the documented limitation). This cast only fixes the field's type to
+        match the mapping; it cannot recover precision already lost upstream.
+  - rename:
+      field: json.direction
+      target_field: direction
+      tag: rename_direction
+      ignore_missing: true
+  - rename:
+      field: json.capture_file
+      target_field: capture_file
+      tag: rename_capture_file
+      ignore_missing: true
+  - rename:
+      field: json.beaconing_report
+      target_field: beaconing_report
+      tag: rename_beaconing_report
+      ignore_missing: true
+  - rename:
+      field: json.beaconing_statistics
+      target_field: beaconing_statistics
+      tag: rename_beaconing_statistics
+      ignore_missing: true
+
+  ###
+  # Network 5-tuple and transport/application protocol
+  ###
+  - rename:
+      field: json.community_id
+      target_field: network.community_id
+      tag: rename_community_id
+      ignore_missing: true
+  - rename:
+      field: json.proto
+      target_field: network.transport
+      tag: rename_proto_to_network_transport
+      ignore_missing: true
+  - lowercase:
+      field: network.transport
+      tag: lowercase_network_transport
+      ignore_missing: true
+      description: Suricata delivers `proto` upper-case (e.g. "TCP"); ECS convention is lower-case.
+  - rename:
+      field: json.app_proto
+      target_field: network.protocol
+      tag: rename_app_proto_to_network_protocol
+      ignore_missing: true
+      if: ctx.network?.protocol == null
+
+  # `alert.source`/`alert.target` (attacker/victim) take priority over the top-level 5-tuple —
+  # only present when the rule uses the Suricata `target` keyword.
+  - rename:
+      field: alert.source.ip
+      target_field: source.ip
+      tag: rename_alert_source_ip
+      ignore_missing: true
+  - rename:
+      field: alert.source.port
+      target_field: source.port
+      tag: rename_alert_source_port
+      ignore_missing: true
+  - rename:
+      field: alert.target.ip
+      target_field: destination.ip
+      tag: rename_alert_target_ip
+      ignore_missing: true
+  - rename:
+      field: alert.target.port
+      target_field: destination.port
+      tag: rename_alert_target_port
+      ignore_missing: true
+  - remove:
+      field:
+        - alert.source
+        - alert.target
+      tag: remove_empty_alert_source_target
+      ignore_missing: true
+      description: >-
+        `alert.source`/`alert.target` only ever contain `ip`/`port`, both relocated above; remove
+        the now-empty shells so they are not indexed.
+
+  - rename:
+      field: json.src_ip
+      target_field: source.ip
+      tag: rename_src_ip
+      ignore_missing: true
+      if: ctx.source?.ip == null
+  - rename:
+      field: json.src_port
+      target_field: source.port
+      tag: rename_src_port
+      ignore_missing: true
+      if: ctx.source?.port == null
+  - rename:
+      field: json.dest_ip
+      target_field: destination.ip
+      tag: rename_dest_ip
+      ignore_missing: true
+      if: ctx.destination?.ip == null
+  - rename:
+      field: json.dest_port
+      target_field: destination.port
+      tag: rename_dest_port
+      ignore_missing: true
+      if: ctx.destination?.port == null
+
+  - community_id:
+      tag: compute_community_id_fallback
+      target_field: network.community_id
+      ignore_failure: true
+      if: ctx.network?.community_id == null
+      description: >-
+        Falls back to a freshly-computed community ID when the vendor didn't supply one (e.g.
+        community-id logging not enabled on the sensor) -- derived from the 5-tuple above, same
+        as the official `suricata` package's `eve` pipeline.
+
+  ###
+  # Suricata EVE `flow.*` object -> ECS byte/packet counters + flow start time.
+  # `flow.src_ip`/`src_port`/`dest_ip`/`dest_port` are duplicates of the 5-tuple already
+  # captured above and are intentionally left for the final `json` cleanup to discard.
+  #
+  # `bytes_toserver`/`pkts_toserver` are traffic FROM the flow's OWN `src_ip` (the flow's
+  # initiator) TO its OWN `dest_ip` -- this is the flow's fixed client/server orientation and is
+  # independent of the alert-record-level `src_ip`/`dest_ip`/`direction` fields above (a single
+  # EVE alert record can report either packet direction of a flow, and/or have its 5-tuple
+  # replaced by `alert.source`/`alert.target` attacker/victim attribution). `bytes_toclient`/
+  # `pkts_toclient` are the reverse direction (flow `dest_ip` -> flow `src_ip`).
+  #
+  # The final `source.ip`/`destination.ip` are NOT guaranteed to align with the flow's own
+  # `src_ip`/`dest_ip` -- compare them directly (never assume `source.ip == flow.src_ip`) to
+  # determine which ECS endpoint actually matches the flow's traffic originator:
+  #   - `source.ip == json.flow.src_ip`      -> source is the flow originator: `toserver` traffic
+  #     (source -> destination) maps to `source.*`, `toclient` (destination -> source) to
+  #     `destination.*` -- this is the "not flipped" case.
+  #   - `source.ip == json.flow.dest_ip` (or any other mismatch with `json.flow.src_ip`) -> source
+  #     is actually the flow's destination endpoint, so the mapping must be swapped: `toserver`
+  #     traffic (still flow `src_ip` -> flow `dest_ip`, i.e. destination -> source in the final
+  #     ECS orientation) maps to `destination.*`, and `toclient` maps to `source.*`.
+  ###
+  - set:
+      field: json._flow_orientation_flipped
+      value: true
+      tag: set_flow_orientation_flipped
+      if: ctx.source?.ip != null && ctx.json?.flow?.src_ip != null && ctx.source.ip != ctx.json.flow.src_ip
+      description: >-
+        True when the final `source.ip` does not match the flow's own `src_ip`, meaning the flow
+        byte/packet counters below must be swapped to stay attributed to the correct ECS endpoint.
+  - rename:
+      field: json.flow.bytes_toserver
+      target_field: source.bytes
+      tag: rename_flow_bytes_toserver_to_source
+      ignore_missing: true
+      if: ctx.json?._flow_orientation_flipped != true
+  - rename:
+      field: json.flow.bytes_toserver
+      target_field: destination.bytes
+      tag: rename_flow_bytes_toserver_to_destination
+      ignore_missing: true
+      if: ctx.json?._flow_orientation_flipped == true
+  - rename:
+      field: json.flow.bytes_toclient
+      target_field: destination.bytes
+      tag: rename_flow_bytes_toclient_to_destination
+      ignore_missing: true
+      if: ctx.json?._flow_orientation_flipped != true
+  - rename:
+      field: json.flow.bytes_toclient
+      target_field: source.bytes
+      tag: rename_flow_bytes_toclient_to_source
+      ignore_missing: true
+      if: ctx.json?._flow_orientation_flipped == true
+  - rename:
+      field: json.flow.pkts_toserver
+      target_field: source.packets
+      tag: rename_flow_pkts_toserver_to_source
+      ignore_missing: true
+      if: ctx.json?._flow_orientation_flipped != true
+  - rename:
+      field: json.flow.pkts_toserver
+      target_field: destination.packets
+      tag: rename_flow_pkts_toserver_to_destination
+      ignore_missing: true
+      if: ctx.json?._flow_orientation_flipped == true
+  - rename:
+      field: json.flow.pkts_toclient
+      target_field: destination.packets
+      tag: rename_flow_pkts_toclient_to_destination
+      ignore_missing: true
+      if: ctx.json?._flow_orientation_flipped != true
+  - rename:
+      field: json.flow.pkts_toclient
+      target_field: source.packets
+      tag: rename_flow_pkts_toclient_to_source
+      ignore_missing: true
+      if: ctx.json?._flow_orientation_flipped == true
+  - date:
+      field: json.flow.start
+      target_field: event.start
+      tag: parse_flow_start_to_event_start
+      formats:
+        - ISO8601
+      if: ctx.json?.flow?.start != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_flow_start
+            value: '{{{_ingest.on_failure_message}}}'
+
+  ###
+  # Sightings sensor identity
+  ###
+  - rename:
+      field: json.see_id
+      target_field: stamus_sensor.id
+      tag: rename_see_id
+      ignore_missing: true
+  - rename:
+      field: json.see_name
+      target_field: stamus_sensor.name
+      tag: rename_see_name
+      ignore_missing: true
+
+  ###
+  # `alert.*` rule fields -> ECS
+  ###
+  - rename:
+      field: alert.signature_id
+      target_field: rule.id
+      tag: rename_alert_signature_id_to_rule_id
+      ignore_missing: true
+  - convert:
+      field: rule.id
+      type: string
+      tag: convert_rule_id_to_string
+      ignore_missing: true
+  - rename:
+      field: alert.rev
+      target_field: rule.version
+      tag: rename_alert_rev_to_rule_version
+      ignore_missing: true
+  - rename:
+      field: alert.signature
+      target_field: rule.name
+      tag: rename_alert_signature_to_rule_name
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message_from_rule_name
+      value: '{{{rule.name}}}'
+      if: ctx.rule?.name != null
+      description: >-
+        Repopulates `message` (cleared earlier when it was copied to `event.original`) with the
+        alert's signature text, so Discover's default summary line isn't blank. The official
+        `suricata` package instead uses `alert.category` here; `rule.name` is used here instead
+        since the signature text is far more specific (for example "ETPRO HUNTING Generic Pong
+        Keep-Alive Inbound M3" vs. the generic "Potentially Bad Traffic" category bucket).
+  - rename:
+      field: alert.category
+      target_field: rule.category
+      tag: rename_alert_category_to_rule_category
+      ignore_missing: true
+  - rename:
+      field: alert.severity
+      target_field: event.severity
+      tag: rename_alert_severity_to_event_severity
+      ignore_missing: true
+      description: >-
+        Numeric severity from the rule's classtype mapping (lower = more severe by community
+        convention). Can disagree with the free-text `alert.metadata.signature_severity` label —
+        both are mapped; neither is treated as authoritative over the other.
+  - rename:
+      field: alert.app_proto
+      target_field: network.protocol
+      tag: rename_alert_app_proto_to_network_protocol
+      ignore_missing: true
+      if: ctx.network?.protocol == null
+  - rename:
+      field: alert.action
+      target_field: event.action
+      tag: rename_alert_action_to_event_action
+      ignore_missing: true
+      description: Verdict applied to the matching traffic ("allowed" or "blocked").
+
+  # Rule metadata with a clean ECS home.
+  - rename:
+      field: alert.metadata.cve
+      target_field: vulnerability.id
+      tag: rename_metadata_cve_to_vulnerability_id
+      ignore_missing: true
+  - rename:
+      field: alert.metadata.mitre_tactic_id
+      target_field: threat.tactic.id
+      tag: rename_metadata_mitre_tactic_id
+      ignore_missing: true
+  - rename:
+      field: alert.metadata.mitre_tactic_name
+      target_field: threat.tactic.name
+      tag: rename_metadata_mitre_tactic_name
+      ignore_missing: true
+  - rename:
+      field: alert.metadata.mitre_technique_id
+      target_field: threat.technique.id
+      tag: rename_metadata_mitre_technique_id
+      ignore_missing: true
+  - rename:
+      field: alert.metadata.mitre_technique_name
+      target_field: threat.technique.name
+      tag: rename_metadata_mitre_technique_name
+      ignore_missing: true
+  - rename:
+      field: alert.metadata.cvss_v3_base
+      target_field: vulnerability.score.base
+      tag: rename_metadata_cvss_v3_base_to_vulnerability_score_base
+      ignore_missing: true
+  - set:
+      field: vulnerability.score.version
+      value: '3.0'
+      tag: set_vulnerability_score_version_3
+      if: ctx.vulnerability?.score?.base != null
+      description: >-
+        Suricata rule metadata only distinguishes CVSS v2 vs v3 by key name, not an exact
+        point release -- "3.0" is the most specific version this source data supports.
+  - rename:
+      field: alert.metadata.cvss_v2_base
+      target_field: vulnerability.score.base
+      tag: rename_metadata_cvss_v2_base_to_vulnerability_score_base
+      ignore_missing: true
+      description: Only applied when no v3 score was already set above (v3 is preferred when both are present).
+      if: ctx.vulnerability?.score?.base == null
+  - set:
+      field: vulnerability.score.version
+      value: '2.0'
+      tag: set_vulnerability_score_version_2
+      if: ctx.vulnerability?.score?.base != null && ctx.vulnerability?.score?.version == null
+  - remove:
+      field: alert.metadata.cvss_v2_base
+      tag: remove_unused_metadata_cvss_v2_base
+      ignore_missing: true
+      description: >-
+        Discards the v2 score when v3 was already present and took precedence above -- otherwise
+        this would be left as an undeclared leftover field under `alert.metadata`.
+  - convert:
+      field: vulnerability.score.base
+      type: float
+      tag: convert_vulnerability_score_base_to_float
+      ignore_missing: true
+      description: Suricata rule metadata delivers CVSS scores as strings (for example "9.8").
+
+  ###
+  # ECS categorization (Pattern B — fewer than 5 mappings)
+  ###
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: alert
+  - append:
+      field: event.category
+      tag: append_event_category_intrusion_detection
+      value: intrusion_detection
+      allow_duplicates: false
+  - append:
+      field: event.category
+      tag: append_event_category_network
+      value: network
+      allow_duplicates: false
+  - append:
+      field: event.category
+      tag: append_event_category_threat
+      value: threat
+      allow_duplicates: false
+      if: ctx.stamus != null
+      description: >-
+        Added when the document carries a fully-populated Declaration of Compromise/Policy
+        Violation `stamus.*` correlation object.
+  - append:
+      field: event.type
+      tag: append_event_type_allowed
+      value: allowed
+      allow_duplicates: false
+      if: ctx.event?.action == 'allowed'
+  - append:
+      field: event.type
+      tag: append_event_type_denied
+      value: denied
+      allow_duplicates: false
+      if: ctx.event?.action == 'blocked'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_unknown
+      value: unknown
+      description: >-
+        `alert.action` (allowed/blocked) describes what Suricata did with the packet, not a
+        success/failure judgement about the underlying security event — surfaced instead via
+        `event.action`.
+
+  ###
+  # Geo + ASN enrichment
+  ###
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geoip_source_ip
+      if: ctx.source?.ip != null
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      tag: geoip_destination_ip
+      if: ctx.destination?.ip != null
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      tag: geoip_asn_source_ip
+      if: ctx.source?.ip != null
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      tag: geoip_asn_destination_ip
+      if: ctx.destination?.ip != null
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      tag: rename_source_asn
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      tag: rename_source_as_org
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      tag: rename_destination_asn
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      tag: rename_destination_as_org
+      ignore_missing: true
+
+  ###
+  # related.* enrichment
+  ###
+  - append:
+      field: related.ip
+      tag: append_related_ip_source
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.ip
+      tag: append_related_ip_destination
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - append:
+      field: related.hosts
+      tag: append_related_hosts_hostname_info
+      value: '{{{hostname_info.host}}}'
+      allow_duplicates: false
+      if: ctx.hostname_info?.host != null
+
+  - append:
+      field: related.ip
+      tag: append_related_ip_stamus_asset
+      value: '{{{stamus.asset}}}'
+      allow_duplicates: false
+      if: ctx.stamus?.asset_type == 'ip' && ctx.stamus?.asset != null
+  - append:
+      field: related.hosts
+      tag: append_related_hosts_stamus_asset
+      value: '{{{stamus.asset}}}'
+      allow_duplicates: false
+      if: ctx.stamus?.asset_type == 'hostname' && ctx.stamus?.asset != null
+  - append:
+      field: related.user
+      tag: append_related_user_stamus_asset
+      value: '{{{stamus.asset}}}'
+      allow_duplicates: false
+      if: ctx.stamus?.asset_type == 'user' && ctx.stamus?.asset != null
+  - append:
+      field: related.ip
+      tag: append_related_ip_stamus_offender
+      value: '{{{stamus.offender}}}'
+      allow_duplicates: false
+      if: ctx.stamus?.offender_type == 'ip' && ctx.stamus?.offender != null
+  - append:
+      field: related.hosts
+      tag: append_related_hosts_stamus_offender
+      value: '{{{stamus.offender}}}'
+      allow_duplicates: false
+      if: ctx.stamus?.offender_type == 'hostname' && ctx.stamus?.offender != null
+  - append:
+      field: related.user
+      tag: append_related_user_stamus_offender
+      value: '{{{stamus.offender}}}'
+      allow_duplicates: false
+      if: ctx.stamus?.offender_type == 'user' && ctx.stamus?.offender != null
+
+  ###
+  # Cleanup
+  ###
+  - remove:
+      field: discovery.asset_net
+      tag: remove_null_discovery_asset_net
+      ignore_missing: true
+      if: ctx.discovery?.asset_net == null
+      description: >-
+        Stamus delivers `asset_net` as explicit JSON `null` (not absent) when not applicable;
+        strip it rather than indexing a null keyword value.
+  - remove:
+      field: stamus.extra_info
+      tag: remove_null_stamus_extra_info
+      ignore_missing: true
+      if: ctx.stamus?.extra_info == null
+      description: >-
+        `stamus.extra_info` is confirmed-live to always be explicit JSON `null`; strip it rather
+        than indexing a null keyword value.
+  - set:
+      field: user_agent.original
+      tag: set_user_agent_original_from_http
+      value: '{{{json.http.http_user_agent}}}'
+      ignore_empty_value: true
+      if: ctx.json?.http?.http_user_agent != null
+      description: User agent string embedded on file-identification and sightings alerts.
+  - user_agent:
+      field: user_agent.original
+      tag: parse_user_agent
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.http.request_headers
+      target_field: http.request_headers
+      tag: rename_http_request_headers
+      ignore_missing: true
+      description: Request headers embedded on file-identification and sightings alerts.
+
+  - set:
+      field: observer.name
+      copy_from: json.host
+      ignore_empty_value: true
+      if: ctx.observer?.name == null && ctx.json?.host instanceof String
+      tag: set_observer_name_from_probe_host
+      description: Probe name from the EVE host string.
+  - remove:
+      field: json
+      tag: remove_json_temp
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_pipeline_error
+      value: preserve_original_event
+      allow_duplicates: false

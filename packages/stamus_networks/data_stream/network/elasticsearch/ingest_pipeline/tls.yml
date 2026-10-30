@@ -1,0 +1,76 @@
+---
+description: Pipeline for Stamus Networks TLS fields (SNI, JA3, JA4, version).
+
+processors:
+  - grok:
+      tag: grok_tls_version
+      field: json.tls.version
+      patterns:
+        - '^%{DATA:tls.version_protocol} %{GREEDYDATA:tls.version}$'
+        - '^%{DATA:tls.version_protocol}v%{GREEDYDATA:tls.version}$'
+      if: ctx.json?.tls?.version != null && ctx.json.tls.version != 'UNDETERMINED'
+      ignore_failure: true
+  - lowercase:
+      tag: lowercase_tls_version_protocol
+      field: tls.version_protocol
+      ignore_missing: true
+  - script:
+      if: ctx.json != null && ctx.json.tls != null && ctx.json.tls.sni != null
+      tag: trim_tls_sni
+      lang: painless
+      source: |
+        def sni = ctx.json.tls.sni;
+        if (!(sni instanceof String) || !sni.endsWith(".")) {
+            return;
+        }
+        ctx.json.tls.sni = sni.substring(0, sni.length() - 1);
+  - set:
+      tag: set_tls_client_server_name
+      field: tls.client.server_name
+      value: '{{{json.tls.sni}}}'
+      ignore_empty_value: true
+  - set:
+      tag: set_destination_domain_from_sni
+      field: destination.domain
+      value: '{{{json.tls.sni}}}'
+      ignore_empty_value: true
+      if: ctx.destination?.domain == null
+  - append:
+      tag: append_related_hosts_from_sni
+      field: related.hosts
+      value: '{{{json.tls.sni}}}'
+      if: ctx.json?.tls?.sni != null && ctx.json.tls.sni != ""
+      allow_duplicates: false
+  - set:
+      tag: set_tls_client_ja3
+      field: tls.client.ja3
+      value: '{{{json.tls.ja3.hash}}}'
+      ignore_empty_value: true
+  - set:
+      tag: set_tls_server_ja3s
+      field: tls.server.ja3s
+      value: '{{{json.tls.ja3s.hash}}}'
+      ignore_empty_value: true
+  - set:
+      tag: set_tls_client_ja4
+      field: tls.client.ja4
+      value: '{{{json.tls.ja4}}}'
+      ignore_empty_value: true
+on_failure:
+  - set:
+      field: event.kind
+      tag: set_tls_pipeline_error_kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      tag: append_tls_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      tag: append_tls_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false

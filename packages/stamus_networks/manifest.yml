@@ -1,0 +1,67 @@
+format_version: "3.4.2"
+name: stamus_networks
+title: "Stamus Networks"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Collect IDS/IPS alerts, protocol and network logs, Declarations of Compromise/Policy Violation, and host inventory from Stamus Networks Clear NDR (Stamus Security Platform) with Elastic Agent."
+type: integration
+categories:
+  - network_security
+  - security
+conditions:
+  kibana:
+    version: "^8.19.0 || ^9.1.0"
+  elastic:
+    subscription: "basic"
+screenshots:
+  - src: /img/stamus-networks-alerts.png
+    title: IDS and declarations
+    size: 1600x1100
+    type: image/png
+  - src: /img/stamus-networks-events.png
+    title: Protocol insights
+    size: 1600x1100
+    type: image/png
+  - src: /img/stamus-networks-hosts.png
+    title: Host insights
+    size: 1600x1100
+    type: image/png
+  - src: /img/stamus-networks-smb.png
+    title: SMB insights
+    size: 1600x1100
+    type: image/png
+icons:
+  - src: /img/stamus-logo.svg
+    title: Stamus Networks logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: stamus_networks
+    title: Stamus Networks
+    description: Collect alerts, protocol and network logs, and host insights from Stamus Networks Clear NDR
+    inputs:
+      - type: cel
+        title: Collect alerts, network logs, and host insights via REST API
+        description: Collect IDS/IPS alerts, protocol and network logs, Declaration of Compromise/Policy Violation events, and host inventory profiles from the Stamus Clear NDR REST API
+        vars:
+          - name: url
+            type: text
+            title: "Central Server URL"
+            description: |-
+              Base URL of the Clear NDR / Stamus Central Server (CNCS), for example, `https://cncs.example.com` (no trailing `/rest/`).
+            required: true
+            show_user: true
+          - name: api_token
+            type: password
+            title: "API Token"
+            description: |-
+              Per-user API token generated in the CNCS web UI (Account Settings -> User Settings -> Edit Token -> Regenerate).
+              A dedicated read-only ("Active" tier) user account is recommended. Requires Stamus Tier 2 licensing or above;
+              full Declaration of Compromise/Policy Violation (`stamus.*`) data additionally requires Tier 3.
+            required: true
+            secret: true
+            show_user: true
+owner:
+  github: elastic/security-service-integrations
+  type: community

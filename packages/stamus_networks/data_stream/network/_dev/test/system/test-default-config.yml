@@ -1,0 +1,24 @@
+wait_for_data_timeout: 3m
+input: cel
+service: stamus_networks-network-mock
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  api_token: test-token
+data_stream:
+  vars:
+    interval: 2s
+    initial_interval: 24h
+    collection_delay: 1m
+    page_size: 2
+# hit_count = 11. The mock pages fileinfo then dns (production phase order) and
+# returns an empty 200 for every later phase. Empty pages are dropped by
+# drop_event.when.equals.retry.
+#   window 1: fileinfo page1=2 + page2=1, dns page1=2 + page2=1           = 6
+#   window 2: fileinfo=1, dns=1                                            = 2
+#   window 3: fileinfo 503 is absorbed by the agent HTTP retry, then 1
+#             recovery event; dns is empty                                 = 1
+#   window 4: fileinfo is empty; dns returns 400, which is indexed, and the
+#             cursor stays on dns. The next poll retries dns and gets 1    = 2
+#   later windows are empty, so the count stays at 11.
+assert:
+  hit_count: 11
