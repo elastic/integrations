@@ -333,12 +333,15 @@ details, and its forecast from the `azure_billing.forecast_latest` alias, where 
 scope's newest forecast from today on, so it shows no forecast for a day that has passed. A newer
 fetch may no longer return a forecast day, for example after someone shortens the forecast window.
 That day's forecast stays in the index until its three-day retention ends, and the dashboard shows
-it when the time range covers only such days. When several policies query the same scope, the
-dashboard shows the forecast of the policy that fetched last, so give them the same forecast window.
+it when the time range and the controls select only such days. When several policies query the same
+scope, the dashboard shows the forecast of the policy that fetched last, so give them the same
+forecast window.
 The dashboard adds up the forecasts of overlapping scopes, such as a department and a subscription
 inside it, because the forecast API returns one total per scope and that total cannot be split by
-subscription. Forecast rows carry no department,
-account, or resource, so selecting one of those controls hides the forecast. All cost panels are
+subscription. Forecast rows carry the subscription configured in the policy, even for a department or
+billing account scope, so the **Subscription** control shows a department's whole forecast for that
+subscription and none for the others. Forecast rows carry no department, account, or resource, so
+selecting one of those controls hides the forecast. All cost panels are
 broken down by `azure.billing.currency`, so amounts in different currencies are never added
 together. When you collect more than one currency, pick one with the **Currency** control, so
 that the donut proportions compare amounts in a single currency. The controls list values from the
