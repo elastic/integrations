@@ -7,7 +7,7 @@ This package is designed for **Serverless-only** organizations. For Hosted monit
 ## Overview
 
 - **Billing classification pipeline** (`chargeback-serverless-billing`): classifies Serverless SKUs into `allocation_driver` (`indexing`, `query`, `storage`, or `none`) and `cost_category` (`data_tier`, `platform`, `transfer`, `snapshot`, `support`, or `other`).
-- **Dashboards**: three linked dashboards for organization billing reconciliation, workload & data stream cost attribution, and policy/registry configuration.
+- **Dashboards**: five linked dashboards for organization billing reconciliation, workload & data stream cost attribution, AI & Machine Learning FinOps, Synthetics FinOps, and policy/registry configuration.
 - **Local currency normalization**: spend visuals convert chargeable units (ECU) to your configured currency using policy rates stamped into billing data (`conf_chargeable_unit_rate` × `conf_chargeable_unit_rate_unit`).
 - **Alert rule templates**: prebuilt ES|QL rule templates for unallocated cost, stale usage harvest, and billed projects missing from the project registry.
 
@@ -22,10 +22,12 @@ This package is designed for **Serverless-only** organizations. For Hosted monit
 | Dashboard | Purpose |
 | --- | --- |
 | **[Chargeback Serverless] Billing Components Overview** | Organization spend KPIs, daily cost by project and cost category, spend flow (`cost_category → cost_type → project_type`), unallocatable & pass-through charges, and invoice reconciliation detail |
-| **[Chargeback Serverless] Usage & Cost Allocation** | Workload pool KPIs (Indexing, Search & Query, Storage), daily allocatable cost by workload driver, cost allocation by project, data stream cost attribution, and harvested `_cat/indices` usage metrics |
+| **[Chargeback Serverless] Usage & Cost Allocation** | Workload pool KPIs (Indexing, Search & Query, Storage), daily allocatable cost by workload driver, cost allocation by project, data stream cost attribution by namespace (`ds_namespace`) and data stream type (`ds_type`), and harvested `_cat/indices` usage metrics |
+| **[Chargeback Serverless] AI & Machine Learning** | AI & ML FinOps KPIs (AI pool spend, inference volume, active models, avg latency, unit cost per 1k inferences), daily attributed AI cost by model, attributed AI cost by project, AI model compute & spend breakdown, and dedicated AI/Inference/Agent Builder billing line items |
+| **[Chargeback Serverless] Synthetics** | Synthetics FinOps KPIs (direct Synthetics SKU spend, billed check quantity, ECU, unit cost per 1k checks), Synthetics data stream attribution KPIs (`synthetics-*` indexing, search, storage), daily Synthetics SKU cost by project, Synthetics data stream cost by namespace, SKU line items, and Synthetics data stream attribution table |
 | **[Chargeback Serverless] Configuration** | Fleet policy settings guide, active currency settings, discovered Serverless projects registry, and daily usage harvest status |
 
-Open **Analytics → Dashboards** and filter by the **Chargeback** tag. Use the top Links bar to navigate between the three dashboards, and use the filter controls (`Project type`, `Project name`, `Cost category`, `Cost type`, `Allocation driver`) to slice spend.
+Open **Analytics → Dashboards** and filter by the **Chargeback** tag. Use the top Links bar to navigate between the five dashboards, and use the filter controls (`Project type`, `Project name`, `Cost category`, `Cost type`, `Allocation driver`) to slice spend.
 
 ## Configuration
 
@@ -37,10 +39,12 @@ Organization ID, Cloud API Key, Currency Rates, and Remote Project API Keys are 
 | --- | --- | --- |
 | **Organization ID** | No | Elastic Cloud organization ID |
 | **Cloud API Key** | Yes | Elastic Cloud API key with billing read access |
+| **Hub Project Elasticsearch API Key** | Yes | Optional Elasticsearch API key for the local Hub project when harvesting local data streams |
+| **Remote Project Elasticsearch API Keys** | Yes | Optional project-specific keys (`<project_id>:<encoded_key>`) with index `monitor` privilege |
+| **Billing Lookbehind Days** | No | Historical days of billing data to backfill on initial install (default `60`) |
 | **Currency Unit** | No | Currency label (e.g. `USD`, `EUR`, `ZAR`) |
 | **Currency Symbol** | No | Currency symbol (e.g. `$`, `€`, `R`) |
 | **Chargeable Unit Rate** | No | Multiplier from chargeable units (ECU) to configured currency |
-| **Remote Project API Keys** | Yes | Optional project-specific keys (`<project_id>:<encoded_key>`) with index `monitor` privilege |
 
 #### Registering Remote Project API Keys
 
