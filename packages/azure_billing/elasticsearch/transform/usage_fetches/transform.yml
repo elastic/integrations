@@ -53,15 +53,18 @@ source:
     # the scope lets a newer fetch of any scope replace an older one: a
     # department policy and a subscription policy inside it, or an agent upgrade
     # that changes a department policy's scope, never count a subscription's day
-    # twice. Rows without a subscription fall back to the queried scope.
+    # twice. Rows without a subscription (absent or empty) fall back to the
+    # queried scope.
     azure.billing.subscription_day:
       type: keyword
       script:
         source: |-
           String key = null;
-          if (doc.containsKey('azure.subscription_id') && doc['azure.subscription_id'].size() > 0) {
+          if (doc.containsKey('azure.subscription_id') && doc['azure.subscription_id'].size() > 0
+              && doc['azure.subscription_id'].value != '') {
             key = 'subscriptions/' + doc['azure.subscription_id'].value;
-          } else if (doc.containsKey('azure.billing.scope') && doc['azure.billing.scope'].size() > 0) {
+          } else if (doc.containsKey('azure.billing.scope') && doc['azure.billing.scope'].size() > 0
+              && doc['azure.billing.scope'].value != '') {
             key = doc['azure.billing.scope'].value;
           }
           def day = null;
