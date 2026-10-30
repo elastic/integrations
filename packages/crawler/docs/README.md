@@ -14,6 +14,7 @@ This integration is a technical preview.
 | Setting | Description |
 |---|---|
 | Index name | The Elasticsearch index that receives the crawled documents. |
+| Elasticsearch API key | API key the crawler uses to write to the index. Kibana creates a key scoped to the index when it sets up an Elastic managed crawler; the credentials of the agent's Elasticsearch output do not grant access to arbitrary indices. |
 | Domains | The websites to crawl. Each domain can define seed URLs, sitemap URLs, crawl rules, extraction rules and authentication, using the same format as the crawler configuration file. |
 | Crawl schedule | A cron expression that starts a crawl periodically. Without a schedule, crawls are started on demand from Kibana. |
 | Maximum crawl depth | How many links deep the crawler follows from the seed URLs. |
