@@ -62,23 +62,21 @@ program: |
             "user": state.user,
             "password": state.password,
             "batch_size": string(state.batch_size),
+            "offset": int(state.offset),
             "access_token": state.access_token,
             "cursor": {
               "new_offset": (
+                inner_body != null && inner_body.size() > 0
+              ?
                 (
                   state.?cursor.new_offset.orValue(null) != null
                 ?
                   int(state.cursor.new_offset)
                 :
                   int(state.offset)
-                ) +
-                (
-                  inner_body != null && inner_body.size() > 0
-                ?
-                  inner_body.size()
-                :
-                  0
-                )
+                ) + inner_body.size()
+              :
+                int(state.offset)
               )
             },
         }))
