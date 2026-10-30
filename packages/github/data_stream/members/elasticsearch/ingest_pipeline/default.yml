@@ -137,22 +137,25 @@ processors:
       value: false
       if: ctx.json?.hasTwoFactorEnabled == false
 
-  # user.entity.relationships.administers.service.* — teams where user is MAINTAINER,
-  # modelled as services (closest available relationship type in the ECS entity schema).
+  # user.entity.relationships.administers.entity.id — GitHub node ids of teams
+  # where the user is a MAINTAINER. The same id is entity.id on github.teams.
   - script:
-      tag: build_administers_service_ids
+      tag: build_administers_entity_ids
       description: >-
-        Collects GraphQL node IDs and display names of teams where the member is a
-        MAINTAINER into user.entity.relationships.administers.service.id and .service.name.
+        Collects GraphQL node IDs of teams where the member is a MAINTAINER into
+        user.entity.relationships.administers.entity.id, and their display names
+        into github.members.maintained_team_names.
       lang: painless
       if: ctx.json?.teams instanceof List && ctx.json.teams.size() != 0
       source: |-
         def adminIds = [];
         def adminNames = [];
         for (def team : ctx.json.teams) {
-          if (team?.role == "MAINTAINER") {
+          if (team?.role == "MAINTAINER" && team?.id != null) {
             adminIds.add(team.id);
-            adminNames.add(team.name);
+            if (team?.name != null) {
+              adminNames.add(team.name);
+            }
           }
         }
         if (!adminIds.isEmpty()) {
@@ -160,9 +163,13 @@ processors:
           ctx.user.entity = ctx.user.entity ?: [:];
           ctx.user.entity.relationships = ctx.user.entity.relationships ?: [:];
           ctx.user.entity.relationships.administers = ctx.user.entity.relationships.administers ?: [:];
-          ctx.user.entity.relationships.administers.service = ctx.user.entity.relationships.administers.service ?: [:];
-          ctx.user.entity.relationships.administers.service.id = adminIds;
-          ctx.user.entity.relationships.administers.service.name = adminNames;
+          ctx.user.entity.relationships.administers.entity = ctx.user.entity.relationships.administers.entity ?: [:];
+          ctx.user.entity.relationships.administers.entity.id = adminIds;
+        }
+        if (!adminNames.isEmpty()) {
+          ctx.github = ctx.github ?: [:];
+          ctx.github.members = ctx.github.members ?: [:];
+          ctx.github.members.maintained_team_names = adminNames;
         }
 
   # Custom fields: github.members.role
@@ -349,14 +356,25 @@ processors:
       allow_duplicates: false
       if: ctx.user?.id != null
 
-  # Deduplication: stable document ID from the full raw payload; unchanged members
-  # produce the same hash across collection cycles and are not re-indexed.
+  # Deduplication key is the raw payload plus a schema version. members-3.0.0
+  # changes the hash once so an unchanged member is indexed again after upgrade
+  # and receives administers.entity.id and maintained_team_names. Later
+  # unchanged collections reuse this _id. The version field is not indexed.
+  - set:
+      field: _tmp.members_dedup_version
+      tag: set_members_dedup_version
+      value: members-3.0.0
   - fingerprint:
       fields:
         - event.original
+        - _tmp.members_dedup_version
       target_field: _id
       tag: set_fingerprint_id
       ignore_missing: false
+  - remove:
+      field: _tmp
+      tag: remove_members_dedup_version
+      ignore_missing: true
 
   # Cleanup: remove json scratch space
   - remove:
