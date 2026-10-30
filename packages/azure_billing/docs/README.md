@@ -347,13 +347,16 @@ selecting one of those controls hides the forecast. All cost panels are
 broken down by `azure.billing.currency`, so amounts in different currencies are never added
 together. When you collect more than one currency, pick one with the **Currency** control, so
 that the donut proportions compare amounts in a single currency. The controls list values from the
-`metrics-azure.billing-*` data view that the integration installs, filtered by usage day like the
-panels, so they only offer billing data.
+`azure_billing.usage_fetches` and `azure_billing.forecast_latest` transform aliases (the data view
+the integration installs), filtered by usage day like the panels. That matches the panels' usage
+day, including rows from agents before 8.4 that carry only `usage_start`, which the usage
+transform writes as `azure.billing.usage_date`. Including the forecast alias keeps the
+**Subscription** control able to select a department or billing-account forecast.
 
 The transforms must be running for the dashboard to show data. You can check their status
 in Kibana under **Stack Management > Transforms**. Users of the dashboard need read access to the
-`azure_billing.*` indices, besides `metrics-azure.billing-*`. If you prefer to query the raw,
-non-deduplicated documents, use the `metrics-azure.billing-*` data stream directly.
+`azure_billing.*` indices. If you prefer to query the raw, non-deduplicated documents, use the
+`metrics-azure.billing-*` data stream directly.
 
 ## Metrics Reference
 
