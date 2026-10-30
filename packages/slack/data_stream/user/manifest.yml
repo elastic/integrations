@@ -1,0 +1,82 @@
+title: Slack Users
+type: logs
+streams:
+  - input: cel
+    title: Slack users
+    description: >-
+      Collect Slack Enterprise Grid user records from admin.users.list for entity analytics.
+    enabled: false
+    template_path: cel.yml.hbs
+    vars:
+      - name: oauth_token
+        type: password
+        title: OAuth API Token
+        description: >-
+          Org-level Slack user token (xoxp-) with the admin.users:read scope.
+          The app must be installed on the Enterprise organization, not on a single workspace.
+        multi: false
+        required: true
+        show_user: true
+        secret: true
+      - name: interval
+        type: text
+        title: Interval
+        description: >-
+          Time between full user snapshots. Supported units are h, m, and s.
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+      - name: limit
+        type: integer
+        title: Page Size
+        description: >-
+          Number of users requested per page. Slack allows up to 1000.
+        multi: false
+        required: true
+        show_user: false
+        default: 1000
+      - name: is_active
+        type: bool
+        title: Active Users Only
+        description: >-
+          When enabled, collect only active users. When disabled, collect only deactivated users.
+          Slack cannot return both in one request.
+        multi: false
+        required: true
+        show_user: true
+        default: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - slack-user
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        multi: false
+        required: true
+        show_user: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+      - name: enable_request_tracer
+        type: bool
+        title: Enable Request Tracing
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+        multi: false
+        required: false
+        show_user: false
+        default: false

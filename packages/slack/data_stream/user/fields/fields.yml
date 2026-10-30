@@ -1,0 +1,107 @@
+- name: slack.user
+  type: group
+  fields:
+    - name: is_active
+      type: boolean
+      description: Whether the Slack account is active. Deactivated accounts are false.
+    - name: is_admin
+      type: boolean
+      description: Whether the user is an admin.
+    - name: is_owner
+      type: boolean
+      description: Whether the user is an owner.
+    - name: is_primary_owner
+      type: boolean
+      description: Whether the user is the primary owner.
+    - name: is_restricted
+      type: boolean
+      description: Whether the user is a guest.
+    - name: is_ultra_restricted
+      type: boolean
+      description: Whether the user is a single-channel guest.
+    - name: is_bot
+      type: boolean
+      description: Whether the account is a bot.
+    - name: has_2fa
+      type: boolean
+      description: Whether the user has two-factor authentication enabled. Copied to user.entity.attributes.mfa_enabled.
+    - name: has_sso
+      type: boolean
+      description: Whether the user signs in with single sign-on.
+    - name: date_created
+      type: date
+      description: When the Slack account was created.
+    - name: deactivated_ts
+      type: date
+      description: When the Slack account was deactivated. Absent when Slack sends 0.
+    - name: expiration_ts
+      type: date
+      description: When a guest account expires. Absent when Slack sends 0.
+    - name: last_active_ts
+      type: date
+      description: When Slack last recorded activity for the user. Copied to user.entity.lifecycle.last_activity.
+    - name: workspaces
+      type: keyword
+      description: Workspace IDs the user belongs to.
+    - name: roles
+      type: keyword
+      description: Slack admin role IDs assigned to the user, when the API returns them.
+    - name: groups
+      type: group
+      description: Slack user groups the account belongs to, from usergroups.list.
+      fields:
+        - name: id
+          type: keyword
+          description: Slack user group ID.
+        - name: team_id
+          type: keyword
+          description: Workspace ID the user group belongs to.
+        - name: is_usergroup
+          type: boolean
+          description: Whether this object is a Slack user group.
+        - name: name
+          type: keyword
+          description: User group name.
+        - name: description
+          type: keyword
+          description: User group description.
+        - name: handle
+          type: keyword
+          description: User group mention handle.
+        - name: is_external
+          type: boolean
+          description: Whether the user group is external.
+        - name: date_create
+          type: date
+          description: When the user group was created.
+        - name: date_update
+          type: date
+          description: When the user group was last updated.
+        - name: date_delete
+          type: date
+          description: When the user group was deleted. Absent when Slack sends 0.
+        - name: auto_type
+          type: keyword
+          description: Automatic user group type, such as admin or owner, when Slack sets one.
+        - name: created_by
+          type: keyword
+          description: Slack user ID that created the user group.
+        - name: updated_by
+          type: keyword
+          description: Slack user ID that last updated the user group.
+        - name: deleted_by
+          type: keyword
+          description: Slack user ID that deleted the user group.
+        - name: user_count
+          type: keyword
+          description: Number of users in the user group, as returned by Slack.
+        - name: prefs
+          type: group
+          description: Default channels and private groups for the user group.
+          fields:
+            - name: channels
+              type: keyword
+              description: Default public channel IDs for the user group.
+            - name: groups
+              type: keyword
+              description: Default private channel IDs for the user group.

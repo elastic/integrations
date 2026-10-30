@@ -2,11 +2,11 @@
 
 [Slack](https://www.slack.com) is used by numerous orgazations as their primary chat and collaboration tool.
 
-The Slack integration uses [Slack's API](https://api.slack.com/) to retrieve audit events and ingest them into Elasticsearch. This allows you to search, observe, and visualize the Slack log events through Elasticsearch.
+The Slack integration uses [Slack's API](https://api.slack.com/) to retrieve audit events and a user inventory, and ingest them into Elasticsearch. This allows you to search, observe, and visualize the Slack log events through Elasticsearch.
 
-The Elastic agent running this integration interacts with Slack's infrastructure using their APIs to retrieve [audit logs](https://api.slack.com/admins/audit-logs) for a workspace or enterprise.
+The Elastic agent running this integration interacts with Slack's infrastructure using their APIs to retrieve [audit logs](https://api.slack.com/admins/audit-logs), [Enterprise Grid users](https://docs.slack.dev/reference/methods/admin.users.list), and [user groups](https://docs.slack.dev/reference/methods/usergroups.list).
 
-**Please note the Audit Logs API is only available to Slack workspaces on an Enterprise Grid plan. These API methods will not work for workspaces on a Free, Standard, or Business+ plan.**
+**Please note these APIs are only available to Slack workspaces on an Enterprise Grid plan. These API methods will not work for workspaces on a Free, Standard, or Business+ plan.**
 
 ## Agentless Enabled Integration
 
@@ -30,9 +30,13 @@ Enter values "OAuth API Token".
 
 #### Configure using API Token
 
-For the Slack integration to be able to successfully get logs the following "User Token Scopes"" must be granted to the Slack App:
+For the Slack integration to be able to successfully get logs the following "User Token Scopes" must be granted to the Slack App:
 
-- `auditlogs:read`
+- Audit logs: `auditlogs:read`
+- Users: `admin.users:read`
+- User groups: `usergroups:read`
+
+The audit and users streams each have their own token. You can use one Slack app token that has all required scopes, or a separate token per stream. The users stream needs both `admin.users:read` and `usergroups:read`.
 
 ## Logs
 
@@ -43,3 +47,17 @@ Audit logs summarize the history of changes made within the Slack Enterprise.
 {{fields "audit"}}
 
 {{event "audit"}}
+
+### Users
+
+The users data stream collects a daily snapshot of Slack Enterprise Grid user accounts from [`admin.users.list`](https://docs.slack.dev/reference/methods/admin.users.list). Each document is one user, for Elastic Security entity analytics.
+
+It then collects user groups from [`usergroups.list`](https://docs.slack.dev/reference/methods/usergroups.list) for each workspace on those users, and attaches matching groups to `slack.user.groups`. The **[Logs Slack Logs] Users** dashboard includes user and group panels.
+
+The token must be an org-level user token (`xoxp-`) with the `admin.users:read` and `usergroups:read` scopes. The app must be installed on the Enterprise organization, not on a single workspace.
+
+**Active Users Only** chooses which accounts are collected. Enabled collects active users. Disabled collects deactivated users. Slack cannot return both in one request.
+
+{{fields "user"}}
+
+{{event "user"}}
