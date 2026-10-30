@@ -45,14 +45,27 @@
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
                             "key": "aws.guardduty.severity.value",
                             "negate": false,
-                            "params": {
-                                "query": "High"
-                            },
-                            "type": "phrase"
+                            "params": [
+                                "High",
+                                "Critical"
+                            ],
+                            "type": "phrases"
                         },
                         "query": {
-                            "match_phrase": {
-                                "aws.guardduty.severity.value": "High"
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "aws.guardduty.severity.value": "High"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "aws.guardduty.severity.value": "Critical"
+                                        }
+                                    }
+                                ]
                             }
                         }
                     }
