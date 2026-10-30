@@ -449,6 +449,8 @@ An example event for `audit` looks as following:
 
 This is the `case` dataset.
 
+Each time a case is modified, a new document is stored, so one case can have several documents. Use the one with the latest `abnormal_security.case.last_modified` for its current state.
+
 #### Example
 
 An example event for `case` looks as following:
@@ -538,6 +540,7 @@ An example event for `case` looks as following:
 | abnormal_security.case.description |  | keyword |
 | abnormal_security.case.first_observed | First time suspicious behavior was observed. | date |
 | abnormal_security.case.id | A unique identifier for this case. | keyword |
+| abnormal_security.case.last_modified | Last time the case was modified. | date |
 | abnormal_security.case.remediation_status |  | keyword |
 | abnormal_security.case.severity | Description of the severity level for this case. | keyword |
 | abnormal_security.case.severity_level |  | keyword |
@@ -664,6 +667,8 @@ An example event for `vendor_case` looks as following:
 ### Threat
 
 This is the `threat` dataset.
+
+Each poll collects threats received in the polling window and threats remediated in it. A new document is stored each time a message's remediation status changes, so one message can have several documents. Use the one with the latest `abnormal_security.threat.remediation_timestamp` for its current status.
 
 #### Example
 

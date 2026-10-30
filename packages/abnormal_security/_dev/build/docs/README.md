@@ -93,6 +93,8 @@ This is the `audit` dataset.
 
 This is the `case` dataset.
 
+Each time a case is modified, a new document is stored, so one case can have several documents. Use the one with the latest `abnormal_security.case.last_modified` for its current state.
+
 #### Example
 
 {{event "case"}}
@@ -112,6 +114,8 @@ This is the `vendor_case` dataset.
 ### Threat
 
 This is the `threat` dataset.
+
+Each poll collects threats received in the polling window and threats remediated in it. A new document is stored each time a message's remediation status changes, so one message can have several documents. Use the one with the latest `abnormal_security.threat.remediation_timestamp` for its current status.
 
 #### Example
 
