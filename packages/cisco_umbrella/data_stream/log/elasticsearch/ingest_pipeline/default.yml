@@ -454,6 +454,16 @@ processors:
       separator: ",\\s*"
       preserve_trailing: false
       if: "ctx.cisco?.umbrella?.email_attachments != null"
+  - split:
+      field: cisco.umbrella.match_violation_starts
+      separator: ",\\s*"
+      preserve_trailing: false
+      if: "ctx.cisco?.umbrella?.match_violation_starts != null"
+  - split:
+      field: cisco.umbrella.match_violation_ends
+      separator: ",\\s*"
+      preserve_trailing: false
+      if: "ctx.cisco?.umbrella?.match_violation_ends != null"
   - set:
       field: host.name
       copy_from: cisco.umbrella.hostname
@@ -908,6 +918,14 @@ processors:
       value: "{{{cisco.umbrella.email_sender}}}"
       allow_duplicates: false
       if: ctx.cisco?.umbrella?.email_sender != null
+  - foreach:
+      field: cisco.umbrella.email_recipients
+      if: ctx.cisco?.umbrella?.email_recipients != null
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - append:
       field: related.hosts
       value: "{{{host.name}}}"
