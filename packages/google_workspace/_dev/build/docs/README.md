@@ -46,6 +46,7 @@ In order to ingest data from the Google Reports API you must:
   - OUs: Read
   - Users: Read
   - Chrome Management > Managed browsers: Read
+  - Chrome Management > Manage ChromeOS Devices: Read (only needed for the `chromeos_devices` data stream; *Managed browsers: Read* does not grant it)
   - View Reports
   - Alert Center: Full access
 
@@ -65,6 +66,8 @@ In order to ingest data from the Google Reports API you must:
 The Reports API data streams use the following *oauth2 scope*:
 
 - `https://www.googleapis.com/auth/admin.reports.audit.readonly`
+
+The `chromeos_devices` data stream needs a different scope. See the Google Workspace ChromeOS Devices section.
 
 The `users` data stream needs different scopes. See the Google Workspace Users section.
 
@@ -260,6 +263,70 @@ Once Service Account credentials are downloaded as a JSON file, then the integra
 >  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
 >  NOTE: The default value of the "Page Size" is set to 1000. This option is available under 'Alert' Advance options. Set the parameter "Page Size" according to the requirement. For Alert Data Stream, The default value of "Alert Center API Host" is `https://alertcenter.googleapis.com`. The Alert Center API Host will be used for collecting alert logs only.
+
+# Google Workspace ChromeOS Devices
+
+The `chromeos_devices` data stream collects an **inventory** of the ChromeOS and ChromeOS Flex devices enrolled in your Google Workspace or Chrome Enterprise account, from the [Admin SDK Directory API](https://developers.google.com/workspace/admin/directory/reference/rest/v1/chromeosdevices/list). Each collection cycle produces one document per device, describing what exists: identity, status, organizational unit, assigned user, OS version and update state, boot mode, TPM, end of auto-updates, last known IP addresses and recent users. Documents have `event.kind: asset`.
+
+This is different from the `chrome` data stream, which contains Chrome and ChromeOS activity **events** (what happened). Changes made to devices by administrators are in the `admin` data stream.
+
+The data stream is turned off by default.
+
+## Collection
+
+The Directory API has no filter for changed devices, so each cycle reads the whole device inventory again. The default interval is `24h`. Each request returns up to 100 devices (the **Page Size** setting, which Google allows up to 300).
+
+To collect only part of the inventory, set **Organizational Unit** under the data stream's advanced options. The data stream then collects the devices in that organizational unit and all its children. Use the full path, for example `/Sales` (the leading `/` is optional), or `id:` followed by the organizational unit ID.
+
+## Requirements
+
+The `chromeos_devices` data stream uses the same service account and `Delegated Account` as the Reports API data streams. It needs this extra scope and privilege:
+
+| OAuth scope to add | Privilege the delegated account needs |
+|---|---|
+| `https://www.googleapis.com/auth/admin.directory.device.chromeos.readonly` | Services → Chrome Management → Manage ChromeOS Devices → **Manage ChromeOS Devices (read only)**, on **all** organizational units, and Organizational Units → Read |
+
+*Chrome Management → Managed browsers: Read* is a different privilege for Chrome browsers. It does not give access to ChromeOS devices. Google has merged the former "Admin console privileges" and "Admin API privileges" into one **Admin privileges** section, so one grant covers both. See [Delegate admin roles in Chrome](https://support.google.com/chrome/a/answer/2984343).
+
+To add the scope to the service account's domain-wide delegation (a super administrator must do this):
+
+1. In the Admin console go to **Security → Access and data control → API controls → Manage Domain Wide Delegation**.
+2. Find the service account's client ID and click **Edit**. Do not use **Add new** for a client ID that is already listed, and do not delete and re-add it: deleting it stops every application that uses it straight away.
+3. Add the scope. **Keep** `https://www.googleapis.com/auth/admin.reports.audit.readonly` and any other scopes already listed.
+4. Click **Authorize**, then open **View details** and check that the scope is listed.
+
+Use the exact scope string in the table. Google does not accept a broader scope in place of the one the integration requests. Scope changes can take up to 24 hours to take effect. If your organization uses multi-party approval, another super administrator must approve the change first.
+
+> NOTE: If the scope is not delegated yet, Google issues no token and the `chromeos_devices` data stream collects nothing. The other data streams of the integration are not affected.
+
+Devices only appear after they are enrolled, and enrolment needs a ChromeOS Enterprise, Education or Kiosk & Signage upgrade for each device, including ChromeOS Flex devices. An account without enrolled devices collects no documents, and this is not an error.
+
+Hardware, network and recent-user information is only reported while the *User and device reporting* policies are on. They are on by default. See [View ChromeOS device details](https://support.google.com/chrome/a/answer/1698333).
+
+The data stream calls `https://admin.googleapis.com`. You can change this with the **Directory API Host** setting under the data stream's advanced options. If your network uses an egress allowlist, add `admin.googleapis.com`.
+
+## Notes on the data
+
+- Devices in every status are included, among them deprovisioned and disabled devices. `host.entity.attributes.managed` is set from `status`:
+
+  | `status` | `host.entity.attributes.managed` |
+  |---|---|
+  | `ACTIVE`, `DISABLED` | `true` |
+  | `DEPROVISIONED`, `INACTIVE`, `DELINQUENT`, `PRE_PROVISIONED` | `false` |
+  | `RETURN_REQUESTED`, `RETURN_ARRIVED`, `SHIPPED`, `UNKNOWN`, absent or any other value | not set |
+
+- ChromeOS devices have no hostname. `host.name` is the serial number, or else the device ID. The asset ID set by an administrator goes in `host.entity.display_name`.
+- The assigned user (`google_workspace.chromeos_devices.annotated_user`) is free text that administrators can edit. It is copied to `user.email`, `user.name` and `user.domain` only when it is an email address.
+- `host.ip` holds the devices' local IP addresses. The public (WAN) addresses are shared by many devices behind the same NAT, so they are only in `related.ip` and `google_workspace.chromeos_devices.last_known_network.wan_ip_address`.
+- Google returns some values in either camelCase or upper case, for example `chromeOs` or `CHROME_OS`. They are kept as received.
+- Telemetry reports, such as CPU, memory, disk volume and active time reports, are not indexed. They are only in `event.original` when **Preserve original event** is on.
+
+## Troubleshooting
+
+- **The data stream stops with `oauth2: cannot fetch token` and the input health is Degraded.** Google rejected the token request. The error usually contains `unauthorized_client`, `access_denied`, `invalid_grant`, `invalid_scope` or `admin_policy_enforced`. Check that the scope is delegated exactly as in the table above, and that enough time has passed for the change to take effect.
+- **An error document reports HTTP 403 `Not Authorized to access this resource/api`.** The delegated account lacks the *Manage ChromeOS Devices (read only)* privilege.
+- **Fewer devices than expected.** The delegated account's Chrome privilege is probably limited to some organizational units. Grant it on all organizational units. Also check the **Organizational Unit** setting.
+- **No devices at all.** The account has no enrolled ChromeOS devices, or no ChromeOS upgrades.
 
 # Google Workspace Users
 
@@ -468,6 +535,14 @@ This is the `chrome` dataset.
 {{event "chrome"}}
 
 {{fields "chrome"}}
+
+### ChromeOS Devices
+
+This is the `chromeos_devices` dataset. It contains an inventory of ChromeOS devices, not events. See the Google Workspace ChromeOS Devices section.
+
+{{event "chromeos_devices"}}
+
+{{fields "chromeos_devices"}}
 
 ### Data Studio
 
