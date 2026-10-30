@@ -323,7 +323,11 @@ selects **usage days** (`azure.billing.usage_date`), and the dashboard opens on 
 Usage days are UTC days, while Kibana builds the time range in its display time zone: for exact
 days, set **Stack Management > Advanced Settings > Timezone for date formatting**
 (`dateFormat:tz`) to `UTC`, otherwise a selected day can take in a neighbouring UTC day. Its actual costs come from the usage
-details, and its forecast from the `azure_billing.forecast_latest` alias. All cost panels are
+details, and its forecast from the `azure_billing.forecast_latest` alias, where it keeps each
+scope's newest forecast from today on: a forecast for a day that has passed, or that a newer fetch
+no longer returns, is not shown. Forecasts of overlapping scopes, such as a department and a
+subscription inside it, are added together, because the forecast API returns one total per scope
+that cannot be split by subscription. All cost panels are
 broken down by `azure.billing.currency`, so amounts in different currencies are never added
 together. When you collect more than one currency, pick one with the **Currency** control, so
 that the donut proportions compare amounts in a single currency. The controls list values from the
