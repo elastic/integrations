@@ -330,7 +330,9 @@ Usage days are UTC days, while Kibana builds the time range in its display time 
 days, set **Stack Management > Advanced Settings > Timezone for date formatting**
 (`dateFormat:tz`) to `UTC`, otherwise a selected day can take in a neighbouring UTC day. Its actual costs come from the usage
 details, and its forecast from the `azure_billing.forecast_latest` alias, where it keeps each
-scope's newest forecast from today on, so it shows no forecast for a day that has passed. A newer
+scope's newest forecast from today on, collected in the last three days, so it shows no forecast for
+a day that has passed, nor one that has not been refreshed for three days, even when collection has
+stopped. A newer
 fetch may no longer return a forecast day, for example after someone shortens the forecast window.
 That day's forecast stays in the index until its three-day retention ends, and the dashboard shows
 it when the time range and the controls select only such days. When several policies query the same
