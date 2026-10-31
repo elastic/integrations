@@ -863,7 +863,9 @@ def audit_package(pkg_dir, dashboards=True, rules_dir="auto"):
     # blocks it, and so does, once readiness is declared, any other logs stream that is not ready;
     # package-spec skips the columnar checks of both.
     ready = ("opt_in", "default")
-    declared = any(s.get("logsdb_columnar_effective") in ready for s in result["data_streams"])
+    # The package value counts even when every logs stream ignores it through `index_mode`.
+    declared = result["logsdb_columnar"] in ready \
+        or any(s.get("logsdb_columnar_effective") in ready for s in result["data_streams"])
     for s in result["data_streams"]:
         effective = s.get("logsdb_columnar_effective")
         if s.get("type") != "logs" or s["status"] == "OUT_OF_SCOPE" or effective in ready \
