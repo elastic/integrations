@@ -160,7 +160,10 @@ only means this script found nothing), the effective `logsdb_columnar`, and find
 - `source_consumer_latest_transform`, `source_consumer_transform`,
   `source_consumer_kibana`, `source_consumer_detection_rule`: readers of the rebuilt
   `_source`. Nothing fails; they silently get the flat shape. Review each one;
-- `nested_object_children`: objects inside a `nested` field (the Elasticsearch bug).
+- `nested_object_children`: objects inside a `nested` field (the Elasticsearch bug);
+- `object_array_multi`: arrays of two or more objects outside `nested` fields in the
+  stream's test documents. `_source` loses which values belonged to the same element;
+  decide per path whether that matters.
 
 Declare readiness only once every stream's `_source` consumers are reviewed. Quote the
 **Detection rules** line in the PR even when it is zero; rules users wrote are not
@@ -217,4 +220,4 @@ Expected differences:
 
 Lead with each stream's status and the one-line reason, name the field and file for
 every finding, quote the Detection rules line and the lookup candidates, and say what
-the user still has to decide (sort, lookup fields, `_source` consumers).
+the user still has to decide (sort, lookup fields, `_source` consumers, object arrays).

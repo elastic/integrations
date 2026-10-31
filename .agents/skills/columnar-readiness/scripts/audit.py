@@ -234,6 +234,67 @@ def nested_object_children(entries):
     return out
 
 
+def object_arrays(ds_dir, pkg_dir, fields):
+    """Multi-element arrays of objects in the stream's test documents, outside `nested` fields
+    (references: script findings). Columnar `_source` rebuilds them as one array per property."""
+    def mapped(path):
+        """`nested` or `flattened` for the field itself, `inside_flattened` below a `flattened` field."""
+        parts = path.split(".")
+        for i in range(len(parts), 0, -1):
+            name = ".".join(parts[:i])
+            ftype = resolved_type(fields[name], name) if name in fields else (ecs().get(name) or {}).get("type")
+            if ftype == "flattened":
+                return "flattened" if i == len(parts) else "inside_flattened"
+            if ftype == "nested" and i == len(parts):
+                return "nested"
+        return None
+
+    seen = {}
+
+    def walk(doc, prefix, where):
+        for key, value in doc.items() if isinstance(doc, dict) else []:
+            path = f"{prefix}.{key}" if prefix else str(key)
+            kind = mapped(path)
+            # Arrays deeper inside a `flattened` value are merged on LogsDB too (ES-8).
+            if kind == "inside_flattened" or (kind == "flattened" and isinstance(value, dict)):
+                continue
+            if isinstance(value, dict):
+                walk(value, path, where)
+            elif isinstance(value, list):
+                objects = [e for e in value if isinstance(e, dict)]
+                if len(objects) >= 2 and kind != "nested":
+                    s = seen.setdefault(path, {"max": 0, "ragged": False, "file": where})
+                    s["max"] = max(s["max"], len(objects))
+                    s["ragged"] |= len({frozenset(e) for e in objects}) > 1
+                if kind != "flattened":
+                    for e in objects:
+                        walk(e, path, where)
+
+    test_dir = os.path.join(ds_dir, "_dev", "test", "pipeline")
+    docs = [(os.path.join(test_dir, f), (read_json(os.path.join(test_dir, f)) or {}).get("expected"))
+            for f in sorted(os.listdir(test_dir)) if f.endswith("-expected.json")] if os.path.isdir(test_dir) else []
+    docs.append((os.path.join(ds_dir, "sample_event.json"), [read_json(os.path.join(ds_dir, "sample_event.json"))]))
+    for path, items in docs:
+        for doc in items if isinstance(items, list) else []:
+            walk(doc, "", os.path.relpath(path, pkg_dir))
+    out = []
+    for path, s in sorted(seen.items()):
+        if mapped(path) == "flattened":
+            message = (f"`{path}` is `flattened` and holds arrays of up to {s['max']} objects: columnar merges "
+                       "them into one object of arrays and turns the values into strings, in `_source` and in "
+                       "the fields API.")
+        else:
+            message = (f"`{path}` holds arrays of up to {s['max']} objects (not `nested`): columnar `_source` "
+                       "rebuilds them as one array per property, so which values belonged to the same element "
+                       "is lost.") + (" The elements have different keys, so the positions don't line up "
+                                      "either." if s["ragged"] else "")
+        ecs_field = (fields.get(path) or {}).get("external") == "ecs" or (path not in fields and path in ecs())
+        out.append(finding("object_array_multi", "review",
+                           message + (" It is an ECS field: accept it and record why." if ecs_field else ""),
+                           s["file"], path))
+    return out
+
+
 def rejected_mappings(entries, itpl, ds_dir, pkg_dir):
     """`doc_values: false` and `store: true`, which Elasticsearch rejects in columnar modes:
     Fleet installs the mappings as they are. package-spec reports them only once the stream
@@ -917,6 +978,7 @@ def audit_stream(pkg_dir, ds_name, manifest, rules, pkg_name, own_dir, package_v
             sources.setdefault(flat, fname)
     findings.extend(rejected_mappings(entries, itpl, ds_dir, pkg_dir))
     findings.extend(nested_object_children(entries))
+    findings.extend(object_arrays(ds_dir, pkg_dir, fields))
     findings.extend(finding("source_consumer_kibana", "review", f"Reads `_source`: {', '.join(a['hits'])}.",
                             a["file"]) for a in kibana)
     name = index_name(pkg_name, ds_name, manifest)

@@ -104,6 +104,23 @@ record it: a `script` at the end of the default pipeline (tag
 `nested` query or reads that `_source`; or map the objects `flattened`. Otherwise the
 package stays undeclared.
 
+**`object_array_multi`**: the stream's test documents (pipeline-test outputs and
+`sample_event.json`) hold arrays of two or more objects in a field that isn't `nested`.
+Columnar `_source` rebuilds `[{a:1,b:2},{a:3,b:4}]` as `{a:[1,3],b:[2,4]}`; LogsDB keeps
+the array as sent. Values, queries and aggregations don't change (a non-`nested` object
+array never kept the pairing in queries), but Discover, the Security flyout and every
+other `_source` reader no longer see which values belonged to the same element. When the
+elements have different keys, the finding says so: the positions don't line up either. A
+`flattened` field holding the array is merged and stringified in the fields API too
+(ES-8). Decide per path and record it in the PR:
+
+- accept it when the pairing carries no meaning, or the elements always have the same
+  keys and nothing reads that `_source`. ECS fields such as `dns.answers` can't be
+  remapped: accept them and say so;
+- otherwise map the field `nested` when queries need the pairing too (a query change for
+  dashboards and rules), or rewrite it in the pipeline into an object keyed by a stable
+  element property (regenerate expectations with `-g`).
+
 **`_source` consumers.** Columnar `_source` has dotted keys, scalar single-element
 arrays and parallel object arrays. Field-level reads (`doc[...]`, KQL, aggregations,
 ES|QL columns, ingest pipelines on the stream) are unaffected; readers of `_source` are
