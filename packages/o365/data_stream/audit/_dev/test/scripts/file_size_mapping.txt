@@ -1,0 +1,268 @@
+# Test that file size values are indexed with their declared types for every
+# shape the Office 365 Management Activity API is known to send.
+#
+# The API returns byte counts as JSON numbers, sometimes in scientific notation
+# (1.3405e4) or with a fractional part (1000.0), and occasionally as JSON
+# strings. The CEL program decodes numbers as strings, so the ingest pipeline
+# receives e.g. "1.3405e4" and must make sure that what reaches Elasticsearch
+# is indexed as a long, not dynamically mapped as a keyword.
+#
+# This cannot be a pipeline test: pipeline tests only see the _source emitted by
+# the pipeline, and elastic-package accepts a numeric string for a long field,
+# so a "1000.0" in file.size passes. It cannot be a system test either, because
+# system tests validate against the package's field definitions, which treat
+# every ECS field as defined whether or not Elasticsearch has a mapping for it.
+# Only the values returned by the search `fields` API reflect the mapping that
+# Elasticsearch actually applied, which is what this test asserts on.
+#
+# See https://github.com/elastic/integrations/issues/21137.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start the mock O365 API server.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} o365-mock
+
+# Add the package resources.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Add the data stream policy.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Seven SharePoint events exercising the size field shapes, plus one Exchange
+# DLP event carrying sizes under ExchangeMetaData.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 8 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# No pipeline failures.
+exec jq '[.hits.hits[]._source | select(.error != null)] | length' got_docs.json
+stdout '^0$'
+
+# No field on any document was dropped by ignore_malformed. Fleet logs data
+# streams set index.mapping.ignore_malformed: true, so a value that cannot be
+# parsed into its mapped type is silently skipped and recorded in _ignored
+# rather than rejecting the document.
+exec jq '.aggregations.all_ignored.doc_count' got_docs.json
+stdout '^0$'
+
+# file.size is ECS long. Every value, whatever its input shape, must be indexed
+# as a number with the expected integer value. A keyword mapping would leave
+# "1.3405e4" and "1000.0" as strings here.
+exec jq -r '[.hits.hits[] | select(.fields["file.size"] != null) | "\(.fields["event.id"][0])=\(.fields["file.size"][0])"] | sort | join(",")' got_docs.json
+stdout '^sp-both=4096,sp-decimal=1000,sp-enotation=13405,sp-filesize-enotation=1000000000,sp-filesize-string=35920,sp-plain=2048$'
+
+exec jq -c '[.hits.hits[].fields["file.size"][0] // empty | type] | unique' got_docs.json
+stdout '^\["number"\]$'
+
+# The event with no size fields must not get a file.size.
+exec jq '[.hits.hits[] | select(.fields["event.id"][0] == "sp-none") | .fields["file.size"]] | map(. != null) | any' got_docs.json
+stdout '^false$'
+
+# o365.audit.FileSizeBytes is declared long in fields.yml; Elasticsearch coerces
+# the scientific-notation string on indexing.
+exec jq -c '[.hits.hits[] | select(.fields["event.id"][0] == "sp-enotation") | .fields["o365.audit.FileSizeBytes"][0]]' got_docs.json
+stdout '^\[13405\]$'
+
+# o365.audit.FileSize is declared keyword. The normalization script must have
+# rewritten the scientific notation to a plain integer string.
+exec jq -r '.hits.hits[] | select(.fields["event.id"][0] == "sp-filesize-enotation") | .fields["o365.audit.FileSize"][0]' got_docs.json
+stdout '^1000000000$'
+
+# o365.audit.ExchangeMetaData.* is declared long.
+exec jq -c '[.hits.hits[] | select(.fields["event.id"][0] == "ex-dlp") | .fields["o365.audit.ExchangeMetaData.FileSize"][0], .fields["o365.audit.ExchangeMetaData.RecipientCount"][0]]' got_docs.json
+stdout '^\[13405,2\]$'
+
+# Generic checks over every field of every document.
+#
+# No field is indexed as a string while holding a number in _source. This is
+# the signature of a numeric field that has no explicit mapping and was
+# dynamically mapped as keyword.
+exec jq -c '[.hits.hits[] | ._source as $s | .fields | to_entries[] | select((.value[0] | type) == "string") | select(((try ($s | getpath(.key | split("."))) catch null) | type) == "number") | .key] | unique' got_docs.json
+stdout '^\[\]$'
+
+# No keyword field holds a number in scientific notation. Fields that are
+# numbers at the API but keywords in the package must be normalized so that
+# searching for the value works.
+exec jq -c '[.hits.hits[].fields | to_entries[] | select((.value[0] | type) == "string") | select(.value[0] | test("^-?[0-9]*\\.?[0-9]+[eE][-+]?[0-9]+$")) | .key] | unique' got_docs.json
+stdout '^\[\]$'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down o365-mock
+
+-- test_config.yaml --
+input: cel
+vars: ~
+data_stream:
+  vars:
+    url: http://o365-mock:8080
+    token_url: http://o365-mock:8080
+    preserve_original_event: true
+    client_id: test-cel-client-id
+    client_secret: test-cel-client-secret
+    azure_tenant_id: test-cel-tenant-id
+    content_types: "Audit.SharePoint, Audit.General"
+    interval: 30s
+    initial_interval: 1h
+    enable_request_tracer: false
+-- o365-mock/docker-compose.yml --
+version: '2.3'
+services:
+  o365-mock:
+    image: docker.elastic.co/observability/stream:v0.19.0
+    hostname: o365-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- o365-mock/config.yml --
+rules:
+  # Token endpoint.
+  - path: /test-cel-tenant-id/oauth2/v2.0/token
+    methods: [POST]
+    query_params:
+      client_id: test-cel-client-id
+      client_secret: test-cel-client-secret
+      grant_type: client_credentials
+      scope: https://manage.office.com/.default
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token":"test-token","token_type":"Bearer","expires_in":3600,"ext_expires_in":3600}
+
+  # Subscribe Audit.SharePoint - success.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/start
+    methods: [POST]
+    query_params:
+      contentType: "Audit.SharePoint"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"contentType":"Audit.SharePoint","status":"enabled","webhook":null}
+
+  # Subscribe Audit.General - success.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/start
+    methods: [POST]
+    query_params:
+      contentType: "Audit.General"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"contentType":"Audit.General","status":"enabled","webhook":null}
+
+  # List content for Audit.SharePoint.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
+    methods: [GET]
+    query_params:
+      contentType: "Audit.SharePoint"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"contentType":"Audit.SharePoint","contentId":"sp-content-1","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-1","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"}]
+
+  # List content for Audit.General.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
+    methods: [GET]
+    query_params:
+      contentType: "Audit.General"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"contentType":"Audit.General","contentId":"gen-content-1","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-1","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"}]
+
+  # Fetch SharePoint content: one FileUploaded event per size field shape.
+  #
+  # - sp-enotation:          FileSizeBytes as a number in scientific notation.
+  # - sp-plain:              FileSizeBytes as a plain integer number.
+  # - sp-decimal:            FileSizeBytes as a number with a fractional part.
+  # - sp-filesize-enotation: only FileSize, in scientific notation.
+  # - sp-filesize-string:    only FileSize, as a JSON string.
+  # - sp-both:               both present; FileSizeBytes must win.
+  # - sp-none:               neither present.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-1
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [
+            {"Id":"sp-enotation","CreationTime":"2020-02-07T16:43:53","Workload":"SharePoint","Operation":"FileUploaded","RecordType":6,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.1","ObjectId":"https://test.sharepoint.com/sites/a/report.xlsx","SourceFileName":"report.xlsx","SourceFileExtension":"xlsx","FileSizeBytes":1.3405e4},
+            {"Id":"sp-plain","CreationTime":"2020-02-07T16:44:53","Workload":"SharePoint","Operation":"FileUploaded","RecordType":6,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.1","ObjectId":"https://test.sharepoint.com/sites/a/notes.txt","SourceFileName":"notes.txt","SourceFileExtension":"txt","FileSizeBytes":2048},
+            {"Id":"sp-decimal","CreationTime":"2020-02-07T16:45:53","Workload":"SharePoint","Operation":"FileUploaded","RecordType":6,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.1","ObjectId":"https://test.sharepoint.com/sites/a/image.png","SourceFileName":"image.png","SourceFileExtension":"png","FileSizeBytes":1000.0},
+            {"Id":"sp-filesize-enotation","CreationTime":"2020-02-07T16:46:53","Workload":"SharePoint","Operation":"FileUploaded","RecordType":6,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.1","ObjectId":"https://test.sharepoint.com/sites/a/archive.zip","SourceFileName":"archive.zip","SourceFileExtension":"zip","FileSize":1e9},
+            {"Id":"sp-filesize-string","CreationTime":"2020-02-07T16:47:53","Workload":"SharePoint","Operation":"FileUploaded","RecordType":6,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.1","ObjectId":"https://test.sharepoint.com/sites/a/deck.pptx","SourceFileName":"deck.pptx","SourceFileExtension":"pptx","FileSize":"35920"},
+            {"Id":"sp-both","CreationTime":"2020-02-07T16:48:53","Workload":"SharePoint","Operation":"FileUploaded","RecordType":6,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.1","ObjectId":"https://test.sharepoint.com/sites/a/doc.docx","SourceFileName":"doc.docx","SourceFileExtension":"docx","FileSizeBytes":4096,"FileSize":1},
+            {"Id":"sp-none","CreationTime":"2020-02-07T16:49:53","Workload":"SharePoint","Operation":"PageViewed","RecordType":4,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.1","ObjectId":"https://test.sharepoint.com/sites/a/Home.aspx"}
+          ]
+
+  # Fetch General content: an Exchange DLP event. ExchangeMetaData.FileSize is
+  # sent in scientific notation and RecipientCount as a plain number; both are
+  # mapped long through the ExchangeMetaData.* wildcard.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-1
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"Id":"ex-dlp","CreationTime":"2020-02-24T20:11:15","Workload":"Exchange","Operation":"DlpRuleMatch","RecordType":13,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"DlpAgent","UserKey":"1153801116545789462","UserType":4,"Version":1,"IncidentId":"c1dc582b-fa61-6020-1800-08d7b966ec64","ObjectId":"<AM0PR05MB4803CDA6206C2F2FEB36DB5AB8EC0@AM0PR05MB4803.eurprd05.prod.outlook.com>","SensitiveInfoDetectionIsIncluded":false,"ExchangeMetaData":{"BCC":[],"CC":["asr@example.net"],"FileSize":1.3405e4,"From":"asr@test.onmicrosoft.com","MessageID":"<AM0PR05MB4803CDA6206C2F2FEB36DB5AB8EC0@AM0PR05MB4803.eurprd05.prod.outlook.com>","RecipientCount":2,"Sent":"2020-02-24T20:11:14","Subject":"Here's the phony data","To":["asr@example.org"],"UniqueID":"8e103f2f-b293-4062-38b8-08d7b965b2fa"},"PolicyDetails":[{"PolicyId":"88956b36-45b3-4828-bf53-78603c0e5f58","PolicyName":"test","Rules":[{"ActionParameters":["GenerateIncidentReport:asr@test.onmicrosoft.com"],"Actions":["BlockAccess","NotifyUser","GenerateIncidentReport"],"ConditionsMatched":{"OtherConditions":[{"Name":"AccessScope","Value":"IncludeExternalUsers"}],"SensitiveInformation":[{"Confidence":75,"Count":1,"Location":"Message Body","SensitiveType":"419f449f-6d9d-4be1-a154-b531f7a91b41","UniqueCount":1}]},"RuleId":"51e3d97a-e159-4645-9092-608bd24e083a","RuleMode":"Enable","RuleName":"High volume of content detected test","Severity":"High"}]}]}]
