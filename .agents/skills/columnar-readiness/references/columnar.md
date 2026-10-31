@@ -199,8 +199,8 @@ exact value; if the benchmark shows it too slow and it cannot join the sort key,
   (`geo_point` stays `{lat, lon}`); single-element arrays as scalars; object arrays as
   parallel arrays; multi-value order preserved; objects inside `nested` elements split
   off (until fixed); `normalizer: lowercase` values
-  lowercased. elastic-package fails columnar runs with "expected array, found
-  <scalar>": tooling, not a package bug; check the values and note it. Anything else
+  lowercased. elastic-package without #4113 fails columnar runs with "expected array,
+  found <scalar>": tooling, not a package bug; check the values and note it. Anything else
   (a changed value, a dropped mapped field, precision loss) is a bug to report with
   the input document and both indexed versions.
 - **Benchmark** realistic volume (weeks, not `_dev/test` samples) in one LogsDB and one

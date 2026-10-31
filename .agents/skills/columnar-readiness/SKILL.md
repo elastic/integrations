@@ -16,7 +16,7 @@ finding: [`references/columnar.md`](references/columnar.md).
 
 ## Current status
 
-Last reviewed 2026-10-23; update these facts here when they change.
+Last reviewed 2026-10-31; update these facts here when they change.
 
 - **Elasticsearch:** `logsdb_columnar` is tech preview since 9.5, GA targeted for 9.7.
   Keyword doc-value skippers and bloom filters are still to come, so benchmarks move.
@@ -27,7 +27,11 @@ Last reviewed 2026-10-23; update these facts here when they change.
 - **Fleet** (elastic/kibana#292285, Kibana 9.7, unmerged) offers one toggle per
   integration and only sets the index mode: the package's mappings go in as they are.
   The toggle needs every logs stream ready: one that is `unsupported`, undeclared or
-  fed by an OpenTelemetry input keeps the whole integration on LogsDB.
+  has an `index_mode` keeps the whole integration on LogsDB. Fleet doesn't look at
+  inputs, so it doesn't keep a stream fed by an OpenTelemetry input on LogsDB by
+  itself: leave such a package undeclared (rule 4).
+- **elastic-package#4113** (unmerged) adds a `logsdb_columnar: true` system test
+  option, which turns the toggle on for the test.
 - **`doc_values: false` and `store: true`** are rejected by Elasticsearch in columnar
   modes (9.6 and 9.7 snapshots, 2026-10-22), including the `event.original` about 50
   packages import from ECS. Elasticsearch plans to accept `doc_values: false`; until then
@@ -100,7 +104,9 @@ In the root `manifest.yml`:
   must be 9.7+), and a **major** version bump.
 - `elasticsearch.logsdb_columnar: opt_in`, merged into an existing `elasticsearch:` key.
 - No stream may stay on LogsDB. With an OTel-input logs stream, or one that steps 2 or
-  3 leave blocked, revert the declaration and report the package blocked. A manifest
+  3 leave blocked, revert the declaration this change added and report the package
+  blocked. Never remove one a released version shipped: every new logs stream of a
+  ready package must be ready, so fix the stream or leave it out of the release. A manifest
   has one `elasticsearch:` key: merge, never paste a second one (YAML keeps only one).
 - Changelog: one `enhancement` entry with a placeholder link, for example "Add opt-in
   LogsDB columnar support, which requires Kibana 9.7.0." Name the index sort in the same
@@ -125,7 +131,8 @@ says how:
 
 Never exclude a columnar finding in `validation.yml`, except `SVR00016` with a comment
 when the dataset is never queried by time range. A stream you cannot fix now keeps the
-package undeclared: revert the declaration and report the finding.
+package undeclared: revert the declaration this change added (never a released one) and
+report the finding.
 
 ### 3. Run the script for what the validator cannot see
 
@@ -194,11 +201,12 @@ query in the PR. "None" is a valid decision.
 
 ### 6. Validate on a stack and benchmark
 
-`opt_in` alone never produces a columnar index, and elastic-package has no flag for the
-toggle. Get one with a Kibana that has the Fleet support (temporarily and uncommitted,
-set `logsdb_columnar: default` and install fresh, or turn the toggle on), or on any
-9.5+ stack with a `logs-<pkg>.<ds>@custom` component template that sets
-`index.mode: logsdb_columnar`. Run `elastic-package lint`, `build`, `test pipeline`
+`opt_in` alone never produces a columnar index. Get one with a Kibana that has the Fleet
+support: a system test config with `logsdb_columnar: true` (elastic-package#4113, for
+example `test-columnar-config.yml` next to the default one), the toggle, or,
+temporarily and uncommitted, `logsdb_columnar: default` and a fresh install. On any
+9.5+ stack, a `logs-<pkg>.<ds>@custom` component template that sets
+`index.mode: logsdb_columnar` works too. Run `elastic-package lint`, `build`, `test pipeline`
 (identical in both modes; no `-g` unless a fix moved logic into the pipeline),
 `test static`, and `test system` in both modes, diff, then benchmark the dashboard and
 rule queries (Query DSL and EQL, not only ES|QL), needle-in-a-haystack lookups first.
