@@ -226,6 +226,7 @@ The `vulnerability` data stream provides vulnerability findings from Trivy scan 
 | vulnerability.PkgPath | Path of the affected package or lockfile inside the scanned artifact. | keyword |
 | vulnerability.PrimaryURL | Primary reference URL of the vulnerability. | keyword |
 | vulnerability.PublishedDate | Date the vulnerability was published. | date |
+| vulnerability.References | Reference URLs of the vulnerability, as reported by Trivy. | keyword |
 | vulnerability.Severity | Severity as reported by Trivy. | keyword |
 | vulnerability.SeveritySource | Data source the severity was taken from. | keyword |
 | vulnerability.Status | Fix status of the vulnerability, for example fixed or affected. | keyword |
@@ -486,6 +487,7 @@ An example event for `vulnerability` looks as following:
 | vulnerability.PkgPath | Path of the affected package or lockfile inside the scanned artifact. | keyword |
 | vulnerability.PrimaryURL | Primary reference URL of the vulnerability. | keyword |
 | vulnerability.PublishedDate | Date the vulnerability was published. | date |
+| vulnerability.References | Reference URLs of the vulnerability, as reported by Trivy. | keyword |
 | vulnerability.Severity | Severity as reported by Trivy. | keyword |
 | vulnerability.SeveritySource | Data source the severity was taken from. | keyword |
 | vulnerability.Status | Fix status of the vulnerability, for example fixed or affected. | keyword |
