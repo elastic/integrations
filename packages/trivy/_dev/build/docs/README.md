@@ -1,17 +1,21 @@
-{{- generatedHeader }}
 # Trivy Integration for Elastic
 
 ## Overview
 
-The Trivy integration collects vulnerability findings from Trivy scan reports and maps them to ECS vulnerability fields. It reads flattened Trivy JSON reports stored as NDJSON files, with one vulnerability finding per line, using the filestream input.
+The Trivy integration collects vulnerability findings from Trivy scan reports and maps them to ECS vulnerability fields.
+It reads flattened Trivy JSON reports stored as NDJSON files, with one vulnerability finding per line, using the filestream input.
 
 ### Compatibility
 
-This integration is compatible with Trivy 0.68 and later scan reports in JSON format (`schema_version: 2`). The reports must be flattened to one finding per line before they are collected, as described in the Set up steps in Trivy section. The integration has been tested against image scan and Kubernetes scan reports.
+This integration is tested to be compatible with Trivy 0.68 and later scan reports in JSON format (`schema_version: 2`).
+The reports must be flattened to one finding per line before they are collected, as described in the Set up steps in Trivy section.
+The integration has been tested against image scan and Kubernetes scan reports.
 
 ### How it works
 
-Trivy writes a JSON report per scanned artifact. You convert that report into NDJSON, one line per vulnerability finding, and store it on disk. Elastic Agent reads the NDJSON files with the filestream input, and the ingest pipeline parses each line and maps the Trivy fields to ECS fields, including `vulnerability.id`, `vulnerability.severity`, `vulnerability.score.base`, and `vulnerability.package.*`. The original Trivy keys are preserved alongside the ECS fields for full fidelity.
+Trivy writes a JSON report per scanned artifact.
+You convert that report into NDJSON, one line per vulnerability finding, and store it on disk.
+Elastic Agent reads the NDJSON files with the filestream input, and the ingest pipeline parses each line and maps the Trivy fields to ECS fields, including `vulnerability.id`, `vulnerability.severity`, `vulnerability.score.base`, and `vulnerability.package.*`. The original Trivy keys are preserved alongside the ECS fields for full fidelity.
 
 ## What data does this integration collect?
 
@@ -20,7 +24,7 @@ The Trivy integration collects vulnerability findings, one per event. Each event
 * The vulnerability itself (CVE or advisory ID, severity, CVSS score, description, references, fix status)
 * The affected package (name, installed version, fixed version, path or lockfile)
 * The scanned artifact (container image reference, image ID, repository tags, operating system)
-* The scan context (scan time, Trivy version, and for Kubernetes scans the cluster, namespace, and workload)
+* The scan context (scan time, Trivy version, scanning host, and for Kubernetes scans the cluster, namespace, and workload)
 
 ### Supported use cases
 
@@ -30,7 +34,7 @@ The Trivy integration collects vulnerability findings, one per event. Each event
 
 ## What do I need to use this integration?
 
-* Elastic Agent 8.19 or 9.1 and later
+* Elastic Agent 9.4 and later
 * Trivy 0.68 or later
 * Write access to a directory on the host where flattened NDJSON report files are stored
 
@@ -49,14 +53,15 @@ Run a Trivy scan with JSON output, then flatten the report to NDJSON with one fi
 ```bash
 trivy image --format json registry.example.com/team-a/webapp:13 > report.json
 
-jq -c '
+jq -c --arg host "$(hostname)" '
   .Results[] as $r
   | ($r.Vulnerabilities // [])[]
   | {
       scan: {
         time: (.Metadata.scan_time // now | todate),
         schema_version: .SchemaVersion,
-        trivy_version: .Metadata.Version
+        trivy_version: .Metadata.Version,
+        hostname: $host
       },
       resource: null,
       artifact: (.Metadata | {ArtifactName, ArtifactType, OS, ImageID, RepoTags, RepoDigests, Reference}),
@@ -66,7 +71,8 @@ jq -c '
 ' report.json >> /var/log/trivy/trivy-vulnerability-image.ndjson
 ```
 
-For Kubernetes scans, `trivy k8s --format json` produces one report per workload. Add the `--cluster-name` value and the workload metadata from the report to the `scan` and `resource` objects so findings can be attributed to a namespace and deployment.
+For Kubernetes scans, `trivy k8s --format json` produces one report per workload.
+Add the `--cluster-name` value, the `hostname` of the scanning machine, and the workload metadata from the report to the `scan` and `resource` objects so findings can be attributed to a namespace and deployment.
 
 Rotate or size the NDJSON files as needed. Elastic Agent tracks read offsets per file, so appending to an existing file is safe.
 
@@ -103,7 +109,9 @@ The transform runs every 5 minutes and keeps 90 days of findings. Findings older
 
 ## Performance and scaling
 
-Full Kubernetes cluster scans can produce hundreds of thousands of findings per run. Prefer appending scan output to rotating files over rewriting entire files, and keep `preserve_original_event` disabled unless raw lines are required. For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+Full Kubernetes cluster scans can produce hundreds of thousands of findings per run.
+Prefer appending scan output to rotating files over rewriting entire files, and keep `preserve_original_event` disabled unless raw lines are required.
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
 ## Reference
 
