@@ -1,0 +1,233 @@
+{
+  "id": "nginx_otel-client-errors-ml",
+  "type": "ml-module",
+  "migrationVersion": {
+    "search": "7.9.3"
+  },
+  "references": [],
+  "attributes": {
+    "id": "nginx_otel-client-errors-ml",
+    "title": "[Nginx OTel] Client error anomalies",
+    "description": "Detect Nginx hosts whose share of client errors (4xx), authentication failures (401/403) or not-found responses (404) rises above their own baseline, from the Nginx (OpenTelemetry) access logs.",
+    "type": "Web server logs",
+    "logo": {
+      "icon": "logoNginx"
+    },
+    "defaultIndexPattern": "logs-nginx.access.otel-*",
+    "query": {
+      "bool": {
+        "filter": [
+          {
+            "term": {
+              "data_stream.dataset": "nginx.access.otel"
+            }
+          },
+          {
+            "exists": {
+              "field": "host.name"
+            }
+          }
+        ],
+        "must_not": {
+          "terms": {
+            "_tier": [
+              "data_frozen",
+              "data_cold"
+            ]
+          }
+        }
+      }
+    },
+    "jobs": [
+      {
+        "id": "nginx_host_client_error_anomaly",
+        "config": {
+          "groups": [
+            "nginx",
+            "otel"
+          ],
+          "description": "Nginx OTel access logs: per-host share of 4xx, 401/403 and 404 responses above the host's own baseline. Shares are computed in the datafeed every 15 minutes; hosts with fewer than 50 requests are skipped and status-page requests are excluded.",
+          "analysis_config": {
+            "bucket_span": "15m",
+            "detectors": [
+              {
+                "detector_description": "High share of 4xx client errors per host (computed in the datafeed)",
+                "function": "high_mean",
+                "field_name": "client_error_share",
+                "partition_field_name": "host.name"
+              },
+              {
+                "detector_description": "High share of 401/403 authentication failures per host (computed in the datafeed)",
+                "function": "high_mean",
+                "field_name": "auth_error_share",
+                "partition_field_name": "host.name"
+              },
+              {
+                "detector_description": "High share of 404 not-found responses per host (computed in the datafeed)",
+                "function": "high_mean",
+                "field_name": "not_found_share",
+                "partition_field_name": "host.name"
+              }
+            ],
+            "influencers": [
+              "host.name"
+            ],
+            "summary_count_field_name": "doc_count"
+          },
+          "analysis_limits": {
+            "model_memory_limit": "128mb"
+          },
+          "data_description": {
+            "time_field": "@timestamp",
+            "time_format": "epoch_ms"
+          },
+          "custom_settings": {
+            "created_by": "ml-module-nginx-otel-client-errors-ml",
+            "custom_urls": [
+              {
+                "url_name": "Request Health for this host",
+                "url_value": "dashboards#/view/nginx_otel-a1b2c3d4-e5f6-7890-abcd-ef1234567890?_g=(filters:!(),time:(from:'$earliest$',mode:absolute,to:'$latest$'))&_a=(filters:!(),query:(language:kuery,query:'host.name:\"$host.name$\"'))"
+              }
+            ]
+          },
+          "model_plot_config": {
+            "enabled": true,
+            "annotations_enabled": true
+          }
+        }
+      }
+    ],
+    "datafeeds": [
+      {
+        "id": "datafeed-nginx_host_client_error_anomaly",
+        "job_id": "nginx_host_client_error_anomaly",
+        "config": {
+          "job_id": "nginx_host_client_error_anomaly",
+          "indices": [
+            "INDEX_PATTERN_NAME"
+          ],
+          "query": {
+            "bool": {
+              "filter": [
+                {
+                  "term": {
+                    "data_stream.dataset": "nginx.access.otel"
+                  }
+                },
+                {
+                  "exists": {
+                    "field": "http.response.status_code"
+                  }
+                }
+              ],
+              "must_not": [
+                {
+                  "term": {
+                    "url.path": "/nginx_status"
+                  }
+                }
+              ]
+            }
+          },
+          "indices_options": {
+            "allow_no_indices": true
+          },
+          "runtime_mappings": {
+            "is_client_error": {
+              "type": "long",
+              "script": {
+                "source": "if (doc.containsKey('http.response.status_code') && doc['http.response.status_code'].size() > 0) { long c = doc['http.response.status_code'].value; emit(c >= 400 && c < 500 ? 1 : 0); }"
+              }
+            },
+            "is_auth_error": {
+              "type": "long",
+              "script": {
+                "source": "if (doc.containsKey('http.response.status_code') && doc['http.response.status_code'].size() > 0) { long c = doc['http.response.status_code'].value; emit(c == 401 || c == 403 ? 1 : 0); }"
+              }
+            },
+            "is_not_found": {
+              "type": "long",
+              "script": {
+                "source": "if (doc.containsKey('http.response.status_code') && doc['http.response.status_code'].size() > 0) { long c = doc['http.response.status_code'].value; emit(c == 404 ? 1 : 0); }"
+              }
+            }
+          },
+          "aggregations": {
+            "buckets": {
+              "composite": {
+                "size": 1000,
+                "sources": [
+                  {
+                    "date": {
+                      "date_histogram": {
+                        "field": "@timestamp",
+                        "fixed_interval": "15m"
+                      }
+                    }
+                  },
+                  {
+                    "host.name": {
+                      "terms": {
+                        "field": "host.name"
+                      }
+                    }
+                  }
+                ]
+              },
+              "aggregations": {
+                "@timestamp": {
+                  "max": {
+                    "field": "@timestamp"
+                  }
+                },
+                "client_errors": {
+                  "sum": {
+                    "field": "is_client_error"
+                  }
+                },
+                "auth_errors": {
+                  "sum": {
+                    "field": "is_auth_error"
+                  }
+                },
+                "not_found": {
+                  "sum": {
+                    "field": "is_not_found"
+                  }
+                },
+                "client_error_share": {
+                  "bucket_script": {
+                    "buckets_path": {
+                      "e": "client_errors",
+                      "n": "_count"
+                    },
+                    "script": "params.n >= 50 ? params.e / params.n : null"
+                  }
+                },
+                "auth_error_share": {
+                  "bucket_script": {
+                    "buckets_path": {
+                      "e": "auth_errors",
+                      "n": "_count"
+                    },
+                    "script": "params.n >= 50 ? params.e / params.n : null"
+                  }
+                },
+                "not_found_share": {
+                  "bucket_script": {
+                    "buckets_path": {
+                      "e": "not_found",
+                      "n": "_count"
+                    },
+                    "script": "params.n >= 50 ? params.e / params.n : null"
+                  }
+                }
+              }
+            }
+          },
+          "frequency": "15m"
+        }
+      }
+    ]
+  }
+}
