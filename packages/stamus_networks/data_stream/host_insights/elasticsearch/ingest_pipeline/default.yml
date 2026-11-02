@@ -7,6 +7,8 @@
 # pipeline is a real observation, so _id is left to Elasticsearch. entity.id is the
 # host IP. The vendor documents no MAC address or asset UUID, so that key is weak
 # across DHCP reassignment. Current state per host is left to downstream consumers.
+# Filebeat's JSON codec can also deliver the same record already parsed, with a
+# string host set to the probe name. That string is the probe, not ECS host.
 description: >-
   Pipeline for Stamus Networks Clear NDR Host Insights. Maps host inventory
   profiles to ECS host and entity fields.
@@ -50,6 +52,38 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
 
+  - script:
+      tag: hoist_preparsed_host_insights_under_json
+      lang: painless
+      description: >-
+        Filebeat and Logstash deliver an already-parsed host insights record.
+        Move vendor root fields under json so the rest of this pipeline can
+        map them. A string host is the probe name and moves with those fields,
+        so it never hits the ECS host object. Elastic Agent documents already
+        have event.original, so this script does not run for them.
+      if: ctx.event?.original == null && ctx.json == null && (ctx.host_id != null || ctx.event_type == 'host_id' || ctx.host instanceof String)
+      source: |
+        def keep = new HashSet();
+        keep.add('@timestamp');
+        keep.add('agent');
+        keep.add('elastic_agent');
+        keep.add('ecs');
+        keep.add('data_stream');
+        keep.add('event');
+        keep.add('tags');
+        keep.add('observer');
+        keep.add('log');
+        keep.add('input');
+        def vendor = new HashMap();
+        for (def key : new ArrayList(ctx.keySet())) {
+          if (keep.contains(key) || key.startsWith('_')) {
+            continue;
+          }
+          vendor[key] = ctx[key];
+          ctx.remove(key);
+        }
+        ctx.json = vendor;
+
   - json:
       field: event.original
       target_field: json
@@ -60,6 +94,22 @@ processors:
             field: error.message
             tag: append_error_parse_json
             value: '{{{ _ingest.on_failure_message }}}'
+
+  - script:
+      tag: relocate_string_host
+      lang: painless
+      description: >-
+        Drop a root string host left beside a JSON string. The probe name is
+        kept on json.host when that field is empty.
+      if: ctx.host instanceof String
+      source: |
+        if (ctx.json == null) {
+          ctx.json = new HashMap();
+        }
+        if (ctx.json.host == null) {
+          ctx.json.host = ctx.host;
+        }
+        ctx.remove('host');
 
   # --- Entity identity: host.* and entity.* ---
   - append:
@@ -121,9 +171,13 @@ processors:
           }
         }
         if (bestHost != null) {
-          ctx.host = ctx.host == null ? new HashMap() : ctx.host;
+          if (!(ctx.host instanceof Map)) {
+            ctx.host = new HashMap();
+          }
           ctx.host.name = bestHost;
-          ctx.entity = ctx.entity == null ? new HashMap() : ctx.entity;
+          if (!(ctx.entity instanceof Map)) {
+            ctx.entity = new HashMap();
+          }
           ctx.entity.name = bestHost;
         }
       on_failure:
@@ -188,7 +242,7 @@ processors:
       tag: append_host_name_to_related_hosts
       value: '{{{host.name}}}'
       allow_duplicates: false
-      if: ctx.host?.name != null
+      if: ctx.host instanceof Map && ctx.host.name != null
   - append:
       field: related.ip
       tag: append_host_ip_to_related_ip
@@ -211,6 +265,14 @@ processors:
       tag: append_event_type_info
       value: info
       allow_duplicates: false
+
+  - set:
+      field: observer.name
+      copy_from: json.host
+      ignore_empty_value: true
+      if: ctx.observer?.name == null && ctx.json?.host instanceof String
+      tag: set_observer_name_from_probe_host
+      description: Probe name from a string host field.
 
   # --- Cleanup ---
   - remove:
