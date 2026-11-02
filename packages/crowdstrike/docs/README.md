@@ -3047,8 +3047,6 @@ An example event for `fdr` looks as following:
 | crowdstrike.firstDetected |  | date |
 | crowdstrike.hostname |  | keyword |
 | crowdstrike.id |  | keyword |
-| crowdstrike.info.host.\* | Host information enriched from aidmaster data. | object |
-| crowdstrike.info.user.\* | User information enriched from userinfo data. | object |
 | crowdstrike.internal_only |  | boolean |
 | crowdstrike.iso_benchmark_ids |  | keyword |
 | crowdstrike.lastDetected |  | date |
