@@ -1,0 +1,105 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+  maxsize: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+auth.oauth2:
+  provider: google
+  google:
+    jwt_file: {{jwt_file}}
+    jwt_json: {{jwt_json}}
+    delegated_account: {{delegated_account}}
+  scopes:
+    - https://www.googleapis.com/auth/admin.directory.device.chromeos.readonly
+resource.url: {{directory_api_host}}
+state:
+  customer: {{customer}}
+{{#if org_unit_path}}
+  org_unit_path: {{escape_string org_unit_path}}
+{{/if}}
+  batch_size: {{batch_size}}
+redact:
+  fields: ~
+# A cycle makes one request per page of the device inventory. Keep the budget
+# high enough that a walk is never cut short and resumed at the next interval.
+max_executions: 100000
+program: |-
+  // Each cycle is a full walk of chromeosdevices.list. The page token is
+  // honoured only while the walk continues ("want_more" set by the previous
+  // evaluation); any other evaluation starts a new walk from the first page,
+  // so no token is carried into the next interval.
+  (state.?want_more.orValue(false) ? state.?page_token.orValue("") : "").as(page_token,
+    state.drop("page_token").with(
+      request(
+        "GET",
+        state.url.trim_right("/") + "/admin/directory/v1/customer/" + state.customer + "/devices/chromeos?" + {
+          "projection": ["FULL"],
+          "maxResults": [string(int(state.batch_size))],
+          // The API takes the path without its leading "/". The root path
+          // "/" becomes empty, which lists every device.
+          ?"orgUnitPath": (state.?org_unit_path.orValue("").trim_prefix("/") != "") ?
+            optional.of([state.org_unit_path.trim_prefix("/")])
+          :
+            optional.none(),
+          ?"includeChildOrgunits": (state.?org_unit_path.orValue("").trim_prefix("/") != "") ? optional.of(["true"]) : optional.none(),
+          ?"pageToken": (page_token != "") ? optional.of([page_token]) : optional.none(),
+        }.format_query()
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body,
+            {
+              // A page with no "chromeosdevices" key has no records. A
+              // placeholder keeps the walk going and is dropped by a processor.
+              "events": (size(body.?chromeosdevices.orValue([])) > 0) ?
+                dyn(body.chromeosdevices.map(d, {"message": d.encode_json()}))
+              :
+                dyn([{"retry": true}]),
+              ?"page_token": (body.?nextPageToken.orValue("") != "") ? optional.of(body.nextPageToken) : optional.none(),
+              "want_more": body.?nextPageToken.orValue("") != "",
+            }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_right("/") + "/admin/directory/v1/customer/" + state.customer + "/devices/chromeos: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}
