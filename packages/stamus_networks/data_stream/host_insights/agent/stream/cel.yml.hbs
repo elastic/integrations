@@ -145,11 +145,10 @@ program: |-
   // ingest pipeline (ip is reused via DHCP, so "the same IP later" is not
   // assumed to be "the same host").
   //
-  // Pagination envelope on a live Clear NDR enterprise server is the same DRF
-  // {count, next, previous, results} shape. That server honors `page` and ignores
-  // `page_number` (community/SELKS is the reverse), so both are sent. `next`
-  // non-null means more pages; a short or empty page is the fallback when `next`
-  // is omitted. The list omits empty arrays, and a populated page includes
+  // Pagination is DRF {count, next, previous, results}. A full Clear NDR server
+  // honors `page`. Community Clear NDR honors `page_number`. Both are sent.
+  // `next` non-null means more pages; a short or empty page is the fallback when
+  // `next` is omitted. The list omits empty arrays, and a populated page includes
   // hostname[] and services[]. `host_id.client_service` is a list on some hosts.
   {
     "page": int(state.?page.orValue(1)),
