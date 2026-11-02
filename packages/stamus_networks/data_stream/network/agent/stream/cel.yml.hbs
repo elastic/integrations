@@ -1,0 +1,196 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_token: {{api_token}}
+  page_size: {{page_size}}
+  initial_interval: {{initial_interval}}
+  collection_delay: {{collection_delay}}
+redact:
+  fields:
+    - api_token
+program: |-
+  // Stamus Networks protocol/network logs: GET /rest/rules/es/events_tail/?qfilter=event_type:<phase>
+  //
+  // One ordered phase list per time window. An empty first page exhausts that phase.
+  // The cursor then advances to the next event type in the same [from_date, to_date)
+  // window (want_more stays true). After the last type, the window advances and
+  // want_more is false until the next poll. Every phase is primary data: transport
+  // errors and HTTP errors preserve the cursor and retry that same phase/page/window.
+  // Unlike the alerts stream, a 4xx does not skip ahead.
+  //
+  // Pagination is DRF PageNumberPagination: {count, next, previous, results}.
+  // page_number is the server-side cursor. `next` non-null means more pages; a short
+  // or empty page is the fallback when `next` is omitted.
+  //
+  // collection_delay shifts to_date back from now so events that become searchable
+  // slightly after their own timestamp are not skipped when the window advances.
+  // from_date is hoisted so a larger collection_delay cannot invert the window
+  // (to_date < from_date); the clamp produces a zero-width window instead.
+  state.?cursor.from_date.orValue(
+    string(int(now - duration(state.collection_delay) - duration(state.initial_interval)) * 1000)
+  ).as(fromDate,
+    [
+      "fileinfo",
+      "dns",
+      "http",
+      "tls",
+      "flow",
+      "snmp",
+      "krb5",
+      "anomaly",
+      "smb",
+      "smb_insights",
+      "quic",
+      "dhcp",
+      "dcerpc",
+      "ssh",
+      "rdp",
+      "mqtt",
+      "sip",
+      "tftp",
+      "smtp",
+      "pop3",
+      "ftp",
+      "ftp_data",
+      "http2",
+      "nfs",
+      "ike",
+      "ikev2",
+      "dnp3",
+      "rfb",
+      "bittorrent_dht",
+      "pgsql",
+      "modbus",
+      "arp",
+      "netflow",
+      "stats",
+    ].as(phases,
+      {
+        "phase_index": int(state.?cursor.phase_index.orValue(0)),
+        "page": int(state.?cursor.page.orValue(1)),
+        "from_date": fromDate,
+        "to_date": state.?cursor.to_date.orValue(
+          string(max(int(fromDate), int(now - duration(state.collection_delay)) * 1000))
+        ),
+      }.as(cur,
+        state.with(
+          // do_request() can return a CEL error (not an HTTP response) for a
+          // transport failure. is_error() is applied directly to that binding,
+          // not to try(resp): try() stringifies errors, so is_error() on a
+          // try()'d value is always false. Preserve "cursor": cur unmodified.
+          request(
+            "GET",
+            state.url.trim_right("/") + "/rest/rules/es/events_tail/?" + {
+              "qfilter": ["event_type:" + phases[cur.phase_index]],
+              "from_date": [cur.from_date],
+              "to_date": [cur.to_date],
+              "page_size": [string(int(state.page_size))],
+              "page_number": [string(cur.page)],
+            }.format_query()
+          ).with(
+            {
+              "Header": {
+                "Authorization": ["Token " + state.api_token],
+                "Content-Type": ["application/json"],
+              },
+            }
+          ).do_request().as(resp,
+            is_error(resp) ?
+              {
+                "code": "transport_error",
+                "id": "transport_error",
+                "message": "GET /rest/rules/es/events_tail/: transport-level failure (timeout, connection reset, DNS failure, TLS handshake failure, etc.) before an HTTP response was received: " + try(resp, "error").error,
+              }.as(err,
+                {"events": [{"error": err}], "cursor": cur, "want_more": false}
+              )
+            : (resp.StatusCode == 200) ?
+              // flow_id is a large integer that would lose trailing-digit
+              // precision through CEL's float64 JSON layer. decode_json_string_numbers()
+              // keeps every JSON number's original textual form. encode_json()
+              // writes those digits back as bare JSON numbers.
+              resp.Body.decode_json_string_numbers().as(body,
+                body.?results.orValue([]).map(e, {"message": e.encode_json()}).as(mapped,
+                  (
+                    size(mapped) != 0 && (
+                      body.?next.hasValue() ?
+                        (body.?next.orValue(null) != null)
+                      :
+                        size(mapped) >= int(state.page_size)
+                    )
+                  ) ?
+                    {
+                      "events": dyn(mapped),
+                      "cursor": cur.with({"page": cur.page + 1}),
+                      "want_more": true,
+                    }
+                  : (cur.phase_index + 1 < size(phases)) ?
+                    {
+                      "events": (size(mapped) > 0) ? dyn(mapped) : dyn([{"retry": true}]),
+                      "cursor": {
+                        "phase_index": cur.phase_index + 1,
+                        "page": 1,
+                        "from_date": cur.from_date,
+                        "to_date": cur.to_date,
+                      },
+                      "want_more": true,
+                    }
+                  :
+                    {
+                      "events": (size(mapped) > 0) ? dyn(mapped) : dyn([{"retry": true}]),
+                      "cursor": {"phase_index": 0, "from_date": cur.to_date},
+                      "want_more": false,
+                    }
+                )
+              )
+            :
+              {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET /rest/rules/es/events_tail/: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              }.as(err,
+                // Return errors as a one-element list with an explicit unmodified
+                // cursor. A single-object "events" value makes the CEL runtime
+                // delete the stored cursor (see o365 audit cel.yml.hbs). Every
+                // HTTP status preserves the phase/page/window so the next
+                // evaluation retries it. A persistent failure therefore stalls
+                // on that phase instead of skipping protocol logs.
+                {"events": [{"error": err}], "cursor": cur, "want_more": false}
+              )
+          )
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{escape_string tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}

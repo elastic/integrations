@@ -1,0 +1,106 @@
+title: "Stamus Networks network"
+type: logs
+streams:
+  - input: cel
+    title: "Stamus Networks network"
+    description: |-
+      Collect Suricata protocol and network logs (DNS, HTTP, TLS, flow, and the other
+      events_tail event types) from the Clear NDR Central Server REST API.
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: "Collection interval"
+        description: |-
+          How often the API is polled, for example, 5m, 1h. DNS and flow events are high
+          volume; raise this if the Central Server or the ingest pipeline falls behind.
+        required: true
+        show_user: true
+        default: 5m
+      - name: initial_interval
+        type: text
+        title: "Initial lookback"
+        description: |-
+          Lookback window used on the very first poll (no stored cursor yet). Go duration units
+          only (h, m, s) -- day units are not supported. Shorten this on first install: DNS and
+          flow logs are high volume, and the default 24h window can be a large first collection.
+        required: true
+        show_user: true
+        default: 24h
+      - name: collection_delay
+        type: text
+        title: "Collection delay"
+        description: |-
+          Safety margin subtracted from the upper bound (`to_date`) of every collection window,
+          to tolerate delay between an event's own timestamp and the moment it becomes searchable
+          via the events_tail API. Without this margin, an event that becomes searchable even a
+          moment after its window's upper bound has already been queried is permanently skipped:
+          the window boundary only ever advances forward. Increase this if the target CNCS
+          instance has higher Suricata-to-searchable-index latency than the default assumes. Go
+          duration units only (h, m, s).
+        required: true
+        show_user: true
+        default: 1m
+      - name: page_size
+        type: integer
+        title: "Page size"
+        description: |-
+          Pagination page size for the events_tail endpoint. The vendor's documented default/cap
+          is 30 -- verify at deployment time whether a larger value is accepted by the target CNCS.
+        required: true
+        show_user: false
+        default: 30
+      - name: http_client_timeout
+        type: text
+        title: "HTTP client timeout"
+        description: |-
+          Duration before declaring that the HTTP client connection has timed out, for example, 30s.
+        required: false
+        show_user: false
+        default: 30s
+      - name: ssl
+        type: yaml
+        title: "TLS configuration"
+        description: |-
+          TLS configuration for the Central Server connection (certificate_authorities,
+          verification_mode, and so on). Self-signed certificates are common on CNCS deployments.
+        required: false
+        show_user: false
+      - name: proxy_url
+        type: text
+        title: "Proxy URL"
+        description: |-
+          Optional HTTP/HTTPS proxy URL, for example, http://proxy.example.com:3128.
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: "Tags"
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - stamus_networks-network
+      - name: processors
+        type: yaml
+        title: "Processors"
+        description: |-
+          Processors to apply to the event before it is sent to Elasticsearch. See
+          [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html)
+          for details.
+        required: false
+        show_user: false
+      - name: enable_request_tracer
+        type: bool
+        title: "Enable request tracing"
+        description: |-
+          Logs HTTP requests and responses to the agent's local filesystem for debugging. Compromises
+          security (may log secrets) -- use for troubleshooting only, not in steady-state production.
+        required: false
+        show_user: false
+        default: false
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

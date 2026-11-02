@@ -4,9 +4,9 @@
 
 ## Overview
 
-The Stamus Networks integration for Elastic enables collection of IDS/IPS alerts, Declaration of
-Compromise (DoC) and Declaration of Policy Violation (DoPV) correlation records, and host
-inventory data from [Stamus Networks Clear NDR](https://www.stamus-networks.com/) (formerly
+The Stamus Networks integration for Elastic enables collection of IDS/IPS alerts, protocol and
+network logs, Declaration of Compromise (DoC) and Declaration of Policy Violation (DoPV)
+correlation records, and host inventory data from [Stamus Networks Clear NDR](https://www.stamus-networks.com/) (formerly
 branded "Stamus Security Platform") — a Network Detection and Response (NDR) / Network Security
 Monitoring (NSM) platform built on [Suricata](https://suricata.io/), the open-source IDS/IPS/NSM
 engine. Data is collected from the Clear NDR Central Server (CNCS) REST API.
@@ -22,9 +22,11 @@ Stamus Tier 3 license; the `alerts` data stream otherwise works with the lower T
 
 This integration polls the CNCS REST API on a configurable interval using the `cel` input. The
 `alerts` data stream retrieves Suricata IDS/IPS alert events and Stamus DoC/DoPV correlation
-records with a persisted time-range cursor (`from_date`/`to_date`). The `host_insights` data
-stream retrieves the full host inventory on every poll cycle, since the API does not expose an
-incremental ("updated since") filter for that endpoint.
+records with a persisted time-range cursor (`from_date`/`to_date`). The `network` data stream
+uses the same `events_tail` endpoint and cursor, walking an ordered list of protocol event types
+(fileinfo, then DNS, HTTP, TLS, flow, and the remaining Suricata EVE types) inside each window.
+The `host_insights` data stream retrieves the full host inventory on every poll cycle, since the
+API does not expose an incremental ("updated since") filter for that endpoint.
 
 Geolocation and ASN fields (`source.geo`, `destination.geo`, `source.as`, `destination.as`) on the
 `alerts` data stream are derived by this integration's ingest pipeline using Elasticsearch's
@@ -40,6 +42,11 @@ The Stamus Networks integration collects the following data streams:
   stamus`) when present, plus Sightings (newly discovered asset attributes), Outlier Alert
   (`stamus_novel`), and File Identification classification tags that decorate alert/stamus
   documents.
+* **network**: Suricata protocol and network logs from the same `events_tail` API, in one data
+  stream rather than one stream per event type. DNS and flow are high volume. Shorten
+  **Initial lookback** (`initial_interval`, default 24h) on first install so the first poll does
+  not pull a full day of those logs. Event types with no sample in the reference cluster are still
+  collected and mapped from the Suricata EVE schema.
 * **host_insights**: a continuously-updated per-host inventory/profile object (hostnames, users,
   roles, services, TLS/SSH/HTTP client fingerprints). This is an entity/inventory data stream, not
   a timestamped event stream.
@@ -89,17 +96,18 @@ Add the **Stamus Networks** integration in Fleet and configure:
   (no trailing `/rest/`).
 * **API Token** — the token generated above.
 
-The `alerts` and `host_insights` data streams share these two settings. Each data stream also
-exposes its own **Interval** (polling frequency). `alerts` also exposes an **Initial lookback**
-(default 24h). For `host_insights`, keep the interval conservative relative to the size of your
-host inventory, since every poll cycle performs a full re-read of all hosts (see Performance and
-scaling, below).
+The `alerts`, `network`, and `host_insights` data streams share these two settings. Each data
+stream also exposes its own **Interval** (polling frequency) and, for `alerts` and `network`, an
+**Initial lookback**. DNS and flow logs on the `network` stream are high volume: shorten
+**Initial lookback** on first install (the default is 24h). For `host_insights`, keep the interval
+conservative relative to the size of your host inventory, since every poll cycle performs a full
+re-read of all hosts (see Performance and scaling, below).
 
 ### Validation
 
 After enabling the integration, generate or wait for Suricata alert traffic on your monitored
 network, then check **Discover** in Kibana for documents in the
-`logs-stamus_networks.alerts-*` and `logs-stamus_networks.host_insights-*` data streams.
+`logs-stamus_networks.alerts-*`, `logs-stamus_networks.network-*`, and `logs-stamus_networks.host_insights-*` data streams.
 
 ## Troubleshooting
 
@@ -113,9 +121,10 @@ network, then check **Discover** in Kibana for documents in the
 
 ## Performance and scaling
 
-The `alerts` data stream polls `events_tail` once per interval. The default interval is 5m and the
-default initial lookback is 24h. `collection_delay` (default 1m) keeps the cursor behind now so
-alerts that become searchable slightly after their own timestamp are not skipped.
+The `network` data stream reads every protocol phase in each time window. DNS and flow dominate
+volume. On first install, shorten **Initial lookback** from the default 24h so the first cursor
+does not request a full day of those events. After the cursor has caught up, the polling interval
+(default 5m) is the steady-state load.
 
 The `host_insights` data stream performs a full inventory read on every poll cycle, since the
 Stamus REST API does not expose an incremental ("updated since") filter for the host insights
@@ -169,7 +178,7 @@ To collect logs via API endpoint, configure the following parameters:
 ### API usage
 
 These APIs are used with this integration:
-* `GET /rest/rules/es/events_tail/` — alert and stamus (Declaration of Compromise/Policy Violation) events for the `alerts` data stream.
+* `GET /rest/rules/es/events_tail/` — alert and stamus (Declaration of Compromise/Policy Violation) events for the `alerts` data stream, and protocol/network logs for the `network` data stream.
 * `GET /rest/appliances/host_id/` — host inventory profiles for the `host_insights` data stream.
 
 See the [REST API documentation](https://docs.stamus-networks.com/42.2.0/developer-corner/rest-api.html) for authentication, pagination, and filtering details.
@@ -184,10 +193,12 @@ See the [REST API documentation](https://docs.stamus-networks.com/42.2.0/develop
 
 ### Dashboards
 
-The package ships two dashboards, linked to each other:
+The package ships four dashboards, linked to each other:
 
 - **[Logs Stamus Networks] IDS and Declarations** covers signature alerts and Declaration of Compromise or Policy Violation records: categories, severity, affected products, attack targets, malware families, Stamus classification, kill chain, threat families, assets, and sightings.
+- **[Logs Stamus Networks] Protocol Insights** covers TLS versions, server names, JA4 and JA3S, transferred files, DNS questions, HTTP hostnames, and protocol anomalies.
 - **[Logs Stamus Networks] Host Insights** covers the host inventory: roles, hostnames, usernames, services, HTTP servers, TLS issuers, and SSH or HTTP client software.
+- **[Logs Stamus Networks] SMB Insights** covers SMB commands, status, dialects, named pipes, shares, and SMB insight summaries.
 
 ### Data streams
 
@@ -454,6 +465,467 @@ An example event for `alerts` looks as following:
     "tags": [
         "forwarded",
         "stamus_networks-alerts"
+    ]
+}
+```
+
+#### network
+
+The `network` data stream collects Suricata protocol and network logs from
+`GET /rest/rules/es/events_tail/`. One CEL input walks a fixed phase list. Live event types are
+collected first (fileinfo, dns, http, tls, flow, snmp, krb5, anomaly, smb, smb_insights, quic,
+dhcp, dcerpc, ssh, rdp, mqtt, sip, tftp), then event types that had no sample in the reference
+cluster but are still requested (smtp, pop3, ftp, ftp_data, http2, nfs, ike, ikev2, dnp3, rfb,
+bittorrent_dht, pgsql, modbus, arp, netflow, stats). An empty first page ends that phase. After
+the last phase, the time window advances.
+
+DNS and flow are high volume. Shorten `initial_interval` on first install.
+
+A transport error or HTTP error keeps the cursor on the current phase and page. The next poll
+retries that request. The stream does not skip a protocol phase after an error.
+
+##### network fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| anomaly.event | Anomaly event name. | keyword |
+| anomaly.layer | Protocol layer that reported the anomaly. | keyword |
+| anomaly.type | Anomaly type. | keyword |
+| arp.dest_ip | ARP target protocol address. | ip |
+| arp.dest_mac | ARP target hardware address. | keyword |
+| arp.hw_type | ARP hardware type. | long |
+| arp.opcode | ARP opcode. | keyword |
+| arp.proto_type | ARP protocol type. | long |
+| arp.src_ip | ARP sender protocol address. | ip |
+| arp.src_mac | ARP sender hardware address. | keyword |
+| bittorrent_dht.transaction_id | BitTorrent DHT transaction id. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| dcerpc.call_id | DCERPC call id. | long |
+| dcerpc.interfaces.ack_result | Interface acknowledgement result. | long |
+| dcerpc.interfaces.uuid | Interface UUID. | keyword |
+| dcerpc.interfaces.version | Interface version. | keyword |
+| dcerpc.request | DCERPC request type. | keyword |
+| dcerpc.response | DCERPC response type. | keyword |
+| destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.packets | Packets sent from the destination to the source. | long |
+| destination.port | Port of the destination. | long |
+| dhcp.assigned_ip | Address the server assigned. | ip |
+| dhcp.client_ip | Client IP address from the DHCP message. | ip |
+| dhcp.client_mac | Client hardware address. | keyword |
+| dhcp.hostname | Hostname requested or offered. | keyword |
+| dhcp.params | Requested DHCP parameter names. | keyword |
+| dhcp.type | DHCP message type name. | keyword |
+| dnp3.application.function_code | DNP3 application function code. | long |
+| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | group |
+| dns.answers.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
+| dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
+| dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
+| dns.answers.type | The type of data contained in this resource record. | keyword |
+| dns.header_flags | Array of 2 letter DNS header flags. | keyword |
+| dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
+| dns.question.domain | Domain portion written by the registered_domain processor for the DNS question name. | keyword |
+| dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
+| dns.question.registered_domain | The highest registered domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| dns.question.subdomain | The subdomain is all of the labels under the registered_domain. If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
+| dns.question.type | The type of record being queried. | keyword |
+| dns.resolved_ip | Array containing all IPs seen in `answers.data`. The `answers` array can be difficult to use, because of the variety of data formats it can contain. Extracting all IP addresses seen in there to `dns.resolved_ip` makes it possible to index them as IP addresses, and makes them easier to visualize and query for. | ip |
+| dns.response_code | The DNS response code. | keyword |
+| dns.type | The type of DNS event captured, query or answer. If your source of DNS events only gives you DNS queries, you should only create dns events of type `dns.type:query`. If your source of DNS events gives you answers as well, you should create one event per query (optionally as soon as the query is seen). And a second event containing all query details as well as an array of answers. | keyword |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.status | Suricata EVE email.status. Used for SMTP and POP3 events. POP3 has no pop3 object. | keyword |
+| email.to.address | The email address of recipient | keyword |
+| error.code | Error code describing the error. | keyword |
+| error.id | Unique identifier for the error. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| file.hash.sha256 | SHA256 hash. | keyword |
+| file.mime_type | MIME type should identify the format of the file or stream of bytes using IANA official types: https://www.iana.org/assignments/media-types/media-types.xhtml, where possible. When more than one type is applicable, the most specific type should be used. | keyword |
+| file.name | Name of the file including the extension, without the directory. | keyword |
+| file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
+| fileinfo.gaps | Whether the captured file content had gaps. | boolean |
+| fileinfo.state | File transfer state, for example CLOSED. | keyword |
+| fileinfo.stored | Whether the sensor stored the file content. | boolean |
+| fileinfo.tx_id | Transaction id of the file within the flow. | long |
+| flow_id | Suricata flow identifier. Opaque correlation key, stored as keyword. The collector parses it with decode_json_string_numbers() so values above 2^53 keep their digits. | keyword |
+| ftp.command | FTP command. | keyword |
+| ftp.command_data | Argument of the FTP command. | keyword |
+| ftp.completion_code | FTP completion codes. | keyword |
+| ftp.filename | Filename transferred on the ftp_data channel. | keyword |
+| ftp.mode | FTP transfer mode. | keyword |
+| ftp.reply | FTP reply lines. | keyword |
+| ftp.reply_received | Whether the FTP reply was received. | keyword |
+| hostname_info.domain | Domain portion of the hostname. | keyword |
+| hostname_info.domain_without_tld | Domain with the top-level domain removed. | keyword |
+| hostname_info.host | Hostname observed for this event. | keyword |
+| hostname_info.subdomain | Subdomain portion of the hostname, if any. | keyword |
+| hostname_info.tld | Top-level domain. | keyword |
+| hostname_info.url | URL context associated with the hostname enrichment. | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
+| http.response.body.bytes | Size in bytes of the response body. | long |
+| http.response.status_code | HTTP response status code. | long |
+| ike.exchange_type | IKE exchange type number. | long |
+| ike.ikev1.client.proposals.alg_auth | IKE proposal authentication algorithm. | keyword |
+| ike.ikev1.client.proposals.alg_auth_raw | Numeric IKE proposal authentication algorithm. | long |
+| ike.ikev1.client.proposals.alg_dh | IKE proposal Diffie-Hellman group. | keyword |
+| ike.ikev1.client.proposals.alg_dh_raw | Numeric IKE proposal Diffie-Hellman group. | long |
+| ike.ikev1.client.proposals.alg_enc | IKE proposal encryption algorithm. | keyword |
+| ike.ikev1.client.proposals.alg_enc_raw | Numeric IKE proposal encryption algorithm. | long |
+| ike.ikev1.client.proposals.alg_hash | IKE proposal hash algorithm. | keyword |
+| ike.ikev1.client.proposals.alg_hash_raw | Numeric IKE proposal hash algorithm. | long |
+| ike.ikev1.client.proposals.sa_key_length | IKE proposal SA key length. | keyword |
+| ike.ikev1.client.proposals.sa_key_length_raw | Numeric IKE proposal SA key length. | long |
+| ike.ikev1.client.proposals.sa_life_duration | IKE proposal SA lifetime. | keyword |
+| ike.ikev1.client.proposals.sa_life_duration_raw | Numeric IKE proposal SA lifetime. | long |
+| ike.ikev1.client.proposals.sa_life_type | IKE proposal SA lifetime type. | keyword |
+| ike.ikev1.client.proposals.sa_life_type_raw | Numeric IKE proposal SA lifetime type. | long |
+| ike.ikev2.errors | Count of IKEv2 error notifies. | long |
+| ike.ikev2.notify | IKEv2 notify type names. | keyword |
+| ike.init_spi | Initiator SPI. | keyword |
+| ike.resp_spi | Responder SPI. | keyword |
+| ike.role | IKEv2 role, initiator or responder. | keyword |
+| ike.version_major | IKE major version. | long |
+| ike.version_minor | IKE minor version. | long |
+| input.type | Type of Elastic Agent input. | keyword |
+| krb5.cname | Client principal name. | keyword |
+| krb5.encryption | Encryption type name. | keyword |
+| krb5.error_code | Kerberos error code name. | keyword |
+| krb5.msg_type | Kerberos message type. | keyword |
+| krb5.realm | Kerberos realm. | keyword |
+| krb5.sname | Service principal name. | keyword |
+| krb5.weak_encryption | Whether the encryption type is considered weak. | boolean |
+| metadata.flowbits | Suricata flowbits set or checked for this event. | keyword |
+| modbus.request.function_code | Modbus function code name. | keyword |
+| modbus.request.transaction_id | Modbus transaction id. | long |
+| mqtt.connack | MQTT CONNACK packet. | flattened |
+| mqtt.connect | MQTT CONNECT packet. | flattened |
+| mqtt.publish.dup | MQTT DUP flag. | boolean |
+| mqtt.publish.message | MQTT PUBLISH payload text. | keyword |
+| mqtt.publish.qos | MQTT QoS level. | long |
+| mqtt.publish.retain | MQTT RETAIN flag. | boolean |
+| mqtt.publish.topic | MQTT topic. | keyword |
+| mqtt.suback | MQTT SUBACK packet. | flattened |
+| mqtt.subscribe | MQTT SUBSCRIBE packet. | flattened |
+| netflow.age | Flow age in seconds. | long |
+| netflow.bytes | Flow byte count. | long |
+| netflow.end | Flow end time. | date |
+| netflow.max_ttl | Maximum TTL observed on the flow. | long |
+| netflow.min_ttl | Minimum TTL observed on the flow. | long |
+| netflow.pkts | Flow packet count. | long |
+| netflow.start | Flow start time. | date |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| nfs.filename | NFS filename. | keyword |
+| nfs.procedure | NFS procedure name. | keyword |
+| observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| pgsql.request | PostgreSQL request object. | flattened |
+| pgsql.response | PostgreSQL response object. | flattened |
+| quic.version | QUIC version string. | keyword |
+| rdp.client | RDP client object. | flattened |
+| rdp.cookie | RDP cookie. | keyword |
+| rdp.event_type | RDP event type, for example connect_response. | keyword |
+| rdp.protocol | RDP protocol negotiation result. | keyword |
+| rdp.server_supports | RDP server capability flags. | flattened |
+| rdp.tx_id | RDP transaction id. | long |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| rfb.authentication.security_result | RFB authentication result. | keyword |
+| rfb.authentication.security_type | RFB security type number. | long |
+| rfb.framebuffer.name | RFB desktop name. | keyword |
+| sip.method | SIP method. | keyword |
+| sip.request_line | SIP request line. | keyword |
+| sip.uri | SIP request URI. | keyword |
+| sip.version | SIP version. | keyword |
+| smb.command | SMB command name. | keyword |
+| smb.dialect | SMB dialect string. | keyword |
+| smb.named_pipe | SMB named pipe. | keyword |
+| smb.session_id | SMB session id. | long |
+| smb.share | SMB share name. | keyword |
+| smb.status | SMB status name. | keyword |
+| smb.status_code | SMB status code. | keyword |
+| smb_insights.events | Number of SMB events summarized. | long |
+| smb_insights.first_seen | First time this SMB insight was observed. | date |
+| smb_insights.flags | SMB insight boolean flags. | flattened |
+| smb_insights.last_seen | Last time this SMB insight was observed. | date |
+| smb_insights.trackers | SMB command and status trackers. | flattened |
+| smtp.helo | SMTP HELO or EHLO name. | keyword |
+| smtp.mail_from | SMTP MAIL FROM address. | keyword |
+| smtp.rcpt_to | SMTP RCPT TO recipients. | keyword |
+| snmp.pdu_type | SNMP PDU type, for example get_request. | keyword |
+| snmp.usm | SNMPv3 User-based Security Model user name. | keyword |
+| snmp.version | SNMP version number. | long |
+| source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.packets | Packets sent from the source to the destination. | long |
+| source.port | Port of the source. | long |
+| ssh.client.proto_version | SSH protocol version advertised by the client. | keyword |
+| ssh.client.software_version | SSH software version advertised by the client. | keyword |
+| ssh.server.proto_version | SSH protocol version advertised by the server. | keyword |
+| ssh.server.software_version | SSH software version advertised by the server. | keyword |
+| stamus_infrequent | Stamus flag marking events that the sensor classified as infrequent. | boolean |
+| stats.app_layer.flow.dcerpc_tcp | Suricata EVE stats counter. | long |
+| stats.app_layer.flow.dcerpc_udp | Suricata EVE stats counter. | long |
+| stats.app_layer.flow.dns_tcp | Suricata EVE stats counter. | long |
+| stats.app_layer.flow.dns_udp | Suricata EVE stats counter. | long |
+| stats.app_layer.flow.failed_tcp | Suricata EVE stats counter. | long |
+| stats.app_layer.flow.failed_udp | Suricata EVE stats counter. | long |
+| stats.app_layer.flow.ftp | Suricata EVE stats counter. | long |
+| stats.app_layer.flow.http | Suricata EVE stats counter. | long |
+| stats.app_layer.flow.imap | Suricata EVE stats counter. | long |
+| stats.app_layer.flow.msn | Suricata EVE stats counter. | long |
+| stats.app_layer.flow.smb | Suricata EVE stats counter. | long |
+| stats.app_layer.flow.smtp | Suricata EVE stats counter. | long |
+| stats.app_layer.flow.ssh | Suricata EVE stats counter. | long |
+| stats.app_layer.flow.tls | Suricata EVE stats counter. | long |
+| stats.app_layer.tx.dcerpc_tcp | Suricata EVE stats counter. | long |
+| stats.app_layer.tx.dcerpc_udp | Suricata EVE stats counter. | long |
+| stats.app_layer.tx.dns_tcp | Suricata EVE stats counter. | long |
+| stats.app_layer.tx.dns_udp | Suricata EVE stats counter. | long |
+| stats.app_layer.tx.ftp | Suricata EVE stats counter. | long |
+| stats.app_layer.tx.http | Suricata EVE stats counter. | long |
+| stats.app_layer.tx.smb | Suricata EVE stats counter. | long |
+| stats.app_layer.tx.smtp | Suricata EVE stats counter. | long |
+| stats.app_layer.tx.ssh | Suricata EVE stats counter. | long |
+| stats.app_layer.tx.tls | Suricata EVE stats counter. | long |
+| stats.capture.kernel_drops | Suricata EVE stats counter. | long |
+| stats.capture.kernel_ifdrops | Suricata EVE stats counter. | long |
+| stats.capture.kernel_packets | Suricata EVE stats counter. | long |
+| stats.decoder.avg_pkt_size | Suricata EVE stats counter. | long |
+| stats.decoder.bytes | Suricata EVE stats counter. | long |
+| stats.decoder.dce.pkt_too_small | Suricata EVE stats counter. | long |
+| stats.decoder.erspan | Suricata EVE stats counter. | long |
+| stats.decoder.ethernet | Suricata EVE stats counter. | long |
+| stats.decoder.gre | Suricata EVE stats counter. | long |
+| stats.decoder.icmpv4 | Suricata EVE stats counter. | long |
+| stats.decoder.icmpv6 | Suricata EVE stats counter. | long |
+| stats.decoder.ieee8021ah | Suricata EVE stats counter. | long |
+| stats.decoder.invalid | Suricata EVE stats counter. | long |
+| stats.decoder.ipraw.invalid_ip_version | Suricata EVE stats counter. | long |
+| stats.decoder.ipv4 | Suricata EVE stats counter. | long |
+| stats.decoder.ipv4_in_ipv6 | Suricata EVE stats counter. | long |
+| stats.decoder.ipv6 | Suricata EVE stats counter. | long |
+| stats.decoder.ipv6_in_ipv6 | Suricata EVE stats counter. | long |
+| stats.decoder.ltnull.pkt_too_small | Suricata EVE stats counter. | long |
+| stats.decoder.ltnull.unsupported_type | Suricata EVE stats counter. | long |
+| stats.decoder.max_pkt_size | Suricata EVE stats counter. | long |
+| stats.decoder.mpls | Suricata EVE stats counter. | long |
+| stats.decoder.null | Suricata EVE stats counter. | long |
+| stats.decoder.pkts | Suricata EVE stats counter. | long |
+| stats.decoder.ppp | Suricata EVE stats counter. | long |
+| stats.decoder.pppoe | Suricata EVE stats counter. | long |
+| stats.decoder.raw | Suricata EVE stats counter. | long |
+| stats.decoder.sctp | Suricata EVE stats counter. | long |
+| stats.decoder.sll | Suricata EVE stats counter. | long |
+| stats.decoder.tcp | Suricata EVE stats counter. | long |
+| stats.decoder.teredo | Suricata EVE stats counter. | long |
+| stats.decoder.udp | Suricata EVE stats counter. | long |
+| stats.decoder.vlan | Suricata EVE stats counter. | long |
+| stats.decoder.vlan_qinq | Suricata EVE stats counter. | long |
+| stats.defrag.ipv4.fragments | Suricata EVE stats counter. | long |
+| stats.defrag.ipv4.reassembled | Suricata EVE stats counter. | long |
+| stats.defrag.ipv4.timeouts | Suricata EVE stats counter. | long |
+| stats.defrag.ipv6.fragments | Suricata EVE stats counter. | long |
+| stats.defrag.ipv6.reassembled | Suricata EVE stats counter. | long |
+| stats.defrag.ipv6.timeouts | Suricata EVE stats counter. | long |
+| stats.defrag.max_frag_hits | Suricata EVE stats counter. | long |
+| stats.detect.alert | Suricata EVE stats counter. | long |
+| stats.dns.memcap_global | Suricata EVE stats counter. | long |
+| stats.dns.memcap_state | Suricata EVE stats counter. | long |
+| stats.dns.memuse | Suricata EVE stats counter. | long |
+| stats.file_store.open_files | Suricata EVE stats counter. | long |
+| stats.flow.emerg_mode_entered | Suricata EVE stats counter. | long |
+| stats.flow.emerg_mode_over | Suricata EVE stats counter. | long |
+| stats.flow.icmpv4 | Suricata EVE stats counter. | long |
+| stats.flow.icmpv6 | Suricata EVE stats counter. | long |
+| stats.flow.memcap | Suricata EVE stats counter. | long |
+| stats.flow.memuse | Suricata EVE stats counter. | long |
+| stats.flow.spare | Suricata EVE stats counter. | long |
+| stats.flow.tcp | Suricata EVE stats counter. | long |
+| stats.flow.tcp_reuse | Suricata EVE stats counter. | long |
+| stats.flow.udp | Suricata EVE stats counter. | long |
+| stats.flow_mgr.bypassed_pruned | Suricata EVE stats counter. | long |
+| stats.flow_mgr.closed_pruned | Suricata EVE stats counter. | long |
+| stats.flow_mgr.est_pruned | Suricata EVE stats counter. | long |
+| stats.flow_mgr.flows_checked | Suricata EVE stats counter. | long |
+| stats.flow_mgr.flows_notimeout | Suricata EVE stats counter. | long |
+| stats.flow_mgr.flows_removed | Suricata EVE stats counter. | long |
+| stats.flow_mgr.flows_timeout | Suricata EVE stats counter. | long |
+| stats.flow_mgr.flows_timeout_inuse | Suricata EVE stats counter. | long |
+| stats.flow_mgr.new_pruned | Suricata EVE stats counter. | long |
+| stats.flow_mgr.rows_busy | Suricata EVE stats counter. | long |
+| stats.flow_mgr.rows_checked | Suricata EVE stats counter. | long |
+| stats.flow_mgr.rows_empty | Suricata EVE stats counter. | long |
+| stats.flow_mgr.rows_maxlen | Suricata EVE stats counter. | long |
+| stats.flow_mgr.rows_skipped | Suricata EVE stats counter. | long |
+| stats.http.memcap | Suricata EVE stats counter. | long |
+| stats.http.memuse | Suricata EVE stats counter. | long |
+| stats.tcp.insert_data_normal_fail | Suricata EVE stats counter. | long |
+| stats.tcp.insert_data_overlap_fail | Suricata EVE stats counter. | long |
+| stats.tcp.insert_list_fail | Suricata EVE stats counter. | long |
+| stats.tcp.invalid_checksum | Suricata EVE stats counter. | long |
+| stats.tcp.memuse | Suricata EVE stats counter. | long |
+| stats.tcp.no_flow | Suricata EVE stats counter. | long |
+| stats.tcp.overlap | Suricata EVE stats counter. | long |
+| stats.tcp.overlap_diff_data | Suricata EVE stats counter. | long |
+| stats.tcp.pseudo | Suricata EVE stats counter. | long |
+| stats.tcp.pseudo_failed | Suricata EVE stats counter. | long |
+| stats.tcp.reassembly_gap | Suricata EVE stats counter. | long |
+| stats.tcp.reassembly_memuse | Suricata EVE stats counter. | long |
+| stats.tcp.rst | Suricata EVE stats counter. | long |
+| stats.tcp.segment_memcap_drop | Suricata EVE stats counter. | long |
+| stats.tcp.sessions | Suricata EVE stats counter. | long |
+| stats.tcp.ssn_memcap_drop | Suricata EVE stats counter. | long |
+| stats.tcp.stream_depth_reached | Suricata EVE stats counter. | long |
+| stats.tcp.syn | Suricata EVE stats counter. | long |
+| stats.tcp.synack | Suricata EVE stats counter. | long |
+| stats.uptime | Suricata EVE stats counter. | long |
+| tags | List of keywords used to tag each event. | keyword |
+| tftp.file | TFTP filename. | keyword |
+| tftp.mode | TFTP transfer mode. | keyword |
+| tftp.packet | TFTP packet type. | keyword |
+| tls.client.ja3 | A hash that identifies clients based on how they perform an SSL/TLS handshake. | keyword |
+| tls.client.ja4 | JA4 TLS client fingerprint. Not an ECS field in the 9.5.0 schema used by this package. | keyword |
+| tls.client.server_name | Also called an SNI, this tells the server which hostname to which the client is attempting to connect to. When this value is available, it should get copied to `destination.domain`. | keyword |
+| tls.server.ja3s | A hash that identifies servers based on how they perform an SSL/TLS handshake. | keyword |
+| tls.version | Numeric part of the version parsed from the original string. | keyword |
+| tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
+| url.path | Path of the request, such as "/search". | wildcard |
+| url.query | The field contains the entire query string, excluding the leading `?` character, such as "q=elasticsearch". If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
+
+
+##### network sample event
+
+An example event for `network` looks as following:
+
+```json
+{
+    "@timestamp": "2024-01-15T12:01:00.000Z",
+    "agent": {
+        "ephemeral_id": "fdbc9e93-b350-482b-abd6-299776fc7cef",
+        "id": "25764d7a-3fe5-410f-a8cd-1b645e6c03f6",
+        "name": "elastic-agent-52269",
+        "type": "filebeat",
+        "version": "9.5.3"
+    },
+    "data_stream": {
+        "dataset": "stamus_networks.network",
+        "namespace": "72368",
+        "type": "logs"
+    },
+    "destination": {
+        "as": {
+            "number": 64500,
+            "organization": {
+                "name": "Documentation ASN"
+            }
+        },
+        "geo": {
+            "city_name": "Las Vegas",
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 36.17496999911964,
+                "lon": -115.13722007162869
+            },
+            "region_iso_code": "US-NV",
+            "region_name": "Nevada"
+        },
+        "ip": "192.0.2.20",
+        "port": 80
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "25764d7a-3fe5-410f-a8cd-1b645e6c03f6",
+        "snapshot": false,
+        "version": "9.5.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network",
+            "file"
+        ],
+        "dataset": "stamus_networks.network",
+        "ingested": "2026-10-27T11:49:46Z",
+        "kind": "event",
+        "module": "stamus_networks",
+        "type": [
+            "info"
+        ]
+    },
+    "flow_id": "700001",
+    "input": {
+        "type": "cel"
+    },
+    "network": {
+        "community_id": "1://jCSjUZ5PSNZjcptfbn8D60JY4=",
+        "transport": "tcp"
+    },
+    "observer": {
+        "product": "Clear NDR",
+        "vendor": "Stamus Networks"
+    },
+    "related": {
+        "ip": [
+            "192.0.2.10",
+            "192.0.2.20"
+        ]
+    },
+    "source": {
+        "as": {
+            "number": 64500,
+            "organization": {
+                "name": "Documentation ASN"
+            }
+        },
+        "geo": {
+            "city_name": "Las Vegas",
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 36.17496999911964,
+                "lon": -115.13722007162869
+            },
+            "region_iso_code": "US-NV",
+            "region_name": "Nevada"
+        },
+        "ip": "192.0.2.10",
+        "port": 40001
+    },
+    "tags": [
+        "forwarded",
+        "stamus_networks-network"
     ]
 }
 ```
