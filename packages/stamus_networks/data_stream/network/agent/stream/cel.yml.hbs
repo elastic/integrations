@@ -31,9 +31,10 @@ program: |-
   // errors and HTTP errors preserve the cursor and retry that same phase/page/window.
   // Unlike the alerts stream, a 4xx does not skip ahead.
   //
-  // Pagination is DRF PageNumberPagination: {count, next, previous, results}.
-  // page_number is the server-side cursor. `next` non-null means more pages; a short
-  // or empty page is the fallback when `next` is omitted.
+  // Pagination is DRF {count, next, previous, results}. Community/SELKS honors
+  // page_number and ignores page. Clear NDR enterprise honors page and ignores
+  // page_number. Both are sent with the same value. `next` non-null means more
+  // pages; a short or empty page is the fallback when `next` is omitted.
   //
   // collection_delay shifts to_date back from now so events that become searchable
   // slightly after their own timestamp are not skipped when the window advances.
@@ -98,6 +99,7 @@ program: |-
               "from_date": [cur.from_date],
               "to_date": [cur.to_date],
               "page_size": [string(int(state.page_size))],
+              "page": [string(cur.page)],
               "page_number": [string(cur.page)],
             }.format_query()
           ).with(

@@ -40,15 +40,12 @@ program: |-
   // within-type pagination and to move from the "alert" phase to the "stamus"
   // phase without waiting for the next poll interval.
   //
-  // [CONFIRMED -- live CNCS instance] Pagination response envelope is exactly DRF
-  // PageNumberPagination: {count, next, previous, results}. `page_number` (not the
-  // `page=` value that appears, vestigially, in the `next` URL's querystring) is
-  // the real server-side cursor parameter -- confirmed experimentally that
-  // changing `page_number` changes the returned documents. This program already
-  // sends `page_number` (see below), so no fix was needed. Continuation is driven
-  // primarily by `next` (non-null), with fallback heuristics (empty/short page)
-  // retained as a defensive fallback in case a different CNCS version/edition ever
-  // omits `next`.
+  // Pagination response envelope is DRF {count, next, previous, results}.
+  // Community/SELKS honors `page_number` and ignores `page`. Clear NDR enterprise
+  // honors `page` and ignores `page_number`; its `next` URL advances `page` and
+  // echoes `page_number` unchanged. Sending both, set to the same value, walks
+  // either server. Continuation is driven by `next` (non-null), with a short or
+  // empty page as the fallback when `next` is omitted.
   // [Copilot review, PR #22143] `to_date` is always this evaluation's `now`
   // (minus the safety margin below), and a window's upper bound is never
   // revisited once the cursor has moved past it -- only `from_date` carries
@@ -114,6 +111,7 @@ program: |-
           "from_date": [cur.from_date],
           "to_date": [cur.to_date],
           "page_size": [string(int(state.page_size))],
+          "page": [string(cur.page)],
           "page_number": [string(cur.page)],
         }.format_query()
       ).with(

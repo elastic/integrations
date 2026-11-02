@@ -147,23 +147,29 @@ processors:
       tag: resolve_latest_hostname
       description: >-
         Pick the host_id.hostname[] entry with the most recent last_seen timestamp and
-        use it for host.name / entity.name. Vendor timestamps are
-        yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ with a per-record (not always identical) UTC
-        offset, so entries are compared as parsed instants, not lexically.
+        use it for host.name / entity.name. Enterprise REST timestamps use a colon
+        offset (yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX, +00:00). Filebeat and community
+        samples use yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ (+0000). Entries are compared as
+        parsed instants, not lexically.
       if: ctx.host_id?.hostname instanceof List && !ctx.host_id.hostname.isEmpty()
       source: |-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ");
+        DateTimeFormatter colonOffset = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX");
+        DateTimeFormatter plainOffset = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ");
         String bestHost = null;
         Instant bestInstant = null;
         for (def entry : ctx.host_id.hostname) {
           if (entry.host == null || entry.last_seen == null) {
             continue;
           }
-          Instant parsed;
+          Instant parsed = null;
           try {
-            parsed = ZonedDateTime.parse(entry.last_seen, formatter).toInstant();
-          } catch (Exception e) {
-            continue;
+            parsed = ZonedDateTime.parse(entry.last_seen, colonOffset).toInstant();
+          } catch (Exception ignored) {
+            try {
+              parsed = ZonedDateTime.parse(entry.last_seen, plainOffset).toInstant();
+            } catch (Exception ignoredToo) {
+              continue;
+            }
           }
           if (bestInstant == null || parsed.isAfter(bestInstant)) {
             bestInstant = parsed;
@@ -208,6 +214,7 @@ processors:
       field: host_id.last_seen
       target_field: entity.last_seen_timestamp
       formats:
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX"
         - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ"
         - ISO8601
       if: ctx.host_id?.last_seen != null
