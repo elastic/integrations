@@ -101,3 +101,164 @@ streams:
         default:
           - forwarded
           - akamai-siem
+
+  - input: aws-s3
+    title: Collect Akamai SIEM logs via AWS S3 / SQS
+    description: Collect Akamai SIEM JSON files from Amazon S3 using SQS notifications or direct polling.
+    template_path: aws-s3.yml.hbs
+    enabled: false
+    vars:
+      - name: collect_s3_logs
+        type: bool
+        title: Collect via direct S3 bucket polling
+        description: Turn on for direct S3 listing, or leave off for SQS notifications.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: queue_url
+        type: text
+        title: SQS Queue URL
+        description: Required in SQS mode. S3 event notifications must reach this queue.
+        multi: false
+        required: false
+        show_user: true
+        default: ''
+      - name: bucket_arn
+        type: text
+        title: S3 Bucket ARN
+        description: Required in direct S3 polling mode. For example, arn:aws:s3:::your-bucket.
+        multi: false
+        required: false
+        show_user: true
+        default: ''
+      - name: bucket_list_prefix
+        type: text
+        title: S3 Bucket Prefix
+        description: Optional prefix for direct S3 listing.
+        multi: false
+        required: false
+        show_user: true
+        default: ''
+      - name: bucket_list_interval
+        type: text
+        title: S3 Bucket List Interval
+        description: Direct S3 polling frequency.
+        multi: false
+        required: false
+        show_user: true
+        default: 1m
+      - name: number_of_workers
+        type: integer
+        title: Workers
+        description: Number of workers processing S3 objects.
+        multi: false
+        required: false
+        show_user: true
+        default: 5
+      - name: visibility_timeout
+        type: text
+        title: SQS Visibility Timeout
+        description: Configure long enough to process an object. SQS mode only.
+        multi: false
+        required: false
+        show_user: true
+        default: 300s
+      - name: api_timeout
+        type: text
+        title: SQS API Timeout
+        description: Must not exceed half the visibility timeout.
+        multi: false
+        required: false
+        show_user: true
+        default: 120s
+      - name: access_key_id
+        type: password
+        title: AWS Access Key ID
+        description: Optional, use AWS credentials chain or IAM role instead when possible.
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+      - name: secret_access_key
+        type: password
+        title: AWS Secret Access Key
+        description: Optional AWS secret access key.
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+      - name: session_token
+        type: password
+        title: AWS Session Token
+        description: Optional temporary credential session token.
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+      - name: role_arn
+        type: text
+        title: AWS Role ARN
+        description: Optional IAM role to assume.
+        multi: false
+        required: false
+        show_user: true
+      - name: shared_credential_file
+        type: text
+        title: Shared Credential File
+        description: Optional AWS shared credentials path.
+        multi: false
+        required: false
+        show_user: false
+      - name: credential_profile_name
+        type: text
+        title: Credential Profile Name
+        description: Optional profile in the shared credentials file.
+        multi: false
+        required: false
+        show_user: false
+      - name: default_region
+        type: text
+        title: AWS Region
+        description: Default AWS region if not provided by environment or credentials.
+        multi: false
+        required: false
+        show_user: true
+      - name: endpoint
+        type: text
+        title: AWS Endpoint Override
+        description: Optional custom AWS endpoint.
+        multi: false
+        required: false
+        show_user: false
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        description: Optional HTTP proxy.
+        multi: false
+        required: false
+        show_user: false
+      - name: file_selectors
+        type: yaml
+        title: File Selectors
+        description: Optional RE2 selectors to include only Akamai object keys.
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to add to ingested events.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+          - akamai-siem
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Optional Filebeat processors applied before Elasticsearch parsing.
+        multi: false
+        required: false
+        show_user: false
