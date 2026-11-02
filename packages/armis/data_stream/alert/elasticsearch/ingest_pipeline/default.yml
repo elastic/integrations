@@ -266,6 +266,32 @@ processors:
       tag: rename_sourceEndpoints_27538fe7
       target_field: armis.alert.source_endpoints
       ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_endpoint_details_8a5b43f1
+      description: Preserve structured endpoints separately from legacy string endpoint values.
+      if: ctx.armis?.alert != null
+      source: |-
+        for (String direction : ['destination', 'source']) {
+          String field = direction + '_endpoints';
+          def endpoints = ctx.armis.alert[field];
+          if (!(endpoints instanceof List)) {
+            continue;
+          }
+          List details = new ArrayList();
+          List values = new ArrayList();
+          for (def endpoint : endpoints) {
+            if (endpoint instanceof Map) {
+              details.add(endpoint);
+            } else {
+              values.add(endpoint);
+            }
+          }
+          if (!details.isEmpty()) {
+            ctx.armis.alert[direction + '_endpoint_details'] = details;
+            ctx.armis.alert[field] = values;
+          }
+        }
   - rename:
       field: json.status
       tag: rename_status_49c9c205

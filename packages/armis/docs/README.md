@@ -136,6 +136,8 @@ The alert and device latest transforms keep one current document per alert or de
 
 This is the `alert` dataset.
 
+String endpoints remain in `armis.alert.source_endpoints` and `armis.alert.destination_endpoints`. Endpoint objects use the flattened fields `armis.alert.source_endpoint_details` and `armis.alert.destination_endpoint_details`. Subfields support keyword-style searches, not typed numeric/IP queries or per-endpoint attribute correlation. Synthetic `_source` may change the returned structure.
+
 ##### Example
 
 An example event for `alert` looks as following:
@@ -240,7 +242,8 @@ An example event for `alert` looks as following:
 | armis.alert.classification |  | keyword |
 | armis.alert.connection_ids |  | keyword |
 | armis.alert.description |  | keyword |
-| armis.alert.destination_endpoints |  | keyword |
+| armis.alert.destination_endpoint_details | Structured destination endpoint objects returned by Armis. | flattened |
+| armis.alert.destination_endpoints | String destination endpoint values. Structured endpoints are stored in destination_endpoint_details. | keyword |
 | armis.alert.device_ids |  | keyword |
 | armis.alert.friendly_name |  | keyword |
 | armis.alert.last_alert_update_time |  | date |
@@ -249,7 +252,8 @@ An example event for `alert` looks as following:
 | armis.alert.policy_labels |  | keyword |
 | armis.alert.policy_title |  | keyword |
 | armis.alert.severity |  | keyword |
-| armis.alert.source_endpoints |  | keyword |
+| armis.alert.source_endpoint_details | Structured source endpoint objects returned by Armis. | flattened |
+| armis.alert.source_endpoints | String source endpoint values. Structured endpoints are stored in source_endpoint_details. | keyword |
 | armis.alert.status |  | keyword |
 | armis.alert.status_change_time |  | date |
 | armis.alert.time |  | date |

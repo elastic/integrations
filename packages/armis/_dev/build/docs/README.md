@@ -136,6 +136,8 @@ The alert and device latest transforms keep one current document per alert or de
 
 This is the `alert` dataset.
 
+String endpoints remain in `armis.alert.source_endpoints` and `armis.alert.destination_endpoints`. Endpoint objects use the flattened fields `armis.alert.source_endpoint_details` and `armis.alert.destination_endpoint_details`. Subfields support keyword-style searches, not typed numeric/IP queries or per-endpoint attribute correlation. Synthetic `_source` may change the returned structure.
+
 ##### Example
 
 An example event for `alert` looks as following:
