@@ -24,12 +24,40 @@ processors:
             ctx.datastream = m.group(1);
           }
           def parts = ctx.datastream.splitOnToken('-');
-          if (parts.length >= 2) {
+          if (parts.length >= 3) {
             ctx.ds_type = parts[0];
             ctx.ds_namespace = parts[parts.length - 1];
+            def mid = new ArrayList();
+            for (int i = 1; i < parts.length - 1; i++) {
+              mid.add(parts[i]);
+            }
+            ctx.ds_dataset = String.join('-', mid);
+          } else if (parts.length == 2) {
+            ctx.ds_type = parts[0];
+            ctx.ds_dataset = parts[0];
+            ctx.ds_namespace = parts[1];
           } else {
             ctx.ds_type = 'other';
+            ctx.ds_dataset = ctx.datastream;
             ctx.ds_namespace = 'other';
+          }
+        }
+        if (ctx.monitor_name instanceof Map) {
+          def buckets = ctx.monitor_name.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.monitor_name = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.monitor_name.keySet());
+            ctx.monitor_name = keys.size() > 0 ? keys[0] : ctx.monitor_id;
+          }
+        }
+        if (ctx.monitor_namespace instanceof Map) {
+          def buckets = ctx.monitor_namespace.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.monitor_namespace = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.monitor_namespace.keySet());
+            ctx.monitor_namespace = keys.size() > 0 ? keys[0] : 'default';
           }
         }
         if (ctx.project_name instanceof Map) {

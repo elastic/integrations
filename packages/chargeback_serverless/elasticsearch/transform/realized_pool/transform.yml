@@ -4,7 +4,7 @@ source:
     - serverless_billing_cost_lookup
 dest:
   index: serverless_billing_realized_pool_lookup
-  pipeline: logs-chargeback_serverless.lookup-0.3.11-realized_pool
+  pipeline: logs-chargeback_serverless.lookup-0.3.12-realized_pool
 frequency: 5m
 sync:
   time:
@@ -55,6 +55,30 @@ pivot:
         val:
           sum:
             field: total_ecu
+    synthetics_ecu:
+      filter:
+        term:
+          allocation_driver: "synthetics"
+      aggs:
+        val:
+          sum:
+            field: total_ecu
+    synthetics_pings_ecu:
+      filter:
+        wildcard:
+          sku: "*synthetic*ping*"
+      aggs:
+        val:
+          sum:
+            field: total_ecu
+    synthetics_executions_ecu:
+      filter:
+        wildcard:
+          sku: "*synthetic*execution*"
+      aggs:
+        val:
+          sum:
+            field: total_ecu
     conf_chargeable_unit_rate:
       max:
         field: conf_chargeable_unit_rate
@@ -72,4 +96,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.3.11
+  fleet_transform_version: 0.3.12

@@ -55,15 +55,51 @@ processors:
         } else if (ctx.ai_ecu instanceof Number) {
           ai = ((Number)ctx.ai_ecu).doubleValue();
         }
+        double syn = 0.0;
+        if (ctx.synthetics_ecu instanceof Map) {
+          def v = ctx.synthetics_ecu.val;
+          if (v instanceof Map && v.value != null) {
+            syn = ((Number)v.value).doubleValue();
+          } else if (v instanceof Number) {
+            syn = ((Number)v).doubleValue();
+          }
+        } else if (ctx.synthetics_ecu instanceof Number) {
+          syn = ((Number)ctx.synthetics_ecu).doubleValue();
+        }
+        double syn_pings = 0.0;
+        if (ctx.synthetics_pings_ecu instanceof Map) {
+          def v = ctx.synthetics_pings_ecu.val;
+          if (v instanceof Map && v.value != null) {
+            syn_pings = ((Number)v.value).doubleValue();
+          } else if (v instanceof Number) {
+            syn_pings = ((Number)v).doubleValue();
+          }
+        } else if (ctx.synthetics_pings_ecu instanceof Number) {
+          syn_pings = ((Number)ctx.synthetics_pings_ecu).doubleValue();
+        }
+        double syn_exec = 0.0;
+        if (ctx.synthetics_executions_ecu instanceof Map) {
+          def v = ctx.synthetics_executions_ecu.val;
+          if (v instanceof Map && v.value != null) {
+            syn_exec = ((Number)v.value).doubleValue();
+          } else if (v instanceof Number) {
+            syn_exec = ((Number)v).doubleValue();
+          }
+        } else if (ctx.synthetics_executions_ecu instanceof Number) {
+          syn_exec = ((Number)ctx.synthetics_executions_ecu).doubleValue();
+        }
         ctx.indexing_ecu = idx;
         ctx.query_ecu = qry;
         ctx.storage_ecu = stg;
         ctx.ai_ecu = ai;
+        ctx.synthetics_ecu = syn;
+        ctx.synthetics_pings_ecu = syn_pings;
+        ctx.synthetics_executions_ecu = syn_exec;
         double cap = idx + qry + stg;
         ctx.data_tier_capacity_ecu = cap;
         ctx.realized_chargeable_units = cap;
-        ctx.total_chargeable_units = cap + ai;
-        ctx.total_ecu = cap + ai;
+        ctx.total_chargeable_units = cap + ai + syn;
+        ctx.total_ecu = cap + ai + syn;
         if (ctx.project_id != null) {
           ctx.deployment_id = ctx.project_id;
         }

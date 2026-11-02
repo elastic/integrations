@@ -37,11 +37,21 @@ processors:
             ctx.datastream = m.group(1);
           }
           def parts = ctx.datastream.splitOnToken('-');
-          if (parts.length >= 2) {
+          if (parts.length >= 3) {
             ctx.ds_type = parts[0];
             ctx.ds_namespace = parts[parts.length - 1];
+            def mid = new ArrayList();
+            for (int i = 1; i < parts.length - 1; i++) {
+              mid.add(parts[i]);
+            }
+            ctx.ds_dataset = String.join('-', mid);
+          } else if (parts.length == 2) {
+            ctx.ds_type = parts[0];
+            ctx.ds_dataset = parts[0];
+            ctx.ds_namespace = parts[1];
           } else {
             ctx.ds_type = 'other';
+            ctx.ds_dataset = ctx.datastream;
             ctx.ds_namespace = 'other';
           }
         }
