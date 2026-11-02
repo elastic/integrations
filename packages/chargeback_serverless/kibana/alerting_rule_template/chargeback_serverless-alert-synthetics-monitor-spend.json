@@ -1,0 +1,30 @@
+{
+    "attributes": {
+        "name": "[Chargeback Serverless] Synthetics monitor attributed daily spend threshold exceeded",
+        "params": {
+            "esqlQuery": {
+                "esql": "FROM serverless_synthetics_monitor_contribution_lookup\n| EVAL threshold_spend = 25.0, filter_monitor = \"*\"\n| INLINE STATS latest_day = MAX(@timestamp)\n| WHERE @timestamp == latest_day\n| EVAL ts = @timestamp\n| RENAME project_id AS _u_pid, project_name AS _u_pname, project_type AS _u_ptype, conf_chargeable_unit_rate AS _u_rate, conf_chargeable_unit_rate_unit AS _u_unit, conf_currency_symbol AS _u_sym\n| LOOKUP JOIN serverless_project_status_lookup ON composite_key\n| RENAME project_id AS _ps_pid, project_name AS _ps_pname, project_type AS _ps_ptype, conf_chargeable_unit_rate AS _ps_rate, conf_chargeable_unit_rate_unit AS _ps_unit, conf_currency_symbol AS _ps_sym\n| LOOKUP JOIN serverless_billing_realized_pool_lookup ON composite_key\n| EVAL @timestamp = ts\n| EVAL project_id = COALESCE(_u_pid, _ps_pid, project_id)\n| EVAL project_name = CASE(_u_pname IS NOT NULL AND _u_pname != \"\" AND _u_pname != project_id, _u_pname, _ps_pname IS NOT NULL AND _ps_pname != \"\" AND _ps_pname != project_id, _ps_pname, _u_pname IS NOT NULL AND _u_pname != \"\", _u_pname, _ps_pname IS NOT NULL AND _ps_pname != \"\", _ps_pname, project_id)\n| EVAL project_type = CASE(_u_ptype IS NOT NULL AND _u_ptype != \"\" AND _u_ptype != \"unknown\", _u_ptype, _ps_ptype IS NOT NULL AND _ps_ptype != \"\", _ps_ptype, \"unknown\")\n| EVAL project = CASE(project_name IS NOT NULL AND project_name != \"\", project_name, project_id IS NOT NULL AND project_id != \"\", project_id, \"unknown\")\n| EVAL conf_chargeable_unit_rate = COALESCE(conf_chargeable_unit_rate, _ps_rate, _u_rate, 1.0), conf_chargeable_unit_rate_unit = COALESCE(conf_chargeable_unit_rate_unit, _ps_unit, _u_unit, \"USD\"), conf_currency_symbol = COALESCE(conf_currency_symbol, _ps_sym, _u_sym, \"$\")\n| EVAL rate = COALESCE(conf_chargeable_unit_rate, 1.0)\n| EVAL unit = TO_UPPER(COALESCE(conf_chargeable_unit_rate_unit, \"USD\"))\n| EVAL currency_symbol = CASE(\n    conf_currency_symbol IS NOT NULL AND conf_currency_symbol != \"\" AND (conf_currency_symbol != \"$\" OR conf_chargeable_unit_rate_unit IS NULL OR conf_chargeable_unit_rate_unit IN (\"USD\", \"usd\")), conf_currency_symbol,\n    unit == \"EUR\", \"\u20ac\",\n    unit == \"GBP\", \"\u00a3\",\n    unit == \"ZAR\", \"R\",\n    unit == \"JPY\", \"\u00a5\",\n    unit == \"CNY\", \"\u00a5\",\n    unit == \"INR\", \"\u20b9\",\n    unit == \"CAD\", \"CA$\",\n    unit == \"AUD\", \"A$\",\n    unit == \"CHF\", \"CHF\",\n    unit == \"BRL\", \"R$\",\n    unit == \"SEK\", \"kr\",\n    unit == \"NOK\", \"kr\",\n    unit == \"DKK\", \"kr\",\n    unit == \"PLN\", \"z\u0142\",\n    unit == \"NZD\", \"NZ$\",\n    unit == \"SGD\", \"S$\",\n    unit == \"HKD\", \"HK$\",\n    unit == \"ILS\", \"\u20aa\",\n    unit == \"KRW\", \"\u20a9\",\n    conf_currency_symbol IS NOT NULL AND conf_currency_symbol != \"\", conf_currency_symbol,\n    unit != \"\", unit,\n    \"$\"\n  )\n| EVAL monitor_type = COALESCE(monitor_type, \"http\")\n| EVAL is_browser = (monitor_type == \"browser\")\n| EVAL pings_pool_cost = COALESCE(synthetics_pings_ecu, 0.0) * rate\n| EVAL exec_pool_cost = COALESCE(synthetics_executions_ecu, 0.0) * rate\n| EVAL tot_pool_cost = COALESCE(synthetics_ecu, 0.0) * rate\n| EVAL chk = COALESCE(check_count, 0)\n| EVAL b_chk = CASE(is_browser, chk, 0)\n| EVAL p_chk = CASE(NOT is_browser, chk, 0)\n| INLINE STATS day_b_checks = SUM(b_chk), day_p_checks = SUM(p_chk), day_tot_checks = SUM(chk) BY composite_key\n| EVAL day_monitor_cost = CASE(\n    (pings_pool_cost > 0.0 OR exec_pool_cost > 0.0) AND is_browser AND day_b_checks > 0, (TO_DOUBLE(chk) / TO_DOUBLE(day_b_checks)) * exec_pool_cost,\n    (pings_pool_cost > 0.0 OR exec_pool_cost > 0.0) AND NOT is_browser AND day_p_checks > 0, (TO_DOUBLE(chk) / TO_DOUBLE(day_p_checks)) * pings_pool_cost,\n    tot_pool_cost > 0.0 AND day_tot_checks > 0, (TO_DOUBLE(chk) / TO_DOUBLE(day_tot_checks)) * tot_pool_cost,\n    0.0\n  )\n| EVAL project = CASE(project_name IS NOT NULL AND project_name != \"\", project_name, project_id IS NOT NULL AND project_id != \"\", project_id, \"unknown\")\n| EVAL monitor_name = COALESCE(monitor_name, monitor_id, \"unknown\")\n| WHERE filter_monitor == \"*\" OR monitor_id == filter_monitor OR monitor_name == filter_monitor\n| STATS spend = ROUND(SUM(day_monitor_cost), 2), checks = SUM(chk), threshold = MAX(threshold_spend), sym = COALESCE(MAX(currency_symbol), \"$\"), unit = COALESCE(MAX(unit), \"USD\") BY day = LEFT(TO_STRING(@timestamp), 10), monitor_name, monitor_id, monitor_type, project\n| WHERE spend > threshold\n| SORT spend DESC\n| EVAL result = CONCAT(\"[\", day, \"] Synthetics monitor `\", monitor_name, \"` (\", monitor_type, \") in project `\", project, \"` attributed spend of \", sym, TO_STRING(spend), \" \", unit, \" (\", TO_STRING(checks), \" checks) exceeded threshold of \", sym, TO_STRING(threshold), \" \", unit, \".\")\n| KEEP result, day, monitor_name, monitor_id, monitor_type, project, spend, checks, threshold, unit"
+            },
+            "excludeHitsFromPreviousRun": true,
+            "searchType": "esqlQuery",
+            "size": 100,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 3,
+            "timeWindowUnit": "d"
+        },
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "24h"
+        },
+        "tags": [
+            "Chargeback",
+            "Chargeback Serverless"
+        ]
+    },
+    "id": "chargeback_serverless-alert-synthetics-monitor-spend",
+    "type": "alerting_rule_template"
+}

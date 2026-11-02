@@ -1,0 +1,30 @@
+{
+    "attributes": {
+        "name": "[Chargeback Serverless] Data trust & project harvest health issue",
+        "params": {
+            "esqlQuery": {
+                "esql": "FROM serverless_billing_cost_lookup\n| EVAL threshold_unallocated_spend = 100.0, threshold_unallocated_pct = 25.0\n| INLINE STATS latest_day = MAX(@timestamp)\n| WHERE @timestamp == latest_day\n| EVAL ts = @timestamp\n| RENAME project_id AS _b_pid, project_name AS _b_pname, project_type AS _b_ptype, conf_chargeable_unit_rate AS _b_rate, conf_chargeable_unit_rate_unit AS _b_unit, conf_currency_symbol AS _b_sym\n| LOOKUP JOIN serverless_project_status_lookup ON composite_key\n| EVAL @timestamp = ts\n| EVAL project_id = COALESCE(_b_pid, project_id)\n| EVAL project_name = CASE(_b_pname IS NOT NULL AND _b_pname != \"\" AND _b_pname != project_id, _b_pname, project_name IS NOT NULL AND project_name != \"\" AND project_name != project_id, project_name, _b_pname IS NOT NULL AND _b_pname != \"\", _b_pname, project_name IS NOT NULL AND project_name != \"\", project_name, project_id)\n| EVAL project_type = CASE(_b_ptype IS NOT NULL AND _b_ptype != \"\" AND _b_ptype != \"unknown\", _b_ptype, project_type IS NOT NULL AND project_type != \"\", project_type, _b_ptype)\n| EVAL conf_chargeable_unit_rate = COALESCE(_b_rate, conf_chargeable_unit_rate, 1.0), conf_chargeable_unit_rate_unit = COALESCE(_b_unit, conf_chargeable_unit_rate_unit, \"USD\"), conf_currency_symbol = COALESCE(_b_sym, conf_currency_symbol, \"$\")\n| EVAL unit = TO_UPPER(COALESCE(conf_chargeable_unit_rate_unit, \"USD\"))\n| EVAL currency_symbol = CASE(\n    conf_currency_symbol IS NOT NULL AND conf_currency_symbol != \"\" AND (conf_currency_symbol != \"$\" OR conf_chargeable_unit_rate_unit IS NULL OR conf_chargeable_unit_rate_unit IN (\"USD\", \"usd\")), conf_currency_symbol,\n    unit == \"EUR\", \"\u20ac\",\n    unit == \"GBP\", \"\u00a3\",\n    unit == \"ZAR\", \"R\",\n    unit == \"JPY\", \"\u00a5\",\n    unit == \"CNY\", \"\u00a5\",\n    unit == \"INR\", \"\u20b9\",\n    unit == \"CAD\", \"CA$\",\n    unit == \"AUD\", \"A$\",\n    unit == \"CHF\", \"CHF\",\n    unit == \"BRL\", \"R$\",\n    unit == \"SEK\", \"kr\",\n    unit == \"NOK\", \"kr\",\n    unit == \"DKK\", \"kr\",\n    unit == \"PLN\", \"z\u0142\",\n    unit == \"NZD\", \"NZ$\",\n    unit == \"SGD\", \"S$\",\n    unit == \"HKD\", \"HK$\",\n    unit == \"ILS\", \"\u20aa\",\n    unit == \"KRW\", \"\u20a9\",\n    conf_currency_symbol IS NOT NULL AND conf_currency_symbol != \"\", conf_currency_symbol,\n    unit != \"\", unit,\n    \"$\"\n  )\n| EVAL units = COALESCE(total_ecu, 0.0)\n| EVAL cost = units * COALESCE(conf_chargeable_unit_rate, 1.0)\n| EVAL project = CASE(project_name IS NOT NULL AND project_name != \"\", project_name, project_id IS NOT NULL AND project_id != \"\", project_id, \"organization\")\n| EVAL project_type_label = CASE(project_type IS NOT NULL AND project_type != \"\", project_type, \"organization\")\n| EVAL category_label = COALESCE(cost_category, \"other\")\n| EVAL cost_type_label = COALESCE(cost_type, \"other\")\n| WHERE ts IS NOT NULL\n| EVAL unalloc_cost = CASE((COALESCE(is_allocatable, false) == false OR allocation_driver == \"none\") AND COALESCE(sku, \"none\") != \"none\", cost, 0.0)\n| INLINE STATS org_total_spend = SUM(cost)\n| STATS\n    project = MAX(project),\n    raw_pname = MAX(project_name),\n    project_type = MAX(project_type_label),\n    harvest_status = COALESCE(MAX(last_status), \"missing\"),\n    updated_at_str = COALESCE(TO_STRING(MAX(updated_at)), \"never\"),\n    is_stale_time = MAX(CASE(updated_at IS NULL OR updated_at < NOW() - 26 hours, 1, 0)),\n    proj_spend = ROUND(SUM(cost), 2),\n    proj_ecu = ROUND(SUM(units), 2),\n    unallocated_spend = ROUND(SUM(unalloc_cost), 2),\n    org_spend = MAX(org_total_spend),\n    thresh_unalloc = MAX(threshold_unallocated_spend),\n    thresh_pct = MAX(threshold_unallocated_pct),\n    sym = COALESCE(MAX(currency_symbol), \"$\"),\n    unit = COALESCE(MAX(unit), \"USD\")\n  BY day = LEFT(TO_STRING(@timestamp), 10), project_id\n| EVAL has_harvest_issue = (harvest_status != \"inactive\" AND (harvest_status != \"ok\" OR is_stale_time == 1))\n| EVAL has_missing_name = (proj_ecu > 0.0 AND (raw_pname IS NULL OR raw_pname == \"\" OR raw_pname == project_id))\n| EVAL unallocated_pct = CASE(org_spend > 0.0, ROUND(unallocated_spend * 100.0 / org_spend, 1), 0.0)\n| EVAL has_unalloc_issue = (unallocated_spend > thresh_unalloc AND unallocated_pct > thresh_pct)\n| WHERE has_harvest_issue OR has_missing_name OR has_unalloc_issue\n| EVAL issue_type = CASE(\n    has_harvest_issue, \"stale_or_unauthorized_harvest\",\n    has_missing_name, \"missing_project_name\",\n    \"high_unallocated_spend\"\n  )\n| EVAL result = CONCAT(\"[\", day, \"] Project `\", COALESCE(project, project_id), \"` (\", project_id, \") issue=\", issue_type, \": harvest_status=\", harvest_status, \" (last updated \", updated_at_str, \"), unallocated=\", sym, TO_STRING(unallocated_spend), \" \", unit, \" (\", TO_STRING(unallocated_pct), \"% of org spend).\")\n| KEEP result, day, project, project_id, project_type, issue_type, harvest_status, unallocated_spend, unallocated_pct, unit"
+            },
+            "excludeHitsFromPreviousRun": true,
+            "searchType": "esqlQuery",
+            "size": 100,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 3,
+            "timeWindowUnit": "d"
+        },
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "24h"
+        },
+        "tags": [
+            "Chargeback",
+            "Chargeback Serverless"
+        ]
+    },
+    "id": "chargeback_serverless-alert-data-trust-health",
+    "type": "alerting_rule_template"
+}
