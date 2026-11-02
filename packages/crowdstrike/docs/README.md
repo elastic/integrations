@@ -100,6 +100,7 @@ The following event types are supported for CrowdStrike Event Streams (whether y
 - IncidentSummaryEvent
 - UserActivityAuditEvent
 - AuthActivityAuditEvent
+- APIActivityAuditEvent
 - FirewallMatchEvent
 - RemoteResponseSessionStartEvent
 - RemoteResponseSessionEndEvent
@@ -1417,6 +1418,7 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.MatchCountSinceLastReport | Number of firewall rule matches since the last report. | long |
 | crowdstrike.event.MatchedClassification.ID |  | keyword |
 | crowdstrike.event.MatchedClassification.Name |  | keyword |
+| crowdstrike.event.Message | Additional message or detail associated with the event. | keyword |
 | crowdstrike.event.MitreAttack.PatternID |  | keyword |
 | crowdstrike.event.MitreAttack.Tactic |  | keyword |
 | crowdstrike.event.MitreAttack.TacticID |  | keyword |
@@ -1536,11 +1538,13 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.SignalEndTimestamp | Timestamp of when the last indicator was added to the lead. | date |
 | crowdstrike.event.SignalStartTimestamp | Timestamp of when the first indicator was added to the lead. | date |
 | crowdstrike.event.SignalUpdatedTimestamp | The last time the lead was updated with new information or when it was closed. | date |
+| crowdstrike.event.Source | Source of the API activity audit event. | keyword |
 | crowdstrike.event.SourceAccountUpn | Source user UPN. | keyword |
 | crowdstrike.event.SourceEndpointAccountObjectGuid | Source endpoint object GUID | keyword |
 | crowdstrike.event.SourceEndpointAccountObjectSid | Source endpoint object SID. | keyword |
 | crowdstrike.event.SourceEndpointIpReputation | Source endpoint IP reputation. | keyword |
 | crowdstrike.event.SourceEndpointSensorId | Source endpoint agent ID. | keyword |
+| crowdstrike.event.SourceIp | Source IP address associated with the API activity audit event. | ip |
 | crowdstrike.event.SourceProducts | Names of the products from which the source data originated. | keyword |
 | crowdstrike.event.SourceVendors | Names of the vendors from which the source data originated. | keyword |
 | crowdstrike.event.SsoApplicationIdentifier | Destination application identifier. | keyword |
@@ -1585,7 +1589,7 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.VerifiedBootState | Provides the device’s current boot state. | keyword |
 | crowdstrike.event.XdrType | Type of detection: xdr or xdr-scheduled-search. | keyword |
 | crowdstrike.metadata.customerIDString | Customer identifier | keyword |
-| crowdstrike.metadata.eventType | DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, UserActivityAuditEvent, or AutomatedLeadSummaryEvent | keyword |
+| crowdstrike.metadata.eventType | DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, UserActivityAuditEvent, APIActivityAuditEvent, or AutomatedLeadSummaryEvent | keyword |
 | crowdstrike.metadata.offset | Offset number that tracks the location of the event in stream. This is used to identify unique detection events. | integer |
 | crowdstrike.metadata.version | Schema version | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |

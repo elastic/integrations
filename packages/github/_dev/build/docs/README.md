@@ -1,6 +1,6 @@
 # GitHub Integration
 
-The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest) and Azure Eventhub. It can also retrieve global advisories (reviewed or unreviewed) from the GitHub Security Advisories database, and collect an inventory of organization members for entity analytics.
+The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest) and Azure Eventhub. It can also retrieve global advisories (reviewed or unreviewed) from the GitHub Security Advisories database, and collect an inventory of organization members and teams for entity analytics.
 
 ## Agentless Enabled Integration
 
@@ -52,9 +52,25 @@ For Filebeat input documentation, refer to the following pages:
 
 *This integration is not compatible with GitHub Enterprise server.*
 
+#### Routing API request events to a separate data stream
+
+When GitHub audit log streaming has [API Request Events](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise) enabled, `api.request` events are typically much higher in volume than regular audit records. To manage their retention and index lifecycle independently, enable the **Route API request events to a separate data stream** setting on the audit data stream. When enabled, events with `event.action` set to `api.request` are routed to the `github.api_requests` data stream (`logs-github.api_requests-*`) instead of `github.audit`.
+
+Notes:
+ - The setting is available on the streaming inputs only (AWS S3/SQS, Azure Blob Storage, Azure Event Hub and Google Cloud Storage). GitHub does not return `api.request` events through the REST audit log API, so the setting does not apply to the API input.
+ - Enabling the setting only affects new data; existing documents remain in `logs-github.audit-*`. Queries that must span old and new data should target both data streams.
+ - The rerouted documents keep the `github.*` field names, and carry a `route_api_request_events` tag.
+ - Routing on its own does not change retention. To apply a different retention, customize the `logs-github.api_requests@custom` component template (for example, set `index.lifecycle.name` to an ILM policy, or set a data stream lifecycle `data_retention`).
+
 {{fields "audit"}}
 
 {{event "audit"}}
+
+### API Request
+
+The API Request data stream receives GitHub `api.request` audit log events rerouted from the audit data stream when the **Route API request events to a separate data stream** setting is enabled on a streaming audit input. It has no inputs of its own.
+
+{{fields "api_requests"}}
 
 
 ### Code Scanning
@@ -105,6 +121,12 @@ To use this integration, users must use GitHub Apps or Personal Access Token wit
 - At least `Read-only` permission on Metadata
 If misconfigured, the integration could run successfully without any data being processed. Alternatively, you might encounter an error like `⁠GET: server returned a 404 (Not Found)`.
 
+#### Upgrading to version 2.32.0
+
+Version 2.32.0 recreates the latest-issues transform with destination index `logs-github_latest.dest_issues-2` so the additional Issues API field mappings can take effect. The `logs-github_latest.issues` alias moves to the new index when it is created. The transform rebuilds the latest issue state from retained documents in `logs-github.issues-*`; source documents that have expired cannot be recovered this way.
+
+The previous destination index, `logs-github_latest.dest_issues-1`, is not deleted automatically. After upgrading, verify that the transform has caught up and the alias points to the new index. Before removing the old index, preserve any issue records that are no longer available in the source data stream and take a snapshot if needed. Once the new index contains the records you need, delete only `logs-github_latest.dest_issues-1`. Keeping both destination indices can produce duplicate results and field type conflicts in wildcard queries.
+
 {{fields "issues"}}
 
 {{event "issues"}}
@@ -128,7 +150,7 @@ Data collected per member includes: organization role (MEMBER or ADMIN), two-fac
 The data stream issues two GraphQL queries per collection cycle against `POST https://api.github.com/graphql`:
 
 1. **`organization.membersWithRole`** — paginated list of all org members with their role and 2FA status.
-2. **`organization.teams`** (with nested `team.members`) — paginated list of all teams and their members, used to populate team membership and entity relationship fields.
+2. **`organization.teams`** (with nested `team.members`) — paginated list of all teams and their members, used to populate team membership. For each team where the member is a `MAINTAINER`, the pipeline sets `user.entity.relationships.administers.entity.id` to that team's GitHub node id. The same id is `entity.id` on the teams data stream.
 
 **Authentication:** This data stream requires a **Classic Personal Access Token (PAT)**. Fine-grained PATs do not support the `admin:org` scope or the `membersWithRole` GraphQL query reliably and cannot be used.
 
@@ -155,3 +177,15 @@ Refer to [Creating a personal access token (classic)](https://docs.github.com/en
 {{fields "members"}}
 
 {{event "members"}}
+
+### Teams
+
+The GitHub Teams data stream collects one document per organization team using the [GitHub GraphQL API](https://docs.github.com/en/graphql) `organization.teams` query. Each document is a generic entity (`event.kind: asset`). It does not set `user.*` fields, so team documents do not create user entities.
+
+`entity.id` is the team's GitHub node id (for example `T_kgDOAABBCC`). That value is the same id written to `user.entity.relationships.administers.entity.id` on the member document of each maintainer of the team. `github.teams.combined_slug` keeps the `org/team-slug` value, which can change on rename.
+
+**Authentication:** Classic personal access token with the `read:org` scope. Fine-grained PATs are not supported. For GitHub Enterprise Server, set **API URL** to the instance API root (for example `https://github.example.com/api`). This data stream calls `<API URL>/graphql`.
+
+{{fields "teams"}}
+
+{{event "teams"}}

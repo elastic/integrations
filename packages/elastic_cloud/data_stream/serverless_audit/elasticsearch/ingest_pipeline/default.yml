@@ -1,0 +1,64 @@
+---
+description: Pipeline for Elastic Cloud serverless audit logs.
+processors:
+  # Keys inside `attributes` are literal dotted strings (attributes['network.forwarded_ip']), so the IP
+  # is lifted with a script rather than a dotted `field` path. The nested shape is accepted too in case
+  # the stream ever expands them.
+  - script:
+      tag: script_set_client_ip
+      description: Lift attributes['network.forwarded_ip'] to client.ip.
+      lang: painless
+      ignore_failure: true
+      source: |
+        def a = ctx.attributes;
+        if (a == null) {
+          return;
+        }
+        def ip = a.get('network.forwarded_ip');
+        if (ip == null && a.get('network') instanceof Map) {
+          ip = a.get('network').get('forwarded_ip');
+        }
+        if (ip == null || ip == '') {
+          return;
+        }
+        if (ctx.client == null) {
+          ctx.client = new HashMap();
+        }
+        ctx.client.ip = ip;
+  - geoip:
+      tag: geoip_client_ip
+      field: client.ip
+      target_field: client.geo
+      ignore_missing: true
+      if: ctx.client?.ip != null
+      properties:
+        - continent_name
+        - country_iso_code
+        - country_name
+        - region_iso_code
+        - region_name
+        - city_name
+        - location
+      on_failure:
+        - append:
+            tag: append_geoip_error_message
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+
+on_failure:
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error

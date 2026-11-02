@@ -143,7 +143,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
     3. When **API Type** is **Community API** and **Auth Key (Community)** is not configured, MalwareBazaar, ThreatFox, Malware URLs, and YARAify log `api_type is 'community' but auth_key is not configured` in `error.message` and `configuration_error` in `error.id`. Add **Auth Key (Community)** at the integration level.
     4. When **API Type** is **Commercial API** and **Username (Commercial)** or **Password (Commercial)** is not configured, MalwareBazaar, ThreatFox, Malware URLs, and YARAify log `api_type is 'commercial' but username/password are not configured` in `error.message` and `configuration_error` in `error.id`. Configure both fields at the integration level.
 - Since this integration supports the expiration of Indicators of Compromise (IoCs) using Elastic latest transform, the threat indicators are present in both source and destination indices. While this may appear to be duplicate ingestion, it is an implementation detail necessary for properly expiring threat indicators.
-- Because the latest copy of threat indicators is now indexed in two places, that is, in both source and destination indices, users must anticipate storage requirements accordingly. The ILM policies on source indices can be tuned to manage their data retention period.
+- Because the latest copy of threat indicators is now indexed in two places, that is, in both source and destination indices, users must anticipate storage requirements accordingly. See [Data retention](#data-retention) for how long source indices are kept and how to change it.
 - For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
 
 ## Scaling
@@ -1109,6 +1109,25 @@ Destinations indices are aliased to `logs-ti_abusech_latest.<data_stream_name>`.
 | `logs-ti_abusech.threatfox-*`      | `logs-ti_abusech_latest.dest_threatfox-*`        | `logs-ti_abusech_latest.threatfox`      |
 | `logs-ti_abusech.yaraify-*`        | `logs-ti_abusech_latest.dest_yaraify-*`          | `logs-ti_abusech_latest.yaraify`        |
 
-#### ILM Policy
+#### Data retention
 
-To facilitate IoC expiration, source data stream-backed indices `.ds-logs-ti_abusech.<data_stream_name>-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-ti_abusech.<data_stream_name>-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `5 days` from ingested date.
+Threat indicators are re-collected across polling intervals, and the latest transform keeps the active, deduplicated view in its destination index. The source data streams therefore hold repeated copies of the same indicators.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-ti_abusech.ja3_fingerprints-*` | `logs-ti_abusech.ja3_fingerprints-default_policy`: roll over after 1d, delete 2d after rollover | delete 5d after rollover |
+| `logs-ti_abusech.malware-*` | `logs-ti_abusech.malware-default_policy`: roll over after 1d, delete 2d after rollover | delete 5d after rollover |
+| `logs-ti_abusech.malwarebazaar-*` | `logs-ti_abusech.malwarebazaar-default_policy`: roll over after 1d, delete 2d after rollover | delete 5d after rollover |
+| `logs-ti_abusech.sslblacklist-*` | `logs-ti_abusech.sslblacklist-default_policy`: roll over after 1d, delete 2d after rollover | delete 5d after rollover |
+| `logs-ti_abusech.threatfox-*` | `logs-ti_abusech.threatfox-default_policy`: roll over after 1d, delete 2d after rollover | delete 5d after rollover |
+| `logs-ti_abusech.url-*` | `logs-ti_abusech.url-default_policy`: roll over after 1d, delete 2d after rollover | delete 5d after rollover |
+| `logs-ti_abusech.yaraify-*` | `logs-ti_abusech.yaraify-default_policy`: roll over after 1d, delete 2d after rollover | none |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-ti_abusech.ja3_fingerprints-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
