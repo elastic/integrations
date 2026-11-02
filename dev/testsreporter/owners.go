@@ -6,7 +6,6 @@ package testsreporter
 
 import (
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	"github.com/elastic/integrations/dev/citools"
@@ -15,9 +14,9 @@ import (
 
 // ownersResolver finds the owners of the packages reported in the tests results.
 //
-// The package name in the results is the name defined in the manifest of the package for recent
-// versions of elastic-package, and the name of the package folder for older versions. Both are
-// supported: the name in the manifest is looked up first, and then the name of the folder.
+// The package name in the results is the name defined in the manifest of the package, so packages
+// are looked up by that name and not by the name of their folders, that is not unique for nested
+// packages.
 type ownersResolver struct {
 	owners   *codeowners.Owners
 	packages []citools.PackageInfo
@@ -64,27 +63,17 @@ func (r *ownersResolver) lookup(packageName, dataStream string) (packageDetails,
 }
 
 func (r *ownersResolver) findPackage(name string) (citools.PackageInfo, error) {
-	var byName, byFolder []citools.PackageInfo
+	var candidates []citools.PackageInfo
 	for _, pkg := range r.packages {
 		if pkg.Name == name {
-			byName = append(byName, pkg)
-		}
-		if filepath.Base(pkg.Path) == name {
-			byFolder = append(byFolder, pkg)
+			candidates = append(candidates, pkg)
 		}
 	}
 
-	if len(byName) > 0 {
-		return uniquePackage(name, "name", byName)
-	}
-	if len(byFolder) > 0 {
-		return uniquePackage(name, "folder", byFolder)
-	}
-	return citools.PackageInfo{}, fmt.Errorf("no package found with name or folder %q", name)
-}
-
-func uniquePackage(name, kind string, candidates []citools.PackageInfo) (citools.PackageInfo, error) {
-	if len(candidates) == 1 {
+	switch len(candidates) {
+	case 0:
+		return citools.PackageInfo{}, fmt.Errorf("no package found with name %q", name)
+	case 1:
 		return candidates[0], nil
 	}
 
@@ -92,5 +81,5 @@ func uniquePackage(name, kind string, candidates []citools.PackageInfo) (citools
 	for i, pkg := range candidates {
 		paths[i] = pkg.Path
 	}
-	return citools.PackageInfo{}, fmt.Errorf("package %s %q is ambiguous, found in: %s", kind, name, strings.Join(paths, ", "))
+	return citools.PackageInfo{}, fmt.Errorf("package name %q is ambiguous, found in: %s", name, strings.Join(paths, ", "))
 }
