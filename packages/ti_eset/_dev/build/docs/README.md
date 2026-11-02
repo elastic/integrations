@@ -15,7 +15,10 @@ It includes the following datasets for retrieving logs:
 |   emailattachments | emailattachments stix 2.1   |
 |              files | file stix 2.1               |
 |                 ip | ip stix 2.1                 |
+|        phishingurl | phishingurl stix 2.1        |
 |         ransomware | ransomware stix 2.1         |
+|            scamurl | scamurl stix 2.1            |
+|           smishing | smishing stix 2.1           |
 |                url | url stix 2.1                |
 
 ## Agentless Enabled Integration
@@ -41,7 +44,10 @@ Destinations indices are aliased to `logs-ti_eset_latest.<feed name>`.
 | `logs-ti_eset.emailattachments-*`   | logs-ti_eset_latest.dest_emailattachments-*   | logs-ti_eset_latest.emailattachments   |
 | `logs-ti_eset.files-*`              | logs-ti_eset_latest.dest_files-*              | logs-ti_eset_latest.files              |
 | `logs-ti_eset.ip-*`                 | logs-ti_eset_latest.dest_ip-*                 | logs-ti_eset_latest.ip                 |
+| `logs-ti_eset.phishingurl-*`        | logs-ti_eset_latest.dest_phishingurl-*        | logs-ti_eset_latest.phishingurl        |
 | `logs-ti_eset.ransomware-*`         | logs-ti_eset_latest.dest_ransomware-*         | logs-ti_eset_latest.ransomware         |
+| `logs-ti_eset.scamurl-*`            | logs-ti_eset_latest.dest_scamurl-*            | logs-ti_eset_latest.scamurl            |
+| `logs-ti_eset.smishing-*`           | logs-ti_eset_latest.dest_smishing-*           | logs-ti_eset_latest.smishing           |
 | `logs-ti_eset.url-*`                | logs-ti_eset_latest.dest_url-*                | logs-ti_eset_latest.url                |
 
 ### Data retention
@@ -62,7 +68,10 @@ The package bounds the growth of these source data streams with a retention that
 | `logs-ti_eset.emailattachments-*` | `logs-ti_eset.emailattachments-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
 | `logs-ti_eset.files-*` | `logs-ti_eset.files-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
 | `logs-ti_eset.ip-*` | `logs-ti_eset.ip-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
+| `logs-ti_eset.phishingurl-*` | `logs-ti_eset.phishingurl-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
 | `logs-ti_eset.ransomware-*` | `logs-ti_eset.ransomware-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
+| `logs-ti_eset.scamurl-*` | `logs-ti_eset.scamurl-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
+| `logs-ti_eset.smishing-*` | `logs-ti_eset.smishing-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
 | `logs-ti_eset.url-*` | `logs-ti_eset.url-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after rollover |
 
 On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
@@ -143,6 +152,12 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 {{event "ip"}}
 
+### Phishing URL
+
+{{fields "phishingurl"}}
+
+{{event "phishingurl"}}
+
 ### APT
 
 {{fields "apt"}}
@@ -154,6 +169,18 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 {{fields "ransomware"}}
 
 {{event "ransomware"}}
+
+### Scam URL
+
+{{fields "scamurl"}}
+
+{{event "scamurl"}}
+
+### SMS phishing
+
+{{fields "smishing"}}
+
+{{event "smishing"}}
 
 ### URL
 
