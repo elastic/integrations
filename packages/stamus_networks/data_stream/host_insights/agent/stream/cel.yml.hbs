@@ -145,11 +145,11 @@ program: |-
   // ingest pipeline (ip is reused via DHCP, so "the same IP later" is not
   // assumed to be "the same host").
   //
-  // Pagination response envelope is UNCONFIRMED against a live CNCS instance
-  // (research-brief.md section 3.3 / open question #3) -- assumed to be the
-  // same DRF-style {count, next, previous, results} envelope used for the
-  // `alerts` stream, with the same fallback heuristics (empty/short page) in
-  // case the real envelope omits `next`.
+  // Pagination is DRF {count, next, previous, results}. A full Clear NDR server
+  // honors `page`. Community Clear NDR honors `page_number`. Both are sent.
+  // `next` non-null means more pages; a short or empty page is the fallback when
+  // `next` is omitted. The list omits empty arrays, and a populated page includes
+  // hostname[] and services[]. `host_id.client_service` is a list on some hosts.
   {
     "page": int(state.?page.orValue(1)),
     "baseline": state.?cursor.host_states.orValue({}),
@@ -160,6 +160,7 @@ program: |-
         "GET",
         state.url.trim_right("/") + "/rest/appliances/host_id/?" + {
           "page_size": [string(int(state.page_size))],
+          "page": [string(ctx.page)],
           "page_number": [string(ctx.page)],
         }.format_query()
       ).with(
@@ -181,6 +182,17 @@ program: |-
                 {
                   "ip": string(e.?ip.orValue("")),
                   "message": e.encode_json(),
+                  // REST host records have no probe name. The central server in the
+                  // configured URL is the observer. Filebeat does not use this
+                  // program; its ingest pipeline copies a string host onto
+                  // observer.name when that field is still empty.
+                  "observer": {
+                    "name": state.url.parse_url().Host.as(host,
+                      host.contains("]") ?
+                        host
+                      : (host.contains(":") ? host.substring(0, host.index(":")) : host)
+                    ),
+                  },
                   "comparable": {
                     "in_home_net": h.?in_home_net.orValue(false),
                     "hostname": h.?hostname.orValue([]),
@@ -194,7 +206,14 @@ program: |-
                         "values": s.?values.orValue([]).map(v, v.drop(["first_seen", "last_seen"])),
                       }
                     ),
-                    "client_service": h.?client_service.orValue({}).drop(["first_seen", "last_seen"]),
+                    // Enterprise records sometimes send client_service as a list of
+                    // {name, first_seen, last_seen}. drop() only exists on maps, so a
+                    // list must be walked or this page fails before any host is emitted.
+                    "client_service": h.?client_service.orValue({}).as(cs,
+                      type(cs) == list ?
+                        cs.map(c, type(c) == map ? c.drop(["first_seen", "last_seen"]) : c)
+                      : (type(cs) == map ? cs.drop(["first_seen", "last_seen"]) : cs)
+                    ),
                     "ssh_client": h.?ssh.client.orValue({}).drop(["first_seen", "last_seen"]),
                     "tls_ja4": h.?tls.ja4.orValue({}).drop(["first_seen", "last_seen"]),
                     "http_user_agent": h.?http.user_agent.orValue({}).drop(["first_seen", "last_seen"]),
@@ -233,7 +252,7 @@ program: |-
                   "recordIps": records.map(r, r.ip),
                   "emitted": records.map(r,
                     ((r.ip in ctx.baseline) ? (ctx.baseline[r.ip] != r.comparable) : true) ?
-                      [{"message": r.message}]
+                      [{"message": r.message, "observer": r.observer}]
                     :
                       []
                   ).flatten(),
