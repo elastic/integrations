@@ -1,7 +1,7 @@
 - name: flow_id
   type: keyword
   description: >-
-    Suricata flow identifier. Primary cross-event correlation/join key for tying an alert back to its underlying flow or to other alerts on the same flow; delivered as a large integer (commonly >= 2^53, the float64 safe-integer ceiling) but treated as an opaque identifier (keyword), not a metric. The CEL program parses the raw response with decode_json_string_numbers(), which decodes every JSON number in the response (not just flow_id) using its exact original textual form instead of float64, and re-emits it the same way through encode_json(); flow_id therefore round-trips through this integration with no precision loss, even above 2^53. An earlier version of this program instead rewrote flow_id to a quoted JSON string before a plain decode_json() call (using a `regexp:` stream-config block and re_replace_all()), but that mechanism caused Elastic Agent to silently fail to schedule a component for this input (confirmed on Elastic Agent 9.5.5) and was removed; decode_json_string_numbers() requires no stream-config changes, so it does not reintroduce that failure mode. See the package README's Troubleshooting section for historical context.
+    Suricata flow identifier. This field is the primary cross-event correlation key for tying an alert to its underlying flow or other alerts on the same flow. It is delivered as a large integer (commonly >= 2^53, the float64 safe-integer ceiling) but treated as an opaque keyword, not a metric. The CEL program parses the raw response with decode_json_string_numbers(). This function preserves the exact textual form of every JSON number before encode_json() re-emits the response. As a result, flow_id round-trips through this integration without precision loss, even above 2^53. An earlier version rewrote flow_id to a quoted JSON string before a plain decode_json() call by using a `regexp:` stream-config block and re_replace_all(). That mechanism caused Elastic Agent 9.5.5 to silently fail to schedule a component for this input, so it was removed. decode_json_string_numbers() requires no stream-config changes and does not reintroduce that failure mode. See the package README's Troubleshooting section for historical context.
 - name: direction
   type: keyword
   description: >-
@@ -56,7 +56,7 @@
     - name: flowbits
       type: keyword
       description: >-
-        Suricata flowbits set/checked for this event (for example, "stamus.sightings", "stamus.file.identification.") Cross-cutting enrichment tag, not rule metadata.
+        Suricata flowbits set or checked for this event (for example, `stamus.sightings` or `stamus.file.identification.`). This is a cross-cutting enrichment tag, not rule metadata.
 - name: beaconing_report
   type: group
   description: >-
@@ -120,7 +120,7 @@
     - name: metadata.stamus_classification
       type: keyword
       description: >-
-        Stamus sub-classification tag, for example, a DoC/DoPV threat classification, "stamus_sightings", or "fileidentification".
+        Stamus sub-classification tag, for example, a DoC/DoPV threat classification, `stamus_sightings`, or `fileidentification`.
     - name: metadata.confidence
       type: keyword
       description: Rule-writer-assigned confidence label (for example, "Medium.")
@@ -183,7 +183,7 @@
     - name: kill_chain
       type: keyword
       description: >-
-        Kill-chain phase: "pre_condition" (DoPV only), or "delivery"/"exploitation"/"installation"/ "command_and_control"/"action_on_objectives" (DoC). Lockheed-Martin-style phase naming, not MITRE ATT&CK — intentionally not mapped into `threat.tactic.*`.
+        Detection lifecycle phase: `pre_condition` (DoPV only), or `delivery`/`exploitation`/`installation`/`command_and_control`/`action_on_objectives` (DoC). Uses the corresponding Lockheed Martin lifecycle model rather than MITRE ATT&CK, so it is intentionally not mapped to `threat.tactic.*`.
     - name: asset
       type: keyword
       description: >-
