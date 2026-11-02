@@ -1,11 +1,12 @@
 ---
 description: >-
   Chargeback Serverless: build composite_key, classify Serverless SKUs, and set
-  allocation_driver (indexing | query | storage | none) for showback.
+  allocation_driver (indexing | query | storage | ai | synthetics | none) for showback.
 processors:
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
+      if: ctx.event?.ingested == null
       tag: set_event_ingested
   - date:
       field: period_start
@@ -56,7 +57,8 @@ processors:
       description: >-
         Serverless-only classification. Sets cost_type, cost_category, is_allocatable,
         and allocation_driver. Drivers: indexing (ingest VCU / Observability-Security
-        ingest GB), query (search VCU), storage (retained), none (unallocated).
+        ingest GB), query (search VCU), storage (retained), ai (inference / ML VCU /
+        Agent Builder), synthetics (synthetic pings & executions), none (unallocated).
       source: |
         def sku = ctx.sku;
         if (sku == null) {
@@ -64,6 +66,24 @@ processors:
           ctx.cost_category = 'other';
           ctx.is_allocatable = false;
           ctx.allocation_driver = 'none';
+          return;
+        }
+
+        // Synthetics (singular 'synthetic-' or plural 'synthetics')
+        if (sku.contains('synthetic')) {
+          ctx.cost_type = 'synthetics';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'synthetics';
+          return;
+        }
+
+        // Agent Builder executions
+        if (sku.contains('agent-builder')) {
+          ctx.cost_type = 'agent-builder';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'ai';
           return;
         }
 
@@ -86,7 +106,7 @@ processors:
           }
         }
 
-        // Elasticsearch and Vector Database capacity (VCU + retained).
+        // Elasticsearch and Vector Database capacity (VCU + retained + ML VCU).
         if (sku.startsWith('elasticsearch.') || sku.startsWith('vector.')
             || sku.startsWith('elasticsearch-vector.')) {
           if (sku.contains('-ingest-vcu_') || sku.contains('ingest-vcu')) {
@@ -114,8 +134,8 @@ processors:
           if (sku.contains('-ml-vcu_') || sku.contains('ml-vcu')) {
             ctx.cost_type = 'ml-vcu';
             ctx.cost_category = 'platform';
-            ctx.is_allocatable = false;
-            ctx.allocation_driver = 'none';
+            ctx.is_allocatable = true;
+            ctx.allocation_driver = 'ai';
             return;
           }
         }
@@ -146,26 +166,12 @@ processors:
         if (ctx.cost_type == 'inference' || sku.contains('inference') || sku.contains('llm')) {
           ctx.cost_type = 'inference';
           ctx.cost_category = 'platform';
-          ctx.is_allocatable = false;
-          ctx.allocation_driver = 'none';
-          return;
-        }
-        if (sku.contains('synthetics')) {
-          ctx.cost_type = 'synthetics';
-          ctx.cost_category = 'platform';
-          ctx.is_allocatable = false;
-          ctx.allocation_driver = 'none';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'ai';
           return;
         }
         if (sku.contains('workflow')) {
           ctx.cost_type = 'workflows';
-          ctx.cost_category = 'platform';
-          ctx.is_allocatable = false;
-          ctx.allocation_driver = 'none';
-          return;
-        }
-        if (sku.contains('agent-builder')) {
-          ctx.cost_type = 'agent-builder';
           ctx.cost_category = 'platform';
           ctx.is_allocatable = false;
           ctx.allocation_driver = 'none';

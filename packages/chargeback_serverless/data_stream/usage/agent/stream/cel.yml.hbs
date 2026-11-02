@@ -62,8 +62,8 @@ program: |-
                           size(projects) > 0 ?
                           {
                             "events": projects.map(p,
-                              (state.?project_keys.orValue([]) != null ? state.project_keys : []).filter(k, k.startsWith(p.id + ":")).as(pkeys,
-                                size(pkeys) > 0 ? pkeys[0].substring(size(p.id) + 1) : (
+                              (state.?project_keys.orValue([]) != null ? state.project_keys : []).filter(k, string(k).startsWith(p.id + ":")).as(pkeys,
+                                size(pkeys) > 0 ? string(pkeys[0]).substring(size(p.id) + 1, size(string(pkeys[0]))) : (
                                   state.hub_es_api_key != "" ? state.hub_es_api_key : state.api_key
                                 )
                               ).as(target_key,
@@ -91,9 +91,9 @@ program: |-
                                           "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
                                           "project_type": p.project_type,
                                           "datastream": row.index,
-                                          "datastream_sum_indexing_time": (has(row["indexing.index_time"]) && row["indexing.index_time"] != null && row["indexing.index_time"] != "") ? int(row["indexing.index_time"]) : 0,
-                                          "datastream_sum_query_time": (has(row["search.query_time"]) && row["search.query_time"] != null && row["search.query_time"] != "") ? int(row["search.query_time"]) : 0,
-                                          "datastream_sum_data_set_store_size": (has(row["dataset.size"]) && row["dataset.size"] != null && row["dataset.size"] != "") ? int(row["dataset.size"]) : 0,
+                                          "datastream_sum_indexing_time": ("indexing.index_time" in row && row["indexing.index_time"] != null && row["indexing.index_time"] != "") ? int(row["indexing.index_time"]) : 0,
+                                          "datastream_sum_query_time": ("search.query_time" in row && row["search.query_time"] != null && row["search.query_time"] != "") ? int(row["search.query_time"]) : 0,
+                                          "datastream_sum_data_set_store_size": ("dataset.size" in row && row["dataset.size"] != null && row["dataset.size"] != "") ? int(row["dataset.size"]) : 0,
                                           "conf_chargeable_unit_rate": double(state.conf_unit_rate),
                                           "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
                                           "conf_currency_symbol": state.conf_currency_symbol,
