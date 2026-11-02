@@ -1,0 +1,155 @@
+{{- generatedHeader }}
+# Stamus Networks Integration for Elastic
+
+## Overview
+
+The Stamus Networks integration for Elastic enables collection of IDS/IPS alerts and Declaration
+of Compromise (DoC) and Declaration of Policy Violation (DoPV) correlation records from
+[Stamus Networks Clear NDR](https://www.stamus-networks.com/) (formerly branded "Stamus Security
+Platform") — a Network Detection and Response (NDR) / Network Security Monitoring (NSM) platform
+built on [Suricata](https://suricata.io/), the open-source IDS/IPS/NSM engine. Data is collected
+from the Clear NDR Central Server (CNCS) REST API.
+
+### Compatibility
+
+This integration was built and tested against Stamus Networks CNCS 42.2.0 and its documented REST
+API. It relies on a static, per-user API token for authentication (no OAuth2 flow is available).
+Retrieving the embedded `stamus.*` Declaration of Compromise/Policy Violation object requires a
+Stamus Tier 3 license; the `alerts` data stream otherwise works with the lower Tier 2 license.
+
+### How it works
+
+This integration polls the CNCS REST API on a configurable interval using the `cel` input. The
+`alerts` data stream retrieves Suricata IDS/IPS alert events and Stamus DoC/DoPV correlation
+records with a persisted time-range cursor (`from_date`/`to_date`).
+
+Geolocation and ASN fields (`source.geo`, `destination.geo`, `source.as`, `destination.as`) on the
+`alerts` data stream are derived by this integration's ingest pipeline using Elasticsearch's
+built-in GeoLite2 databases against the event's source/destination IP addresses — Stamus Clear
+NDR does not supply its own geolocation data for these events.
+
+## What data does this integration collect?
+
+The Stamus Networks integration collects the following data streams:
+
+* **alerts**: Suricata IDS/IPS signature-match alert events (`event_type: alert`), including the
+  embedded Stamus Declaration of Compromise/Policy Violation correlation object (`event_type:
+  stamus`) when present, plus Sightings (newly discovered asset attributes), Outlier Alert
+  (`stamus_novel`), and File Identification classification tags that decorate alert/stamus
+  documents.
+
+### Supported use cases
+
+Use this integration to bring Stamus Networks' curated, high-fidelity NDR threat detections
+(alerts and Declarations) into Elastic Security for correlation with other telemetry, threat
+hunting, and dashboarding.
+
+## What do I need to use this integration?
+
+* A running Stamus Networks Clear NDR deployment (Central Server, CNCS) reachable from the host
+  running Elastic Agent.
+* A dedicated, read-only ("Active" tier) CNCS user account is recommended for the integration
+  rather than reusing an administrative account's token.
+* Stamus Tier 2 licensing (REST API access) at minimum; Tier 3 licensing is required for the
+  `stamus.*` Declaration of Compromise/Policy Violation object on the `alerts` data stream.
+
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
+
+Elastic Agent polls the Stamus Clear NDR Central Server REST API on the configured interval and ships the data to Elastic, where the events are then processed via the integration's ingest pipelines.
+
+### Set up steps in stamus_networks
+
+1. Log in to the CNCS web UI.
+2. Open account settings from the header menu.
+3. Under **User Settings**, select **Edit Token**.
+4. Click **Regenerate** to generate the API token used by this integration.
+
+#### Vendor resources
+
+- [REST API documentation](https://docs.stamus-networks.com/42.2.0/developer-corner/rest-api.html)
+- [JSON Data Format](https://docs.stamus-networks.com/42.2.0/developer-corner/json-format.html)
+
+### Set up steps in Kibana
+
+Add the **Stamus Networks** integration in Fleet and configure:
+
+* **Central Server URL** — the base URL of your CNCS instance, for example, `https://cncs.example.com`
+  (no trailing `/rest/`).
+* **API Token** — the token generated above.
+
+The `alerts` data stream uses these two settings. It also exposes its own **Interval** (polling
+frequency, default 5m) and **Initial lookback** (default 24h).
+
+### Validation
+
+After enabling the integration, generate or wait for Suricata alert traffic on your monitored
+network, then check **Discover** in Kibana for documents in the
+`logs-stamus_networks.alerts-*` data stream.
+
+## Troubleshooting
+
+- No data is being collected: Verify the Central Server URL and API token are correct, and that the host running Elastic Agent can reach the CNCS REST API over HTTPS.
+- 401 Unauthorized errors: The API token may have been regenerated or revoked in the CNCS UI. Regenerate the token in CNCS and update the integration configuration; the Stamus API has no automated token-rotation mechanism.
+- REST endpoint behavior for the alerts data stream (confirmed against a live, open-source Clear NDR Community/SELKS instance): this integration's CEL program retrieves alert and stamus documents from `/rest/rules/es/events_tail/` filtered with `qfilter=event_type:alert` and `qfilter=event_type:stamus`. Although vendor documentation describes this endpoint's scope as non-alert protocol events only, a live test confirmed it does return full raw alert documents when filtered this way, and that the pagination response envelope is a standard DRF `{count, next, previous, results}` shape with `page_number` as the real server-side cursor parameter — both match what this integration's CEL program already implements, so no changes were needed.
+- The full DoC/DoPV correlation layer (`event_type: stamus`) requires a Stamus Clear NDR **Tier 3** license. It was validated against the documented API shape and a mock. Confirmed against a live, open-source Clear NDR Community/SELKS (below Tier 3) instance: the REST API itself works fine and `qfilter=event_type:stamus` consistently returns zero results. This matches Stamus's own licensing documentation, which lists Declaration of Compromise as Tier 3-only, with the REST API itself available starting at Tier 2. If you see no `stamus`-typed events, confirm your license tier before treating it as an integration bug. On some server configurations the `stamus` correlation phase may instead return a persistent 400/401/403/404/422 (rather than a clean zero-result page) when gated by licensing; the CEL program treats a non-retryable error on the `stamus` phase as "this phase is unavailable for this window" and advances to the next window's alert collection instead of retrying the failed phase forever — only a persistent error on the `alert` phase (the primary data) halts and retries.
+- Beaconing detection fields (`beaconing_report.*`, `beaconing_statistics.*`) are mapped but have not been observed in any sample data used to build this integration; treat as unverified end-to-end even though the fields are vendor-documented.
+- `flow_id` precision: `flow_id` is delivered by the API as a large integer (commonly >= 2^53 in production) and is mapped as `keyword` since it is used only as an opaque correlation key, never as a metric. The CEL program parses the raw API response with `decode_json_string_numbers()`, which decodes every JSON number (not just `flow_id`) using its exact original textual form instead of float64, and re-emits it the same way through `encode_json()`; `flow_id` therefore round-trips through this integration with no precision loss, even above 2^53. (An earlier version of this program instead rewrote `flow_id` to a quoted JSON string before a plain `decode_json()` call, via a CEL `regexp:` stream-config block; that mechanism caused Elastic Agent to silently fail to schedule a component for this input — confirmed on Elastic Agent 9.5.5, with no errors logged anywhere — and was removed. `decode_json_string_numbers()` requires no stream-config changes, so it does not reintroduce that failure mode.)
+
+## Performance and scaling
+
+The `alerts` data stream polls `events_tail` once per interval. The default interval is 5m and the
+default initial lookback is 24h. `collection_delay` (default 1m) keeps the cursor behind now so
+alerts that become searchable slightly after their own timestamp are not skipped.
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+## Reference
+
+### Inputs used
+
+{{ inputDocs }}
+
+### API usage
+
+These APIs are used with this integration:
+* `GET /rest/rules/es/events_tail/` — alert and stamus (Declaration of Compromise/Policy Violation) events for the `alerts` data stream.
+
+See the [REST API documentation](https://docs.stamus-networks.com/42.2.0/developer-corner/rest-api.html) for authentication, pagination, and filtering details.
+
+### Vendor documentation links
+
+- [Stamus Networks Clear NDR documentation](https://docs.stamus-networks.com/)
+- [REST API](https://docs.stamus-networks.com/42.2.0/developer-corner/rest-api.html)
+- [DoC versus DoPV concepts](https://docs.stamus-networks.com/42.2.0/concepts/doc-vs-dopv.html)
+- [Outlier Alerts concepts](https://docs.stamus-networks.com/42.2.0/concepts/alert-outliers.html)
+
+### Dashboards
+
+The package ships one dashboard:
+
+- **[Logs Stamus Networks] IDS and Declarations** covers signature alerts and Declaration of Compromise or Policy Violation records: categories, severity, affected products, attack targets, malware families, Stamus classification, kill chain, threat families, assets, and sightings.
+
+### Data streams
+
+#### alerts
+
+The `alerts` data stream provides events from the Stamus Clear NDR Central Server REST API of the
+following types: Suricata IDS/IPS signature-match alerts (`event_type: alert`) and Stamus
+Declaration of Compromise/Policy Violation correlation records (`event_type: stamus`), including
+Sightings, Outlier Alert, and File Identification classification tags.
+
+##### alerts fields
+
+{{ fields "alerts" }}
+
+##### alerts sample event
+
+{{ event "alerts" }}
+
+{{ ilm }}
+
+{{ transform }}
