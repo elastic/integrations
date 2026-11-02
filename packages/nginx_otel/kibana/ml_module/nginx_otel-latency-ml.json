@@ -1,0 +1,212 @@
+{
+  "id": "nginx_otel-latency-ml",
+  "type": "ml-module",
+  "migrationVersion": {
+    "search": "7.9.3"
+  },
+  "references": [],
+  "attributes": {
+    "id": "nginx_otel-latency-ml",
+    "title": "[Nginx OTel] Request latency anomalies",
+    "description": "Detect Nginx hosts whose request or upstream response time rises above their own baseline, from Nginx (OpenTelemetry) access logs with timing fields.",
+    "type": "Web server logs",
+    "logo": {
+      "icon": "logoNginx"
+    },
+    "defaultIndexPattern": "logs-nginx.access.otel-*",
+    "query": {
+      "bool": {
+        "filter": [
+          {
+            "term": {
+              "data_stream.dataset": "nginx.access.otel"
+            }
+          },
+          {
+            "exists": {
+              "field": "host.name"
+            }
+          }
+        ],
+        "must_not": {
+          "terms": {
+            "_tier": [
+              "data_frozen",
+              "data_cold"
+            ]
+          }
+        }
+      }
+    },
+    "jobs": [
+      {
+        "id": "nginx_host_latency_anomaly",
+        "config": {
+          "groups": [
+            "nginx",
+            "otel"
+          ],
+          "description": "Nginx OTel access logs: request and upstream response time per host above its own baseline. The datafeed computes each host's median every 15 minutes; hosts with fewer than 10 requests, or fewer than 10 upstream requests for the upstream median, are skipped. Requires the timing fields in the access log format.",
+          "analysis_config": {
+            "bucket_span": "15m",
+            "detectors": [
+              {
+                "detector_description": "High median request duration per host (median computed in the datafeed)",
+                "function": "high_mean",
+                "field_name": "request_duration_p50",
+                "partition_field_name": "host.name"
+              },
+              {
+                "detector_description": "High median upstream response time per host (median computed in the datafeed)",
+                "function": "high_mean",
+                "field_name": "upstream_response_duration_p50",
+                "partition_field_name": "host.name"
+              }
+            ],
+            "influencers": [
+              "host.name"
+            ],
+            "summary_count_field_name": "doc_count"
+          },
+          "analysis_limits": {
+            "model_memory_limit": "256mb"
+          },
+          "data_description": {
+            "time_field": "@timestamp",
+            "time_format": "epoch_ms"
+          },
+          "model_plot_config": {
+            "enabled": true,
+            "annotations_enabled": true
+          },
+          "custom_settings": {
+            "created_by": "ml-module-nginx-otel-latency-ml",
+            "custom_urls": [
+              {
+                "url_name": "Request Health for this host",
+                "url_value": "dashboards#/view/nginx_otel-a1b2c3d4-e5f6-7890-abcd-ef1234567890?_g=(filters:!(),time:(from:'$earliest$',mode:absolute,to:'$latest$'))&_a=(filters:!(),query:(language:kuery,query:'host.name:\"$host.name$\"'))"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "datafeeds": [
+      {
+        "id": "datafeed-nginx_host_latency_anomaly",
+        "job_id": "nginx_host_latency_anomaly",
+        "config": {
+          "job_id": "nginx_host_latency_anomaly",
+          "indices": [
+            "INDEX_PATTERN_NAME"
+          ],
+          "query": {
+            "bool": {
+              "filter": [
+                {
+                  "term": {
+                    "data_stream.dataset": "nginx.access.otel"
+                  }
+                },
+                {
+                  "exists": {
+                    "field": "http.server.request.duration"
+                  }
+                }
+              ],
+              "must_not": [
+                {
+                  "term": {
+                    "url.path": "/nginx_status"
+                  }
+                }
+              ]
+            }
+          },
+          "indices_options": {
+            "allow_no_indices": true
+          },
+          "runtime_mappings": {
+            "upstream_connected_response_duration": {
+              "type": "double",
+              "script": {
+                "source": "if (doc.containsKey('nginx.upstream.connect.duration') && doc.containsKey('nginx.upstream.response.duration') && doc['nginx.upstream.connect.duration'].size() > 0 && doc['nginx.upstream.response.duration'].size() > 0) { emit(doc['nginx.upstream.response.duration'].value); }"
+              }
+            }
+          },
+          "aggregations": {
+            "buckets": {
+              "composite": {
+                "size": 1000,
+                "sources": [
+                  {
+                    "date": {
+                      "date_histogram": {
+                        "field": "@timestamp",
+                        "fixed_interval": "15m"
+                      }
+                    }
+                  },
+                  {
+                    "host.name": {
+                      "terms": {
+                        "field": "host.name"
+                      }
+                    }
+                  }
+                ]
+              },
+              "aggregations": {
+                "@timestamp": {
+                  "max": {
+                    "field": "@timestamp"
+                  }
+                },
+                "request_p50": {
+                  "percentiles": {
+                    "field": "http.server.request.duration",
+                    "percents": [
+                      50
+                    ]
+                  }
+                },
+                "upstream_p50": {
+                  "percentiles": {
+                    "field": "upstream_connected_response_duration",
+                    "percents": [
+                      50
+                    ]
+                  }
+                },
+                "upstream_requests": {
+                  "value_count": {
+                    "field": "upstream_connected_response_duration"
+                  }
+                },
+                "request_duration_p50": {
+                  "bucket_script": {
+                    "buckets_path": {
+                      "p": "request_p50[50.0]",
+                      "n": "_count"
+                    },
+                    "script": "params.n >= 10 ? params.p : null"
+                  }
+                },
+                "upstream_response_duration_p50": {
+                  "bucket_script": {
+                    "buckets_path": {
+                      "p": "upstream_p50[50.0]",
+                      "n": "upstream_requests"
+                    },
+                    "script": "params.n >= 10 ? params.p : null"
+                  }
+                }
+              }
+            }
+          },
+          "frequency": "15m"
+        }
+      }
+    ]
+  }
+}
