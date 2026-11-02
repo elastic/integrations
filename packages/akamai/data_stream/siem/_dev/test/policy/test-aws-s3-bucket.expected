@@ -1,0 +1,37 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: akamai
+      name: test-aws-s3-bucket-akamai
+      streams:
+        - bucket_arn: arn:aws:s3:::akamai-siem-bucket
+          bucket_list_interval: 5m
+          bucket_list_prefix: akamai/
+          data_stream:
+            dataset: akamai.siem
+          default_region: us-east-1
+          number_of_workers: 5
+          publisher_pipeline.disable_host: true
+          role_arn: arn:aws:iam::123456789012:role/akamai-siem-reader
+          tags:
+            - forwarded
+            - akamai-siem
+      type: aws-s3
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-akamai.siem-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

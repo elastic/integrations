@@ -4,10 +4,11 @@ The Custom Threat Intelligence package is an integration designed to ingest thre
 
 The integration comes with a default pipeline that automatically maps standard STIX 2.1 data into ECS fields. However, it also offers the flexibility to handle custom STIX data by allowing users to add custom pipelines accordingly.
 
-## Agentless Enabled Integration
+## Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ## Key features
 
@@ -88,7 +89,7 @@ Some TAXII 2.1 servers issue an API key and secret instead of a username and pas
    | API Key / API Key Type | Leave unset |
 
    Leave **Accept header value** and **Content-Type header value** at their defaults. Configure one stream per collection. For example, the `malicious-ips` collection on IsMalicious uses `https://api.ismalicious.com/taxii/api-root/collections/malicious-ips/objects/`.
-4. Set **Initial Interval** and **Interval** according to collection size. Pagination follows the server's `next` token automatically. Use **Limit** to bound the page size, and raise **Maximum Pages Per Interval** if a large initial import hits the [CEL execution limit](#exceeding-maximum-number-of-cel-executions).
+4. Set **Initial Interval** and **Interval** according to collection size. Pagination follows the server's `next` token while the server reports `more: true`, as defined by TAXII 2.1. Use **Limit** to bound the page size, and raise **Maximum Pages Per Interval** if a large initial import hits the [CEL execution limit](#exceeding-maximum-number-of-cel-executions).
 5. Verify indicators arrive with the expected values, types and timestamps, and use the `logs-ti_custom_latest.indicator` alias for indicator match rules. See [Expiration of Indicators of Compromise](#expiration-of-indicators-of-compromise-iocs) for how `valid_until`, `revoked` and the `IOC Expiration Duration` fail-safe are applied.
 
 ### Expiration of Indicators of Compromise (IOCs)
