@@ -371,15 +371,9 @@ FROM logs-crowdstrike.fdr-*
 | LIMIT 20
 ```
 
-**Elasticsearch 8.19+** is required for `LOOKUP JOIN` to resolve an alias. Use `crowdstrike_lookup.aidmaster` as in the example above. On **releases before 8.19**, `LOOKUP JOIN` must target the concrete transform destination index instead: in Kibana go to **Stack Management** → **Transforms**, open the CrowdStrike latest aidmaster transform, and use the **destination_index** name shown there (that name can change with the integration version).
-
 **Using enriched fields:** Enrichment from the lookup is under the `crowdstrike.info.host.*` namespace (e.g. `crowdstrike.info.host.hostname` for hostname, `crowdstrike.info.host.cid` for customer ID). Use these fields in dashboards and detection rules when building on query-time enrichment.
 
-**Ingest-time versus query-time:** The FDR integration’s **Enrich Host and User Metadata** option (`enrich_metadata`, on by default) uses the Elastic Agent (Filebeat) metadata cache to attach `aidmaster` and `userinfo` to events at ingest time. If you rely on query-time host enrichment only (transform + `LOOKUP JOIN` above), set **Enrich Host and User Metadata** to **Off** so host metadata is not applied twice. Turning it off also disables ingest-time enrichment from `userinfo`; if you still need user fields from `userinfo` on every document, keep ingest-time enrichment enabled or supplement with a separate query pattern. Disabling **Enrich Host and User Metadata** automatically makes **Keep Original Host and User Metadata** option (`keep_metadata`) ineffective and the metadata events are retained.
-
-:::{warning}
-**Deprecation notice:** Ingest-time cache enrichment (`enrich_metadata` and related settings — `keep_metadata`, `metadata_ttl`, `metadata_cache_capacity`, `metadata_cache_write_interval`) is deprecated and will be removed in a future major version. Query-time enrichment via `LOOKUP JOIN` is the replacement. The default for `keep_metadata` has been changed to `true` so that metadata events are indexed and the LOOKUP JOIN transforms have source data. Existing installations that upgrade retain their previous `keep_metadata` setting; if it was `false`, set it to `true` to enable query-time enrichment.
-:::
+**Ingest-time enrichment removed in 5.0.0:** Earlier versions could attach `aidmaster` and `userinfo` metadata to events at ingest time through an Elastic Agent cache (the **Enrich Host and User Metadata** option and related settings). That option was deprecated in 3.25.0 and removed in 5.0.0; `LOOKUP JOIN` is now the only enrichment path. `aidmaster` and `userinfo` events are always indexed, so the lookup transforms always have source data. `crowdstrike.info.*` is no longer stored on FDR events. For the aws-s3 input, `host.name`, `user.name`, `user.domain`, `host.ip`, `related.hosts`, `related.user` and `related.ip` are no longer filled from cached `aidmaster` or `userinfo` metadata. Most sensor events carry only `aid` and `UserSid`, so after upgrading they no longer have `host.name` or `user.name`; `host.id` and `user.id` are unchanged. Security alerts, the Hosts and Users pages, asset criticality and risk scoring key on `host.name` and `user.name`, so FDR events and alerts without those fields are affected. Rewrite custom KQL, EQL or threshold rules that filter on stored `crowdstrike.info.*` fields as ES|QL queries that use `LOOKUP JOIN`.
 
 ### Query-time user metadata enrichment (LOOKUP JOIN)
 
@@ -416,15 +410,7 @@ FROM logs-crowdstrike.fdr-*
 | LIMIT 20
 ```
 
-**Elasticsearch 8.19+** is required for `LOOKUP JOIN` to resolve an alias. Use `crowdstrike_lookup.userinfo` as in the examples above. On **releases before 8.19**, `LOOKUP JOIN` must target the concrete transform destination index instead: in Kibana go to **Stack Management** → **Transforms**, open the CrowdStrike latest userinfo transform, and use the **destination_index** name shown there (that name can change with the integration version). If you use both host and user lookups on releases before 8.19, you will need two concrete destination index names — one for aidmaster and one for userinfo — both obtainable from **Stack Management** → **Transforms**.
-
-**Using enriched fields:** Enrichment from the user lookup is under the `crowdstrike.info.user.*` namespace (e.g. `crowdstrike.info.user.name` for username, `crowdstrike.info.user.domain` for UPN domain, `crowdstrike.info.user.logon_type` for logon type). Use these fields in dashboards and ES|QL detection rules when building on query-time enrichment. Note that detection rules using EQL, threshold, or KQL operate on stored documents and cannot use `LOOKUP JOIN` — those rule types continue to rely on ingest-time cache enrichment for user metadata.
-
-**Ingest-time versus query-time:** The same **Enrich Host and User Metadata** option (`enrich_metadata`) that controls ingest-time host enrichment also controls ingest-time user enrichment from `userinfo` directory data. Query-time user enrichment via the transform is additive — it works regardless of whether ingest-time enrichment is enabled. If you rely on query-time enrichment only, set **Enrich Host and User Metadata** to **Off** so metadata is not applied twice. If both are active, user metadata may appear under `crowdstrike.info.user.*` from both the ingest-time cache and the query-time lookup; the values should be consistent but the ingest-time cache is populated from `userinfo` while the query-time lookup uses sensor events, so field availability may differ.
-
-:::{warning}
-**Deprecation notice:** Ingest-time cache enrichment is deprecated and will be removed in a future major version. Query-time enrichment via the transforms and `LOOKUP JOIN` described above is the replacement. See the deprecation notice in the host metadata section above for details on the `keep_metadata` default change.
-:::
+**Using enriched fields:** Enrichment from the user lookup is under the `crowdstrike.info.user.*` namespace (e.g. `crowdstrike.info.user.name` for username, `crowdstrike.info.user.domain` for UPN domain, `crowdstrike.info.user.logon_type` for logon type). Use these fields in dashboards and ES|QL detection rules when building on query-time enrichment.
 
 #### ES|QL dashboard panels
 
