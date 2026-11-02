@@ -1,0 +1,84 @@
+{
+  "id": "gcp_gke_otel-node-condition-active-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP GKE OTel] Node pressure or problem condition active",
+        "description": "Fires for each GKE node and condition whose latest status is True, for every condition except Ready, the informational KubeletConfigChanged and SysctlChanged, and the Deprecated* configuration warnings. That covers MemoryPressure, DiskPressure and PIDPressure (the kubelet is evicting pods), NetworkUnavailable, and node-problem-detector conditions such as KernelDeadlock, ReadonlyFilesystem or FrequentContainerdRestart. Uses GKE system metrics (`node/status_condition`). The node-problem-detector condition set varies by GKE version and node image: add any condition that is informational in your fleet to the exclusion list in the query. Conditions that stopped reporting more than 5 minutes before their cluster's newest sample are ignored.",
+        "tags": [
+          "observability",
+          "gcp",
+          "gke"
+        ]
+      },
+      "schedule": {
+        "every": "1m",
+        "lookback": "10m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.gke.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n    AND attributes.condition IS NOT NULL\n    // Ready has its own rule. KubeletConfigChanged and SysctlChanged are informational and often True.\n    AND attributes.condition NOT IN (\"Ready\", \"KubeletConfigChanged\", \"SysctlChanged\")\n    // Deprecated* conditions are configuration deprecation warnings. Remove this line to include them.\n    AND NOT attributes.condition LIKE \"Deprecated*\"\n// Only the current status of each condition is emitted (value 1); a status change starts a new series\n| STATS v = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/node/status_condition`))\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name,\n       resource.attributes.node_name, attributes.condition, attributes.status, bucket = TBUCKET(1 minute)\n// Newest condition sample of each cluster, for the per-cluster freshness rule\n| INLINE STATS cluster_newest = MAX(bucket)\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name\n// Latest status per node and condition\n| STATS condition_status = LAST(attributes.status, bucket),\n        last_seen = MAX(bucket),\n        cluster_newest = MAX(cluster_newest)\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name,\n       resource.attributes.node_name, attributes.condition",
+        "breach": {
+          "segment": "// Ignore nodes and conditions that stopped reporting more than 5 minutes before their cluster's newest sample\nWHERE last_seen >= cluster_newest - 5 minutes\n// MemoryPressure, DiskPressure, PIDPressure, NetworkUnavailable and node-problem-detector conditions are problems when True\n| WHERE condition_status == \"True\"\n| KEEP resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name,\n       resource.attributes.node_name, attributes.condition, condition_status, last_seen"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 2
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.location",
+          "resource.attributes.cluster_name",
+          "resource.attributes.node_name",
+          "attributes.condition"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_gke_otel-node-condition-active-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Node pressure or problem condition active\n\nA node condition other than `Ready` is `True`. The alert's `attributes.condition` names it.\n\n| Condition | Meaning |\n|---|---|\n| `MemoryPressure` | Node memory is low; the kubelet is evicting pods. |\n| `DiskPressure` | Boot disk space or inodes are low (on GKE, less than 10% of total disk free); the kubelet is evicting pods and garbage-collecting images. |\n| `PIDPressure` | The node is running out of process IDs. |\n| `NetworkUnavailable` | The node's network isn't configured correctly. |\n| Others (`KernelDeadlock`, `ReadonlyFilesystem`, `FrequentKubeletRestart`, `FrequentContainerdRestart`, `CorruptDockerOverlay2`, ...) | Node-problem-detector found a kernel, filesystem or runtime problem. |\n\n### Triage\n1. Open **[GCP OTel] GKE Node Detail** for the node. **Node conditions over time** shows when the condition started; the capacity section shows memory against allocatable, ephemeral storage against total, inodes, and PIDs against the limit.\n2. Pressure conditions: find what consumes the resource. Pod series have no node label, so use **[GCP OTel] GKE Cluster Detail** for the cluster's top pods by memory, and the node's ephemeral storage and log volume charts for disk.\n3. Node-problem-detector conditions usually need the node replaced. Check the node's serial console and system logs in the Google Cloud console.\n\n### Remediation\n- Memory or PID pressure: fix the offending workload's limits, or move it to a larger node pool.\n- Disk pressure: reduce log and `emptyDir` use, set ephemeral storage limits, or enlarge the node pool's boot disk.\n- Kernel, filesystem or runtime problems: cordon and drain the node, then let auto-repair or the node pool replace it.\n\n### Notes\n- The kubelet keeps pressure conditions `True` for about 5 minutes after the pressure clears, so recovery lags.\n- Fires after 3 consecutive checks at a 1-minute interval.\n- To ignore a condition, add it to the `NOT IN` list in the query. Remove the `Deprecated*` line to include configuration deprecation warnings."
+          }
+        },
+        {
+          "id": "gcp_gke_otel-node-condition-active-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-b3188cbe-aa34-4bbe-8384-a089fcf9c6d0"
+          }
+        },
+        {
+          "id": "gcp_gke_otel-node-condition-active-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-ff682663-564f-4b10-bd9a-8cba4d15d1dd"
+          }
+        },
+        {
+          "id": "gcp_gke_otel-node-condition-active-v2-dashboard-2",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-a8c033b4-994a-4ec7-9b6f-82d41ea34078"
+          }
+        }
+      ]
+    }
+  }
+}

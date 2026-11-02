@@ -1,0 +1,85 @@
+{
+  "id": "gcp_gke_otel-workload-replicas-unavailable-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP GKE OTel] Workload replicas unavailable",
+        "description": "Fires for each Deployment, StatefulSet or DaemonSet that is short of desired replicas now and has been in every minute for at least 15 minutes. Short means fewer available replicas than desired for a Deployment, and fewer ready replicas (or nodes with a ready daemon pod) than desired for a StatefulSet or DaemonSet. Rollouts and scale-ups dip briefly and don't alert; a persistent shortfall means a stuck rollout, crash-looping or unschedulable pods, or nodes missing their DaemonSet pod. Workloads deleted more than 5 minutes before their cluster's newest sample are ignored. Needs Managed Service for Prometheus kube state metrics (DEPLOYMENT, STATEFULSET and DAEMONSET components). The rule never fires for clusters without them, or for system namespaces (`kube-system`, `gmp-system`, `gke-managed-*` and others), because kube state metrics aren't collected there.",
+        "tags": [
+          "observability",
+          "gcp",
+          "gke"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "20m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.gke.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"prometheus_target\"\n    AND (attributes.deployment IS NOT NULL OR attributes.statefulset IS NOT NULL OR attributes.daemonset IS NOT NULL)\n// Latest desired and ready/available replicas per workload and minute. Kube state samples every 30 seconds,\n// so take the latest sample per series instead of summing raw samples.\n| STATS deployment_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_spec_replicas/gauge`)),\n        deployment_available = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_deployment_status_replicas_available/gauge`)),\n        statefulset_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_replicas/gauge`)),\n        statefulset_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_statefulset_status_replicas_ready/gauge`)),\n        daemonset_desired = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_desired_number_scheduled/gauge`)),\n        daemonset_ready = MAX(LAST_OVER_TIME(`metrics.prometheus.googleapis.com/kube_daemonset_status_number_ready/gauge`))\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster,\n       resource.attributes.namespace, attributes.deployment, attributes.statefulset, attributes.daemonset,\n       bucket = TBUCKET(1 minute)\n// Newest workload sample of each cluster, for the per-cluster freshness rule\n| INLINE STATS cluster_newest = MAX(bucket)\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster\n| EVAL kind = CASE(attributes.deployment IS NOT NULL, \"Deployment\", attributes.statefulset IS NOT NULL, \"StatefulSet\", \"DaemonSet\"),\n       workload = COALESCE(attributes.deployment, attributes.statefulset, attributes.daemonset),\n       desired = COALESCE(deployment_desired, statefulset_desired, daemonset_desired),\n       // Deployments: available replicas. StatefulSets: ready replicas. DaemonSets: nodes with a ready daemon pod.\n       ready = COALESCE(deployment_available, statefulset_ready, daemonset_ready),\n       // Null when either gauge is missing from the minute\n       minute_shortfall = desired - ready\n// Desired and ready can arrive in separate documents, so take the latest non-null value of each\n| STATS desired = LAST(desired, bucket) WHERE desired IS NOT NULL,\n        ready = LAST(ready, bucket) WHERE ready IS NOT NULL,\n        min_shortfall = MIN(minute_shortfall),\n        first_seen = MIN(bucket),\n        last_seen = MAX(bucket),\n        cluster_newest = MAX(cluster_newest)\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster,\n       resource.attributes.namespace, kind, workload\n| EVAL shortfall = desired - ready,\n       observed_minutes = DATE_DIFF(\"minute\", first_seen, last_seen)",
+        "breach": {
+          "segment": "// Ignore workloads that stopped reporting (deleted) more than 5 minutes before their cluster's newest sample\nWHERE last_seen >= cluster_newest - 5 minutes\n// Rollouts and scale-ups briefly drop ready below desired, so the workload must be short now and in every\n// observed minute for at least 15 minutes. Keep observed_minutes below the rule window.\n| WHERE shortfall >= 1 AND min_shortfall >= 1 AND observed_minutes >= 15\n| KEEP resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster,\n       resource.attributes.namespace, kind, workload, desired, ready, shortfall, min_shortfall, observed_minutes\n| SORT shortfall DESC"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.location",
+          "resource.attributes.cluster",
+          "resource.attributes.namespace",
+          "kind",
+          "workload"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_gke_otel-workload-replicas-unavailable-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Workload replicas unavailable\n\nThe workload (`kind`, `workload`) has had fewer ready or available replicas than desired in every minute for at least 15 minutes. `shortfall` is the current gap; `min_shortfall` the smallest gap in the window.\n\n### Triage\n1. Open **[GCP OTel] GKE Workloads** to see the shortfall and, for Deployments, whether `updated` replicas lag desired (a stuck rollout).\n2. Open **[GCP OTel] GKE Namespace Detail** for the namespace. Check the pods' phases and restarts:\n   - Pods restarting: see the **Container restarting repeatedly** alert, and recent deployments.\n   - Pods `Pending`: see the **Pod stuck Pending or Unknown** alert and the cluster's scheduling headroom on **[GCP OTel] GKE Cluster Detail**.\n3. DaemonSets: a shortfall usually means a node is not ready or can't run the daemon pod (taints, resources). Check the cluster's nodes.\n4. Run `kubectl rollout status` and `kubectl describe` on the workload for conditions such as `ProgressDeadlineExceeded`.\n\n### Remediation\n- Roll back a bad rollout (`kubectl rollout undo`), or fix the image or configuration.\n- Add capacity or lower requests if pods can't be scheduled.\n- For StatefulSets, check PersistentVolumeClaim binding and the first unready ordinal pod.\n\n### Notes\n- Needs Managed Service for Prometheus kube state metrics (DEPLOYMENT, STATEFULSET and DAEMONSET components). Clusters without them and system namespaces are never evaluated.\n- Workloads scaled to 0 never fire. Raise `observed_minutes` (and the window) for workloads with slow rollouts.\n- DaemonSet misscheduling (`number_misscheduled`) isn't covered; see the DaemonSet scheduling chart on the Workloads dashboard."
+          }
+        },
+        {
+          "id": "gcp_gke_otel-workload-replicas-unavailable-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-a3f8f035-4f7d-4977-a112-e6ad46c6c8ea"
+          }
+        },
+        {
+          "id": "gcp_gke_otel-workload-replicas-unavailable-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-05487b8b-c21b-4898-a513-716e39b7c702"
+          }
+        },
+        {
+          "id": "gcp_gke_otel-workload-replicas-unavailable-v2-dashboard-2",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-a8c033b4-994a-4ec7-9b6f-82d41ea34078"
+          }
+        }
+      ]
+    }
+  }
+}

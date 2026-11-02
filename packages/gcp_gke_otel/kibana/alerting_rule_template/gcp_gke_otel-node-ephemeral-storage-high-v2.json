@@ -1,0 +1,83 @@
+{
+  "id": "gcp_gke_otel-node-ephemeral-storage-high-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP GKE OTel] Node ephemeral storage nearly full",
+        "description": "Fires for each GKE node whose ephemeral storage (boot disk) used over total is at least 85% now and has been in every minute of the last 15 minutes. The kubelet starts garbage-collecting images at 85%, and on GKE it sets DiskPressure and evicts pods when less than 10% of total is free, so this is the warning before evictions. Total is the denominator because used over allocatable regularly exceeds 100%. Uses GKE system metrics, so it covers every cluster. Inode exhaustion also causes DiskPressure and is caught by the node condition rule. Nodes that stopped reporting more than 5 minutes before their cluster's newest sample are ignored.",
+        "tags": [
+          "observability",
+          "gcp",
+          "gke"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.gke.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"k8s_node\"\n    AND (`metrics.kubernetes.io/node/ephemeral_storage/used_bytes` IS NOT NULL\n      OR `metrics.kubernetes.io/node/ephemeral_storage/total_bytes` IS NOT NULL)\n// Latest used and total boot-disk bytes per node and minute. They can arrive in separate documents.\n| STATS used_bytes = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/used_bytes`)),\n        total_bytes = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/node/ephemeral_storage/total_bytes`))\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name,\n       resource.attributes.node_name, bucket = TBUCKET(1 minute)\n// Newest sample of each cluster, for the per-cluster freshness rule\n| INLINE STATS cluster_newest = MAX(bucket)\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name\n// Used over total, not allocatable: GKE sets DiskPressure and evicts pods when free space drops below 10% of total\n| EVAL minute_utilization = CASE(total_bytes > 0, TO_DOUBLE(used_bytes) / total_bytes, NULL)\n| STATS used_bytes = LAST(used_bytes, bucket) WHERE used_bytes IS NOT NULL,\n        total_bytes = LAST(total_bytes, bucket) WHERE total_bytes IS NOT NULL,\n        min_utilization = MIN(minute_utilization),\n        last_seen = MAX(bucket),\n        cluster_newest = MAX(cluster_newest)\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name,\n       resource.attributes.node_name\n| EVAL latest_utilization = CASE(total_bytes > 0, TO_DOUBLE(used_bytes) / total_bytes, NULL),\n       used_gib = used_bytes / 1073741824.0,\n       total_gib = total_bytes / 1073741824.0",
+        "breach": {
+          "segment": "// Ignore nodes that stopped reporting (deleted or replaced) more than 5 minutes before their cluster's newest sample\nWHERE last_seen >= cluster_newest - 5 minutes\n// Threshold: fraction of total ephemeral storage used, now and in every observed minute of the window.\n// The kubelet starts image garbage collection at 85%; DiskPressure eviction starts at 90%.\n| WHERE latest_utilization >= 0.85 AND min_utilization >= 0.85\n| KEEP resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name,\n       resource.attributes.node_name, latest_utilization, min_utilization, used_gib, total_gib, last_seen\n| SORT latest_utilization DESC"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.location",
+          "resource.attributes.cluster_name",
+          "resource.attributes.node_name"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_gke_otel-node-ephemeral-storage-high-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Node ephemeral storage nearly full\n\nThe node's boot disk has stayed at or above 85% used (`latest_utilization`, `min_utilization`) for the window. GKE evicts pods with `DiskPressure` at 90%.\n\n### Triage\n1. Open **[GCP OTel] GKE Node Detail** for the node. **Ephemeral storage used vs allocatable vs total** shows how fast it fills; **Log volume by type** shows whether system or workload logging drives it; **Inodes free vs total** shows inode use.\n2. Image garbage collection runs from 85%. If usage doesn't drop, the space is held by container writable layers, `emptyDir` volumes or logs rather than unused images.\n3. Pod series carry no node label. Use **[GCP OTel] GKE Cluster Detail** and the Pods dashboard's ephemeral storage column to find pods with large ephemeral storage use in the cluster.\n\n### Remediation\n- Set ephemeral storage requests and limits on workloads that write locally, and move large scratch data to persistent volumes.\n- Reduce log verbosity of noisy workloads.\n- Enlarge the node pool's boot disk, or use a machine type with local SSDs for ephemeral storage.\n\n### Notes\n- Raise or lower the 0.85 threshold in both conditions of the last `WHERE`; keep it below 0.9 to warn before evictions."
+          }
+        },
+        {
+          "id": "gcp_gke_otel-node-ephemeral-storage-high-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-b3188cbe-aa34-4bbe-8384-a089fcf9c6d0"
+          }
+        },
+        {
+          "id": "gcp_gke_otel-node-ephemeral-storage-high-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-ff682663-564f-4b10-bd9a-8cba4d15d1dd"
+          }
+        },
+        {
+          "id": "gcp_gke_otel-node-ephemeral-storage-high-v2-dashboard-2",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-a8c033b4-994a-4ec7-9b6f-82d41ea34078"
+          }
+        }
+      ]
+    }
+  }
+}

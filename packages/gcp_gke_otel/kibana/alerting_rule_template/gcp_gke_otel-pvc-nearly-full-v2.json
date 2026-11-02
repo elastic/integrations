@@ -1,0 +1,84 @@
+{
+  "id": "gcp_gke_otel-pvc-nearly-full-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP GKE OTel] Persistent volume claim nearly full",
+        "description": "Fires for each PersistentVolumeClaim whose fill level (`pod/volume/utilization`) is at least 90% now and has been in every minute of the last 15 minutes. A full volume makes stateful workloads such as databases, queues and search engines fail writes or crash. The claim is identified by project, location, cluster, namespace and claim name, so it keeps a single alert when its pod is rescheduled or several pods mount it. Only volumes backed by a PersistentVolumeClaim are evaluated; configmap, secret, projected and emptyDir volumes are not. Uses GKE system metrics. Claims that no pod has reported for more than 5 minutes before the cluster's newest sample are ignored.",
+        "tags": [
+          "observability",
+          "gcp",
+          "gke"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.gke.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"k8s_pod\"\n    AND attributes.volume_name IS NOT NULL\n// Latest fill level per volume claim and minute. Several pods can mount the same claim, and a rescheduled\n// pod reports it under a new pod name, so group by the claim rather than the pod. Non-PVC volumes\n// (configmaps, secrets, emptyDir) group under a null claim and only feed the freshness reference.\n| STATS minute_utilization = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/utilization`)),\n        used_bytes = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/used_bytes`)),\n        total_bytes = MAX(LAST_OVER_TIME(`metrics.kubernetes.io/pod/volume/total_bytes`))\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name,\n       resource.attributes.namespace_name, attributes.persistentvolumeclaim_name, bucket = TBUCKET(1 minute)\n// Newest volume sample of each cluster, for the per-cluster freshness rule\n| INLINE STATS cluster_newest = MAX(bucket)\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name\n// PersistentVolumeClaims are the capacity risk\n| WHERE attributes.persistentvolumeclaim_name IS NOT NULL\n// Utilization, used and capacity arrive in separate documents, so take the latest non-null value of each\n| STATS latest_utilization = LAST(minute_utilization, bucket) WHERE minute_utilization IS NOT NULL,\n        min_utilization = MIN(minute_utilization),\n        used_bytes = LAST(used_bytes, bucket) WHERE used_bytes IS NOT NULL,\n        total_bytes = LAST(total_bytes, bucket) WHERE total_bytes IS NOT NULL,\n        last_seen = MAX(bucket) WHERE minute_utilization IS NOT NULL,\n        cluster_newest = MAX(cluster_newest)\n    BY resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name,\n       resource.attributes.namespace_name, attributes.persistentvolumeclaim_name\n| EVAL used_gib = used_bytes / 1073741824.0,\n       capacity_gib = total_bytes / 1073741824.0",
+        "breach": {
+          "segment": "// Ignore claims no pod has reported for more than 5 minutes before their cluster's newest sample\nWHERE last_seen >= cluster_newest - 5 minutes\n// Threshold: fraction of the volume used, now and in every observed minute of the window\n| WHERE latest_utilization >= 0.9 AND min_utilization >= 0.9\n| KEEP resource.attributes.project_id, resource.attributes.location, resource.attributes.cluster_name,\n       resource.attributes.namespace_name, attributes.persistentvolumeclaim_name,\n       latest_utilization, min_utilization, used_gib, capacity_gib, last_seen\n| SORT latest_utilization DESC"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.location",
+          "resource.attributes.cluster_name",
+          "resource.attributes.namespace_name",
+          "attributes.persistentvolumeclaim_name"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_gke_otel-pvc-nearly-full-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Persistent volume claim nearly full\n\nThe claim's volume has stayed at or above 90% used (`latest_utilization`, `min_utilization`) for the window. `used_gib` and `capacity_gib` show the latest bytes.\n\n### Triage\n1. Open **[GCP OTel] GKE Namespace Detail** for the namespace. **PVC usage over time** shows how fast the claim fills, which tells you how long until it is full.\n2. Open **[GCP OTel] GKE Pod Detail** for a pod that mounts the claim (**List of volumes**) to see the application's other symptoms.\n3. Check the application: retention settings, compaction, write-ahead logs or snapshots that grew unexpectedly.\n\n### Remediation\n- Expand the claim if its StorageClass allows volume expansion (`allowVolumeExpansion: true`), then let the filesystem resize.\n- Delete or archive data, or tighten the application's retention.\n\n### Notes\n- Raise or lower the 0.9 threshold in both conditions of the last `WHERE`.\n- Several pods can mount one claim (for example ReadWriteMany volumes); the claim's highest reported fill level is used."
+          }
+        },
+        {
+          "id": "gcp_gke_otel-pvc-nearly-full-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-af2e90f0-abec-4756-91d7-542cdc2c41d3"
+          }
+        },
+        {
+          "id": "gcp_gke_otel-pvc-nearly-full-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-05487b8b-c21b-4898-a513-716e39b7c702"
+          }
+        },
+        {
+          "id": "gcp_gke_otel-pvc-nearly-full-v2-dashboard-2",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_gke_otel-a8c033b4-994a-4ec7-9b6f-82d41ea34078"
+          }
+        }
+      ]
+    }
+  }
+}
