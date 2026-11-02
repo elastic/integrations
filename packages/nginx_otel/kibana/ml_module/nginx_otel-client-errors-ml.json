@@ -8,7 +8,7 @@
   "attributes": {
     "id": "nginx_otel-client-errors-ml",
     "title": "[Nginx OTel] Client error anomalies",
-    "description": "Detect Nginx hosts whose share of client errors (4xx), authentication failures (401/403) or not-found responses (404) rises above their own baseline, from the Nginx (OpenTelemetry) access logs.",
+    "description": "Detect Nginx hosts whose share of authentication failures (401/403), not-found responses (404) or other client errors (4xx) rises above their own baseline, from the Nginx (OpenTelemetry) access logs.",
     "type": "Web server logs",
     "logo": {
       "icon": "logoNginx"
@@ -46,16 +46,10 @@
             "nginx",
             "otel"
           ],
-          "description": "Nginx OTel access logs: per-host share of 4xx, 401/403 and 404 responses above the host's own baseline. Shares are computed in the datafeed every 15 minutes; hosts with fewer than 50 requests are skipped and status-page requests are excluded.",
+          "description": "Nginx OTel access logs: per-host share of 401/403, 404 and other 4xx responses above the host's own baseline. Shares are computed in the datafeed every 15 minutes; 15-minute windows with fewer than 20 requests are skipped, and status-page requests are excluded.",
           "analysis_config": {
             "bucket_span": "15m",
             "detectors": [
-              {
-                "detector_description": "High share of 4xx client errors per host (computed in the datafeed)",
-                "function": "high_mean",
-                "field_name": "client_error_share",
-                "partition_field_name": "host.name"
-              },
               {
                 "detector_description": "High share of 401/403 authentication failures per host (computed in the datafeed)",
                 "function": "high_mean",
@@ -66,6 +60,12 @@
                 "detector_description": "High share of 404 not-found responses per host (computed in the datafeed)",
                 "function": "high_mean",
                 "field_name": "not_found_share",
+                "partition_field_name": "host.name"
+              },
+              {
+                "detector_description": "High share of other 4xx client errors (excluding 401/403/404) per host (computed in the datafeed)",
+                "function": "high_mean",
+                "field_name": "other_client_error_share",
                 "partition_field_name": "host.name"
               }
             ],
@@ -132,26 +132,6 @@
           "indices_options": {
             "allow_no_indices": true
           },
-          "runtime_mappings": {
-            "is_client_error": {
-              "type": "long",
-              "script": {
-                "source": "if (doc.containsKey('http.response.status_code') && doc['http.response.status_code'].size() > 0) { long c = doc['http.response.status_code'].value; emit(c >= 400 && c < 500 ? 1 : 0); }"
-              }
-            },
-            "is_auth_error": {
-              "type": "long",
-              "script": {
-                "source": "if (doc.containsKey('http.response.status_code') && doc['http.response.status_code'].size() > 0) { long c = doc['http.response.status_code'].value; emit(c == 401 || c == 403 ? 1 : 0); }"
-              }
-            },
-            "is_not_found": {
-              "type": "long",
-              "script": {
-                "source": "if (doc.containsKey('http.response.status_code') && doc['http.response.status_code'].size() > 0) { long c = doc['http.response.status_code'].value; emit(c == 404 ? 1 : 0); }"
-              }
-            }
-          },
           "aggregations": {
             "buckets": {
               "composite": {
@@ -180,46 +160,75 @@
                     "field": "@timestamp"
                   }
                 },
-                "client_errors": {
-                  "sum": {
-                    "field": "is_client_error"
-                  }
-                },
                 "auth_errors": {
-                  "sum": {
-                    "field": "is_auth_error"
+                  "filter": {
+                    "terms": {
+                      "http.response.status_code": [
+                        401,
+                        403
+                      ]
+                    }
                   }
                 },
                 "not_found": {
-                  "sum": {
-                    "field": "is_not_found"
+                  "filter": {
+                    "term": {
+                      "http.response.status_code": 404
+                    }
                   }
                 },
-                "client_error_share": {
-                  "bucket_script": {
-                    "buckets_path": {
-                      "e": "client_errors",
-                      "n": "_count"
-                    },
-                    "script": "params.n >= 50 ? params.e / params.n : null"
+                "other_client_errors": {
+                  "filter": {
+                    "bool": {
+                      "filter": [
+                        {
+                          "range": {
+                            "http.response.status_code": {
+                              "gte": 400,
+                              "lt": 500
+                            }
+                          }
+                        }
+                      ],
+                      "must_not": [
+                        {
+                          "terms": {
+                            "http.response.status_code": [
+                              401,
+                              403,
+                              404
+                            ]
+                          }
+                        }
+                      ]
+                    }
                   }
                 },
                 "auth_error_share": {
                   "bucket_script": {
                     "buckets_path": {
-                      "e": "auth_errors",
+                      "e": "auth_errors>_count",
                       "n": "_count"
                     },
-                    "script": "params.n >= 50 ? params.e / params.n : null"
+                    "script": "params.n >= 20 ? params.e / params.n : null"
                   }
                 },
                 "not_found_share": {
                   "bucket_script": {
                     "buckets_path": {
-                      "e": "not_found",
+                      "e": "not_found>_count",
                       "n": "_count"
                     },
-                    "script": "params.n >= 50 ? params.e / params.n : null"
+                    "script": "params.n >= 20 ? params.e / params.n : null"
+                  }
+                },
+                "other_client_error_share": {
+                  "bucket_script": {
+                    "buckets_path": {
+                      "e": "other_client_errors>_count",
+                      "n": "_count"
+                    },
+                    "script": "params.n >= 20 ? params.e / params.n : null"
                   }
                 }
               }
