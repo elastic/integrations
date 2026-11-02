@@ -8,7 +8,14 @@ The `log` dataset is tested with logs from Kafka 0.9, 1.1.0 and 2.0.0.
 
 The `broker`, `consumergroup`, `partition` datastreams are tested with Kafka 0.10.2.1, 1.1.0, 2.1.1, 2.2.2, 3.6.0, 4.0.0.
 
-**Kafka 4.x support requires Elastic Agent 8.19.6+, 9.0.7+, 9.1.4+, or 9.2.0+.** With an older Elastic Agent, collecting from Kafka 4.x brokers fails with errors, regardless of the integration version. Upgrade Elastic Agent to one of the versions listed above.
+The `partition` and `consumergroup` datastreams connect to Kafka brokers directly, so collecting them from Kafka 4.x requires one of the following Elastic Agent versions:
+
+- 8.19.x: 8.19.6 or later
+- 9.0.x: 9.0.7 or later
+- 9.1.x: 9.1.4 or later
+- 9.2.0 or later
+
+With an older Elastic Agent, these datastreams fail with errors against Kafka 4.x brokers, regardless of the integration version. The `log` datastream and the Jolokia-based datastreams are not affected.
 
 The `broker`, `consumer`, `controller`, `jvm`, `log_manager`, `network`, `producer`, `raft`, `replica_manager`, `topic` metricsets require Jolokia to fetch JMX metrics. Refer to the `How do I deploy this integration?` section below for more information.
 
