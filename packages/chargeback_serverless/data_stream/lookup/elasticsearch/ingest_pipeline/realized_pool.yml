@@ -100,6 +100,16 @@ processors:
         ctx.realized_chargeable_units = cap;
         ctx.total_chargeable_units = cap + ai + syn;
         ctx.total_ecu = cap + ai + syn;
+        double all_ecu = cap + ai + syn;
+        if (ctx.all_sku_ecu instanceof Map) {
+          def v = ctx.all_sku_ecu.value;
+          if (v instanceof Number) {
+            all_ecu = ((Number)v).doubleValue();
+          }
+        } else if (ctx.all_sku_ecu instanceof Number) {
+          all_ecu = ((Number)ctx.all_sku_ecu).doubleValue();
+        }
+        ctx.all_sku_ecu = all_ecu;
         if (ctx.project_id != null) {
           ctx.deployment_id = ctx.project_id;
         }

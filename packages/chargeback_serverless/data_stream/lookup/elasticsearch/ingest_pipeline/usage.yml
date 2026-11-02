@@ -128,6 +128,24 @@ processors:
             ctx.last_status = keys.size() > 0 ? keys[0] : 'ok';
           }
         }
+        if (ctx.api_key_type instanceof Map) {
+          def buckets = ctx.api_key_type.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.api_key_type = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.api_key_type.keySet());
+            ctx.api_key_type = keys.size() > 0 ? keys[0] : 'missing_key';
+          }
+        }
+        if (ctx.synthetics_status instanceof Map) {
+          def buckets = ctx.synthetics_status.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.synthetics_status = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.synthetics_status.keySet());
+            ctx.synthetics_status = keys.size() > 0 ? keys[0] : 'ok';
+          }
+        }
         if (ctx.optimized_for instanceof Map) {
           def buckets = ctx.optimized_for.buckets;
           if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
