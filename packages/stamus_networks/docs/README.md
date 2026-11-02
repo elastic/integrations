@@ -4,12 +4,12 @@
 
 ## Overview
 
-The Stamus Networks integration for Elastic enables collection of IDS/IPS alerts and Declaration
-of Compromise (DoC) and Declaration of Policy Violation (DoPV) correlation records from
-[Stamus Networks Clear NDR](https://www.stamus-networks.com/) (formerly branded "Stamus Security
-Platform") — a Network Detection and Response (NDR) / Network Security Monitoring (NSM) platform
-built on [Suricata](https://suricata.io/), the open-source IDS/IPS/NSM engine. Data is collected
-from the Clear NDR Central Server (CNCS) REST API.
+The Stamus Networks integration for Elastic enables collection of IDS/IPS alerts, Declaration of
+Compromise (DoC) and Declaration of Policy Violation (DoPV) correlation records, and host
+inventory data from [Stamus Networks Clear NDR](https://www.stamus-networks.com/) (formerly
+branded "Stamus Security Platform") — a Network Detection and Response (NDR) / Network Security
+Monitoring (NSM) platform built on [Suricata](https://suricata.io/), the open-source IDS/IPS/NSM
+engine. Data is collected from the Clear NDR Central Server (CNCS) REST API.
 
 ### Compatibility
 
@@ -22,7 +22,9 @@ Stamus Tier 3 license; the `alerts` data stream otherwise works with the lower T
 
 This integration polls the CNCS REST API on a configurable interval using the `cel` input. The
 `alerts` data stream retrieves Suricata IDS/IPS alert events and Stamus DoC/DoPV correlation
-records with a persisted time-range cursor (`from_date`/`to_date`).
+records with a persisted time-range cursor (`from_date`/`to_date`). The `host_insights` data
+stream retrieves the full host inventory on every poll cycle, since the API does not expose an
+incremental ("updated since") filter for that endpoint.
 
 Geolocation and ASN fields (`source.geo`, `destination.geo`, `source.as`, `destination.as`) on the
 `alerts` data stream are derived by this integration's ingest pipeline using Elasticsearch's
@@ -38,12 +40,16 @@ The Stamus Networks integration collects the following data streams:
   stamus`) when present, plus Sightings (newly discovered asset attributes), Outlier Alert
   (`stamus_novel`), and File Identification classification tags that decorate alert/stamus
   documents.
+* **host_insights**: a continuously-updated per-host inventory/profile object (hostnames, users,
+  roles, services, TLS/SSH/HTTP client fingerprints). This is an entity/inventory data stream, not
+  a timestamped event stream.
 
 ### Supported use cases
 
 Use this integration to bring Stamus Networks' curated, high-fidelity NDR threat detections
 (alerts and Declarations) into Elastic Security for correlation with other telemetry, threat
-hunting, and dashboarding.
+hunting, and dashboarding, and to populate Elastic's entity store with network-asset inventory
+collected by Stamus Host Insights.
 
 ## What do I need to use this integration?
 
@@ -73,6 +79,7 @@ Elastic Agent polls the Stamus Clear NDR Central Server REST API on the configur
 
 - [REST API documentation](https://docs.stamus-networks.com/42.2.0/developer-corner/rest-api.html)
 - [JSON Data Format](https://docs.stamus-networks.com/42.2.0/developer-corner/json-format.html)
+- [Host Insights concepts](https://docs.stamus-networks.com/42.2.0/concepts/host-insights.html)
 
 ### Set up steps in Kibana
 
@@ -82,21 +89,25 @@ Add the **Stamus Networks** integration in Fleet and configure:
   (no trailing `/rest/`).
 * **API Token** — the token generated above.
 
-The `alerts` data stream uses these two settings. It also exposes its own **Interval** (polling
-frequency, default 5m) and **Initial lookback** (default 24h).
+The `alerts` and `host_insights` data streams share these two settings. Each data stream also
+exposes its own **Interval** (polling frequency). `alerts` also exposes an **Initial lookback**
+(default 24h). For `host_insights`, keep the interval conservative relative to the size of your
+host inventory, since every poll cycle performs a full re-read of all hosts (see Performance and
+scaling, below).
 
 ### Validation
 
 After enabling the integration, generate or wait for Suricata alert traffic on your monitored
 network, then check **Discover** in Kibana for documents in the
-`logs-stamus_networks.alerts-*` data stream.
+`logs-stamus_networks.alerts-*` and `logs-stamus_networks.host_insights-*` data streams.
 
 ## Troubleshooting
 
 - No data is being collected: Verify the Central Server URL and API token are correct, and that the host running Elastic Agent can reach the CNCS REST API over HTTPS.
 - 401 Unauthorized errors: The API token may have been regenerated or revoked in the CNCS UI. Regenerate the token in CNCS and update the integration configuration; the Stamus API has no automated token-rotation mechanism.
+- Multiple host_insights documents per host: The host_insights data stream performs a full re-read of the host inventory on every poll cycle, since the API does not expose an incremental filter. Change detection is handled upstream, by the CEL program's persisted per-host baseline (`host.ip` -> a comparable snapshot of that host's inventory content, with `hostname[]` kept in full and `first_seen`/`last_seen` stripped from every other sub-object): a host is only emitted into a given poll's events when it is new to the baseline or its comparable content has genuinely changed since the last time that specific host was observed, so an unchanged re-poll produces no document at all. Documents therefore get a normal, Elasticsearch-auto-generated `_id`, exactly like any other log event -- no custom `_id` scheme is used. This means `host_insights` will contain **a new document per host only when it is first observed, or when its profile genuinely changes** by design -- not on every poll, and not a fixed one-document-per-host total. If you need a single current-state-per-host view, build it downstream (for example an Elasticsearch transform aggregating by `entity.id` with `max(@timestamp)`, or ingestion into the Elastic Entity Store); this package does not maintain that view itself. Separately, hosts are keyed only by IP address, which is not a maximally stable identifier (no MAC address or UUID is exposed by the API), so a host that changes IP address via DHCP may appear as a new entity.
 - REST endpoint behavior for the alerts data stream (confirmed against a live, open-source Clear NDR Community/SELKS instance): this integration's CEL program retrieves alert and stamus documents from `/rest/rules/es/events_tail/` filtered with `qfilter=event_type:alert` and `qfilter=event_type:stamus`. Although vendor documentation describes this endpoint's scope as non-alert protocol events only, a live test confirmed it does return full raw alert documents when filtered this way, and that the pagination response envelope is a standard DRF `{count, next, previous, results}` shape with `page_number` as the real server-side cursor parameter — both match what this integration's CEL program already implements, so no changes were needed.
-- The full DoC/DoPV correlation layer (`event_type: stamus`) requires a Stamus Clear NDR **Tier 3** license. It was validated against the documented API shape and a mock. Confirmed against a live, open-source Clear NDR Community/SELKS (below Tier 3) instance: the REST API itself works fine and `qfilter=event_type:stamus` consistently returns zero results. This matches Stamus's own licensing documentation, which lists Declaration of Compromise as Tier 3-only, with the REST API itself available starting at Tier 2. If you see no `stamus`-typed events, confirm your license tier before treating it as an integration bug. On some server configurations the `stamus` correlation phase may instead return a persistent 400/401/403/404/422 (rather than a clean zero-result page) when gated by licensing; the CEL program treats a non-retryable error on the `stamus` phase as "this phase is unavailable for this window" and advances to the next window's alert collection instead of retrying the failed phase forever — only a persistent error on the `alert` phase (the primary data) halts and retries.
+- Host Insights (`/rest/appliances/host_id/`) and the full DoC/DoPV correlation layer (`event_type: stamus`) require a Stamus Clear NDR **Tier 3** license. Both were validated only against the documented API shape and a mock. Confirmed against a live, open-source Clear NDR Community/SELKS (below Tier 3) instance: the REST API itself works fine, `qfilter=event_type:stamus` consistently returns zero results, and `/rest/appliances/host_id/` returns a `404` (ruled out as a routing/path issue — on that server, every unmatched path under `/rest/` returns `404` and every unmatched path under `/api/v1/` returns a generic `500`, and `/rest/appliances/host_id/` cleanly follows the `404` pattern). This matches Stamus's own licensing documentation, which lists Host Insights ("Assets Insights") and Declaration of Compromise as Tier 3-only, with the REST API itself available starting at Tier 2. If you see no data, or a 404, on `host_insights` or no `stamus`-typed events, confirm your license tier before treating it as an integration bug. On some server configurations the `stamus` correlation phase may instead return a persistent 400/401/403/404/422 (rather than a clean zero-result page) when gated by licensing; the CEL program treats a non-retryable error on the `stamus` phase as "this phase is unavailable for this window" and advances to the next window's alert collection instead of retrying the failed phase forever — only a persistent error on the `alert` phase (the primary data) halts and retries.
 - Beaconing detection fields (`beaconing_report.*`, `beaconing_statistics.*`) are mapped but have not been observed in any sample data used to build this integration; treat as unverified end-to-end even though the fields are vendor-documented.
 - `flow_id` precision: `flow_id` is delivered by the API as a large integer (commonly >= 2^53 in production) and is mapped as `keyword` since it is used only as an opaque correlation key, never as a metric. The CEL program parses the raw API response with `decode_json_string_numbers()`, which decodes every JSON number (not just `flow_id`) using its exact original textual form instead of float64, and re-emits it the same way through `encode_json()`; `flow_id` therefore round-trips through this integration with no precision loss, even above 2^53. (An earlier version of this program instead rewrote `flow_id` to a quoted JSON string before a plain `decode_json()` call, via a CEL `regexp:` stream-config block; that mechanism caused Elastic Agent to silently fail to schedule a component for this input — confirmed on Elastic Agent 9.5.5, with no errors logged anywhere — and was removed. `decode_json_string_numbers()` requires no stream-config changes, so it does not reintroduce that failure mode.)
 
@@ -105,6 +116,22 @@ network, then check **Discover** in Kibana for documents in the
 The `alerts` data stream polls `events_tail` once per interval. The default interval is 5m and the
 default initial lookback is 24h. `collection_delay` (default 1m) keeps the cursor behind now so
 alerts that become searchable slightly after their own timestamp are not skipped.
+
+The `host_insights` data stream performs a full inventory read on every poll cycle, since the
+Stamus REST API does not expose an incremental ("updated since") filter for the host insights
+endpoint. For large host inventories, tune the **Interval** setting conservatively to balance
+freshness against API and ingest load. Change detection happens before ingestion, in the CEL
+program: it keeps a persisted per-host baseline (keyed on `host.ip`) and only emits a host into a
+given poll's events when it is new to the baseline or its comparable content has genuinely
+changed since that host was last observed (hostname entries are compared in full, since the
+pipeline's `resolve_latest_hostname` script can change `host.name` purely from their relative
+timestamp ordering; every other sub-object is compared with its own `first_seen`/`last_seen`
+stripped, since those observation-window timestamps advance on nearly every poll regardless of
+whether the host's actual profile changed). A re-poll of a host whose state hasn't actually
+changed produces no document at all, so there is nothing for the ingest pipeline to deduplicate —
+each document that does arrive gets a normal, auto-generated `_id`. Expect roughly one new
+document per host each time it is first observed or its profile changes, not a new document on
+every single poll or a fixed one-document-per-host total — size retention accordingly.
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
@@ -143,6 +170,7 @@ To collect logs via API endpoint, configure the following parameters:
 
 These APIs are used with this integration:
 * `GET /rest/rules/es/events_tail/` — alert and stamus (Declaration of Compromise/Policy Violation) events for the `alerts` data stream.
+* `GET /rest/appliances/host_id/` — host inventory profiles for the `host_insights` data stream.
 
 See the [REST API documentation](https://docs.stamus-networks.com/42.2.0/developer-corner/rest-api.html) for authentication, pagination, and filtering details.
 
@@ -151,13 +179,15 @@ See the [REST API documentation](https://docs.stamus-networks.com/42.2.0/develop
 - [Stamus Networks Clear NDR documentation](https://docs.stamus-networks.com/)
 - [REST API](https://docs.stamus-networks.com/42.2.0/developer-corner/rest-api.html)
 - [DoC versus DoPV concepts](https://docs.stamus-networks.com/42.2.0/concepts/doc-vs-dopv.html)
+- [Host Insights concepts](https://docs.stamus-networks.com/42.2.0/concepts/host-insights.html)
 - [Outlier Alerts concepts](https://docs.stamus-networks.com/42.2.0/concepts/alert-outliers.html)
 
 ### Dashboards
 
-The package ships one dashboard:
+The package ships two dashboards, linked to each other:
 
 - **[Logs Stamus Networks] IDS and Declarations** covers signature alerts and Declaration of Compromise or Policy Violation records: categories, severity, affected products, attack targets, malware families, Stamus classification, kill chain, threat families, assets, and sightings.
+- **[Logs Stamus Networks] Host Insights** covers the host inventory: roles, hostnames, usernames, services, HTTP servers, TLS issuers, and SSH or HTTP client software.
 
 ### Data streams
 
@@ -424,6 +454,184 @@ An example event for `alerts` looks as following:
     "tags": [
         "forwarded",
         "stamus_networks-alerts"
+    ]
+}
+```
+
+#### host_insights
+
+The `host_insights` data stream provides a continuously-updated per-host inventory/profile from
+the Stamus Clear NDR Central Server REST API (hostnames, usernames, roles, services, and
+TLS/SSH/HTTP client fingerprints observed for the host). This is an entity/inventory data stream.
+
+##### host_insights fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| entity.id | A unique identifier for the entity. When multiple identifiers exist, this should be the most stable and commonly used identifier that: 1) persists across the entity's lifecycle, 2) ensures uniqueness within its scope, 3) is commonly used for queries and correlation, and 4) is readily available in most observations (logs/events). For entities with dedicated field sets (for example, host, user), this value should match the corresponding \*.id field. Alternative identifiers (for example, ARNs values in AWS, URLs) can be preserved in the raw field. | keyword |
+| entity.last_seen_timestamp | Indicates the date/time when this entity was last "seen," usually based upon the last event/log that is initiated by this entity. | date |
+| entity.name | The name of the entity. The keyword field enables exact matches for filtering and aggregations, while the text field enables full-text search. For entities with dedicated field sets (for example, `host`), this field should mirrors the corresponding \*.name value. | keyword |
+| entity.name.text | Multi-field of `entity.name`. | match_only_text |
+| entity.source | The module or integration that provided this entity data (similar to event.module). | keyword |
+| entity.type | A standardized high-level classification of the entity. This provides a normalized way to group similar entities across different providers or systems. Example values: `bucket`, `database`, `container`, `function`, `queue`, `host`, `user`, `application`, `session`, `cloud`, `orchestrator`, etc. If an entity is nested under a top-level namespace like `host` or `cloud`, or similar, its type array should include the matching value — for example, `host` or `cloud`. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.entity.id | A unique identifier for the entity. When multiple identifiers exist, this should be the most stable and commonly used identifier that: 1) persists across the entity's lifecycle, 2) ensures uniqueness within its scope, 3) is commonly used for queries and correlation, and 4) is readily available in most observations (logs/events). For entities with dedicated field sets (for example, host, user), this value should match the corresponding \*.id field. Alternative identifiers (for example, ARNs values in AWS, URLs) can be preserved in the raw field. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
+| host_id.client_service.first_seen |  | date |
+| host_id.client_service.last_seen |  | date |
+| host_id.client_service.name | Client-side protocol/service name. | keyword |
+| host_id.first_seen | Record-level first-observed timestamp for this host (distinct from the per-sub-field first_seen timestamps below). | date |
+| host_id.hostname.first_seen |  | date |
+| host_id.hostname.host | Observed hostname value. | keyword |
+| host_id.hostname.last_seen |  | date |
+| host_id.http.user_agent.agent | HTTP User-Agent string value. | keyword |
+| host_id.http.user_agent.first_seen |  | date |
+| host_id.http.user_agent.last_seen |  | date |
+| host_id.in_home_net | Whether the host is inside the configured "home network." | boolean |
+| host_id.last_seen | Record-level last-observed timestamp for this host. | date |
+| host_id.roles.first_seen |  | date |
+| host_id.roles.last_seen |  | date |
+| host_id.roles.name | Inferred role name. | keyword |
+| host_id.services.overflow | Vendor-internal overflow/truncation counter for this service's observation list. | long |
+| host_id.services.port | Service port number. | long |
+| host_id.services.proto | Transport protocol, for example, "tcp". | keyword |
+| host_id.services.values.app_proto | Detected application-layer protocol, for example, "tls," "unknown." | keyword |
+| host_id.services.values.first_seen |  | date |
+| host_id.services.values.http.server | HTTP Server header value observed on this service. | keyword |
+| host_id.services.values.last_seen |  | date |
+| host_id.services.values.ssh.server.software_version | SSH server banner/software version observed on this service. | keyword |
+| host_id.services.values.tls.cn | TLS certificate common name. | keyword |
+| host_id.services.values.tls.fingerprint | TLS certificate fingerprint. | keyword |
+| host_id.services.values.tls.issuerdn | TLS certificate issuer distinguished name. | keyword |
+| host_id.services.values.tls.notafter |  | date |
+| host_id.services.values.tls.notbefore |  | date |
+| host_id.services.values.tls.serial | TLS certificate serial number. | keyword |
+| host_id.services.values.tls.subject | TLS certificate subject distinguished name. | keyword |
+| host_id.ssh.client.first_seen |  | date |
+| host_id.ssh.client.last_seen |  | date |
+| host_id.ssh.client.software_version | SSH client banner/software version. | keyword |
+| host_id.tls.ja4.agent | Client agent/application associated with this JA4 fingerprint, when known. | keyword |
+| host_id.tls.ja4.first_seen |  | date |
+| host_id.tls.ja4.hash | JA4 fingerprint hash value. | keyword |
+| host_id.tls.ja4.last_seen |  | date |
+| host_id.username.first_seen |  | date |
+| host_id.username.last_seen |  | date |
+| host_id.username.user | Observed username value. | keyword |
+| input.type | Type of Elastic Agent input. | keyword |
+| ip | The host's IP address. Entity identifier for this data stream (weak key -- IP-only, no MAC/UUID alternative is documented; subject to DHCP reassignment, see research-brief.md open question #10). | ip |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+
+
+##### host_insights sample event
+
+An example event for `host_insights` looks as following:
+
+```json
+{
+    "@timestamp": "2026-10-23T17:17:44.208Z",
+    "agent": {
+        "ephemeral_id": "8a683061-594c-4826-bd8f-4ce980cacaef",
+        "id": "92c07d3c-e2ba-469c-9e67-e018a270e3ea",
+        "name": "elastic-agent-21713",
+        "type": "filebeat",
+        "version": "9.5.5"
+    },
+    "data_stream": {
+        "dataset": "stamus_networks.host_insights",
+        "namespace": "58090",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "92c07d3c-e2ba-469c-9e67-e018a270e3ea",
+        "snapshot": false,
+        "version": "9.5.5"
+    },
+    "entity": {
+        "id": "198.51.100.10",
+        "last_seen_timestamp": "2024-01-15T12:00:00.000Z",
+        "name": "host-a.example.com",
+        "source": "stamus_networks",
+        "type": [
+            "host"
+        ]
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "host"
+        ],
+        "dataset": "stamus_networks.host_insights",
+        "ingested": "2026-10-23T17:17:48Z",
+        "kind": "asset",
+        "module": "stamus_networks",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "entity": {
+            "id": "198.51.100.10"
+        },
+        "id": "198.51.100.10",
+        "ip": [
+            "198.51.100.10"
+        ],
+        "name": "host-a.example.com"
+    },
+    "host_id": {
+        "first_seen": "2024-01-10T08:00:00.000Z",
+        "hostname": {
+            "first_seen": "2024-01-10T08:00:00.000Z",
+            "host": "host-a.example.com",
+            "last_seen": "2024-01-15T12:00:00.000Z"
+        },
+        "in_home_net": true,
+        "last_seen": "2024-01-15T12:00:00.000Z",
+        "services": {
+            "overflow": 0,
+            "port": 443,
+            "proto": "tcp",
+            "values": {
+                "app_proto": "tls",
+                "first_seen": "2024-01-10T08:00:00.000Z",
+                "last_seen": "2024-01-15T12:00:00.000Z"
+            }
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "hosts": [
+            "host-a.example.com"
+        ],
+        "ip": [
+            "198.51.100.10"
+        ]
+    },
+    "tags": [
+        "forwarded",
+        "stamus_networks-host_insights"
     ]
 }
 ```

@@ -1,0 +1,378 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_token: {{api_token}}
+  page_size: {{page_size}}
+redact:
+  fields:
+    - api_token
+program: |-
+  // Stamus Networks host insights: GET /rest/appliances/host_id/
+  //
+  // Host Insights has NO documented "updated since" / incremental filter
+  // (research-brief.md section 8, open question #9) -- every poll cycle must
+  // do a FULL re-read of all hosts, starting at page 1, every time. There is
+  // no time-range window to narrow what the API returns (unlike the `alerts`
+  // data stream's from_date/to_date cursor). This has resourcing and
+  // polling-interval implications: a large host inventory means every single
+  // poll re-transfers the entire list, so `interval` should be set
+  // conservatively relative to inventory size and API load tolerance.
+  //
+  // Change detection lives HERE, in the CEL cursor -- not in the ingest
+  // pipeline. A prior approach tried to deduplicate repeated/unchanged
+  // observations by fingerprinting each document's content at the pipeline
+  // layer (hash of host_id.* with timestamps stripped -> _id). That approach
+  // is STATELESS: it only knows "have I ever produced this exact hash
+  // before", not "what was the immediately preceding observation for this
+  // specific host". A host whose profile goes A -> B -> A (e.g. a service
+  // temporarily disappears and later returns) would have its third
+  // observation (A again) collide with and silently drop against the FIRST
+  // observation's _id, because Elasticsearch data streams only support
+  // `create` writes -- so the transition back to A would be lost, and any
+  // downstream "latest state per host" view (built via max(@timestamp))
+  // would incorrectly keep showing B as current. `cursor.host_states` fixes
+  // this because it is the only place in this architecture with genuine
+  // memory of "what did I see last time for this specific host" (a single,
+  // most-recent baseline per host.ip), not "have I ever seen this content,
+  // in any order, across all of history".
+  //
+  // `cursor.host_states` is a map of host.ip -> a content-only comparable
+  // snapshot of that host's host_id.* (JSON-encoded to a string so map
+  // equality is a plain string compare). Per host, per page of a poll:
+  // - absent from cursor.host_states (never seen, or pruned -- see below)
+  // -> always emit, this host is "new" to the baseline.
+  // - present and the freshly computed comparable differs from the stored
+  // value -> emit (a real, externally-visible change happened).
+  // - present and identical -> suppress entirely (no event for this host
+  // this poll); the baseline is still refreshed to the latest value.
+  //
+  // PER-PAGE DURABLE MERGE (fixes the restart / interrupted-scan class of
+  // bug reported in GitHub Copilot review on PR #22143): every page's
+  // newly-computed host_states entries are merged into the DURABLE
+  // `cursor.host_states` as soon as that page's events are computed -- NOT
+  // deferred until the terminal page of a multi-page poll. The merge is a
+  // proper map union: take the cursor's CURRENT host_states (as of the
+  // start of this page's evaluation, which already reflects every earlier
+  // page of this same scan thanks to this same per-page merge), overlay
+  // this page's freshly computed ip -> comparable entries on top
+  // (overwriting matching keys, adding new ones), and write the result back
+  // to cursor.host_states immediately -- every page publishes events AND
+  // persists its baseline update in the same evaluation.
+  //
+  // Why this matters -- the exact scenario from the Copilot finding: a
+  // prior version of this program accumulated each page's host-state
+  // updates in a plain (non-cursor) `state.pending_host_states` map across
+  // pages, and only promoted that accumulator into the durable
+  // `cursor.host_states` on the TERMINAL page. If the Agent restarted after
+  // an earlier page's events were already acknowledged/indexed, or a LATER
+  // page in the same scan returned a non-retryable 4xx (halting the scan
+  // before the terminal page), the pending baseline update for that
+  // earlier page was lost -- even though its events were already durably
+  // indexed. On the NEXT scan, the STALE old baseline was compared against
+  // fresh data: if a host's profile had reverted to that stale baseline by
+  // then, it was incorrectly suppressed as "unchanged", even though the
+  // actual most recently INDEXED document for that host showed the
+  // intermediate changed profile, not the reverted one -- leaving the
+  // changed profile as the host's latest indexed state while the baseline
+  // silently fell out of sync. Merging per page (this version) closes that
+  // window: the baseline for a page is durable the moment that page's
+  // events are computed, independent of whether the scan ever reaches its
+  // terminal page, and independent of whether the Agent process survives
+  // to see the next page.
+  //
+  // PRUNING remains terminal-only and is now based on "IPs seen this scan",
+  // not on wholesale map replacement. Pruning (removing a host that has
+  // genuinely dropped out of the inventory) can only be done safely once a
+  // COMPLETE scan is confirmed -- a host simply not yet encountered on page
+  // 3 of an N-page scan is not the same as a host that is actually gone
+  // from the inventory, so pruning never happens mid-scan.
+  // `state.pending_seen_ips` is a plain (non-cursor), scan-scoped list of
+  // host.ip values observed so far in the CURRENT scan; it is reset to []
+  // whenever a NEW scan begins (`state.page` is absent or 1) and extended
+  // with each page's ips as pages are fetched. At the terminal page, any
+  // key in the (already-merged) cursor.host_states that is NOT in this
+  // scan's seen-ips list is dropped -- that is a host that was in the
+  // baseline before this scan started but did not appear in ANY page of
+  // the now-complete scan, i.e. it has genuinely left the inventory.
+  //
+  // Page tracking uses a plain `state.page` field, not `cursor` -- an
+  // in-progress page number across restarts would be meaningless for a
+  // full-inventory poll (each new polling interval always starts over at
+  // page 1). `state.pending_seen_ips` is the same kind of plain, non-cursor
+  // field (see PRUNING above). Both plain fields are reset on every error
+  // branch too, so a partial poll never contaminates the next one's
+  // accumulation.
+  //
+  // What counts as "comparable" (research-brief.md / field-schema-analysis.md
+  // document the full host_id.* shape):
+  // - host_id.hostname[] is kept IN FULL, including its own first_seen/
+  // last_seen. The pipeline's resolve_latest_hostname script picks the
+  // host's "current" name by max-last_seen over this array, so the
+  // relative timestamp ordering of hostname entries is itself a real,
+  // externally-visible state change (it can flip which name is reported
+  // as current) even when the set of hostnames is otherwise identical.
+  // - Every OTHER sub-object (username[], roles[], services[] and their
+  // nested values[], client_service, ssh.client, tls.ja4,
+  // http.user_agent) has first_seen/last_seen stripped. Those are pure
+  // observation-window timestamps that advance on nearly every poll for
+  // an active host and do not feed any resolved/derived output field --
+  // including them would make the comparison fire on every single poll
+  // regardless of whether the host's actual profile changed. host_id's
+  // own top-level first_seen/last_seen are excluded from the comparison
+  // entirely for the same reason.
+  // - host_id.in_home_net is included as-is (not a timestamp).
+  //
+  // Cursor size growth: cursor.host_states converges on one entry per
+  // distinct host.ip currently in the inventory (pruned at each scan's
+  // terminal page as described above). The accepted tradeoff: if a host
+  // genuinely churns out of the inventory and later reappears with
+  // unchanged content, it is treated as "new" again (re-emitted once)
+  // because its prior baseline was pruned -- this is intentional and
+  // matches the existing weak-IP-key posture already documented in the
+  // ingest pipeline (ip is reused via DHCP, so "the same IP later" is not
+  // assumed to be "the same host").
+  //
+  // Pagination response envelope is UNCONFIRMED against a live CNCS instance
+  // (research-brief.md section 3.3 / open question #3) -- assumed to be the
+  // same DRF-style {count, next, previous, results} envelope used for the
+  // `alerts` stream, with the same fallback heuristics (empty/short page) in
+  // case the real envelope omits `next`.
+  {
+    "page": int(state.?page.orValue(1)),
+    "baseline": state.?cursor.host_states.orValue({}),
+    "seen": (int(state.?page.orValue(1)) == 1) ? [] : state.?pending_seen_ips.orValue([]),
+  }.as(ctx,
+    state.with(
+      request(
+        "GET",
+        state.url.trim_right("/") + "/rest/appliances/host_id/?" + {
+          "page_size": [string(int(state.page_size))],
+          "page_number": [string(ctx.page)],
+        }.format_query()
+      ).with(
+        {
+          "Header": {
+            "Authorization": ["Token " + state.api_token],
+            "Content-Type": ["application/json"],
+          },
+        }
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body,
+            // Per host: carry the raw event through untouched (`message`) and
+            // separately build a content-only `comparable` snapshot (JSON string)
+            // used purely for this-poll-vs-last-poll change detection -- see the
+            // comparable-content rules in the header comment above.
+            body.?results.orValue([]).map(e,
+              e.?host_id.orValue({}).as(h,
+                {
+                  "ip": string(e.?ip.orValue("")),
+                  "message": e.encode_json(),
+                  "comparable": {
+                    "in_home_net": h.?in_home_net.orValue(false),
+                    "hostname": h.?hostname.orValue([]),
+                    "username": h.?username.orValue([]).map(u, {"user": u.?user.orValue("")}),
+                    "roles": h.?roles.orValue([]).map(r, {"name": r.?name.orValue("")}),
+                    "services": h.?services.orValue([]).map(s,
+                      {
+                        "proto": s.?proto.orValue(""),
+                        "port": s.?port.orValue(0),
+                        "overflow": s.?overflow.orValue(0),
+                        "values": s.?values.orValue([]).map(v, v.drop(["first_seen", "last_seen"])),
+                      }
+                    ),
+                    "client_service": h.?client_service.orValue({}).drop(["first_seen", "last_seen"]),
+                    "ssh_client": h.?ssh.client.orValue({}).drop(["first_seen", "last_seen"]),
+                    "tls_ja4": h.?tls.ja4.orValue({}).drop(["first_seen", "last_seen"]),
+                    "http_user_agent": h.?http.user_agent.orValue({}).drop(["first_seen", "last_seen"]),
+                  }.encode_json(),
+                }
+              )
+            ).as(records,
+              // Emit only hosts that are new to the baseline or whose comparable
+              // content differs from the baseline -- a host whose content is
+              // unchanged from cursor.host_states is skipped entirely this poll.
+              //
+              // `morePages` is hoisted above `pageData` (and referenced from
+              // both `pageData.seenMap`'s guard below and the branch selector
+              // further down) specifically so it is a multi-use `.as()`
+              // binding, not a single-use one -- `celfmt -s` inlines single-use
+              // `.as()` bindings back into every call site (see
+              // cel-code-style.md), which would duplicate this condition's
+              // evaluation; multi-use bindings are left alone.
+              (
+                // Primary signal: DRF-style `next` field, non-null means more
+                // pages. Fallback (if the real envelope omits `next`
+                // entirely): a full page suggests more data may follow; a
+                // short/empty page means stop.
+                size(records) != 0 && (
+                  body.?next.hasValue() ?
+                    (body.?next.orValue(null) != null)
+                  :
+                    size(records) >= int(state.page_size)
+                )
+              ).as(morePages,
+                // `pageData` consolidates this page's ip list, emitted-events
+                // list, and (on a terminal page only) the seen-anywhere-this-
+                // scan lookup map into a single binding reused by both
+                // branches below.
+                {
+                  "recordIps": records.map(r, r.ip),
+                  "emitted": records.map(r,
+                    ((r.ip in ctx.baseline) ? (ctx.baseline[r.ip] != r.comparable) : true) ?
+                      [{"message": r.message}]
+                    :
+                      []
+                  ).flatten(),
+                  // [Copilot review, PR #22143] Guarded by `morePages` rather
+                  // than built unconditionally: CEL's map-literal construction
+                  // evaluates every field regardless of which branch below
+                  // ends up using it, so without this guard the zip() below
+                  // would run on every NONTERMINAL page too, where it is never
+                  // read (only `pending_seen_ips` is used there). The `{}`
+                  // placeholder on a nonterminal page is never read either.
+                  // Keeping this as a plain field of `pageData` (itself
+                  // multi-use: `pageData.recordIps`/`pageData.emitted` are
+                  // each referenced in both branches) rather than its own
+                  // `.as()` binding is what keeps it immune to the same
+                  // single-use inlining `morePages` is hoisted to avoid above
+                  // -- see the PERFORMANCE comment in the terminal branch
+                  // below for why that inlining would reintroduce quadratic
+                  // behaviour here specifically.
+                  "seenMap": morePages ?
+                    {}
+                  :
+                    (ctx.seen + records.map(r, r.ip)).as(allSeen, allSeen.zip(allSeen.map(ip, true))),
+                }.as(pageData,
+                morePages ?
+                  // More pages remain for this poll's full read -- merge THIS
+                  // page's host states into the durable cursor right now (see
+                  // the PER-PAGE DURABLE MERGE header note above), and extend
+                  // the seen-ips tracker for this scan. The cursor is never
+                  // left pointing at a stale pre-scan baseline for hosts this
+                  // page already resolved, regardless of what happens on
+                  // later pages (restart, or a later page's non-retryable
+                  // error -- see the array-error branch below).
+                  {
+                    "events": (size(pageData.emitted) > 0) ? dyn(pageData.emitted) : dyn([{"retry": true}]),
+                    "page": ctx.page + 1,
+                    "cursor": {
+                      "host_states": ctx.baseline.with(pageData.recordIps.zip(records.map(r, r.comparable))),
+                    },
+                    "pending_seen_ips": ctx.seen + pageData.recordIps,
+                    "want_more": true,
+                  }
+                :
+                  // Full read complete for this poll -- the durable cursor
+                  // already holds every earlier page's merge (see above);
+                  // merge this final page too, then PRUNE: keep only baseline
+                  // hosts that were seen on SOME page of this now-complete
+                  // scan (anything else has genuinely left the inventory),
+                  // then layer this page's fresh entries on top. Reset the
+                  // page counter and the intra-scan seen-ips tracker for the
+                  // next poll.
+                  //
+                  // PERFORMANCE (GitHub Copilot review finding on PR #22143):
+                  // `pageData.seenMap` -- "ips seen anywhere in this
+                  // now-complete scan" -- is a MAP (ip -> true), built via
+                  // zip() exactly once per page, and (per the `morePages`
+                  // guard on its field above) only actually computed on the
+                  // terminal page that reaches this branch. CEL's `in`
+                  // operator is a hash lookup against a map but a linear scan
+                  // against a list, so checking every baseline key against a
+                  // map here is O(1) per key instead of O(n) per key (the old
+                  // list-concatenation `ctx.seen + records.map(...)` was also
+                  // rebuilt from scratch on every single predicate
+                  // evaluation, compounding the cost). `keptKeys` -- the
+                  // surviving baseline keys -- is likewise computed with a
+                  // SINGLE filter() pass over ctx.baseline.keys() and then
+                  // reused for both the key list and (via ctx.baseline[k])
+                  // the value list below, instead of filtering
+                  // ctx.baseline.keys() twice with the same predicate.
+                  //
+                  // NOTE: the retained subset is rebuilt via keys().filter() +
+                  // zip() rather than `.drop(dropKeys)` -- `drop()` treats a
+                  // dotted key string as a nested path (see its dot-path
+                  // navigation support), so a literal IPv4 address like
+                  // "198.51.100.10" used as a top-level map key is silently
+                  // NOT removed by `drop()`. Rebuilding the surviving subset
+                  // directly sidesteps that pitfall.
+                  ctx.baseline.keys().filter(k, k in pageData.seenMap).as(keptKeys,
+                    {
+                      "events": (size(pageData.emitted) > 0) ? dyn(pageData.emitted) : dyn([{"retry": true}]),
+                      "page": 1,
+                      "cursor": {
+                        "host_states": keptKeys.zip(keptKeys.map(k, ctx.baseline[k])).with(
+                          pageData.recordIps.zip(records.map(r, r.comparable))
+                        ),
+                      },
+                      "pending_seen_ips": [],
+                      "want_more": false,
+                    }
+                  )
+              )
+              )
+            )
+          )
+        :
+          {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET /rest/appliances/host_id/: " + (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          }.as(err,
+            // Non-retryable 4xx (bad/expired token, licensing gap, malformed request,
+            // unknown route): advance past the error instead of retrying forever, so
+            // it is indexed and visible to an operator (see README Troubleshooting on
+            // 401s from token rotation). Everything else (429, 5xx, etc.) is treated
+            // as transient: the single-object error form deletes the cursor so the
+            // next evaluation retries -- this also forgets cursor.host_states, so the
+            // next successful poll re-emits the full inventory once more as a
+            // one-time, self-healing consequence of a transient failure.
+            //
+            // The array-error (advance) branch below deliberately omits a
+            // "cursor" key: this LEAVES cursor.host_states exactly as it was
+            // already durably merged by earlier pages of this scan (see
+            // PER-PAGE DURABLE MERGE above) -- a later page's 4xx never
+            // rolls back or loses an earlier page's already-persisted
+            // baseline update.
+            [400, 401, 403, 404, 422].exists(c, c == int(resp.StatusCode)) ?
+              {"events": [{"error": err}], "page": 1, "pending_seen_ips": [], "want_more": false}
+            :
+              {"events": {"error": err}, "page": 1, "pending_seen_ips": [], "want_more": false}
+          )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{escape_string tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}
