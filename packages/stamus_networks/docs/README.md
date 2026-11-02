@@ -16,7 +16,7 @@ engine. Data is collected from the Clear NDR Central Server (CNCS) REST API.
 This integration is tested against a full Stamus Clear NDR server and the CNCS 42.2.0 REST API.
 It relies on a static, per-user API token for authentication (no OAuth2 flow is available).
 Retrieving the embedded `stamus.*` Declaration of Compromise/Policy Violation object requires a
-Stamus Tier 3 license; the `alerts` data stream otherwise works with the lower Tier 2 license.
+Stamus Tier 3 license. The `alerts` data stream otherwise works with the lower Tier 2 license.
 
 ### How it works
 
@@ -64,7 +64,7 @@ collected by Stamus Host Insights.
   running Elastic Agent.
 * A dedicated, read-only ("Active" tier) CNCS user account is recommended for the integration
   rather than reusing an administrative account's token.
-* Stamus Tier 2 licensing (REST API access) at minimum; Tier 3 licensing is required for the
+* Stamus Tier 2 licensing (REST API access) at minimum. Tier 3 licensing is required for the
   `stamus.*` Declaration of Compromise/Policy Violation object on the `alerts` data stream.
 
 ## How do I deploy this integration?
@@ -112,12 +112,12 @@ network, then check **Discover** in Kibana for documents in the
 ## Troubleshooting
 
 - No data is being collected: Verify the Central Server URL and API token are correct, and that the host running Elastic Agent can reach the CNCS REST API over HTTPS.
-- 401 Unauthorized errors: The API token may have been regenerated or revoked in the CNCS UI. Regenerate the token in CNCS and update the integration configuration; the Stamus API has no automated token-rotation mechanism.
+- 401 Unauthorized errors: The API token might have been regenerated or revoked in the CNCS UI. Regenerate the token in CNCS and update the integration configuration. The Stamus API has no automated token-rotation mechanism.
 - Multiple host_insights documents per host: The host_insights data stream performs a full re-read of the host inventory on every poll cycle, since the API does not expose an incremental filter. Change detection is handled upstream, by the CEL program's persisted per-host baseline (`host.ip` -> a comparable snapshot of that host's inventory content, with `hostname[]` kept in full and `first_seen`/`last_seen` stripped from every other sub-object): a host is only emitted into a given poll's events when it is new to the baseline or its comparable content has genuinely changed since the last time that specific host was observed, so an unchanged re-poll produces no document at all. Documents therefore get a normal, Elasticsearch-auto-generated `_id`, exactly like any other log event -- no custom `_id` scheme is used. This means `host_insights` will contain **a new document per host only when it is first observed, or when its profile genuinely changes** by design -- not on every poll, and not a fixed one-document-per-host total. If you need a single current-state-per-host view, build it downstream (for example an Elasticsearch transform aggregating by `entity.id` with `max(@timestamp)`, or ingestion into the Elastic Entity Store); this package does not maintain that view itself. Separately, hosts are keyed only by IP address, which is not a maximally stable identifier (no MAC address or UUID is exposed by the API), so a host that changes IP address via DHCP may appear as a new entity.
 - Alert, stamus, and protocol documents are retrieved from `/rest/rules/es/events_tail/`. This integration is tested against a full Stamus Clear NDR server, where that endpoint returns full alert documents and `event_type: stamus` correlation records. Pagination is a DRF `{count, next, previous, results}` envelope. A full Clear NDR server honors `page`. Community Clear NDR honors `page_number`. The alerts, network, and host_insights collectors send both parameters set to the same value, and continue while `next` is non-null.
 - Host Insights (`/rest/appliances/host_id/`) and Declaration of Compromise / Policy Violation records (`event_type: stamus`) require a Stamus Clear NDR **Tier 3** license. On a full Clear NDR server both are returned. Host Insights timestamps use a colon UTC offset (`+00:00`). Some hosts send `client_service` as a list. REST host records have no probe name, so the collector sets `observer.name` from the host in the configured Central Server URL. A Filebeat document that carries a string `host` copies that probe name onto `observer.name` when the field is empty. If Host Insights returns no data, or stamus events are missing, confirm the license tier. A non-retryable error on the `stamus` phase advances to the next window; only a persistent error on the `alert` phase retries.
-- Beaconing detection fields (`beaconing_report.*`, `beaconing_statistics.*`) are mapped but have not been observed in any sample data used to build this integration; treat as unverified end-to-end even though the fields are vendor-documented.
-- `flow_id` precision: `flow_id` is delivered by the API as a large integer (commonly >= 2^53 in production) and is mapped as `keyword` since it is used only as an opaque correlation key, never as a metric. The CEL program parses the raw API response with `decode_json_string_numbers()`, which decodes every JSON number (not just `flow_id`) using its exact original textual form instead of float64, and re-emits it the same way through `encode_json()`; `flow_id` therefore round-trips through this integration with no precision loss, even above 2^53. (An earlier version of this program instead rewrote `flow_id` to a quoted JSON string before a plain `decode_json()` call, via a CEL `regexp:` stream-config block; that mechanism caused Elastic Agent to silently fail to schedule a component for this input — confirmed on Elastic Agent 9.5.5, with no errors logged anywhere — and was removed. `decode_json_string_numbers()` requires no stream-config changes, so it does not reintroduce that failure mode.)
+- Beaconing detection fields (`beaconing_report.*`, `beaconing_statistics.*`) are mapped but have not been observed in any sample data used to build this integration. Treat them as unverified end-to-end even though the fields are vendor-documented.
+- `flow_id` precision: `flow_id` is delivered by the API as a large integer (commonly >= 2^53 in production) and is mapped as `keyword` because it is an opaque correlation key, not a metric. The CEL program parses the raw API response with `decode_json_string_numbers()`. This function preserves the exact text of every JSON number, including `flow_id`, before the program re-emits the response through `encode_json()`. As a result, `flow_id` round-trips through this integration with no precision loss, even above 2^53. An earlier version rewrote `flow_id` to a quoted JSON string before a plain `decode_json()` call by using a CEL `regexp:` stream-config block. That mechanism caused Elastic Agent to silently fail to schedule a component for this input on Elastic Agent 9.5.5, so it was removed. `decode_json_string_numbers()` requires no stream-config changes and does not reintroduce that failure mode.
 
 ## Performance and scaling
 
@@ -132,11 +132,11 @@ endpoint. For large host inventories, tune the **Interval** setting conservative
 freshness against API and ingest load. Change detection happens before ingestion, in the CEL
 program: it keeps a persisted per-host baseline (keyed on `host.ip`) and only emits a host into a
 given poll's events when it is new to the baseline or its comparable content has genuinely
-changed since that host was last observed (hostname entries are compared in full, since the
-pipeline's `resolve_latest_hostname` script can change `host.name` purely from their relative
-timestamp ordering; every other sub-object is compared with its own `first_seen`/`last_seen`
-stripped, since those observation-window timestamps advance on nearly every poll regardless of
-whether the host's actual profile changed). A re-poll of a host whose state hasn't actually
+changed since that host was last observed. Hostname entries are compared in full because the
+pipeline's `resolve_latest_hostname` script can change `host.name` based on their relative
+timestamp ordering. Every other sub-object is compared with its own `first_seen`/`last_seen`
+stripped because those observation-window timestamps advance on nearly every poll regardless of
+whether the host's actual profile changed. A re-poll of a host whose state hasn't actually
 changed produces no document at all, so there is nothing for the ingest pipeline to deduplicate —
 each document that does arrive gets a normal, auto-generated `_id`. Expect roughly one new
 document per host each time it is first observed or its profile changes, not a new document on
