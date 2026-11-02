@@ -707,7 +707,7 @@ This is the `Event` dataset.
 | panw_cortex.xdr.event.action.user_status |  | keyword |
 | panw_cortex.xdr.event.action.user_status_sid |  | keyword |
 | panw_cortex.xdr.event.action.username |  | keyword |
-| panw_cortex.xdr.event.address_mapping |  | keyword |
+| panw_cortex.xdr.event.address_mapping | Network address mapping when Cortex XDR sends a string. | keyword |
 | panw_cortex.xdr.event.agent.content_version |  | keyword |
 | panw_cortex.xdr.event.agent.hostname |  | keyword |
 | panw_cortex.xdr.event.agent.id |  | keyword |
@@ -736,6 +736,12 @@ This is the `Event` dataset.
 | panw_cortex.xdr.event.host_metadata.interface_map.ipv6_subnet_mask |  | keyword |
 | panw_cortex.xdr.event.host_metadata.interface_map.mac |  | keyword |
 | panw_cortex.xdr.event.id |  | keyword |
+| panw_cortex.xdr.event.memory_address_mapping.address_range_type | Address range type code. | long |
+| panw_cortex.xdr.event.memory_address_mapping.image_path | Path of the image that contains the mapped section or injected function. | keyword |
+| panw_cortex.xdr.event.memory_address_mapping.index | Mapping index. For syscall events, the function parameter number. | long |
+| panw_cortex.xdr.event.memory_address_mapping.section_characteristics | PE section characteristics flags. | long |
+| panw_cortex.xdr.event.memory_address_mapping.section_name | PE section name, such as .text. | keyword |
+| panw_cortex.xdr.event.memory_address_mapping.symbol_name | Name of the mapped function. | keyword |
 | panw_cortex.xdr.event.os_actor.local_ip |  | ip |
 | panw_cortex.xdr.event.os_actor.local_port |  | long |
 | panw_cortex.xdr.event.os_actor.primary_user_sid |  | keyword |

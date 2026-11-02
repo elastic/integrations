@@ -1233,6 +1233,15 @@ processors:
       tag: rename_address_mapping_b6107158
       target_field: panw_cortex.xdr.event.address_mapping
       ignore_missing: true
+      if: ctx.json?.address_mapping instanceof String
+      description: Keep network address mapping strings on the keyword field.
+  - rename:
+      field: json.address_mapping
+      tag: rename_memory_address_mapping
+      target_field: panw_cortex.xdr.event.memory_address_mapping
+      ignore_missing: true
+      if: ctx.json?.address_mapping instanceof List || ctx.json?.address_mapping instanceof Map
+      description: Move memory address mapping objects off the keyword network address field.
   - rename:
       field: json.agent_content_version
       tag: rename_agent_content_version_4f71c230
