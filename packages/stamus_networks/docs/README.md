@@ -16,7 +16,7 @@ from the Clear NDR Central Server (CNCS) REST API.
 This integration is tested against a full Stamus Clear NDR server and the CNCS 42.2.0 REST API.
 It relies on a static, per-user API token for authentication (no OAuth2 flow is available).
 Retrieving the embedded `stamus.*` Declaration of Compromise/Policy Violation object requires a
-Stamus Tier 3 license; the `alerts` data stream otherwise works with the lower Tier 2 license.
+Stamus Tier 3 license. The `alerts` data stream otherwise works with the lower Tier 2 license.
 
 ### How it works
 
@@ -51,7 +51,7 @@ hunting, and dashboarding.
   running Elastic Agent.
 * A dedicated, read-only ("Active" tier) CNCS user account is recommended for the integration
   rather than reusing an administrative account's token.
-* Stamus Tier 2 licensing (REST API access) at minimum; Tier 3 licensing is required for the
+* Stamus Tier 2 licensing (REST API access) at minimum. Tier 3 licensing is required for the
   `stamus.*` Declaration of Compromise/Policy Violation object on the `alerts` data stream.
 
 ## How do I deploy this integration?
@@ -94,11 +94,11 @@ network, then check **Discover** in Kibana for documents in the
 ## Troubleshooting
 
 - No data is being collected: Verify the Central Server URL and API token are correct, and that the host running Elastic Agent can reach the CNCS REST API over HTTPS.
-- 401 Unauthorized errors: The API token may have been regenerated or revoked in the CNCS UI. Regenerate the token in CNCS and update the integration configuration; the Stamus API has no automated token-rotation mechanism.
+- 401 Unauthorized errors: The API token might have been regenerated or revoked in the CNCS UI. Regenerate the token in CNCS and update the integration configuration. The Stamus API has no automated token-rotation mechanism.
 - Alert and stamus documents are retrieved from `/rest/rules/es/events_tail/`. This integration is tested against a full Stamus Clear NDR server, where that endpoint returns full alert documents and `event_type: stamus` correlation records. Pagination is a DRF `{count, next, previous, results}` envelope. A full Clear NDR server honors `page`. Community Clear NDR honors `page_number`. The collector sends both parameters set to the same value, and continues while `next` is non-null.
 - Declaration of Compromise / Policy Violation records (`event_type: stamus`) require a Stamus Clear NDR **Tier 3** license and are returned on a full Clear NDR server. If stamus events are missing, confirm the license tier. A non-retryable error on the `stamus` phase advances to the next window; only a persistent error on the `alert` phase retries.
-- Beaconing detection fields (`beaconing_report.*`, `beaconing_statistics.*`) are mapped but have not been observed in any sample data used to build this integration; treat as unverified end-to-end even though the fields are vendor-documented.
-- `flow_id` precision: `flow_id` is delivered by the API as a large integer (commonly >= 2^53 in production) and is mapped as `keyword` since it is used only as an opaque correlation key, never as a metric. The CEL program parses the raw API response with `decode_json_string_numbers()`, which decodes every JSON number (not just `flow_id`) using its exact original textual form instead of float64, and re-emits it the same way through `encode_json()`; `flow_id` therefore round-trips through this integration with no precision loss, even above 2^53. (An earlier version of this program instead rewrote `flow_id` to a quoted JSON string before a plain `decode_json()` call, via a CEL `regexp:` stream-config block; that mechanism caused Elastic Agent to silently fail to schedule a component for this input — confirmed on Elastic Agent 9.5.5, with no errors logged anywhere — and was removed. `decode_json_string_numbers()` requires no stream-config changes, so it does not reintroduce that failure mode.)
+- Beaconing detection fields (`beaconing_report.*`, `beaconing_statistics.*`) are mapped but have not been observed in any sample data used to build this integration. Treat them as unverified end-to-end even though the fields are vendor-documented.
+- `flow_id` precision: `flow_id` is delivered by the API as a large integer (commonly >= 2^53 in production) and is mapped as `keyword` because it is an opaque correlation key, not a metric. The CEL program parses the raw API response with `decode_json_string_numbers()`. This function preserves the exact text of every JSON number, including `flow_id`, before the program re-emits the response through `encode_json()`. As a result, `flow_id` round-trips through this integration with no precision loss, even above 2^53. An earlier version rewrote `flow_id` to a quoted JSON string before a plain `decode_json()` call by using a CEL `regexp:` stream-config block. That mechanism caused Elastic Agent to silently fail to schedule a component for this input on Elastic Agent 9.5.5, so it was removed. `decode_json_string_numbers()` requires no stream-config changes and does not reintroduce that failure mode.
 
 ## Performance and scaling
 
@@ -194,7 +194,7 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | alert.metadata.sightings_key | Dotted field path that triggered a Sightings detection, for example, "http.http_user_agent." | keyword |
 | alert.metadata.signature_severity | Free-text, rule-writer-assigned severity label (for example, Informational, Minor, Major, Critical). Can disagree with the numeric `event.severity` (mapped from `alert.severity`). | keyword |
 | alert.metadata.source | Detection source/method tag (for example, "mime-type" on File Identification alerts). | keyword |
-| alert.metadata.stamus_classification | Stamus sub-classification tag, for example, a DoC/DoPV threat classification, "stamus_sightings", or "fileidentification". | keyword |
+| alert.metadata.stamus_classification | Stamus sub-classification tag, for example, a DoC/DoPV threat classification, `stamus_sightings`, or `fileidentification`. | keyword |
 | alert.metadata.stamus_type | Stamus detection family tag, for example, "doc" or "dopv." | keyword |
 | alert.metadata.tag |  | keyword |
 | alert.metadata.tls_state | TLS state observed on the flow (for example, "plaintext"). | keyword |
@@ -239,7 +239,7 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | files.state | File transfer state, for example, "UNKNOWN," "CLOSED," "TRUNCATED." | keyword |
 | files.stored | Whether the file content itself was stored to disk by the sensor. | boolean |
 | files.tx_id | Transaction ID within the parent flow. | long |
-| flow_id | Suricata flow identifier. Primary cross-event correlation/join key for tying an alert back to its underlying flow or to other alerts on the same flow; delivered as a large integer (commonly \>= 2^53, the float64 safe-integer ceiling) but treated as an opaque identifier (keyword), not a metric. The CEL program parses the raw response with decode_json_string_numbers(), which decodes every JSON number in the response (not just flow_id) using its exact original textual form instead of float64, and re-emits it the same way through encode_json(); flow_id therefore round-trips through this integration with no precision loss, even above 2^53. An earlier version of this program instead rewrote flow_id to a quoted JSON string before a plain decode_json() call (using a `regexp:` stream-config block and re_replace_all()), but that mechanism caused Elastic Agent to silently fail to schedule a component for this input (confirmed on Elastic Agent 9.5.5) and was removed; decode_json_string_numbers() requires no stream-config changes, so it does not reintroduce that failure mode. See the package README's Troubleshooting section for historical context. | keyword |
+| flow_id | Suricata flow identifier. This field is the primary cross-event correlation key for tying an alert to its underlying flow or other alerts on the same flow. It is delivered as a large integer (commonly \>= 2^53, the float64 safe-integer ceiling) but treated as an opaque keyword, not a metric. The CEL program parses the raw response with decode_json_string_numbers(). This function preserves the exact textual form of every JSON number before encode_json() re-emits the response. As a result, flow_id round-trips through this integration without precision loss, even above 2^53. An earlier version rewrote flow_id to a quoted JSON string before a plain decode_json() call by using a `regexp:` stream-config block and re_replace_all(). That mechanism caused Elastic Agent 9.5.5 to silently fail to schedule a component for this input, so it was removed. decode_json_string_numbers() requires no stream-config changes and does not reintroduce that failure mode. See the package README's Troubleshooting section for historical context. | keyword |
 | hostname_info.domain | Full domain portion of the hostname. | keyword |
 | hostname_info.domain_without_tld | Domain with the top-level domain removed. | keyword |
 | hostname_info.host | The hostname observed for this event. | keyword |
@@ -249,7 +249,7 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | http.request_headers.name | HTTP request header name. | keyword |
 | http.request_headers.value | HTTP request header value. | keyword |
 | input.type | Type of Elastic Agent input. | keyword |
-| metadata.flowbits | Suricata flowbits set/checked for this event (for example, "stamus.sightings", "stamus.file.identification.") Cross-cutting enrichment tag, not rule metadata. | keyword |
+| metadata.flowbits | Suricata flowbits set or checked for this event (for example, `stamus.sightings` or `stamus.file.identification.`). This is a cross-cutting enrichment tag, not rule metadata. | keyword |
 | net_info.dest | Network/zone label for the destination IP. | keyword |
 | net_info.dest_agg | Aggregated/parent network label for the destination IP. | keyword |
 | net_info.src | Network/zone label for the source IP (for example, a named network segment). | keyword |
@@ -286,7 +286,7 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | stamus.family_name | Threat family name, for example, "Lateral Movement," "Adware." | keyword |
 | stamus.family_type |  | keyword |
 | stamus.incidents_id | Linked incident ID(s); two entries when both asset and offender sides are tracked. | long |
-| stamus.kill_chain | Kill-chain phase: "pre_condition" (DoPV only), or "delivery"/"exploitation"/"installation"/ "command_and_control"/"action_on_objectives" (DoC). Lockheed-Martin-style phase naming, not MITRE ATT&CK — intentionally not mapped into `threat.tactic.\*`. | keyword |
+| stamus.kill_chain | Detection lifecycle phase: `pre_condition` (DoPV only), or `delivery`/`exploitation`/`installation`/`command_and_control`/`action_on_objectives` (DoC). Uses the corresponding Lockheed Martin lifecycle model rather than MITRE ATT&CK, so it is intentionally not mapped to `threat.tactic.\*`. | keyword |
 | stamus.method_id | Identifier of the specific detection method/rule that triggered this event. | long |
 | stamus.offender | The actor/attacker side — IP, hostname, mail, or user, when separately tracked. Also appended to the matching `related.\*` array based on `offender_type`. | keyword |
 | stamus.offender_info.event_id |  | long |
