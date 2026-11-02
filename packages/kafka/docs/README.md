@@ -6,7 +6,9 @@ This integration collects logs and metrics from [Kafka](https://kafka.apache.org
 
 The `log` dataset is tested with logs from Kafka 0.9, 1.1.0 and 2.0.0.
 
-The `broker`, `consumergroup`, `partition` datastreams are tested with Kafka 0.10.2.1, 1.1.0, 2.1.1, 2.2.2 ,3.6.0, 4.0.0. If you are on any earlier 9.1.x release, you must upgrade to 9.1.3 for Kafka 4.0.0 support.
+The `broker`, `consumergroup`, `partition` datastreams are tested with Kafka 0.10.2.1, 1.1.0, 2.1.1, 2.2.2, 3.6.0, 4.0.0.
+
+**Kafka 4.x support requires Elastic Agent 8.19.6+, 9.0.7+, 9.1.4+, or 9.2.0+.** With an older Elastic Agent, collecting from Kafka 4.x brokers fails with errors, regardless of the integration version. Upgrade Elastic Agent to one of the versions listed above.
 
 The `broker`, `consumer`, `controller`, `jvm`, `log_manager`, `network`, `producer`, `raft`, `replica_manager`, `topic` metricsets require Jolokia to fetch JMX metrics. Refer to the `How do I deploy this integration?` section below for more information.
 
