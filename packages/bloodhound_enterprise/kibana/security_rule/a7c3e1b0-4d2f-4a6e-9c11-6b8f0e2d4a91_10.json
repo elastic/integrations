@@ -9,10 +9,10 @@
             "Use Case: Threat Detection",
             "Resources: Investigation Guide"
         ],
-        "interval": "5m",
+        "interval": "1m",
         "enabled": false,
         "revision": 0,
-        "description": "Creates an Elastic Security alert for each BloodHound Enterprise finding collected in the latest poll. The same finding id does not create another alert for one year. Error documents do not match this rule. Attach the BloodHound finding workflow to group alerts into one Security case per environment, zone, and finding type.",
+        "description": "Creates an Elastic Security alert for each BloodHound Enterprise finding that does not already have a suppressed alert. Each run searches findings ingested in the last 7 days (up to 10000 alerts per run, subject to Kibana xpack.alerting.rules.run.alerts.max). Findings that were never alerted stay eligible across runs until they alert or age out of the lookback. The same event.id does not create another alert for one year. Error documents do not match this rule. Attach the BloodHound finding workflow to group alerts into one Security case per environment, zone, and finding type.",
         "risk_score": 47,
         "severity": "medium",
         "license": "Elastic License v2",
@@ -24,9 +24,9 @@
             "Accepted or inherited relationships that BloodHound Enterprise still returns as open findings.",
             "Lab or tier-zero audit activity that is expected in the selected environment."
         ],
-        "from": "now-6m",
+        "from": "now-7d",
         "rule_id": "a7c3e1b0-4d2f-4a6e-9c11-6b8f0e2d4a91",
-        "max_signals": 1000,
+        "max_signals": 10000,
         "risk_score_mapping": [
             {
                 "field": "log.level",
@@ -121,7 +121,14 @@
                 "message",
                 "bloodhound_enterprise.accepted",
                 "bloodhound_enterprise.principal.kind",
-                "bloodhound_enterprise.target.kind"
+                "bloodhound_enterprise.target.kind",
+                "bloodhound_enterprise.finding_layout",
+                "bloodhound_enterprise.instance",
+                "bloodhound_enterprise.principal.properties",
+                "bloodhound_enterprise.from_principal.properties",
+                "bloodhound_enterprise.to_principal.properties",
+                "bloodhound_enterprise.relationship.properties",
+                "event.original"
             ]
         },
         "required_fields": [
@@ -136,7 +143,7 @@
                 "type": "keyword"
             }
         ],
-        "setup": "Add the SpecterOps BloodHound Enterprise integration and confirm documents in logs-bloodhound_enterprise.finding-*. Enable this rule. It alerts on findings from the latest poll. The same event.id does not raise another alert for one year. Authentication and request failures are in logs-bloodhound_enterprise.error-* and do not match this rule. To open cases, save the BloodHound finding workflow and add it on this rule's Actions tab. This rule does not create cases by itself.",
+        "setup": "Add the SpecterOps BloodHound Enterprise integration and confirm documents in logs-bloodhound_enterprise.finding-*. Enable this rule. It runs every 1 minute and searches findings with @timestamp in the last 7 days. Each run creates alerts only for event.id values not suppressed in the last year, so a wide lookback does not duplicate alerts. Up to 10000 alerts can be created per run; Kibana setting xpack.alerting.rules.run.alerts.max may cap that lower (often 1000 on Elastic Cloud until raised). For large backfills, keep the rule enabled until alert volume stabilizes; you may set the interval to 5m after catch-up. Raise xpack.alerting.rules.run.alerts.max and xpack.alerting.rules.run.timeout on self-managed Kibana when attaching the case workflow to large rule runs. Authentication and request failures are in logs-bloodhound_enterprise.error-* and do not match this rule. Save the BloodHound finding workflow and add it on this rule's Actions tab to open cases. This rule does not create cases by itself.",
         "rule_name_override": "bloodhound_enterprise.title",
         "type": "query",
         "alert_suppression": {
@@ -153,9 +160,9 @@
         "index": [
             "logs-bloodhound_enterprise.finding-*"
         ],
-        "query": "event.dataset:\"bloodhound_enterprise.finding\" and event.kind:event and event.id:* and not error.message:*",
+        "query": "event.dataset:\"bloodhound_enterprise.finding\" and event.kind:event and event.id:* and bloodhound_enterprise.change_type:opened and not event.action:collection_status and not error.message:*",
         "filters": [],
         "actions": [],
-        "note": "## Triage\n\nEach document is one BloodHound Enterprise finding instance collected by the integration.\n\n- `event.action` is the finding type.\n- `event.id` is the BloodHound finding instance.\n- `source.domain` is the BloodHound environment.\n- `user.name` and `destination.user.name` are the principals on the edge.\n- `event.url` opens this finding in BloodHound Enterprise.\n- `bloodhound_enterprise.remediation` is the vendor remediation text.\n\nThe same instance is collected again on the next poll. Use `event.id` to tie snapshots of one instance together. This rule alerts that id once, then suppresses another alert for one year."
+        "note": "## Triage\n\nEach document is one BloodHound Enterprise finding instance collected by the integration.\n\n- `event.action` is the finding type.\n- `event.id` is the BloodHound finding instance.\n- `source.domain` is the BloodHound environment.\n- `bloodhound_enterprise.finding_layout` is `relationship` (from/to principals) or `single_principal` (Principal/Props).\n- `user.name` and `destination.user.name` are mapped principals when present.\n- `bloodhound_enterprise.instance` and `event.original` hold the full API payload (fields vary by finding type).\n- `event.url` opens this finding in BloodHound Enterprise when a graph URL was collected.\n- `bloodhound_enterprise.remediation` is the vendor remediation text when present.\n\nThe same instance is collected again on the next poll. Use `event.id` to tie snapshots of one instance together. This rule alerts that id once, then suppresses another alert for one year. The 7-day lookback lets capped rule runs catch up on findings that were ingested before an earlier run could alert them; suppression prevents duplicate alerts for ids that already fired."
     }
 }

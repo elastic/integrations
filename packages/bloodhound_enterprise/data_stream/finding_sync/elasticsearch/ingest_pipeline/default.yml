@@ -1,0 +1,106 @@
+---
+description: Pipeline for BloodHound Enterprise finding sync checkpoints and removals.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: "9.3.0"
+  - rename:
+      field: sync_event
+      target_field: json
+      tag: rename_sync_event_to_json
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+      if: ctx.error?.message == null
+  - rename:
+      field: json.sync_kind
+      target_field: bloodhound_enterprise.sync_kind
+      tag: rename_sync_kind
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: bloodhound_enterprise.sync_kind
+      tag: set_event_action_from_sync_kind
+      ignore_empty_value: true
+  - rename:
+      field: json.type_key
+      target_field: bloodhound_enterprise.type_key
+      tag: rename_type_key
+      ignore_missing: true
+  - rename:
+      field: json.finding_type
+      target_field: bloodhound_enterprise.finding_type
+      tag: rename_finding_type
+      ignore_missing: true
+  - rename:
+      field: json.category
+      target_field: bloodhound_enterprise.category
+      tag: rename_category
+      ignore_missing: true
+  - rename:
+      field: json.domain_name
+      target_field: bloodhound_enterprise.domain_name
+      tag: rename_domain_name
+      ignore_missing: true
+  - set:
+      field: source.domain
+      copy_from: bloodhound_enterprise.domain_name
+      tag: set_source_domain
+      ignore_empty_value: true
+  - rename:
+      field: json.max_updated_at
+      target_field: bloodhound_enterprise.max_updated_at
+      tag: rename_max_updated_at
+      ignore_missing: true
+  - rename:
+      field: json.open_finding_ids
+      target_field: bloodhound_enterprise.open_finding_ids
+      tag: rename_open_finding_ids
+      ignore_missing: true
+  - rename:
+      field: json.open_finding_count
+      target_field: bloodhound_enterprise.open_finding_count
+      tag: rename_open_finding_count
+      ignore_missing: true
+  - rename:
+      field: json.id
+      target_field: event.id
+      tag: rename_id_to_event_id
+      ignore_missing: true
+  - date:
+      field: json.poll_completed_at
+      target_field: bloodhound_enterprise.poll_completed_at
+      tag: parse_poll_completed_at
+      formats:
+        - ISO8601
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      tag: set_event_dataset
+      value: bloodhound_enterprise.finding_sync
+  - script:
+      tag: set_sync_message
+      lang: painless
+      source: |
+        def kind = ctx.bloodhound_enterprise?.sync_kind;
+        if (kind == 'checkpoint') {
+          ctx.message = 'BloodHound sync checkpoint: ' + ctx.bloodhound_enterprise?.finding_type + ' (' + ctx.source?.domain + ' / ' + ctx.bloodhound_enterprise?.category + ')';
+        } else if (kind == 'finding_removed') {
+          ctx.message = 'BloodHound finding removed: ' + ctx.event?.id + ' (' + ctx.bloodhound_enterprise?.finding_type + ')';
+        }
+      if: ctx.message == null
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      tag: append_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

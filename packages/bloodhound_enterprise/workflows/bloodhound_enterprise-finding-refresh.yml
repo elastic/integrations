@@ -1,0 +1,315 @@
+version: "1"
+name: BloodHound Enterprise finding refresh
+description: >
+  Scheduled companion to the bloodhound_enterprise finding case workflow. Runs on
+  the same cadence as the default agent poll (24 hours). Reads finding_sync for
+  finding_removed events and the latest sync checkpoints, removes stale open
+  alerts (and closes empty cases), and patches open alerts when finding documents
+  were ingested with change_type updated. Enable after the case workflow is
+  attaching alerts. Deleting an alert may end suppression unless Kibana keeps
+  suppressing until the window ends.
+enabled: false
+tags:
+  - bloodhound_enterprise
+consts:
+  sync_lookback: "36 hours"
+  alert_lookback: "7 days"
+inputs:
+  - name: sync_lookback
+    type: string
+    description: How far back to read finding_sync removals and finding updates. ES|QL date math.
+    default: "36 hours"
+  - name: alert_lookback
+    type: string
+    description: How far back to search open BloodHound alerts for cleanup and updates.
+    default: "7 days"
+triggers:
+  - type: scheduled
+    with:
+      every: "24h"
+  - type: manual
+steps:
+  - name: settings
+    type: data.set
+    with:
+      sync_lookback: "{{ inputs.sync_lookback | default: consts.sync_lookback }}"
+      alert_lookback: "{{ inputs.alert_lookback | default: consts.alert_lookback }}"
+  - name: removed_findings
+    type: elasticsearch.esql.query
+    with:
+      query: |
+        FROM logs-bloodhound_enterprise.finding_sync-*
+        | WHERE event.dataset == "bloodhound_enterprise.finding_sync"
+            AND bloodhound_enterprise.sync_kind == "finding_removed"
+            AND event.id IS NOT NULL
+            AND @timestamp >= NOW() - {{ variables.sync_lookback }}
+        | STATS last_removed = MAX(@timestamp) BY event.id
+        | SORT last_removed DESC
+        | KEEP event.id
+  - name: count_removals
+    type: data.set
+    with:
+      removal_count: "${{ steps.removed_findings.output.values | size }}"
+  - name: has_removals
+    type: if
+    condition: "${{ variables.removal_count > 0 }}"
+    steps:
+      - name: each_removal
+        type: foreach
+        foreach: "${{ steps.removed_findings.output.values }}"
+        steps:
+          - name: remember_removal
+            type: data.set
+            with:
+              finding_id: "{{ foreach.item[0] | default: '' }}"
+          - name: has_finding_id
+            type: if
+            condition: "${{ variables.finding_id != '' }}"
+            steps:
+              - name: open_alert_for_removal
+                type: elasticsearch.esql.query
+                with:
+                  query: |
+                    FROM .alerts-security.alerts-default METADATA _id
+                    | WHERE kibana.alert.rule.rule_id == "a7c3e1b0-4d2f-4a6e-9c11-6b8f0e2d4a91"
+                        AND kibana.alert.workflow_status == "open"
+                        AND event.id == "{{ variables.finding_id }}"
+                        AND @timestamp >= NOW() - {{ variables.alert_lookback }}
+                    | LIMIT 1
+                    | KEEP _id
+              - name: count_removal_alerts
+                type: data.set
+                with:
+                  removal_alert_count: "${{ steps.open_alert_for_removal.output.values | size }}"
+              - name: has_removal_alert
+                type: if
+                condition: "${{ variables.removal_alert_count > 0 }}"
+                steps:
+                  - name: remember_alert_for_removal
+                    type: data.set
+                    with:
+                      alert_id: "{{ steps.open_alert_for_removal.output.values[0][0] | default: '' }}"
+                  - name: case_for_removal_alert
+                    type: cases.getCasesByAlertId
+                    with:
+                      alert_id: "{{ variables.alert_id }}"
+                      owner: "securitySolution"
+                  - name: count_removal_cases
+                    type: data.set
+                    with:
+                      removal_case_count: "${{ steps.case_for_removal_alert.output.cases | size }}"
+                  - name: has_removal_cases
+                    type: if
+                    condition: "${{ variables.removal_case_count > 0 }}"
+                    steps:
+                      - name: each_removal_case
+                        type: foreach
+                        foreach: "${{ steps.case_for_removal_alert.output.cases }}"
+                        steps:
+                          - name: remember_removal_case
+                            type: data.set
+                            with:
+                              detach_case_id: "{{ foreach.item.id }}"
+                          - name: init_removal_detach_search
+                            type: data.set
+                            with:
+                              action_page: "${{ 1 }}"
+                              attachment_comment_id: ""
+                              more_action_pages: "yes"
+                          - name: removal_page_user_actions
+                            type: while
+                            max-iterations: 15
+                            condition: "${{ variables.attachment_comment_id == '' and variables.more_action_pages == 'yes' }}"
+                            steps:
+                              - name: removal_case_activity
+                                type: kibana.request
+                                with:
+                                  method: GET
+                                  path: "/api/cases/{{ variables.detach_case_id }}/user_actions/_find"
+                                  query:
+                                    perPage: "100"
+                                    page: "{{ variables.action_page }}"
+                                  fetcher:
+                                    skip_ssl_verification: true
+                              - name: removal_count_actions
+                                type: data.set
+                                with:
+                                  action_count: "${{ steps.removal_case_activity.output.userActions | size }}"
+                              - name: removal_has_actions
+                                type: if
+                                condition: "${{ variables.action_count > 0 }}"
+                                steps:
+                                  - name: removal_each_action
+                                    type: foreach
+                                    foreach: "${{ steps.removal_case_activity.output.userActions }}"
+                                    steps:
+                                      - name: removal_is_comment
+                                        type: if
+                                        condition: "${{ foreach.item.type == 'comment' and foreach.item.action == 'create' }}"
+                                        steps:
+                                          - name: removal_is_alert_attachment
+                                            type: if
+                                            condition: "${{ foreach.item.payload.comment.type == 'alert' }}"
+                                            steps:
+                                              - name: removal_matches_alert
+                                                type: if
+                                                condition: "${{ foreach.item.payload.comment.alertId contains variables.alert_id }}"
+                                                steps:
+                                                  - name: removal_remember_attachment
+                                                    type: data.set
+                                                    with:
+                                                      attachment_comment_id: "{{ foreach.item.comment_id }}"
+                                                      more_action_pages: "no"
+                                                  - name: removal_detach_alert
+                                                    type: kibana.request
+                                                    with:
+                                                      method: DELETE
+                                                      path: "/api/cases/{{ variables.detach_case_id }}/comments/{{ variables.attachment_comment_id }}"
+                                                      fetcher:
+                                                        skip_ssl_verification: true
+                              - name: removal_continue_paging
+                                type: if
+                                condition: "${{ variables.attachment_comment_id == '' }}"
+                                steps:
+                                  - name: removal_stop_if_short
+                                    type: if
+                                    condition: "${{ variables.action_count < 100 }}"
+                                    steps:
+                                      - name: removal_no_more_pages
+                                        type: data.set
+                                        with:
+                                          more_action_pages: "no"
+                                  - name: removal_next_page
+                                    type: if
+                                    condition: "${{ variables.action_count == 100 }}"
+                                    steps:
+                                      - name: removal_bump_page
+                                        type: data.set
+                                        with:
+                                          action_page: "${{ variables.action_page | plus: 1 }}"
+                          - name: removal_read_case
+                            type: cases.getCase
+                            with:
+                              case_id: "{{ variables.detach_case_id }}"
+                              include_comments: false
+                          - name: removal_remember_case_state
+                            type: data.set
+                            with:
+                              case_alert_count: "${{ steps.removal_read_case.output.case.totalAlerts | default: 0 }}"
+                              case_status: "{{ steps.removal_read_case.output.case.status | default: 'open' }}"
+                              case_version: "{{ steps.removal_read_case.output.case.version }}"
+                          - name: removal_close_if_empty
+                            type: if
+                            condition: "${{ variables.case_alert_count == 0 and variables.case_status != 'closed' }}"
+                            steps:
+                              - name: removal_close_empty_case
+                                type: kibana.request
+                                with:
+                                  method: PATCH
+                                  path: "/api/cases"
+                                  body:
+                                    cases:
+                                      - id: "{{ variables.detach_case_id }}"
+                                        version: "{{ variables.case_version }}"
+                                        status: closed
+                                  fetcher:
+                                    skip_ssl_verification: true
+                  - name: remove_removal_alert
+                    type: elasticsearch.request
+                    with:
+                      method: DELETE
+                      path: "/.alerts-security.alerts-default/_doc/{{ variables.alert_id }}"
+  - name: updated_findings
+    type: elasticsearch.esql.query
+    with:
+      query: |
+        FROM logs-bloodhound_enterprise.finding-*
+        | WHERE event.dataset == "bloodhound_enterprise.finding"
+            AND event.kind == "event"
+            AND bloodhound_enterprise.change_type == "updated"
+            AND event.id IS NOT NULL
+            AND @timestamp >= NOW() - {{ variables.sync_lookback }}
+        | STATS last_update = MAX(@timestamp) BY event.id
+        | SORT last_update DESC
+        | KEEP event.id
+  - name: count_updates
+    type: data.set
+    with:
+      update_count: "${{ steps.updated_findings.output.values | size }}"
+  - name: has_updates
+    type: if
+    condition: "${{ variables.update_count > 0 }}"
+    steps:
+      - name: each_update
+        type: foreach
+        foreach: "${{ steps.updated_findings.output.values }}"
+        steps:
+          - name: remember_update_id
+            type: data.set
+            with:
+              finding_id: "{{ foreach.item[0] | default: '' }}"
+          - name: has_update_id
+            type: if
+            condition: "${{ variables.finding_id != '' }}"
+            steps:
+              - name: latest_finding_doc
+                type: elasticsearch.esql.query
+                with:
+                  query: |
+                    FROM logs-bloodhound_enterprise.finding-*
+                    | WHERE event.dataset == "bloodhound_enterprise.finding"
+                        AND event.kind == "event"
+                        AND event.id == "{{ variables.finding_id }}"
+                    | SORT @timestamp DESC
+                    | LIMIT 1
+                    | KEEP message, user.name, destination.user.name, source.domain, log.level, event.url, bloodhound_enterprise.finding_type, bloodhound_enterprise.category, bloodhound_enterprise.impact_percentage, bloodhound_enterprise.exposure_percentage, bloodhound_enterprise.impact_count, bloodhound_enterprise.exposure_count, bloodhound_enterprise.title, bloodhound_enterprise.remediation
+              - name: count_finding_docs
+                type: data.set
+                with:
+                  finding_doc_count: "${{ steps.latest_finding_doc.output.values | size }}"
+              - name: has_finding_doc
+                type: if
+                condition: "${{ variables.finding_doc_count > 0 }}"
+                steps:
+                  - name: open_alert_for_update
+                    type: elasticsearch.esql.query
+                    with:
+                      query: |
+                        FROM .alerts-security.alerts-default METADATA _id
+                        | WHERE kibana.alert.rule.rule_id == "a7c3e1b0-4d2f-4a6e-9c11-6b8f0e2d4a91"
+                            AND kibana.alert.workflow_status == "open"
+                            AND event.id == "{{ variables.finding_id }}"
+                            AND @timestamp >= NOW() - {{ variables.alert_lookback }}
+                        | LIMIT 1
+                        | KEEP _id
+                  - name: count_update_alerts
+                    type: data.set
+                    with:
+                      update_alert_count: "${{ steps.open_alert_for_update.output.values | size }}"
+                  - name: has_update_alert
+                    type: if
+                    condition: "${{ variables.update_alert_count > 0 }}"
+                    steps:
+                      - name: remember_alert_for_update
+                        type: data.set
+                        with:
+                          alert_id: "{{ steps.open_alert_for_update.output.values[0][0] | default: '' }}"
+                          finding_message: "{{ steps.latest_finding_doc.output.values[0][0] | default: '' }}"
+                          finding_user_name: "{{ steps.latest_finding_doc.output.values[0][1] | default: '' }}"
+                          finding_destination_user_name: "{{ steps.latest_finding_doc.output.values[0][2] | default: '' }}"
+                          finding_source_domain: "{{ steps.latest_finding_doc.output.values[0][3] | default: '' }}"
+                          finding_log_level: "{{ steps.latest_finding_doc.output.values[0][4] | default: '' }}"
+                          finding_event_url: "{{ steps.latest_finding_doc.output.values[0][5] | default: '' }}"
+                      - name: patch_alert_from_finding
+                        type: elasticsearch.request
+                        with:
+                          method: POST
+                          path: "/.alerts-security.alerts-default/_update/{{ variables.alert_id }}"
+                          body:
+                            doc:
+                              message: "{{ variables.finding_message }}"
+                              user.name: "{{ variables.finding_user_name }}"
+                              destination.user.name: "{{ variables.finding_destination_user_name }}"
+                              source.domain: "{{ variables.finding_source_domain }}"
+                              log.level: "{{ variables.finding_log_level }}"
+                              event.url: "{{ variables.finding_event_url }}"

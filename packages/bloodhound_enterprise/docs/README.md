@@ -4,7 +4,7 @@
 
 [SpecterOps BloodHound Enterprise](https://bloodhoundenterprise.io/) identifies Active Directory and Azure AD attack paths. This integration collects those attack-path findings into Elastic.
 
-The agent only stores findings. It does not open Security cases and it does not write alerts. The detection rule **BloodHound Enterprise Attack Path Finding** creates one alert per finding. The BloodHound finding case workflow, attached to that rule, groups those alerts into one Security case per environment, zone, and finding type. An optional finding refresh workflow removes alerts when a finding no longer appears in BloodHound polls.
+The agent only stores findings. It does not open Security cases and it does not write alerts. The detection rule **BloodHound Enterprise Attack Path Finding** creates one alert per finding. The **bloodhound_enterprise finding case** workflow (`workflow/bloodhound_enterprise-finding-case.yml`), attached to that rule, groups those alerts into one Security case per environment, zone, and finding type and reopens a previously closed case when alerts return for the same group. The **bloodhound_enterprise finding refresh** workflow (`workflow/bloodhound_enterprise-finding-refresh.yml`) removes alerts when a finding no longer appears in BloodHound polls and closes cases that have no alerts left.
 
 ### Compatibility
 
@@ -22,27 +22,29 @@ On each polling interval, the findings CEL program:
 1. Discovers BloodHound Enterprise domains and asset-group tags (zones).
 2. Lists finding types for each selected domain and zone.
 3. Loads finding-type metadata from `/api/v2/findings/{finding_type}` when the API returns it.
-4. Pages open finding instances and publishes one document per instance to `logs-bloodhound_enterprise.finding-*`.
+4. Pages open finding instances and publishes finding documents only for new or changed instances (`bloodhound_enterprise.change_type` `opened` or `updated`) to `logs-bloodhound_enterprise.finding-*`.
+5. At the end of each poll, compares agent sync state to the finding types returned from `available-types`. When an entire finding type is gone from BloodHound for an environment and zone, emits `finding_removed` sync events for every instance id still held for that type and a checkpoint with zero open ids to `logs-bloodhound_enterprise.finding_sync-*`.
+6. When a configured environment and zone has no open finding types or no open instances in a poll, publishes a **collection_status** document to the same index with `bloodhound_enterprise.environment`, `bloodhound_enterprise.zone`, `source.domain`, `bloodhound_enterprise.category`, and `bloodhound_enterprise.collection_message` naming where no data was returned (no `event.id`, so the detection rule does not alert on it).
 
-If BloodHound rejects the token or a request fails, that failure is published to `logs-bloodhound_enterprise.error-*` (data view **[Logs BloodHound Enterprise] Error**). Those documents are not findings, and the detection rule does not alert on them.
+If BloodHound rejects the token, a request fails, or a filter names a domain or zone that does not exist in your tenant, that outcome is published to `logs-bloodhound_enterprise.error-*` (data view **[Logs BloodHound Enterprise] Error**). Those documents are not findings, and the detection rule does not alert on them.
 
-Optional filters (`selected_environment`, `bhe_zones`) limit which domains and zones are collected. Empty, `All`, or `*` values mean fetch-all. Unrecognized values are treated as fetch-all so misconfiguration does not block collection.
+Optional filters (`selected_environment`, `bhe_zones`) limit which domains and zones are collected. Empty, `All`, or `*` mean collect all available domains or zones. Matching is case-insensitive. An unrecognized name is **skipped**, logged to the error data stream, and does **not** expand collection to all domains or zones. If you list both valid and invalid names, collection continues for the valid ones only. (Early **1.0.0** package docs described typo names as fetch-all; **1.0.17+** uses skip plus error logging instead.)
 
-**Polling Interval** is only how often the agent asks BloodHound for findings. The default is `1h`. It does not create alerts or cases. The detection rule runs on its own 5-minute schedule and looks at findings ingested in the last 6 minutes. Because each finding document is timestamped when the agent collects it, the rule sees the documents from the latest poll.
+**Polling Interval** is how often the agent runs a full BloodHound reconcile. The default is `24h`. On each run the agent compares every open instance to per-type sync state and indexes **only new or changed** findings (`bloodhound_enterprise.change_type` `opened` or `updated`). Checkpoints and instance-level removals are written to `logs-bloodhound_enterprise.finding_sync-*` while reconciling each type; when a finding type disappears from `available-types`, the same stream receives bulk `finding_removed` events for all previously tracked instance ids for that type. The detection rule creates alerts only for `opened` findings; the refresh workflow removes alerts when `finding_removed` sync events arrive and patches open alerts when `updated` finding documents are ingested.
 
 ## What data does this integration collect?
 
 This integration collects the following data:
 
 - **finding**: Attack-path finding documents. This is the stream the detection rule reads.
-- **error**: Authentication and request failures. Open these in Discover with the **[Logs BloodHound Enterprise] Error** data view (`logs-bloodhound_enterprise.error-*`). They are not mixed into the finding documents.
+- **error**: Authentication failures, request failures, and invalid filter names (`selected_environment`, `bhe_zones`). Open these in Discover with the **[Logs BloodHound Enterprise] Error** data view (`logs-bloodhound_enterprise.error-*`). They are not mixed into the finding documents.
 
 ### Supported use cases
 
 - Collect BloodHound Enterprise attack-path findings into Elasticsearch
 - Create Security alerts with the packaged detection rule
-- Group those alerts into Security cases with the BloodHound finding case workflow
-- Optionally keep case alert counts aligned when findings leave BloodHound with the finding refresh workflow
+- Group those alerts into Security cases with the bloodhound_enterprise finding case workflow
+- Optionally keep case alert counts aligned when findings leave BloodHound with the bloodhound_enterprise finding refresh workflow
 - Filter collection by environment/domain and BloodHound zone
 - Inspect authentication and request failures in a separate error data view
 - Visualize findings with the bundled Attack Path Overview dashboard
@@ -97,14 +99,14 @@ Assign this integration to an agent policy whose agents can reach BloodHound Ent
 | Base URL | Yes | BloodHound Enterprise tenant URL without a trailing slash |
 | Token ID | Yes | BloodHound Enterprise API token ID |
 | Token Key | Yes | BloodHound Enterprise API token secret |
-| Polling Interval | Yes | How often the agent asks BloodHound for findings. Choose 5m, 1h, 2h, 6h, 12h, or 24h. Default `1h`. This does not create alerts or cases. |
-| Selected environment | No | Comma-separated domain names, or empty/`All`/`*` for all |
-| BloodHound Enterprise zones | No | Comma-separated zone names, or empty/`All`/`*` for all |
+| Polling Interval | Yes | How often the agent reconciles BloodHound findings. Choose 1h, 2h, 6h, 12h, or 24h. Default `24h`. Only new/changed instances are indexed to the finding data stream. |
+| Selected environment | No | Comma-separated domain names, or empty/`All`/`*` for all. Case-insensitive. Unknown names are skipped and logged to the error data stream |
+| BloodHound Enterprise zones | No | Comma-separated zone names, or empty/`All`/`*` for all. Case-insensitive. Unknown names are skipped and logged to the error data stream |
 
 5. Select **Save and continue**.
 6. Install and enable the **BloodHound Enterprise Attack Path Finding** detection rule.
-7. Save the **BloodHound Enterprise finding case** workflow and add it on that rule's **Actions** tab so alerts group into one case per environment, zone, and finding type.
-8. Optionally save the **BloodHound Enterprise finding refresh** workflow, leave it disabled until step 7 is working, then enable it to detach and delete alerts when a finding no longer appears in the latest poll (for example after it is accepted in BloodHound Enterprise).
+7. Import **`workflow/bloodhound_enterprise-finding-case.yml`**, save it, and add it on that rule's **Actions** tab so alerts group into one case per environment, zone, and finding type.
+8. Optionally import **`workflow/bloodhound_enterprise-finding-refresh.yml`**, leave it disabled until step 7 is working, then enable it to detach and delete alerts when a finding no longer appears in the latest poll (for example after it is accepted in BloodHound Enterprise). When the last alert is removed from a case, the workflow sets that case to **closed** (it does not delete the case). When alerts return, the case workflow reuses that closed case and sets it back to **open**.
 
 ### Validation
 
@@ -123,18 +125,19 @@ After the first poll completes:
 | Same finding is collected again | The document stays in Discover. No second alert for that `event.id` for one year |
 | Finding accepted or otherwise absent from BloodHound polls | No new finding document for that instance; with the refresh workflow enabled, the open alert is detached from cases and deleted |
 | BloodHound authentication or request failure | One document in `logs-bloodhound_enterprise.error-*`, and no alert |
+| Invalid `selected_environment` or `bhe_zones` name | Error document(s) in `logs-bloodhound_enterprise.error-*` for each unknown name; that name is not collected. If every configured name is invalid, no finding documents that poll |
 
 ## Troubleshooting
 
 | Symptom | What to check |
 |---------|----------------|
 | Auth failures against BloodHound | Token ID/Key, Base URL (no trailing slash), agent egress allowlist, clock skew for HMAC signatures. The failure document is in **[Logs BloodHound Enterprise] Error**, not in the finding data view |
-| No finding documents | Polling Interval has not elapsed yet, or the environment and zone filters match nothing |
+| No finding documents | Polling Interval has not elapsed yet, filters match nothing (including when every configured domain or zone name is invalid), or auth/API errors stopped the poll |
 | Alerts missing | The detection rule is installed and enabled. It looks back 6 minutes and runs every 5 minutes. Findings are timestamped at collection time |
 | An error document became an alert | The installed rule is older than this package. Reinstall the package and confirm the rule query requires `event.id` and excludes `error.message` |
 | Cases not created | The case workflow is saved and attached to the detection rule. The agent does not open cases |
 | Case alert count stays high after findings are accepted in BloodHound | Enable the finding refresh workflow after the case workflow is attaching alerts |
-| Unexpected domains/zones | `selected_environment` / `bhe_zones` filters; unrecognized values fetch all |
+| Typo or unknown domain/zone in filters | Check names in BloodHound Enterprise; matching is case-insensitive. Unknown values appear in **[Logs BloodHound Enterprise] Error** and are skipped—they do not fetch all |
 | Integration not listed | Package not uploaded or registry not refreshed; rebuild/upload or wait for EPR propagation |
 
 For general Elastic ingest issues, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).

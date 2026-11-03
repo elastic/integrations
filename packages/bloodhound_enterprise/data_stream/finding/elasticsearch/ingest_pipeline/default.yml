@@ -29,6 +29,23 @@ processors:
       target_field: json
       tag: parse_json
       if: ctx.event?.original != null
+  - script:
+      tag: snapshot_full_finding_instance
+      description: Shallow-copy the parsed API document before renames strip top-level json keys
+      lang: painless
+      source: |
+        if (ctx.json != null && ctx.json.collection_absent_reason == null) {
+          if (ctx.bloodhound_enterprise == null) {
+            ctx.bloodhound_enterprise = new HashMap();
+          }
+          ctx.bloodhound_enterprise.instance = new HashMap(ctx.json);
+        }
+      if: ctx.error?.message == null
+  - rename:
+      field: json.change_type
+      target_field: bloodhound_enterprise.change_type
+      tag: rename_change_type
+      ignore_missing: true
   - set:
       field: event.kind
       tag: set_event_kind
@@ -89,6 +106,43 @@ processors:
       if: ctx.source?.domain == null
   - set:
       field: source.domain
+      tag: set_source_domain_from_json_environment
+      copy_from: json.environment
+      ignore_empty_value: true
+      if: ctx.source?.domain == null
+  - rename:
+      field: json.environment
+      target_field: bloodhound_enterprise.environment
+      tag: rename_collection_environment
+      ignore_missing: true
+  - rename:
+      field: json.zone
+      target_field: bloodhound_enterprise.zone
+      tag: rename_collection_zone
+      ignore_missing: true
+  - rename:
+      field: json.collection_absent_reason
+      target_field: bloodhound_enterprise.collection_absent_reason
+      tag: rename_collection_absent_reason
+      ignore_missing: true
+  - rename:
+      field: json.collection_data_source
+      target_field: bloodhound_enterprise.collection_data_source
+      tag: rename_collection_data_source
+      ignore_missing: true
+  - rename:
+      field: json.collection_message
+      target_field: bloodhound_enterprise.collection_message
+      tag: rename_collection_message
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message_from_collection_status
+      copy_from: bloodhound_enterprise.collection_message
+      ignore_empty_value: true
+      if: ctx.event?.action == 'collection_status' && ctx.bloodhound_enterprise?.collection_message != null
+  - set:
+      field: source.domain
       tag: set_source_domain_from_environment
       copy_from: json.Environment
       ignore_empty_value: true
@@ -119,6 +173,24 @@ processors:
       target_field: user.name
       tag: rename_principal_name_to_user_name
       ignore_missing: true
+  - rename:
+      field: json.PrincipalName
+      target_field: user.name
+      tag: rename_api_principal_name_to_user_name
+      ignore_missing: true
+      if: ctx.user?.name == null
+  - rename:
+      field: json.Principal
+      target_field: user.id
+      tag: rename_api_principal_to_user_id
+      ignore_missing: true
+      if: ctx.user?.id == null
+  - rename:
+      field: json.PrincipalKind
+      target_field: bloodhound_enterprise.principal.kind
+      tag: rename_api_principal_kind
+      ignore_missing: true
+      if: ctx.bloodhound_enterprise?.principal?.kind == null
   - rename:
       field: json.FromPrincipalName
       target_field: user.name
@@ -211,6 +283,7 @@ processors:
       target_field: bloodhound_enterprise.is_inherited
       tag: rename_is_inherited
       ignore_missing: true
+      if: ctx.json?.IsInherited instanceof Boolean
   - rename:
       field: json.FromPrincipalProps.operatingsystem
       target_field: host.os.full
@@ -282,6 +355,65 @@ processors:
       tag: remove_empty_finding_title
       ignore_missing: true
       if: ctx.bloodhound_enterprise?.title == ''
+  - rename:
+      field: json.finding_layout
+      target_field: bloodhound_enterprise.finding_layout
+      tag: rename_finding_layout
+      ignore_missing: true
+  - rename:
+      field: json.ComboGraphRelationID
+      target_field: bloodhound_enterprise.combo_graph_relation_id
+      tag: rename_combo_graph_relation_id
+      ignore_missing: true
+  - script:
+      tag: classify_finding_layout_and_copy_props
+      description: Classify API shape, copy Props objects, and preserve the full instance document for alerts and search
+      lang: painless
+      source: |
+        if (ctx.json == null || ctx.event?.action == 'collection_status') {
+          return;
+        }
+        if (ctx.bloodhound_enterprise == null) {
+          ctx.bloodhound_enterprise = new HashMap();
+        }
+        if (ctx.bloodhound_enterprise.finding_layout == null) {
+          if (ctx.json.FromPrincipal != null || ctx.json.ToPrincipal != null) {
+            ctx.bloodhound_enterprise.finding_layout = 'relationship';
+          } else if (ctx.json.Principal != null || ctx.json.PrincipalName != null) {
+            ctx.bloodhound_enterprise.finding_layout = 'single_principal';
+          } else if (ctx.json.principal != null) {
+            ctx.bloodhound_enterprise.finding_layout = 'legacy_nested';
+          }
+        }
+        if (ctx.json.Props != null) {
+          if (ctx.bloodhound_enterprise.principal == null) {
+            ctx.bloodhound_enterprise.principal = new HashMap();
+          }
+          ctx.bloodhound_enterprise.principal.properties = ctx.json.Props;
+        }
+        if (ctx.json.FromPrincipalProps != null) {
+          if (ctx.bloodhound_enterprise.from_principal == null) {
+            ctx.bloodhound_enterprise.from_principal = new HashMap();
+          }
+          ctx.bloodhound_enterprise.from_principal.properties = ctx.json.FromPrincipalProps;
+        }
+        if (ctx.json.ToPrincipalProps != null) {
+          if (ctx.bloodhound_enterprise.to_principal == null) {
+            ctx.bloodhound_enterprise.to_principal = new HashMap();
+          }
+          ctx.bloodhound_enterprise.to_principal.properties = ctx.json.ToPrincipalProps;
+        }
+        if (ctx.json.RelProps != null) {
+          if (ctx.bloodhound_enterprise.relationship == null) {
+            ctx.bloodhound_enterprise.relationship = new HashMap();
+          }
+          ctx.bloodhound_enterprise.relationship.properties = ctx.json.RelProps;
+        }
+        if (ctx.json.IsInherited instanceof String) {
+          def inherited = ctx.json.IsInherited.toString().equalsIgnoreCase('true');
+          ctx.bloodhound_enterprise.is_inherited = inherited;
+        }
+      if: ctx.error?.message == null
   - script:
       tag: set_host_name_from_computer
       description: Use the BloodHound computer principal as the alert host
@@ -309,6 +441,8 @@ processors:
             if (ctx.destination?.user?.name != null && ctx.destination.user.name != '') {
               msg = msg + ' -> ' + ctx.destination.user.name;
             }
+          } else if (ctx.destination?.user?.name != null && ctx.destination.user.name != '') {
+            msg = msg + ': ' + ctx.destination.user.name;
           }
           if (ctx.source?.domain != null && ctx.source.domain != '') {
             msg = msg + ' (' + ctx.source.domain;

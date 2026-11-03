@@ -4,7 +4,7 @@
 
 [SpecterOps BloodHound Enterprise](https://bloodhoundenterprise.io/) identifies Active Directory and Azure AD attack paths. This integration collects those attack-path findings into Elastic.
 
-The agent only stores findings. It does not open Security cases and it does not write alerts. The detection rule **BloodHound Enterprise Attack Path Finding** creates one alert per finding. The BloodHound finding case workflow, attached to that rule, groups those alerts into one Security case per environment, zone, and finding type. An optional finding refresh workflow removes alerts when a finding no longer appears in BloodHound polls.
+The agent only stores findings. It does not open Security cases and it does not write alerts. The detection rule **BloodHound Enterprise Attack Path Finding** creates one alert per finding. The **bloodhound_enterprise finding case** workflow (`workflow/bloodhound_enterprise-finding-case.yml`), attached to that rule, groups those alerts into one Security case per environment, zone, and finding type and reopens a previously closed case when alerts return for the same group. The **bloodhound_enterprise finding refresh** workflow (`workflow/bloodhound_enterprise-finding-refresh.yml`) removes alerts when a finding no longer appears in BloodHound polls and closes cases that have no alerts left.
 
 ### Compatibility
 
@@ -22,27 +22,29 @@ On each polling interval, the findings CEL program:
 1. Discovers BloodHound Enterprise domains and asset-group tags (zones).
 2. Lists finding types for each selected domain and zone.
 3. Loads finding-type metadata from `/api/v2/findings/{finding_type}` when the API returns it.
-4. Pages open finding instances and publishes one document per instance to `logs-bloodhound_enterprise.finding-*`.
+4. Pages open finding instances and publishes finding documents only for new or changed instances (`bloodhound_enterprise.change_type` `opened` or `updated`) to `logs-bloodhound_enterprise.finding-*`.
+5. At the end of each poll, compares agent sync state to the finding types returned from `available-types`. When an entire finding type is gone from BloodHound for an environment and zone, emits `finding_removed` sync events for every instance id still held for that type and a checkpoint with zero open ids to `logs-bloodhound_enterprise.finding_sync-*`.
+6. When a configured environment and zone has no open finding types or no open instances in a poll, publishes a **collection_status** document to the same index with `bloodhound_enterprise.environment`, `bloodhound_enterprise.zone`, `source.domain`, `bloodhound_enterprise.category`, and `bloodhound_enterprise.collection_message` naming where no data was returned (no `event.id`, so the detection rule does not alert on it).
 
-If BloodHound rejects the token or a request fails, that failure is published to `logs-bloodhound_enterprise.error-*` (data view **[Logs BloodHound Enterprise] Error**). Those documents are not findings, and the detection rule does not alert on them.
+If BloodHound rejects the token, a request fails, or a filter names a domain or zone that does not exist in your tenant, that outcome is published to `logs-bloodhound_enterprise.error-*` (data view **[Logs BloodHound Enterprise] Error**). Those documents are not findings, and the detection rule does not alert on them.
 
-Optional filters (`selected_environment`, `bhe_zones`) limit which domains and zones are collected. Empty, `All`, or `*` values mean fetch-all. Unrecognized values are treated as fetch-all so misconfiguration does not block collection.
+Optional filters (`selected_environment`, `bhe_zones`) limit which domains and zones are collected. Empty, `All`, or `*` mean collect all available domains or zones. Matching is case-insensitive. An unrecognized name is **skipped**, logged to the error data stream, and does **not** expand collection to all domains or zones. If you list both valid and invalid names, collection continues for the valid ones only. (Early **1.0.0** package docs described typo names as fetch-all; **1.0.17+** uses skip plus error logging instead.)
 
-**Polling Interval** is only how often the agent asks BloodHound for findings. The default is `1h`. It does not create alerts or cases. The detection rule runs on its own 5-minute schedule and looks at findings ingested in the last 6 minutes. Because each finding document is timestamped when the agent collects it, the rule sees the documents from the latest poll.
+**Polling Interval** is how often the agent runs a full BloodHound reconcile. The default is `24h`. On each run the agent compares every open instance to per-type sync state and indexes **only new or changed** findings (`bloodhound_enterprise.change_type` `opened` or `updated`). Checkpoints and instance-level removals are written to `logs-bloodhound_enterprise.finding_sync-*` while reconciling each type; when a finding type disappears from `available-types`, the same stream receives bulk `finding_removed` events for all previously tracked instance ids for that type. The detection rule creates alerts only for `opened` findings; the refresh workflow removes alerts when `finding_removed` sync events arrive and patches open alerts when `updated` finding documents are ingested.
 
 ## What data does this integration collect?
 
 This integration collects the following data:
 
 - **finding**: Attack-path finding documents. This is the stream the detection rule reads.
-- **error**: Authentication and request failures. Open these in Discover with the **[Logs BloodHound Enterprise] Error** data view (`logs-bloodhound_enterprise.error-*`). They are not mixed into the finding documents.
+- **error**: Authentication failures, request failures, and invalid filter names (`selected_environment`, `bhe_zones`). Open these in Discover with the **[Logs BloodHound Enterprise] Error** data view (`logs-bloodhound_enterprise.error-*`). They are not mixed into the finding documents.
 
 ### Supported use cases
 
 - Collect BloodHound Enterprise attack-path findings into Elasticsearch
 - Create Security alerts with the packaged detection rule
-- Group those alerts into Security cases with the BloodHound finding case workflow
-- Optionally keep case alert counts aligned when findings leave BloodHound with the finding refresh workflow
+- Group those alerts into Security cases with the bloodhound_enterprise finding case workflow
+- Optionally keep case alert counts aligned when findings leave BloodHound with the bloodhound_enterprise finding refresh workflow
 - Filter collection by environment/domain and BloodHound zone
 - Inspect authentication and request failures in a separate error data view
 - Visualize findings with the bundled Attack Path Overview dashboard
@@ -97,14 +99,14 @@ Assign this integration to an agent policy whose agents can reach BloodHound Ent
 | Base URL | Yes | BloodHound Enterprise tenant URL without a trailing slash |
 | Token ID | Yes | BloodHound Enterprise API token ID |
 | Token Key | Yes | BloodHound Enterprise API token secret |
-| Polling Interval | Yes | How often the agent asks BloodHound for findings. Choose 5m, 1h, 2h, 6h, 12h, or 24h. Default `1h`. This does not create alerts or cases. |
-| Selected environment | No | Comma-separated domain names, or empty/`All`/`*` for all |
-| BloodHound Enterprise zones | No | Comma-separated zone names, or empty/`All`/`*` for all |
+| Polling Interval | Yes | How often the agent reconciles BloodHound findings. Choose 1h, 2h, 6h, 12h, or 24h. Default `24h`. Only new/changed instances are indexed to the finding data stream. |
+| Selected environment | No | Comma-separated domain names, or empty/`All`/`*` for all. Case-insensitive. Unknown names are skipped and logged to the error data stream |
+| BloodHound Enterprise zones | No | Comma-separated zone names, or empty/`All`/`*` for all. Case-insensitive. Unknown names are skipped and logged to the error data stream |
 
 5. Select **Save and continue**.
 6. Install and enable the **BloodHound Enterprise Attack Path Finding** detection rule.
-7. Save the **BloodHound Enterprise finding case** workflow and add it on that rule's **Actions** tab so alerts group into one case per environment, zone, and finding type.
-8. Optionally save the **BloodHound Enterprise finding refresh** workflow, leave it disabled until step 7 is working, then enable it to detach and delete alerts when a finding no longer appears in the latest poll (for example after it is accepted in BloodHound Enterprise).
+7. Import **`workflow/bloodhound_enterprise-finding-case.yml`**, save it, and add it on that rule's **Actions** tab so alerts group into one case per environment, zone, and finding type.
+8. Optionally import **`workflow/bloodhound_enterprise-finding-refresh.yml`**, leave it disabled until step 7 is working, then enable it to detach and delete alerts when a finding no longer appears in the latest poll (for example after it is accepted in BloodHound Enterprise). When the last alert is removed from a case, the workflow sets that case to **closed** (it does not delete the case). When alerts return, the case workflow reuses that closed case and sets it back to **open**.
 
 ### Validation
 
@@ -123,18 +125,19 @@ After the first poll completes:
 | Same finding is collected again | The document stays in Discover. No second alert for that `event.id` for one year |
 | Finding accepted or otherwise absent from BloodHound polls | No new finding document for that instance; with the refresh workflow enabled, the open alert is detached from cases and deleted |
 | BloodHound authentication or request failure | One document in `logs-bloodhound_enterprise.error-*`, and no alert |
+| Invalid `selected_environment` or `bhe_zones` name | Error document(s) in `logs-bloodhound_enterprise.error-*` for each unknown name; that name is not collected. If every configured name is invalid, no finding documents that poll |
 
 ## Troubleshooting
 
 | Symptom | What to check |
 |---------|----------------|
 | Auth failures against BloodHound | Token ID/Key, Base URL (no trailing slash), agent egress allowlist, clock skew for HMAC signatures. The failure document is in **[Logs BloodHound Enterprise] Error**, not in the finding data view |
-| No finding documents | Polling Interval has not elapsed yet, or the environment and zone filters match nothing |
+| No finding documents | Polling Interval has not elapsed yet, filters match nothing (including when every configured domain or zone name is invalid), or auth/API errors stopped the poll |
 | Alerts missing | The detection rule is installed and enabled. It looks back 6 minutes and runs every 5 minutes. Findings are timestamped at collection time |
 | An error document became an alert | The installed rule is older than this package. Reinstall the package and confirm the rule query requires `event.id` and excludes `error.message` |
 | Cases not created | The case workflow is saved and attached to the detection rule. The agent does not open cases |
 | Case alert count stays high after findings are accepted in BloodHound | Enable the finding refresh workflow after the case workflow is attaching alerts |
-| Unexpected domains/zones | `selected_environment` / `bhe_zones` filters; unrecognized values fetch all |
+| Typo or unknown domain/zone in filters | Check names in BloodHound Enterprise; matching is case-insensitive. Unknown values appear in **[Logs BloodHound Enterprise] Error** and are skipped—they do not fetch all |
 | Integration not listed | Package not uploaded or registry not refreshed; rebuild/upload or wait for EPR propagation |
 
 For general Elastic ingest issues, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
@@ -181,10 +184,89 @@ This integration uses:
 
 This is the `error` dataset. Documents are BloodHound authentication and request failures. In Discover, use the **[Logs BloodHound Enterprise] Error** data view, `logs-bloodhound_enterprise.error-*`.
 
-{{fields "error"}}
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.code | Error code describing the error. | keyword |
+| error.message | Error message. | match_only_text |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.offset | Log offset. | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| tags | List of keywords used to tag each event. | keyword |
+
 
 #### finding
 
 This is the `finding` dataset. One document per BloodHound attack-path finding instance.
 
-{{fields "finding"}}
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| bloodhound_enterprise.accepted | Whether the finding risk has been accepted by an admin. | boolean |
+| bloodhound_enterprise.asset_group_tag_id | Asset group tag identifier. | long |
+| bloodhound_enterprise.attack_path.length | Number of hops/edges in the attack path. | long |
+| bloodhound_enterprise.attack_path.relationships | List of edge relationship types in the attack path. | keyword |
+| bloodhound_enterprise.category | BloodHound finding category (e.g. zone/tag name). | keyword |
+| bloodhound_enterprise.domain_sid | Active Directory domain SID for the finding environment. This is an identifier, not the domain name. | keyword |
+| bloodhound_enterprise.exposure_count | Number of exposed domain objects. | long |
+| bloodhound_enterprise.exposure_percentage | Percentage of domain exposed to attack path. | float |
+| bloodhound_enterprise.finding_type | Type of BloodHound finding (e.g. AttackPath). | keyword |
+| bloodhound_enterprise.impact_count | Number of domain objects impacted. | long |
+| bloodhound_enterprise.impact_percentage | Percentage of domain impacted by attack path. | float |
+| bloodhound_enterprise.impact_score | Risk impact score assigned by BloodHound Enterprise (0.0 to 10.0). | float |
+| bloodhound_enterprise.is_inherited | Whether the relationship is inherited. | boolean |
+| bloodhound_enterprise.long_description | Long description of this finding type. | match_only_text |
+| bloodhound_enterprise.long_remediation | Long remediation text for this finding type. | match_only_text |
+| bloodhound_enterprise.principal.kind | BloodHound principal kind for the source principal (User, Group, Computer). | keyword |
+| bloodhound_enterprise.principal_hash | Internal principal graph hash. | keyword |
+| bloodhound_enterprise.references | References published with this finding type. | match_only_text |
+| bloodhound_enterprise.remediation | Summary of remediation steps recommended by BloodHound Enterprise. | match_only_text |
+| bloodhound_enterprise.short_description | Short description of this finding type. | match_only_text |
+| bloodhound_enterprise.short_remediation | Short remediation text for this finding type. | match_only_text |
+| bloodhound_enterprise.target.kind | BloodHound principal kind for the destination principal (User, Group, Computer). | keyword |
+| bloodhound_enterprise.title | BloodHound finding title from the finding-type description. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| destination.user.id | Unique identifier of the user. | keyword |
+| destination.user.name | Short name or login of the user. | keyword |
+| destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
+| host.os.full | Operating system name, including the version or code name. | keyword |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |
+| input.type | Type of filebeat input. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.offset | Log offset. | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| rule.reference | Reference URL to additional information about the rule used to generate this event. The URL can point to the vendor's documentation about the rule. If that's not available, it can also be a link to a more general page describing this type of alert. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+

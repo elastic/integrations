@@ -19,6 +19,10 @@ state:
   types: []
   type_index: 0
   skip: 0
+  collected_pairs: []
+  sync_by_type: []
+  type_poll_open_ids: []
+  type_poll_id_to_uat: {}
   want_more: true
 redact:
   fields:
@@ -70,6 +74,7 @@ program: |-
                   "RequestDate": [ts],
                   "Signature": [base64(hmac(bytes(""), "sha256", hmac(ts.substring(0, 13), "sha256", hmac("GET" + uri, "sha256", bytes(state.token_key)))))],
                   "Content-Type": ["application/json"],
+                  "User-Agent": ["Elastic-kibana-v1.0.0"],
                 },
               }
             ).do_request().as(resp,
@@ -88,68 +93,67 @@ program: |-
                               [{"id": "1", "name": "default"}],
                           }
                         ).as(all_domains,
-                          state.?selected_environment.orValue("").as(env,
-                            state.?bhe_zones.orValue("").as(zones,
-                              all_domains.map(d,
-                                env == "" || env == "*" || env.equal_fold("all") ||
-                                !all_domains.exists(x,
-                                  ("," + env + ",").contains("," + x.name + ",") ||
-                                  ("," + env + ",").contains(", " + x.name + ",") ||
-                                  ("," + env + ",").contains(",\"" + x.name + "\",") ||
-                                  ("," + env + ",").contains(", \"" + x.name + "\",") ||
-                                  ("," + env + ",").contains(",'" + x.name + "',") ||
-                                  ("," + env + ",").contains(", '" + x.name + "',")
-                                ) || ("," + env + ",").contains("," + d.name + ",") ||
-                                ("," + env + ",").contains(", " + d.name + ",") ||
-                                ("," + env + ",").contains(",\"" + d.name + "\",") ||
-                                ("," + env + ",").contains(", \"" + d.name + "\",") ||
-                                ("," + env + ",").contains(",'" + d.name + "',") ||
-                                ("," + env + ",").contains(", '" + d.name + "',"),
-                                d.with(
-                                  {
-                                    "tags": d.tags.filter(t,
-                                      zones == "" || zones == "*" || zones.equal_fold("all") ||
-                                      !all_domains.exists(x,
-                                        x.tags.exists(tag,
-                                          ("," + zones + ",").contains("," + tag.name + ",") ||
-                                          ("," + zones + ",").contains(", " + tag.name + ",") ||
-                                          ("," + zones + ",").contains(",\"" + tag.name + "\",") ||
-                                          ("," + zones + ",").contains(", \"" + tag.name + "\",") ||
-                                          ("," + zones + ",").contains(",'" + tag.name + "',") ||
-                                          ("," + zones + ",").contains(", '" + tag.name + "',")
+                          state.?selected_environment.orValue("").trim_space().as(env_raw,
+                            state.?bhe_zones.orValue("").trim_space().as(zones_raw,
+                              (env_raw == "" || env_raw == "*" || env_raw.equal_fold("all")).as(env_fetch_all,
+                                (zones_raw == "" || zones_raw == "*" || zones_raw.equal_fold("all")).as(zones_fetch_all,
+                                  (env_fetch_all ? [] : env_raw.split(",").map(t, t.trim_space().trim('"').trim("'")).filter(t, t != "")).as(env_tokens,
+                                    (zones_fetch_all ? [] : zones_raw.split(",").map(t, t.trim_space().trim('"').trim("'")).filter(t, t != "")).as(zone_tokens,
+                                      (!env_fetch_all ? env_tokens.filter(tok, !all_domains.exists(d, d.name.equal_fold(tok))) : []).as(invalid_env,
+                                        (!zones_fetch_all ? zone_tokens.filter(tok, !all_domains.exists(x, x.tags.exists(tag, tag.name.equal_fold(tok)))) : []).as(invalid_zones,
+                                          all_domains.filter(d,
+                                            env_fetch_all || env_tokens.exists(tok, d.name.equal_fold(tok))
+                                          ).map(d,
+                                            d.with(
+                                              {
+                                                "tags": d.tags.filter(t,
+                                                  zones_fetch_all || zone_tokens.exists(tok, t.name.equal_fold(tok))
+                                                ),
+                                              }
+                                            )
+                                          ).filter(d, size(d.tags) > 0).as(
+                                            domains,
+                                            (size(domains) > 0) ?
+                                              {
+                                                "step": 2,
+                                                "domains": domains,
+                                                "domain_index": 0,
+                                                "tag_index": 0,
+                                                "types": [],
+                                                "type_index": 0,
+                                                "skip": 0,
+                                                "collected_pairs": [],
+                                                "want_more": true,
+                                                "events": (size(invalid_env) > 0 || size(invalid_zones) > 0) ?
+                                                  dyn(
+                                                    invalid_env.map(tok, {"error": {"message": "selected_environment: domain not found in BloodHound Enterprise: " + tok}}) +
+                                                    invalid_zones.map(tok, {"error": {"message": "bhe_zones: zone not found in BloodHound Enterprise: " + tok}})
+                                                  )
+                                                :
+                                                  [{"retry": true}],
+                                              }
+                                            :
+                                              {
+                                                "events": (size(invalid_env) > 0 || size(invalid_zones) > 0) ?
+                                                  dyn(
+                                                    invalid_env.map(tok, {"error": {"message": "selected_environment: domain not found in BloodHound Enterprise: " + tok}}) +
+                                                    invalid_zones.map(tok, {"error": {"message": "bhe_zones: zone not found in BloodHound Enterprise: " + tok}}) +
+                                                    [{"error": {"message": "GET " + uri + ": no domains after selected_environment/bhe_zones filters"}}]
+                                                  )
+                                                :
+                                                  {
+                                                    "error": {
+                                                      "message": "GET " + uri + ": no domains after selected_environment/bhe_zones filters",
+                                                    },
+                                                  },
+                                                "want_more": false,
+                                              }
+                                          )
                                         )
-                                      ) || ("," + zones + ",").contains("," + t.name + ",") ||
-                                      ("," + zones + ",").contains(", " + t.name + ",") ||
-                                      ("," + zones + ",").contains(",\"" + t.name + "\",") ||
-                                      ("," + zones + ",").contains(", \"" + t.name + "\",") ||
-                                      ("," + zones + ",").contains(",'" + t.name + "',") ||
-                                      ("," + zones + ",").contains(", '" + t.name + "',")
-                                    ),
-                                  }
+                                      )
+                                    )
+                                  )
                                 )
-                              ).filter(d, size(d.tags) > 0).as(
-                                domains,
-                                (size(domains) > 0) ?
-                                  {
-                                    "step": 2,
-                                    "domains": domains,
-                                    "domain_index": 0,
-                                    "tag_index": 0,
-                                    "types": [],
-                                    "type_index": 0,
-                                    "skip": 0,
-                                    "want_more": true,
-                                    "events": [{"retry": true}],
-                                  }
-                                :
-                                  {
-                                    "events": {
-                                      "error": {
-                                        "message": "GET " + uri + ": no domains after selected_environment/bhe_zones filters",
-                                      },
-                                    },
-                                    "want_more": false,
-                                  }
                               )
                             )
                           )
@@ -206,12 +210,72 @@ program: |-
                             "events": [{"retry": true}],
                           }
                         :
-                          {
-                            "step": 1,
-                            "want_more": false,
-                            "types": [],
-                            "events": [{"retry": true}],
-                          }
+                          state.domains.map(d,
+                            d.tags.map(t,
+                              {
+                                "message": {
+                                  "Finding": "collection_status",
+                                  "finding_type": "collection_status",
+                                  "environment": string(d.name),
+                                  "zone": string(t.name),
+                                  "domain_name": string(d.name),
+                                  "category": string(t.name),
+                                  "collection_absent_reason": "no_open_finding_types",
+                                  "collection_data_source": "BloodHound Enterprise GET /api/v2/domains/{domain_id}/available-types",
+                                  "collection_message": "No open finding types returned from BloodHound Enterprise for environment '" + string(d.name) + "' and zone '" + string(t.name) + "' during this poll.",
+                                }.encode_json(),
+                              }
+                            )
+                          ).flatten().as(
+                            no_type_events,
+                            state.?sync_by_type.orValue([]).as(
+                              stale_all_types,
+                              stale_all_types.map(e,
+                                e.?open_ids.orValue([]).map(id,
+                                  {
+                                    "sync_event": {
+                                      "sync_kind": "finding_removed",
+                                      "id": id,
+                                      "finding_type": string(e.?finding_type.orValue("")),
+                                      "domain_name": string(e.?domain_name.orValue("")),
+                                      "category": string(e.?category.orValue("")),
+                                      "type_key": string(e.type_key),
+                                    },
+                                  }
+                                )
+                              ).flatten().as(
+                                stale_all_removed,
+                                stale_all_types.map(e,
+                                  {
+                                    "sync_event": {
+                                      "sync_kind": "checkpoint",
+                                      "type_key": string(e.type_key),
+                                      "finding_type": string(e.?finding_type.orValue("")),
+                                      "domain_name": string(e.?domain_name.orValue("")),
+                                      "category": string(e.?category.orValue("")),
+                                      "max_updated_at": string(e.?max_updated_at.orValue("")),
+                                      "open_finding_ids": [],
+                                      "open_finding_count": 0,
+                                      "poll_completed_at": now.format("2006-01-02T15:04:05Z07:00"),
+                                    },
+                                  }
+                                ).as(
+                                  stale_all_checkpoints,
+                                  {
+                                    "step": 1,
+                                    "want_more": false,
+                                    "types": [],
+                                    "collected_pairs": [],
+                                    "sync_by_type": [],
+                                    "events": (size(no_type_events) + size(stale_all_removed) + size(stale_all_checkpoints) > 0) ?
+                                      dyn(no_type_events) + dyn(stale_all_removed) + dyn(stale_all_checkpoints)
+                                    :
+                                      dyn([{"retry": true}]),
+                                  }
+                                )
+                              )
+                            )
+                          )
                       )
                     )
                   : (cur.type != "" && cur.?meta_loaded.orValue(false) != true) ?
@@ -240,53 +304,257 @@ program: |-
                     )
                   :
                     ((has(body.data) && type(body.data) == list) ? body.data : []).as(page,
-                      page.map(inst,
-                        {
-                          "message": inst.with(
-                            {
-                              "finding_type": cur.type,
-                              "domain_name": cur.domain_name,
-                              "category": cur.tag_name,
-                              "finding_title": cur.?title.orValue(""),
-                              "short_remediation": cur.?short_remediation.orValue(""),
-                              "long_remediation": cur.?long_remediation.orValue(""),
-                              "short_description": cur.?short_description.orValue(""),
-                              "long_description": cur.?long_description.orValue(""),
-                              "finding_references": cur.?references.orValue(""),
-                              "graph_url": (has(inst.GraphURL) && string(inst.GraphURL) != "") ? string(inst.GraphURL) : ((has(inst.graph_url) &&
-                              string(inst.graph_url) != "") ? string(inst.graph_url) : (state.base_url.trim_right("/") + "/ui/graphview?environmentId=" + ((has(inst.DomainSID) &&
-                              string(inst.DomainSID) != "") ? string(inst.DomainSID) : ((has(inst.domain_sid) &&
-                              string(inst.domain_sid) != "") ? string(inst.domain_sid) : cur.domain_id)) + "&findingName=" + cur.type + "&assetGroupTagId=" + cur.tag_id)),
-                            }
-                          ).encode_json(),
-                        }
-                      ).as(events,
-                        (size(page) > 0 && int(state.?skip.orValue(0)) + size(page) < int(body.?count.orValue(int(state.?skip.orValue(0)) + size(page)))) ?
-                          {
-                            "step": 3,
-                            "skip": int(state.?skip.orValue(0)) + size(page),
-                            "want_more": true,
-                            "events": (size(events) > 0) ? dyn(events) : dyn([{"retry": true}]),
-                          }
-                        : (int(state.type_index) + 1 < size(state.types)) ?
-                          {
-                            "step": 3,
-                            "type_index": int(state.type_index) + 1,
-                            "skip": 0,
-                            "want_more": true,
-                            "events": (size(events) > 0) ? dyn(events) : dyn([{"retry": true}]),
-                          }
+                      (string(cur.domain_name) + "|" + string(cur.tag_name) + "|" + string(cur.type)).as(type_key,
+                        (int(state.?skip.orValue(0)) == 0 ?
+                          state.with({"type_poll_open_ids": [], "type_poll_id_to_uat": {}})
                         :
-                          {
-                            "step": 1,
-                            "want_more": false,
-                            "types": [],
-                            "type_index": 0,
-                            "skip": 0,
-                            "domain_index": 0,
-                            "tag_index": 0,
-                            "events": (size(events) > 0) ? dyn(events) : dyn([{"retry": true}]),
-                          }
+                          state
+                        ).as(st0,
+                          (st0.?sync_by_type.orValue([]).filter(e, e.type_key == type_key).size() > 0 ?
+                            st0.?sync_by_type.orValue([]).filter(e, e.type_key == type_key)[0]
+                          :
+                            {"type_key": type_key, "open_ids": [], "updated_at_by_id": {}, "max_updated_at": ""}
+                          ).as(cursor,
+                            page.filter(inst,
+                              string(inst.id).as(id,
+                                string(inst.?updated_at.orValue("")).as(uat,
+                                  (!cursor.?open_ids.orValue([]).exists(oid, oid == id)) ||
+                                  (uat != "" && uat != string(cursor.?updated_at_by_id.orValue({})[id]))
+                                )
+                              )
+                            ).map(inst,
+                              string(inst.id).as(id,
+                                ((!cursor.?open_ids.orValue([]).exists(oid, oid == id)) ? "opened" : "updated").as(change_type,
+                                  {
+                                    "message": inst.with(
+                                      {
+                                        "finding_type": cur.type,
+                                        "domain_name": cur.domain_name,
+                                        "category": cur.tag_name,
+                                        "change_type": change_type,
+                                        "finding_title": cur.?title.orValue(""),
+                                        "short_remediation": cur.?short_remediation.orValue(""),
+                                        "long_remediation": cur.?long_remediation.orValue(""),
+                                        "short_description": cur.?short_description.orValue(""),
+                                        "long_description": cur.?long_description.orValue(""),
+                                        "finding_references": cur.?references.orValue(""),
+                                        "finding_layout": (
+                                          has(inst.FromPrincipal) || has(inst.ToPrincipal) ||
+                                          has(inst.FromPrincipalName) || has(inst.ToPrincipalName)
+                                        ) ?
+                                          "relationship"
+                                        : (
+                                          has(inst.Principal) || has(inst.PrincipalName) || has(inst.Props)
+                                        ) ?
+                                          "single_principal"
+                                        :
+                                          "unknown",
+                                        "graph_url": (has(inst.GraphURL) && string(inst.GraphURL) != "") ? string(inst.GraphURL) : ((has(inst.graph_url) &&
+                                        string(inst.graph_url) != "") ? string(inst.graph_url) : (state.base_url.trim_right("/") + "/ui/graphview?environmentId=" + ((has(inst.DomainSID) &&
+                                        string(inst.DomainSID) != "") ? string(inst.DomainSID) : ((has(inst.domain_sid) &&
+                                        string(inst.domain_sid) != "") ? string(inst.domain_sid) : cur.domain_id)) + "&findingName=" + cur.type + "&assetGroupTagId=" + cur.tag_id)),
+                                      }
+                                    ).encode_json(),
+                                  }
+                                )
+                              )
+                            ).as(finding_events,
+                              page.map(i, string(i.id)).as(page_ids,
+                                zip(page_ids, page.map(i, string(i.?updated_at.orValue("")))).as(page_uat_map,
+                                  (st0.?type_poll_open_ids.orValue([]) + page_ids).as(all_ids,
+                                    st0.?type_poll_id_to_uat.orValue({}).with_update(page_uat_map).as(id_to_uat,
+                                      (!(size(page) > 0 && int(st0.?skip.orValue(0)) + size(page) < int(body.?count.orValue(int(st0.?skip.orValue(0)) + size(page))))).as(type_complete,
+                                        id_to_uat.keys().as(current_ids,
+                                          (size(id_to_uat.values().filter(u, u != "")) > 0 ?
+                                            string(max(id_to_uat.values().filter(u, u != "")))
+                                          :
+                                            string(cursor.?max_updated_at.orValue(""))
+                                          ).as(max_uat,
+                                            (type_complete ?
+                                              cursor.?open_ids.orValue([]).filter(id, !current_ids.exists(c, c == id))
+                                            :
+                                              []
+                                            ).as(removed_ids,
+                                              (type_complete ?
+                                                removed_ids.map(id,
+                                                  {
+                                                    "sync_event": {
+                                                      "sync_kind": "finding_removed",
+                                                      "id": id,
+                                                      "finding_type": cur.type,
+                                                      "domain_name": cur.domain_name,
+                                                      "category": cur.tag_name,
+                                                      "type_key": type_key,
+                                                    },
+                                                  }
+                                                ) + [
+                                                  {
+                                                    "sync_event": {
+                                                      "sync_kind": "checkpoint",
+                                                      "type_key": type_key,
+                                                      "finding_type": cur.type,
+                                                      "domain_name": cur.domain_name,
+                                                      "category": cur.tag_name,
+                                                      "max_updated_at": max_uat,
+                                                      "open_finding_ids": current_ids,
+                                                      "open_finding_count": size(current_ids),
+                                                      "poll_completed_at": now.format("2006-01-02T15:04:05Z07:00"),
+                                                    },
+                                                  }
+                                                ]
+                                              :
+                                                []
+                                              ).as(sync_events,
+                                                (type_complete ?
+                                                st0.?sync_by_type.orValue([]).filter(e, e.type_key != type_key) + [
+                                                  {
+                                                    "type_key": type_key,
+                                                    "finding_type": cur.type,
+                                                    "domain_name": cur.domain_name,
+                                                    "category": cur.tag_name,
+                                                    "open_ids": current_ids,
+                                                    "updated_at_by_id": id_to_uat,
+                                                    "max_updated_at": max_uat,
+                                                  }
+                                                ]
+                                                :
+                                                  st0.?sync_by_type.orValue([])
+                                                ).as(next_sync_by_type,
+                                                  (string(cur.domain_name) + "|" + string(cur.tag_name)).as(
+                                                    pair_key,
+                                                    (
+                                                      st0.collected_pairs.exists(p, p == pair_key) ?
+                                                        st0.collected_pairs
+                                                      :
+                                                        st0.collected_pairs + [pair_key]
+                                                    ).as(
+                                                      next_collected_pairs,
+                                                      (!type_complete) ?
+                                                        {
+                                                          "step": 3,
+                                                          "types": st0.types,
+                                                          "skip": int(st0.?skip.orValue(0)) + size(page),
+                                                          "collected_pairs": next_collected_pairs,
+                                                          "sync_by_type": next_sync_by_type,
+                                                          "type_poll_open_ids": all_ids,
+                                                          "type_poll_id_to_uat": id_to_uat,
+                                                          "want_more": true,
+                                                          "events": (size(finding_events) > 0) ? dyn(finding_events) : dyn([{"retry": true}]),
+                                                        }
+                                                      : (int(st0.type_index) + 1 < size(st0.types)) ?
+                                                        {
+                                                          "step": 3,
+                                                          "types": st0.types,
+                                                          "type_index": int(st0.type_index) + 1,
+                                                          "skip": 0,
+                                                          "collected_pairs": next_collected_pairs,
+                                                          "sync_by_type": next_sync_by_type,
+                                                          "type_poll_open_ids": [],
+                                                          "type_poll_id_to_uat": {},
+                                                          "want_more": true,
+                                                          "events": (size(finding_events) + size(sync_events) > 0) ?
+                                                            dyn(finding_events) + dyn(sync_events)
+                                                          :
+                                                            dyn([{"retry": true}]),
+                                                        }
+                                                      :
+                                                        st0.domains.map(d,
+                                                          d.tags.filter(t,
+                                                            !next_collected_pairs.exists(p, p == string(d.name) + "|" + string(t.name))
+                                                          ).map(t,
+                                                            {
+                                                              "message": {
+                                                                "Finding": "collection_status",
+                                                                "finding_type": "collection_status",
+                                                                "environment": string(d.name),
+                                                                "zone": string(t.name),
+                                                                "domain_name": string(d.name),
+                                                                "category": string(t.name),
+                                                                "collection_absent_reason": "no_open_finding_instances",
+                                                                "collection_data_source": "BloodHound Enterprise GET /api/v2/domains/{domain_id}/details",
+                                                                "collection_message": "No open finding instances returned from BloodHound Enterprise for environment '" + string(d.name) + "' and zone '" + string(t.name) + "' during this poll.",
+                                                              }.encode_json(),
+                                                            }
+                                                          )
+                                                        ).flatten().as(
+                                                          empty_pair_events,
+                                                          st0.types.map(t,
+                                                            string(t.domain_name) + "|" + string(t.tag_name) + "|" + string(t.type)
+                                                          ).as(
+                                                            active_type_keys,
+                                                            next_sync_by_type.filter(e, !active_type_keys.exists(k, k == e.type_key)).as(
+                                                              stale_type_entries,
+                                                              stale_type_entries.map(e,
+                                                                e.?open_ids.orValue([]).map(id,
+                                                                  {
+                                                                    "sync_event": {
+                                                                      "sync_kind": "finding_removed",
+                                                                      "id": id,
+                                                                      "finding_type": string(e.?finding_type.orValue("")),
+                                                                      "domain_name": string(e.?domain_name.orValue("")),
+                                                                      "category": string(e.?category.orValue("")),
+                                                                      "type_key": string(e.type_key),
+                                                                    },
+                                                                  }
+                                                                )
+                                                              ).flatten().as(
+                                                                stale_type_removed,
+                                                                stale_type_entries.map(e,
+                                                                  {
+                                                                    "sync_event": {
+                                                                      "sync_kind": "checkpoint",
+                                                                      "type_key": string(e.type_key),
+                                                                      "finding_type": string(e.?finding_type.orValue("")),
+                                                                      "domain_name": string(e.?domain_name.orValue("")),
+                                                                      "category": string(e.?category.orValue("")),
+                                                                      "max_updated_at": string(e.?max_updated_at.orValue("")),
+                                                                      "open_finding_ids": [],
+                                                                      "open_finding_count": 0,
+                                                                      "poll_completed_at": now.format("2006-01-02T15:04:05Z07:00"),
+                                                                    },
+                                                                  }
+                                                                ).as(
+                                                                  stale_type_checkpoints,
+                                                                  next_sync_by_type.filter(e, active_type_keys.exists(k, k == e.type_key)).as(
+                                                                    pruned_sync_by_type,
+                                                                    {
+                                                                      "step": 1,
+                                                                      "want_more": false,
+                                                                      "types": [],
+                                                                      "type_index": 0,
+                                                                      "skip": 0,
+                                                                      "domain_index": 0,
+                                                                      "tag_index": 0,
+                                                                      "collected_pairs": [],
+                                                                      "sync_by_type": pruned_sync_by_type,
+                                                                      "type_poll_open_ids": [],
+                                                                      "type_poll_id_to_uat": {},
+                                                                      "events": (size(finding_events) + size(sync_events) + size(empty_pair_events) + size(stale_type_removed) + size(stale_type_checkpoints) > 0) ?
+                                                                        dyn(finding_events) + dyn(sync_events) + dyn(empty_pair_events) + dyn(stale_type_removed) + dyn(stale_type_checkpoints)
+                                                                      :
+                                                                        dyn([{"retry": true}]),
+                                                                    }
+                                                                  )
+                                                                )
+                                                              )
+                                                            )
+                                                          )
+                                                        )
+                                                    )
+                                                  )
+                                                )
+                                              )
+                                            )
+                                          )
+                                        )
+                                      )
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
                       )
                     )
                 )

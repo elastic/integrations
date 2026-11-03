@@ -3,7 +3,8 @@ name: BloodHound Enterprise finding case
 description: >
   Opens one Security case per environment, zone, and finding type. The first
   case uses that group name with no number. Each run uses the highest
-  iteration. When that case already holds 1000 alerts, the next alert opens
+  iteration, including closed cases, and reopens a closed case when new alerts
+  attach. When that case already holds 1000 alerts, the next alert opens
   [2], then [3], and later alerts for the group go there.
 enabled: true
 tags:
@@ -173,46 +174,63 @@ steps:
                 type: data.set
                 with:
                   finding_portal: "[View on portal]({{ variables.finding_url }})"
+          - name: continuation_case_description
+            type: if
+            condition: "${{ variables.iteration > 1 }}"
+            steps:
+              - name: set_short_description
+                type: data.set
+                with:
+                  case_description: |
+                    Continuation case for **{{ variables.case_title_base }}**. Alerts attach here after the prior case reached 1000 alerts. See the first case in this group for full finding-type context.
+          - name: first_case_description
+            type: if
+            condition: "${{ variables.iteration <= 1 }}"
+            steps:
+              - name: set_full_description
+                type: data.set
+                with:
+                  case_description: |
+                    # {{ variables.finding_title | default: variables.finding_action }}
+
+                    {{ variables.finding_portal }}
+
+                    ## Type
+
+                    {{ variables.finding_action }}
+
+                    ## Environment
+
+                    {{ variables.finding_domain }}
+
+                    ## Zone
+
+                    {{ variables.finding_zone }}
+
+                    ## Short Remediation
+
+                    {{ variables.finding_short_remediation }}
+
+                    ## Long Remediation
+
+                    {{ variables.finding_long_remediation }}
+
+                    ## Short Description
+
+                    {{ variables.finding_short_description }}
+
+                    ## Long Description
+
+                    {{ variables.finding_long_description }}
+
+                    ## References
+
+                    {{ variables.finding_references }}
           - name: create_case
             type: cases.createCase
             with:
               title: "{{ variables.case_title }}"
-              description: |
-                # {{ variables.finding_title | default: variables.finding_action }}
-
-                {{ variables.finding_portal }}
-
-                ## Type
-
-                {{ variables.finding_action }}
-
-                ## Environment
-
-                {{ variables.finding_domain }}
-
-                ## Zone
-
-                {{ variables.finding_zone }}
-
-                ## Short Remediation
-
-                {{ variables.finding_short_remediation }}
-
-                ## Long Remediation
-
-                {{ variables.finding_long_remediation }}
-
-                ## Short Description
-
-                {{ variables.finding_short_description }}
-
-                ## Long Description
-
-                {{ variables.finding_long_description }}
-
-                ## References
-
-                {{ variables.finding_references }}
+              description: "{{ variables.case_description }}"
               owner: "securitySolution"
               severity: "{{ variables.finding_severity }}"
               category: "{{ variables.finding_domain }}"
@@ -227,8 +245,39 @@ steps:
             with:
               case_id: "${{ steps.create_case.output.case.id }}"
               alert_count: "${{ 0 }}"
+      - name: prepare_case_for_alerts
+        type: if
+        condition: "${{ variables.case_id != '' }}"
+        steps:
+          - name: read_case_status
+            type: cases.getCase
+            with:
+              case_id: "{{ variables.case_id }}"
+              include_comments: false
+          - name: remember_case_status
+            type: data.set
+            with:
+              case_status: "{{ steps.read_case_status.output.case.status | default: 'open' }}"
+              case_version: "{{ steps.read_case_status.output.case.version }}"
+          - name: reopen_closed_case
+            type: if
+            condition: "${{ variables.case_status == 'closed' }}"
+            steps:
+              - name: patch_case_open
+                type: kibana.request
+                with:
+                  method: PATCH
+                  path: "/api/cases"
+                  body:
+                    cases:
+                      - id: "{{ variables.case_id }}"
+                        version: "{{ variables.case_version }}"
+                        status: open
+                  fetcher:
+                    skip_ssl_verification: true
       - name: attach_alert
         type: cases.addAlerts
+        continue: true
         with:
           case_id: "{{ variables.case_id }}"
           alerts:
