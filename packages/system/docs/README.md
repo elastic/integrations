@@ -920,6 +920,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.ClassName |  | keyword |
 | winlog.event_data.ClientAddress |  | keyword |
 | winlog.event_data.ClientCreationTime |  | date |
+| winlog.event_data.ClientInfo |  | keyword |
 | winlog.event_data.ClientName |  | keyword |
 | winlog.event_data.ClientProcessId |  | keyword |
 | winlog.event_data.CommandLine |  | keyword |
@@ -927,6 +928,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.CompatibleIds |  | keyword |
 | winlog.event_data.ComputerAccountChange |  | keyword |
 | winlog.event_data.Conditions |  | keyword |
+| winlog.event_data.Configuration |  | keyword |
 | winlog.event_data.CorruptionActionState |  | keyword |
 | winlog.event_data.CountOfCredentialsReturned |  | keyword |
 | winlog.event_data.CrashOnAuditFailValue |  | keyword |
@@ -942,6 +944,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.DestAddress |  | keyword |
 | winlog.event_data.DestPort |  | keyword |
 | winlog.event_data.Detail |  | keyword |
+| winlog.event_data.Details |  | keyword |
 | winlog.event_data.DeviceDescription |  | keyword |
 | winlog.event_data.DeviceId |  | keyword |
 | winlog.event_data.DeviceName |  | keyword |
@@ -969,6 +972,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.EventCountTotal |  | long |
 | winlog.event_data.EventIdx |  | long |
 | winlog.event_data.EventSourceId |  | keyword |
+| winlog.event_data.EventType |  | keyword |
 | winlog.event_data.ExtensionData |  | keyword |
 | winlog.event_data.ExtensionDataType |  | keyword |
 | winlog.event_data.ExtensionName |  | keyword |
@@ -1173,6 +1177,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.ServiceStartType |  | keyword |
 | winlog.event_data.ServiceType |  | keyword |
 | winlog.event_data.ServiceVersion |  | keyword |
+| winlog.event_data.Session |  | keyword |
 | winlog.event_data.SessionId |  | keyword |
 | winlog.event_data.SessionName |  | keyword |
 | winlog.event_data.ShareLocalPath |  | keyword |
@@ -1235,6 +1240,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.TokenElevationType |  | keyword |
 | winlog.event_data.TransactionId |  | keyword |
 | winlog.event_data.TransmittedServices |  | keyword |
+| winlog.event_data.TreeDelete |  | keyword |
 | winlog.event_data.Type |  | keyword |
 | winlog.event_data.UserAccountControl |  | keyword |
 | winlog.event_data.UserName |  | keyword |
