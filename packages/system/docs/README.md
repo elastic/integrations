@@ -614,6 +614,23 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | process.name.caseless | Multi-field of `process.name`. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
+| winlog.adcs.request.attributes.ccm | Values extracted from the ccm enrollment attribute in `winlog.event_data.Attributes`, preserved in request order. | keyword |
+| winlog.adcs.request.attributes.cdc | Active Directory server names supplied in the cdc enrollment attribute for the CA to use when requester information cannot be obtained from its working directory. Values are preserved in request order without hostname validation. | keyword |
+| winlog.adcs.request.attributes.certificate_template | Ordered CertificateTemplate request-attribute values. These remain separate from the native `winlog.event_data.CertificateTemplate` field and do not establish which template was used for issuance. | keyword |
+| winlog.adcs.request.attributes.request_client_info | Ordered RequestClientInfo request values. | keyword |
+| winlog.adcs.request.attributes.rmd | Machine object FQDNs supplied in the rmd enrollment attribute for the certificate request. Values are preserved in request order without hostname validation. | keyword |
+| winlog.adcs.request.attributes.san | Ordered, outer-trimmed SAN request values parsed from `winlog.event_data.Attributes`. | keyword |
+| winlog.adcs.request.disposition.code | Unsigned 32-bit disposition or HRESULT derived from decimal `winlog.event_data.Disposition`. Signed and unsigned representations normalize to the same code, including unknown codes. Values outside -2147483648 through 4294967295 have no normalized code. The original representation remains in the native field. | long |
+| winlog.adcs.request.disposition.name | Canonical CR_DISP_\* or CERTSRV_E_\* name for a recognized Certificate Services disposition or HRESULT in `winlog.adcs.request.disposition.code`. Signed and unsigned decimal representations of an HRESULT resolve to the same name. Unknown codes have no derived name. | keyword |
+| winlog.adcs.request.extension.name | Exact nonblank event 4873 ExtensionName without value decoding. | keyword |
+| winlog.adcs.request.extension.oid | Conservative dotted-ASCII-decimal identifier derived from event 4873 ExtensionName. | keyword |
+| winlog.adcs.request.id | Strict signed-ASCII-decimal request identifier derived from `winlog.event_data.RequestId`. | long |
+| winlog.adcs.request.requester.domain | Exact requester domain component from `winlog.event_data.Requester`, with source case preserved. | keyword |
+| winlog.adcs.request.requester.name | Exact requester name component from `winlog.event_data.Requester`, with source case preserved. | keyword |
+| winlog.adcs.request.subject_alt_name.dns | Ordered DNS SAN request claims parsed from `winlog.event_data.Attributes`. | keyword |
+| winlog.adcs.request.subject_alt_name.sid | Exact unvalidated suffix from a recognized Microsoft SID URI parsed from `winlog.event_data.Attributes`. | keyword |
+| winlog.adcs.request.subject_alt_name.upn | Ordered UPN SAN request claims parsed from `winlog.event_data.Attributes`. | keyword |
+| winlog.adcs.request.subject_alt_name.uri | Ordered URL or URI SAN request claims parsed from `winlog.event_data.Attributes`. | keyword |
 | winlog.api | The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API. The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs. | keyword |
 | winlog.channel | The name of the channel from which this record was read. This value is one of the names from the `event_logs` collection in the configuration. | keyword |
 | winlog.computerObject.domain |  | keyword |
@@ -642,10 +659,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.AttributeSyntaxOID |  | keyword |
 | winlog.event_data.AttributeValue |  | keyword |
 | winlog.event_data.AttributeValue.wildcard | Multi-field of `winlog.event_data.AttributeValue`. | wildcard |
+| winlog.event_data.Attributes |  | keyword |
 | winlog.event_data.AuditPolicyChanges |  | keyword |
 | winlog.event_data.AuditPolicyChangesDescription |  | keyword |
 | winlog.event_data.AuditSourceName |  | keyword |
+| winlog.event_data.AuthenticationLevel | Authentication level reported in the AD CS audit event. | keyword |
 | winlog.event_data.AuthenticationPackageName |  | keyword |
+| winlog.event_data.AuthenticationService | Authentication service reported in the AD CS audit event. | keyword |
 | winlog.event_data.BackupType |  | keyword |
 | winlog.event_data.BackupTypeDescription |  | keyword |
 | winlog.event_data.Binary |  | keyword |
@@ -653,6 +673,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.BootMode |  | keyword |
 | winlog.event_data.BootType |  | keyword |
 | winlog.event_data.BuildVersion |  | keyword |
+| winlog.event_data.CACertificateHash |  | keyword |
+| winlog.event_data.CAPublicKeyHash |  | keyword |
+| winlog.event_data.CRLNumber |  | keyword |
 | winlog.event_data.CallerProcessId |  | keyword |
 | winlog.event_data.CallerProcessName |  | keyword |
 | winlog.event_data.CalloutId |  | keyword |
@@ -661,6 +684,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.CalloutType |  | keyword |
 | winlog.event_data.Category |  | keyword |
 | winlog.event_data.CategoryId |  | keyword |
+| winlog.event_data.CertIssuerName | Issuer name of the certificate presented for certificate-based Kerberos authentication. | keyword |
+| winlog.event_data.CertSerialNumber | Serial number of the certificate presented for certificate-based Kerberos authentication. | keyword |
+| winlog.event_data.CertThumbprint | Thumbprint of the certificate presented for certificate-based Kerberos authentication. | keyword |
+| winlog.event_data.CertificateDatabaseHash |  | keyword |
+| winlog.event_data.CertificateSerialNumber |  | keyword |
+| winlog.event_data.CertificateTemplate | Native template reported by Windows: the requested template on event 4886 version 1, and the template reported by the CA issuance event on 4887 version 1. Availability depends on the event version and source. When absent, parsed request attributes are not substituted as confirmed issuance metadata. | keyword |
 | winlog.event_data.ChangeType |  | keyword |
 | winlog.event_data.ClassId |  | keyword |
 | winlog.event_data.ClassName |  | keyword |
@@ -679,6 +708,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.CreationUtcTime |  | keyword |
 | winlog.event_data.CryptoAlgorithms |  | keyword |
 | winlog.event_data.CurrentProfile |  | keyword |
+| winlog.event_data.DCDNSName |  | keyword |
+| winlog.event_data.DCOMorRPC | DCOM or RPC transport indicator reported for the AD CS certificate request. | keyword |
 | winlog.event_data.DSName |  | keyword |
 | winlog.event_data.DSType |  | keyword |
 | winlog.event_data.DataDescription |  | keyword |
@@ -695,6 +726,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.DeviceVersionMinor |  | keyword |
 | winlog.event_data.Direction |  | keyword |
 | winlog.event_data.DisplayName |  | keyword |
+| winlog.event_data.Disposition |  | keyword |
 | winlog.event_data.DnsHostName |  | keyword |
 | winlog.event_data.DomainBehaviorVersion |  | keyword |
 | winlog.event_data.DomainName |  | keyword |
@@ -706,11 +738,16 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.Dummy |  | keyword |
 | winlog.event_data.DwordVal |  | keyword |
 | winlog.event_data.EnabledPrivilegeList |  | keyword |
+| winlog.event_data.Entry |  | keyword |
 | winlog.event_data.EntryCount |  | keyword |
 | winlog.event_data.ErrorCode |  | keyword |
 | winlog.event_data.EventCountTotal |  | long |
 | winlog.event_data.EventIdx |  | long |
 | winlog.event_data.EventSourceId |  | keyword |
+| winlog.event_data.ExtensionData |  | keyword |
+| winlog.event_data.ExtensionDataType |  | keyword |
+| winlog.event_data.ExtensionName |  | keyword |
+| winlog.event_data.ExtensionPolicyFlags |  | keyword |
 | winlog.event_data.ExtraInfo |  | keyword |
 | winlog.event_data.FailureName |  | keyword |
 | winlog.event_data.FailureNameLength |  | keyword |
@@ -744,8 +781,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.InterfaceIndex |  | keyword |
 | winlog.event_data.IpAddress |  | keyword |
 | winlog.event_data.IpPort |  | keyword |
+| winlog.event_data.IsBaseCRL |  | keyword |
 | winlog.event_data.IsLoopback |  | keyword |
 | winlog.event_data.KerberosPolicyChange |  | keyword |
+| winlog.event_data.KeyContainer |  | keyword |
 | winlog.event_data.KeyFilePath |  | keyword |
 | winlog.event_data.KeyLength |  | keyword |
 | winlog.event_data.KeyName |  | keyword |
@@ -793,6 +832,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.NewTime |  | keyword |
 | winlog.event_data.NewUACList |  | keyword |
 | winlog.event_data.NewUacValue |  | keyword |
+| winlog.event_data.NextPublish |  | keyword |
+| winlog.event_data.NextPublishForBaseCRL |  | keyword |
+| winlog.event_data.NextPublishForDeltaCRL |  | keyword |
+| winlog.event_data.NextUpdate |  | keyword |
+| winlog.event_data.Node |  | keyword |
 | winlog.event_data.NominalFrequency |  | keyword |
 | winlog.event_data.Number |  | keyword |
 | winlog.event_data.ObjectClass |  | keyword |
@@ -829,6 +873,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.PreviousCreationUtcTime |  | keyword |
 | winlog.event_data.PreviousTime |  | keyword |
 | winlog.event_data.PrimaryGroupId |  | keyword |
+| winlog.event_data.PrivateKeyUsageCount |  | keyword |
 | winlog.event_data.PrivilegeList |  | keyword |
 | winlog.event_data.ProcessCreationTime |  | keyword |
 | winlog.event_data.ProcessID |  | keyword |
@@ -842,6 +887,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.ProfilePath |  | keyword |
 | winlog.event_data.ProfileUsed |  | keyword |
 | winlog.event_data.Properties |  | keyword |
+| winlog.event_data.PropertyIndex |  | keyword |
+| winlog.event_data.PropertyName |  | keyword |
+| winlog.event_data.PropertyType |  | keyword |
+| winlog.event_data.PropertyValue |  | keyword |
 | winlog.event_data.ProtectedDataFlags |  | keyword |
 | winlog.event_data.Protocol |  | keyword |
 | winlog.event_data.ProviderContextKey |  | keyword |
@@ -851,6 +900,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.ProviderName |  | keyword |
 | winlog.event_data.PuaCount |  | keyword |
 | winlog.event_data.PuaPolicyId |  | keyword |
+| winlog.event_data.PublishURLs |  | keyword |
 | winlog.event_data.QfeVersion |  | keyword |
 | winlog.event_data.ReadOperation |  | keyword |
 | winlog.event_data.Reason |  | keyword |
@@ -864,12 +914,18 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.RemoteMachineID |  | keyword |
 | winlog.event_data.RemoteUserDescription |  | keyword |
 | winlog.event_data.RemoteUserID |  | keyword |
+| winlog.event_data.RequestCSPProvider | Cryptographic service provider reported for the AD CS certificate request. | keyword |
+| winlog.event_data.RequestClientInfo | Native client information reported for the AD CS certificate request, separate from values parsed from request attributes. | keyword |
 | winlog.event_data.RequestId |  | keyword |
+| winlog.event_data.RequestOSVersion | Operating system version reported for the AD CS certificate request client. | keyword |
+| winlog.event_data.Requester |  | keyword |
 | winlog.event_data.Resource |  | keyword |
 | winlog.event_data.ResourceAttributes |  | keyword |
 | winlog.event_data.ResourceManager |  | keyword |
 | winlog.event_data.ReturnCode |  | keyword |
 | winlog.event_data.ReturnCodeOutcome |  | keyword |
+| winlog.event_data.RevocationReason |  | keyword |
+| winlog.event_data.RoleSeparationEnabled |  | keyword |
 | winlog.event_data.RuleAttr |  | keyword |
 | winlog.event_data.RuleId |  | keyword |
 | winlog.event_data.RuleName |  | keyword |
@@ -881,6 +937,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.ScriptBlockText |  | keyword |
 | winlog.event_data.ScriptPath |  | keyword |
 | winlog.event_data.SearchString |  | keyword |
+| winlog.event_data.SecurityDescriptor |  | keyword |
+| winlog.event_data.SerialNumber | Serial number of the certificate issued by AD CS. | keyword |
 | winlog.event_data.Service |  | keyword |
 | winlog.event_data.ServiceAccount |  | keyword |
 | winlog.event_data.ServiceFileName |  | keyword |
@@ -917,7 +975,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.SubStatus |  | keyword |
 | winlog.event_data.SubcategoryGuid |  | keyword |
 | winlog.event_data.SubcategoryId |  | keyword |
+| winlog.event_data.Subject |  | keyword |
+| winlog.event_data.SubjectAlternativeName | Native subject alternative name information reported by the AD CS audit event, separate from SAN values parsed from request attributes. | keyword |
 | winlog.event_data.SubjectDomainName |  | keyword |
+| winlog.event_data.SubjectKeyIdentifier |  | keyword |
 | winlog.event_data.SubjectLogonId |  | keyword |
 | winlog.event_data.SubjectUserName |  | keyword |
 | winlog.event_data.SubjectUserSid |  | keyword |
@@ -935,6 +996,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.TdoDirection |  | keyword |
 | winlog.event_data.TdoSid |  | keyword |
 | winlog.event_data.TdoType |  | keyword |
+| winlog.event_data.TemplateContent |  | keyword |
+| winlog.event_data.TemplateDSObjectFQDN |  | keyword |
+| winlog.event_data.TemplateInternalName |  | keyword |
+| winlog.event_data.TemplateOID |  | keyword |
+| winlog.event_data.TemplateSchemaVersion |  | keyword |
+| winlog.event_data.TemplateVersion |  | keyword |
 | winlog.event_data.TerminalSessionId |  | keyword |
 | winlog.event_data.TicketEncryptionType |  | keyword |
 | winlog.event_data.TicketEncryptionTypeDescription |  | keyword |
@@ -950,6 +1017,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.UserPrincipalName |  | keyword |
 | winlog.event_data.UserSid |  | keyword |
 | winlog.event_data.UserWorkstations |  | keyword |
+| winlog.event_data.Value |  | keyword |
 | winlog.event_data.VendorIds |  | keyword |
 | winlog.event_data.Version |  | keyword |
 | winlog.event_data.Weight |  | keyword |
@@ -1676,6 +1744,8 @@ The System `process` data stream provides process statistics. One document is
 provided for each process. 
 Refer to the [Configuration](beats://reference/metricbeat/metricbeat-metricset-system-process.md##_configuration_12) section for more details on how to change the process configuration.
 
+> Note: On macOS, `system.process.memory.rss.bytes` can differ a lot from the memory that `top` and Activity Monitor show. To match the MEM column of `top` and the Memory column of Activity Monitor, use `system.process.memory.footprint`. Elastic Agent 9.6.0 and later send this field.
+
 #### Supported operating systems
 
 - FreeBSD
@@ -1851,6 +1921,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | system.process.io.write_bytes | The number of bytes written to the storage layer. | long | byte | counter |
 | system.process.io.write_char | The number of bytes sent to syscalls for writing. | long | byte | counter |
 | system.process.io.write_ops | The count of write-related syscalls. | long |  | counter |
+| system.process.memory.footprint | The physical memory footprint of the process, the value shown in the MEM column of top and the Memory column of Activity Monitor (supported only on macOS). It is a different metric from rss.bytes: clean file-backed pages count toward the Resident Set Size but not toward the footprint, and compressed memory counts toward the footprint but not toward the Resident Set Size. | long | byte | gauge |
 | system.process.memory.rss.bytes | The Resident Set Size. The amount of memory the process occupied in main memory (RAM). On Windows this represents the current working set size, in bytes. | long | byte | gauge |
 | system.process.memory.rss.pct | The percentage of memory the process occupied in main memory (RAM). | scaled_float | percent | gauge |
 | system.process.memory.share | The shared memory the process uses. | long | byte | gauge |

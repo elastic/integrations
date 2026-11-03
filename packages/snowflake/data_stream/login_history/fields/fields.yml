@@ -1,0 +1,57 @@
+- name: snowflake.login_history
+  type: group
+  description: Fields from SNOWFLAKE.ACCOUNT_USAGE.LOGIN_HISTORY that have no ECS equivalent.
+  fields:
+    - name: client_ip
+      type: keyword
+      description: Client IP address reported for the login attempt when the value is not a valid IP (for example INTERNAL_SNOWFLAKE_IP/0.0.0.0).
+    - name: reported_client_type
+      type: keyword
+      description: Client family reported by the caller (not authenticated).
+    - name: reported_client_version
+      type: keyword
+      description: Client version reported by the caller.
+    - name: first_authentication_factor
+      type: keyword
+      description: First authentication factor (for example PASSWORD or OAUTH_ACCESS_TOKEN).
+    - name: second_authentication_factor
+      type: keyword
+      description: Second authentication factor when MFA was used (for example MFA_TOKEN).
+    - name: first_authentication_factor_id
+      type: keyword
+      description: Identifier of the first authentication factor credential.
+    - name: second_authentication_factor_id
+      type: keyword
+      description: Identifier of the second authentication factor credential.
+    - name: related_event_id
+      type: keyword
+      description: Reserved related event identifier from LOGIN_HISTORY.RELATED_EVENT_ID.
+    - name: connection
+      type: keyword
+      description: Client Redirect connection name, when present.
+    - name: client_private_link_id
+      type: keyword
+      description: Private connectivity endpoint identifier.
+    - name: login_details
+      type: group
+      description: Parsed JSON from LOGIN_HISTORY.LOGIN_DETAILS (VARCHAR). See Snowflake LOGIN_HISTORY and malicious IP protection documentation.
+      fields:
+        - name: malicious_ip_protection_info
+          type: group
+          description: Malicious IP protection details from LOGIN_DETAILS.malicious_ip_protection_info (often a stringified JSON object in Snowflake output).
+          fields:
+            - name: result
+              type: keyword
+              description: Malicious IP protection action, for example BLOCKED or OPTED_OUT.
+            - name: risk_classification
+              type: keyword
+              description: Risk level from riskClassification, for example HIGH or LOW.
+            - name: categories
+              type: keyword
+              description: Threat categories (for example ANONYMOUS_VPN, TOR_EXITS).
+        - name: authn_validation_error
+          type: keyword
+          description: Validation errors from authn_validation_error when present (array of strings in Snowflake).
+    - name: authorizing_integration_name
+      type: keyword
+      description: Security integration that authorized the login, when present.
