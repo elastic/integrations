@@ -1,4 +1,4 @@
-# Upgrade existing 0.9.1 and 0.9.2 indices, then collect structured and string endpoints.
+# Upgrade existing 0.9.1 and 0.10.0 indices, then collect structured and string endpoints.
 
 [!external_stack] skip 'Skipping external stack test.'
 [!exec:jq] skip 'Skipping test requiring absent jq command'
@@ -17,13 +17,13 @@ cp stdout got_docs_pre_upgrade.json
 exec jq -r '.hits.hits[0]._source.armis.alert.source_endpoints[0]' got_docs_pre_upgrade.json
 stdout '^legacy-source$'
 
-install_package_from_registry -profile ${CONFIG_PROFILES}/${PROFILE} ${PACKAGE_NAME} 0.9.2
+install_package_from_registry -profile ${CONFIG_PROFILES}/${PROFILE} ${PACKAGE_NAME} 0.10.0
 upgrade_package_latest -profile ${CONFIG_PROFILES}/${PROFILE}
 stdout 'upgraded package '${PACKAGE_NAME}' from version 0\.9\.1'
 
 add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 upgrade_package_latest -profile ${CONFIG_PROFILES}/${PROFILE}
-stdout 'upgraded package '${PACKAGE_NAME}' from version 0\.9\.2'
+stdout 'upgraded package '${PACKAGE_NAME}' from version 0\.10\.0'
 
 docker_down armis-mock
 cp armis-mock/config-phase2.yml armis-mock/config.yml
