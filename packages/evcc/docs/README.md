@@ -243,7 +243,8 @@ The `loadpoint` data stream provides one event per evcc loadpoint (charge point)
 | evcc.loadpoint.last_7d_energy | Energy charged at this loadpoint over the last 7 days, in Wh. | double |  | gauge |
 | evcc.loadpoint.mode | Charging mode of the loadpoint, e.g. off, now, minpv, or pv. | keyword |  |  |
 | evcc.loadpoint.title | Configured name of the loadpoint. | keyword |  |  |
-| evcc.loadpoint.vehicle.name | Name of the vehicle currently assigned to this loadpoint. | keyword |  |  |
+| evcc.loadpoint.vehicle.id | Configuration name of the vehicle currently assigned to this loadpoint, as defined in the evcc configuration (evcc's vehicleName, e.g. `my_car`). | keyword |  |  |
+| evcc.loadpoint.vehicle.name | Display title of the vehicle currently assigned to this loadpoint (evcc's vehicleTitle). | keyword |  |  |
 | evcc.loadpoint.vehicle.range | Estimated remaining range of the vehicle currently assigned to this loadpoint, in km. | double |  | gauge |
 | evcc.loadpoint.vehicle.soc | State of charge of the vehicle currently assigned to this loadpoint. | double | percent | gauge |
 | evcc.site.title | Configured title of the evcc site this loadpoint belongs to. | keyword |  |  |
@@ -261,26 +262,26 @@ An example event for `loadpoint` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-08-19T21:43:58.965560547Z",
+    "@timestamp": "2026-11-03T08:08:15.535060018Z",
     "agent": {
-        "ephemeral_id": "e5bf66d4-c65f-4fa8-903e-f6fe008e1819",
-        "id": "b899a929-a2a1-4eab-abeb-753b1a8a4a3c",
-        "name": "elastic-agent-31037",
+        "ephemeral_id": "e7796a16-65be-4e3b-bcd2-bad30deda220",
+        "id": "251ae5a7-8f39-41ec-b7b6-e2cfe4ac1bfc",
+        "name": "elastic-agent-75904",
         "type": "filebeat",
-        "version": "9.4.3"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "evcc.loadpoint",
-        "namespace": "71086",
+        "namespace": "18988",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "b899a929-a2a1-4eab-abeb-753b1a8a4a3c",
+        "id": "251ae5a7-8f39-41ec-b7b6-e2cfe4ac1bfc",
         "snapshot": false,
-        "version": "9.4.3"
+        "version": "8.19.0"
     },
     "evcc": {
         "loadpoint": {
@@ -313,6 +314,7 @@ An example event for `loadpoint` looks as following:
             "mode": "pv",
             "title": "Garage",
             "vehicle": {
+                "id": "my_car",
                 "name": "blue e-Golf",
                 "range": 210,
                 "soc": 63
@@ -325,9 +327,9 @@ An example event for `loadpoint` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "evcc.loadpoint",
-        "ingested": "2026-08-19T21:43:58Z",
+        "ingested": "2026-11-03T08:08:15Z",
         "kind": "metric",
-        "original": "{\"charge_duration\":91241,\"charge_power\":6900,\"charge_remaining_duration\":41739,\"charge_remaining_energy\":40000,\"charged_energy\":103212.794,\"charger_status_reason\":\"unknown\",\"charging\":true,\"connected\":true,\"connected_duration\":3600,\"effective_limit_soc\":95,\"effective_max_current\":13,\"effective_min_current\":3,\"enabled\":true,\"index\":1,\"last_24h_energy\":88014,\"last_7d_energy\":190432,\"mode\":\"pv\",\"site_title\":\"My Home\",\"title\":\"Garage\",\"vehicle_name\":\"blue e-Golf\",\"vehicle_range\":210,\"vehicle_soc\":63}"
+        "original": "{\"charge_duration\":91241,\"charge_power\":6900,\"charge_remaining_duration\":41739,\"charge_remaining_energy\":40000,\"charged_energy\":103212.794,\"charger_status_reason\":\"unknown\",\"charging\":true,\"connected\":true,\"connected_duration\":3600,\"effective_limit_soc\":95,\"effective_max_current\":13,\"effective_min_current\":3,\"enabled\":true,\"index\":1,\"last_24h_energy\":88014,\"last_7d_energy\":190432,\"mode\":\"pv\",\"site_title\":\"My Home\",\"title\":\"Garage\",\"vehicle_id\":\"my_car\",\"vehicle_name\":\"blue e-Golf\",\"vehicle_range\":210,\"vehicle_soc\":63}"
     },
     "input": {
         "type": "cel"

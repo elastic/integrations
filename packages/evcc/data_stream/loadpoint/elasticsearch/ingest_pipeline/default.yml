@@ -42,9 +42,9 @@ processors:
       tag: remove_null_fields
       lang: painless
       if: ctx.json != null
-      description: Removes null-valued fields so per-loadpoint metrics that evcc did not report (e.g. no vehicle connected) do not appear in the document.
+      description: Removes null-valued and empty-string fields so per-loadpoint metrics that evcc did not report do not appear in the document. evcc publishes an empty vehicleName and vehicleTitle when no vehicle is assigned.
       source: >-
-        ctx.json.entrySet().removeIf(e -> e.getValue() == null);
+        ctx.json.entrySet().removeIf(e -> e.getValue() == null || e.getValue() == '');
   - set:
       field: '@timestamp'
       tag: set_timestamp_from_ingest
@@ -144,6 +144,11 @@ processors:
       target_field: evcc.loadpoint.last_7d_energy
       ignore_missing: true
       tag: rename_last_7d_energy
+  - rename:
+      field: json.vehicle_id
+      target_field: evcc.loadpoint.vehicle.id
+      ignore_missing: true
+      tag: rename_vehicle_id
   - rename:
       field: json.vehicle_name
       target_field: evcc.loadpoint.vehicle.name
