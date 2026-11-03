@@ -411,7 +411,9 @@ processors:
       tag: append_event_type_denied
       value: denied
       allow_duplicates: false
-      if: ctx.event?.action == 'connection-refused' || ctx.event?.action == 'subscription-denied' || ctx.event?.action == 'mqtt-publish-dropped'
+      if: >-
+        ctx.event?.action == 'connection-refused' || ctx.event?.action == 'subscription-denied' || ctx.event?.action == 'mqtt-publish-dropped' ||
+        (ctx._temp?.packet_type_lower == 'connack' && ctx.mosquitto?.log?.reason_code != null && ctx.mosquitto.log.reason_code != 0)
   - append:
       field: event.type
       tag: append_event_type_allowed
@@ -443,6 +445,17 @@ processors:
       tag: set_event_outcome_success
       value: success
       if: ctx.event?.action == 'client-connected'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure_reason_code
+      value: failure
+      description: >-
+        A packet whose reason code reports a failure: any MQTT v5 reason code of 128 or above (for example a
+        PUBACK with rc135, not authorized), or a CONNACK with any non-zero code, which is a refusal under both
+        MQTT 3.1.1 (return codes 1-5) and MQTT v5. Mosquitto logs no separate line for these denials.
+      if: >-
+        ctx._temp?.packet_type_lower != null && ctx.mosquitto?.log?.reason_code != null &&
+        (ctx.mosquitto.log.reason_code >= 128 || (ctx._temp.packet_type_lower == 'connack' && ctx.mosquitto.log.reason_code != 0))
 
   - append:
       field: related.ip
