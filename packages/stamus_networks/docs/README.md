@@ -533,6 +533,7 @@ TLS/SSH/HTTP client fingerprints observed for the host). This is an entity/inven
 | host_id.username.user | Observed username value. | keyword |
 | input.type | Type of Elastic Agent input. | keyword |
 | ip | The host's IP address. Entity identifier for this data stream (weak key -- IP-only, no MAC/UUID alternative is documented; subject to DHCP reassignment, see research-brief.md open question #10). | ip |
+| log.offset | Log offset. | long |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
