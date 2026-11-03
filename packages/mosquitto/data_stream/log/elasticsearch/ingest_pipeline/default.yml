@@ -155,11 +155,6 @@ processors:
         # Anything else is kept verbatim in `message`.
         - '^%{GREEDYDATA}$'
       if: ctx.message != null
-  - trim:
-      field: message
-      tag: trim_message
-      ignore_missing: true
-      description: Strips the leading tab from indented subscription detail lines.
 
   # Decompose the argument list that follows an MQTT packet. The shape depends on
   # the packet type; anything unrecognised is left alone because the full text is
@@ -431,6 +426,14 @@ processors:
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
+
+  - trim:
+      field: message
+      tag: trim_message
+      ignore_missing: true
+      description: >-
+        Strips the leading tab from indented subscription detail lines. Runs only after every message-based
+        classifier, so a topic filter such as "Connection Refused: x" or "Opening x" cannot be read as a broker message.
 
   - remove:
       field:
