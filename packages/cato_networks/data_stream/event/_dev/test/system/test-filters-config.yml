@@ -8,7 +8,10 @@ data_stream:
   vars:
     account_ids:
       - 33333
-    interval: 5s
+    # Longer than wait_for_data_timeout: both events must come from consecutive
+    # requests in the first cycle, which requires pagination to continue while the
+    # filtered marker advances even though each page has fewer than 3000 events.
+    interval: 5m
     filters: |-
       - fieldName: event_sub_type
         operator: in
@@ -16,4 +19,4 @@ data_stream:
           - WAN Firewall
     preserve_original_event: true
 assert:
-  hit_count: 1
+  hit_count: 2

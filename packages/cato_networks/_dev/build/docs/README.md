@@ -160,7 +160,7 @@ Instance 3:
 Keep the following in mind:
 
 - Filters across instances must be exclusive and together cover every event you want. Overlapping filters ingest duplicates, and gaps lose events.
-- When filters are applied, Cato Networks scans its event queue until matching events are found or a search limit is reached, so a request can return fewer than 3000 events even when more matching events are pending.
+- When filters are applied, Cato Networks scans its event queue until matching events are found or a search limit is reached, so a request can return fewer than 3000 events even when more matching events are pending. When `Filters` is set, the integration therefore keeps requesting while the returned marker changes, and stops when a request returns the same marker. Each cycle is still bounded by `Maximum Pages Per Cycle`, and a filter that matches few events on a busy account can use many requests per cycle, which counts against the shared rate limit.
 - All instances share the account rate limit described in [Rate Limiting](#rate-limiting). Lower `Resource Rate Limit` on each instance so that the total stays under 100 requests per minute.
 
 ## Limitation:

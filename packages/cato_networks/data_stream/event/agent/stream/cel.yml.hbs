@@ -28,6 +28,10 @@ state:
   {{!--
     max_page_limit: 3000 — Cato EventsFeed API returns at most 3000 records per call.
     want_more is true when a full page is returned, indicating more data may be available.
+    With filters, Cato scans the event queue until it finds matches or hits a search limit, so a
+    page can be short while more events are pending. The returned marker is then the position where
+    the scan stopped: want_more is also true while that marker differs from the previous one, and
+    false once a request returns the same marker (end of the queue).
   --}}
   max_page_limit: 3000
   query: >-
@@ -86,8 +90,8 @@ program: |
                   "want_more": false,
                 }
               :
-                {
-                  "events": (body.data.eventsFeed.?accounts.orValue(null) != null) ?
+                (
+                  (body.data.eventsFeed.?accounts.orValue(null) != null) ?
                     body.data.eventsFeed.accounts.map(account, (account.?records.orValue(null) != null) ?
                       account.records.map(record,
                         {
@@ -98,12 +102,25 @@ program: |
                       []
                     ).flatten()
                   :
-                    [],
-                  "cursor": {
-                    ?"marker": body.?data.eventsFeed.marker,
-                  },
-                  "want_more": body.data.eventsFeed.fetchedCount >= state.max_page_limit,
-                }
+                    []
+                ).as(events,
+                  (
+                    state.?filters.orValue(null) != null &&
+                    body.data.eventsFeed.?marker.orValue("") != "" &&
+                    body.data.eventsFeed.?marker.orValue("") != state.?cursor.marker.orValue("")
+                  ).as(scan_advanced,
+                    {
+                      // A cycle ends on a response without events, so a scan-limited page with no
+                      // matches would stop pagination. Publish a placeholder (dropped by the
+                      // processor below) to persist the marker and continue.
+                      "events": (size(events) == 0 && scan_advanced) ? [{"retry": true}] : events,
+                      "cursor": {
+                        ?"marker": body.?data.eventsFeed.marker,
+                      },
+                      "want_more": (body.data.eventsFeed.fetchedCount >= state.max_page_limit) || scan_advanced,
+                    }
+                  )
+                )
             )
           :
             {
@@ -148,7 +165,8 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
 {{processors}}
 {{/if}}
