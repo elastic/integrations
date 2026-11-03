@@ -89,13 +89,16 @@ processors:
       ignore_missing: true
       pattern_definitions:
         MOSQ_DIRECTION: '(?:Received|Sending)'
+        # Every packet argument list starts with '(', so a client id that contains
+        # spaces stays intact instead of being split at its first space.
+        MOSQ_PACKET_ARGS: '\(.*\)'
         MOSQ_CONNECT_ARGS: '\(p%{INT:mosquitto.log.protocol_version:long}, c%{INT:_temp.clean_session:long}, k%{INT:mosquitto.log.keepalive:long}(?:, u''%{DATA:user.name}'')?\)'
       patterns:
         # Every MQTT packet the broker sends or receives shares one shape:
         # "<direction> <PACKET> <from|to> <client id>" with an optional argument
         # list that `grok_packet_args` below decomposes.
-        - '^%{MOSQ_DIRECTION:_temp.direction} %{WORD:mosquitto.log.packet_type} (?:from|to) %{DATA:mosquitto.log.client_id}(?: %{GREEDYDATA:_temp.packet_args})?$'
-        - '^Dropped too large PUBLISH from %{DATA:mosquitto.log.client_id} %{GREEDYDATA:_temp.packet_args}$'
+        - '^%{MOSQ_DIRECTION:_temp.direction} %{WORD:mosquitto.log.packet_type} (?:from|to) %{DATA:mosquitto.log.client_id}(?: %{MOSQ_PACKET_ARGS:_temp.packet_args})?$'
+        - '^Dropped too large PUBLISH from %{DATA:mosquitto.log.client_id} %{MOSQ_PACKET_ARGS:_temp.packet_args}$'
         # Connection lifecycle.
         - '^New connection from %{IP:source.ip}:%{POSINT:source.port:long} on port %{POSINT:server.port:long}\.$'
         - '^New connection from %{IP:source.ip}:%{POSINT:source.port:long}\.$'
@@ -104,7 +107,12 @@ processors:
         - '^Client %{DATA:mosquitto.log.client_id} \[%{IP:source.ip}:%{POSINT:source.port:long}\] disconnected\.$'
         - '^Client %{DATA:mosquitto.log.client_id} disconnected: %{DATA:mosquitto.log.reason}\.?$'
         - '^Client %{DATA:mosquitto.log.client_id} disconnected\.$'
+        - '^Client %{DATA:mosquitto.log.client_id} disconnected due to %{DATA:mosquitto.log.reason}\.$'
+        - '^Client %{DATA:mosquitto.log.client_id} disconnected, %{DATA:mosquitto.log.reason}\.$'
+        - '^Client %{DATA:mosquitto.log.client_id} closed its connection\.$'
         - '^Socket error on client %{DATA:mosquitto.log.client_id}, disconnecting\.$'
+        # Packet validation failures, e.g. "Invalid QoS in PUBLISH from <id>, disconnecting."
+        - '^%{DATA:mosquitto.log.reason} from %{DATA:mosquitto.log.client_id}, disconnecting\.$'
         - '^Client %{DATA:mosquitto.log.client_id} has exceeded timeout, disconnecting\.$'
         - '^Client %{DATA:mosquitto.log.client_id} already connected, closing old connection\.$'
         - '^Expiring client %{DATA:mosquitto.log.client_id} due to timeout\.$'
@@ -129,8 +137,9 @@ processors:
         - '^\t%{DATA:mosquitto.log.topic} \(QoS %{INT:mosquitto.log.qos:long}\)$'
         - '^\t%{DATA:mosquitto.log.topic} \(denied\)$'
         - '^\t%{GREEDYDATA:mosquitto.log.topic}$'
-        # `log_type subscribe` lines: client id, granted QoS, topic filter.
-        - '^%{NOTSPACE:mosquitto.log.client_id} %{INT:mosquitto.log.qos:long} %{NOTSPACE:mosquitto.log.topic}$'
+        # `log_type subscribe` lines: client id, granted QoS, topic filter. The
+        # filter is last and may contain spaces, so it takes the rest of the line.
+        - '^%{NOTSPACE:mosquitto.log.client_id} %{INT:mosquitto.log.qos:long} %{GREEDYDATA:mosquitto.log.topic}$'
         # Bridge-side packet logging.
         - '^Client %{DATA:mosquitto.log.client_id} (?:received|sending) %{WORD:mosquitto.log.packet_type}$'
         # Anything else is kept verbatim in `message`.
@@ -267,12 +276,14 @@ processors:
       field: event.action
       tag: set_event_action_client_disconnected
       value: client-disconnected
-      if: ctx.message != null && ((ctx.message.startsWith('Client ') && ctx.message.contains(' disconnect')) || ctx.message.contains(', disconnecting'))
+      description: Only for non-packet lines, so a topic or payload text such as 'status, disconnecting' cannot reclassify a PUBLISH.
+      if: ctx._temp?.packet_type_lower == null && ctx.mosquitto?.log?.topic == null && ctx.message != null && ((ctx.message.startsWith('Client ') && (ctx.message.contains(' disconnected') || ctx.message.endsWith(' closed its connection.'))) || ctx.message.endsWith(', disconnecting.'))
   - set:
       field: event.action
       tag: set_event_action_connection_refused
       value: connection-refused
-      if: ctx.message != null && (ctx.message.startsWith('Connection Refused:') || ctx.message.contains(' rejected, ') || ctx.message.contains(' denied'))
+      description: Only for non-packet lines, so a topic such as 'access denied' cannot reclassify a PUBLISH.
+      if: ctx._temp?.packet_type_lower == null && ctx.mosquitto?.log?.topic == null && ctx.message != null && (ctx.message.startsWith('Connection Refused:') || ctx.message.contains(' rejected, ') || ctx.message.contains(' denied'))
   - set:
       field: event.action
       tag: set_event_action_subscription_denied
@@ -298,6 +309,12 @@ processors:
       tag: set_event_action_listener_opened
       value: listener-opened
       if: ctx.message != null && ctx.message.startsWith('Opening ')
+  - set:
+      field: event.action
+      tag: set_event_action_publish_dropped
+      value: mqtt-publish-dropped
+      description: The broker discarded an inbound PUBLISH that exceeded message_size_limit; the line has no packet direction, so it must not fall through to subscription-granted.
+      if: ctx.message != null && ctx.message.startsWith('Dropped too large PUBLISH from ')
   - set:
       field: event.action
       tag: set_event_action_subscription_granted
@@ -358,7 +375,7 @@ processors:
       tag: append_event_type_denied
       value: denied
       allow_duplicates: false
-      if: ctx.event?.action == 'connection-refused' || ctx.event?.action == 'subscription-denied'
+      if: ctx.event?.action == 'connection-refused' || ctx.event?.action == 'subscription-denied' || ctx.event?.action == 'mqtt-publish-dropped'
   - append:
       field: event.type
       tag: append_event_type_allowed
@@ -384,7 +401,7 @@ processors:
       field: event.outcome
       tag: set_event_outcome_failure
       value: failure
-      if: ctx.event?.action == 'connection-refused' || ctx.event?.action == 'protocol-error' || ctx.event?.action == 'subscription-denied' || ctx.log?.level == 'error'
+      if: ctx.event?.action == 'connection-refused' || ctx.event?.action == 'protocol-error' || ctx.event?.action == 'subscription-denied' || ctx.event?.action == 'mqtt-publish-dropped' || ctx.log?.level == 'error'
   - set:
       field: event.outcome
       tag: set_event_outcome_success
