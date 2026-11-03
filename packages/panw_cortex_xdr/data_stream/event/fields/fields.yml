@@ -38,7 +38,9 @@
                     - name: mod_time
                       type: date
                     - name: mode
-                      type: keyword
+                      type: group
+                      dynamic: true
+                      description: UNIX file permissions mask record. Subfields are mapped dynamically.
                     - name: name
                       type: keyword
                     - name: operation_flags
@@ -50,7 +52,9 @@
                     - name: path
                       type: keyword
                     - name: pe_info
-                      type: keyword
+                      type: group
+                      dynamic: true
+                      description: PE information record, usually present on some write-file events. Subfields are mapped dynamically.
                     - name: prev_type
                       type: keyword
                     - name: previous_file_name
@@ -87,7 +91,8 @@
                     - name: file_info
                       type: keyword
                     - name: image_size
-                      type: double
+                      type: long
+                      description: Loaded image size in bytes.
                     - name: last_writer_actor
                       type: keyword
                     - name: md5
@@ -124,12 +129,15 @@
                     - name: stats_is_last
                       type: boolean
                 - name: powered_off
-                  type: keyword
+                  type: boolean
+                  description: Whether the host was powered off.
                 - name: process
                   type: group
                   fields:
                     - name: fds
-                      type: keyword
+                      type: group
+                      dynamic: true
+                      description: Unix file-descriptor information for stdin, stdout, and stderr. Subfields are mapped dynamically.
                     - name: image_command_line
                       type: keyword
                     - name: image_extension
@@ -155,7 +163,9 @@
                     - name: os_pid
                       type: long
                     - name: pe_load_info
-                      type: keyword
+                      type: group
+                      dynamic: true
+                      description: Windows information about the loaded PE image. Subfields are mapped dynamically.
                     - name: peb
                       type: keyword
                     - name: peb32
@@ -177,7 +187,9 @@
                     - name: termination_date
                       type: date
                     - name: token
-                      type: keyword
+                      type: group
+                      dynamic: true
+                      description: Security context of the process. Subfields are mapped dynamically.
                     - name: user_sid
                       type: keyword
                     - name: username
@@ -231,7 +243,8 @@
                     - name: signature_vendor
                       type: keyword
                     - name: thread_id
-                      type: keyword
+                      type: long
+                      description: Thread identifier.
                     - name: thread_start_address
                       type: keyword
                     - name: user_sid
@@ -247,7 +260,8 @@
                 - name: user_is_local_session
                   type: boolean
                 - name: user_session_id
-                  type: keyword
+                  type: long
+                  description: Windows session identifier.
                 - name: user_status
                   type: keyword
                 - name: user_status_sid
@@ -255,30 +269,28 @@
                 - name: username
                   type: keyword
             - name: address_mapping
-              type: keyword
-              description: Network address mapping when Cortex XDR sends a string.
-            - name: memory_address_mapping
               type: group
-              description: Memory address mapping when Cortex XDR sends address_mapping as an object or array.
+              dynamic: true
+              description: Memory address mapping records from Cortex XDR injection and syscall events.
               fields:
                 - name: address_range_type
                   type: long
-                  description: Address range type code.
+                  description: Address range type code. Observed in Cortex XDR events and not documented in the XQL schema.
                 - name: image_path
                   type: keyword
-                  description: Path of the image that contains the mapped section or injected function.
+                  description: Path of the image containing the function or the image injected into.
                 - name: index
                   type: long
-                  description: Mapping index. For syscall events, the function parameter number.
+                  description: Mapping index. Defaults to 1. In syscall events, the function parameter number.
                 - name: section_characteristics
                   type: long
-                  description: PE section characteristics flags.
+                  description: PE section characteristics flags. Observed in Cortex XDR events and not documented in the XQL schema.
                 - name: section_name
                   type: keyword
-                  description: PE section name, such as .text.
+                  description: PE section name. Observed in Cortex XDR events and not documented in the XQL schema.
                 - name: symbol_name
                   type: keyword
-                  description: Name of the mapped function.
+                  description: Name of the suspicious function.
             - name: agent
               type: group
               fields:
@@ -373,12 +385,14 @@
                 - name: process_logon_id
                   type: keyword
                 - name: process_os_pid
-                  type: keyword
+                  type: long
+                  description: Operating system process identifier.
                 - name: process_signature_status
                   type: keyword
                 - name: remote_ip
                   type: ip
                 - name: thread_thread_id
-                  type: keyword
+                  type: long
+                  description: Operating system thread identifier.
             - name: uuid
               type: keyword

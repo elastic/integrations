@@ -204,11 +204,6 @@ processors:
       tag: rename_action_file_mode_e4dcd5a4
       target_field: panw_cortex.xdr.event.action.file.mode
       ignore_missing: true
-  - set:
-      field: file.mode
-      tag: set_file_mode_from_xdr_event_action_file_mode_d5ee6532
-      copy_from: panw_cortex.xdr.event.action.file.mode
-      ignore_empty_value: true
   - foreach:
       field: json.action_file_name
       if: ctx.json?.action_file_name instanceof List
@@ -264,11 +259,6 @@ processors:
       tag: rename_action_file_pe_info_e2db0c5e
       target_field: panw_cortex.xdr.event.action.file.pe_info
       ignore_missing: true
-  - set:
-      field: file.pe.description
-      tag: set_file_pe_description_from_xdr_event_action_file_pe_info_cc2e4d66
-      copy_from: panw_cortex.xdr.event.action.file.pe_info
-      ignore_empty_value: true
   - rename:
       field: json.action_file_prev_type
       tag: rename_action_file_prev_type_0542e8f4
@@ -352,11 +342,6 @@ processors:
       tag: rename_action_file_type_89126a6c
       target_field: panw_cortex.xdr.event.action.file.type
       ignore_missing: true
-  - set:
-      field: file.type
-      tag: set_file_type_from_xdr_event_action_file_type_ba2c80ba
-      copy_from: panw_cortex.xdr.event.action.file.type
-      ignore_empty_value: true
   - foreach:
       field: json.action_local_ip
       if: ctx.json?.action_local_ip instanceof List
@@ -465,9 +450,9 @@ processors:
       ignore_missing: true
   - convert:
       field: json.action_module_image_size
-      tag: convert_action_module_image_size_to_double_98f4613b
+      tag: convert_action_module_image_size_to_long_98f4613b
       target_field: panw_cortex.xdr.event.action.module.image_size
-      type: double
+      type: long
       ignore_missing: true
       on_failure:
         - append:
@@ -608,11 +593,17 @@ processors:
             tag: append_error_message_9e32c5f7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
+  - convert:
       field: json.action_powered_off
-      tag: rename_action_powered_off_5467554b
+      tag: convert_action_powered_off_to_boolean_a1c4e8d2
       target_field: panw_cortex.xdr.event.action.powered_off
+      type: boolean
       ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_a1c4e8d3
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.action_process_fds
       tag: rename_action_process_fds_2dede8f2
@@ -730,11 +721,6 @@ processors:
       tag: rename_action_process_pe_load_info_a3a3e7ee
       target_field: panw_cortex.xdr.event.action.process.pe_load_info
       ignore_missing: true
-  - set:
-      field: process.pe.description
-      tag: set_process_pe_description_from_xdr_event_action_process_pe_load_info_ba5d3332
-      copy_from: panw_cortex.xdr.event.action.process.pe_load_info
-      ignore_empty_value: true
   - rename:
       field: json.action_process_peb
       tag: rename_action_process_peb_a023c6db
@@ -1106,11 +1092,17 @@ processors:
       tag: rename_action_remote_process_signature_vendor_99e00d4e
       target_field: panw_cortex.xdr.event.action.remote_process.signature_vendor
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.action_remote_process_thread_id
-      tag: rename_action_remote_process_thread_id_94a07fee
+      tag: convert_action_remote_process_thread_id_to_long_b7e2c91a
       target_field: panw_cortex.xdr.event.action.remote_process.thread_id
+      type: long
       ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_b7e2c91b
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.action_remote_process_thread_start_address
       tag: rename_action_remote_process_thread_start_address_acf3bb58
@@ -1186,11 +1178,17 @@ processors:
             tag: append_error_message_e0baec53
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
+  - convert:
       field: json.action_user_session_id
-      tag: rename_action_user_session_id_bc3a96f8
+      tag: convert_action_user_session_id_to_long_c3d8f04e
       target_field: panw_cortex.xdr.event.action.user_session_id
+      type: long
       ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_c3d8f04f
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.action_user_status
       tag: rename_action_user_status_02e31e20
@@ -1233,15 +1231,7 @@ processors:
       tag: rename_address_mapping_b6107158
       target_field: panw_cortex.xdr.event.address_mapping
       ignore_missing: true
-      if: ctx.json?.address_mapping instanceof String
-      description: Keep network address mapping strings on the keyword field.
-  - rename:
-      field: json.address_mapping
-      tag: rename_memory_address_mapping
-      target_field: panw_cortex.xdr.event.memory_address_mapping
-      ignore_missing: true
-      if: ctx.json?.address_mapping instanceof List || ctx.json?.address_mapping instanceof Map
-      description: Move memory address mapping objects off the keyword network address field.
+      description: Keep Cortex XDR address_mapping records under the vendor field name.
   - rename:
       field: json.agent_content_version
       tag: rename_agent_content_version_4f71c230
@@ -1810,11 +1800,17 @@ processors:
       tag: rename_os_actor_process_logon_id_bec64329
       target_field: panw_cortex.xdr.event.os_actor.process_logon_id
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.os_actor_process_os_pid
-      tag: rename_os_actor_process_os_pid_569a5674
+      tag: convert_os_actor_process_os_pid_to_long_d4a91b77
       target_field: panw_cortex.xdr.event.os_actor.process_os_pid
+      type: long
       ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_d4a91b78
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.os_actor_process_signature_status
       tag: rename_os_actor_process_signature_status_bcb3b06c
@@ -1844,11 +1840,17 @@ processors:
       value: '{{{panw_cortex.xdr.event.os_actor.remote_ip}}}'
       if: ctx.panw_cortex?.xdr?.event?.os_actor?.remote_ip != null
       allow_duplicates: false
-  - rename:
+  - convert:
       field: json.os_actor_thread_thread_id
-      tag: rename_os_actor_thread_thread_id_3de5c7de
+      tag: convert_os_actor_thread_thread_id_to_long_e5b02c88
       target_field: panw_cortex.xdr.event.os_actor.thread_thread_id
+      type: long
       ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_e5b02c89
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: source.port
       tag: foreach_convert_source_port_to_long_d6d33cf6
@@ -1894,19 +1896,15 @@ processors:
         - panw_cortex.xdr.event.action.file.group_name
         - panw_cortex.xdr.event.action.file.md5
         - panw_cortex.xdr.event.action.file.mod_time
-        - panw_cortex.xdr.event.action.file.mode
         - panw_cortex.xdr.event.action.file.owner_name
-        - panw_cortex.xdr.event.action.file.pe_info
         - panw_cortex.xdr.event.action.file.sha256
         - panw_cortex.xdr.event.action.file.signature_is_embedded
         - panw_cortex.xdr.event.action.file.size
-        - panw_cortex.xdr.event.action.file.type
         - panw_cortex.xdr.event.action.module.path
         - panw_cortex.xdr.event.action.network.protocol
         - panw_cortex.xdr.event.action.process.image_md5
         - panw_cortex.xdr.event.action.process.image_sha256
         - panw_cortex.xdr.event.action.process.os_pid
-        - panw_cortex.xdr.event.action.process.pe_load_info
         - panw_cortex.xdr.event.action.process.signature_is_embedded
         - panw_cortex.xdr.event.action.process.signature_vendor
         - panw_cortex.xdr.event.action.process.termination_code
