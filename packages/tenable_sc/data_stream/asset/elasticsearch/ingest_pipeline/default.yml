@@ -82,6 +82,52 @@ processors:
       target_field: tenable_sc.asset.custom_hash
       method: SHA-256
       ignore_missing: true
+  - script:
+      tag: set_asset_ingest_day_a91c4e72
+      description: >-
+        Collection day used only in the document id so that when Tenable
+        reports an asset again on a later day, a new document is indexed even
+        if scan state is unchanged. The latest transform can then refresh
+        @timestamp without waiting for the backing index to roll over.
+      if: ctx['@timestamp'] != null && ctx.tenable_sc?.asset?.custom_hash != null
+      lang: painless
+      source: >-
+        def ts = ctx['@timestamp'].toString();
+        if (ts.length() >= 10) {
+          ctx.tenable_sc.asset.ingest_day = ts.substring(0, 10);
+        }
+      ignore_failure: true
+  - fingerprint:
+      tag: fingerprint_to_id_asset_state_8a3c2f1e
+      description: >-
+        Document id from stable asset identity, mutable scan state, and the
+        collection day. Severity or score changes index as new documents.
+        Unchanged assets from the same Tenable report on the same day
+        deduplicate. A later Tenable report on a new day indexes a new
+        document even if scan state is unchanged.
+      if: ctx.tenable_sc?.asset?.custom_hash != null
+      fields:
+        - tenable_sc.asset.custom_hash
+        - tenable_sc.asset.ingest_day
+        - json.score
+        - json.total
+        - json.severityInfo
+        - json.severityLow
+        - json.severityMedium
+        - json.severityHigh
+        - json.severityCritical
+        - json.macAddress
+        - json.policyName
+        - json.pluginSet
+        - json.lastAuthRun
+        - json.lastUnauthRun
+      target_field: _id
+      method: SHA-256
+      ignore_missing: true
+  - remove:
+      tag: remove_asset_ingest_day_b72d5f03
+      field: tenable_sc.asset.ingest_day
+      ignore_missing: true
   - convert:
       tag: convert_json_ip_to_tenable_sc_asset_ip_0a1cb325
       field: json.ip

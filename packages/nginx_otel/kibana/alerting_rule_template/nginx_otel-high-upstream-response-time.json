@@ -1,0 +1,51 @@
+{
+  "id": "nginx_otel-high-upstream-response-time",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "description": "Alerts when the 95th percentile of upstream response time ($upstream_response_time) exceeds 1 second per host over 15 minutes, for proxied requests where NGINX connected to the backend. Requires the extended NGINX log format with timing fields.",
+    "name": "[Nginx OTel] High P95 upstream response time",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "Nginx OTel"
+    ],
+    "schedule": {
+      "interval": "1m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "nginx_otel-1c93999f-fbcd-4fe8-ae55-7a3186fd5602"
+        },
+        {
+          "id": "nginx_otel-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## NGINX high P95 upstream response time\n\n### What fired\nThe 95th percentile of upstream response time (`nginx.upstream.response.duration`, from `$upstream_response_time`) exceeded 1 s over the window (min 20 proxied requests). Attempts where NGINX could not connect to the backend are excluded; for retried requests only the final attempt counts.\n\n### Why it matters\nThe backends behind NGINX are slow to respond, which adds directly to the latency clients see.\n\n### Triage\n1. Open the Latency section of the Request Health dashboard and check the upstream time breakdown: connect time points to network, TLS or saturated backends; time to first byte points to slow backend processing.\n2. Check the slowest URL paths table (Upstream P95 column) for the affected endpoints.\n3. Check the health and load of the upstream application.\n\n### Remediation\n- Scale or fix the slow backend; review upstream keepalive and timeouts.\n\n### Tuning\n- 1 s threshold; set it to your backend's expected response time.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "FROM logs-nginx.access.otel-*\n// Proxied requests where NGINX connected to the backend, excluding stub_status checks\n| WHERE nginx.upstream.response.duration IS NOT NULL AND nginx.upstream.connect.duration IS NOT NULL AND url.path != \"/nginx_status\"\n// P95 upstream response time (seconds) and proxied request count per NGINX host\n| STATS requests = COUNT(*), p95_upstream_s = PERCENTILE(nginx.upstream.response.duration, 95) BY host.name\n// Minimum sample size to avoid noisy low-traffic hosts\n| WHERE requests >= 20\n| EVAL p95_upstream_s = ROUND(p95_upstream_s, 3)\n// Alert threshold in seconds: adjust to your backend's expected response time\n| WHERE p95_upstream_s > 1.0\n| SORT p95_upstream_s DESC\n| LIMIT 10"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 10
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

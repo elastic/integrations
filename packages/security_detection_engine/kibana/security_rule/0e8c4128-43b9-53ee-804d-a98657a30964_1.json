@@ -1,0 +1,128 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects three or more failed ESXi logons for the same account from the same remote address within 10 minutes. Hostd records each failure from `pam_do_authenticate` with the login name and `rhost`. Repeated failures from one source are password guessing against that account and can lock it or come just before a successful login.",
+        "false_positives": [
+            "An administrator who mistypes the root password in the Host Client a few times can reach three failures. Confirm the source address is a known workstation and that a successful login did not follow."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "user.name",
+                "source.ip",
+                "message",
+                "host.ip",
+                "Esql.failure_count",
+                "Esql.first_seen",
+                "Esql.last_seen"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "ESXi Multiple Logon Failures by User and Source",
+        "note": "## Triage and analysis\n\n### Investigating ESXi Multiple Logon Failures by User and Source\n\nEach failed Host Client or API logon is a hostd line pam_do_authenticate: error with rhost=<address> and\nlogin:<account>. The query uses GROK to take those two values from message, then counts failures for the\nsame account and remote address. The rule lookback is 9 minutes, and the alert requires at least 3 failures\nwithin 10 minutes apart.\n\n#### Possible investigation steps\n\n- Read user.name, source.ip, and Esql.failure_count.\n- Compare source.ip with known jump hosts and administrator workstations.\n- Look for a following Accepted password for user for the same account from that address.\n- On the host, check whether the account is locked: esxcli system account list.\n\n### False positive analysis\n\nA short run of mistyped passwords from one workstation is commonly benign. Failures from an unknown address, or failures followed by a successful login, deserve review.\n\n### Response and remediation\n\n- If the source is not approved, block it and rotate the targeted account password.\n- Unlock the account if the lockout threshold was reached and the activity was not approved.\n- Preserve hostd.log for the source address and account.\n",
+        "query": "FROM logs-vsphere.log-*\n| WHERE data_stream.dataset == \"vsphere.log\" AND event.module == \"vsphere\"\n    AND message LIKE \"*pam_do_authenticate: error*\"\n| GROK message \"%{DATA}rhost=%{IP:source_ip}%{DATA}login:%{DATA:user}]%{GREEDYDATA}\"\n| WHERE user IS NOT NULL AND source_ip IS NOT NULL\n| EVAL user.name = user, source.ip = source_ip\n| STATS\n    Esql.failure_count = COUNT(*),\n    Esql.first_seen = MIN(@timestamp),\n    Esql.last_seen = MAX(@timestamp),\n    Esql.message_values = VALUES(message)\n  BY user.name, source.ip, host.ip\n| WHERE Esql.failure_count >= 3\n| EVAL message = MV_FIRST(Esql.message_values)\n| KEEP message, user.name, source.ip, host.ip, Esql.failure_count, Esql.first_seen, Esql.last_seen, Esql.message_values\n",
+        "references": [
+            "https://lolesxi-project.github.io/LOLESXi/#",
+            "https://blogs.vmware.com/security/2022/10/esxi-targeting-ransomware-tactics-and-techniques-part-2.html",
+            "https://detect.fyi/vmware-esxi-logging-detection-opportunities-4fb56411ec21"
+        ],
+        "related_integrations": [
+            {
+                "package": "vsphere",
+                "version": ">=1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "source_ip",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "user",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "0e8c4128-43b9-53ee-804d-a98657a30964",
+        "setup": "## Setup\n\nThis rule requires ESXi host logs collected by the Elastic vSphere integration: https://www.elastic.co/docs/reference/integrations/vsphere\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: VMware vSphere",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Platform: VMware ESXi"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/",
+                        "subtechnique": [
+                            {
+                                "id": "T1110.001",
+                                "name": "Password Guessing",
+                                "reference": "https://attack.mitre.org/techniques/T1110/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "0e8c4128-43b9-53ee-804d-a98657a30964_1",
+    "type": "security-rule"
+}
