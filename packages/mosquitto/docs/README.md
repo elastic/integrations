@@ -312,7 +312,5 @@ An example event for `log` looks as following:
 ```
 
 
-### Data streams using ILM policies
-
 
 
