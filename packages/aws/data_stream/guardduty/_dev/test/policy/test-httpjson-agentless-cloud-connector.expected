@@ -3,14 +3,10 @@ inputs:
         namespace: ep
       meta:
         package:
-            agentVersion: ^9.4.0
             name: aws
       name: test-httpjson-agentless-cloud-connector-aws
       streams:
-        - auth.aws:
-            role_arn: arn:aws:iam::123456789012:role/ElasticGuardDutyReadOnly
-            use_cloud_connectors: true
-          chain:
+        - chain:
             - step:
                 replace: $.nextToken
                 request.method: POST
@@ -25,6 +21,12 @@ inputs:
                         target: body.sortCriteria
                         value: '{"attributeName":"updatedAt","orderBy":"ASC"}'
                         value_type: json
+                    - set:
+                        target: header.X-Amz-Date
+                        value: '[[formatDate (now) "20060102T150405Z"]]'
+                    - set:
+                        target: header.Authorization
+                        value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential=/%s/us-east-1/guardduty/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4" (formatDate ($now) "20060102"))) "us-east-1")) "guardduty")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "us-east-1/guardduty/aws4_request") (hash "sha256" "POST\n" "/detector/12abc34d567e8fa901bc2d34e567f890/findings/get\n" "\n" "host:guardduty.us-east-1.amazonaws.com\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
                 request.url: https://guardduty.us-east-1.amazonaws.com/detector/12abc34d567e8fa901bc2d34e567f890/findings/get
                 response.split:
                     target: body.findings
@@ -53,6 +55,12 @@ inputs:
                 default: '[[((now (parseDuration "-48h"))).UnixMilli]]'
                 target: body.findingCriteria.criterion.updatedAt.greaterThan
                 value: '[[((parseDate .cursor.last_execution_datetime)).UnixMilli]]'
+            - set:
+                target: header.X-Amz-Date
+                value: '[[formatDate (now) "20060102T150405Z"]]'
+            - set:
+                target: header.Authorization
+                value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential=/%s/us-east-1/guardduty/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4" (formatDate ($now) "20060102"))) "us-east-1")) "guardduty")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "us-east-1/guardduty/aws4_request") (hash "sha256" "POST\n" "/detector/12abc34d567e8fa901bc2d34e567f890/findings\n" "\n" "host:guardduty.us-east-1.amazonaws.com\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
           request.url: https://guardduty.us-east-1.amazonaws.com/detector/12abc34d567e8fa901bc2d34e567f890/findings
           response.pagination:
             - set:
@@ -60,6 +68,11 @@ inputs:
                 fail_on_template_error: true
                 target: body.nextToken
                 value: '[[if (ne .last_response.body.nextToken "")]][[.last_response.body.nextToken]][[end]]'
+            - delete:
+                target: header.Authorization
+            - set:
+                target: header.Authorization
+                value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential=/%s/us-east-1/guardduty/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4" (formatDate ($now) "20060102"))) "us-east-1")) "guardduty")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "us-east-1/guardduty/aws4_request") (hash "sha256" "POST\n" "/detector/12abc34d567e8fa901bc2d34e567f890/findings\n" "\n" "host:guardduty.us-east-1.amazonaws.com\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
           tags:
             - forwarded
             - aws-guardduty

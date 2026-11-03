@@ -38,12 +38,30 @@ request.transforms:
       value: '[{ "startInclusive": [[mul (div (toInt .cursor.last_update_datetime) 1000) 1000]], "endInclusive": 1956528000 }]'
       default: '[{ "startInclusive": [[mul (div (toInt (now (parseDuration "-{{initial_interval}}")).Unix) 1000) 1000]], "endInclusive": 1956528000 }]'
       value_type: json
+{{#semverSatisfies _meta.agent.version ">=9.4.0"}}
+{{else}}
+  - set:
+      target: header.X-Amz-Date
+      value: '[[formatDate (now) "20060102T150405Z"]]'
+  - set:
+      target: header.Authorization
+      value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential={{access_key_id}}/%s/{{aws_region}}/inspector2/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4{{secret_access_key}}" (formatDate ($now) "20060102"))) "{{aws_region}}")) "inspector2")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "{{aws_region}}/inspector2/aws4_request") (hash "sha256" "POST\n" "/findings/list\n" "\n" "host:inspector2.{{aws_region}}.{{tld}}\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
+{{!-- https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-auth-using-authorization-header.html --}}
+{{/semverSatisfies}}
 response.pagination:
   - set:
       target: body.nextToken
       value: '[[if (eq (len .last_response.body.findings) 100)]][[.last_response.body.nextToken]][[end]]'
       fail_on_template_error: true
       do_not_log_failure: true
+{{#semverSatisfies _meta.agent.version ">=9.4.0"}}
+{{else}}
+  - delete:
+      target: header.Authorization
+  - set:
+      target: header.Authorization
+      value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential={{access_key_id}}/%s/{{aws_region}}/inspector2/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4{{secret_access_key}}" (formatDate ($now) "20060102"))) "{{aws_region}}")) "inspector2")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "{{aws_region}}/inspector2/aws4_request") (hash "sha256" "POST\n" "/findings/list\n" "\n" "host:inspector2.{{aws_region}}.{{tld}}\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
+{{/semverSatisfies}}
 {{!-- Store the poll time minus lag_time as the watermark. Because the window advances
       by wall-clock time (not by a value seen in the data), a finding whose updatedAt
       predates the poll but only becomes visible later would be missed; the lag_time
@@ -54,6 +72,7 @@ cursor:
     value: '[[if (ne (len .last_response.body.findings) 100)]][[(now (parseDuration "-{{lag_time}}")).Unix]][[end]]'
 response.split:
   target: body.findings
+{{#semverSatisfies _meta.agent.version ">=9.4.0"}}
 auth.aws:
 {{#if access_key_id}}
   access_key_id: {{access_key_id}}
@@ -82,6 +101,7 @@ auth.aws:
 {{#if supports_identity_federation}}
   use_cloud_connectors: {{supports_identity_federation}}
 {{/if}}
+{{/semverSatisfies}}
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
