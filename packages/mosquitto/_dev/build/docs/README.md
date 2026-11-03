@@ -49,6 +49,8 @@ The Mosquitto integration collects the broker log and parses the following kinds
 
 Lines that do not match a known message shape are still indexed, with the full text kept in `message`.
 
+`log_type subscribe` lines are recognized only when the client identifier contains no spaces, because Mosquitto writes them as `<client id> <QoS> <topic filter>` with no delimiter; lines from clients whose identifier contains a space are kept verbatim in `message`.
+
 One known limitation: the line Mosquitto writes for `log_type unsubscribe` consists of nothing but a client identifier and a topic filter separated by a space. That shape cannot be told apart from ordinary two-word log messages, so those lines are indexed with their text in `message` but without a parsed topic. The `UNSUBSCRIBE` packet line that accompanies them is parsed normally.
 
 ### Supported use cases

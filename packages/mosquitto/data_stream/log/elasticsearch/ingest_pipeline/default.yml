@@ -68,6 +68,8 @@ processors:
         - ISO8601
         - "yyyy-MM-dd'T'HH:mm:ss"
         - 'yyyy-MM-dd HH:mm:ss'
+        - 'yyyy-MM-dd HH:mm:ssZ'
+        - 'yyyy-MM-dd HH:mm:ssXXX'
       timezone: '{{{event.timezone}}}'
       if: ctx._temp?.timestamp_iso != null && ctx.event?.timezone != null
   - date:
@@ -78,6 +80,8 @@ processors:
         - ISO8601
         - "yyyy-MM-dd'T'HH:mm:ss"
         - 'yyyy-MM-dd HH:mm:ss'
+        - 'yyyy-MM-dd HH:mm:ssZ'
+        - 'yyyy-MM-dd HH:mm:ssXXX'
       if: ctx._temp?.timestamp_iso != null && ctx.event?.timezone == null
 
   # Parse the message body. Patterns are ordered from most specific and most
@@ -91,9 +95,9 @@ processors:
         MOSQ_DIRECTION: '(?:Received|Sending)'
         # Mosquitto's packet argument lists only ever open with one of these forms:
         # (d0, q1, ...), (m12...), (Mid: 12...), (rc0...), or bare integers such as
-        # CONNACK's (0, 0) and (0). Matching only those keeps client ids that contain
+        # CONNACK's (0, 0). Matching only those keeps client ids that contain
         # spaces or parentheses, e.g. "factory (sensor)", intact.
-        MOSQ_PACKET_ARGS: '\((?:(?:d[0-9]+, q|m[0-9]+|Mid: |rc[0-9]+).*|[0-9]+(?:, [0-9]+)?)\)'
+        MOSQ_PACKET_ARGS: '\((?:(?:d[0-9]+, q|m[0-9]+|Mid: |rc[0-9]+).*|[0-9]+, [0-9]+)\)'
         MOSQ_QOS: '[0-2]'
         MOSQ_CONNECT_ARGS: '\(p%{INT:mosquitto.log.protocol_version:long}, c%{INT:_temp.clean_session:long}, k%{INT:mosquitto.log.keepalive:long}(?:, u''%{DATA:user.name}'')?\)'
       patterns:
@@ -115,6 +119,7 @@ processors:
         - '^Client %{DATA:mosquitto.log.client_id} disconnected due to %{DATA:mosquitto.log.reason}\.$'
         - '^Client %{DATA:mosquitto.log.client_id} disconnected, %{DATA:mosquitto.log.reason}\.$'
         - '^Client %{DATA:mosquitto.log.client_id} closed its connection\.$'
+        - '^Client %{DATA:mosquitto.log.client_id} been disconnected by %{DATA:mosquitto.log.reason}\.$'
         - '^Socket error on client %{DATA:mosquitto.log.client_id}, disconnecting\.$'
         # SUBSCRIBE validation failures log the peer address, not the client id
         # (src/handle_subscribe.c), so they must come before the generic rule below.
@@ -153,18 +158,23 @@ processors:
         # Bridge-side packet logging from the client library, prefixed "Client" or
         # "Bridge" (lib/send_subscribe.c, lib/send_unsubscribe.c). These must stay
         # ahead of the permissive `log_type subscribe` fallback below.
+        # The bridge's CONNACK carries a bare reason code (lib/handle_connack.c). It is
+        # matched explicitly because other packets (PINGREQ, SUBACK, ...) have no
+        # argument list, so a client id such as "device (200)" must stay whole.
+        - '^Client %{DATA:mosquitto.log.client_id} (?<_temp.bridge_direction>received) (?<mosquitto.log.packet_type>CONNACK) \(%{INT:mosquitto.log.reason_code:long}\)$'
         - '^(?:Client|Bridge) %{DATA:mosquitto.log.client_id} (?<_temp.bridge_direction>received|sending) %{WORD:mosquitto.log.packet_type}(?: %{MOSQ_PACKET_ARGS:_temp.packet_args})?$'
         # A bridge subscribing to its local topics (src/bridge.c).
         - '^Bridge %{DATA:mosquitto.log.client_id} (?<_temp.bridge_local_subscribe>doing local SUBSCRIBE) on topic %{GREEDYDATA:mosquitto.log.topic}$'
         # `log_type subscribe` lines ("%s %d %s"): client id, granted QoS, topic
-        # filter. Both the id and the filter may contain spaces, so the id ends at
-        # the first standalone QoS digit and the filter takes the rest of the line.
+        # filter. The id must be a single token: allowing spaces there made broker
+        # notices such as "idle_timeout interval too low, using 1 second." look like
+        # subscriptions. The filter is last and may contain spaces.
         # The id goes to _temp first so the record can be marked as a subscribe
         # record, which keeps an id such as "Error-logger" or "Opening door" from
         # being read as broker wording by the classifiers further down.
         # Lines opening with the broker's "Error: " / "Warning: " wording are
         # never subscribe records, even when they contain a standalone 0-2.
-        - '^(?!Error: |Warning: )%{DATA:_temp.subscribe_client_id} %{MOSQ_QOS:mosquitto.log.qos:long} %{GREEDYDATA:mosquitto.log.topic}$'
+        - '^(?!Error: |Warning: )%{NOTSPACE:_temp.subscribe_client_id} %{MOSQ_QOS:mosquitto.log.qos:long} %{GREEDYDATA:mosquitto.log.topic}$'
         # Anything else is kept verbatim in `message`.
         - '^%{GREEDYDATA}$'
       if: ctx.message != null
@@ -197,8 +207,6 @@ processors:
         - '^\(rc%{INT:mosquitto.log.reason_code:long}, %{DATA:mosquitto.log.auth_method}\)$'
         - '^\(rc%{INT:mosquitto.log.reason_code:long}\)$'
         - '^\(%{INT:_temp.session_present:long}, %{INT:mosquitto.log.reason_code:long}\)$'
-        # Bridge-side "Client <id> received CONNACK (<reason code>)" (lib/handle_connack.c).
-        - '^\(%{INT:mosquitto.log.reason_code:long}\)$'
       if: ctx._temp?.packet_args != null
 
   # Normalise the direction words used by the packet patterns.
@@ -505,6 +513,12 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - remove:
+      field:
+        - _temp
+        - _conf
+      tag: remove_temp_fields_on_failure
+      ignore_missing: true
   - append:
       field: tags
       value: preserve_original_event
