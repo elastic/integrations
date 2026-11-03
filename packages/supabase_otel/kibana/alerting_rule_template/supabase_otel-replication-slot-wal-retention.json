@@ -1,0 +1,56 @@
+{
+    "id": "supabase_otel-replication-slot-wal-retention",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when a replication slot is retaining a large volume of WAL. An inactive slot pins WAL indefinitely and will eventually fill the data volume, which makes slot lag a disk-space risk rather than only a replication concern.",
+        "name": "[Supabase OTel] Replication slot retaining WAL",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "replication",
+            "saturation"
+        ],
+        "schedule": {
+            "interval": "10m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                },
+                {
+                    "id": "supabase_otel-7c6a2004-c517-4b50-b70a-2682b7a79228"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Replication Slot Retaining WAL\n\nPostgreSQL will not recycle WAL that a replication slot still needs. An abandoned slot — a replica that was removed, or a logical replication consumer that stopped reading — therefore accumulates WAL on the primary until the data volume is full. This is one of the least obvious ways to run out of disk.\n\n### Triage Steps\n1. Compare retained WAL against free space on the data mountpoint. Retention only matters relative to the volume it will fill: `TS metrics-supabase.metrics.otel-* | STATS avail = MIN(LAST_OVER_TIME(node_filesystem_avail_bytes)) BY attributes.mountpoint`\n2. Establish whether the consumer is alive. A slot whose consumer is gone will never advance and must be dropped; a slow consumer will catch up if it is unblocked.\n3. Check the WAL archive backlog (`pg_ls_archive_statusdir_wal_pending_count`) as a second, independent reason WAL may not be recycled.\n4. Check `pg_wal_size_mb` growth to project when the volume will fill.\n\n### Escalation\nIf retention is growing and free space is projected to run out, this becomes an imminent write outage. Treat it with the urgency of a disk-full alert rather than a replication alert.\n\n### Tuning\nThe default is 10 GB of retained WAL. Size this against the free space on your data volume — on small compute tiers a much lower value is already dangerous. Slot series only exist when a replication slot exists, so projects without one return no rows."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// Gauges. WAL size uses the same aggregation as the \"WAL Size\" dashboard panel.\n// Slot series only exist when a replication slot exists, so a project without one\n// returns no rows rather than a false breach.\n| STATS\n    `Slot Max Lag Bytes` = MAX(LAST_OVER_TIME(replication_slots_max_lag_bytes)),\n    `WAL Size (MB)` = MAX(LAST_OVER_TIME(pg_wal_size_mb))\n  BY resource.attributes.supabase_project_ref\n| EVAL `Slot Max Lag GB` = ROUND(`Slot Max Lag Bytes` / POW(1024, 3), 2)\n// 10 GB of retained WAL. Size this against the free space on your data mountpoint —\n// on small compute tiers a much lower value is already dangerous.\n| WHERE `Slot Max Lag GB` > 10\n| SORT `Slot Max Lag GB` DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 30,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.supabase_project_ref",
+            "termSize": 50
+        }
+    }
+}

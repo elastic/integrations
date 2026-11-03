@@ -1,0 +1,68 @@
+- name: snowflake.access_history
+  type: group
+  description: Fields from SNOWFLAKE.ACCOUNT_USAGE.ACCESS_HISTORY that have no ECS equivalent.
+  fields:
+    - name: parent_query_id
+      type: keyword
+      description: Query ID of the parent job, or absent if the job has no parent.
+    - name: root_query_id
+      type: keyword
+      description: Query ID of the topmost job in the chain, or absent if the job has no parent.
+    - name: direct_objects_accessed
+      type: flattened
+      description: Data objects (tables, views, columns, stages, UDFs, stored procedures) directly named in the query. Decoded from the DIRECT_OBJECTS_ACCESSED JSON array.
+    - name: direct_objects_accessed_names
+      type: keyword
+      description: Fully qualified objectName values extracted from direct_objects_accessed.
+    - name: direct_objects_accessed_columns
+      type: keyword
+      description: Distinct columnName values extracted from direct_objects_accessed. Column names vary per query.
+    - name: base_objects_accessed
+      type: flattened
+      description: All base data objects required to run the query. Decoded from the BASE_OBJECTS_ACCESSED JSON array.
+    - name: base_objects_accessed_names
+      type: keyword
+      description: Fully qualified objectName values extracted from base_objects_accessed.
+    - name: base_objects_accessed_columns
+      type: keyword
+      description: Distinct columnName values extracted from base_objects_accessed. Column names vary per query.
+    - name: objects_modified
+      type: flattened
+      description: Objects associated with a write operation in the query, including column lineage (directSources/baseSources). Decoded from the OBJECTS_MODIFIED JSON array.
+    - name: objects_modified_names
+      type: keyword
+      description: Fully qualified objectName values extracted from objects_modified.
+    - name: objects_modified_columns
+      type: keyword
+      description: Distinct columnName values extracted from objects_modified. Column names vary per query.
+    - name: object_modified_by_ddl
+      type: group
+      description: DDL operation on a database, schema, table, view, column, policy, or tag. Decoded from the OBJECT_MODIFIED_BY_DDL JSON object.
+      fields:
+        - name: object_domain
+          type: keyword
+          description: Type of the object defined or modified by the DDL operation.
+        - name: object_id
+          type: keyword
+          description: Identifier of the object defined or modified by the DDL operation, unique within an account and domain.
+        - name: object_name
+          type: keyword
+          description: Fully qualified name of the object defined or modified by the DDL operation.
+        - name: operation_type
+          type: keyword
+          description: SQL keyword for the DDL operation, for example ALTER, CREATE, DROP, GRANT, or REVOKE.
+        - name: properties
+          type: flattened
+          description: Object or column properties set by the DDL operation (atomic and compound properties).
+    - name: policies_referenced
+      type: flattened
+      description: Masking and row access policies enforced on the accessed objects and columns. Decoded from the POLICIES_REFERENCED JSON array.
+    - name: additional_properties
+      type: flattened
+      description: Operational metadata for the source of the event. Decoded from the ADDITIONAL_PROPERTIES VARIANT.
+    - name: invoker_identity
+      type: flattened
+      description: Snowflake service that directly accessed the object. Deprecated by Snowflake (removed in the 2026_07 bundle). Decoded from the INVOKER_IDENTITY VARIANT.
+    - name: agents_info
+      type: flattened
+      description: Ordered list of invoking agents, from the nearest agent to the top-level agent (agentType, agentId, agentName). Decoded from the AGENTS_INFO JSON array.

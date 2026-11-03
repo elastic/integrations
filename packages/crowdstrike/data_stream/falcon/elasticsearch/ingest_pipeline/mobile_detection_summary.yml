@@ -3,15 +3,15 @@ processors:
   - set:
       field: event.kind
       value: alert
-      tag: set_event_kind
+      tag: set_event_kind_ab1166ce
   - append:
       field: event.category
       value: malware
-      tag: append_malware_category
+      tag: append_malware_category_00df95f0
   - append:
       field: event.type
       value: info
-      tag: append_info_type
+      tag: append_info_type_5eab37e6
   - set:
       tag: set_event_action_2bf36a54
       field: event.action
@@ -19,7 +19,7 @@ processors:
   - remove:
       field: event.created
       if: ctx.crowdstrike?.event?.ContextTimeStamp != null
-      tag: remove_event_created
+      tag: remove_event_created_95e9d0a3
       ignore_missing: true
   - date:
       field: crowdstrike.event.ContextTimeStamp
@@ -27,7 +27,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX
-      tag: date_event_creation_time
+      tag: date_event_creation_time_3c05c144
       if: 'ctx.crowdstrike?.event?.ContextTimeStamp != null && String.valueOf(ctx.crowdstrike.event.ContextTimeStamp).length() <= 11'
   - date:
       field: crowdstrike.event.ContextTimeStamp
@@ -35,89 +35,92 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_event_creation_time_ms
+      tag: date_event_creation_time_ms_79e37e39
       if: 'ctx.crowdstrike?.event?.ContextTimeStamp != null && String.valueOf(ctx.crowdstrike.event.ContextTimeStamp).length() >= 12'
   - rename:
       field: crowdstrike.event.MobileDetectionId
       target_field: event.id
       ignore_missing: true
-      tag: rename_mobile_detect_id
+      tag: rename_mobile_detect_id_8ccc84d0
   - convert:
       field: event.id
       type: string
       ignore_missing: true
-      tag: convert_event_id_to_string
+      tag: convert_event_id_to_string_3553019a
   - rename:
       field: crowdstrike.event.DetectId
       target_field: rule.id
       ignore_missing: true
-      tag: rename_detect_id
+      tag: rename_detect_id_a74b89ee
   - rename:
       field: crowdstrike.event.DetectName
       target_field: rule.name
       ignore_missing: true
-      tag: rename_detect_name
+      tag: rename_detect_name_e7b04914
   - rename:
       field: crowdstrike.event.DetectDescription
       target_field: rule.description
       ignore_missing: true
-      tag: rename_detect_description
+      tag: rename_detect_description_52e132c5
 # Threat fields: the default pipeline sets threat.framework from the threat.* fields.
   - append:
       field: threat.technique.name
       value: "{{{crowdstrike.event.Technique}}}"
-      tag: append_technique_name
+      tag: append_technique_name_a3e26449
       if: ctx.crowdstrike?.event?.Technique != null
   - append:
       field: threat.technique.id
       value: "{{{crowdstrike.event.TechniqueId}}}"
-      tag: append_technique_id
+      tag: append_technique_id_2de189a2
       if: ctx.crowdstrike?.event?.TechniqueId != null
   - append:
       field: threat.tactic.name
       value: "{{{crowdstrike.event.Tactic}}}"
-      tag: append_tactic_name
+      tag: append_tactic_name_369a6cb5
       if: ctx.crowdstrike?.event?.Tactic != null
   - append:
       field: threat.tactic.id
       value: "{{{crowdstrike.event.TacticId}}}"
-      tag: append_tactic_id
+      tag: append_tactic_id_d732fb38
       if: ctx.crowdstrike?.event?.TacticId != null
   - rename:
       field: crowdstrike.event.ComputerName
       target_field: host.name
       ignore_missing: true
-      tag: rename_computer_name
+      tag: rename_computer_name_09970320
   - rename:
       field: crowdstrike.event.UserName
       target_field: user.name
       ignore_missing: true
-      tag: rename_user_name
+      tag: rename_user_name_ab44b1da
   - rename:
       field: crowdstrike.event.FalconHostLink
       target_field: event.reference
       ignore_missing: true
-      tag: rename_falcon_host_link
+      tag: rename_falcon_host_link_7d3b772f
   - rename:
       field: crowdstrike.event.SensorId
       target_field: device.id
       ignore_missing: true
-      tag: rename_sensor_id
+      tag: rename_sensor_id_dc1d7349
   - rename:
       field: crowdstrike.event.ProcessId
       target_field: process.pid
       ignore_missing: true
-      tag: rename_process_id
+      tag: rename_process_id_ffc72dd0
 
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
       value: |-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

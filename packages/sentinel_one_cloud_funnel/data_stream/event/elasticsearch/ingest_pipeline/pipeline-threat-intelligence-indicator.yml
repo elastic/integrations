@@ -2,22 +2,26 @@
 description: Pipeline for processing Threat Intelligence Indicator Event logs.
 processors:
   - set:
+      tag: set_event_category_cceb7c22
       field: event.category
       value: [threat]
   - set:
+      tag: set_event_type_97bb78b9
       field: event.type
       value: [indicator]
   - rename:
+      tag: rename_json_tiIndicator_addedBy_to_sentinel_one_cloud_funnel_event_ti_indicator_added_by_8bf7b266
       field: json.tiIndicator.addedBy
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.added_by
       ignore_missing: true
   - rename:
+      tag: rename_json_tiIndicator_comparisonMethod_to_sentinel_one_cloud_funnel_event_ti_indicator_comparison_method_1a0daf46
       field: json.tiIndicator.comparisonMethod
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.comparison_method
       ignore_missing: true
   - date:
       field: json.tiIndicator.modificationTime
-      tag: 'date_json_tiIndicator_modificationTime'
+      tag: date_json_tiIndicator_modificationTime_12bf0b53
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.modification_time
       formats:
         - ISO8601
@@ -25,30 +29,34 @@ processors:
       if: ctx.json?.tiIndicator?.modificationTime != null && ctx.json.tiIndicator.modificationTime != ''
       on_failure:
         - append:
+            tag: append_error_message_40edfd55
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tiIndicator_name_to_sentinel_one_cloud_funnel_event_ti_indicator_name_d840c5cb
       field: json.tiIndicator.name
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.name
       ignore_missing: true
   - rename:
+      tag: rename_json_tiindicator_originalEvent_id_to_sentinel_one_cloud_funnel_event_ti_indicator_original_event_id_3d84f7e6
       field: json.tiindicator.originalEvent.id
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.original_event.id
       ignore_missing: true
   - convert:
       field: json.tiindicator.originalEvent.index
-      tag: 'convert_json_tiindicator_originalEvent_index'
+      tag: convert_json_tiindicator_originalEvent_index_819b01b8
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.original_event.index
       type: long
       ignore_missing: true
       if: ctx.json?.tiindicator?.originalEvent?.index != ''
       on_failure:
         - append:
+            tag: append_error_message_66844991
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.tiindicator.originalEvent.time
-      tag: 'date_json_tiindicator_originalEvent_time'
+      tag: date_json_tiindicator_originalEvent_time_ecc182a7
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.original_event.time
       formats:
         - ISO8601
@@ -56,27 +64,32 @@ processors:
       if: ctx.json?.tiindicator?.originalEvent?.time != null && ctx.json.tiindicator.originalEvent.time != ''
       on_failure:
         - append:
+            tag: append_error_message_c9cbd0d4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tiindicator_originalEvent_traceId_to_sentinel_one_cloud_funnel_event_ti_indicator_original_event_trace_id_a639061f
       field: json.tiindicator.originalEvent.traceId
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.original_event.trace_id
       ignore_missing: true
   - rename:
+      tag: rename_json_tiIndicator_source_to_sentinel_one_cloud_funnel_event_ti_indicator_source_452c36f3
       field: json.tiIndicator.source
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.source
       ignore_missing: true
   - rename:
+      tag: rename_json_tiIndicator_type_to_sentinel_one_cloud_funnel_event_ti_indicator_type_b30049a1
       field: json.tiIndicator.type
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.type
       ignore_missing: true
   - rename:
+      tag: rename_json_tiIndicator_uid_to_sentinel_one_cloud_funnel_event_ti_indicator_uid_95b027bd
       field: json.tiIndicator.uid
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.uid
       ignore_missing: true
   - date:
       field: json.tiIndicator.uploadTime
-      tag: 'date_json_tiIndicator_uploadTime'
+      tag: date_json_tiIndicator_uploadTime_02912553
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.upload_time
       formats:
         - ISO8601
@@ -84,11 +97,12 @@ processors:
       if: ctx.json?.tiIndicator?.uploadTime != null && ctx.json.tiIndicator.uploadTime != ''
       on_failure:
         - append:
+            tag: append_error_message_aa16ff68
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.tiIndicator.validUntil
-      tag: 'date_json_tiIndicator_validUntil'
+      tag: date_json_tiIndicator_validUntil_74939a48
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.valid_until
       formats:
         - ISO8601
@@ -96,16 +110,28 @@ processors:
       if: ctx.json?.tiIndicator?.validUntil != null && ctx.json.tiIndicator.validUntil != ''
       on_failure:
         - append:
+            tag: append_error_message_d1637106
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tiIndicator_value_to_sentinel_one_cloud_funnel_event_ti_indicator_value_3b461759
       field: json.tiIndicator.value
       target_field: sentinel_one_cloud_funnel.event.ti_indicator.value
       ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
+      value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

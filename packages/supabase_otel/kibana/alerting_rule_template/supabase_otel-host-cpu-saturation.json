@@ -1,0 +1,59 @@
+{
+    "id": "supabase_otel-host-cpu-saturation",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when CPU utilisation on the project node stays near 100% across the evaluation window. Compute tiers fix the core count, and on the small core counts typical of lower tiers queries start queueing for CPU well before anything else looks wrong.",
+        "name": "[Supabase OTel] Host CPU saturation",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "host",
+            "saturation"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-7c6a2004-c517-4b50-b70a-2682b7a79228"
+                },
+                {
+                    "id": "supabase_otel-0fedaab5-00a9-45ce-8340-fcf6e510d215"
+                },
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Host CPU Saturation\n\nUtilisation is derived as `1 - rate(node_cpu_seconds_total{mode=\"idle\"})`, averaged across cores. Everything in the project competes for these cores, so saturation surfaces as latency in whichever component is unlucky.\n\n### Triage Steps\n1. Split the time into modes to identify the shape of the load: `TS metrics-supabase.metrics.otel-* | STATS rate = SUM(RATE(node_cpu_seconds_total)) BY attributes.mode`. High `iowait` points at disk rather than compute; high `steal` points at noisy neighbours; high `system` points at syscall or network overhead.\n2. Compare run-queue pressure against core count: `node_load1` / `node_load5` / `node_load15` against `node_cpu_online`. A load average above the core count means work is waiting, not just running.\n3. Check whether Auth password hashing is the driver. `gotrue_generate_from_password_submitted_total` by `attributes.bcrypt_cost` is CPU-expensive by design, and a raised cost factor multiplies it.\n4. Check query throughput (`pg_stat_statements_total_queries`). CPU rising in step with traffic is capacity; CPU rising without it is a plan change or a missing index.\n\n### Tuning\nMatches the `CPU Utilisation %` dashboard panel exactly, including the clamping `CASE` — per-core rates can land marginally outside [0, 1], so the derived percentage is bounded before comparison. Widen the window on burstable tiers where short spikes are expected and only sustained saturation matters."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// Utilisation is 1 - the idle rate. AVG(RATE()) averages the per-core rates, matching the\n// \"CPU Utilisation %\" dashboard panel including its clamping CASE.\n| STATS `Idle Rate` = AVG(RATE(node_cpu_seconds_total))\n    BY resource.attributes.supabase_project_ref, attributes.mode\n| WHERE attributes.mode == \"idle\"\n// Per-core rates can land marginally outside [0, 1], so bound the derived percentage.\n| EVAL `CPU Utilisation %` = CASE(\n    `Idle Rate` >= 1, 0.0,\n    `Idle Rate` <= 0, 100.0,\n    ROUND((1 - `Idle Rate`) * 100, 1)\n  )\n// Sustained 90% on the small core counts of lower compute tiers means queries queue for CPU.\n| WHERE `CPU Utilisation %` >= 90\n| KEEP resource.attributes.supabase_project_ref, `CPU Utilisation %`"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.supabase_project_ref",
+            "termSize": 50
+        }
+    }
+}

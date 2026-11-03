@@ -1,0 +1,152 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the first occurrence of create or patch activity against sensitive GKE workloads (DaemonSets, Deployments, or CronJobs) from an unusual combination of user agent, source IP, and user identity, which may indicate privilege escalation or unauthorized access within the cluster.",
+        "false_positives": [
+            "Emergency kubectl changes, VPN or workstation migrations, and CI runner rotation can produce new user agent, source IP, and username combinations for authorized operators. Baseline expected automation before tuning."
+        ],
+        "from": "now-6m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "client.user.email",
+                "source.ip",
+                "user_agent.original",
+                "event.action",
+                "event.outcome",
+                "gcp.audit.resource_name",
+                "gcp.audit.request",
+                "data_stream.namespace"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Unusual Sensitive Workload Modification",
+        "new_terms_fields": [
+            "user_agent.original",
+            "source.ip",
+            "client.user.email"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating GKE Unusual Sensitive Workload Modification\n\nThis new-terms rule alerts on the first create or patch of a DaemonSet, Deployment, or CronJob from a new combination of\n`user_agent.original`, `source.ip`, and `client.user.email`.\n\n### Possible investigation steps\n\n- Review the audit request for image, command, service account, and privileged settings changes.\n- Attribute the actor to its backing identity and validate whether the source network is expected.\n- Correlate with RBAC, secret, or exec activity from the same identity.\n\n### False positive analysis\n\n- Legitimate on-call changes from new workstations or updated kubectl versions are common in lab clusters.\n\n### Response and remediation\n\n- Roll back unauthorized workload changes, revoke the credential used, and tighten RBAC on workload controllers.\n\n",
+        "query": "data_stream.dataset:gcp.audit and service.name:k8s.io and event.outcome:success and user_agent.original:* and client.user.email:(* and not system\\:*) and source.ip:* and event.action:(io.k8s.apps.v1.daemonsets.create or io.k8s.apps.v1.daemonsets.patch or io.k8s.apps.v1.deployments.create or io.k8s.apps.v1.deployments.patch or io.k8s.batch.v1.cronjobs.create or io.k8s.batch.v1.cronjobs.patch)\n",
+        "references": [
+            "https://heilancoos.github.io/research/2025/12/16/kubernetes.html#overly-permissive-role-based-access-control",
+            "https://flare.io/learn/resources/blog/teampcp-cloud-native-ransomware"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": ">=2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "client.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "8d97dfa3-3c51-45fb-8621-bde800c47b22",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "8d97dfa3-3c51-45fb-8621-bde800c47b22_1",
+    "type": "security-rule"
+}

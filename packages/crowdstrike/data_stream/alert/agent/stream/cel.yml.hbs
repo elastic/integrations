@@ -25,6 +25,7 @@ auth.oauth2:
 state:
   initial_interval: {{initial_interval}}
   batch_size: {{batch_size}}
+  user_agent: Elastic-crowdstrike/{{#if _meta.package.version}}{{_meta.package.version}}{{else}}unknown{{/if}}
 {{#if query}}
   query: {{query}}
 {{/if}}
@@ -48,11 +49,18 @@ program: |-
           "limit": int(state.batch_size),
           "sort": "updated_timestamp|asc",
           "filter": [
-            "updated_timestamp:>'" + start_time + "'",
+            // Inclusive lower bound: records sharing the boundary timestamp can span a page
+            // or error boundary, so ">=" avoids permanently skipping same-timestamp records.
+            // Re-fetched records are de-duplicated downstream by the fingerprint _id
+            "updated_timestamp:>='" + start_time + "'",
             ?state.?query.optMap(q, "(" + q + ")"),
           ].join("+"),
         }.encode_json()
-      ).do_request().as(resp, (resp.StatusCode == 200) ?
+      ).as(req, req.with(
+        {
+          "Header": req.Header.with({"User-Agent": [state.user_agent]}),
+        }
+      )).do_request().as(resp, (resp.StatusCode == 200) ?
         resp.Body.decode_json().as(body,
           (size(body.?errors.orValue([])) > 0) ?
             {

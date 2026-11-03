@@ -153,10 +153,7 @@ processors:
       field: url.original
       if: ctx.url?.original != null && ctx.url.original != '' && ctx.url.original != '-'
       tag: 'uri_parts_processor'
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      ignore_failure: true
 # There could be a scenario where IPs are separated by commas(,).
   - split:
       field: _tmp.header_forwarder

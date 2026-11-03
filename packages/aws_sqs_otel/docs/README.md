@@ -40,6 +40,7 @@ Alert rule templates require Elastic Stack version 9.2.0 or later.
 | [AWS SQS OTel] High backlog | Alerts when a queue's visible message backlog stays above the configured depth across the evaluation window, indicating consumers are not keeping up with producers. Pair with the oldest-message-age alert/SLO, which captures processing lag directly. |
 | [AWS SQS OTel] In-flight saturation | Alerts when in-flight messages approach the standard-queue limit (~120,000), indicating stuck consumers or processing bottlenecks. |
 | [AWS SQS OTel] Oldest message age high | Alerts when the oldest unprocessed message on a queue exceeds a configurable age threshold. This is the headline SQS processing-lag signal. |
+| [AWS SQS OTel] Producer send rate drop | Alerts when a queue's message send rate drops below the configured minimum, indicating producer slowdown or failure. Requires threshold tuning to match your expected baseline send rate. |
 
 </details>
 

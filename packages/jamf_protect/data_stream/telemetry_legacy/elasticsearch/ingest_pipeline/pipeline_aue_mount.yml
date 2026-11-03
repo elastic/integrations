@@ -2,79 +2,95 @@
 description: Pipeline for Jamf Protect Telemetry aue_mount audit logs.
 processors:
   - rename:
+      tag: rename_json_texts_to_jamf_protect_telemetry_texts_a3c7f96b
       field: json.texts
       target_field: jamf_protect.telemetry.texts
       ignore_missing: true
   - pipeline:
+      tag: pipeline_exec_chain_child_object_75de012d
       name: '{{ IngestPipeline "pipeline_exec_chain_child_object" }}'
   - pipeline:
+      tag: pipeline_identity_object_8cb224f5
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
   - rename:
+      tag: rename_json_path_to_jamf_protect_telemetry_path_4323bfb1
       field: json.path
       target_field: jamf_protect.telemetry.path
       ignore_missing: true
   - convert:
+      tag: convert_json_attributes_device_to_jamf_protect_telemetry_attributes_device_5738d4f4
       field: json.attributes.device
       target_field: jamf_protect.telemetry.attributes.device
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_attributes_file_access_mode_to_json_file_access_mode_58473c4f
       field: json.attributes.file_access_mode
       target_field: json.file_access_mode
       ignore_missing: true
   - convert:
+      tag: convert_json_attributes_file_system_id_to_jamf_protect_telemetry_attributes_file_system_id_5b5d2ea2
       field: json.attributes.file_system_id
       target_field: jamf_protect.telemetry.attributes.file.system.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_attributes_node_id_to_jamf_protect_telemetry_attributes_node_id_78f34dc5
       field: json.attributes.node_id
       target_field: jamf_protect.telemetry.attributes.node.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_attributes_owner_group_id_to_jamf_protect_telemetry_attributes_owner_group_id_79477094
       field: json.attributes.owner_group_id
       target_field: jamf_protect.telemetry.attributes.owner.group.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_attributes_owner_group_name_to_jamf_protect_telemetry_attributes_owner_group_name_9dba5003
       field: json.attributes.owner_group_name
       target_field: jamf_protect.telemetry.attributes.owner.group.name
       ignore_missing: true
   - convert:
+      tag: convert_json_attributes_owner_user_id_58bbc519
       field: json.attributes.owner_user_id
       type: string
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_user_id_f10ea64d
       field: user.id
       value: '{{{json.attributes.owner_user_id}}}'
       if: ctx.json?.attributes?.owner_user_id != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_user_name_2ba08467
       field: user.name
       value: '{{{json.attributes.owner_user_name}}}'
       if: ctx.json?.attributes?.owner_user_name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_0321d5d7
       field: related.user
       value: '{{{json.attributes.owner_user_name}}}'
       if: ctx.json?.attributes?.owner_user_name != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_arguments_flags_to_jamf_protect_telemetry_arguments_flags_f83dec40
       field: json.arguments.flags
       target_field: jamf_protect.telemetry.arguments.flags
       type: string
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_convert_decimal_into_octal_7f4421a4
       description: Convert Decimal into Octal.
       lang: painless
       source: |

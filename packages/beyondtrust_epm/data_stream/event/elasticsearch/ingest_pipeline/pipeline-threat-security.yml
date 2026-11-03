@@ -3,1233 +3,1284 @@ description: Pipeline for processing threat and security intelligence fields (th
 processors:
   - rename:
       field: beyondtrust_epm.event.threat.indicator.file.owner
-      tag: rename_threat_indicator_file_owner
+      tag: rename_threat_indicator_file_owner_7e3b3ef1
       target_field: beyondtrust_epm.event.threat.indicator.file.owner_keyword
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.owner instanceof String
   - set:
       field: threat.indicator.file.owner
-      tag: set_beyondtrust_epm_event_threat_indicator_file_owner
+      tag: set_beyondtrust_epm_event_threat_indicator_file_owner_7b227ab2
       value: '{{{beyondtrust_epm.event.threat.indicator.file.owner_keyword}}}'
       ignore_empty_value: true
   - set:
       field: rule.description
-      tag: set_rule_description_from_event_EPMWinMac_Configuration_Workstyle_Description
+      tag: set_rule_description_from_event_EPMWinMac_Configuration_Workstyle_Description_a7bec2b8
       copy_from: beyondtrust_epm.event.EPMWinMac.Configuration.Workstyle.Description
       ignore_empty_value: true
   - set:
       field: rule.id
-      tag: set_rule_id_from_event_EPMWinMac_Configuration_Workstyle_Identifier
+      tag: set_rule_id_from_event_EPMWinMac_Configuration_Workstyle_Identifier_4978de71
       copy_from: beyondtrust_epm.event.EPMWinMac.Configuration.Workstyle.Identifier
       ignore_empty_value: true
   - set:
       field: rule.name
-      tag: set_rule_name_from_event_EPMWinMac_Configuration_Workstyle_Name
+      tag: set_rule_name_from_event_EPMWinMac_Configuration_Workstyle_Name_9c2745fb
       copy_from: beyondtrust_epm.event.EPMWinMac.Configuration.Workstyle.Name
       ignore_empty_value: true
   - foreach:
       field: beyondtrust_epm.event.rule.author
-      tag: foreach_rule_author
+      tag: foreach_rule_author_330f66c5
       if: ctx.beyondtrust_epm?.event?.rule?.author instanceof List
       processor:
         append:
           field: rule.author
-          tag: append_rule_author_into_rule_author
+          tag: append_rule_author_into_rule_author_125a84d2
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - set:
       field: rule.category
-      tag: set_rule_category_from_event_rule_category
+      tag: set_rule_category_from_event_rule_category_cc87c465
       copy_from: beyondtrust_epm.event.rule.category
       ignore_empty_value: true
   - append:
       field: rule.description
-      tag: append_beyondtrust_epm_event_rule_description_into_rule_description
+      tag: append_beyondtrust_epm_event_rule_description_into_rule_description_7c4bd36d
       if: ctx.beyondtrust_epm?.event?.rule?.description != null
       value: '{{{beyondtrust_epm.event.rule.description}}}'
       allow_duplicates: false
   - append:
       field: rule.id
-      tag: append_beyondtrust_epm_event_rule_id_into_rule_id
+      tag: append_beyondtrust_epm_event_rule_id_into_rule_id_687cbed7
       if: ctx.beyondtrust_epm?.event?.rule?.id != null
       value: '{{{beyondtrust_epm.event.rule.id}}}'
       allow_duplicates: false
   - set:
       field: rule.license
-      tag: set_rule_license_from_event_rule_license
+      tag: set_rule_license_from_event_rule_license_3f7b46e1
       copy_from: beyondtrust_epm.event.rule.license
       ignore_empty_value: true
   - append:
       field: rule.name
-      tag: append_beyondtrust_epm_event_rule_name_into_rule_name
+      tag: append_beyondtrust_epm_event_rule_name_into_rule_name_e8af84f3
       if: ctx.beyondtrust_epm?.event?.rule?.name != null
       value: '{{{beyondtrust_epm.event.rule.name}}}'
       allow_duplicates: false
   - set:
       field: rule.reference
-      tag: set_rule_reference_from_event_rule_reference
+      tag: set_rule_reference_from_event_rule_reference_c1ca85cb
       copy_from: beyondtrust_epm.event.rule.reference
       ignore_empty_value: true
   - set:
       field: rule.ruleset
-      tag: set_rule_ruleset_from_event_rule_ruleset
+      tag: set_rule_ruleset_from_event_rule_ruleset_e25642a8
       copy_from: beyondtrust_epm.event.rule.ruleset
       ignore_empty_value: true
   - set:
       field: rule.uuid
-      tag: set_rule_uuid_from_event_rule_uuid
+      tag: set_rule_uuid_from_event_rule_uuid_8f12f6e1
       copy_from: beyondtrust_epm.event.rule.uuid
       ignore_empty_value: true
   - set:
       field: rule.version
-      tag: set_rule_version_from_event_rule_version
+      tag: set_rule_version_from_event_rule_version_9e65d722
       copy_from: beyondtrust_epm.event.rule.version
       ignore_empty_value: true
   - foreach:
       field: beyondtrust_epm.event.threat.enrichments
-      tag: foreach_threat_enrichments_matched_atomic
+      tag: foreach_threat_enrichments_matched_atomic_9053c9cb
       if: ctx.beyondtrust_epm?.event?.threat?.enrichments instanceof List
       processor:
         append:
           field: threat.enrichments.matched.atomic
-          tag: append_threat_enrichments_matched_atomic_into_threat_enrichments_matched_atomic
+          tag: append_threat_enrichments_matched_atomic_into_threat_enrichments_matched_atomic_0637156e
           value: '{{{_ingest._value.matched.atomic}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.enrichments
-      tag: foreach_threat_enrichments_matched_field
+      tag: foreach_threat_enrichments_matched_field_8abc530b
       if: ctx.beyondtrust_epm?.event?.threat?.enrichments instanceof List
       processor:
         append:
           field: threat.enrichments.matched.field
-          tag: append_threat_enrichments_matched_field_into_threat_enrichments_matched_field
+          tag: append_threat_enrichments_matched_field_into_threat_enrichments_matched_field_f64ac273
           value: '{{{_ingest._value.matched.field}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.enrichments
-      tag: foreach_threat_enrichments_matched_id
+      tag: foreach_threat_enrichments_matched_id_e1cbe2a7
       if: ctx.beyondtrust_epm?.event?.threat?.enrichments instanceof List
       processor:
         append:
           field: threat.enrichments.matched.id
-          tag: append_threat_enrichments_matched_id_into_threat_enrichments_matched_id
+          tag: append_threat_enrichments_matched_id_into_threat_enrichments_matched_id_64d65245
           value: '{{{_ingest._value.matched.id}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.enrichments
-      tag: foreach_threat_enrichments_matched_index
+      tag: foreach_threat_enrichments_matched_index_84a532ed
       if: ctx.beyondtrust_epm?.event?.threat?.enrichments instanceof List
       processor:
         append:
           field: threat.enrichments.matched.index
-          tag: append_threat_enrichments_matched_index_into_threat_enrichments_matched_index
+          tag: append_threat_enrichments_matched_index_into_threat_enrichments_matched_index_1f4a1a61
           value: '{{{_ingest._value.matched.index}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.enrichments
-      tag: foreach_threat_enrichments_matched_occurred
+      tag: foreach_threat_enrichments_matched_occurred_c6ee1526
       if: ctx.beyondtrust_epm?.event?.threat?.enrichments instanceof List
       processor:
         date:
           field: _ingest._value.matched.occurred
-          tag: date_threat_enrichments_matched_occurred
+          tag: date_threat_enrichments_matched_occurred_0a81dd90
           target_field: _ingest._value.matched.occurred
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_15206502
                 field:
                   - _ingest._value.matched.occurred
                 ignore_missing: true
   - foreach:
       field: beyondtrust_epm.event.threat.enrichments
-      tag: foreach_threat_enrichments_matched_occurred
+      tag: foreach_threat_enrichments_matched_occurred_782f733b
       if: ctx.beyondtrust_epm?.event?.threat?.enrichments instanceof List
       processor:
         append:
           field: threat.enrichments.matched.occurred
-          tag: append_threat_enrichments_matched_occurred_into_threat_enrichments_matched_occurred
+          tag: append_threat_enrichments_matched_occurred_into_threat_enrichments_matched_occurred_ecf5fa8a
           value: '{{{_ingest._value.matched.occurred}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.enrichments
-      tag: foreach_threat_enrichments_matched_type
+      tag: foreach_threat_enrichments_matched_type_297ddf5f
       if: ctx.beyondtrust_epm?.event?.threat?.enrichments instanceof List
       processor:
         append:
           field: threat.enrichments.matched.type
-          tag: append_threat_enrichments_matched_type_into_threat_enrichments_matched_type
+          tag: append_threat_enrichments_matched_type_into_threat_enrichments_matched_type_f9188c57
           value: '{{{_ingest._value.matched.type}}}'
           allow_duplicates: false
   - set:
       field: threat.feed.dashboard_id
-      tag: set_threat_feed_dashboard_id_from_event_threat_feed_dashboard_id
+      tag: set_threat_feed_dashboard_id_from_event_threat_feed_dashboard_id_45cc3d37
       copy_from: beyondtrust_epm.event.threat.feed.dashboard_id
       ignore_empty_value: true
   - set:
       field: threat.feed.description
-      tag: set_threat_feed_description_from_event_threat_feed_description
+      tag: set_threat_feed_description_from_event_threat_feed_description_1f08b61a
       copy_from: beyondtrust_epm.event.threat.feed.description
       ignore_empty_value: true
   - set:
       field: threat.feed.name
-      tag: set_threat_feed_name_from_event_threat_feed_name
+      tag: set_threat_feed_name_from_event_threat_feed_name_c007dfac
       copy_from: beyondtrust_epm.event.threat.feed.name
       ignore_empty_value: true
   - set:
       field: threat.feed.reference
-      tag: set_threat_feed_reference_from_event_threat_feed_reference
+      tag: set_threat_feed_reference_from_event_threat_feed_reference_ad0dea3c
       copy_from: beyondtrust_epm.event.threat.feed.reference
       ignore_empty_value: true
   - set:
       field: threat.framework
-      tag: set_threat_framework_from_event_threat_framework
+      tag: set_threat_framework_from_event_threat_framework_427e437f
       copy_from: beyondtrust_epm.event.threat.framework
       ignore_empty_value: true
   - foreach:
       field: beyondtrust_epm.event.threat.group.alias
-      tag: foreach_threat_group_alias
+      tag: foreach_threat_group_alias_b0bebdca
       if: ctx.beyondtrust_epm?.event?.threat?.group?.alias instanceof List
       processor:
         append:
           field: threat.group.alias
-          tag: append_threat_group_alias_into_threat_group_alias
+          tag: append_threat_group_alias_into_threat_group_alias_95e7ffe8
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - set:
       field: threat.group.id
-      tag: set_threat_group_id_from_event_threat_group_id
+      tag: set_threat_group_id_from_event_threat_group_id_f1df7c67
       copy_from: beyondtrust_epm.event.threat.group.id
       ignore_empty_value: true
   - set:
       field: threat.group.name
-      tag: set_threat_group_name_from_event_threat_group_name
+      tag: set_threat_group_name_from_event_threat_group_name_0a2d54e7
       copy_from: beyondtrust_epm.event.threat.group.name
       ignore_empty_value: true
   - set:
       field: threat.group.reference
-      tag: set_threat_group_reference_from_event_threat_group_reference
+      tag: set_threat_group_reference_from_event_threat_group_reference_41c30649
       copy_from: beyondtrust_epm.event.threat.group.reference
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.threat.indicator.as.number
-      tag: convert_threat_indicator_as_number_to_long
+      tag: convert_threat_indicator_as_number_to_long_f069b1d6
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_as_number_201542d1
             field: beyondtrust_epm.event.threat.indicator.as.number
             ignore_missing: true
         - append:
+            tag: append_error_message_985d52cc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.as.number
-      tag: set_threat_indicator_as_number_from_event_threat_indicator_as_number
+      tag: set_threat_indicator_as_number_from_event_threat_indicator_as_number_92df6f04
       copy_from: beyondtrust_epm.event.threat.indicator.as.number
       ignore_empty_value: true
   - set:
       field: threat.indicator.as.organization.name
-      tag: set_threat_indicator_as_organization_name_from_event_threat_indicator_as_organization_name
+      tag: set_threat_indicator_as_organization_name_from_event_threat_indicator_as_organization_name_34669d1a
       copy_from: beyondtrust_epm.event.threat.indicator.as.organization.name
       ignore_empty_value: true
   - set:
       field: threat.indicator.confidence
-      tag: set_threat_indicator_confidence_from_event_threat_indicator_confidence
+      tag: set_threat_indicator_confidence_from_event_threat_indicator_confidence_1f03abe2
       copy_from: beyondtrust_epm.event.threat.indicator.confidence
       ignore_empty_value: true
   - set:
       field: threat.indicator.description
-      tag: set_threat_indicator_description_from_event_threat_indicator_description
+      tag: set_threat_indicator_description_from_event_threat_indicator_description_776e3886
       copy_from: beyondtrust_epm.event.threat.indicator.description
       ignore_empty_value: true
   - set:
       field: threat.indicator.email.address
-      tag: set_threat_indicator_email_address_from_event_threat_indicator_email_address
+      tag: set_threat_indicator_email_address_from_event_threat_indicator_email_address_1e7a365f
       copy_from: beyondtrust_epm.event.threat.indicator.email.address
       ignore_empty_value: true
   - date:
       field: beyondtrust_epm.event.threat.indicator.file.accessed
-      tag: date_threat_indicator_file_accessed
+      tag: date_threat_indicator_file_accessed_69c2b336
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.accessed != null && ctx.beyondtrust_epm.event.threat.indicator.file.accessed != ''
       target_field: beyondtrust_epm.event.threat.indicator.file.accessed
       formats:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_file_accessed_62e56a4a
             field: beyondtrust_epm.event.threat.indicator.file.accessed
             ignore_missing: true
         - append:
+            tag: append_error_message_2d5b9b99
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.file.accessed
-      tag: set_threat_indicator_file_accessed_from_event_threat_indicator_file_accessed
+      tag: set_threat_indicator_file_accessed_from_event_threat_indicator_file_accessed_3f7d2bce
       copy_from: beyondtrust_epm.event.threat.indicator.file.accessed
       ignore_empty_value: true
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.attributes
-      tag: foreach_threat_indicator_file_attributes
+      tag: foreach_threat_indicator_file_attributes_789b18c4
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.attributes instanceof List
       processor:
         append:
           field: threat.indicator.file.attributes
-          tag: append_threat_indicator_file_attributes_into_threat_indicator_file_attributes
+          tag: append_threat_indicator_file_attributes_into_threat_indicator_file_attributes_e1a0e798
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - set:
       field: threat.indicator.file.code_signature.digest_algorithm
-      tag: set_threat_indicator_file_code_signature_digest_algorithm_from_event_threat_indicator_file_code_signature_digest_algorithm
+      tag: set_threat_indicator_file_code_signature_digest_algorithm_from_event_threat_indicator_file_code_signature_digest_algorithm_3990fbf5
       copy_from: beyondtrust_epm.event.threat.indicator.file.code_signature.digest_algorithm
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.threat.indicator.file.code_signature.exists
-      tag: convert_threat_indicator_file_code_signature_exists_to_boolean
+      tag: convert_threat_indicator_file_code_signature_exists_to_boolean_fa03d035
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_file_code_signature_exists_71cb0a6c
             field: beyondtrust_epm.event.threat.indicator.file.code_signature.exists
             ignore_missing: true
         - append:
+            tag: append_error_message_24f9b488
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.file.code_signature.exists
-      tag: set_threat_indicator_file_code_signature_exists_from_event_threat_indicator_file_code_signature_exists
+      tag: set_threat_indicator_file_code_signature_exists_from_event_threat_indicator_file_code_signature_exists_4443cf2c
       copy_from: beyondtrust_epm.event.threat.indicator.file.code_signature.exists
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.code_signature.signing_id
-      tag: set_threat_indicator_file_code_signature_signing_id_from_event_threat_indicator_file_code_signature_signing_id
+      tag: set_threat_indicator_file_code_signature_signing_id_from_event_threat_indicator_file_code_signature_signing_id_40daedc7
       copy_from: beyondtrust_epm.event.threat.indicator.file.code_signature.signing_id
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.code_signature.status
-      tag: set_threat_indicator_file_code_signature_status_from_event_threat_indicator_file_code_signature_status
+      tag: set_threat_indicator_file_code_signature_status_from_event_threat_indicator_file_code_signature_status_6828b5e5
       copy_from: beyondtrust_epm.event.threat.indicator.file.code_signature.status
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.code_signature.subject_name
-      tag: set_threat_indicator_file_code_signature_subject_name_from_event_threat_indicator_file_code_signature_subject_name
+      tag: set_threat_indicator_file_code_signature_subject_name_from_event_threat_indicator_file_code_signature_subject_name_820c60ea
       copy_from: beyondtrust_epm.event.threat.indicator.file.code_signature.subject_name
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.code_signature.team_id
-      tag: set_threat_indicator_file_code_signature_team_id_from_event_threat_indicator_file_code_signature_team_id
+      tag: set_threat_indicator_file_code_signature_team_id_from_event_threat_indicator_file_code_signature_team_id_8cc04924
       copy_from: beyondtrust_epm.event.threat.indicator.file.code_signature.team_id
       ignore_empty_value: true
   - date:
       field: beyondtrust_epm.event.threat.indicator.file.code_signature.timestamp
-      tag: date_threat_indicator_file_code_signature_timestamp
+      tag: date_threat_indicator_file_code_signature_timestamp_c729d86a
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.code_signature?.timestamp != null && ctx.beyondtrust_epm.event.threat.indicator.file.code_signature.timestamp != ''
       target_field: beyondtrust_epm.event.threat.indicator.file.code_signature.timestamp
       formats:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_file_code_signature_timestamp_f971589f
             field: beyondtrust_epm.event.threat.indicator.file.code_signature.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_f3df0edb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.file.code_signature.timestamp
-      tag: set_threat_indicator_file_code_signature_timestamp_from_event_threat_indicator_file_code_signature_timestamp
+      tag: set_threat_indicator_file_code_signature_timestamp_from_event_threat_indicator_file_code_signature_timestamp_e4d82dab
       copy_from: beyondtrust_epm.event.threat.indicator.file.code_signature.timestamp
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.threat.indicator.file.code_signature.trusted
-      tag: convert_threat_indicator_file_code_signature_trusted_to_boolean
+      tag: convert_threat_indicator_file_code_signature_trusted_to_boolean_0962eb14
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_file_code_signature_trusted_a6102046
             field: beyondtrust_epm.event.threat.indicator.file.code_signature.trusted
             ignore_missing: true
         - append:
+            tag: append_error_message_cb31c135
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.file.code_signature.trusted
-      tag: set_threat_indicator_file_code_signature_trusted_from_event_threat_indicator_file_code_signature_trusted
+      tag: set_threat_indicator_file_code_signature_trusted_from_event_threat_indicator_file_code_signature_trusted_ec101f05
       copy_from: beyondtrust_epm.event.threat.indicator.file.code_signature.trusted
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.threat.indicator.file.code_signature.valid
-      tag: convert_threat_indicator_file_code_signature_valid_to_boolean
+      tag: convert_threat_indicator_file_code_signature_valid_to_boolean_f4ef5da7
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_file_code_signature_valid_e8d13eac
             field: beyondtrust_epm.event.threat.indicator.file.code_signature.valid
             ignore_missing: true
         - append:
+            tag: append_error_message_ca85cf42
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.file.code_signature.valid
-      tag: set_threat_indicator_file_code_signature_valid_from_event_threat_indicator_file_code_signature_valid
+      tag: set_threat_indicator_file_code_signature_valid_from_event_threat_indicator_file_code_signature_valid_49861bba
       copy_from: beyondtrust_epm.event.threat.indicator.file.code_signature.valid
       ignore_empty_value: true
   - date:
       field: beyondtrust_epm.event.threat.indicator.file.created
-      tag: date_threat_indicator_file_created
+      tag: date_threat_indicator_file_created_0a639fb0
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.created != null && ctx.beyondtrust_epm.event.threat.indicator.file.created != ''
       target_field: beyondtrust_epm.event.threat.indicator.file.created
       formats:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_file_created_994c7b43
             field: beyondtrust_epm.event.threat.indicator.file.created
             ignore_missing: true
         - append:
+            tag: append_error_message_2aaff961
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.file.created
-      tag: set_threat_indicator_file_created_from_event_threat_indicator_file_created
+      tag: set_threat_indicator_file_created_from_event_threat_indicator_file_created_41ff203e
       copy_from: beyondtrust_epm.event.threat.indicator.file.created
       ignore_empty_value: true
   - date:
       field: beyondtrust_epm.event.threat.indicator.file.ctime
-      tag: date_threat_indicator_file_ctime
+      tag: date_threat_indicator_file_ctime_f750fad4
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.ctime != null && ctx.beyondtrust_epm.event.threat.indicator.file.ctime != ''
       target_field: beyondtrust_epm.event.threat.indicator.file.ctime
       formats:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_file_ctime_2f43053f
             field: beyondtrust_epm.event.threat.indicator.file.ctime
             ignore_missing: true
         - append:
+            tag: append_error_message_ddf92721
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.file.ctime
-      tag: set_threat_indicator_file_ctime_from_event_threat_indicator_file_ctime
+      tag: set_threat_indicator_file_ctime_from_event_threat_indicator_file_ctime_e555dbe0
       copy_from: beyondtrust_epm.event.threat.indicator.file.ctime
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.device
-      tag: set_threat_indicator_file_device_from_event_threat_indicator_file_device
+      tag: set_threat_indicator_file_device_from_event_threat_indicator_file_device_bcf6fd31
       copy_from: beyondtrust_epm.event.threat.indicator.file.device
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.directory
-      tag: set_threat_indicator_file_directory_from_event_threat_indicator_file_directory
+      tag: set_threat_indicator_file_directory_from_event_threat_indicator_file_directory_41f98b9b
       copy_from: beyondtrust_epm.event.threat.indicator.file.directory
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.drive_letter
-      tag: set_threat_indicator_file_drive_letter_from_event_threat_indicator_file_drive_letter
+      tag: set_threat_indicator_file_drive_letter_from_event_threat_indicator_file_drive_letter_51af5a59
       copy_from: beyondtrust_epm.event.threat.indicator.file.drive_letter
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.elf.architecture
-      tag: set_threat_indicator_file_elf_architecture_from_event_threat_indicator_file_elf_architecture
+      tag: set_threat_indicator_file_elf_architecture_from_event_threat_indicator_file_elf_architecture_85b08160
       copy_from: beyondtrust_epm.event.threat.indicator.file.elf.architecture
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.elf.byte_order
-      tag: set_threat_indicator_file_elf_byte_order_from_event_threat_indicator_file_elf_byte_order
+      tag: set_threat_indicator_file_elf_byte_order_from_event_threat_indicator_file_elf_byte_order_43ff6028
       copy_from: beyondtrust_epm.event.threat.indicator.file.elf.byte_order
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.elf.cpu_type
-      tag: set_threat_indicator_file_elf_cpu_type_from_event_threat_indicator_file_elf_cpu_type
+      tag: set_threat_indicator_file_elf_cpu_type_from_event_threat_indicator_file_elf_cpu_type_e94b38de
       copy_from: beyondtrust_epm.event.threat.indicator.file.elf.cpu_type
       ignore_empty_value: true
   - date:
       field: beyondtrust_epm.event.threat.indicator.file.elf.creation_date
-      tag: date_threat_indicator_file_elf_creation_date
+      tag: date_threat_indicator_file_elf_creation_date_de15712a
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.elf?.creation_date != null && ctx.beyondtrust_epm.event.threat.indicator.file.elf.creation_date != ''
       target_field: beyondtrust_epm.event.threat.indicator.file.elf.creation_date
       formats:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_file_elf_creation_date_9c4da7f8
             field: beyondtrust_epm.event.threat.indicator.file.elf.creation_date
             ignore_missing: true
         - append:
+            tag: append_error_message_815b4c3b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.file.elf.creation_date
-      tag: set_threat_indicator_file_elf_creation_date_from_event_threat_indicator_file_elf_creation_date
+      tag: set_threat_indicator_file_elf_creation_date_from_event_threat_indicator_file_elf_creation_date_fbcec535
       copy_from: beyondtrust_epm.event.threat.indicator.file.elf.creation_date
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.elf.header.abi_version
-      tag: set_threat_indicator_file_elf_header_abi_version_from_event_threat_indicator_file_elf_header_abi_version
+      tag: set_threat_indicator_file_elf_header_abi_version_from_event_threat_indicator_file_elf_header_abi_version_cebcf99a
       copy_from: beyondtrust_epm.event.threat.indicator.file.elf.header.abi_version
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.elf.header.class
-      tag: set_threat_indicator_file_elf_header_class_from_event_threat_indicator_file_elf_header_class
+      tag: set_threat_indicator_file_elf_header_class_from_event_threat_indicator_file_elf_header_class_9b0cc0fb
       copy_from: beyondtrust_epm.event.threat.indicator.file.elf.header.class
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.elf.header.data
-      tag: set_threat_indicator_file_elf_header_data_from_event_threat_indicator_file_elf_header_data
+      tag: set_threat_indicator_file_elf_header_data_from_event_threat_indicator_file_elf_header_data_af99e80e
       copy_from: beyondtrust_epm.event.threat.indicator.file.elf.header.data
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.threat.indicator.file.elf.header.entrypoint
-      tag: convert_threat_indicator_file_elf_header_entrypoint_to_long
+      tag: convert_threat_indicator_file_elf_header_entrypoint_to_long_50763f64
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_file_elf_header_entrypoint_23b8f60b
             field: beyondtrust_epm.event.threat.indicator.file.elf.header.entrypoint
             ignore_missing: true
         - append:
+            tag: append_error_message_602164e9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.file.elf.header.entrypoint
-      tag: set_threat_indicator_file_elf_header_entrypoint_from_event_threat_indicator_file_elf_header_entrypoint
+      tag: set_threat_indicator_file_elf_header_entrypoint_from_event_threat_indicator_file_elf_header_entrypoint_952c25f9
       copy_from: beyondtrust_epm.event.threat.indicator.file.elf.header.entrypoint
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.elf.header.object_version
-      tag: set_threat_indicator_file_elf_header_object_version_from_event_threat_indicator_file_elf_header_object_version
+      tag: set_threat_indicator_file_elf_header_object_version_from_event_threat_indicator_file_elf_header_object_version_e11afd03
       copy_from: beyondtrust_epm.event.threat.indicator.file.elf.header.object_version
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.elf.header.os_abi
-      tag: set_threat_indicator_file_elf_header_os_abi_from_event_threat_indicator_file_elf_header_os_abi
+      tag: set_threat_indicator_file_elf_header_os_abi_from_event_threat_indicator_file_elf_header_os_abi_cf7f7eb5
       copy_from: beyondtrust_epm.event.threat.indicator.file.elf.header.os_abi
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.elf.header.type
-      tag: set_threat_indicator_file_elf_header_type_from_event_threat_indicator_file_elf_header_type
+      tag: set_threat_indicator_file_elf_header_type_from_event_threat_indicator_file_elf_header_type_1616a439
       copy_from: beyondtrust_epm.event.threat.indicator.file.elf.header.type
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.elf.header.version
-      tag: set_threat_indicator_file_elf_header_version_from_event_threat_indicator_file_elf_header_version
+      tag: set_threat_indicator_file_elf_header_version_from_event_threat_indicator_file_elf_header_version_0c003242
       copy_from: beyondtrust_epm.event.threat.indicator.file.elf.header.version
       ignore_empty_value: true
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.elf.sections
-      tag: foreach_threat_indicator_file_elf_sections_chi2
+      tag: foreach_threat_indicator_file_elf_sections_chi2_3d69bdcf
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.elf?.sections instanceof List
       processor:
         convert:
           field: _ingest._value.chi2
-          tag: convert_threat_indicator_file_elf_sections_chi2_to_long
+          tag: convert_threat_indicator_file_elf_sections_chi2_to_long_43fc2f1c
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ef87f83d
                 field:
                   - _ingest._value.chi2
                 ignore_missing: true
             - append:
+                tag: append_error_message_9b876c2a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.elf.sections
-      tag: foreach_threat_indicator_file_elf_sections_entropy
+      tag: foreach_threat_indicator_file_elf_sections_entropy_b15ffb5c
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.elf?.sections instanceof List
       processor:
         convert:
           field: _ingest._value.entropy
-          tag: convert_threat_indicator_file_elf_sections_entropy_to_long
+          tag: convert_threat_indicator_file_elf_sections_entropy_to_long_c021060e
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ff092bfd
                 field:
                   - _ingest._value.entropy
                 ignore_missing: true
             - append:
+                tag: append_error_message_683160f2
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.elf.sections
-      tag: foreach_threat_indicator_file_elf_sections_flags
+      tag: foreach_threat_indicator_file_elf_sections_flags_b51bd9e6
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.elf?.sections instanceof List
       processor:
         append:
           field: threat.indicator.file.elf.sections.flags
-          tag: append_threat_indicator_file_elf_sections_flags_into_threat_indicator_file_elf_sections_flags
+          tag: append_threat_indicator_file_elf_sections_flags_into_threat_indicator_file_elf_sections_flags_0188d947
           value: '{{{_ingest._value.flags}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.elf.sections
-      tag: foreach_threat_indicator_file_elf_sections_name
+      tag: foreach_threat_indicator_file_elf_sections_name_4b8cad67
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.elf?.sections instanceof List
       processor:
         append:
           field: threat.indicator.file.elf.sections.name
-          tag: append_threat_indicator_file_elf_sections_name_into_threat_indicator_file_elf_sections_name
+          tag: append_threat_indicator_file_elf_sections_name_into_threat_indicator_file_elf_sections_name_b8a5087a
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.elf.sections
-      tag: foreach_threat_indicator_file_elf_sections_physical_offset
+      tag: foreach_threat_indicator_file_elf_sections_physical_offset_9d67a9e8
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.elf?.sections instanceof List
       processor:
         append:
           field: threat.indicator.file.elf.sections.physical_offset
-          tag: append_threat_indicator_file_elf_sections_physical_offset_into_threat_indicator_file_elf_sections_physical_offset
+          tag: append_threat_indicator_file_elf_sections_physical_offset_into_threat_indicator_file_elf_sections_physical_offset_39942dad
           value: '{{{_ingest._value.physical_offset}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.elf.sections
-      tag: foreach_threat_indicator_file_elf_sections_physical_size
+      tag: foreach_threat_indicator_file_elf_sections_physical_size_b1d3a795
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.elf?.sections instanceof List
       processor:
         convert:
           field: _ingest._value.physical_size
-          tag: convert_threat_indicator_file_elf_sections_physical_size_to_long
+          tag: convert_threat_indicator_file_elf_sections_physical_size_to_long_ec948d2e
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_59a2152b
                 field:
                   - _ingest._value.physical_size
                 ignore_missing: true
             - append:
+                tag: append_error_message_b4aaed4c
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.elf.sections
-      tag: foreach_threat_indicator_file_elf_sections_type
+      tag: foreach_threat_indicator_file_elf_sections_type_0002a206
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.elf?.sections instanceof List
       processor:
         append:
           field: threat.indicator.file.elf.sections.type
-          tag: append_threat_indicator_file_elf_sections_type_into_threat_indicator_file_elf_sections_type
+          tag: append_threat_indicator_file_elf_sections_type_into_threat_indicator_file_elf_sections_type_b10668ef
           value: '{{{_ingest._value.type}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.elf.sections
-      tag: foreach_threat_indicator_file_elf_sections_virtual_address
+      tag: foreach_threat_indicator_file_elf_sections_virtual_address_2e90e35d
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.elf?.sections instanceof List
       processor:
         convert:
           field: _ingest._value.virtual_address
-          tag: convert_threat_indicator_file_elf_sections_virtual_address_to_long
+          tag: convert_threat_indicator_file_elf_sections_virtual_address_to_long_7a34900d
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_2bc9bb88
                 field:
                   - _ingest._value.virtual_address
                 ignore_missing: true
             - append:
+                tag: append_error_message_4d727e4a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.elf.sections
-      tag: foreach_threat_indicator_file_elf_sections_virtual_size
+      tag: foreach_threat_indicator_file_elf_sections_virtual_size_62041f00
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.elf?.sections instanceof List
       processor:
         convert:
           field: _ingest._value.virtual_size
-          tag: convert_threat_indicator_file_elf_sections_virtual_size_to_long
+          tag: convert_threat_indicator_file_elf_sections_virtual_size_to_long_9a5f4065
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_7174936d
                 field:
                   - _ingest._value.virtual_size
                 ignore_missing: true
             - append:
+                tag: append_error_message_9b431e7d
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.file.elf.sections
-      tag: set_threat_indicator_file_elf_sections_from_event_threat_indicator_file_elf_sections
+      tag: set_threat_indicator_file_elf_sections_from_event_threat_indicator_file_elf_sections_0895676b
       copy_from: beyondtrust_epm.event.threat.indicator.file.elf.sections
       ignore_empty_value: true
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.elf.segments
-      tag: foreach_threat_indicator_file_elf_segments_sections
+      tag: foreach_threat_indicator_file_elf_segments_sections_9a2c3ae7
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.elf?.segments instanceof List
       processor:
         append:
           field: threat.indicator.file.elf.segments.sections
-          tag: append_threat_indicator_file_elf_segments_sections_into_threat_indicator_file_elf_segments_sections
+          tag: append_threat_indicator_file_elf_segments_sections_into_threat_indicator_file_elf_segments_sections_b7d5c299
           value: '{{{_ingest._value.sections}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.elf.segments
-      tag: foreach_threat_indicator_file_elf_segments_type
+      tag: foreach_threat_indicator_file_elf_segments_type_0904cbd9
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.elf?.segments instanceof List
       processor:
         append:
           field: threat.indicator.file.elf.segments.type
-          tag: append_threat_indicator_file_elf_segments_type_into_threat_indicator_file_elf_segments_type
+          tag: append_threat_indicator_file_elf_segments_type_into_threat_indicator_file_elf_segments_type_564df104
           value: '{{{_ingest._value.type}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.elf.shared_libraries
-      tag: foreach_threat_indicator_file_elf_shared_libraries
+      tag: foreach_threat_indicator_file_elf_shared_libraries_1b1ab3fe
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.elf?.shared_libraries instanceof List
       processor:
         append:
           field: threat.indicator.file.elf.shared_libraries
-          tag: append_threat_indicator_file_elf_shared_libraries_into_threat_indicator_file_elf_shared_libraries
+          tag: append_threat_indicator_file_elf_shared_libraries_into_threat_indicator_file_elf_shared_libraries_20ff262c
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - set:
       field: threat.indicator.file.elf.telfhash
-      tag: set_threat_indicator_file_elf_telfhash_from_event_threat_indicator_file_elf_telfhash
+      tag: set_threat_indicator_file_elf_telfhash_from_event_threat_indicator_file_elf_telfhash_749b70c6
       copy_from: beyondtrust_epm.event.threat.indicator.file.elf.telfhash
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_event_threat_indicator_file_elf_telfhash_into_related_hash
+      tag: append_event_threat_indicator_file_elf_telfhash_into_related_hash_73093178
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.elf?.telfhash != null
       value: '{{{beyondtrust_epm.event.threat.indicator.file.elf.telfhash}}}'
       allow_duplicates: false
   - set:
       field: threat.indicator.file.extension
-      tag: set_threat_indicator_file_extension_from_event_threat_indicator_file_extension
+      tag: set_threat_indicator_file_extension_from_event_threat_indicator_file_extension_b2e7d3eb
       copy_from: beyondtrust_epm.event.threat.indicator.file.extension
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.fork_name
-      tag: set_threat_indicator_file_fork_name_from_event_threat_indicator_file_fork_name
+      tag: set_threat_indicator_file_fork_name_from_event_threat_indicator_file_fork_name_7a56a0b1
       copy_from: beyondtrust_epm.event.threat.indicator.file.fork_name
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.gid
-      tag: set_threat_indicator_file_gid_from_event_threat_indicator_file_gid
+      tag: set_threat_indicator_file_gid_from_event_threat_indicator_file_gid_19d62c9e
       copy_from: beyondtrust_epm.event.threat.indicator.file.gid
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.group
-      tag: set_threat_indicator_file_group_from_event_threat_indicator_file_group
+      tag: set_threat_indicator_file_group_from_event_threat_indicator_file_group_658d4ef0
       copy_from: beyondtrust_epm.event.threat.indicator.file.group
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.hash.md5
-      tag: set_threat_indicator_file_hash_md5_from_event_threat_indicator_file_hash_md5
+      tag: set_threat_indicator_file_hash_md5_from_event_threat_indicator_file_hash_md5_01cbea5a
       copy_from: beyondtrust_epm.event.threat.indicator.file.hash.md5
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_event_threat_indicator_file_hash_md5_into_related_hash
+      tag: append_event_threat_indicator_file_hash_md5_into_related_hash_e049a706
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.hash?.md5 != null
       value: '{{{beyondtrust_epm.event.threat.indicator.file.hash.md5}}}'
       allow_duplicates: false
   - set:
       field: threat.indicator.file.hash.sha1
-      tag: set_threat_indicator_file_hash_sha1_from_event_threat_indicator_file_hash_sha1
+      tag: set_threat_indicator_file_hash_sha1_from_event_threat_indicator_file_hash_sha1_3dc5df30
       copy_from: beyondtrust_epm.event.threat.indicator.file.hash.sha1
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_event_threat_indicator_file_hash_sha1_into_related_hash
+      tag: append_event_threat_indicator_file_hash_sha1_into_related_hash_c2afe036
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.hash?.sha1 != null
       value: '{{{beyondtrust_epm.event.threat.indicator.file.hash.sha1}}}'
       allow_duplicates: false
   - set:
       field: threat.indicator.file.hash.sha256
-      tag: set_threat_indicator_file_hash_sha256_from_event_threat_indicator_file_hash_sha256
+      tag: set_threat_indicator_file_hash_sha256_from_event_threat_indicator_file_hash_sha256_6eab8e89
       copy_from: beyondtrust_epm.event.threat.indicator.file.hash.sha256
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_event_threat_indicator_file_hash_sha256_into_related_hash
+      tag: append_event_threat_indicator_file_hash_sha256_into_related_hash_a9a3b9b7
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.hash?.sha256 != null
       value: '{{{beyondtrust_epm.event.threat.indicator.file.hash.sha256}}}'
       allow_duplicates: false
   - set:
       field: threat.indicator.file.hash.sha384
-      tag: set_threat_indicator_file_hash_sha384_from_event_threat_indicator_file_hash_sha384
+      tag: set_threat_indicator_file_hash_sha384_from_event_threat_indicator_file_hash_sha384_c0e44b1a
       copy_from: beyondtrust_epm.event.threat.indicator.file.hash.sha384
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_event_threat_indicator_file_hash_sha384_into_related_hash
+      tag: append_event_threat_indicator_file_hash_sha384_into_related_hash_27008105
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.hash?.sha384 != null
       value: '{{{beyondtrust_epm.event.threat.indicator.file.hash.sha384}}}'
       allow_duplicates: false
   - set:
       field: threat.indicator.file.hash.sha512
-      tag: set_threat_indicator_file_hash_sha512_from_event_threat_indicator_file_hash_sha512
+      tag: set_threat_indicator_file_hash_sha512_from_event_threat_indicator_file_hash_sha512_84e60f1e
       copy_from: beyondtrust_epm.event.threat.indicator.file.hash.sha512
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_event_threat_indicator_file_hash_sha512_into_related_hash
+      tag: append_event_threat_indicator_file_hash_sha512_into_related_hash_565b0ff5
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.hash?.sha512 != null
       value: '{{{beyondtrust_epm.event.threat.indicator.file.hash.sha512}}}'
       allow_duplicates: false
   - set:
       field: threat.indicator.file.hash.ssdeep
-      tag: set_threat_indicator_file_hash_ssdeep_from_event_threat_indicator_file_hash_ssdeep
+      tag: set_threat_indicator_file_hash_ssdeep_from_event_threat_indicator_file_hash_ssdeep_fc339414
       copy_from: beyondtrust_epm.event.threat.indicator.file.hash.ssdeep
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_event_threat_indicator_file_hash_ssdeep_into_related_hash
+      tag: append_event_threat_indicator_file_hash_ssdeep_into_related_hash_2ccfbd2d
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.hash?.ssdeep != null
       value: '{{{beyondtrust_epm.event.threat.indicator.file.hash.ssdeep}}}'
       allow_duplicates: false
   - set:
       field: threat.indicator.file.hash.tlsh
-      tag: set_threat_indicator_file_hash_tlsh_from_event_threat_indicator_file_hash_tlsh
+      tag: set_threat_indicator_file_hash_tlsh_from_event_threat_indicator_file_hash_tlsh_7b3d42b6
       copy_from: beyondtrust_epm.event.threat.indicator.file.hash.tlsh
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_event_threat_indicator_file_hash_tlsh_into_related_hash
+      tag: append_event_threat_indicator_file_hash_tlsh_into_related_hash_3f0f788c
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.hash?.tlsh != null
       value: '{{{beyondtrust_epm.event.threat.indicator.file.hash.tlsh}}}'
       allow_duplicates: false
   - set:
       field: threat.indicator.file.inode
-      tag: set_threat_indicator_file_inode_from_event_threat_indicator_file_inode
+      tag: set_threat_indicator_file_inode_from_event_threat_indicator_file_inode_8a2536ab
       copy_from: beyondtrust_epm.event.threat.indicator.file.inode
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.mime_type
-      tag: set_threat_indicator_file_mime_type_from_event_threat_indicator_file_mime_type
+      tag: set_threat_indicator_file_mime_type_from_event_threat_indicator_file_mime_type_3bac08bf
       copy_from: beyondtrust_epm.event.threat.indicator.file.mime_type
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.mode
-      tag: set_threat_indicator_file_mode_from_event_threat_indicator_file_mode
+      tag: set_threat_indicator_file_mode_from_event_threat_indicator_file_mode_ee227a78
       copy_from: beyondtrust_epm.event.threat.indicator.file.mode
       ignore_empty_value: true
   - date:
       field: beyondtrust_epm.event.threat.indicator.file.mtime
-      tag: date_threat_indicator_file_mtime
+      tag: date_threat_indicator_file_mtime_5b207e38
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.mtime != null && ctx.beyondtrust_epm.event.threat.indicator.file.mtime != ''
       target_field: beyondtrust_epm.event.threat.indicator.file.mtime
       formats:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_file_mtime_c9dfe4a5
             field: beyondtrust_epm.event.threat.indicator.file.mtime
             ignore_missing: true
         - append:
+            tag: append_error_message_aa2eb451
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.file.mtime
-      tag: set_threat_indicator_file_mtime_from_event_threat_indicator_file_mtime
+      tag: set_threat_indicator_file_mtime_from_event_threat_indicator_file_mtime_e6b36cb7
       copy_from: beyondtrust_epm.event.threat.indicator.file.mtime
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.name
-      tag: set_threat_indicator_file_name_from_event_threat_indicator_file_name
+      tag: set_threat_indicator_file_name_from_event_threat_indicator_file_name_28b2aa27
       copy_from: beyondtrust_epm.event.threat.indicator.file.name
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.path
-      tag: set_threat_indicator_file_path_from_event_threat_indicator_file_path
+      tag: set_threat_indicator_file_path_from_event_threat_indicator_file_path_0503c66b
       copy_from: beyondtrust_epm.event.threat.indicator.file.path
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.pe.architecture
-      tag: set_threat_indicator_file_pe_architecture_from_event_threat_indicator_file_pe_architecture
+      tag: set_threat_indicator_file_pe_architecture_from_event_threat_indicator_file_pe_architecture_ae676c69
       copy_from: beyondtrust_epm.event.threat.indicator.file.pe.architecture
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.pe.company
-      tag: set_threat_indicator_file_pe_company_from_event_threat_indicator_file_pe_company
+      tag: set_threat_indicator_file_pe_company_from_event_threat_indicator_file_pe_company_ea50aad0
       copy_from: beyondtrust_epm.event.threat.indicator.file.pe.company
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.pe.description
-      tag: set_threat_indicator_file_pe_description_from_event_threat_indicator_file_pe_description
+      tag: set_threat_indicator_file_pe_description_from_event_threat_indicator_file_pe_description_bb8056ae
       copy_from: beyondtrust_epm.event.threat.indicator.file.pe.description
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.pe.file_version
-      tag: set_threat_indicator_file_pe_file_version_from_event_threat_indicator_file_pe_file_version
+      tag: set_threat_indicator_file_pe_file_version_from_event_threat_indicator_file_pe_file_version_04a0a8da
       copy_from: beyondtrust_epm.event.threat.indicator.file.pe.file_version
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.pe.imphash
-      tag: set_threat_indicator_file_pe_imphash_from_event_threat_indicator_file_pe_imphash
+      tag: set_threat_indicator_file_pe_imphash_from_event_threat_indicator_file_pe_imphash_abc20acd
       copy_from: beyondtrust_epm.event.threat.indicator.file.pe.imphash
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_event_threat_indicator_file_pe_imphash_into_related_hash
+      tag: append_event_threat_indicator_file_pe_imphash_into_related_hash_3c8cca4a
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.pe?.imphash != null
       value: '{{{beyondtrust_epm.event.threat.indicator.file.pe.imphash}}}'
       allow_duplicates: false
   - set:
       field: threat.indicator.file.pe.original_file_name
-      tag: set_threat_indicator_file_pe_original_file_name_from_event_threat_indicator_file_pe_original_file_name
+      tag: set_threat_indicator_file_pe_original_file_name_from_event_threat_indicator_file_pe_original_file_name_dd8b779d
       copy_from: beyondtrust_epm.event.threat.indicator.file.pe.original_file_name
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.pe.pehash
-      tag: set_threat_indicator_file_pe_pehash_from_event_threat_indicator_file_pe_pehash
+      tag: set_threat_indicator_file_pe_pehash_from_event_threat_indicator_file_pe_pehash_35d0a89f
       copy_from: beyondtrust_epm.event.threat.indicator.file.pe.pehash
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_event_threat_indicator_file_pe_pehash_into_related_hash
+      tag: append_event_threat_indicator_file_pe_pehash_into_related_hash_3c58d76c
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.pe?.pehash != null
       value: '{{{beyondtrust_epm.event.threat.indicator.file.pe.pehash}}}'
       allow_duplicates: false
   - set:
       field: threat.indicator.file.pe.product
-      tag: set_threat_indicator_file_pe_product_from_event_threat_indicator_file_pe_product
+      tag: set_threat_indicator_file_pe_product_from_event_threat_indicator_file_pe_product_62311aa4
       copy_from: beyondtrust_epm.event.threat.indicator.file.pe.product
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.threat.indicator.file.size
-      tag: convert_threat_indicator_file_size_to_long
+      tag: convert_threat_indicator_file_size_to_long_518ca1ba
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_file_size_92438829
             field: beyondtrust_epm.event.threat.indicator.file.size
             ignore_missing: true
         - append:
+            tag: append_error_message_3286abbe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.file.size
-      tag: set_threat_indicator_file_size_from_event_threat_indicator_file_size
+      tag: set_threat_indicator_file_size_from_event_threat_indicator_file_size_ff4914b6
       copy_from: beyondtrust_epm.event.threat.indicator.file.size
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.target_path
-      tag: set_threat_indicator_file_target_path_from_event_threat_indicator_file_target_path
+      tag: set_threat_indicator_file_target_path_from_event_threat_indicator_file_target_path_b4213748
       copy_from: beyondtrust_epm.event.threat.indicator.file.target_path
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.type
-      tag: set_threat_indicator_file_type_from_event_threat_indicator_file_type
+      tag: set_threat_indicator_file_type_from_event_threat_indicator_file_type_6c77122a
       copy_from: beyondtrust_epm.event.threat.indicator.file.type
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.uid
-      tag: set_threat_indicator_file_uid_from_event_threat_indicator_file_uid
+      tag: set_threat_indicator_file_uid_from_event_threat_indicator_file_uid_d36d07b0
       copy_from: beyondtrust_epm.event.threat.indicator.file.uid
       ignore_empty_value: true
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.x509.alternative_names
-      tag: foreach_threat_indicator_file_x509_alternative_names
+      tag: foreach_threat_indicator_file_x509_alternative_names_63ca9693
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.x509?.alternative_names instanceof List
       processor:
         append:
           field: threat.indicator.file.x509.alternative_names
-          tag: append_threat_indicator_file_x509_alternative_names_into_threat_indicator_file_x509_alternative_names
+          tag: append_threat_indicator_file_x509_alternative_names_into_threat_indicator_file_x509_alternative_names_20181449
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.x509.issuer.common_name
-      tag: foreach_threat_indicator_file_x509_issuer_common_name
+      tag: foreach_threat_indicator_file_x509_issuer_common_name_2c262c40
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.x509?.issuer?.common_name instanceof List
       processor:
         append:
           field: threat.indicator.file.x509.issuer.common_name
-          tag: append_threat_indicator_file_x509_issuer_common_name_into_threat_indicator_file_x509_issuer_common_name
+          tag: append_threat_indicator_file_x509_issuer_common_name_into_threat_indicator_file_x509_issuer_common_name_a68607fa
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.x509.issuer.country
-      tag: foreach_threat_indicator_file_x509_issuer_country
+      tag: foreach_threat_indicator_file_x509_issuer_country_3159bf31
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.x509?.issuer?.country instanceof List
       processor:
         append:
           field: threat.indicator.file.x509.issuer.country
-          tag: append_threat_indicator_file_x509_issuer_country_into_threat_indicator_file_x509_issuer_country
+          tag: append_threat_indicator_file_x509_issuer_country_into_threat_indicator_file_x509_issuer_country_011d90e9
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - set:
       field: threat.indicator.file.x509.issuer.distinguished_name
-      tag: set_threat_indicator_file_x509_issuer_distinguished_name_from_event_threat_indicator_file_x509_issuer_distinguished_name
+      tag: set_threat_indicator_file_x509_issuer_distinguished_name_from_event_threat_indicator_file_x509_issuer_distinguished_name_ad893b17
       copy_from: beyondtrust_epm.event.threat.indicator.file.x509.issuer.distinguished_name
       ignore_empty_value: true
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.x509.issuer.locality
-      tag: foreach_threat_indicator_file_x509_issuer_locality
+      tag: foreach_threat_indicator_file_x509_issuer_locality_8db1287e
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.x509?.issuer?.locality instanceof List
       processor:
         append:
           field: threat.indicator.file.x509.issuer.locality
-          tag: append_threat_indicator_file_x509_issuer_locality_into_threat_indicator_file_x509_issuer_locality
+          tag: append_threat_indicator_file_x509_issuer_locality_into_threat_indicator_file_x509_issuer_locality_bcfc3acb
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.x509.issuer.organization
-      tag: foreach_threat_indicator_file_x509_issuer_organization
+      tag: foreach_threat_indicator_file_x509_issuer_organization_347299f3
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.x509?.issuer?.organization instanceof List
       processor:
         append:
           field: threat.indicator.file.x509.issuer.organization
-          tag: append_threat_indicator_file_x509_issuer_organization_into_threat_indicator_file_x509_issuer_organization
+          tag: append_threat_indicator_file_x509_issuer_organization_into_threat_indicator_file_x509_issuer_organization_ae621ea2
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.x509.issuer.organizational_unit
-      tag: foreach_threat_indicator_file_x509_issuer_organizational_unit
+      tag: foreach_threat_indicator_file_x509_issuer_organizational_unit_a4ba6dc8
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.x509?.issuer?.organizational_unit instanceof List
       processor:
         append:
           field: threat.indicator.file.x509.issuer.organizational_unit
-          tag: append_threat_indicator_file_x509_issuer_organizational_unit_into_threat_indicator_file_x509_issuer_organizational_unit
+          tag: append_threat_indicator_file_x509_issuer_organizational_unit_into_threat_indicator_file_x509_issuer_organizational_unit_00be65fc
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.x509.issuer.state_or_province
-      tag: foreach_threat_indicator_file_x509_issuer_state_or_province
+      tag: foreach_threat_indicator_file_x509_issuer_state_or_province_b586486a
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.x509?.issuer?.state_or_province instanceof List
       processor:
         append:
           field: threat.indicator.file.x509.issuer.state_or_province
-          tag: append_threat_indicator_file_x509_issuer_state_or_province_into_threat_indicator_file_x509_issuer_state_or_province
+          tag: append_threat_indicator_file_x509_issuer_state_or_province_into_threat_indicator_file_x509_issuer_state_or_province_42e1ee31
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - date:
       field: beyondtrust_epm.event.threat.indicator.file.x509.not_after
-      tag: date_threat_indicator_file_x509_not_after
+      tag: date_threat_indicator_file_x509_not_after_12f3e68a
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.x509?.not_after != null && ctx.beyondtrust_epm.event.threat.indicator.file.x509.not_after != ''
       target_field: beyondtrust_epm.event.threat.indicator.file.x509.not_after
       formats:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_file_x509_not_after_cbe1bba3
             field: beyondtrust_epm.event.threat.indicator.file.x509.not_after
             ignore_missing: true
         - append:
+            tag: append_error_message_17162e03
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.file.x509.not_after
-      tag: set_threat_indicator_file_x509_not_after_from_event_threat_indicator_file_x509_not_after
+      tag: set_threat_indicator_file_x509_not_after_from_event_threat_indicator_file_x509_not_after_e7e08c01
       copy_from: beyondtrust_epm.event.threat.indicator.file.x509.not_after
       ignore_empty_value: true
   - date:
       field: beyondtrust_epm.event.threat.indicator.file.x509.not_before
-      tag: date_threat_indicator_file_x509_not_before
+      tag: date_threat_indicator_file_x509_not_before_c8c278c3
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.x509?.not_before != null && ctx.beyondtrust_epm.event.threat.indicator.file.x509.not_before != ''
       target_field: beyondtrust_epm.event.threat.indicator.file.x509.not_before
       formats:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_file_x509_not_before_edfdc6d8
             field: beyondtrust_epm.event.threat.indicator.file.x509.not_before
             ignore_missing: true
         - append:
+            tag: append_error_message_5c27217d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.file.x509.not_before
-      tag: set_threat_indicator_file_x509_not_before_from_event_threat_indicator_file_x509_not_before
+      tag: set_threat_indicator_file_x509_not_before_from_event_threat_indicator_file_x509_not_before_12fe41e6
       copy_from: beyondtrust_epm.event.threat.indicator.file.x509.not_before
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.x509.public_key_algorithm
-      tag: set_threat_indicator_file_x509_public_key_algorithm_from_event_threat_indicator_file_x509_public_key_algorithm
+      tag: set_threat_indicator_file_x509_public_key_algorithm_from_event_threat_indicator_file_x509_public_key_algorithm_85a68bdb
       copy_from: beyondtrust_epm.event.threat.indicator.file.x509.public_key_algorithm
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.x509.public_key_curve
-      tag: set_threat_indicator_file_x509_public_key_curve_from_event_threat_indicator_file_x509_public_key_curve
+      tag: set_threat_indicator_file_x509_public_key_curve_from_event_threat_indicator_file_x509_public_key_curve_e869bb67
       copy_from: beyondtrust_epm.event.threat.indicator.file.x509.public_key_curve
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.threat.indicator.file.x509.public_key_exponent
-      tag: convert_threat_indicator_file_x509_public_key_exponent_to_long
+      tag: convert_threat_indicator_file_x509_public_key_exponent_to_long_83d8729f
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_file_x509_public_key_exponent_3995113e
             field: beyondtrust_epm.event.threat.indicator.file.x509.public_key_exponent
             ignore_missing: true
         - append:
+            tag: append_error_message_efd4a2b3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.file.x509.public_key_exponent
-      tag: set_threat_indicator_file_x509_public_key_exponent_from_event_threat_indicator_file_x509_public_key_exponent
+      tag: set_threat_indicator_file_x509_public_key_exponent_from_event_threat_indicator_file_x509_public_key_exponent_ff99ad41
       copy_from: beyondtrust_epm.event.threat.indicator.file.x509.public_key_exponent
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.threat.indicator.file.x509.public_key_size
-      tag: convert_threat_indicator_file_x509_public_key_size_to_long
+      tag: convert_threat_indicator_file_x509_public_key_size_to_long_8394741b
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_file_x509_public_key_size_d3744232
             field: beyondtrust_epm.event.threat.indicator.file.x509.public_key_size
             ignore_missing: true
         - append:
+            tag: append_error_message_d593f571
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.file.x509.public_key_size
-      tag: set_threat_indicator_file_x509_public_key_size_from_event_threat_indicator_file_x509_public_key_size
+      tag: set_threat_indicator_file_x509_public_key_size_from_event_threat_indicator_file_x509_public_key_size_adfc5834
       copy_from: beyondtrust_epm.event.threat.indicator.file.x509.public_key_size
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.x509.serial_number
-      tag: set_threat_indicator_file_x509_serial_number_from_event_threat_indicator_file_x509_serial_number
+      tag: set_threat_indicator_file_x509_serial_number_from_event_threat_indicator_file_x509_serial_number_9e7226f3
       copy_from: beyondtrust_epm.event.threat.indicator.file.x509.serial_number
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.x509.signature_algorithm
-      tag: set_threat_indicator_file_x509_signature_algorithm_from_event_threat_indicator_file_x509_signature_algorithm
+      tag: set_threat_indicator_file_x509_signature_algorithm_from_event_threat_indicator_file_x509_signature_algorithm_3784d526
       copy_from: beyondtrust_epm.event.threat.indicator.file.x509.signature_algorithm
       ignore_empty_value: true
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.x509.subject.common_name
-      tag: foreach_threat_indicator_file_x509_subject_common_name
+      tag: foreach_threat_indicator_file_x509_subject_common_name_504f2f83
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.x509?.subject?.common_name instanceof List
       processor:
         append:
           field: threat.indicator.file.x509.subject.common_name
-          tag: append_threat_indicator_file_x509_subject_common_name_into_threat_indicator_file_x509_subject_common_name
+          tag: append_threat_indicator_file_x509_subject_common_name_into_threat_indicator_file_x509_subject_common_name_366657a6
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.x509.subject.country
-      tag: foreach_threat_indicator_file_x509_subject_country
+      tag: foreach_threat_indicator_file_x509_subject_country_eab6dbbf
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.x509?.subject?.country instanceof List
       processor:
         append:
           field: threat.indicator.file.x509.subject.country
-          tag: append_threat_indicator_file_x509_subject_country_into_threat_indicator_file_x509_subject_country
+          tag: append_threat_indicator_file_x509_subject_country_into_threat_indicator_file_x509_subject_country_d7cf8c31
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - set:
       field: threat.indicator.file.x509.subject.distinguished_name
-      tag: set_threat_indicator_file_x509_subject_distinguished_name_from_event_threat_indicator_file_x509_subject_distinguished_name
+      tag: set_threat_indicator_file_x509_subject_distinguished_name_from_event_threat_indicator_file_x509_subject_distinguished_name_37affb10
       copy_from: beyondtrust_epm.event.threat.indicator.file.x509.subject.distinguished_name
       ignore_empty_value: true
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.x509.subject.locality
-      tag: foreach_threat_indicator_file_x509_subject_locality
+      tag: foreach_threat_indicator_file_x509_subject_locality_b1ddf43a
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.x509?.subject?.locality instanceof List
       processor:
         append:
           field: threat.indicator.file.x509.subject.locality
-          tag: append_threat_indicator_file_x509_subject_locality_into_threat_indicator_file_x509_subject_locality
+          tag: append_threat_indicator_file_x509_subject_locality_into_threat_indicator_file_x509_subject_locality_b990a2fa
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.x509.subject.organization
-      tag: foreach_threat_indicator_file_x509_subject_organization
+      tag: foreach_threat_indicator_file_x509_subject_organization_e37da63a
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.x509?.subject?.organization instanceof List
       processor:
         append:
           field: threat.indicator.file.x509.subject.organization
-          tag: append_threat_indicator_file_x509_subject_organization_into_threat_indicator_file_x509_subject_organization
+          tag: append_threat_indicator_file_x509_subject_organization_into_threat_indicator_file_x509_subject_organization_50cd580a
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.x509.subject.organizational_unit
-      tag: foreach_threat_indicator_file_x509_subject_organizational_unit
+      tag: foreach_threat_indicator_file_x509_subject_organizational_unit_9c713963
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.x509?.subject?.organizational_unit instanceof List
       processor:
         append:
           field: threat.indicator.file.x509.subject.organizational_unit
-          tag: append_threat_indicator_file_x509_subject_organizational_unit_into_threat_indicator_file_x509_subject_organizational_unit
+          tag: append_threat_indicator_file_x509_subject_organizational_unit_into_threat_indicator_file_x509_subject_organizational_unit_db657226
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.x509.subject.state_or_province
-      tag: foreach_threat_indicator_file_x509_subject_state_or_province
+      tag: foreach_threat_indicator_file_x509_subject_state_or_province_72f80e32
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.x509?.subject?.state_or_province instanceof List
       processor:
         append:
           field: threat.indicator.file.x509.subject.state_or_province
-          tag: append_threat_indicator_file_x509_subject_state_or_province_into_threat_indicator_file_x509_subject_state_or_province
+          tag: append_threat_indicator_file_x509_subject_state_or_province_into_threat_indicator_file_x509_subject_state_or_province_401bf1c1
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - set:
       field: threat.indicator.file.x509.version_number
-      tag: set_threat_indicator_file_x509_version_number_from_event_threat_indicator_file_x509_version_number
+      tag: set_threat_indicator_file_x509_version_number_from_event_threat_indicator_file_x509_version_number_da1905e0
       copy_from: beyondtrust_epm.event.threat.indicator.file.x509.version_number
       ignore_empty_value: true
   - date:
       field: beyondtrust_epm.event.threat.indicator.first_seen
-      tag: date_threat_indicator_first_seen
+      tag: date_threat_indicator_first_seen_da6a62fb
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.first_seen != null && ctx.beyondtrust_epm.event.threat.indicator.first_seen != ''
       target_field: beyondtrust_epm.event.threat.indicator.first_seen
       formats:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_first_seen_3d429937
             field: beyondtrust_epm.event.threat.indicator.first_seen
             ignore_missing: true
         - append:
+            tag: append_error_message_0c27adb5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.first_seen
-      tag: set_threat_indicator_first_seen_from_event_threat_indicator_first_seen
+      tag: set_threat_indicator_first_seen_from_event_threat_indicator_first_seen_04fae626
       copy_from: beyondtrust_epm.event.threat.indicator.first_seen
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.threat.indicator.geo.TimezoneOffset
-      tag: convert_threat_indicator_geo_TimezoneOffset_to_long
+      tag: convert_threat_indicator_geo_TimezoneOffset_to_long_8db920d7
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_geo_TimezoneOffset_ebf40335
             field: beyondtrust_epm.event.threat.indicator.geo.TimezoneOffset
             ignore_missing: true
         - append:
+            tag: append_error_message_f541e55c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.geo.city_name
-      tag: set_threat_indicator_geo_city_name_from_event_threat_indicator_geo_city_name
+      tag: set_threat_indicator_geo_city_name_from_event_threat_indicator_geo_city_name_05616272
       copy_from: beyondtrust_epm.event.threat.indicator.geo.city_name
       ignore_empty_value: true
   - set:
       field: threat.indicator.geo.continent_code
-      tag: set_threat_indicator_geo_continent_code_from_event_threat_indicator_geo_continent_code
+      tag: set_threat_indicator_geo_continent_code_from_event_threat_indicator_geo_continent_code_1cfc66b6
       copy_from: beyondtrust_epm.event.threat.indicator.geo.continent_code
       ignore_empty_value: true
   - set:
       field: threat.indicator.geo.continent_name
-      tag: set_threat_indicator_geo_continent_name_from_event_threat_indicator_geo_continent_name
+      tag: set_threat_indicator_geo_continent_name_from_event_threat_indicator_geo_continent_name_651e7f5c
       copy_from: beyondtrust_epm.event.threat.indicator.geo.continent_name
       ignore_empty_value: true
   - set:
       field: threat.indicator.geo.country_iso_code
-      tag: set_threat_indicator_geo_country_iso_code_from_event_threat_indicator_geo_country_iso_code
+      tag: set_threat_indicator_geo_country_iso_code_from_event_threat_indicator_geo_country_iso_code_ad4db1f5
       copy_from: beyondtrust_epm.event.threat.indicator.geo.country_iso_code
       ignore_empty_value: true
   - set:
       field: threat.indicator.geo.country_name
-      tag: set_threat_indicator_geo_country_name_from_event_threat_indicator_geo_country_name
+      tag: set_threat_indicator_geo_country_name_from_event_threat_indicator_geo_country_name_6ad21690
       copy_from: beyondtrust_epm.event.threat.indicator.geo.country_name
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.threat.indicator.geo.location.lat
-      tag: convert_threat_indicator_geo_location_lat_to_double
+      tag: convert_threat_indicator_geo_location_lat_to_double_3dc84202
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_geo_location_lat_b51f7482
             field: beyondtrust_epm.event.threat.indicator.geo.location.lat
             ignore_missing: true
         - append:
+            tag: append_error_message_7ff5608f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: beyondtrust_epm.event.threat.indicator.geo.location.lon
-      tag: convert_threat_indicator_geo_location_lon_to_double
+      tag: convert_threat_indicator_geo_location_lon_to_double_4155b8c6
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_geo_location_lon_0f7c30fa
             field: beyondtrust_epm.event.threat.indicator.geo.location.lon
             ignore_missing: true
         - append:
+            tag: append_error_message_1348954f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: set_threat_indicator_geo_location_from_lat_lon
+      tag: set_threat_indicator_geo_location_from_lat_lon_c7332003
       lang: painless
       description: Combine lat/lon into geo_point.
       if: >-
@@ -1242,771 +1293,799 @@ processors:
         ctx.beyondtrust_epm.event.threat.indicator.geo.location = location;
   - set:
       field: threat.indicator.geo.location
-      tag: set_threat_indicator_geo_location_from_event
+      tag: set_threat_indicator_geo_location_from_event_38c4ec0f
       copy_from: beyondtrust_epm.event.threat.indicator.geo.location
       ignore_empty_value: true
   - set:
       field: threat.indicator.geo.name
-      tag: set_threat_indicator_geo_name_from_event_threat_indicator_geo_name
+      tag: set_threat_indicator_geo_name_from_event_threat_indicator_geo_name_9e25f5b4
       copy_from: beyondtrust_epm.event.threat.indicator.geo.name
       ignore_empty_value: true
   - set:
       field: threat.indicator.geo.postal_code
-      tag: set_threat_indicator_geo_postal_code_from_event_threat_indicator_geo_postal_code
+      tag: set_threat_indicator_geo_postal_code_from_event_threat_indicator_geo_postal_code_5db5cd81
       copy_from: beyondtrust_epm.event.threat.indicator.geo.postal_code
       ignore_empty_value: true
   - set:
       field: threat.indicator.geo.region_iso_code
-      tag: set_threat_indicator_geo_region_iso_code_from_event_threat_indicator_geo_region_iso_code
+      tag: set_threat_indicator_geo_region_iso_code_from_event_threat_indicator_geo_region_iso_code_78979fb6
       copy_from: beyondtrust_epm.event.threat.indicator.geo.region_iso_code
       ignore_empty_value: true
   - set:
       field: threat.indicator.geo.region_name
-      tag: set_threat_indicator_geo_region_name_from_event_threat_indicator_geo_region_name
+      tag: set_threat_indicator_geo_region_name_from_event_threat_indicator_geo_region_name_05aee5a9
       copy_from: beyondtrust_epm.event.threat.indicator.geo.region_name
       ignore_empty_value: true
   - set:
       field: threat.indicator.geo.timezone
-      tag: set_threat_indicator_geo_timezone_from_event_threat_indicator_geo_timezone
+      tag: set_threat_indicator_geo_timezone_from_event_threat_indicator_geo_timezone_ff7485c4
       copy_from: beyondtrust_epm.event.threat.indicator.geo.timezone
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.threat.indicator.ip
-      tag: convert_threat_indicator_ip_to_ip
+      tag: convert_threat_indicator_ip_to_ip_5926a737
       type: ip
       ignore_missing: true
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.ip != null
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_ip_36c982db
             field: beyondtrust_epm.event.threat.indicator.ip
             ignore_missing: true
         - append:
+            tag: append_error_message_86b39750
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.ip
-      tag: set_threat_indicator_ip_from_event_threat_indicator_ip
+      tag: set_threat_indicator_ip_from_event_threat_indicator_ip_331fa447
       copy_from: beyondtrust_epm.event.threat.indicator.ip
       ignore_empty_value: true
   - append:
       field: related.ip
-      tag: append_event_threat_indicator_ip_into_related_ip
+      tag: append_event_threat_indicator_ip_into_related_ip_f38b0097
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.ip != null
       value: '{{{beyondtrust_epm.event.threat.indicator.ip}}}'
       allow_duplicates: false
   - date:
       field: beyondtrust_epm.event.threat.indicator.last_seen
-      tag: date_threat_indicator_last_seen
+      tag: date_threat_indicator_last_seen_3ac88557
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.last_seen != null && ctx.beyondtrust_epm.event.threat.indicator.last_seen != ''
       target_field: beyondtrust_epm.event.threat.indicator.last_seen
       formats:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_last_seen_70f2a271
             field: beyondtrust_epm.event.threat.indicator.last_seen
             ignore_missing: true
         - append:
+            tag: append_error_message_99fd878d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.last_seen
-      tag: set_threat_indicator_last_seen_from_event_threat_indicator_last_seen
+      tag: set_threat_indicator_last_seen_from_event_threat_indicator_last_seen_3af47db3
       copy_from: beyondtrust_epm.event.threat.indicator.last_seen
       ignore_empty_value: true
   - set:
       field: threat.indicator.marking.tlp
-      tag: set_threat_indicator_marking_tlp_from_event_threat_indicator_marking_tlp
+      tag: set_threat_indicator_marking_tlp_from_event_threat_indicator_marking_tlp_47368ae9
       copy_from: beyondtrust_epm.event.threat.indicator.marking.tlp
       ignore_empty_value: true
   - date:
       field: beyondtrust_epm.event.threat.indicator.modified_at
-      tag: date_threat_indicator_modified_at
+      tag: date_threat_indicator_modified_at_77694001
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.modified_at != null && ctx.beyondtrust_epm.event.threat.indicator.modified_at != ''
       target_field: beyondtrust_epm.event.threat.indicator.modified_at
       formats:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_modified_at_bcc04aa6
             field: beyondtrust_epm.event.threat.indicator.modified_at
             ignore_missing: true
         - append:
+            tag: append_error_message_0387cc35
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.modified_at
-      tag: set_threat_indicator_modified_at_from_event_threat_indicator_modified_at
+      tag: set_threat_indicator_modified_at_from_event_threat_indicator_modified_at_8945cd6f
       copy_from: beyondtrust_epm.event.threat.indicator.modified_at
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.threat.indicator.port
-      tag: convert_threat_indicator_port_to_long
+      tag: convert_threat_indicator_port_to_long_1a54872c
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_port_2fbe42c0
             field: beyondtrust_epm.event.threat.indicator.port
             ignore_missing: true
         - append:
+            tag: append_error_message_26ef7b8b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.port
-      tag: set_threat_indicator_port_from_event_threat_indicator_port
+      tag: set_threat_indicator_port_from_event_threat_indicator_port_7eadcf0e
       copy_from: beyondtrust_epm.event.threat.indicator.port
       ignore_empty_value: true
   - set:
       field: threat.indicator.provider
-      tag: set_threat_indicator_provider_from_event_threat_indicator_provider
+      tag: set_threat_indicator_provider_from_event_threat_indicator_provider_fb2bfbda
       copy_from: beyondtrust_epm.event.threat.indicator.provider
       ignore_empty_value: true
   - set:
       field: threat.indicator.reference
-      tag: set_threat_indicator_reference_from_event_threat_indicator_reference
+      tag: set_threat_indicator_reference_from_event_threat_indicator_reference_981101d8
       copy_from: beyondtrust_epm.event.threat.indicator.reference
       ignore_empty_value: true
   - set:
       field: threat.indicator.registry.data.bytes
-      tag: set_threat_indicator_registry_data_bytes_from_event_threat_indicator_registry_data_bytes
+      tag: set_threat_indicator_registry_data_bytes_from_event_threat_indicator_registry_data_bytes_b38a2684
       copy_from: beyondtrust_epm.event.threat.indicator.registry.data.bytes
       ignore_empty_value: true
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.registry.data.strings
-      tag: foreach_threat_indicator_registry_data_strings
+      tag: foreach_threat_indicator_registry_data_strings_78a91f71
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.registry?.data?.strings instanceof List
       processor:
         append:
           field: threat.indicator.registry.data.strings
-          tag: append_threat_indicator_registry_data_strings_into_threat_indicator_registry_data_strings
+          tag: append_threat_indicator_registry_data_strings_into_threat_indicator_registry_data_strings_eaa4f9e6
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - set:
       field: threat.indicator.registry.data.type
-      tag: set_threat_indicator_registry_data_type_from_event_threat_indicator_registry_data_type
+      tag: set_threat_indicator_registry_data_type_from_event_threat_indicator_registry_data_type_3f27015f
       copy_from: beyondtrust_epm.event.threat.indicator.registry.data.type
       ignore_empty_value: true
   - set:
       field: threat.indicator.registry.hive
-      tag: set_threat_indicator_registry_hive_from_event_threat_indicator_registry_hive
+      tag: set_threat_indicator_registry_hive_from_event_threat_indicator_registry_hive_3d9d44aa
       copy_from: beyondtrust_epm.event.threat.indicator.registry.hive
       ignore_empty_value: true
   - set:
       field: threat.indicator.registry.key
-      tag: set_threat_indicator_registry_key_from_event_threat_indicator_registry_key
+      tag: set_threat_indicator_registry_key_from_event_threat_indicator_registry_key_bb2919f6
       copy_from: beyondtrust_epm.event.threat.indicator.registry.key
       ignore_empty_value: true
   - set:
       field: threat.indicator.registry.path
-      tag: set_threat_indicator_registry_path_from_event_threat_indicator_registry_path
+      tag: set_threat_indicator_registry_path_from_event_threat_indicator_registry_path_8bf8e003
       copy_from: beyondtrust_epm.event.threat.indicator.registry.path
       ignore_empty_value: true
   - set:
       field: threat.indicator.registry.value
-      tag: set_threat_indicator_registry_value_from_event_threat_indicator_registry_value
+      tag: set_threat_indicator_registry_value_from_event_threat_indicator_registry_value_7c00761c
       copy_from: beyondtrust_epm.event.threat.indicator.registry.value
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.threat.indicator.scanner_stats
-      tag: convert_threat_indicator_scanner_stats_to_long
+      tag: convert_threat_indicator_scanner_stats_to_long_f4144238
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_scanner_stats_3c808ed2
             field: beyondtrust_epm.event.threat.indicator.scanner_stats
             ignore_missing: true
         - append:
+            tag: append_error_message_7f6c7e02
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.scanner_stats
-      tag: set_threat_indicator_scanner_stats_from_event_threat_indicator_scanner_stats
+      tag: set_threat_indicator_scanner_stats_from_event_threat_indicator_scanner_stats_701f300f
       copy_from: beyondtrust_epm.event.threat.indicator.scanner_stats
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.threat.indicator.sightings
-      tag: convert_threat_indicator_sightings_to_long
+      tag: convert_threat_indicator_sightings_to_long_007e7e18
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_sightings_c808754e
             field: beyondtrust_epm.event.threat.indicator.sightings
             ignore_missing: true
         - append:
+            tag: append_error_message_7b2d1440
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.sightings
-      tag: set_threat_indicator_sightings_from_event_threat_indicator_sightings
+      tag: set_threat_indicator_sightings_from_event_threat_indicator_sightings_6c5376d0
       copy_from: beyondtrust_epm.event.threat.indicator.sightings
       ignore_empty_value: true
   - set:
       field: threat.indicator.type
-      tag: set_threat_indicator_type_from_event_threat_indicator_type
+      tag: set_threat_indicator_type_from_event_threat_indicator_type_9cbd9f20
       copy_from: beyondtrust_epm.event.threat.indicator.type
       ignore_empty_value: true
   - set:
       field: threat.indicator.url.domain
-      tag: set_threat_indicator_url_domain_from_event_threat_indicator_url_domain
+      tag: set_threat_indicator_url_domain_from_event_threat_indicator_url_domain_10d15e85
       copy_from: beyondtrust_epm.event.threat.indicator.url.domain
       ignore_empty_value: true
   - set:
       field: threat.indicator.url.extension
-      tag: set_threat_indicator_url_extension_from_event_threat_indicator_url_extension
+      tag: set_threat_indicator_url_extension_from_event_threat_indicator_url_extension_e1ee4292
       copy_from: beyondtrust_epm.event.threat.indicator.url.extension
       ignore_empty_value: true
   - set:
       field: threat.indicator.url.fragment
-      tag: set_threat_indicator_url_fragment_from_event_threat_indicator_url_fragment
+      tag: set_threat_indicator_url_fragment_from_event_threat_indicator_url_fragment_9fe6fcad
       copy_from: beyondtrust_epm.event.threat.indicator.url.fragment
       ignore_empty_value: true
   - set:
       field: threat.indicator.url.full
-      tag: set_threat_indicator_url_full_from_event_threat_indicator_url_full
+      tag: set_threat_indicator_url_full_from_event_threat_indicator_url_full_6e094121
       copy_from: beyondtrust_epm.event.threat.indicator.url.full
       ignore_empty_value: true
   - set:
       field: threat.indicator.url.original
-      tag: set_threat_indicator_url_original_from_event_threat_indicator_url_original
+      tag: set_threat_indicator_url_original_from_event_threat_indicator_url_original_f869f258
       copy_from: beyondtrust_epm.event.threat.indicator.url.original
       ignore_empty_value: true
   - set:
       field: threat.indicator.url.password
-      tag: set_threat_indicator_url_password_from_event_threat_indicator_url_password
+      tag: set_threat_indicator_url_password_from_event_threat_indicator_url_password_b618f906
       copy_from: beyondtrust_epm.event.threat.indicator.url.password
       ignore_empty_value: true
   - set:
       field: threat.indicator.url.path
-      tag: set_threat_indicator_url_path_from_event_threat_indicator_url_path
+      tag: set_threat_indicator_url_path_from_event_threat_indicator_url_path_c5c24fe2
       copy_from: beyondtrust_epm.event.threat.indicator.url.path
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.threat.indicator.url.port
-      tag: convert_threat_indicator_url_port_to_long
+      tag: convert_threat_indicator_url_port_to_long_79e55953
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_url_port_272d64bf
             field: beyondtrust_epm.event.threat.indicator.url.port
             ignore_missing: true
         - append:
+            tag: append_error_message_682d0573
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.url.port
-      tag: set_threat_indicator_url_port_from_event_threat_indicator_url_port
+      tag: set_threat_indicator_url_port_from_event_threat_indicator_url_port_8a380578
       copy_from: beyondtrust_epm.event.threat.indicator.url.port
       ignore_empty_value: true
   - set:
       field: threat.indicator.url.query
-      tag: set_threat_indicator_url_query_from_event_threat_indicator_url_query
+      tag: set_threat_indicator_url_query_from_event_threat_indicator_url_query_3e6ef5ef
       copy_from: beyondtrust_epm.event.threat.indicator.url.query
       ignore_empty_value: true
   - set:
       field: threat.indicator.url.registered_domain
-      tag: set_threat_indicator_url_registered_domain_from_event_threat_indicator_url_registered_domain
+      tag: set_threat_indicator_url_registered_domain_from_event_threat_indicator_url_registered_domain_c3d5d974
       copy_from: beyondtrust_epm.event.threat.indicator.url.registered_domain
       ignore_empty_value: true
   - set:
       field: threat.indicator.url.scheme
-      tag: set_threat_indicator_url_scheme_from_event_threat_indicator_url_scheme
+      tag: set_threat_indicator_url_scheme_from_event_threat_indicator_url_scheme_a6dabb56
       copy_from: beyondtrust_epm.event.threat.indicator.url.scheme
       ignore_empty_value: true
   - set:
       field: threat.indicator.url.subdomain
-      tag: set_threat_indicator_url_subdomain_from_event_threat_indicator_url_subdomain
+      tag: set_threat_indicator_url_subdomain_from_event_threat_indicator_url_subdomain_53ea81f5
       copy_from: beyondtrust_epm.event.threat.indicator.url.subdomain
       ignore_empty_value: true
   - set:
       field: threat.indicator.url.top_level_domain
-      tag: set_threat_indicator_url_top_level_domain_from_event_threat_indicator_url_top_level_domain
+      tag: set_threat_indicator_url_top_level_domain_from_event_threat_indicator_url_top_level_domain_d9f284e4
       copy_from: beyondtrust_epm.event.threat.indicator.url.top_level_domain
       ignore_empty_value: true
   - set:
       field: threat.indicator.url.username
-      tag: set_threat_indicator_url_username_from_event_threat_indicator_url_username
+      tag: set_threat_indicator_url_username_from_event_threat_indicator_url_username_6ff9f1f0
       copy_from: beyondtrust_epm.event.threat.indicator.url.username
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_event_threat_indicator_url_username_into_related_user
+      tag: append_event_threat_indicator_url_username_into_related_user_56ae0284
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.url?.username != null
       value: '{{{beyondtrust_epm.event.threat.indicator.url.username}}}'
       allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.x509.alternative_names
-      tag: foreach_threat_indicator_x509_alternative_names
+      tag: foreach_threat_indicator_x509_alternative_names_58faba97
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.x509?.alternative_names instanceof List
       processor:
         append:
           field: threat.indicator.x509.alternative_names
-          tag: append_threat_indicator_x509_alternative_names_into_threat_indicator_x509_alternative_names
+          tag: append_threat_indicator_x509_alternative_names_into_threat_indicator_x509_alternative_names_6f1c0eeb
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.x509.issuer.common_name
-      tag: foreach_threat_indicator_x509_issuer_common_name
+      tag: foreach_threat_indicator_x509_issuer_common_name_4372e6ef
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.x509?.issuer?.common_name instanceof List
       processor:
         append:
           field: threat.indicator.x509.issuer.common_name
-          tag: append_threat_indicator_x509_issuer_common_name_into_threat_indicator_x509_issuer_common_name
+          tag: append_threat_indicator_x509_issuer_common_name_into_threat_indicator_x509_issuer_common_name_4b2e8b99
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.x509.issuer.country
-      tag: foreach_threat_indicator_x509_issuer_country
+      tag: foreach_threat_indicator_x509_issuer_country_929d232e
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.x509?.issuer?.country instanceof List
       processor:
         append:
           field: threat.indicator.x509.issuer.country
-          tag: append_threat_indicator_x509_issuer_country_into_threat_indicator_x509_issuer_country
+          tag: append_threat_indicator_x509_issuer_country_into_threat_indicator_x509_issuer_country_1a9bbe6d
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - set:
       field: threat.indicator.x509.issuer.distinguished_name
-      tag: set_threat_indicator_x509_issuer_distinguished_name_from_event_threat_indicator_x509_issuer_distinguished_name
+      tag: set_threat_indicator_x509_issuer_distinguished_name_from_event_threat_indicator_x509_issuer_distinguished_name_b62bbd22
       copy_from: beyondtrust_epm.event.threat.indicator.x509.issuer.distinguished_name
       ignore_empty_value: true
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.x509.issuer.locality
-      tag: foreach_threat_indicator_x509_issuer_locality
+      tag: foreach_threat_indicator_x509_issuer_locality_7ac80c94
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.x509?.issuer?.locality instanceof List
       processor:
         append:
           field: threat.indicator.x509.issuer.locality
-          tag: append_threat_indicator_x509_issuer_locality_into_threat_indicator_x509_issuer_locality
+          tag: append_threat_indicator_x509_issuer_locality_into_threat_indicator_x509_issuer_locality_2e370152
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.x509.issuer.organization
-      tag: foreach_threat_indicator_x509_issuer_organization
+      tag: foreach_threat_indicator_x509_issuer_organization_03baedb3
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.x509?.issuer?.organization instanceof List
       processor:
         append:
           field: threat.indicator.x509.issuer.organization
-          tag: append_threat_indicator_x509_issuer_organization_into_threat_indicator_x509_issuer_organization
+          tag: append_threat_indicator_x509_issuer_organization_into_threat_indicator_x509_issuer_organization_161bfb85
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.x509.issuer.organizational_unit
-      tag: foreach_threat_indicator_x509_issuer_organizational_unit
+      tag: foreach_threat_indicator_x509_issuer_organizational_unit_d65ec6d2
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.x509?.issuer?.organizational_unit instanceof List
       processor:
         append:
           field: threat.indicator.x509.issuer.organizational_unit
-          tag: append_threat_indicator_x509_issuer_organizational_unit_into_threat_indicator_x509_issuer_organizational_unit
+          tag: append_threat_indicator_x509_issuer_organizational_unit_into_threat_indicator_x509_issuer_organizational_unit_851bf324
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.x509.issuer.state_or_province
-      tag: foreach_threat_indicator_x509_issuer_state_or_province
+      tag: foreach_threat_indicator_x509_issuer_state_or_province_64e73b8d
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.x509?.issuer?.state_or_province instanceof List
       processor:
         append:
           field: threat.indicator.x509.issuer.state_or_province
-          tag: append_threat_indicator_x509_issuer_state_or_province_into_threat_indicator_x509_issuer_state_or_province
+          tag: append_threat_indicator_x509_issuer_state_or_province_into_threat_indicator_x509_issuer_state_or_province_11e6a5ea
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - date:
       field: beyondtrust_epm.event.threat.indicator.x509.not_after
-      tag: date_threat_indicator_x509_not_after
+      tag: date_threat_indicator_x509_not_after_1705f53f
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.x509?.not_after != null && ctx.beyondtrust_epm.event.threat.indicator.x509.not_after != ''
       target_field: beyondtrust_epm.event.threat.indicator.x509.not_after
       formats:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_x509_not_after_3c02fb51
             field: beyondtrust_epm.event.threat.indicator.x509.not_after
             ignore_missing: true
         - append:
+            tag: append_error_message_f70cc305
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.x509.not_after
-      tag: set_threat_indicator_x509_not_after_from_event_threat_indicator_x509_not_after
+      tag: set_threat_indicator_x509_not_after_from_event_threat_indicator_x509_not_after_3a8869d4
       copy_from: beyondtrust_epm.event.threat.indicator.x509.not_after
       ignore_empty_value: true
   - date:
       field: beyondtrust_epm.event.threat.indicator.x509.not_before
-      tag: date_threat_indicator_x509_not_before
+      tag: date_threat_indicator_x509_not_before_c6f2c3bc
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.x509?.not_before != null && ctx.beyondtrust_epm.event.threat.indicator.x509.not_before != ''
       target_field: beyondtrust_epm.event.threat.indicator.x509.not_before
       formats:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_x509_not_before_442edbb2
             field: beyondtrust_epm.event.threat.indicator.x509.not_before
             ignore_missing: true
         - append:
+            tag: append_error_message_6ffbc8c1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.x509.not_before
-      tag: set_threat_indicator_x509_not_before_from_event_threat_indicator_x509_not_before
+      tag: set_threat_indicator_x509_not_before_from_event_threat_indicator_x509_not_before_abdd53b3
       copy_from: beyondtrust_epm.event.threat.indicator.x509.not_before
       ignore_empty_value: true
   - set:
       field: threat.indicator.x509.public_key_algorithm
-      tag: set_threat_indicator_x509_public_key_algorithm_from_event_threat_indicator_x509_public_key_algorithm
+      tag: set_threat_indicator_x509_public_key_algorithm_from_event_threat_indicator_x509_public_key_algorithm_94604b1c
       copy_from: beyondtrust_epm.event.threat.indicator.x509.public_key_algorithm
       ignore_empty_value: true
   - set:
       field: threat.indicator.x509.public_key_curve
-      tag: set_threat_indicator_x509_public_key_curve_from_event_threat_indicator_x509_public_key_curve
+      tag: set_threat_indicator_x509_public_key_curve_from_event_threat_indicator_x509_public_key_curve_02d3f29f
       copy_from: beyondtrust_epm.event.threat.indicator.x509.public_key_curve
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.threat.indicator.x509.public_key_exponent
-      tag: convert_threat_indicator_x509_public_key_exponent_to_long
+      tag: convert_threat_indicator_x509_public_key_exponent_to_long_29425da0
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_x509_public_key_exponent_9378a41b
             field: beyondtrust_epm.event.threat.indicator.x509.public_key_exponent
             ignore_missing: true
         - append:
+            tag: append_error_message_c611ca84
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.x509.public_key_exponent
-      tag: set_threat_indicator_x509_public_key_exponent_from_event_threat_indicator_x509_public_key_exponent
+      tag: set_threat_indicator_x509_public_key_exponent_from_event_threat_indicator_x509_public_key_exponent_192c1e9f
       copy_from: beyondtrust_epm.event.threat.indicator.x509.public_key_exponent
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.threat.indicator.x509.public_key_size
-      tag: convert_threat_indicator_x509_public_key_size_to_long
+      tag: convert_threat_indicator_x509_public_key_size_to_long_b7d5f94b
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_threat_indicator_x509_public_key_size_24bf347f
             field: beyondtrust_epm.event.threat.indicator.x509.public_key_size
             ignore_missing: true
         - append:
+            tag: append_error_message_61f614b6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.x509.public_key_size
-      tag: set_threat_indicator_x509_public_key_size_from_event_threat_indicator_x509_public_key_size
+      tag: set_threat_indicator_x509_public_key_size_from_event_threat_indicator_x509_public_key_size_b26b2f54
       copy_from: beyondtrust_epm.event.threat.indicator.x509.public_key_size
       ignore_empty_value: true
   - set:
       field: threat.indicator.x509.serial_number
-      tag: set_threat_indicator_x509_serial_number_from_event_threat_indicator_x509_serial_number
+      tag: set_threat_indicator_x509_serial_number_from_event_threat_indicator_x509_serial_number_1eb1d0c6
       copy_from: beyondtrust_epm.event.threat.indicator.x509.serial_number
       ignore_empty_value: true
   - set:
       field: threat.indicator.x509.signature_algorithm
-      tag: set_threat_indicator_x509_signature_algorithm_from_event_threat_indicator_x509_signature_algorithm
+      tag: set_threat_indicator_x509_signature_algorithm_from_event_threat_indicator_x509_signature_algorithm_a5452e9c
       copy_from: beyondtrust_epm.event.threat.indicator.x509.signature_algorithm
       ignore_empty_value: true
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.x509.subject.common_name
-      tag: foreach_threat_indicator_x509_subject_common_name
+      tag: foreach_threat_indicator_x509_subject_common_name_bfb18149
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.x509?.subject?.common_name instanceof List
       processor:
         append:
           field: threat.indicator.x509.subject.common_name
-          tag: append_threat_indicator_x509_subject_common_name_into_threat_indicator_x509_subject_common_name
+          tag: append_threat_indicator_x509_subject_common_name_into_threat_indicator_x509_subject_common_name_04db4f2e
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.x509.subject.country
-      tag: foreach_threat_indicator_x509_subject_country
+      tag: foreach_threat_indicator_x509_subject_country_ec5d885f
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.x509?.subject?.country instanceof List
       processor:
         append:
           field: threat.indicator.x509.subject.country
-          tag: append_threat_indicator_x509_subject_country_into_threat_indicator_x509_subject_country
+          tag: append_threat_indicator_x509_subject_country_into_threat_indicator_x509_subject_country_45268d83
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - set:
       field: threat.indicator.x509.subject.distinguished_name
-      tag: set_threat_indicator_x509_subject_distinguished_name_from_event_threat_indicator_x509_subject_distinguished_name
+      tag: set_threat_indicator_x509_subject_distinguished_name_from_event_threat_indicator_x509_subject_distinguished_name_88ab6d9a
       copy_from: beyondtrust_epm.event.threat.indicator.x509.subject.distinguished_name
       ignore_empty_value: true
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.x509.subject.locality
-      tag: foreach_threat_indicator_x509_subject_locality
+      tag: foreach_threat_indicator_x509_subject_locality_0844eb60
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.x509?.subject?.locality instanceof List
       processor:
         append:
           field: threat.indicator.x509.subject.locality
-          tag: append_threat_indicator_x509_subject_locality_into_threat_indicator_x509_subject_locality
+          tag: append_threat_indicator_x509_subject_locality_into_threat_indicator_x509_subject_locality_09105f11
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.x509.subject.organization
-      tag: foreach_threat_indicator_x509_subject_organization
+      tag: foreach_threat_indicator_x509_subject_organization_b7013b5a
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.x509?.subject?.organization instanceof List
       processor:
         append:
           field: threat.indicator.x509.subject.organization
-          tag: append_threat_indicator_x509_subject_organization_into_threat_indicator_x509_subject_organization
+          tag: append_threat_indicator_x509_subject_organization_into_threat_indicator_x509_subject_organization_6fa62a5d
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.x509.subject.organizational_unit
-      tag: foreach_threat_indicator_x509_subject_organizational_unit
+      tag: foreach_threat_indicator_x509_subject_organizational_unit_f2e475d4
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.x509?.subject?.organizational_unit instanceof List
       processor:
         append:
           field: threat.indicator.x509.subject.organizational_unit
-          tag: append_threat_indicator_x509_subject_organizational_unit_into_threat_indicator_x509_subject_organizational_unit
+          tag: append_threat_indicator_x509_subject_organizational_unit_into_threat_indicator_x509_subject_organizational_unit_96ef2497
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.x509.subject.state_or_province
-      tag: foreach_threat_indicator_x509_subject_state_or_province
+      tag: foreach_threat_indicator_x509_subject_state_or_province_57f6a163
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.x509?.subject?.state_or_province instanceof List
       processor:
         append:
           field: threat.indicator.x509.subject.state_or_province
-          tag: append_threat_indicator_x509_subject_state_or_province_into_threat_indicator_x509_subject_state_or_province
+          tag: append_threat_indicator_x509_subject_state_or_province_into_threat_indicator_x509_subject_state_or_province_4d8be3ef
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - set:
       field: threat.indicator.x509.version_number
-      tag: set_threat_indicator_x509_version_number_from_event_threat_indicator_x509_version_number
+      tag: set_threat_indicator_x509_version_number_from_event_threat_indicator_x509_version_number_feadf067
       copy_from: beyondtrust_epm.event.threat.indicator.x509.version_number
       ignore_empty_value: true
   - foreach:
       field: beyondtrust_epm.event.threat.software.alias
-      tag: foreach_threat_software_alias
+      tag: foreach_threat_software_alias_6e3010fa
       if: ctx.beyondtrust_epm?.event?.threat?.software?.alias instanceof List
       processor:
         append:
           field: threat.software.alias
-          tag: append_threat_software_alias_into_threat_software_alias
+          tag: append_threat_software_alias_into_threat_software_alias_b0855ab4
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - set:
       field: threat.software.id
-      tag: set_threat_software_id_from_event_threat_software_id
+      tag: set_threat_software_id_from_event_threat_software_id_85cf0c2c
       copy_from: beyondtrust_epm.event.threat.software.id
       ignore_empty_value: true
   - set:
       field: threat.software.name
-      tag: set_threat_software_name_from_event_threat_software_name
+      tag: set_threat_software_name_from_event_threat_software_name_c0116abc
       copy_from: beyondtrust_epm.event.threat.software.name
       ignore_empty_value: true
   - foreach:
       field: beyondtrust_epm.event.threat.software.platforms
-      tag: foreach_threat_software_platforms
+      tag: foreach_threat_software_platforms_b1de1011
       if: ctx.beyondtrust_epm?.event?.threat?.software?.platforms instanceof List
       processor:
         append:
           field: threat.software.platforms
-          tag: append_threat_software_platforms_into_threat_software_platforms
+          tag: append_threat_software_platforms_into_threat_software_platforms_e32f9cba
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - set:
       field: threat.software.reference
-      tag: set_threat_software_reference_from_event_threat_software_reference
+      tag: set_threat_software_reference_from_event_threat_software_reference_76f5275f
       copy_from: beyondtrust_epm.event.threat.software.reference
       ignore_empty_value: true
   - set:
       field: threat.software.type
-      tag: set_threat_software_type_from_event_threat_software_type
+      tag: set_threat_software_type_from_event_threat_software_type_3b2d149a
       copy_from: beyondtrust_epm.event.threat.software.type
       ignore_empty_value: true
   - foreach:
       field: beyondtrust_epm.event.threat.tactic.id
-      tag: foreach_threat_tactic_id
+      tag: foreach_threat_tactic_id_ab4b1c0d
       if: ctx.beyondtrust_epm?.event?.threat?.tactic?.id instanceof List
       processor:
         append:
           field: threat.tactic.id
-          tag: append_threat_tactic_id_into_threat_tactic_id
+          tag: append_threat_tactic_id_into_threat_tactic_id_31e5ae5c
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.tactic.name
-      tag: foreach_threat_tactic_name
+      tag: foreach_threat_tactic_name_ad6553a4
       if: ctx.beyondtrust_epm?.event?.threat?.tactic?.name instanceof List
       processor:
         append:
           field: threat.tactic.name
-          tag: append_threat_tactic_name_into_threat_tactic_name
+          tag: append_threat_tactic_name_into_threat_tactic_name_f64bf719
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.tactic.reference
-      tag: foreach_threat_tactic_reference
+      tag: foreach_threat_tactic_reference_5018bbc4
       if: ctx.beyondtrust_epm?.event?.threat?.tactic?.reference instanceof List
       processor:
         append:
           field: threat.tactic.reference
-          tag: append_threat_tactic_reference_into_threat_tactic_reference
+          tag: append_threat_tactic_reference_into_threat_tactic_reference_a5f5b299
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.technique.id
-      tag: foreach_threat_technique_id
+      tag: foreach_threat_technique_id_b893cbf8
       if: ctx.beyondtrust_epm?.event?.threat?.technique?.id instanceof List
       processor:
         append:
           field: threat.technique.id
-          tag: append_threat_technique_id_into_threat_technique_id
+          tag: append_threat_technique_id_into_threat_technique_id_18e5849f
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.technique.name
-      tag: foreach_threat_technique_name
+      tag: foreach_threat_technique_name_a3cf52c2
       if: ctx.beyondtrust_epm?.event?.threat?.technique?.name instanceof List
       processor:
         append:
           field: threat.technique.name
-          tag: append_threat_technique_name_into_threat_technique_name
+          tag: append_threat_technique_name_into_threat_technique_name_1ad0de5f
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.technique.reference
-      tag: foreach_threat_technique_reference
+      tag: foreach_threat_technique_reference_217deaa7
       if: ctx.beyondtrust_epm?.event?.threat?.technique?.reference instanceof List
       processor:
         append:
           field: threat.technique.reference
-          tag: append_threat_technique_reference_into_threat_technique_reference
+          tag: append_threat_technique_reference_into_threat_technique_reference_86036dac
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.technique.subtechnique.id
-      tag: foreach_threat_technique_subtechnique_id
+      tag: foreach_threat_technique_subtechnique_id_0f62051b
       if: ctx.beyondtrust_epm?.event?.threat?.technique?.subtechnique?.id instanceof List
       processor:
         append:
           field: threat.technique.subtechnique.id
-          tag: append_threat_technique_subtechnique_id_into_threat_technique_subtechnique_id
+          tag: append_threat_technique_subtechnique_id_into_threat_technique_subtechnique_id_69dd08d7
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.technique.subtechnique.name
-      tag: foreach_threat_technique_subtechnique_name
+      tag: foreach_threat_technique_subtechnique_name_c0b4a529
       if: ctx.beyondtrust_epm?.event?.threat?.technique?.subtechnique?.name instanceof List
       processor:
         append:
           field: threat.technique.subtechnique.name
-          tag: append_threat_technique_subtechnique_name_into_threat_technique_subtechnique_name
+          tag: append_threat_technique_subtechnique_name_into_threat_technique_subtechnique_name_e81cb8d9
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.technique.subtechnique.reference
-      tag: foreach_threat_technique_subtechnique_reference
+      tag: foreach_threat_technique_subtechnique_reference_972070ea
       if: ctx.beyondtrust_epm?.event?.threat?.technique?.subtechnique?.reference instanceof List
       processor:
         append:
           field: threat.technique.subtechnique.reference
-          tag: append_threat_technique_subtechnique_reference_into_threat_technique_subtechnique_reference
+          tag: append_threat_technique_subtechnique_reference_into_threat_technique_subtechnique_reference_6b3a1261
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.vulnerability.category
-      tag: foreach_vulnerability_category
+      tag: foreach_vulnerability_category_0189746a
       if: ctx.beyondtrust_epm?.event?.vulnerability?.category instanceof List
       processor:
         append:
           field: vulnerability.category
-          tag: append_vulnerability_category_into_vulnerability_category
+          tag: append_vulnerability_category_into_vulnerability_category_72d0c14f
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - set:
       field: vulnerability.classification
-      tag: set_vulnerability_classification_from_event_vulnerability_classification
+      tag: set_vulnerability_classification_from_event_vulnerability_classification_0c50b11d
       copy_from: beyondtrust_epm.event.vulnerability.classification
       ignore_empty_value: true
   - set:
       field: vulnerability.description
-      tag: set_vulnerability_description_from_event_vulnerability_description
+      tag: set_vulnerability_description_from_event_vulnerability_description_8efe2d3b
       copy_from: beyondtrust_epm.event.vulnerability.description
       ignore_empty_value: true
   - set:
       field: vulnerability.enumeration
-      tag: set_vulnerability_enumeration_from_event_vulnerability_enumeration
+      tag: set_vulnerability_enumeration_from_event_vulnerability_enumeration_d61ce779
       copy_from: beyondtrust_epm.event.vulnerability.enumeration
       ignore_empty_value: true
   - set:
       field: vulnerability.id
-      tag: set_vulnerability_id_from_event_vulnerability_id
+      tag: set_vulnerability_id_from_event_vulnerability_id_bacebd19
       copy_from: beyondtrust_epm.event.vulnerability.id
       ignore_empty_value: true
   - set:
       field: vulnerability.reference
-      tag: set_vulnerability_reference_from_event_vulnerability_reference
+      tag: set_vulnerability_reference_from_event_vulnerability_reference_13072b4b
       copy_from: beyondtrust_epm.event.vulnerability.reference
       ignore_empty_value: true
   - set:
       field: vulnerability.report_id
-      tag: set_vulnerability_report_id_from_event_vulnerability_report_id
+      tag: set_vulnerability_report_id_from_event_vulnerability_report_id_f0c12b0c
       copy_from: beyondtrust_epm.event.vulnerability.report_id
       ignore_empty_value: true
   - set:
       field: vulnerability.scanner.vendor
-      tag: set_vulnerability_scanner_vendor_from_event_vulnerability_scanner_vendor
+      tag: set_vulnerability_scanner_vendor_from_event_vulnerability_scanner_vendor_8feaca30
       copy_from: beyondtrust_epm.event.vulnerability.scanner.vendor
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.vulnerability.score.base
-      tag: convert_vulnerability_score_base_to_long
+      tag: convert_vulnerability_score_base_to_long_3d8e73ee
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_vulnerability_score_base_940656f2
             field: beyondtrust_epm.event.vulnerability.score.base
             ignore_missing: true
         - append:
+            tag: append_error_message_132ca294
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: vulnerability.score.base
-      tag: set_vulnerability_score_base_from_event_vulnerability_score_base
+      tag: set_vulnerability_score_base_from_event_vulnerability_score_base_1d86b30a
       copy_from: beyondtrust_epm.event.vulnerability.score.base
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.vulnerability.score.environmental
-      tag: convert_vulnerability_score_environmental_to_long
+      tag: convert_vulnerability_score_environmental_to_long_82bfc85b
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_vulnerability_score_environmental_b69b0808
             field: beyondtrust_epm.event.vulnerability.score.environmental
             ignore_missing: true
         - append:
+            tag: append_error_message_11d9153f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: vulnerability.score.environmental
-      tag: set_vulnerability_score_environmental_from_event_vulnerability_score_environmental
+      tag: set_vulnerability_score_environmental_from_event_vulnerability_score_environmental_639cc50d
       copy_from: beyondtrust_epm.event.vulnerability.score.environmental
       ignore_empty_value: true
   - convert:
       field: beyondtrust_epm.event.vulnerability.score.temporal
-      tag: convert_vulnerability_score_temporal_to_long
+      tag: convert_vulnerability_score_temporal_to_long_ba93c182
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_beyondtrust_epm_event_vulnerability_score_temporal_4749916c
             field: beyondtrust_epm.event.vulnerability.score.temporal
             ignore_missing: true
         - append:
+            tag: append_error_message_6b838f45
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: vulnerability.score.temporal
-      tag: set_vulnerability_score_temporal_from_event_vulnerability_score_temporal
+      tag: set_vulnerability_score_temporal_from_event_vulnerability_score_temporal_17a93e68
       copy_from: beyondtrust_epm.event.vulnerability.score.temporal
       ignore_empty_value: true
   - set:
       field: vulnerability.score.version
-      tag: set_vulnerability_score_version_from_event_vulnerability_score_version
+      tag: set_vulnerability_score_version_from_event_vulnerability_score_version_eb7d44d4
       copy_from: beyondtrust_epm.event.vulnerability.score.version
       ignore_empty_value: true
   - set:
       field: vulnerability.severity
-      tag: set_vulnerability_severity_from_event_vulnerability_severity
+      tag: set_vulnerability_severity_from_event_vulnerability_severity_f958df8f
       copy_from: beyondtrust_epm.event.vulnerability.severity
       ignore_empty_value: true
   - append:
       field: event.category
-      tag: append_event_category_threat
+      tag: append_event_category_threat_dc14d01e
       if: >-
         ctx.threat != null
         && (ctx.event?.category == null || !ctx.event.category.contains('threat'))
@@ -2014,7 +2093,7 @@ processors:
       allow_duplicates: false
   - append:
       field: event.category
-      tag: append_event_category_vulnerability
+      tag: append_event_category_vulnerability_8abdca8c
       if: >-
         ctx.vulnerability != null
         && (ctx.event?.category == null || !ctx.event.category.contains('vulnerability'))
@@ -2022,7 +2101,7 @@ processors:
       allow_duplicates: false
   - foreach:
       field: beyondtrust_epm.event.threat.enrichments
-      tag: foreach_threat_enrichments
+      tag: foreach_threat_enrichments_92abc1f4
       if: ctx.beyondtrust_epm?.event?.threat?.enrichments instanceof List
       processor:
         remove:
@@ -2033,11 +2112,11 @@ processors:
             - _ingest._value.matched.index
             - _ingest._value.matched.occurred
             - _ingest._value.matched.type
-          tag: remove_fields_mapped_with_ecs_from_threat_enrichments
+          tag: remove_fields_mapped_with_ecs_from_threat_enrichments_36dfc73c
           ignore_missing: true
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.elf.sections
-      tag: foreach_threat_indicator_file_elf_sections
+      tag: foreach_threat_indicator_file_elf_sections_af2fe8c0
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.elf?.sections instanceof List
       processor:
         remove:
@@ -2051,18 +2130,18 @@ processors:
             - _ingest._value.type
             - _ingest._value.virtual_address
             - _ingest._value.virtual_size
-          tag: remove_fields_mapped_with_ecs_from_threat_indicator_file_elf_sections
+          tag: remove_fields_mapped_with_ecs_from_threat_indicator_file_elf_sections_11e7f5c7
           ignore_missing: true
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.elf.segments
-      tag: foreach_threat_indicator_file_elf_segments
+      tag: foreach_threat_indicator_file_elf_segments_5757f52e
       if: ctx.beyondtrust_epm?.event?.threat?.indicator?.file?.elf?.segments instanceof List
       processor:
         remove:
           field:
             - _ingest._value.sections
             - _ingest._value.type
-          tag: remove_fields_mapped_with_ecs_from_threat_indicator_file_elf_segments
+          tag: remove_fields_mapped_with_ecs_from_threat_indicator_file_elf_segments_86212ce7
           ignore_missing: true
   - remove:
       field:
@@ -2271,5 +2350,5 @@ processors:
         - beyondtrust_epm.event.vulnerability.score.temporal
         - beyondtrust_epm.event.vulnerability.score.version
         - beyondtrust_epm.event.vulnerability.severity
-      tag: remove_fields_mapped_with_ecs
+      tag: remove_fields_mapped_with_ecs_41b562e4
       ignore_missing: true

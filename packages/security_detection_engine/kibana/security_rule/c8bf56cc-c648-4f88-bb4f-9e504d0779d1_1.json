@@ -1,0 +1,135 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects successful GKE pod exec sessions whose command references Google Cloud instance metadata endpoints, including metadata.google.internal, computeMetadata/v1, or the link-local metadata IP 169.254.169.254. Workloads that reach the GKE metadata service from an exec session are often attempting to harvest short-lived credentials or instance attributes from the node or workload identity boundary. That behavior is high risk because it can expose cloud credentials to code running inside a container. GKE records the command in gcp.audit.labels.command.gke.io/command when an explicit command is passed to exec.",
+        "false_positives": [
+            "Break-glass debugging from platform engineers may include curl to the metadata IP or hostname."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "client.user.email",
+                "source.ip",
+                "user_agent.original",
+                "event.action",
+                "event.outcome",
+                "event.type",
+                "gcp.audit.labels.command.gke.io/command",
+                "gcp.audit.resource_name",
+                "data_stream.namespace"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Pod Exec Cloud Instance Metadata Access",
+        "note": "## Triage and analysis\n\n### Investigating GKE Pod Exec Cloud Instance Metadata Access\n\nThis alert fires when a successful pods/exec API call includes a command targeting GKE/GCP instance metadata.\nReview `gcp.audit.labels.command.gke.io/command` for the full command string.\n\n### Possible investigation steps\n\n- Confirm the actor (`client.user.email`), source IP, and user agent that performed exec.\n- Map `gcp.audit.resource_name` to the target pod/namespace and determine whether the workload should ever call metadata.\n- Correlate with GCP audit logs for token issuance or IAM activity around the same time from the node or workload identity.\n- Hunt adjacent activity from the same identity: secret reads, additional execs, or RBAC changes.\n\n### False positive analysis\n\n- Approved platform tooling or bootstrap scripts may query metadata during startup; baseline those images and identities.\n- Break-glass egress/metadata connectivity tests can match; document and allowlist those principals.\n\n### Response and remediation\n\n- If unauthorized, terminate the session, isolate the workload, revoke or rotate instance and workload credentials that\n  could have been read, and tighten pods/exec RBAC plus network policies that deny link-local metadata from pods.\n",
+        "query": "data_stream.dataset:gcp.audit and service.name:\"k8s.io\" and\nevent.outcome:success and event.type:start and\nevent.action:(\"io.k8s.core.v1.pods.exec.create\" or \"io.k8s.core.v1.pods.exec.get\") and\ngcp.audit.labels.command.gke.io/command:(\n  *169.254.169.254* or *metadata.google.internal* or *computeMetadata/v1*\n)\n",
+        "references": [
+            "https://cloud.google.com/kubernetes-engine/docs/concepts/protecting-cluster-metadata"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": ">=2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.labels.command.gke.io/command",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "service.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "c8bf56cc-c648-4f88-bb4f-9e504d0779d1",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: GCP Audit Logs",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Execution",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.005",
+                                "name": "Cloud Instance Metadata API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/005/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1609",
+                        "name": "Container Administration Command",
+                        "reference": "https://attack.mitre.org/techniques/T1609/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "c8bf56cc-c648-4f88-bb4f-9e504d0779d1_1",
+    "type": "security-rule"
+}

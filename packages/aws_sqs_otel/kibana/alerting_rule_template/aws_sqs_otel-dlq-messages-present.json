@@ -29,7 +29,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-aws.sqs.otel-*\n// Dead-letter queues: tune the LIKE pattern to match your naming convention\n| WHERE Namespace == \"AWS/SQS\"\n    AND MetricName == \"ApproximateNumberOfMessagesVisible\"\n    AND stat == \"Maximum\"\n    AND QueueName LIKE \"*dlq*\"\n| STATS dlq_depth = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)\n    BY QueueName, cloud.region\n// Any message in a DLQ indicates processing failure — tune threshold if needed\n| WHERE dlq_depth > 0"
+        "esql": "TS metrics-aws.sqs.otel-*\n// Dead-letter queues: tune the LIKE pattern to match your naming convention\n| WHERE Namespace == \"AWS/SQS\"\n    AND MetricName == \"ApproximateNumberOfMessagesVisible\"\n    AND stat == \"Maximum\"\n    AND QueueName LIKE \"*dlq*\"\n| STATS dlq_depth = MAX(MAX_OVER_TIME(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`))\n    BY QueueName, cloud.region\n// Any message in a DLQ indicates processing failure — tune threshold if needed\n| WHERE dlq_depth > 0\n| EVAL sqs_queue = CONCAT(QueueName, \" (\", cloud.region, \")\")"
       },
       "size": 0,
       "threshold": [
@@ -40,7 +40,7 @@
       "timeWindowSize": 10,
       "timeWindowUnit": "m",
       "groupBy": "row",
-      "termField": "QueueName",
+      "termField": "sqs_queue",
       "termSize": 100,
       "excludeHitsFromPreviousRun": true
     }

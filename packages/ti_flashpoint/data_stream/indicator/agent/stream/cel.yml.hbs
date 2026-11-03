@@ -22,6 +22,8 @@ state:
   initial_interval: {{initial_interval}}
   page_size: {{page_size}}
   api_token: {{api_token}}
+  integration_version: !!str {{#if _meta.package.version}}{{_meta.package.version}}{{else}}unknown{{/if}}
+  integration_platform_version: !!str {{#if _meta.agent.version}}{{_meta.agent.version}}{{else}}unknown{{/if}}
 redact:
   fields:
     - api_token
@@ -40,6 +42,9 @@ program: |
       "Header": {
         "Accept": ["application/json"],
         "Authorization": ["Bearer " + state.api_token],
+        "X-FP-IntegrationPlatform": ["Elastic"],
+        "X-FP-IntegrationVersion": [state.integration_version],
+        "X-FP-IntegrationPlatformVersion": [state.integration_platform_version],
       }
     }).do_request().as(resp, resp.StatusCode == 200 ?
       resp.Body.decode_json().as(body,

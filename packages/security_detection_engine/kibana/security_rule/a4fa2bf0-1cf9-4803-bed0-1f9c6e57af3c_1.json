@@ -1,0 +1,149 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects non-system identities using the GKE nodes/proxy API to reach a node's Kubelet through the API server. The nodes/proxy subresource allows any principal with this permission to call the Kubelet API without direct node network access or Kubelet TLS certificates. Through this path an attacker can list pod specs (including environment secrets), read Kubelet configuration, retrieve container logs, and access running pod metadata on the target node. Monitoring endpoints such as metrics, healthz, and stats/summary are excluded to reduce noise from observability tooling.",
+        "false_positives": [
+            "Legitimate kubelet debugging, node troubleshooting, or security tooling that uses the node proxy outside the excluded metrics paths may match. Baseline approved operators and automation identities after review."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "client.user.email",
+                "source.ip",
+                "user_agent.original",
+                "event.action",
+                "event.outcome",
+                "gcp.audit.resource_name",
+                "data_stream.namespace"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE API Server Proxying Request to Kubelet",
+        "note": "## Triage and analysis\n\n### Investigating GKE API Server Proxying Request to Kubelet\n\nReview `client.user.email`, `source.ip`, and `user_agent.original` to determine who initiated the proxy request.\nExamine `gcp.audit.resource_name` and `event.action` to identify which Kubelet path was accessed after `/proxy/`.\n\n### Possible investigation steps\n\n- Check the proxied Kubelet path for attacker intent:\n  - `/proxy/pods` \u2014 pod spec enumeration, including environment variable secrets\n  - `/proxy/exec` or `/proxy/run` \u2014 command execution inside containers on that node\n  - `/proxy/configz` \u2014 Kubelet configuration and authentication settings\n  - `/proxy/runningpods` \u2014 active workload enumeration\n  - `/proxy/containerLogs` \u2014 log harvesting for leaked credentials\n- Identify how the principal obtained `nodes/proxy` permission by reviewing RBAC bindings.\n- Correlate with TokenRequest activity from the same actor shortly before the proxy call.\n- Review whether the same principal proxied multiple nodes in a short window.\n\n### False positive analysis\n\n- Monitoring agents that scrape paths other than the excluded metrics/health endpoints may match. Add approved paths\n  or identities after baselining.\n- Cluster admin tools that inspect node health via the proxy API can match during maintenance windows.\n\n### Response and remediation\n\n- Review and remove unauthorized RBAC granting `nodes/proxy`.\n- If `/proxy/pods` was accessed, rotate secrets and credentials that may have been exposed via environment variables\n  on that node.\n- If `/proxy/exec` or `/proxy/run` was accessed, treat the node as compromised and isolate it.\n- Restrict `nodes/proxy` to infrastructure automation only.\n\n",
+        "query": "data_stream.dataset:gcp.audit and service.name:\"k8s.io\" and event.outcome:success and\nevent.action:(\n  \"io.k8s.core.v1.nodes.proxy.get\" or\n  \"io.k8s.core.v1.nodes.proxy.create\"\n) and\nnot gcp.audit.resource_name:(*metrics* or *healthz* or *stats/summary* or *elastic-agent* or *configz*) and\nnot client.user.email:(\n  \"system:kube-controller-manager\" or\n  \"system:kube-scheduler\" or\n  system\\:serviceaccount\\:kube-system\\:* or\n  system\\:node\\:*\n)\n",
+        "references": [
+            "https://kubernetes.io/docs/concepts/cluster-administration/proxies/",
+            "https://stratus-red-team.cloud/attack-techniques/kubernetes/k8s.privilege-escalation.nodes-proxy/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": ">=2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "client.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.resource_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "service.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "a4fa2bf0-1cf9-4803-bed0-1f9c6e57af3c",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Tactic: Lateral Movement",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1611",
+                        "name": "Escape to Host",
+                        "reference": "https://attack.mitre.org/techniques/T1611/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1550",
+                        "name": "Use Alternate Authentication Material",
+                        "reference": "https://attack.mitre.org/techniques/T1550/",
+                        "subtechnique": [
+                            {
+                                "id": "T1550.001",
+                                "name": "Application Access Token",
+                                "reference": "https://attack.mitre.org/techniques/T1550/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1613",
+                        "name": "Container and Resource Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1613/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "a4fa2bf0-1cf9-4803-bed0-1f9c6e57af3c_1",
+    "type": "security-rule"
+}

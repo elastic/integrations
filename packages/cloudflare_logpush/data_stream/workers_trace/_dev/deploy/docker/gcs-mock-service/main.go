@@ -86,13 +86,13 @@ func readManifest(path string) (*Manifest, error) {
 // processManifest creates buckets and uploads objects as specified in the manifest.
 func processManifest(manifest *Manifest) error {
 	for bucketName, bucket := range manifest.Buckets {
+		if err := createBucket(bucketName); err != nil {
+			return fmt.Errorf("failed to create bucket '%s': %w", bucketName, err)
+		}
 		for _, file := range bucket.Files {
 			fmt.Printf("preloading data for bucket: %s | path: %s | content-type: %s...\n",
 				bucketName, file.Path, file.ContentType)
 
-			if err := createBucket(bucketName); err != nil {
-				return fmt.Errorf("failed to create bucket '%s': %w", bucketName, err)
-			}
 			data, err := os.ReadFile(file.Path)
 			if err != nil {
 				return fmt.Errorf("failed to read bucket data file '%s': %w", file.Path, err)

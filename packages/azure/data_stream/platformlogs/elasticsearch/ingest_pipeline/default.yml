@@ -2,47 +2,56 @@
 description: Pipeline for parsing azure platform logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_azure_to_azure-eventhub_e7f48148
       field: azure
       target_field: azure-eventhub
       ignore_missing: true
   - remove:
+      tag: remove_routing_category_681b150d
       field: routing.category
       ignore_missing: true
       description: Remove the routing.category field if it exists.
   - script:
+      tag: script_b08e84a2
       source: ctx.message = ctx.message.replace(params.empty_field_name, '')
       params:
         empty_field_name: '"":"",'
       ignore_failure: true
   # BEGIN: Temporary field renaming
   - rename:
+      tag: rename_azureLogForwarder_to_azure_log_forwarder_b220a665
       field: azureLogForwarder
       target_field: azure_log_forwarder
       ignore_missing: true
       override: false
       description: 'Renames the `azureLogForwarder` field to `azure_log_forwarder` to workaround the issue with invalid field names in the Azure Native ISV logs.'
   - rename:
+      tag: rename_azure_log_forwarder_resourceType_to_azure_log_forwarder_resource_type_dac31d0b
       field: azure_log_forwarder.resourceType
       target_field: azure_log_forwarder.resource_type
       ignore_missing: true
       override: false
       description: 'Renames the `azureLogForwarder.resourceType` field to `azure_log_forwarder.resource_type` to workaround the issue with invalid field names in the Azure Native ISV logs.'
   - rename:
+      tag: rename_azure_log_forwarder_serviceProvider_to_azure_log_forwarder_service_provider_be539075
       field: azure_log_forwarder.serviceProvider
       target_field: azure_log_forwarder.service_provider
       ignore_missing: true
       override: false
       description: 'Renames the `azureLogForwarder.serviceProvider` field to `azure_log_forwarder.service_provider` to workaround the issue with invalid field names in the Azure Native ISV logs.'
   - rename:
+      tag: rename_dataStream_to_data_stream_515b09b9
       field: dataStream
       target_field: data_stream
       ignore_missing: true
       override: false
       description: 'Renames the `dataStream` field to `data_stream` to workaround the issue with invalid field names in the Azure Native ISV logs.'
   - date:
+      tag: date_timestamp_to_timestamp_62f4d890
       field: timestamp
       target_field: '@timestamp'
       # Order is prioritized by observed frequency for this log
@@ -50,7 +59,7 @@ processors:
       # We expect the first format to be used in 99% of cases.
       # However, we include the other formats seen in other
       # categories as a necessary fallback.
-      formats: 
+      formats:
         - ISO8601
         - "M/d/yyyy h:mm:ss a XXX"
         - "M/d/yyyy h:mm:ss a"
@@ -59,62 +68,74 @@ processors:
       ignore_failure: true
       description: 'Use the `timestamp` field to set the `@timestamp` field to workaround the invalid field names in the Azure Native ISV logs.'
   - remove:
+      tag: remove_timestamp_b7c804ec
       field: timestamp
       ignore_missing: true
   # END: Temporary field renaming
   - rename:
+      tag: rename_message_to_event_original_c74b1d7e
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_azure_platformlogs_2605ae84
       field: event.original
       target_field: azure.platformlogs
       on_failure:
         - grok:
+            tag: grok_event_original_785b953c
             field: event.original
             patterns:
               - "resourceId\": ?\"%{DATA:azure.platformlogs.resourceId}\""
             ignore_failure: true
             ignore_missing: true
         - grok:
+            tag: grok_event_original_816f8bc6
             field: event.original
             patterns:
               - "category\": ?\"%{DATA:azure.platformlogs.category}\""
             ignore_failure: true
             ignore_missing: true
         - grok:
+            tag: grok_event_original_debe8d54
             field: event.original
             patterns:
               - "time\": ?\"%{DATA:azure.platformlogs.time}\""
             ignore_failure: true
             ignore_missing: true
         - set:
+            tag: set_error_message_6a706e43
             field: error.message
             value: 'Received invalid json from the Azure Cloud platform. Unable to parse the source log message'
             ignore_failure: true
         - append:
+            tag: append_tags_4d350d64
             field: tags
             value: ["preserve_original_event"]
             ignore_failure: true
   - set:
+      tag: set_temp_properties_b6388824
       field: temp_properties
       value: '{{azure.platformlogs.properties}}'
       if: "ctx.azure?.platformlogs?.properties instanceof String"
       ignore_failure: true
       description: 'Temporarily store the properties string.'
   - remove:
+      tag: remove_azure_platformlogs_properties_a33a5ce8
       field: azure.platformlogs.properties
       if: "ctx.temp_properties != null"
       ignore_missing: true
       description: 'Remove the properties string field.'
   - script:
+      tag: script_convert_single_quotes_to_double_ea1c8e63
       lang: painless
       source: >-
         if (ctx?.temp_properties != null) {
@@ -123,27 +144,32 @@ processors:
       ignore_failure: true
       description: 'Convert single quotes to double quotes in the properties string to make it valid JSON.'
   - json:
+      tag: json_temp_properties_to_azure_platformlogs_properties_6589a199
       field: temp_properties
       target_field: azure.platformlogs.properties
       if: "ctx.temp_properties != null"
       ignore_failure: true
       description: 'Parse the stringified JSON properties field into a nested object.'
   - remove:
+      tag: remove_temp_properties_e273520e
       field: temp_properties
       ignore_missing: true
       description: 'Remove the temporary field after successful parsing.'
   - rename:
+      tag: rename_azure_platformlogs_Identity_to_azure_platformlogs_identity_88971367
       field: azure.platformlogs.Identity
       target_field: azure.platformlogs.identity
       ignore_missing: true
       description: 'Standardize the `Identity` field name to `identity` for consistency.'
   - rename:
+      tag: rename_azure_platformlogs_identity_to_azure_platformlogs_identity_name_951b815e
       field: azure.platformlogs.identity
       if: "ctx.azure?.platformlogs?.identity instanceof String"
       target_field: azure.platformlogs.identity_name
       ignore_missing: true
       description: 'Rename the field to `identity_name` to avoid conflicts with the `identity` containing a JSON object.'
   - date:
+      tag: date_azure_platformlogs_time_to_timestamp_05b38f54
       field: azure.platformlogs.time
       target_field: '@timestamp'
       ignore_failure: true
@@ -152,13 +178,14 @@ processors:
       # We expect the first format to be used in 99% of cases.
       # However, we include the other formats seen in other
       # categories as a necessary fallback.
-      formats: 
+      formats:
         - ISO8601
         - "M/d/yyyy h:mm:ss a XXX"
         - "M/d/yyyy h:mm:ss a"
         - "M/d/yyyy H:mm:ss"
         - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - date:
+      tag: date_azure_platformlogs_EventTimeString_to_timestamp_bfca9aed
       field: azure.platformlogs.EventTimeString
       target_field: '@timestamp'
       ignore_failure: true
@@ -167,90 +194,108 @@ processors:
       # We expect the first format to be used in 99% of cases.
       # However, we include the other formats seen in other
       # categories as a necessary fallback.
-      formats: 
+      formats:
         - ISO8601
         - "M/d/yyyy h:mm:ss a XXX"
         - "M/d/yyyy h:mm:ss a"
         - "M/d/yyyy H:mm:ss"
         - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - remove:
+      tag: remove_azure_platformlogs_time_e1c070fe
       field: azure.platformlogs.time
       ignore_missing: true
   - rename:
+      tag: rename_azure_platformlogs_resourceId_to_azure_resource_id_b3b4fce1
       field: azure.platformlogs.resourceId
       target_field: azure.resource_id
       ignore_missing: true
-      if : ctx?.azure?.resource_id == null
+      if: ctx?.azure?.resource_id == null
   - rename:
+      tag: rename_azure_platformlogs_ResourceId_to_azure_resource_id_c1bb31c1
       field: azure.platformlogs.ResourceId
       target_field: azure.resource_id
       ignore_missing: true
-      if : ctx?.azure?.resource_id == null
+      if: ctx?.azure?.resource_id == null
   - rename:
+      tag: rename_azure_platformlogs_Region_to_cloud_region_0e199530
       field: azure.platformlogs.Region
       target_field: cloud.region
       ignore_missing: true
   - rename:
+      tag: rename_azure_platformlogs_Host_to_host_name_1a0686c9
       field: azure.platformlogs.Host
       target_field: host.name
       ignore_missing: true
       description: 'Rename `Host` field to `host.name` for ECS compliance.'
   - json:
+      tag: json_azure_platformlogs_EventProperties_to_azure_platformlogs_properties_d37ffa58
       field: azure.platformlogs.EventProperties
       target_field: azure.platformlogs.properties
       ignore_failure: true
   - remove:
+      tag: remove_7be2df55
       if: ctx.azure.platformlogs.properties != null
       field:
         - azure.platformlogs.EventProperties
       ignore_missing: true
   - json:
+      tag: json_azure_platformlogs_properties_log_to_azure_platformlogs_properties_log_12631c18
       field: azure.platformlogs.properties.log
       target_field: azure.platformlogs.properties.log
       ignore_failure: true
   - rename:
+      tag: rename_azure_platformlogs_properties_log_to_message_0ce6ba4a
       field: azure.platformlogs.properties.log
       target_field: message
       ignore_missing: true
       if: "ctx.azure?.platformlogs?.properties?.log != null && ctx.azure?.platformlogs?.properties?.log instanceof String"
   - rename:
+      tag: rename_azure_platformlogs_EventName_to_event_action_4c50131e
       field: azure.platformlogs.EventName
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_azure_platformlogs_EventIpAddress_to_azure_platformlogs_callerIpAddress_730aefc4
       field: azure.platformlogs.EventIpAddress
       target_field: azure.platformlogs.callerIpAddress
       ignore_missing: true
       description: 'Rename `EventIpAddress` to `callerIpAddress` to be processed by subsequent processors.'
   - convert:
+      tag: convert_azure_platformlogs_callerIpAddress_to_source_ip_b187dfc1
       field: azure.platformlogs.callerIpAddress
       target_field: source.ip
       type: ip
       ignore_missing: true
       on_failure:
-        - rename: 
+        - rename:
+            tag: rename_azure_platformlogs_callerIpAddress_to_source_address_46724e15
             field: azure.platformlogs.callerIpAddress
             target_field: source.address
-            ignore_missing: true 
+            ignore_missing: true
             ignore_failure: true
   - remove:
+      tag: remove_azure_platformlogs_callerIpAddress_0cbee953
       field: azure.platformlogs.callerIpAddress
       if: 'ctx.source?.ip != null'
       ignore_missing: true
   - set:
+      tag: set_client_ip_b6d15cbc
       field: client.ip
       value: '{{source.ip}}'
       ignore_empty_value: true
   - append:
+      tag: append_related_ip_d7aecc5f
       field: related.ip
       value: '{{source.ip}}'
       allow_duplicates: false
       if: 'ctx.source?.ip != null'
   - rename:
+      tag: rename_azure_platformlogs_level_to_log_level_16476625
       field: azure.platformlogs.level
       target_field: log.level
       ignore_missing: true
   - convert:
+      tag: convert_azure_platformlogs_durationMs_to_event_duration_08af5e5c
       field: azure.platformlogs.durationMs
       target_field: event.duration
       type: long
@@ -258,20 +303,23 @@ processors:
       ignore_failure: true
       if: "ctx?.azure?.platformlogs?.durationMs != null && ctx?.azure?.platformlogs?.durationMs instanceof String"
   - remove:
+      tag: remove_azure_platformlogs_durationMs_0e1b7125
       field: azure.platformlogs.durationMs
       ignore_missing: true
   - script:
+      tag: script_7f8b9902
       lang: painless
-      source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration
-        * params.param_nano;}
+      source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration * params.param_nano;}
       params:
         param_nano: 1000000
       ignore_failure: true
   - rename:
+      tag: rename_azure_platformlogs_location_to_geo_name_3bbd11f4
       field: azure.platformlogs.location
       target_field: geo.name
       ignore_missing: true
   - script:
+      tag: script_0c469567
       lang: painless
       source: >-
         if (ctx?.azure?.platformlogs?.properties?.eventCategory != null) {
@@ -285,64 +333,78 @@ processors:
         }
       ignore_failure: true
   - rename:
+      tag: rename_azure_platformlogs_resultType_to_azure_platformlogs_result_type_bc2bd151
       field: azure.platformlogs.resultType
       target_field: azure.platformlogs.result_type
       ignore_missing: true
   - convert:
+      tag: convert_azure_platformlogs_result_type_to_event_outcome_12021d80
       field: azure.platformlogs.result_type
       target_field: event.outcome
       type: string
       if: "ctx?.azure?.platformlogs?.result_type != null && ctx.azure.platformlogs.result_type instanceof String && (ctx.azure.platformlogs.result_type.toLowerCase() == 'success' || ctx.azure.platformlogs.result_type.toLowerCase() == 'failure')"
   - convert:
+      tag: convert_azure_platformlogs_properties_result_to_event_outcome_4dbe0ced
       field: azure.platformlogs.properties.result
       target_field: event.outcome
       type: string
       if: "ctx?.event?.outcome == null && ctx?.azure?.platformlogs?.properties?.result != null && ctx?.azure?.platformlogs?.properties?.result instanceof String && ['success', 'failure', 'unknown'].contains(ctx.azure?.platformlogs?.properties?.result)"
   - convert:
+      tag: convert_azure_platformlogs_Status_to_event_outcome_26325f82
       field: azure.platformlogs.Status
       target_field: event.outcome
       type: string
       if: "ctx?.event?.outcome == null && ctx?.azure?.platformlogs?.Status != null && ctx?.azure?.platformlogs?.Status instanceof String && ['success', 'failure', 'unknown', 'Succeeded', 'Failed'].contains(ctx.azure?.platformlogs?.Status)"
   - set:
+      tag: set_event_outcome_22d9ea28
       field: event.outcome
       value: "success"
       override: true
       if: ctx?.event?.outcome != null && ctx?.event?.outcome == "Succeeded"
   - set:
+      tag: set_event_outcome_a1dc8441
       field: event.outcome
       value: "failure"
       override: true
       if: ctx?.event?.outcome != null && ctx?.event?.outcome == "Failed"
   - rename:
+      tag: rename_azure_platformlogs_operationName_to_azure_platformlogs_operation_name_dfdf9ee9
       field: azure.platformlogs.operationName
       target_field: azure.platformlogs.operation_name
       ignore_missing: true
   - convert:
+      tag: convert_azure_platformlogs_operation_name_to_event_action_c458083c
       field: azure.platformlogs.operation_name
       target_field: event.action
       type: string
       ignore_missing: true
   - rename:
+      tag: rename_azure_platformlogs_resultSignature_to_azure_platformlogs_result_signature_2df5ece5
       field: azure.platformlogs.resultSignature
       target_field: azure.platformlogs.result_signature
       ignore_missing: true
   - rename:
+      tag: rename_azure_platformlogs_correlationId_to_azure_correlation_id_2c90e699
       field: azure.platformlogs.correlationId
       target_field: azure.correlation_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_platformlogs_properties_statusCode_to_azure_platformlogs_properties_status_code_78ef0791
       field: azure.platformlogs.properties.statusCode
       target_field: azure.platformlogs.properties.status_code
       ignore_missing: true
   - rename:
+      tag: rename_azure_platformlogs_Status_to_azure_platformlogs_status_38fcac24
       field: azure.platformlogs.Status
       target_field: azure.platformlogs.status
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_geo_d0a7dae7
       field: source.ip
       target_field: geo
       ignore_missing: true
   - script:
+      tag: script_e04aa004
       lang: painless
       params:
         "write":
@@ -368,10 +430,12 @@ processors:
         def hm = new HashMap(params.get(category));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -380,44 +444,55 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_event_kind_25eebc4d
       field: event.kind
       value: event
       ignore_failure: true
   - pipeline:
+      tag: pipeline_azure_shared_pipeline_7877e1a4
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
   - pipeline:
+      tag: pipeline_springcloudlogs_inner_pipeline_3294151d
       if: "ctx?.azure_log_forwarder?.resource_type != null && (ctx?.azure_log_forwarder?.resource_type == 'Microsoft.AppPlatform/Spring'|| ctx?.azure_log_forwarder?.resource_type == 'MICROSOFT.APPPLATFORM/SPRING')"
       name: '{{ IngestPipeline "springcloudlogs-inner-pipeline" }}'
   - rename:
+      tag: rename_azure_platformlogs_resultDescription_to_azure_platformlogs_result_description_1a669b61
       field: azure.platformlogs.resultDescription
       target_field: azure.platformlogs.result_description
       ignore_missing: true
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

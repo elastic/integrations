@@ -92,7 +92,14 @@ program: |
   ).as(state, !has(state.next) ?
     state
   : (state.next >= size(state.host_list)) ?
-    {}
+    {
+      "events": [],
+      "group_id": state.group_id,
+      "want_more": false,
+      "page_num": 1,
+      "disk_page_num": 1,
+      "query": state.query,
+    }
   :
     state.with(
       request("GET", string(state.host_list[state.next] + "?pageNum=" + string(state.disk_page_num) + "&itemsPerPage=100")).with(
@@ -140,7 +147,30 @@ program: |
   ).as(state, !has(state.disk_next) ?
     state
   : (state.disk_next >= size(state.disk_list)) ?
-    {}
+    // Parenthesized: CEL requires the true-branch of a ternary to be a
+    // ConditionalOr, so a nested ternary here must be wrapped in parens.
+    ((int(state.disk_page_num) == 1) ?
+      {
+        "events": [],
+        "group_id": state.group_id,
+        "query": state.query,
+        "page_num": state.page_num,
+        "disk_page_num": 1,
+        "host_list": (int(state.next) + 1 < size(state.host_list)) ? state.host_list : [],
+        "next": (int(state.next) + 1 < size(state.host_list)) ? (int(state.next) + 1) : 0,
+        "want_more": int(state.next) + 1 < size(state.host_list) || state.page_num != 1,
+      }
+    :
+      {
+        "events": [],
+        "group_id": state.group_id,
+        "query": state.query,
+        "page_num": state.page_num,
+        "disk_page_num": state.disk_page_num,
+        "host_list": state.host_list,
+        "next": int(state.next),
+        "want_more": true,
+      })
   :
     request("GET", string(state.host_list[state.next] + state.disk_list[state.disk_next] + state.query)).with(
       {
@@ -194,6 +224,10 @@ program: |
             },
           ],
           "want_more": false,
+          "group_id": state.group_id,
+          "page_num": 1,
+          "disk_page_num": 1,
+          "query": state.query,
         }
       :
         {
@@ -206,6 +240,10 @@ program: |
             },
           ],
           "want_more": false,
+          "group_id": state.group_id,
+          "page_num": 1,
+          "disk_page_num": 1,
+          "query": state.query,
         }
       )
     )

@@ -1,0 +1,193 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a privilege escalation attempt via a rogue Windows directory (Windir) environment variable. This is a known primitive that is often combined with other vulnerabilities to elevate privileges.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.registry-*",
+            "endgame-*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-crowdstrike.fdr*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.id",
+                "process.executable",
+                "process.command_line",
+                "process.pid",
+                "process.entity_id",
+                "process.parent.command_line",
+                "registry.hive",
+                "registry.path",
+                "registry.value",
+                "registry.data.type",
+                "registry.data.strings"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Privilege Escalation via Windir Environment Variable",
+        "note": "## Triage and analysis\n\n### Investigating Privilege Escalation via Windir Environment Variable\n\n#### Possible investigation steps\n\n- Does the alert show a Windir or SystemRoot override that can affect this user?\n  - Focus: `registry.path`, `registry.value`, `registry.data.strings`, `host.id`, and `user.id`.\n  - Implication: Escalate when a per-user Environment hive, such as HKEY_USERS SID or HKCU-equivalent context, changes \"windir\" or \"systemroot\" away from \"C:\\Windows\" or \"%SystemRoot%\"; lower suspicion only when the same host and user recur with the same test or image-engineering value.\n\n- Does the replacement value create a redirection path?\n  - Focus: `registry.data.strings` and `registry.data.type`: user-writable roots, UNC paths, or unexpected command content.\n  - Implication: Escalate when the value can redirect a Windows-root process to attacker-controlled content or command execution; lower suspicion only when the exact replacement is bounded test or image data and no later elevated execution uses it.\n\n- Is the writing process the expected tool in an explainable launch chain?\n  - Focus: `process.executable`, `process.command_line`, `process.code_signature.subject_name`, `process.code_signature.trusted`, and `process.parent.command_line`.\n  - Implication: Escalate when the writer is \"reg.exe\", a script host, unsigned or user-writable binary, browser or Office child, or renamed tool outside a recognized management chain; reduce suspicion only when signer, path, parent, and arguments match the same test or image-engineering toolchain.\n\n- Does the session and token context make a UAC-bypass path feasible?\n  - Focus: `user.id`, `user.domain`, `process.Ext.session_info.logon_type`, `process.Ext.token.integrity_level_name`, and `process.Ext.token.elevation_level`.\n  - Implication: Escalate when an interactive or remote-admin user changes a per-user value from a medium or limited token and later activity reaches high integrity; lower suspicion when a noninteractive service or repair context cannot exercise an interactive auto-elevated task.\n  - Hint: Recover session and token fields from the writer process by `process.entity_id`; if absent, use the same host plus `process.pid` and a tight time window. !{investigate{\"description\":\"\",\"label\":\"Writer process event\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n\n- Did follow-on process execution exercise the override?\n  - Focus: same-host, same-user process starts after the alert, comparing `process.executable`, `process.command_line`, `process.parent.executable`, and `process.Ext.token.integrity_level_name` to the replacement value.\n  - Implication: Escalate when follow-on execution resolves through the substituted path or higher integrity, or when command-line evidence consumes then deletes or restores the value.\n  - Hint: If no follow-on execution appears in the alert window, treat the value as staged and extend only far enough to test later starts reusing the same replacement string. !{investigate{\"description\":\"\",\"label\":\"Process events for the same user and host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n\n- If local evidence is suspicious or unresolved, do related alerts change scope?\n  - Focus: related alerts for meaningful `user.id` values, such as real users or named service accounts. For machine, local service, or generic service identities, prioritize same-host alerts.\n    - !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n    - !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: Broaden response when the same user or host has adjacent privilege-escalation, persistence, defense-evasion, credential-access, or suspicious elevated-process alerts; keep scope local when related alerts are absent and local telemetry supports the same test or image-engineering pattern.\n\nFinal - Escalate when the non-default value enables redirection or command execution and writer, session, follow-on, or related-alert evidence is suspicious; close only when the registry value, writer path and parent, session, timeline, and host or user pattern fit the same test or image-engineering workflow; preserve artifacts and escalate when evidence is mixed or visibility is incomplete.\n\n### False positive analysis\n\n- Non-default per-user \"windir\" or \"systemroot\" values are unusual on production endpoints. Close as benign only when registry value, writer identity, parent chain, session, host and user pattern, and surrounding process or registry activity converge on one exact test or image-engineering workflow; outside confirmation can corroborate only after telemetry aligns. Recurrence can support missing records but not unresolved current telemetry.\n- Do not close if the replacement value, writer lineage, host or user pattern, or elevated-execution evidence drifts.\n- Before creating an exception, validate the minimum stable pattern: exact `registry.path`, exact or tightly bounded `registry.data.strings`, writer `process.executable`, parent `process.parent.command_line`, `host.id`, and `user.id`. Avoid exceptions on `registry.value`, process names such as \"cmd.exe\", or `host.id` alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and record the exact evidence that proved the workflow: `registry.path`, `registry.data.strings`, writer `process.executable`, `process.parent.command_line`, `host.id`, and `user.id`. Create an exception only if the same bounded pattern is stable across prior alerts from this rule.\n- If suspicious but unconfirmed, preserve a case export of the alert and registry event, the original and modified Environment values, the writer process tree anchored on `process.entity_id`, command lines, and any substituted-path binaries or scripts recovered from the host before containment or cleanup.\n- Apply reversible containment first: heightened monitoring, temporary task or execution restrictions, or removal of the rogue Environment value after evidence capture if operations permit it. Escalate to host isolation or account containment only when follow-on elevated execution, higher-integrity child processes, or related post-exploitation alerts make active misuse likely and the host role can tolerate stronger action.\n- If confirmed malicious, isolate the endpoint when the registry value, writer lineage, session context, and follow-on execution show unauthorized privilege escalation. Before terminating processes or deleting artifacts, record the writer and follow-on process entity IDs, command lines, parent chain, modified registry path and value, substituted-path artifacts, and privileged process paths.\n- After scope is preserved, restore \"windir\" or \"systemroot\" to the expected value, remove substituted-path content or execution triggers identified during triage, and review which privileged processes executed from the substituted path before cleanup.\n- If the override was exercised or related alerts show broader compromise, treat the affected user context as potentially elevated beyond its intended boundary. Scope administrator or remote-access accounts active on the host and perform credential hygiene according to exposure and role.\n- Post-incident hardening: reduce use of environment-variable-expanded paths in auto-elevated tasks where possible, retain process and registry telemetry needed for writer-lineage and follow-on execution review, and record any uncovered variant or visibility gap in the case outcome.",
+        "query": "registry where host.os.type == \"windows\" and event.type == \"change\" and\nregistry.value : (\"windir\", \"systemroot\") and registry.data.strings != null and\nregistry.path : (\n    \"*\\\\Environment\\\\windir\",\n    \"*\\\\Environment\\\\systemroot\"\n    ) and\n not registry.data.strings : (\"C:\\\\windows\", \"%SystemRoot%\")\n",
+        "references": [
+            "https://www.tiraniddo.dev/2017/05/exploiting-environment-variables-in.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": ">=3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": ">=5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": ">=1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": ">=3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.data.strings",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "registry.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.value",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "d563aaba-2e72-462b-8658-3e5ea22db3a6",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Registry Events](https://ela.st/sysmon-event-reg-setup)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide",
+            "Tactic: Defense Impairment",
+            "Tactic: Execution",
+            "Tactic: Persistence",
+            "Tactic: Stealth"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1574",
+                        "name": "Hijack Execution Flow",
+                        "reference": "https://attack.mitre.org/techniques/T1574/",
+                        "subtechnique": [
+                            {
+                                "id": "T1574.007",
+                                "name": "Path Interception by PATH Environment Variable",
+                                "reference": "https://attack.mitre.org/techniques/T1574/007/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Stealth",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1574",
+                        "name": "Hijack Execution Flow",
+                        "reference": "https://attack.mitre.org/techniques/T1574/",
+                        "subtechnique": [
+                            {
+                                "id": "T1574.007",
+                                "name": "Path Interception by PATH Environment Variable",
+                                "reference": "https://attack.mitre.org/techniques/T1574/007/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0112",
+                    "name": "Defense Impairment",
+                    "reference": "https://attack.mitre.org/tactics/TA0112/"
+                },
+                "technique": [
+                    {
+                        "id": "T1112",
+                        "name": "Modify Registry",
+                        "reference": "https://attack.mitre.org/techniques/T1112/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1112",
+                        "name": "Modify Registry",
+                        "reference": "https://attack.mitre.org/techniques/T1112/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 317
+    },
+    "id": "d563aaba-2e72-462b-8658-3e5ea22db3a6_317",
+    "type": "security-rule"
+}

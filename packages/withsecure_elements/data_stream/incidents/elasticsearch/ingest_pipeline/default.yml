@@ -7,12 +7,12 @@ processors:
       copy_from: message
       if: ctx.event?.original == null && ctx.message != null
       ignore_failure: true
-      tag: set_event_original
+      tag: set_event_original_9fef8b10
   - remove:
       field: message
       if: ctx.event?.original != null && ctx.message != null && ctx.message == ctx.event.original
       ignore_missing: true
-      tag: remove_message
+      tag: remove_message_edcbffed
 
   # Parse JSON directly into custom namespace
   - json:
@@ -21,48 +21,49 @@ processors:
       if: ctx.event?.original != null && ctx.event.original instanceof String
       on_failure:
         - set:
+            tag: set_error_message_2eb15271
             field: error.message
             value: 'Failed to parse JSON from event.original'
-      tag: json_decode
+      tag: json_decode_b5ae2280
       description: Decode JSON from event.original into withsecure_elements.incidents
 
   # Set ECS version and basic fields
   - set:
       field: ecs.version
       value: '8.11.0'
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
   - set:
       field: event.dataset
       value: withsecure_elements.incidents
-      tag: set_event_dataset
+      tag: set_event_dataset_cde44aa2
   - set:
       field: event.module
       value: withsecure_elements
-      tag: set_event_module
+      tag: set_event_module_614d9fa0
   - set:
       field: event.category
       value: [threat]
-      tag: set_event_category
+      tag: set_event_category_4675e36d
   - set:
       field: event.type
       value: [incident]
-      tag: set_event_type
+      tag: set_event_type_222a3759
   - set:
       field: event.kind
       value: alert
-      tag: set_event_kind
+      tag: set_event_kind_ab1166ce
   - set:
       field: event.provider
       value: withsecure_elements
-      tag: set_event_provider
+      tag: set_event_provider_9379fd36
   - set:
       field: event.action
       value: detected
-      tag: set_event_action
+      tag: set_event_action_014ef516
   - set:
       field: event.outcome
       value: success
-      tag: set_event_outcome
+      tag: set_event_outcome_5592503e
 
   # Generate unique _id for automatic deduplication
   - fingerprint:
@@ -71,24 +72,24 @@ processors:
         - withsecure_elements.incidents.updatedTimestamp
       target_field: _id
       ignore_missing: true
-      tag: generate_document_id
-  
+      tag: generate_document_id_db261dbc
+
   # Map to ECS fields using copy_from
   - set:
       field: event.id
       copy_from: withsecure_elements.incidents.incidentId
       if: ctx.withsecure_elements?.incidents?.incidentId != null
       ignore_failure: true
-      tag: set_event_id
+      tag: set_event_id_a50183e8
   - set:
       field: event.risk_score
       copy_from: withsecure_elements.incidents.riskScore
       if: ctx.withsecure_elements?.incidents?.riskScore != null
       ignore_failure: true
-      tag: set_event_risk_score
+      tag: set_event_risk_score_6ede324d
   - script:
       lang: painless
-      tag: normalize_incident_severity
+      tag: normalize_incident_severity_9cb39bbe
       if: ctx.withsecure_elements?.incidents?.riskLevel != null
       source: >
         def riskLevelValue = ctx.withsecure_elements.incidents.riskLevel;
@@ -107,7 +108,6 @@ processors:
         } else if (normalized == 'severe') {
           ctx.event.severity = 99;
         }
-
   # Set timestamps
   - date:
       field: withsecure_elements.incidents.createdTimestamp
@@ -116,9 +116,10 @@ processors:
         - ISO8601
         - UNIX_MS
       if: ctx.withsecure_elements?.incidents?.createdTimestamp != null
-      tag: set_timestamp
+      tag: set_timestamp_0480b0bb
       on_failure:
         - append:
+            tag: append_error_message_8375ebd9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -126,13 +127,13 @@ processors:
       copy_from: "@timestamp"
       if: ctx['@timestamp'] != null
       ignore_failure: true
-      tag: set_event_created
+      tag: set_event_created_0e43076c
   - set:
       field: event.start
       copy_from: "@timestamp"
       if: ctx['@timestamp'] != null
       ignore_failure: true
-      tag: set_event_start
+      tag: set_event_start_3a95004e
   - date:
       field: withsecure_elements.incidents.updatedTimestamp
       target_field: event.end
@@ -140,33 +141,38 @@ processors:
         - ISO8601
         - UNIX_MS
       if: ctx.withsecure_elements?.incidents?.updatedTimestamp != null
-      tag: set_event_end
+      tag: set_event_end_f6368345
       on_failure:
         - append:
+            tag: append_error_message_20cf2916
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - set:
       field: event.kind
       value: pipeline_error
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
-  - set:
+  - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

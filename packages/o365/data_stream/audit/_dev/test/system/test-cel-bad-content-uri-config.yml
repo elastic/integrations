@@ -1,0 +1,39 @@
+input: cel
+service: o365-cel
+vars: ~
+policy_template: o365
+data_stream:
+  vars:
+    url: http://{{Hostname}}:{{Port}}
+    token_url: http://{{Hostname}}:{{Port}}
+    preserve_original_event: true
+    client_id: test-cel-client-id
+    client_secret: test-cel-client-secret
+    azure_tenant_id: test-cel-tenant-id
+    content_types: "Audit.AzureActiveDirectory"
+    interval: 30s
+    initial_interval: 1h
+    enable_request_tracer: true
+# Exercises the repair of a contentUri the API returned on a miscomputed base
+# URL. The mock lists one content blob whose contentUri is
+#
+#   http://localhost/celbroken1/activity/feed/audit/celid$aad$1
+#
+# which is the shape seen in elastic/sdh-beats#7627: an http scheme, a localhost
+# host, no /api/v1.0 segment and a tenant that is not the configured one. As
+# given it can never be fetched, and because it is persisted in the cursor it
+# stopped collection until the content expired up to two weeks later, surviving
+# agent restarts and policy changes.
+#
+# The program now rebuilds the URL from the configured resource URL, tenant and
+# content ID before using it. The mock serves the blob only on the canonical
+# path, so hit_count 1 is reached only if the repair produced exactly that URL,
+# under the configured tenant and with the '$' separators unescaped. Without the
+# fix nothing is collected.
+#
+# The companion case, a content item the API rejects outright, cannot be
+# asserted here: it produces an error document, and the system test runner
+# fails any test whose documents carry event.kind pipeline_error. That scenario
+# lives in _dev/test/scripts/rejected_content_item.txt instead.
+assert:
+  hit_count: 1

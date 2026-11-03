@@ -6,8 +6,9 @@ This integration is for [CISA KEV](https://www.cisa.gov/known-exploited-vulnerab
 
 ## Elastic Managed enabled integration
 
-Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ### Example Enrich Policy and ES|QL Correlation Query
 
@@ -40,6 +41,19 @@ from logs-nessus.vulnerability*
 | sort count desc
 | keep nessus.plugin.name, vulnerability.severity, cisa_kev.vulnerability.product, cisa_kev.vulnerability.date_added, count
 | limit 10
+```
+
+### Query-time KEV enrichment (LOOKUP JOIN)
+
+The package ships a `latest` transform that maintains the most recent KEV entry per CVE in the lookup index `logs-cisa_kevs_latest.vulnerability`. Unchanged catalog entries are deduplicated at ingest, while updated entries are retained as new source documents, so the raw data stream can hold multiple historical versions of a CVE. The lookup index collapses those versions into the latest row per CVE, making it the preferred enrichment path.
+
+You can enrich vulnerability findings at query time with the ES|QL [`LOOKUP JOIN`](https://www.elastic.co/guide/en/elasticsearch/reference/current/esql-lookup-join.html) command on `vulnerability.id`:
+
+```esql
+FROM logs-endpoint.vulnerability-*
+| LOOKUP JOIN logs-cisa_kevs_latest.vulnerability ON vulnerability.id
+| KEEP vulnerability.id, cisa_kev.vulnerability.date_added, cisa_kev.vulnerability.due_date, cisa_kev.vulnerability.known_ransomware_campaign_use
+| WHERE cisa_kev.vulnerability.date_added IS NOT NULL
 ```
 
 ## Upgrading to v1.7.0+

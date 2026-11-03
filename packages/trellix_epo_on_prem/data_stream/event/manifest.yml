@@ -1,0 +1,80 @@
+title: Trellix ePO On-Prem event logs
+type: logs
+streams:
+  - input: tcp
+    enabled: false
+    template_path: tcp.yml.hbs
+    title: Trellix ePO On-Prem event logs
+    description: Collect Trellix ePO On-Prem event logs via TCP syslog.
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: The bind address to listen for TCP connections. Set to `0.0.0.0` to bind to all available interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: 0.0.0.0
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: The TCP port number to listen on.
+        multi: false
+        required: true
+        show_user: true
+        default: 9603
+      - name: tcp_options
+        type: yaml
+        title: Custom TCP Options
+        description: Specify custom configuration options for the TCP input.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          max_message_size: 100KiB
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: TLS options for the listening TCP endpoint. Trellix ePO forwards syslog only over TLS, so set `certificate` and `key` to the server certificate presented to ePO. Optionally add `certificate_authorities` to require client certificates. See the [documentation](https://www.elastic.co/docs/reference/beats/filebeat/configuration-ssl) for all options.
+        multi: false
+        required: false
+        show_user: true
+        default: |
+          #enabled: true
+          #certificate: "/etc/pki/server/cert.pem"
+          #key: "/etc/pki/server/cert.key"
+          #certificate_authorities:
+          #  - "/etc/pki/ca/ca.pem"
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - trellix_epo_on_prem-event
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_decoded_event
+        required: true
+        show_user: false
+        title: Preserve decoded event
+        description: Preserves the decoded JSON of the raw syslog event, added to the field `trellix_epo_on_prem.event.original`. Useful for debugging purposes, but increases storage usage.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

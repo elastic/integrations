@@ -1,0 +1,193 @@
+# Test that a content item the API rejects is reported and skipped, and that
+# the items queued behind it are still collected.
+#
+# The mock lists two content blobs. The first always answers 404 with AF20024,
+# the second serves a normal audit event. The rejected blob is listed first, so
+# it sits at the head of the queue and the second is only reached if the
+# program gets past it.
+#
+# The branch handling this said it would "skip this content and continue", but
+# it returned its error as a single object. The runtime treats a single object
+# as an error condition and discards the cursor returned with it, so the
+# advance that would have dropped the item was thrown away. Since the branch
+# also sets want_more, the same request was reissued on every evaluation, up to
+# max_executions times per interval, and the blob behind it was never fetched.
+#
+# This lives in a scripts test rather than a system test because the error
+# document carries event.kind pipeline_error, which the system test runner
+# treats as a failure regardless of the asserted hit count. The repair of a
+# malformed contentUri, which produces no error document, is covered by
+# _dev/test/system/test-cel-bad-content-uri-config.yml.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start the mock O365 API server.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} o365-mock
+
+# Add the package resources.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Add the data stream policy.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Wait for exactly 2 documents: the error for the rejected blob and the audit
+# event from the blob behind it.
+#
+# The confirm duration is what makes this a regression test. The retry loop
+# happens within a single polling interval, not across intervals: the branch
+# sets want_more, so a discarded cursor advance means the rejected blob is
+# requested again immediately, repeatedly, until max_executions is reached.
+# A count that settles at 2 therefore means the item really was dropped.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 30s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# One error document, naming the rejected blob.
+exec jq -r '[.hits.hits[]._source.error.message // empty] | flatten | .[]' got_docs.json
+stdout 'celid-rejected'
+
+# Exactly one error document, not one per evaluation.
+exec jq '[.hits.hits[]._source | select(.error.message != null)] | length' got_docs.json
+stdout '^1$'
+
+# The blob queued behind the rejected one was collected.
+exec jq '[.hits.hits[]._source | select(.o365.audit != null)] | length' got_docs.json
+stdout '^1$'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down o365-mock
+
+-- test_config.yaml --
+input: cel
+vars: ~
+data_stream:
+  vars:
+    url: http://o365-mock:8080
+    token_url: http://o365-mock:8080
+    preserve_original_event: true
+    client_id: test-cel-client-id
+    client_secret: test-cel-client-secret
+    azure_tenant_id: test-cel-tenant-id
+    content_types: "Audit.Exchange"
+    # One poll only. The whole subscribe, list and fetch sequence completes in
+    # the first execution chain, and the mock re-serves its listing on every
+    # request, so a second poll would re-queue both blobs. The audit event
+    # de-duplicates on its record ID, but an error document has no such ID and
+    # would be indexed again, making the count climb for a reason unrelated to
+    # the behaviour under test.
+    interval: 10m
+    # Bound a regression: without the fix the rejected blob is re-requested
+    # within the same interval until this limit, so a failure shows up as a
+    # handful of error documents rather than thousands.
+    max_executions: 20
+    initial_interval: 1h
+    enable_request_tracer: false
+-- o365-mock/docker-compose.yml --
+version: '2.3'
+services:
+  o365-mock:
+    image: docker.elastic.co/observability/stream:v0.19.0
+    hostname: o365-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- o365-mock/config.yml --
+rules:
+  # Token endpoint.
+  - path: /test-cel-tenant-id/oauth2/v2.0/token
+    methods: [POST]
+    query_params:
+      client_id: test-cel-client-id
+      client_secret: test-cel-client-secret
+      grant_type: client_credentials
+      scope: https://manage.office.com/.default
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token":"test-token","token_type":"Bearer","expires_in":3600,"ext_expires_in":3600}
+
+  # Subscribe Audit.Exchange - success.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/start
+    methods: [POST]
+    query_params:
+      contentType: "Audit.Exchange"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"contentType":"Audit.Exchange","status":"enabled","webhook":null}
+
+  # List content. The rejected blob is listed first so that it heads the queue.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
+    methods: [GET]
+    query_params:
+      contentType: "Audit.Exchange"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"contentType":"Audit.Exchange","contentId":"celid-rejected","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/celid-rejected","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"},{"contentType":"Audit.Exchange","contentId":"celid-good","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/celid-good","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"}]
+
+  # The rejected blob. No repair can help with this, so the program has to
+  # report it and move on.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/celid-rejected
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 404
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"error":{"code":"AF20024","message":"The requested content blob does not exist."}}
+
+  # The blob queued behind it.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/celid-good
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"Id":"exchange-event-001","CreationTime":"2020-02-07T16:43:53","Operation":"MailItemsAccessed","RecordType":2,"Workload":"Exchange","OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"analyst@test.onmicrosoft.com","ClientIP":"81.2.69.144"}]

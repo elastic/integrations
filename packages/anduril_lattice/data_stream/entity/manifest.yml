@@ -1,0 +1,79 @@
+title: "Entity"
+type: logs
+streams:
+  - input: cel
+    title: "Collect entity events via Lattice long-poll API"
+    description: >-
+      Collect entity events from the Anduril Lattice long-poll API. Each poll returns entity lifecycle events (created, updated, deleted) for all live entities in the Lattice environment.
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: >-
+          How often to poll the Lattice API for new entity events. Short intervals reduce latency; the API supports continuous long-polling. Supports duration strings such as 1s, 5s, 30s, 1m, 5m.
+        required: true
+        show_user: true
+        default: 5s
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: >-
+          Maximum number of entity events returned per poll request (1–2000). Set higher values for environments with dense entity activity.
+        required: true
+        show_user: false
+        default: 100
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: >-
+          Duration before declaring the HTTP client connection timed out. Default is 30s. Increase for slow or high-latency Lattice environments.
+        required: false
+        show_user: false
+        default: 30s
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        description: >-
+          URL of an HTTP proxy to route Lattice API requests through, in the form http[s]://[user:pass@]host:port.
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: >-
+          TLS settings for connecting to the Lattice API — certificate_authorities, verification_mode, and so on. See Filebeat SSL docs for available options.
+        required: false
+        show_user: false
+        multi: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable Request Tracer
+        description: >-
+          Log HTTP requests and responses to the agent's local file system for debugging. Enabling this traces compromises security; use only for debugging.
+        required: false
+        show_user: false
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        description: >-
+          If enabled, the raw API response is preserved in the event.original field.
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: >-
+          Processors to apply to events before they are sent to Elasticsearch. See Beats processors documentation for available options.
+        required: false
+        show_user: false

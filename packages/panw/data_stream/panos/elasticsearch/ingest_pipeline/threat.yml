@@ -21,9 +21,13 @@ processors:
           }
         }
         ctx.message = fixHttpHeadersEscaping(ctx.message);
+  # PAN-OS sometimes emits a whitespace-only column. Without trim, the CSV parser
+  # drops that column and glues the following comma onto the next value, so later
+  # fields such as the high-resolution timestamp are read from the wrong column.
   - csv:
       tag: csv_message_61fc0089
       field: message
+      trim: true
       target_fields:
         - panw.panos.source.ip
         - panw.panos.destination.ip

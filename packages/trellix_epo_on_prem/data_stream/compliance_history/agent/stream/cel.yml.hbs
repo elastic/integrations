@@ -1,0 +1,116 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.url: {{url}}
+auth.basic:
+  user: {{username}}
+  password: {{password}}
+state:
+  # The first poll starts after this AutoId; subsequent polls resume from the
+  # persisted cursor.
+  initial_auto_id: "{{initial_auto_id}}"
+  page_size: {{page_size}}
+  columns: >-
+    EpoComplianceHistory.AutoId
+    EpoComplianceHistory.ChartName
+    EpoComplianceHistory.TaskName
+    EpoComplianceHistory.CountComputers
+    EpoComplianceHistory.CountNonCompliant
+    EpoComplianceHistory.PercentNonCompliant
+    EpoComplianceHistory.PercentCompliant
+    EpoComplianceHistory.CountCompliant
+    EpoComplianceHistory.TheTimestamp
+    EpoComplianceHistory.TenantId
+redact:
+  fields: ~
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with({
+        "auto_id": state.?cursor.last_auto_id.orValue(
+          string(state.initial_auto_id)
+        )
+      })
+  ).as(state,
+    state.with(
+      get(
+        state.url.trim_right("/") + "/remote/core.executeQuery?" +
+        {
+          "target": ["EpoComplianceHistory"],
+          // (top N) keyset page ordered by the unique AutoId.
+          "select": ['(select (top ' + string(int(state.page_size)) + ') ' + state.columns + ')'],
+          "where": ['(where (gt EpoComplianceHistory.AutoId ' + state.auto_id + '))'],
+          "order": ["(order (asc EpoComplianceHistory.AutoId))"],
+          ":output": ["json"]
+        }.format_query()
+      ).as(resp,
+        // core.executeQuery is a plain-text protocol that reports query errors
+        // with HTTP 200 and an "Error <n> :" body, so the status alone does not
+        // establish that the body is JSON. Without the prefix check a non-JSON
+        // 200 aborts the whole evaluation inside decode_json(), which returns no
+        // events at all and leaves nothing in the index to diagnose.
+        (resp.StatusCode == 200 && string(resp.Body).trim_space().has_prefix("OK:")) ?
+          string(resp.Body).trim_space().trim_prefix("OK:").decode_json().as(rows,
+            // Advance to the greatest AutoId returned by this page. The ID is routed
+            // through int() before string(): JSON numbers arrive as float64, and
+            // string() of a float64 >= 1e6 renders as scientific notation, which is
+            // not a valid operand for the (gt EpoComplianceHistory.AutoId ...) query.
+            string(int(
+              rows.last()["EpoComplianceHistory.AutoId"].orValue(state.auto_id)
+            )).as(new_auto_id, {
+              "events": rows.map(e, {"message": e.encode_json()}),
+              "auto_id": new_auto_id,
+              "cursor": {"last_auto_id": new_auto_id},
+              "want_more": size(rows) == int(state.page_size) &&
+                new_auto_id != state.auto_id
+            })
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": resp.Status,
+                "message": "GET " + state.url.trim_right("/") + "/remote/core.executeQuery: " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
+                )
+              }
+            },
+            "want_more": false
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

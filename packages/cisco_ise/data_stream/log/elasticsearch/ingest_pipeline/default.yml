@@ -31,11 +31,12 @@ processors:
       tag: grok_message_details
       if: ctx._tmp?.message != null
       patterns:
-        - '^%{NOTCOLON:cisco_ise.log.log_severity_level}%{SPACE}: %{NOTCOLON:event.action}%{SPACE}: %{GREEDYDATA:message}$'
+        - '^%{SEVERITY_LEVEL:cisco_ise.log.log_severity_level}%{SPACE}: %{NOTCOLON:event.action}%{SPACE}: %{GREEDYDATA:message}$'
         - ^%{NUMBER:cisco_ise.log.message.id} %{NUMBER:cisco_ise.log.segment.total:long} %{NUMBER:cisco_ise.log.segment.number:long} %{GREEDYDATA:message}$
         - ^%{GREEDYDATA:message}$
       pattern_definitions:
         NOTCOLON: '[^:]*?'
+        SEVERITY_LEVEL: '[^: ]*?'
       on_failure:
         - append:
             tag: append_error_message_0a0a0ab3
@@ -207,6 +208,12 @@ processors:
       ignore_missing: true
       ignore_failure: true
       if: ctx.client?.user?.name == null
+  - set:
+      tag: set_user_name_from_client_user_name_split_4b81ce07
+      field: user.name
+      copy_from: client.user.name
+      if: ctx.cisco_ise?.log?.category?.name == 'CISE_Administrative_and_Operational_Audit' && ctx.user?.name == null && ctx.client?.user?.name != null
+      ignore_failure: true
   - append:
       tag: append_related_user_2353f6bb
       field: related.user

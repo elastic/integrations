@@ -1,0 +1,194 @@
+# Test that replacing the agent (full re-enrollment, no cursor carried over)
+# does not lose alerts, and that repeated delivery of the same alert does not
+# create duplicates.
+#
+# The alert data stream pages the Graph Security API with a
+# `lastUpdateDateTime ge <cursor>` filter and derives the Elasticsearch
+# document `_id` from a fingerprint of the alert (id + lastUpdateDateTime +
+# incidentId + providerAlertId). That makes re-delivery idempotent: the same
+# alert always maps to the same `_id`, so an overlapping re-fetch overwrites
+# rather than duplicates.
+#
+# Phase 1: the mock returns alerts 001, 002, 003 on every poll. Because the
+# `ge` cursor re-includes the boundary alert on each subsequent poll, the same
+# alerts are delivered repeatedly. The test asserts exactly 3 documents land,
+# proving the fingerprint `_id` de-duplicates the overlap.
+#
+# Phase 2: the agent is destroyed and a fresh one is enrolled with no cursor
+# state, so it re-collects from `initial_interval`. The mock is swapped so that
+# alert 001 has aged out of the window and alert 004 is new: it now returns
+# 002, 003, 004. Each install_agent creates a new Fleet policy with a unique
+# namespace, so phase 2 writes to a separate data stream. The union across both
+# phases must contain all four distinct alerts, confirming the agent
+# replacement lost nothing.
+#
+# NOTE: This does NOT test mid-drain cursor consistency (the cursor advancing
+# ahead of records that have not yet been indexed). That scenario requires
+# killing the agent container mid-poll while preserving its cursor across
+# restart, which the script test infrastructure does not support
+# (uninstall_agent destroys the enrollment and its cursor). For the alert
+# stream this risk is low: the cursor only advances to the last indexed
+# alert's lastUpdateDateTime, and the `ge` filter re-fetches the boundary on
+# the next poll.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start the mock Microsoft Graph Security API server (phase 1: alerts 001-003).
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} m365d-mock
+
+# Add the package resources.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Add the data stream policy and start collection.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Wait for exactly 3 alerts. The mock returns the same 3 alerts on every poll,
+# and interval is 10s, so -confirm 25s spans at least two further polls and proves
+# the fingerprint `_id` de-duplicates repeated deliveries rather than inflating the
+# count. The confirm window has to outlast the poll interval or the assertion
+# degrades to "the count did not change while nothing happened".
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 25s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs_phase1.json
+
+# Verify the 3 distinct alert IDs are present.
+exec jq '[.hits.hits[]._source.event.id] | sort | join(",")' got_docs_phase1.json
+stdout '"alert-001,alert-002,alert-003"'
+
+# --- Simulate agent replacement (node rotation, pod eviction) ---
+# Destroy the agent entirely. The new agent will have no cursor state and will
+# re-collect from initial_interval.
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down m365d-mock
+
+# Swap the mock to phase 2: alert 001 aged out, alert 004 added.
+cp m365d-mock/config-phase2.yml m365d-mock/config.yml
+
+# Install the agent first so NETWORK_NAME is refreshed, then start the mock on
+# the agent's network so DNS resolution works.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} m365d-mock
+
+# Re-assign the package policy. This sets DATA_STREAM_NAME to the new data
+# stream (different namespace from phase 1).
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Wait for exactly 3 phase 2 alerts in the new data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 25s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs_phase2.json
+
+# Phase 2 must contain alerts 002, 003, 004 (re-collected overlap + new).
+exec jq '[.hits.hits[]._source.event.id] | sort | join(",")' got_docs_phase2.json
+stdout '"alert-002,alert-003,alert-004"'
+
+# Combine both phases and verify all 4 distinct alerts are present: 001
+# preserved from phase 1, 002/003 overlap, 004 new from phase 2.
+exec jq -s '[.[].hits.hits[]._source.event.id] | unique | sort | join(",")' got_docs_phase1.json got_docs_phase2.json
+stdout '"alert-001,alert-002,alert-003,alert-004"'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down m365d-mock
+
+-- test_config.yaml --
+input: httpjson
+vars:
+  login_url: http://m365d-mock:8080
+  client_id: test-client-id
+  client_secret: test-client-secret
+  tenant_id: test-tenant-id
+data_stream:
+  vars:
+    request_url: http://m365d-mock:8080
+    batch_size: 100
+    # Short enough that the -confirm windows above span more than one poll, which is
+    # what makes the de-duplication assertion mean anything.
+    interval: 10s
+    initial_interval: 1h
+    preserve_original_event: true
+    enable_request_tracer: false
+-- m365d-mock/docker-compose.yml --
+version: '2.3'
+services:
+  m365d-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: m365d-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- m365d-mock/config.yml --
+rules:
+  # OAuth2 token endpoint: always succeeds.
+  - path: /test-tenant-id/oauth2/v2.0/token
+    methods: [POST]
+    query_params:
+      grant_type: client_credentials
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token":"test-access-token","token_type":"Bearer","expires_in":3600}
+
+  # Alerts endpoint (phase 1): alerts 001, 002, 003 on every poll.
+  - path: /v1.0/security/alerts_v2
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-access-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"value":[{"id":"alert-001","title":"Suspicious process executed","severity":"high","status":"new","classification":null,"determination":null,"createdDateTime":"2024-01-15T10:00:00Z","lastUpdateDateTime":"2024-01-15T10:01:00Z","serviceSource":"microsoftDefenderForEndpoint","detectionSource":"antivirus","category":"Malware","tenantId":"test-tenant-id"},{"id":"alert-002","title":"Suspicious network connection","severity":"medium","status":"new","classification":null,"determination":null,"createdDateTime":"2024-01-15T10:05:00Z","lastUpdateDateTime":"2024-01-15T10:06:00Z","serviceSource":"microsoftDefenderForEndpoint","detectionSource":"customDetection","category":"SuspiciousActivity","tenantId":"test-tenant-id"},{"id":"alert-003","title":"Malware detected","severity":"high","status":"new","classification":null,"determination":null,"createdDateTime":"2024-01-15T10:10:00Z","lastUpdateDateTime":"2024-01-15T10:11:00Z","serviceSource":"microsoftDefenderForEndpoint","detectionSource":"antivirus","category":"Malware","tenantId":"test-tenant-id"}]}
+-- m365d-mock/config-phase2.yml --
+rules:
+  # OAuth2 token endpoint: always succeeds.
+  - path: /test-tenant-id/oauth2/v2.0/token
+    methods: [POST]
+    query_params:
+      grant_type: client_credentials
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token":"test-access-token","token_type":"Bearer","expires_in":3600}
+
+  # Alerts endpoint (phase 2): alert 001 aged out, alert 004 new.
+  - path: /v1.0/security/alerts_v2
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-access-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"value":[{"id":"alert-002","title":"Suspicious network connection","severity":"medium","status":"new","classification":null,"determination":null,"createdDateTime":"2024-01-15T10:05:00Z","lastUpdateDateTime":"2024-01-15T10:06:00Z","serviceSource":"microsoftDefenderForEndpoint","detectionSource":"customDetection","category":"SuspiciousActivity","tenantId":"test-tenant-id"},{"id":"alert-003","title":"Malware detected","severity":"high","status":"new","classification":null,"determination":null,"createdDateTime":"2024-01-15T10:10:00Z","lastUpdateDateTime":"2024-01-15T10:11:00Z","serviceSource":"microsoftDefenderForEndpoint","detectionSource":"antivirus","category":"Malware","tenantId":"test-tenant-id"},{"id":"alert-004","title":"Anomalous sign-in","severity":"medium","status":"new","classification":null,"determination":null,"createdDateTime":"2024-01-15T10:15:00Z","lastUpdateDateTime":"2024-01-15T10:16:00Z","serviceSource":"microsoftDefenderForEndpoint","detectionSource":"customDetection","category":"SuspiciousActivity","tenantId":"test-tenant-id"}]}

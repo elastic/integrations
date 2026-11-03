@@ -4,7 +4,7 @@ description: Pipeline for triggering the grok processor and helper scripts to ef
 processors:
   - grok:
       field: _ingest._value
-      tag: grok_parse_x_forwarded_for_ipv4_and_ipv6_addresses
+      tag: grok_parse_x_forwarded_for_ipv4_and_ipv6_addresses_288f0931
       ignore_missing: true
       ignore_failure: true
       patterns:
@@ -37,11 +37,18 @@ processors:
       allow_duplicates: false
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_14080786
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,184 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the use of Distributed Component Object Model (DCOM) to execute commands from a remote host, which are launched via the HTA Application COM Object. This behavior may indicate an attacker abusing a DCOM application to move laterally while attempting to evade detection.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.process-*",
+            "logs-endpoint.events.network-*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "process.entity_id"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Incoming DCOM Lateral Movement via MSHTA",
+        "note": "## Triage and analysis\n\n### Investigating Incoming DCOM Lateral Movement via MSHTA\n\n#### Investigation steps\n\n- Do recovered source events show remote COM activation of mshta on this host?\n  - Focus: alert `host.id` and `process.entity_id`; recover `process.command_line` plus matching network `source.ip`, `source.port`, `destination.port`, and `network.direction`.\n  - Implication: escalate when the COM-server process receives incoming non-loopback RPC-style TCP from an unconfirmed source; lower only when telemetry and exact confirmation tie source, target, and COM-server launch to recurring distribution or helpdesk activity. Missing source events leave the alert unresolved.\n\n- Is mshta the expected Windows COM server, not a staged or masqueraded copy?\n  - Focus: `process.executable`, `process.hash.sha256`, `process.code_signature.subject_name`, `process.code_signature.trusted`, and `process.parent.executable`.\n  - Implication: escalate when mshta runs from a user-writable or non-Windows path, has an unexpected signer, or lacks a service/DCOM-style parent such as \"svchost.exe\"; Microsoft identity lowers only masquerade risk because source and retrieval still decide the case.\n\n- Do source, account, and logon context support the same confirmed workflow?\n  - Focus: recovered `source.ip`, target-side `user.id`, and session bridge `process.Ext.authentication_id`, `winlog.event_data.TargetLogonId`, and `winlog.event_data.AuthenticationPackageName`.\n  - Implication: escalate when source, account, session type, or auth package conflict with the source-event workflow; lower only when telemetry and exact confirmation identify a legitimate source-to-host relationship. Missing Windows Security telemetry leaves origin and auth method unresolved, not benign.\n\n- Does same-process DNS/connection data show remote script retrieval?\n  - Why: HTA COM can load remote script content into \"mshta.exe\"; same-process retrieval is direct corroboration.\n  - Focus: same-process DNS `dns.question.name` and `dns.resolved_ip`, then connection `destination.ip` and `destination.port`. !{investigate{\"description\":\"\",\"label\":\"Network events for the mshta process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: map `dns.question.name` to `dns.resolved_ip` before tying later `destination.ip` to retrieval.\n  - Implication: escalate when mshta resolves or connects to public, rare, or mismatched content hosts; lower only when the destination maps to the same recognized internal or vendor workflow as the source. Missing DNS or connection telemetry leaves retrieval unresolved, not benign.\n\n- Do file artifacts show cached HTA content or staged payloads?\n  - Focus: same-host file events tied to `host.id` and mshta or follow-on `process.entity_id`, especially `file.path`, `file.origin_url`, `file.Ext.windows.zone_identifier`, and `file.Ext.original.path`. !{investigate{\"description\":\"\",\"label\":\"File events for the mshta process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Range: start with the alert window; expand after the first suspicious write to confirm later execution.\n  - Implication: escalate when the chain writes HTA/script/payload content to temp, downloads, ADS-like, systemprofile \"INetCache\", or extensionless paths, or when the artifact later executes; lower when artifacts stay in one recurring deployment path. Missing file telemetry is unresolved, not benign.\n\n- Does mshta stay in-process or hand off execution?\n  - Why: LethalHTA can run JScript/VBScript, DotNetToJScript, CLR, or beacon code inside \"mshta.exe\"; absence of child processes does not clear the alert.\n  - Focus: child process starts from recovered mshta `process.entity_id`. !{investigate{\"description\":\"\",\"label\":\"Child process starts from the mshta process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.type\",\"queryType\":\"phrase\",\"value\":\"start\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Library: same-process `dll.path`, `dll.code_signature.subject_name`, `dll.code_signature.trusted`, and `dll.Ext.relative_file_creation_time`. !{investigate{\"description\":\"\",\"label\":\"Library events for the mshta process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"library\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when mshta spawns shells, downloaders, proxy-execution utilities, or loads recent/untrusted libraries from writable or nonstandard paths; narrow only when no follow-on execution appears and earlier source, session, and retrieval fit one recognized workflow. Missing library telemetry leaves in-process payload review unresolved, not benign.\n\n- Do related alerts change scope?\n  - Focus: related lateral-movement, proxy-execution, or follow-on delivery alerts for `host.id` in the prior 48h. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: use the host-scoped transform first; search recovered `source.ip`, `dns.question.name`, or `destination.ip` across other targets only if local evidence remains suspicious or unresolved.\n  - Implication: escalate scope when the host shows adjacent lateral-movement, proxy-execution, or follow-on delivery alerts, or when the source touches additional targets; keep the case local when the alert is isolated and earlier evidence fits one stable workflow.\n\n- Escalate unauthorized DCOM HTA execution when source-event chain, source/session fit, retrieval, artifacts/libraries, child execution, or related-alert scope remain suspicious; close only when pivots bind one recognized host workflow without contradictory retrieval, artifact, or follow-on activity; if answers stay mixed or incomplete, preserve evidence and escalate.\n\n### False positive analysis\n\n- Management tooling (software distribution, enrollment, or helpdesk launchers) can legitimately activate the HTA COM object. Confirm `source.ip` is the management host, mshta identity and `process.parent.executable` match that tool, DNS/destination pattern serves it, and artifacts, children, or libraries do not contradict it. Telemetry that cannot prove legitimacy needs change, distribution, asset, or owner confirmation.\n- Do not close on partial context: known admin subnet, Microsoft-signed \"mshta.exe\", or familiar user alone. If any evidence dimension contradicts the expected workflow, or neither telemetry nor exact confirmation proves it, treat the alert as suspicious or unresolved.\n- Anchor exceptions on the minimum confirmed workflow: recognized `source.ip`, stable `process.parent.executable`, recovered `process.command_line`, specific benign `dns.question.name` or `destination.ip`, and relevant `host.id`. Avoid exceptions on `process.name` of \"mshta.exe\", incoming high ports, or `user.name` alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and document source, target host, mshta identity, parent context, destination pattern, and artifact evidence confirming the recognized workflow. Create an exception only for the exact pattern confirmed by telemetry and supporting records or owner confirmation.\n- If suspicious but unconfirmed, preserve Timeline source events, mshta identity and command line, remote source and high-port pair, DNS and destination evidence, cached/staged files, child processes, suspicious libraries, and relevant case exports before containment or cleanup.\n- Apply reversible containment first: restrict DCOM or web retrieval between the target and recovered source/destination, increase monitoring on `host.id` and `user.id`, or isolate the endpoint only when retrieval, child execution, or library evidence indicates active payload execution and the host role permits isolation.\n- If confirmed malicious, isolate the target endpoint and contain the recovered source system or account when in scope. Block malicious domains, destinations, and hashes; record process and artifact IDs before killing processes or deleting files.\n- Scope other hosts reached by the same recovered `source.ip`, `dns.question.name`, `destination.ip`, or `process.command_line` pattern before destructive eradication, credential removal, or broad DCOM changes.\n- Eradicate only identified HTA, HTML, script, DLL, cached content, or staged payloads, then remediate the DCOM exposure, application workflow, or credentials that enabled remote execution.\n- Post-incident hardening: restrict DCOM exposure to recognized management paths, keep Windows Firewall or equivalent RPC controls enabled for the host class, limit HTA use to recognized workflows, retain process/network/file/library telemetry, and record SMB/named-pipe delivery if found during scoping.\n",
+        "query": "sequence with maxspan=1m\n  [process where host.os.type == \"windows\" and event.type == \"start\" and\n     process.name : \"mshta.exe\" and process.args : \"-Embedding\"\n  ] by host.id, process.entity_id\n  [network where host.os.type == \"windows\" and event.type == \"start\" and process.name : \"mshta.exe\" and\n     network.direction : (\"incoming\", \"ingress\") and network.transport == \"tcp\" and\n     source.port > 49151 and destination.port > 49151 and source.ip != \"127.0.0.1\" and source.ip != \"::1\"\n  ] by host.id, process.entity_id\n",
+        "references": [
+            "https://code-white.com/blog/2018-07-lethalhta/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": ">=3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.direction",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.transport",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "source.port",
+                "type": "long"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "622ecb68-fa81-4601-90b5-f8cd661e4520",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Sysmon Event ID 3 - Network Connection](https://ela.st/sysmon-event-3-setup)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Lateral Movement",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide",
+            "Tactic: Execution",
+            "Tactic: Stealth"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.003",
+                                "name": "Distributed Component Object Model",
+                                "reference": "https://attack.mitre.org/techniques/T1021/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Stealth",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/",
+                        "subtechnique": [
+                            {
+                                "id": "T1218.005",
+                                "name": "Mshta",
+                                "reference": "https://attack.mitre.org/techniques/T1218/005/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1559",
+                        "name": "Inter-Process Communication",
+                        "reference": "https://attack.mitre.org/techniques/T1559/",
+                        "subtechnique": [
+                            {
+                                "id": "T1559.001",
+                                "name": "Component Object Model",
+                                "reference": "https://attack.mitre.org/techniques/T1559/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 213
+    },
+    "id": "622ecb68-fa81-4601-90b5-f8cd661e4520_213",
+    "type": "security-rule"
+}

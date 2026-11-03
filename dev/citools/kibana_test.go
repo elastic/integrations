@@ -24,7 +24,7 @@ func TestKibanaConstraintPackage(t *testing.T) {
 		expected *semver.Constraints
 	}{
 		{
-			title: "kibana constrasint defined",
+			title: "kibana constraint defined",
 			contents: `name: "version"
 conditions:
   kibana:

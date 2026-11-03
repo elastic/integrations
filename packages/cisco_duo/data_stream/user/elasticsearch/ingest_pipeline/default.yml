@@ -1,0 +1,255 @@
+---
+description: Pipeline for parsing cisco_duo user logs
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '8.11.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: terminate_collector_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: >-
+        Stop processing documents that report a CEL collector error
+        and carry no payload to parse.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - set:
+      field: event.category
+      tag: set_event_category
+      value: ["iam"]
+  - set:
+      field: event.type
+      tag: set_event_type
+      value: ["user", "info"]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+      tag: rename_event_original
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+  - json:
+      field: event.original
+      target_field: json
+      tag: json_event_original
+  - date:
+      field: json.created
+      target_field: cisco_duo.user.created
+      tag: date_created_field
+      formats:
+        - UNIX
+      if: ctx.json?.created != null
+  - date:
+      field: json.last_login
+      target_field: cisco_duo.user.last_login
+      tag: date_last_login
+      formats:
+        - UNIX
+      if: ctx.json?.last_login != null
+  - date:
+      field: json.last_directory_sync
+      target_field: cisco_duo.user.last_directory_sync
+      tag: date_last_directory_sync
+      formats:
+        - UNIX
+      if: ctx.json?.last_directory_sync != null
+
+  ## Custom fields
+  - rename:
+      field: json.user_id
+      target_field: cisco_duo.user.id
+      ignore_missing: true
+      tag: rename_user_id
+  - rename:
+      field: json.username
+      target_field: cisco_duo.user.username
+      ignore_missing: true
+      tag: rename_username
+  - rename:
+      field: json.realname
+      target_field: cisco_duo.user.realname
+      ignore_missing: true
+      tag: rename_realname
+  - rename:
+      field: json.email
+      target_field: cisco_duo.user.email
+      ignore_missing: true
+      tag: rename_email
+  - rename:
+      field: json.firstname
+      target_field: cisco_duo.user.firstname
+      ignore_missing: true
+      tag: rename_firstname
+  - rename:
+      field: json.lastname
+      target_field: cisco_duo.user.lastname
+      ignore_missing: true
+      tag: rename_lastname
+  - rename:
+      field: json.status
+      target_field: cisco_duo.user.status
+      ignore_missing: true
+      tag: rename_status
+  - rename:
+      field: json.is_enrolled
+      target_field: cisco_duo.user.is_enrolled
+      ignore_missing: true
+      tag: rename_is_enrolled
+  - rename:
+      field: json.notes
+      target_field: cisco_duo.user.notes
+      ignore_missing: true
+      tag: rename_notes
+  - rename:
+      field: json.groups
+      target_field: cisco_duo.user.groups
+      ignore_missing: true
+      tag: rename_groups
+  - rename:
+      field: json.phones
+      target_field: cisco_duo.user.phones
+      ignore_missing: true
+      tag: rename_phones
+  - rename:
+      field: json.tokens
+      target_field: cisco_duo.user.tokens
+      ignore_missing: true
+      tag: rename_tokens
+  - rename:
+      field: json.webauthncredentials
+      target_field: cisco_duo.user.webauthncredentials
+      ignore_missing: true
+      tag: rename_webauthncredentials
+  - rename:
+      field: json.custom_attributes
+      target_field: cisco_duo.user.custom_attributes
+      ignore_missing: true
+      tag: rename_custom_attributes
+  - rename:
+      field: json.aliases
+      target_field: cisco_duo.user.aliases
+      ignore_missing: true
+      tag: rename_aliases
+  - rename:
+      field: json.lockout_reason
+      target_field: cisco_duo.user.lockout_reason
+      ignore_missing: true
+      tag: rename_lockout_reason
+  - rename:
+      field: json.external_id
+      target_field: cisco_duo.user.external_id
+      ignore_missing: true
+      tag: rename_external_id
+  - rename:
+      field: json.u2ftokens
+      target_field: cisco_duo.user.u2ftokens
+      ignore_missing: true
+      tag: rename_u2ftokens
+
+  ## ECS fields
+  - set:
+      field: event.id
+      copy_from: cisco_duo.user.id
+      ignore_empty_value: true
+      tag: set_event_id
+  - set:
+      field: user.id
+      copy_from: cisco_duo.user.id
+      ignore_empty_value: true
+      tag: set_user_id
+  - set:
+      field: user.name
+      copy_from: cisco_duo.user.username
+      ignore_empty_value: true
+      tag: set_user_name
+  - set:
+      field: user.email
+      copy_from: cisco_duo.user.email
+      ignore_empty_value: true
+      tag: set_user_email
+  - set:
+      field: user.full_name
+      copy_from: cisco_duo.user.realname
+      ignore_empty_value: true
+      tag: set_user_full_name
+
+  ## Related fields
+  - append:
+      field: related.user
+      value: "{{{user.name}}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null
+      tag: append_related_user
+  - append:
+      field: related.user
+      value: "{{{user.email}}}"
+      allow_duplicates: false
+      if: ctx.user?.email != null
+      tag: append_related_user_email
+
+  ## Clean up
+  - script:
+      lang: painless
+      tag: drop_null_values
+      description: Drops null/empty values recursively.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        handleMap(ctx);
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+on_failure:
+  - append:
+      tag: append_error_message_417e65c9
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
+      value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

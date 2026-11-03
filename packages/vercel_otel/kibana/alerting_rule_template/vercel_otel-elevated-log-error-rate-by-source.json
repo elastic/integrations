@@ -1,0 +1,53 @@
+{
+    "id": "vercel_otel-elevated-log-error-rate-by-source",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when the proportion of ERROR or WARNING level log entries for a given log source exceeds 10% over a 15-minute window. Catches recoverable issues and caught exceptions that don't necessarily surface as an HTTP 5xx.",
+        "name": "[Vercel OTel] Elevated ERROR/WARNING log rate by source",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "vercel",
+            "errors"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "vercel_otel-logs"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Elevated ERROR/WARNING Log Rate\n\n### Triage Steps\n1. Note the affected `vercel.log.source` from the alert context (typically `lambda` or `edge`).\n2. Inspect recent error/warning messages: `FROM logs-vercel.logs.otel-default | WHERE vercel.log.source == \"<source>\" AND log.level IN (\"ERROR\", \"WARNING\") | KEEP @timestamp, log.level, message, http.route, deployment.id | SORT @timestamp DESC | LIMIT 50`\n3. Group messages to find the dominant error signature \u2014 a single recurring exception usually indicates a specific code defect introduced by a recent deployment.\n4. Cross-check against the HTTP 5xx error rate rule \u2014 if this rule fires but the 5xx rule does not, the application may be catching and logging errors without surfacing them to the client, which can still indicate a degraded experience.\n\n### Note\nThis is a count-based proportion of raw log entries, not tied to HTTP status codes \u2014 it will catch issues in `stdout`/`stderr` output that never produce a bad response.\n\n### Escalation\nIf the elevated rate persists for more than 30 minutes or is accompanied by a rising 5xx rate, escalate to the on-call engineer."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM logs-vercel.logs.otel-default\n| WHERE deployment.environment.name == \"production\"\n| STATS\n    total = COUNT(*),\n    bad = COUNT(*) WHERE log.level IN (\"ERROR\", \"WARNING\")\n  BY vercel.log.source\n// Minimum sample size to avoid noisy alerts on low-traffic sources\n| WHERE total > 20\n| EVAL bad_rate_pct = ROUND(TO_DOUBLE(bad) / total * 100.0, 2)\n// WARNING entries are expected to be more frequent than hard errors, so this threshold is set higher\n// than the 5xx error-rate rule. Lower it if your application logs WARNING sparingly.\n| WHERE bad_rate_pct > 10.0\n| SORT bad_rate_pct DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "vercel.log.source",
+            "termSize": 6,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

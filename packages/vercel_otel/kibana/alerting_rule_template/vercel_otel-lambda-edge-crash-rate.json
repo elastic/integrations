@@ -1,0 +1,53 @@
+{
+    "id": "vercel_otel-lambda-edge-crash-rate",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when the proportion of lambda/edge invocations that crash before returning any HTTP response (http.response.status_code == -1) exceeds 1% over a 15-minute window. These hard failures are excluded from standard HTTP error-rate calculations but represent the most severe class of runtime defect.",
+        "name": "[Vercel OTel] Lambda/edge function crash rate elevated",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "vercel",
+            "errors"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "vercel_otel-logs"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Lambda/Edge Crash Rate Elevated\n\n### Triage Steps\n1. `http.response.status_code == -1` means the function crashed (unhandled exception, timeout, or OOM) before any response was returned to the client \u2014 this is a hard failure, worse than a handled 5xx.\n2. Inspect stderr output for crashing invocations: `FROM logs-vercel.logs.otel-default | WHERE vercel.log.source == \"<source>\" AND http.response.status_code == -1 | KEEP @timestamp, message, http.route, deployment.id, vercel.execution.region | SORT @timestamp DESC | LIMIT 50`\n3. Correlate with `deployment.id` \u2014 a spike immediately after a new deployment strongly suggests a rollback is needed.\n4. Check for timeout patterns (crashes with no stderr message) versus explicit exceptions (stderr present) \u2014 timeouts may indicate a downstream dependency (database, third-party API) is slow or unavailable.\n\n### Escalation\nTreat this as higher severity than the standard 5xx error-rate rule \u2014 a crash means the request received no response at all, not even an error page. Page the on-call engineer if the crash rate exceeds 5%."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM logs-vercel.logs.otel-default\n| WHERE deployment.environment.name == \"production\"\n    AND vercel.log.source IN (\"lambda\", \"edge\")\n| STATS\n    total = COUNT(*),\n    crashes = COUNT(*) WHERE http.response.status_code == -1\n  BY vercel.log.source\n// Minimum sample size to avoid noisy alerts on low-traffic sources\n| WHERE total > 20\n| EVAL crash_rate_pct = ROUND(TO_DOUBLE(crashes) / total * 100.0, 2)\n// Alert threshold: crashes are rarer and more severe than generic 5xx responses, so this is set tighter.\n// Adjust based on your application's tolerance for cold-start/timeout-driven crashes.\n| WHERE crash_rate_pct > 1.0\n| SORT crash_rate_pct DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "vercel.log.source",
+            "termSize": 6,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

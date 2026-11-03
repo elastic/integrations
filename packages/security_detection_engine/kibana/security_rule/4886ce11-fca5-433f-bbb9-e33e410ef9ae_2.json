@@ -1,0 +1,103 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects creation or modification of GKE mutating or validating admission webhook configurations by non-system identities. Malicious webhooks can inject workloads, block security tooling, or intercept API traffic for persistence and defense evasion.",
+        "false_positives": [
+            "GitOps and platform controllers (cert-manager, Gatekeeper, Kyverno, service mesh) legitimately manage webhooks. Validate change tickets and controller identities before tuning."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Admission Webhook Created or Modified",
+        "note": "## Triage and analysis\n\n### Investigating GKE Admission Webhook Created or Modified\n\nReview webhook name, actor, and clientConfig destination in `gcp.audit.request`.\n\n### Investigation steps\n\n- Confirm `user.email`, `event.action`, and webhook resource name.\n- Inspect webhook URL or in-cluster service target for external endpoints.\n- Hunt for pod mutations or blocked security deployments after the change.\n\n### False positives\n\n- Approved controller upgrades during change windows.",
+        "query": "data_stream.dataset:gcp.audit and event.outcome:success and event.action:(\n  \"io.k8s.admissionregistration.v1.mutatingwebhookconfigurations.create\" or\n  \"io.k8s.admissionregistration.v1.mutatingwebhookconfigurations.update\" or\n  \"io.k8s.admissionregistration.v1.mutatingwebhookconfigurations.patch\" or\n  \"io.k8s.admissionregistration.v1.validatingwebhookconfigurations.create\" or\n  \"io.k8s.admissionregistration.v1.validatingwebhookconfigurations.update\" or\n  \"io.k8s.admissionregistration.v1.validatingwebhookconfigurations.patch\"\n) and not user.email:(\n  \"system:kube-controller-manager\" or \"system:kube-scheduler\" or system\\:serviceaccount\\:kube-system\\:* or\n  system\\:serviceaccount\\:gke-managed-system\\:* or system\\:serviceaccount\\:cert-manager\\:* or\n  system\\:serviceaccount\\:gatekeeper-system\\:* or system\\:serviceaccount\\:kyverno\\:* or \"system:addon-manager\" or\n  *-operator or *-cainjector or *-webhook or *argocd* or \"system:gke-common-webhooks\"\n)\n",
+        "references": [
+            "https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": ">=2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "4886ce11-fca5-433f-bbb9-e33e410ef9ae",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide",
+            "Tactic: Defense Impairment"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1546",
+                        "name": "Event Triggered Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1546/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0112",
+                    "name": "Defense Impairment",
+                    "reference": "https://attack.mitre.org/tactics/TA0112/"
+                },
+                "technique": [
+                    {
+                        "id": "T1685",
+                        "name": "Disable or Modify Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1685/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 2
+    },
+    "id": "4886ce11-fca5-433f-bbb9-e33e410ef9ae_2",
+    "type": "security-rule"
+}

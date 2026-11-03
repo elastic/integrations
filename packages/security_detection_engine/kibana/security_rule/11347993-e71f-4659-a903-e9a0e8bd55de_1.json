@@ -1,0 +1,95 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Organization deletion and bulk delete remove tenant data, projects, and member access in a single administrative action. An attacker can use this to break AI-assisted workflows as an impact technique, to extort the organization, or to destroy evidence after finishing a data export. Once deletion progresses, recovery options shrink and earlier exfiltration activity is harder to reconstruct from the tenant itself.",
+        "false_positives": [
+            "Planned tenant offboarding, sandbox teardown, or contract termination can produce these events. Confirm the actor and timing against change management or offboarding records before escalating."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "event.id",
+                "organization.id",
+                "anthropic.audit.actor.type",
+                "user.email",
+                "user.id",
+                "source.ip",
+                "user_agent.original"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Anthropic Organization Deletion",
+        "note": "## Triage and analysis\n\n### Investigating Anthropic Organization Deletion\n\nOrganization deletion / bulk delete removes tenant data, projects, and member access. Treat early actions as urgent \u2014\nrecovery options shrink as the workflow progresses.\n\nUnauthorized = no offboarding / lab-teardown ticket naming this org and actor, or deletion preceded by owner transfer,\nadmin grants, key creation, or data exports without a matching business project.\n\n#### Possible investigation steps\n\n- Identify actor (`user_actor` \u2192 email/IP/UA) and `organization.id`.\n- Urgency by action:\n  - `org_deletion_requested`: intervene immediately if unauthorized.\n  - `org_bulk_delete_initiated`: bulk delete started \u2014 escalate IR now.\n  - `org_deleted_via_bulk`: completed \u2014 prioritize evidence preservation outside the tenant.\n- Look for preceding primary owner transfer, admin grants, admin API key creation, or data exports.\n- Close as FP only when platform owners confirm scheduled decommission with matching ticket/time/actor.\n\n### False positive analysis\n\n- Sandbox teardown and contract termination are valid \u2014 require change management or offboarding records.\n\n### Response and remediation\n\n- On unauthorized activity: engage Anthropic support and internal IR immediately, preserve remaining audit logs\n  (including prior exports), and rotate administrative credentials for the organization.\n",
+        "query": "from logs-anthropic.audit-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"anthropic.audit\" and\n    mv_contains(event.category, \"configuration\") and\n    event.action in (\"org_deletion_requested\", \"org_bulk_delete_initiated\", \"org_deleted_via_bulk\")\n| keep _id, _version, _index, @timestamp, event.*, organization.*, user.*, source.*, user_agent.*, anthropic.audit.*, data_stream.*\n",
+        "references": [
+            "https://platform.claude.com/docs/en/api/compliance/activities/list"
+        ],
+        "related_integrations": [
+            {
+                "package": "anthropic",
+                "version": ">=1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 99,
+        "rule_id": "11347993-e71f-4659-a903-e9a0e8bd55de",
+        "severity": "critical",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: Anthropic",
+            "Data Source: Anthropic Audit Logs",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Impact"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1485",
+                        "name": "Data Destruction",
+                        "reference": "https://attack.mitre.org/techniques/T1485/"
+                    },
+                    {
+                        "id": "T1531",
+                        "name": "Account Access Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1531/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "11347993-e71f-4659-a903-e9a0e8bd55de_1",
+    "type": "security-rule"
+}

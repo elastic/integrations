@@ -96,7 +96,15 @@ program: |
     ).as(state, !has(state.next) ?
       state
     : (state.next >= size(state.hostlist)) ?
-      {}
+      {
+        "events": [],
+        "group_id": state.group_id,
+        "want_more": false,
+        "page_num": 1,
+        "cursor": {
+          "last_timestamp": state.endDate,
+        },
+      }
     :
       request("GET", state.url + "/api/atlas/v2/groups/" + state.group_id + "/clusters/" + state.hostlist[state.next] + "/logs/mongodb-audit-log.gz?startDate=" + string(int(state.startDate)) + "&endDate=" + string(int(state.endDate))).with(
         {

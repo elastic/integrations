@@ -18,9 +18,31 @@ The Active Directory Entity Analytics integration collects identity data.
 
 ## Requirements
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+Elastic Agent must be installed for standard deployments. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
+
+### Elastic Managed enabled integration
+
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
+
+Because the agent must still speak LDAP to an Active Directory server, the server must be reachable over the public internet on TCP port 636 (LDAPS). Plain LDAP on port 389 is not accepted in this configuration.
+
+Elastic Managed deployment works with:
+
+- **Microsoft Entra Domain Services (Azure AD DS)** — when the "Allow secure LDAP access over the internet" option is enabled on the managed domain, the domain is assigned a public IP address on port 636. See [Configure secure LDAP for Microsoft Entra Domain Services](https://learn.microsoft.com/en-us/entra/identity/domain-services/tutorial-configure-ldaps) for setup instructions. Elastic Managed integrations do not use a fixed range of egress IP addresses, so the secure LDAP endpoint must accept connections from the public internet; restrict access using the other controls Microsoft recommends, such as requiring a valid certificate and strong credentials.
+- **JumpCloud Cloud LDAP** — `ldap.jumpcloud.com:636` is a public endpoint and requires no additional configuration.
+- **Okta LDAP Interface** — `<org>.ldap.okta.com:636` is a public endpoint and requires no additional configuration.
+
+Elastic Managed deployment does **not** work without additional network connectivity for:
+
+- Traditional on-premises Active Directory domain controllers (not internet-exposed)
+- AWS Managed Microsoft AD (VPC-internal only)
+- Google Cloud Managed Microsoft AD (private network only)
+
+For on-premises AD that is not internet-accessible, use standard agent-based deployment with an Elastic Agent running inside your network.
 
 ### Collect data from Active Directory
 
@@ -37,9 +59,11 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ## Usage
 
-The Active Directory provider periodically contacts the server, retrieving updates for users, updates its internal cache of user metadata, and ships updated user metadata to Elasticsearch.
+The Active Directory provider periodically contacts the server, retrieves updates for users, devices, and groups, updates its internal cache of metadata, and ships updated records to Elasticsearch.
 
-Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations will send the entire list of users in state, along with write markers to indicate the start and end of the synchronization event. Incremental updates will only send data for changed users during that event. Changes on a user can come in many forms, whether it be a change to the user’s metadata, or a user was added or deleted. By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
+Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations send the entire list of users, devices, and groups in state. Incremental updates send only records that changed since the last sync. Changes include metadata updates, additions, and deletions. By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
+
+By default this integration uses **minimal-state sync**, which routes user, device, and group documents directly to the `user`, `device`, and `group` data streams. Existing policies are updated to use minimal-state sync on upgrade.
 
 This integration provides an **asset inventory**, a point-in-time snapshot of which users and devices exist and their current properties. It does not provide an audit trail of who changed what, or when. If you need to track administrative changes to Active Directory objects, consider collecting Windows Security event logs (e.g., Event IDs 4720, 4722, 4738, 4743) via the [System integration](https://docs.elastic.co/integrations/system).
 
