@@ -316,7 +316,12 @@ processors:
             break;
           }
         }
-        if (level == null) {
+        // Suffix rules apply only to the broker's own "Client <id> ..." lifecycle
+        // lines: a topic or client id that happens to end the same way must not match.
+        boolean lifecycleLine = m.startsWith('Client ')
+          && (ctx._temp == null || ctx._temp.packet_type_lower == null)
+          && (ctx.mosquitto == null || ctx.mosquitto.log == null || ctx.mosquitto.log.topic == null);
+        if (level == null && lifecycleLine) {
           for (String s : params.error_suffixes) {
             if (m.endsWith(s)) {
               level = 'error';
