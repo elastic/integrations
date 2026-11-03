@@ -74,14 +74,26 @@ program: |-
                             ).as(projects,
                               ((has(body.instances) && body.instances != null) ?
                                 body.instances.filter(instance,
-                                  instance.type != "kibana" && instance.type != "enterprise_search" && instance.type != "integrations_server" && instance.type != "appsearch" && instance.type != "fleet_server" && instance.type != "apm"
+                                  (!has(instance.type) || instance.type == null || (
+                                    instance.type != "kibana" && instance.type != "enterprise_search" && instance.type != "integrations_server" && instance.type != "appsearch" && instance.type != "fleet_server" && instance.type != "apm"
+                                  ))
                                 )
                               : []).as(sls_instances,
                           (
                             sls_instances.map(instance,
                               projects.filter(p, p.id == instance.id).as(matched_projs,
                                 ((size(matched_projs) > 0 && has(matched_projs[0].name) && matched_projs[0].name != null && matched_projs[0].name != "" && matched_projs[0].name != instance.id) ? matched_projs[0].name : ((has(instance.name) && instance.name != null && instance.name != "") ? instance.name : instance.id)).as(resolved_name,
-                                  ((size(matched_projs) > 0 && has(matched_projs[0].project_type) && matched_projs[0].project_type != null && matched_projs[0].project_type != "") ? matched_projs[0].project_type : ((has(instance.type) && instance.type != null && instance.type != "") ? instance.type : "elasticsearch")).as(resolved_type,
+                                  ((size(matched_projs) > 0 && has(matched_projs[0].project_type) && matched_projs[0].project_type != null && matched_projs[0].project_type != "") ? matched_projs[0].project_type : (
+                                    (has(instance.type) && instance.type != null && instance.type != "" && instance.type != "serverless" && instance.type != "deployment") ? instance.type : (
+                                      (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items.filter(li, has(li.sku) && li.sku.startsWith("observability."))) > 0) ? "observability" : (
+                                        (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items.filter(li, has(li.sku) && li.sku.startsWith("security."))) > 0) ? "security" : (
+                                          (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items.filter(li, has(li.sku) && li.sku.startsWith("search."))) > 0) ? "search" : (
+                                            (has(instance.type) && instance.type != null && instance.type != "") ? instance.type : "elasticsearch"
+                                          )
+                                        )
+                                      )
+                                    )
+                                  )).as(resolved_type,
                                     (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items) > 0) ?
                                       instance.product_line_items.map(line_item,
                                         {
