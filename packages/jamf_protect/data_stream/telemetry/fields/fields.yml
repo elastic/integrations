@@ -53,6 +53,142 @@
     - name: btm_item_user_uid
       type: keyword
       description: UID of the user associated with the BTM item
+    - name: instigator
+      type: group
+      description: Process that registered or removed the BTM launch item, kept when the app is mapped to `process.*`.
+      fields:
+        - name: start
+          type: date
+          description: Start time of the instigator process.
+        - name: pid
+          type: long
+          description: Process ID of the instigator process.
+        - name: entity_id
+          type: keyword
+          description: Unique identifier of the instigator process.
+        - name: executable
+          type: keyword
+          description: Absolute path to the instigator process executable.
+        - name: name
+          type: keyword
+          description: Name of the instigator process executable.
+        - name: user
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Effective user ID of the instigator process.
+            - name: name
+              type: keyword
+              description: Effective user name of the instigator process.
+        - name: hash
+          type: group
+          fields:
+            - name: sha1
+              type: keyword
+              description: SHA1 hash of the instigator process executable.
+            - name: sha256
+              type: keyword
+              description: SHA256 hash of the instigator process executable.
+            - name: cdhash
+              type: keyword
+              description: Code directory hash of the instigator process executable.
+        - name: code_signature
+          type: group
+          fields:
+            - name: signing_id
+              type: keyword
+              description: Signing identifier of the instigator process.
+            - name: team_id
+              type: keyword
+              description: Team identifier of the instigator process.
+            - name: flags
+              type: keyword
+              description: Code signing flags of the instigator process.
+        - name: platform_binary
+          type: boolean
+          description: Indicates if the instigator process is a platform binary.
+        - name: endpoint_security_client
+          type: boolean
+          description: Indicates if the instigator process is an Endpoint Security client.
+        - name: parent
+          type: group
+          fields:
+            - name: entity_id
+              type: keyword
+              description: Unique identifier of the instigator's parent process.
+            - name: pid
+              type: long
+              description: Process ID of the instigator's parent process.
+            - name: executable
+              type: keyword
+              description: Absolute path to the instigator's parent process executable.
+            - name: user
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Effective user ID of the instigator's parent process.
+                - name: name
+                  type: keyword
+                  description: Effective user name of the instigator's parent process.
+            - name: real_user
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Real user ID of the instigator's parent process.
+            - name: real_group
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Real group ID of the instigator's parent process.
+            - name: code_signature
+              type: group
+              fields:
+                - name: signing_id
+                  type: keyword
+                  description: Signing identifier of the instigator's parent process.
+        - name: responsible
+          type: group
+          fields:
+            - name: entity_id
+              type: keyword
+              description: Unique identifier of the instigator's responsible process.
+            - name: pid
+              type: long
+              description: Process ID of the instigator's responsible process.
+            - name: executable
+              type: keyword
+              description: Absolute path to the instigator's responsible process executable.
+            - name: user
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Effective user ID of the instigator's responsible process.
+                - name: name
+                  type: keyword
+                  description: Effective user name of the instigator's responsible process.
+            - name: real_user
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Real user ID of the instigator's responsible process.
+            - name: real_group
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Real group ID of the instigator's responsible process.
+            - name: code_signature
+              type: group
+              fields:
+                - name: signing_id
+                  type: keyword
+                  description: Signing identifier of the instigator's responsible process.
     - name: env_count
       type: integer
       description: Count of environment variables

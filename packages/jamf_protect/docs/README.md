@@ -581,6 +581,37 @@ An example event for `telemetry` looks as following:
 | jamf_protect.telemetry.graphical_authentication_username | The username used for authentication | keyword |
 | jamf_protect.telemetry.graphical_session_id | ID of the graphical session | keyword |
 | jamf_protect.telemetry.identifier | Identifier for an entity or action | keyword |
+| jamf_protect.telemetry.instigator.code_signature.flags | Code signing flags of the instigator process. | keyword |
+| jamf_protect.telemetry.instigator.code_signature.signing_id | Signing identifier of the instigator process. | keyword |
+| jamf_protect.telemetry.instigator.code_signature.team_id | Team identifier of the instigator process. | keyword |
+| jamf_protect.telemetry.instigator.endpoint_security_client | Indicates if the instigator process is an Endpoint Security client. | boolean |
+| jamf_protect.telemetry.instigator.entity_id | Unique identifier of the instigator process. | keyword |
+| jamf_protect.telemetry.instigator.executable | Absolute path to the instigator process executable. | keyword |
+| jamf_protect.telemetry.instigator.hash.cdhash | Code directory hash of the instigator process executable. | keyword |
+| jamf_protect.telemetry.instigator.hash.sha1 | SHA1 hash of the instigator process executable. | keyword |
+| jamf_protect.telemetry.instigator.hash.sha256 | SHA256 hash of the instigator process executable. | keyword |
+| jamf_protect.telemetry.instigator.name | Name of the instigator process executable. | keyword |
+| jamf_protect.telemetry.instigator.parent.code_signature.signing_id | Signing identifier of the instigator's parent process. | keyword |
+| jamf_protect.telemetry.instigator.parent.entity_id | Unique identifier of the instigator's parent process. | keyword |
+| jamf_protect.telemetry.instigator.parent.executable | Absolute path to the instigator's parent process executable. | keyword |
+| jamf_protect.telemetry.instigator.parent.pid | Process ID of the instigator's parent process. | long |
+| jamf_protect.telemetry.instigator.parent.real_group.id | Real group ID of the instigator's parent process. | keyword |
+| jamf_protect.telemetry.instigator.parent.real_user.id | Real user ID of the instigator's parent process. | keyword |
+| jamf_protect.telemetry.instigator.parent.user.id | Effective user ID of the instigator's parent process. | keyword |
+| jamf_protect.telemetry.instigator.parent.user.name | Effective user name of the instigator's parent process. | keyword |
+| jamf_protect.telemetry.instigator.pid | Process ID of the instigator process. | long |
+| jamf_protect.telemetry.instigator.platform_binary | Indicates if the instigator process is a platform binary. | boolean |
+| jamf_protect.telemetry.instigator.responsible.code_signature.signing_id | Signing identifier of the instigator's responsible process. | keyword |
+| jamf_protect.telemetry.instigator.responsible.entity_id | Unique identifier of the instigator's responsible process. | keyword |
+| jamf_protect.telemetry.instigator.responsible.executable | Absolute path to the instigator's responsible process executable. | keyword |
+| jamf_protect.telemetry.instigator.responsible.pid | Process ID of the instigator's responsible process. | long |
+| jamf_protect.telemetry.instigator.responsible.real_group.id | Real group ID of the instigator's responsible process. | keyword |
+| jamf_protect.telemetry.instigator.responsible.real_user.id | Real user ID of the instigator's responsible process. | keyword |
+| jamf_protect.telemetry.instigator.responsible.user.id | Effective user ID of the instigator's responsible process. | keyword |
+| jamf_protect.telemetry.instigator.responsible.user.name | Effective user name of the instigator's responsible process. | keyword |
+| jamf_protect.telemetry.instigator.start | Start time of the instigator process. | date |
+| jamf_protect.telemetry.instigator.user.id | Effective user ID of the instigator process. | keyword |
+| jamf_protect.telemetry.instigator.user.name | Effective user name of the instigator process. | keyword |
 | jamf_protect.telemetry.log_entries | Log entries being collected in an event | object |
 | jamf_protect.telemetry.network_socket_family | The family type of a network socket | keyword |
 | jamf_protect.telemetry.network_socket_type | The type of a network socket | keyword |
