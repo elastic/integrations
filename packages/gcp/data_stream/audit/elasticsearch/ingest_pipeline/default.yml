@@ -336,14 +336,16 @@ processors:
           if (n == 2 && isNumeric(p[1]) && (p[0] == "projects" || p[0] == "organizations" || p[0] == "folders")) {
             return "//cloudresourcemanager.googleapis.com/" + target;
           }
+          // Only the Compute Engine types the inventory collects: instances, networks, firewalls,
+          // subnetworks and (regional) forwarding rules.
           if (service == "compute.googleapis.com" && p[0] == "projects") {
-            if (n == 6 && p[2] == "zones" && (p[4] == "instances" || p[4] == "disks")) {
+            if (n == 6 && p[2] == "zones" && p[4] == "instances") {
               return "//" + service + "/" + target;
             }
-            if (n == 6 && p[2] == "regions" && (p[4] == "disks" || p[4] == "subnetworks" || p[4] == "forwardingRules" || p[4] == "backendServices")) {
+            if (n == 6 && p[2] == "regions" && (p[4] == "subnetworks" || p[4] == "forwardingRules")) {
               return "//" + service + "/" + target;
             }
-            if (n == 5 && p[2] == "global" && (p[3] == "networks" || p[3] == "firewalls" || p[3] == "forwardingRules" || p[3] == "backendServices")) {
+            if (n == 5 && p[2] == "global" && (p[3] == "networks" || p[3] == "firewalls")) {
               return "//" + service + "/" + target;
             }
           }
