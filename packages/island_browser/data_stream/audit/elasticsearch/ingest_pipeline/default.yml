@@ -33,6 +33,37 @@ processors:
       field: event.original
       tag: json_event_original_74d23cc2
       target_field: json
+  - script:
+      tag: script_normalize_siem_snake_case
+      lang: painless
+      description: Copy snake_case SIEM field names to camelCase keys expected by the legacy pipeline.
+      if: ctx.json instanceof Map
+      source: |-
+        String snakeToCamel(String s) {
+          StringBuilder sb = new StringBuilder();
+          boolean cap = false;
+          for (int i = 0; i < s.length(); i++) {
+            String c = s.substring(i, i + 1);
+            if ("_".equals(c)) {
+              cap = true;
+            } else if (cap) {
+              sb.append(c.toUpperCase());
+              cap = false;
+            } else {
+              sb.append(c);
+            }
+          }
+          return sb.toString();
+        }
+        def keys = new ArrayList(ctx.json.keySet());
+        for (def key : keys) {
+          if (key instanceof String && key.indexOf('_') >= 0) {
+            def camel = snakeToCamel(key);
+            if (!ctx.json.containsKey(camel)) {
+              ctx.json.put(camel, ctx.json.get(key));
+            }
+          }
+        }
   - fingerprint:
       fields:
         - json.id
@@ -504,6 +535,43 @@ processors:
       field: json.verdictReason
       tag: rename_verdictReason_f71fd060
       target_field: island_browser.audit.verdict_reason
+      ignore_missing: true
+  - set:
+      field: island_browser.audit.source
+      tag: set_source
+      copy_from: json.source
+      ignore_empty_value: true
+      if: ctx.island_browser?.audit?.source == null
+  - rename:
+      field: json.dataTarget
+      tag: rename_dataTarget
+      target_field: island_browser.audit.data_target
+      ignore_missing: true
+  - date:
+      field: json.clientSendingDate
+      tag: date_clientSendingDate
+      target_field: island_browser.audit.client_sending_date
+      formats:
+        - ISO8601
+      if: ctx.json?.clientSendingDate != null && ctx.json.clientSendingDate != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.version
+      tag: convert_version_to_long
+      target_field: island_browser.audit.version
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.signature
+      tag: rename_signature
+      target_field: island_browser.audit.signature
       ignore_missing: true
   - rename:
       field: json.websiteTopLevelUrl

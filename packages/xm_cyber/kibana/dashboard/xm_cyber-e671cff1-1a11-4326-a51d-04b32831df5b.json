@@ -13,6 +13,8 @@
                 "7fae0c14-250f-4c21-bf2e-c77a73219670": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
                         "fieldName": "vulnerability.score.version",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
@@ -30,6 +32,8 @@
                 "c02b9d8d-0249-4b61-af8a-18408a1e7306": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
                         "fieldName": "device.type",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
@@ -164,6 +168,18 @@
                                 },
                                 "order": 5,
                                 "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_c9f1a2b3-4d5e-6789-0abc-def123456789_dashboard",
+                                "id": "c9f1a2b3-4d5e-6789-0abc-def123456789",
+                                "label": "Vulnerability Instances",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 6,
+                                "type": "dashboardLink"
                             }
                         ]
                     },
@@ -206,12 +222,11 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "device.id"
                                                 },
                                                 "86de10d7-923e-44c4-bf6a-c0c253e0f3a2": {
                                                     "customLabel": true,
@@ -329,9 +344,11 @@
                                                     "color": {
                                                         "type": "loop"
                                                     },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
                                                     "touched": false
                                                 }
                                             ]
@@ -385,6 +402,28 @@
                                     "data_stream.dataset": "xm_cyber.device"
                                 }
                             }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.kind",
+                                "index": "logs-*",
+                                "key": "event.kind",
+                                "negate": false,
+                                "params": {
+                                    "query": "event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "event.kind": "event"
+                                }
+                            }
                         }
                     ],
                     "query": {
@@ -393,7 +432,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Devices by Type"
                 },
                 "gridData": {
                     "h": 15,
@@ -403,7 +443,6 @@
                     "y": 42
                 },
                 "panelIndex": "ed80bc00-9f35-4213-82b9-f66bfdbbc30f",
-                "title": "Devices by Type",
                 "type": "lens"
             },
             {
@@ -433,12 +472,11 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "device.id"
                                                 },
                                                 "86de10d7-923e-44c4-bf6a-c0c253e0f3a2": {
                                                     "customLabel": true,
@@ -556,9 +594,11 @@
                                                     "color": {
                                                         "type": "loop"
                                                     },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
                                                     "touched": false
                                                 }
                                             ]
@@ -612,6 +652,28 @@
                                     "data_stream.dataset": "xm_cyber.device"
                                 }
                             }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.kind",
+                                "index": "logs-*",
+                                "key": "event.kind",
+                                "negate": false,
+                                "params": {
+                                    "query": "event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "event.kind": "event"
+                                }
+                            }
                         }
                     ],
                     "query": {
@@ -620,7 +682,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Devices by Choke Point Level"
                 },
                 "gridData": {
                     "h": 15,
@@ -630,7 +693,6 @@
                     "y": 42
                 },
                 "panelIndex": "71d68c27-c611-4131-86b0-3d7076cab76a",
-                "title": "Devices by Choke Point Level",
                 "type": "lens"
             },
             {
@@ -858,7 +920,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Devices by Risk Score"
                 },
                 "gridData": {
                     "h": 15,
@@ -868,7 +931,6 @@
                     "y": 27
                 },
                 "panelIndex": "8a2819ea-7f0c-4e62-bd15-103a6f30fca2",
-                "title": "Devices by Risk Score",
                 "type": "lens"
             },
             {
@@ -898,12 +960,11 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "device.id"
                                                 },
                                                 "89c1699f-4598-4085-a67c-729a4f1cc30b": {
                                                     "customLabel": true,
@@ -1054,6 +1115,28 @@
                                     "data_stream.dataset": "xm_cyber.device"
                                 }
                             }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.kind",
+                                "index": "logs-*",
+                                "key": "event.kind",
+                                "negate": false,
+                                "params": {
+                                    "query": "event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "event.kind": "event"
+                                }
+                            }
                         }
                     ],
                     "query": {
@@ -1062,7 +1145,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Top Domains"
                 },
                 "gridData": {
                     "h": 15,
@@ -1072,7 +1156,6 @@
                     "y": 57
                 },
                 "panelIndex": "2b908d92-d6b0-4b26-a270-3637dab0a8b9",
-                "title": "Top Domains",
                 "type": "lens"
             },
             {
@@ -1102,12 +1185,11 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "device.id"
                                                 },
                                                 "89c1699f-4598-4085-a67c-729a4f1cc30b": {
                                                     "customLabel": true,
@@ -1258,6 +1340,28 @@
                                     "data_stream.dataset": "xm_cyber.device"
                                 }
                             }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.kind",
+                                "index": "logs-*",
+                                "key": "event.kind",
+                                "negate": false,
+                                "params": {
+                                    "query": "event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "event.kind": "event"
+                                }
+                            }
                         }
                     ],
                     "query": {
@@ -1266,7 +1370,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Top OS"
                 },
                 "gridData": {
                     "h": 15,
@@ -1276,7 +1381,6 @@
                     "y": 57
                 },
                 "panelIndex": "615a179a-82f3-4b8f-9d37-8d5488991fb5",
-                "title": "Top OS",
                 "type": "lens"
             },
             {
@@ -1309,12 +1413,11 @@
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Critical Assets",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "device.id"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -1428,6 +1531,28 @@
                                     "data_stream.dataset": "xm_cyber.device"
                                 }
                             }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.kind",
+                                "index": "logs-*",
+                                "key": "event.kind",
+                                "negate": false,
+                                "params": {
+                                    "query": "event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "event.kind": "event"
+                                }
+                            }
                         }
                     ],
                     "hidePanelTitles": true,
@@ -1437,7 +1562,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": ""
                 },
                 "gridData": {
                     "h": 8,
@@ -1447,7 +1573,6 @@
                     "y": 2
                 },
                 "panelIndex": "badebdfc-ed6a-4bb9-ac03-74d98c40439d",
-                "title": "",
                 "type": "lens"
             },
             {
@@ -1604,7 +1729,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": ""
                 },
                 "gridData": {
                     "h": 8,
@@ -1614,7 +1740,6 @@
                     "y": 2
                 },
                 "panelIndex": "62e1c364-333e-4ef6-9894-d29430dc4146",
-                "title": "",
                 "type": "lens"
             },
             {
@@ -1643,12 +1768,11 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Total Devices",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "device.id"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -1762,6 +1886,28 @@
                                     "data_stream.dataset": "xm_cyber.device"
                                 }
                             }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.kind",
+                                "index": "logs-*",
+                                "key": "event.kind",
+                                "negate": false,
+                                "params": {
+                                    "query": "event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "event.kind": "event"
+                                }
+                            }
                         }
                     ],
                     "hidePanelTitles": true,
@@ -1771,7 +1917,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": ""
                 },
                 "gridData": {
                     "h": 8,
@@ -1781,7 +1928,6 @@
                     "y": 2
                 },
                 "panelIndex": "45bfea91-f597-4cd4-8048-bab54945a07a",
-                "title": "",
                 "type": "lens"
             },
             {
@@ -1810,16 +1956,15 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "xm_cyber.device.is_choke_point : true"
+                                                        "query": "xm_cyber.device.choke_point_level : (High or Critical)"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Choke Points",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "device.id"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -1933,6 +2078,28 @@
                                     "data_stream.dataset": "xm_cyber.device"
                                 }
                             }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.kind",
+                                "index": "logs-*",
+                                "key": "event.kind",
+                                "negate": false,
+                                "params": {
+                                    "query": "event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "event.kind": "event"
+                                }
+                            }
                         }
                     ],
                     "hidePanelTitles": true,
@@ -1942,7 +2109,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": ""
                 },
                 "gridData": {
                     "h": 8,
@@ -1952,7 +2120,6 @@
                     "y": 2
                 },
                 "panelIndex": "8ff34367-ded3-472c-aec0-abfac12087b5",
-                "title": "",
                 "type": "lens"
             },
             {
@@ -1981,16 +2148,15 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "vulnerability.score.base >= 7"
+                                                        "query": "vulnerability.score.base \u003e= 7"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Devices with worst CVSS",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "device.id"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -2104,6 +2270,28 @@
                                     "data_stream.dataset": "xm_cyber.device"
                                 }
                             }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.kind",
+                                "index": "logs-*",
+                                "key": "event.kind",
+                                "negate": false,
+                                "params": {
+                                    "query": "event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "event.kind": "event"
+                                }
+                            }
                         }
                     ],
                     "hidePanelTitles": true,
@@ -2113,7 +2301,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": ""
                 },
                 "gridData": {
                     "h": 8,
@@ -2123,7 +2312,6 @@
                     "y": 2
                 },
                 "panelIndex": "b5715ef6-ea74-4029-b489-7d8130ad1374",
-                "title": "",
                 "type": "lens"
             },
             {
@@ -2193,12 +2381,11 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "device.id"
                                                 },
                                                 "86de10d7-923e-44c4-bf6a-c0c253e0f3a2": {
                                                     "customLabel": true,
@@ -2333,9 +2520,11 @@
                                                     "color": {
                                                         "type": "loop"
                                                     },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
                                                     "touched": false
                                                 }
                                             ]
@@ -2391,6 +2580,28 @@
                                     "data_stream.dataset": "xm_cyber.device"
                                 }
                             }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.kind",
+                                "index": "logs-*",
+                                "key": "event.kind",
+                                "negate": false,
+                                "params": {
+                                    "query": "event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "event.kind": "event"
+                                }
+                            }
                         }
                     ],
                     "query": {
@@ -2399,7 +2610,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Devices by Device Type"
                 },
                 "gridData": {
                     "h": 15,
@@ -2409,7 +2621,6 @@
                     "y": 27
                 },
                 "panelIndex": "f5c428ed-5fd7-4b32-ab1b-b699d4f8f29e",
-                "title": "Devices by Device Type",
                 "type": "lens"
             },
             {
@@ -2614,7 +2825,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Maximum Risk Score over Time"
                 },
                 "gridData": {
                     "h": 17,
@@ -2624,7 +2836,6 @@
                     "y": 10
                 },
                 "panelIndex": "495ba0ba-a2ca-4db2-a8b2-b65a6d6ede63",
-                "title": "Maximum Risk Score over Time",
                 "type": "lens"
             },
             {
@@ -2654,12 +2865,11 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "device.id"
                                                 },
                                                 "fbe4b914-3caa-49eb-9650-88d29380397f": {
                                                     "dataType": "date",
@@ -2765,9 +2975,11 @@
                                                     "color": {
                                                         "type": "loop"
                                                     },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
                                                     "touched": false
                                                 }
                                             ]
@@ -2821,6 +3033,28 @@
                                     "data_stream.dataset": "xm_cyber.device"
                                 }
                             }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.kind",
+                                "index": "logs-*",
+                                "key": "event.kind",
+                                "negate": false,
+                                "params": {
+                                    "query": "event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "event.kind": "event"
+                                }
+                            }
                         }
                     ],
                     "query": {
@@ -2829,7 +3063,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Device Count over Time"
                 },
                 "gridData": {
                     "h": 17,
@@ -2839,7 +3074,6 @@
                     "y": 10
                 },
                 "panelIndex": "2ee2bbd1-8458-4a80-8819-d608a7c0b82a",
-                "title": "Device Count over Time",
                 "type": "lens"
             },
             {
@@ -2869,12 +3103,11 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "device.id"
                                                 },
                                                 "89c1699f-4598-4085-a67c-729a4f1cc30b": {
                                                     "customLabel": true,
@@ -3025,6 +3258,28 @@
                                     "data_stream.dataset": "xm_cyber.device"
                                 }
                             }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.kind",
+                                "index": "logs-*",
+                                "key": "event.kind",
+                                "negate": false,
+                                "params": {
+                                    "query": "event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "event.kind": "event"
+                                }
+                            }
                         }
                     ],
                     "query": {
@@ -3033,7 +3288,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Top Hostnames"
                 },
                 "gridData": {
                     "h": 18,
@@ -3043,7 +3299,6 @@
                     "y": 72
                 },
                 "panelIndex": "4a29be36-301b-4e5e-b997-3304daecebe6",
-                "title": "Top Hostnames",
                 "type": "lens"
             },
             {
@@ -3073,12 +3328,11 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "device.id"
                                                 },
                                                 "89c1699f-4598-4085-a67c-729a4f1cc30b": {
                                                     "customLabel": true,
@@ -3229,6 +3483,28 @@
                                     "data_stream.dataset": "xm_cyber.device"
                                 }
                             }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "event.kind",
+                                "index": "logs-*",
+                                "key": "event.kind",
+                                "negate": false,
+                                "params": {
+                                    "query": "event"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "event.kind": "event"
+                                }
+                            }
                         }
                     ],
                     "query": {
@@ -3237,7 +3513,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Top Host IPs"
                 },
                 "gridData": {
                     "h": 18,
@@ -3247,7 +3524,6 @@
                     "y": 72
                 },
                 "panelIndex": "3b2a6fdd-c448-4ec4-82f9-d3ae0caf0ce8",
-                "title": "Top Host IPs",
                 "type": "lens"
             }
         ],
@@ -3256,7 +3532,7 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-08-04T09:54:44.908Z",
+    "created_at": "2026-09-23T06:44:01.792Z",
     "id": "xm_cyber-e671cff1-1a11-4326-a51d-04b32831df5b",
     "references": [
         {
@@ -3292,6 +3568,11 @@
         {
             "id": "xm_cyber-8591539b-edd7-42bb-bfa0-2ea26a334900",
             "name": "7ea803af-db37-4594-8fdc-d33d995f1eec:link_91542e0e-8bdd-4803-8e80-2711749f4f74_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "xm_cyber-b7e4c1a2-9d83-4f5e-a6b1-2c8d0e4f7a91",
+            "name": "7ea803af-db37-4594-8fdc-d33d995f1eec:link_c9f1a2b3-4d5e-6789-0abc-def123456789_dashboard",
             "type": "dashboard"
         },
         {

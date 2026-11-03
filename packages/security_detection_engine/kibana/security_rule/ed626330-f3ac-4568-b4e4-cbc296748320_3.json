@@ -1,0 +1,239 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies Windows Installer (MSI) packages that originate from commonly abused web services and install a recognized remote monitoring and management (RMM) product. Adversaries may abuse legitimate RMM software in social engineering campaigns to gain remote access and control over victim systems. This rule does not establish that the origin, installer, or RMM product is inherently malicious. Origins outside this set are covered by the companion rule \"RMM Software Installation from an Internet-Originated MSI\".",
+        "false_positives": [
+            "Authorized IT or managed service provider deployment of remote monitoring and management software through public, vendor, or software distribution infrastructure can produce this behavior."
+        ],
+        "from": "now-25m",
+        "interval": "5m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "RMM Software Installation from a Commonly Abused Web Service",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating RMM Software Installation from a Commonly Abused Web Service\n\nThis rule detects a Windows MSI downloaded from a commonly abused hosting service, executed shortly afterward, and followed by installation of a recognized remote management tool, a sequence that can establish covert remote access. An attacker may send a phishing link to a file-sharing site, persuade the user to run the downloaded installer, and deploy an unattended remote-control agent for persistent system access.\n\n### Possible investigation steps\n\n- Validate the MSI\u2019s digital signature, publisher, SHA-256 reputation, download URL, and referrer to distinguish an official vendor package from a repackaged or impersonated installer.\n- Review the user\u2019s browser, email, chat, and recent authentication activity to determine how the download was initiated and whether the RMM installation was authorized by IT.\n- Reconstruct the execution chain around the installer, including its parent process, command-line options, privilege elevation, and any scripts or utilities launched immediately before or after installation.\n- Examine the installed RMM product\u2019s services, scheduled tasks, registry entries, configuration files, enrollment identifiers, and outbound connections for unattended access or linkage to an unknown tenant.\n- Hunt across the environment for the same MSI hash, source URL, RMM executable, publisher, destination infrastructure, or enrollment details, and isolate affected hosts if the deployment is unauthorized.\n\n### False positive analysis\n\n- An authorized administrator may install an approved RMM package hosted on a listed source-code, cloud-storage, or file-sharing domain; confirm the user, host, MSI signature and hash, source URL, and deployment timing against an approved change record.\n- A user may install an approved remote-support client from a legitimate shared download link during a scheduled support session; verify the session with the user or support team and confirm the installed agent is enrolled in the organization\u2019s expected tenant.\n\n### Response and remediation\n\n- Isolate affected Windows hosts from the network while preserving management access, and block the malicious MSI hash, download URL, and identified RMM destination infrastructure.\n- Terminate active RMM sessions and processes, uninstall the unauthorized agent, remove its services, scheduled tasks, startup registry entries, configuration files, enrollment identifiers, and downloaded MSI, and verify that none are recreated.\n- Disable or reset the affected user and RMM-associated accounts, revoke active sessions and tokens, rotate exposed privileged credentials, and review remote logons for unauthorized access.\n- Escalate immediately to incident response if the RMM agent ran with administrative privileges, appears on multiple hosts, used an unknown tenant, enabled lateral movement, or accessed sensitive systems or data.\n- Reimage hosts from a trusted baseline when system integrity cannot be established, restore only validated data, patch the system, and confirm the unauthorized RMM executable and persistence mechanisms are absent before reconnecting it.\n- Prevent recurrence by allowlisting approved RMM products and tenants, restricting MSI execution and unapproved remote-access tools, filtering known malicious hosting URLs, and requiring documented authorization for remote-support installations.\n",
+        "query": "/*\nCorrelate three events on the same host: an MSI downloaded from a commonly abused web service, the same user running\nthat MSI with msiexec within 10 minutes, and msiexec creating a known RMM executable within 5 more minutes. Keep the\nMSI download event as the alert.\n*/\nFROM\n(\n  FROM logs-endpoint.events.file-* METADATA _id, _version, _index\n    | WHERE KQL(\"event.action: creation\") AND TO_LOWER(file.extension) == \"msi\" AND file.origin_url IS NOT NULL\n    | EVAL Esql.sequence_stage = \"origin\"\n    | URI_PARTS Esql.origin = file.origin_url\n    | EVAL Esql.origin.domain = TO_LOWER(Esql.origin.domain)\n    | WHERE (\n      // Source code and developer artifact hosting.\n      Esql.origin.domain LIKE (\n        \"api.bitbucket.org\", \"bitbucket.org\",\n        \"api.github.com\", \"gist.githubusercontent.com\", \"github.com\",\n        \"github-releases.githubusercontent.com\", \"objects.githubusercontent.com\",\n        \"raw.githack.com\", \"raw.githubusercontent.com\", \"rawcdn.githack.com\",\n        \"release-assets.githubusercontent.com\",\n        \"gitlab.com\", \"*.gitlab.com\",\n        \"notabug.org\",\n        \"sourceforge.net\", \"*.sourceforge.net\"\n      ) OR\n      // AWS S3 object storage.\n      Esql.origin.domain LIKE (\n        \"s3.amazonaws.com\", \"*.s3.amazonaws.com\",\n        \"s3.*.amazonaws.com\", \"*.s3.*.amazonaws.com\",\n        \"s3-*.amazonaws.com\", \"*.s3-*.amazonaws.com\",\n        \"*.s3express-*.amazonaws.com\"\n      ) OR\n      // Azure, Cloudflare R2, Discord, and Dropbox.\n      Esql.origin.domain LIKE (\n        \"*.azurewebsites.net\", \"*.azurestaticapps.net\",\n        \"*.azurecontainerapps.io\",\n        \"*.blob.core.windows.net\", \"*.blob.storage.azure.net\",\n        \"*.web.core.windows.net\", \"*.web.storage.azure.net\",\n        \"*.file.core.windows.net\",\n        \"*.azurefd.net\", \"*.azureedge.net\",\n        \"*.r2.dev\",\n        \"cdn.discordapp.com\",\n        \"dropbox.com\", \"*.dropbox.com\",\n        \"dropboxusercontent.com\", \"*.dropboxusercontent.com\"\n      ) OR\n      // Firebase Storage, Google Drive, and Cloud Storage.\n      Esql.origin.domain LIKE (\n        \"*.googleusercontent.com\", \"content-storage.googleapis.com\",\n        \"firebasestorage.googleapis.com\",\n        \"docs.google.com\", \"drive.google.com\", \"drive.usercontent.google.com\",\n        \"storage-download.googleapis.com\", \"storage.googleapis.com\", \"*.storage.googleapis.com\",\n        \"www.googleapis.com\"\n      ) OR\n      // OneDrive, SharePoint, Onehub, OnlyOffice, pCloud, Slack, Supabase, and Wasabi.\n      Esql.origin.domain LIKE (\n        \"api.onedrive.com\", \"files.1drv.com\", \"*.files.1drv.com\",\n        \"onedrive.live.com\", \"*.onedrive.live.com\",\n        \"sharepoint.com\", \"*.sharepoint.com\",\n        \"storage.live.com\", \"*.storage.live.com\",\n        \"onehub.com\", \"*.onehub.com\",\n        \"onlyoffice.com\", \"*.onlyoffice.com\",\n        \"pcloud.com\", \"*.pcloud.com\",\n        \"files.slack.com\", \"slack-files.com\",\n        \"*.supabase.co\",\n        \"s3.wasabisys.com\", \"*.s3.wasabisys.com\",\n        \"s3.*.wasabisys.com\", \"*.s3.*.wasabisys.com\"\n      ) OR\n      // Developer tunnels, reverse proxies, automation, and webhooks.\n      Esql.origin.domain LIKE (\n        \"devtunnels.ms\", \"*.devtunnels.ms\",\n        \"localtunnel.me\", \"*.localtunnel.me\",\n        \"n8n.cloud\", \"*.n8n.cloud\",\n        \"*.ngrok.app\", \"*.ngrok.dev\",\n        \"*.ngrok-free.app\", \"*.ngrok-free.dev\",\n        \"*.ngrok.io\", \"*.ngrok.pizza\", \"*.ngrok.pro\",\n        \"pagekite.me\", \"*.pagekite.me\",\n        \"serveo.net\", \"*.serveo.net\",\n        \"trycloudflare.com\", \"*.trycloudflare.com\",\n        \"webhook.site\"\n      ) OR\n      // File-sharing and transfer services.\n      Esql.origin.domain LIKE (\n        \"4shared.com\", \"*.4shared.com\",\n        \"*.4sync.com\",\n        \"bashupload.com\", \"*.bashupload.com\",\n        \"catbox.moe\", \"*.catbox.moe\",\n        \"easyupload.io\", \"*.easyupload.io\",\n        \"file.io\",\n        \"filebin.net\",\n        \"filecloud.me\",\n        \"files.fm\", \"*.files.fm\",\n        \"filetransfer.io\", \"*.filetransfer.io\",\n        \"gofile.io\", \"*.gofile.io\",\n        \"limewire.com\", \"*.limewire.com\",\n        \"mediafire.com\", \"*.mediafire.com\",\n        \"mega.co.nz\", \"*.mega.co.nz\",\n        \"mega.nz\", \"*.mega.nz\",\n        \"pixeldrain.com\", \"*.pixeldrain.com\",\n        \"send.cm\", \"*.send.cm\", \"send.now\", \"*.send.now\",\n        \"sendit.sh\", \"*.sendit.sh\",\n        \"sendspace.com\", \"*.sendspace.com\",\n        \"share.riseup.net\",\n        \"temp.sh\", \"tempsend.com\",\n        \"transfer.sh\",\n        \"ufile.io\", \"*.ufile.io\",\n        \"upload.ee\", \"*.upload.ee\",\n        \"we.tl\", \"wetransfer.com\", \"*.wetransfer.com\", \"*.wetransfer.net\",\n        \"workupload.com\"\n      ) OR\n      // CDN, paste, and public hosting services.\n      Esql.origin.domain LIKE (\n        \"*.alwaysdata.net\",\n        \"blogspot.com\", \"*.blogspot.com\",\n        \"b-cdn.net\", \"*.b-cdn.net\",\n        \"cdnmegafiles.com\", \"*.cdnmegafiles.com\",\n        \"infinityfreeapp.com\", \"*.infinityfreeapp.com\",\n        \"free.keep.sh\",\n        \"*.netlify.app\",\n        \"paste.ee\",\n        \"publicvm.com\", \"*.publicvm.com\",\n        \"*.vercel.app\",\n        \"*.*.workers.dev\"\n      ) OR\n      // Decentralized and content-addressed storage.\n      Esql.origin.domain LIKE (\n        \"ar.io\", \"*.ar.io\", \"arweave.net\", \"*.arweave.net\",\n        \"ic0.app\", \"*.ic0.app\", \"icp0.io\", \"*.icp0.io\",\n        \"dweb.link\", \"*.dweb.link\",\n        \"gateway.pinata.cloud\",\n        \"ipfs.io\", \"*.ipfs.io\",\n        \"mypinata.cloud\", \"*.mypinata.cloud\",\n        \"nftstorage.link\", \"*.nftstorage.link\",\n        \"storjshare.io\", \"*.storjshare.io\",\n        \"web3.storage\", \"*.web3.storage\"\n      )\n    )\n),\n(\n  FROM logs-endpoint.events.process-* METADATA _id, _version, _index\n  | WHERE host.os.type == \"windows\" AND\n      KQL(\"event.type: start\") AND\n      process.name.caseless == \"msiexec.exe\"\n  | EVAL Esql.sequence_stage = \"execute\"\n  | KEEP @timestamp, host.id, process.args, user.id, _id, _version, _index, Esql.sequence_stage\n),\n(\n  FROM logs-endpoint.events.file-* METADATA _id, _version, _index\n  | WHERE KQL(\"event.action: creation\") AND process.name.caseless == \"msiexec.exe\"\n  | EVAL file.name.caseless = TO_LOWER(file.name)\n  | WHERE\n    file.name.caseless IN (\n      // Acronis\n      \"acroniscyberprotectconnectagent.exe\",\n\n      // AeroAdmin\n      \"aeroadmin.exe\",\n\n      // AnyDesk\n      \"anydesk.exe\",\n\n      // APC\n      \"apc_admin.exe\",\n      \"apc_host.exe\",\n\n      // Atera\n      \"ateraagent.exe\",\n\n      // AweSun\n      \"awesun.exe\",\n\n      // BarracudaRMM\n      \"cagservice.exe\",\n\n      // BeyondTrust\n      \"b4-service.exe\",\n      \"basupsrvc.exe\",\n      \"bomgar-scc.exe\",\n      \"remote support.exe\",\n\n      // CloudRadial\n      \"cloudracmd.exe\",\n      \"cloudrasd.exe\",\n      \"cloudraservice.exe\",\n\n      // ConnectWiseAutomate\n      \"agentmon.exe\",\n      \"ltsvc.exe\",\n      \"ltsvcmon.exe\",\n      \"lttray.exe\",\n\n      // Devolutions\n      \"remotedesktopmanager.exe\",\n\n      // Domotz\n      \"domotz-windows-x64-10.exe\",\n      \"domotzagent.exe\",\n\n      // DWService\n      \"dwagsvc.exe\",\n      \"dwrcc.exe\",\n      \"dwrcs.exe\",\n      \"dwrcst.exe\",\n\n      // GetScreen\n      \"getscreen.exe\",\n\n      // GoTo\n      \"g2aservice.exe\",\n      \"gotoassistservice.exe\",\n      \"gotohttp.exe\",\n      \"gotoresolveprocesschecker.exe\",\n      \"gotoresolveremotecontrol.exe\",\n      \"gotoresolveservice.exe\",\n      \"gotoresolveterminal.exe\",\n      \"gotoresolveunattended.exe\",\n\n      // HelpWire\n      \"helpwire.exe\",\n\n      // ImmyBot\n      \"immyagent.exe\",\n      \"immybot.agent.ephemeral.exe\",\n      \"immyupdater.exe\",\n\n      // Impero\n      \"imperoclientsvc.exe\",\n      \"imperoserversvc.exe\",\n\n      // ISLOnline\n      \"isllight.exe\",\n      \"isllightclient.exe\",\n\n      // JumpCloud\n      \"jumpcloud-agent.exe\",\n\n      // Kaseya\n      \"saazapsc.exe\",\n\n      // Komari\n      \"komari-agent.exe\",\n      \"komari.exe\",\n\n      // Level\n      \"level.exe\",\n      \"lvagent.exe\",\n\n      // LogMeIn\n      \"lmi_rescue_srv.exe\",\n      \"lmi_rescue.exe\",\n      \"lmiignition.exe\",\n      \"logmein.exe\",\n\n      // Lunixar\n      \"lunixar.exe\",\n      \"lunixarremote.exe\",\n      \"lunixarupdater.exe\",\n\n      // ManageEngine\n      \"manageengine_remote_access_plus.exe\",\n\n      // MeshCentral\n      \"meshagent.exe\",\n\n      // Mikogo\n      \"mikogo-service.exe\",\n\n      // Nezha\n      \"nezha-agent.exe\",\n\n      // NinjaOne\n      \"ninjarmm-cli.exe\",\n      \"ninjarmmagent.exe\",\n      \"ninjarmmagentpatcher.exe\",\n\n      // Parsec\n      \"parsec.exe\",\n\n      // PDQ Connect\n      \"pdq-connect-agent.exe\",\n      \"pdq-connect-updater.exe\",\n\n      // Pulseway\n      \"pservice.exe\",\n\n      // QuickAssist\n      \"quickassist.exe\",\n\n      // Radmin\n      \"r_server.exe\",\n      \"radmin.exe\",\n      \"radmin3.exe\",\n      \"rserver3.exe\",\n\n      // RealVNC\n      \"romserver.exe\",\n      \"romviewer.exe\",\n      \"vncserver.exe\",\n      \"vncviewer.exe\",\n      \"winvnc.exe\",\n\n      // Remotely\n      \"remotely_agent.exe\",\n      \"remotely_desktop.exe\",\n\n      // RemotePC\n      \"remotepc.exe\",\n      \"remotepcdesktop.exe\",\n      \"remotepcservice.exe\",\n\n      // RemoteUtilities\n      \"rfusclient.exe\",\n      \"rutserv.exe\",\n      \"rutview.exe\",\n\n      // RPCSuite\n      \"rcclient.exe\",\n      \"rcservice.exe\",\n      \"rpcsuite.exe\",\n\n      // Rsupport\n      \"rcengmgru.exe\",\n      \"rcmgrsvc.exe\",\n      \"remoteview.exe\",\n      \"rvagent.exe\",\n      \"rvagtray.exe\",\n\n      // RustDesk\n      \"rustdesk.exe\",\n\n      // SimpleHelp\n      \"simplegatewayservice.exe\",\n      \"simplehelpcustomer.exe\",\n\n      // Splashtop\n      \"smpcview.exe\",\n      \"spclink.exe\",\n      \"splashtop-streamer.exe\",\n      \"splashtopsos.exe\",\n      \"spsrv.exe\",\n      \"sragent.exe\",\n      \"srmanager.exe\",\n      \"srserver.exe\",\n      \"srservice.exe\",\n      \"strwinclt.exe\",\n\n      // SuperOps\n      \"rmm.agent.exe\",\n\n      // Supremo\n      \"supremo.exe\",\n      \"supremoservice.exe\",\n\n      // Syncro\n      \"syncro.app.runner.exe\",\n      \"syncro.installer.exe\",\n      \"syncro.overmind.service.exe\",\n      \"syncro.service.exe\",\n      \"syncrolive.agent.exe\",\n      \"syncrolive.agent.runner.exe\",\n      \"syncrolive.service.exe\",\n\n      // TacticalRMM\n      \"tacticalrmm.exe\",\n\n      // Tailscale\n      \"tailscale.exe\",\n      \"tailscaled.exe\",\n\n      // TeamViewer\n      \"teamviewer_desktop.exe\",\n      \"teamviewer_service.exe\",\n      \"teamviewer.exe\",\n\n      // Techinline\n      \"tsclient.exe\",\n\n      // Tiflux\n      \"tiagent.exe\",\n      \"ticlientcore.exe\",\n\n      // TightVNC\n      \"tvn.exe\",\n      \"tvnserver.exe\",\n      \"tvnviewer.exe\",\n\n      // ToDesk\n      \"todesk_service.exe\",\n\n      // ToolsIQ\n      \"toolsiq.exe\",\n\n      // Twingate\n      \"twingate.exe\",\n\n      // Velociraptor\n      \"velociraptor.exe\",\n\n      // ZohoAssist\n      \"session_win.exe\",\n      \"za_access.exe\",\n      \"za_connect.exe\",\n      \"zaservice.exe\",\n      \"zmagent.exe\",\n      \"zohomeeting.exe\",\n      \"zohotray.exe\",\n      \"zohours.exe\",\n      \"zohoursservice.exe\"\n    ) OR\n    file.name.caseless LIKE (\n      // AnyAssist\n      \"aa_v*.exe\",\n\n      // AweSun\n      \"aweray_remote*.exe\",\n\n      // FleetDeck\n      \"fleetdeck_commander*.exe\",\n\n      // ScreenConnect\n      \"connectwisecontrol*.exe\",\n      \"screenconnect*.exe\",\n\n      // UltraViewer\n      \"ultraviewer*.exe\",\n\n      // UltraVNC\n      \"ultravnc*.exe\"\n    )\n  // Keep the executable name paired with its creation time through the host-level aggregation.\n  | EVAL\n      Esql.sequence_stage = \"install\",\n      Esql.install_candidate = CONCAT(TO_STRING(@timestamp), \"|\", file.name)\n  | KEEP @timestamp, host.id, _id, _version, _index, Esql.sequence_stage, Esql.install_candidate\n)\n\n| WHERE host.id IS NOT NULL\n\n// Attach known RMM executable creation candidates to all rows on the same host.\n// Retain only download and execution candidates from hosts with at least one such creation.\n| INLINE STATS\n    Esql.install_count = COUNT(*) WHERE Esql.sequence_stage == \"install\",\n    Esql.install_candidates = VALUES(Esql.install_candidate) WHERE Esql.sequence_stage == \"install\"\n  BY host.id\n| DROP Esql.install_candidate\n| WHERE Esql.sequence_stage IN (\"origin\", \"execute\") AND Esql.install_count > 0\n\n// Lowercase the downloaded path and every msiexec argument, remove the :Zone.Identifier marker,\n// and keep values ending in .msi as the shared path key.\n| EVAL\n    Esql.candidate_path = CASE(\n      Esql.sequence_stage == \"origin\", file.path,\n      process.args\n    ),\n    Esql.actor_user_id = user.id\n| MV_EXPAND Esql.candidate_path\n| EVAL Esql.artifact_path =\n    REPLACE(TO_LOWER(Esql.candidate_path), \":zone.identifier\", \"\")\n| WHERE Esql.artifact_path LIKE \"*.msi\" AND Esql.actor_user_id IS NOT NULL\n\n// Match the origin event and msiexec start using host, MSI path, and user SID.\n| INLINE STATS\n    Esql.execute_count = COUNT(*) WHERE Esql.sequence_stage == \"execute\",\n    Esql.execute_times = VALUES(@timestamp) WHERE Esql.sequence_stage == \"execute\"\n  BY host.id, Esql.artifact_path, Esql.actor_user_id\n| WHERE\n    // Keep the real origin event as the alert document.\n    Esql.sequence_stage == \"origin\" AND\n    Esql.execute_count > 0\n\n// Require the matching msiexec process to start within 10 minutes after the MSI download.\n| MV_EXPAND Esql.execute_times\n| EVAL Esql.origin_to_execute_s =\n    DATE_DIFF(\"second\", @timestamp, Esql.execute_times)\n| WHERE\n    Esql.origin_to_execute_s >= 0 AND\n    Esql.origin_to_execute_s <= 600\n\n// On the same host, require any msiexec process to create a known RMM executable\n// within 5 minutes after the matched start.\n| MV_EXPAND Esql.install_candidates\n| EVAL\n    Esql.install_time = TO_DATETIME(MV_FIRST(SPLIT(Esql.install_candidates, \"|\"))),\n    Esql.rmm_file_name = MV_LAST(SPLIT(Esql.install_candidates, \"|\")),\n    Esql.execute_to_install_s = DATE_DIFF(\"second\", Esql.execute_times, Esql.install_time)\n| DROP Esql.install_candidates\n| WHERE\n    Esql.execute_to_install_s >= 0 AND\n    Esql.execute_to_install_s <= 300\n\n// Select one concrete origin row per host, MSI path, and user, preferring the\n// earliest RMM executable creation when second-level durations tie.\n| SORT\n    Esql.execute_times ASC,\n    Esql.origin_to_execute_s ASC,\n    Esql.execute_to_install_s ASC,\n    Esql.install_time ASC,\n    Esql.rmm_file_name ASC,\n    _id ASC\n| LIMIT 1 BY host.id, Esql.artifact_path, Esql.actor_user_id\n\n| RENAME Esql.execute_times AS Esql.execute_time\n| KEEP\n    @timestamp, _id, _index, _version,\n    event.action, event.category, event.type, event.created, event.ingested,\n    data_stream.dataset, data_stream.namespace,\n    host.id, host.name,\n    user.id, user.name,\n    process.entity_id, process.name, process.executable, process.command_line,\n    file.name, file.path, file.extension, file.origin_url, file.origin_referrer_url,\n    file.size, file.hash.sha256,\n    Esql.origin.domain, Esql.artifact_path, Esql.execute_time,\n    Esql.install_time, Esql.rmm_file_name,\n    Esql.origin_to_execute_s, Esql.execute_to_install_s\n",
+        "references": [
+            "https://www.proofpoint.com/us/blog/threat-insight/remote-monitoring-and-management-rmm-tooling-increasingly-attackers-first-choice",
+            "https://www.securonix.com/blog/smoke-screen-screenconnect-rmm-abuse-cloudflare-tunnels/",
+            "https://www.forcepoint.com/blog/x-labs/screenconnect-attack",
+            "https://www.levelblue.com/blogs/spiderlabs-blog/beyond-fake-updates-from-application-store-themed-phishing-to-large-scale-distribution-of-screenconnect",
+            "https://www.security.com/threat-intelligence/rmm-logmein-attacks",
+            "https://www.huntress.com/blog/w2-malvertising-to-kernel-mode-edr-kill",
+            "https://www.huntress.com/blog/active-exploitation-solarwinds-web-help-desk-cve-2025-26399",
+            "https://www.huntress.com/blog/velociraptor-misuse-part-two-eye-of-the-storm",
+            "https://www.fortian.com.au/blog/trusted-domains-disposable-infrastructure-tax-season-phishing-on-vercel.html",
+            "https://www.proofpoint.com/us/blog/threat-insight/crossed-wires-case-study-iranian-espionage-and-attribution"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.namespace",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.created",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.ingested",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.extension",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.hash.sha256",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.origin_referrer_url",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.origin_url",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.size",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "ed626330-f3ac-4568-b4e4-cbc296748320",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Platform: Windows",
+            "Rule Type: ES|QL",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Tactic: Stealth"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    },
+                    {
+                        "id": "T1219",
+                        "name": "Remote Access Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1219/",
+                        "subtechnique": [
+                            {
+                                "id": "T1219.002",
+                                "name": "Remote Desktop Software",
+                                "reference": "https://attack.mitre.org/techniques/T1219/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Stealth",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/",
+                        "subtechnique": [
+                            {
+                                "id": "T1218.007",
+                                "name": "Msiexec",
+                                "reference": "https://attack.mitre.org/techniques/T1218/007/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 3
+    },
+    "id": "ed626330-f3ac-4568-b4e4-cbc296748320_3",
+    "type": "security-rule"
+}

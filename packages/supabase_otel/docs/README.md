@@ -2,7 +2,7 @@
 
 Supabase is an open-source Firebase alternative built on top of PostgreSQL, offering authentication, real-time subscriptions, RESTful APIs, and connection pooling as managed services.
 
-This content package provides dashboards for Supabase projects monitored via the OpenTelemetry Prometheus receiver. The assets cover three observability tiers: node infrastructure, PostgreSQL database internals, and application services (GoTrue, PostgREST, Realtime).
+This content package provides dashboards for Supabase metrics and service logs collected via the **[Supabase](https://www.elastic.co/docs/reference/integrations/supabase)** integration package. The assets cover node infrastructure, PostgreSQL database internals, application services (GoTrue, PostgREST, Realtime), and service log streams.
 
 
 ## Requirements
@@ -15,7 +15,7 @@ You need Elasticsearch for storing and searching your data and Kibana for visual
 
 1. A Supabase project with the Observability endpoint enabled. The endpoint exposes Prometheus-format metrics for infrastructure, PostgreSQL, and application services.
 
-2. Install the **Supabase** integration package and configure it with your Supabase project credentials. This content package provides dashboards that visualize data collected by that integration.
+2. Install the **Supabase** integration package and configure it with your Supabase project credentials. This content package provides dashboards that visualize data collected by that integration, including service logs forwarded via [Supabase Log Drains](https://supabase.com/docs/guides/monitoring-and-debugging/log-drains).
 
 ### Configuration
 

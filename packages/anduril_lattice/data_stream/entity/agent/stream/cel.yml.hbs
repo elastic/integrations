@@ -1,0 +1,140 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  batch_size: {{batch_size}}
+  token: {{token}}
+  client_id: {{client_id}}
+  client_secret: {{client_secret}}
+  sandbox_token: {{sandbox_token}}
+redact:
+  fields:
+    - token
+    - client_secret
+    - sandbox_token
+    - next.token
+program: |-
+  (
+    has(state.client_id) ?
+      (
+        (has(state.?next.expiry) && timestamp(state.next.expiry) > now) ?
+          state.next
+        :
+          post_request(
+            state.url.trim_right("/") + "/api/v1/oauth/token",
+            "application/x-www-form-urlencoded",
+            {
+              "client_id": [state.client_id],
+              "client_secret": [state.client_secret],
+              "grant_type": ["client_credentials"],
+            }.format_query()
+          ).with(
+            {
+              "Header": {
+                "Content-Type": ["application/x-www-form-urlencoded"],
+                ?"Anduril-Sandbox-Authorization": state.?sandbox_token.optMap(t, ["Bearer " + t]),
+              },
+            }
+          ).do_request().as(tok_resp,
+            (tok_resp.StatusCode == 200) ?
+              tok_resp.Body.decode_json().as(tok_body,
+                {
+                  "token": tok_body.access_token,
+                  "expiry": string(now + duration(string(max(int(tok_body.expires_in) - 60, 1)) + "s")),
+                }
+              )
+            :
+              {
+                "error": {
+                  "code": string(tok_resp.StatusCode),
+                  "id": tok_resp.Status,
+                  "message": "POST /api/v1/oauth/token: " + string(tok_resp.Body),
+                },
+              }
+          )
+      )
+    : (state.?token.orValue("") != "") ? {"token": state.token} : {}
+  ).as(auth,
+    has(auth.error) ?
+      state.with(
+        {
+          "events": {"error": auth.error},
+          "want_more": false,
+        }
+      )
+    :
+      request(
+        "POST",
+        state.url.trim_right("/") + "/api/v1/entities/events"
+      ).with(
+        {
+          "Header": {
+            "Content-Type": ["application/json"],
+            ?"Authorization": auth.?token.optMap(t, ["Bearer " + t]),
+            ?"Anduril-Sandbox-Authorization": state.?sandbox_token.optMap(t, ["Bearer " + t]),
+          },
+          "Body": {
+            "sessionToken": state.?cursor.session_token.orValue(""),
+            "batchSize": int(state.batch_size),
+          }.encode_json(),
+        }
+      ).do_request().as(resp,
+        state.with(
+          {?"next": has(auth.expiry) ? optional.of(auth) : (state.?next)}
+        ).with(
+          (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              (type(body.?entityEvents.orValue(null)) == list) ?
+                {
+                  "events": body.entityEvents.map(e, {"message": e.encode_json()}),
+                  "cursor": {"session_token": body.sessionToken},
+                  "want_more": size(body.entityEvents) >= int(state.batch_size),
+                }
+              :
+                {
+                  "events": [{"retry": true}],
+                  "cursor": {"session_token": body.sessionToken},
+                  "want_more": false,
+                }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": resp.Status,
+                  "message": "POST /api/v1/entities/events: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+                },
+              },
+              "want_more": false,
+            }
+        )
+      )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}

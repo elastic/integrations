@@ -87,6 +87,7 @@ Subcommands:
           --remote string     Git remote (default: origin).
           --repository string GitHub repository in org/repo form.
           --packages-dir string  Path to packages directory (default: packages).
+          --origin-pr-number string  Number of the source PR on main; used to auto-assign the backport PR (optional).
 
   check-changelog-versions <base-branch>
         Verify that changelog versions introduced in the current PR do not
@@ -571,6 +572,7 @@ func runApply(args []string) error {
 	remote := fs.String("remote", "", "git remote to fetch from and push to (default: origin)")
 	repository := fs.String("repository", "", "GitHub repository in org/repo form")
 	packagesDir := fs.String("packages-dir", "", "path to packages directory (default: packages)")
+	originPRNumber := fs.String("origin-pr-number", "", "number of the source PR on main; used to auto-assign the backport PR")
 
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -583,15 +585,16 @@ func runApply(args []string) error {
 	target := fs.Arg(2)
 
 	opts := apply.Options{
-		SHA:         sha,
-		Package:     pkg,
-		Target:      target,
-		OpenPR:      *openPR,
-		AsJSON:      *asJSON,
-		DryRun:      *dryRun,
-		Remote:      *remote,
-		Repository:  *repository,
-		PackagesDir: *packagesDir,
+		SHA:            sha,
+		Package:        pkg,
+		Target:         target,
+		OpenPR:         *openPR,
+		AsJSON:         *asJSON,
+		DryRun:         *dryRun,
+		Remote:         *remote,
+		Repository:     *repository,
+		PackagesDir:    *packagesDir,
+		OriginPRNumber: *originPRNumber,
 	}
 
 	result, err := apply.Apply(opts)

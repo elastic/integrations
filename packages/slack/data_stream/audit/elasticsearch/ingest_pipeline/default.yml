@@ -168,6 +168,13 @@ processors:
       field: slack.details
       target_field: slack.audit.details
       ignore_missing: true
+  - remove:
+      field: slack.audit.details.previous_ip_address
+      ignore_missing: true
+      tag: remove_blank_previous_ip_address
+      if: >-
+        ctx.slack?.audit?.details?.previous_ip_address instanceof String
+        && ctx.slack.audit.details.previous_ip_address.trim().length() == 0
   - convert:
       tag: convert_slack_audit_details_previous_ip_address_to_slack_audit_details_previous_ip_address_e7cd14f0
       type: ip

@@ -10,6 +10,9 @@ rules:
     responses:
       - status_code: 200
         body: |
+          {"status":"PROCESSING","chunks_available":[]}
+      - status_code: 200
+        body: |
           {"status":"FINISHED","chunks_available":[1]}
   - path: /assets/export/xxx/chunks/1
     methods: ["GET"]
@@ -37,7 +40,18 @@ rules:
           {"export_uuid":"xxx"}
   - path: /vulns/export/xxx/status
     methods: ["GET"]
+    # Responses are served in rolling sequence, so every export cycle walks
+    # QUEUED -> PROCESSING -> FINISHED and exercises the wait between polls.
+    # Terminal statuses (CANCELLED, ERROR, failed chunks) are not mocked here:
+    # they degrade the input by design, which the system test runner treats as
+    # a failure.
     responses:
+      - status_code: 200
+        body: |
+          {"status":"QUEUED","chunks_available":[]}
+      - status_code: 200
+        body: |
+          {"status":"PROCESSING","chunks_available":[]}
       - status_code: 200
         body: |
           {"status":"FINISHED","chunks_available":[1,2]}

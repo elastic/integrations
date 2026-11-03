@@ -88,6 +88,44 @@ processors:
             message: "Failed decoding message field as CSV: {{{ _ingest.on_failure_message }}}"
 
   #
+  # Normalize Recorded Future public VPN/proxy Fusion lists onto the canonical
+  # risklist schema. These RF-managed files (for example
+  # `/public/vpn_proxy_lists/vpn_ips_list.csv` and `proxy_ips_list.csv`) use the
+  # columns `ip`/`risk_score` instead of `Name`/`Risk`. They cannot be edited by
+  # the customer, so the integration maps them. The renames are no-ops for the
+  # standard risklist schema because they only run when `Name`/`Risk` are
+  # absent. Any other columns (for example `service`) are preserved under
+  # `recordedfuture.*`.
+  #
+  - rename:
+      tag: rename_json_ip_to_json_Name_vpn_proxy
+      field: json.ip
+      target_field: json.Name
+      ignore_missing: true
+      if: ctx.json?.Name == null && ctx.json?.ip != null
+  - rename:
+      tag: rename_json_risk_score_to_json_Risk_vpn_proxy
+      field: json.risk_score
+      target_field: json.Risk
+      ignore_missing: true
+      if: ctx.json?.Risk == null && ctx.json?.risk_score != null
+
+  #
+  # Fail fast with an actionable message for any Fusion file whose schema the
+  # pipeline does not understand (no indicator column after normalization).
+  # Without this, a missing `Name` surfaces later as an opaque Painless
+  # "cannot access method/field [contains] from a null def reference" error.
+  #
+  - fail:
+      tag: fail_unsupported_csv_schema
+      if: ctx.json != null && ctx.json.Name == null
+      message: >-
+        Unsupported Recorded Future CSV schema: the required indicator column
+        `Name` (or `ip` for VPN/proxy lists) is missing. The threat data stream
+        expects the risklist columns Name, Risk, RiskString, EvidenceDetails
+        (and Algorithm for hashes). See event.original for the received row.
+
+  #
   # Decode EvidenceDetails column as JSON.
   #
   - json:

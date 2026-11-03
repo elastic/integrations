@@ -22,20 +22,25 @@ state:
   password: {{escape_string password}}
  {{/if}}
   username: {{escape_string username}}
+  cookie_ttl: 15m
 redact:
   fields:
     - apikey
     - password
+    - cookie_jar
 {{!--
 API References:
   https://docs.beyondtrust.com/bips/docs/api#post-authsignappin
+  https://docs.beyondtrust.com/bips/docs/api#post-authsignout
   https://docs.beyondtrust.com/bips/docs/beyondinsight-apis#workgroups-1
   https://docs.beyondtrust.com/bips/docs/beyondinsight-apis#get-workgroupsworkgroupidassets
 
-Cursor variable definitions:
-  workgroup_ids: Array of objects containing {workgroup_id: string, offset: int}.
+State variable definitions:
+  cookie_jar: Session state ({cookies, session_time}), persisted across polls but not restarts.
+    cookies: Raw Set-Cookie header values from /Auth/SignAppin.
+    session_time: Timestamp of session creation (RFC 3339), used for renewal check.
+  cursor.workgroup_ids: Array of objects containing {workgroup_id: string, offset: int}.
     After the assets for the workgroup have been fully collected, the item is removed.
-  cookies: Session cookie.
 --}}
 program: |-
   (
@@ -54,247 +59,245 @@ program: |-
       )
     :
       state
-  ).with(
-    has(state.?cursor.cookies) ?
+  ).as(state,
+    state.with(
       (
-        // Use existing authenticated session to fetch assets from workgroups.
-        (size(state.?cursor.workgroup_ids.orValue([])) > 0) ?
-          // We already have workgroup IDs, process assets from them.
-          {
-            "workgroup_id": state.cursor.workgroup_ids[0].workgroup_id,
-            "offset": state.cursor.workgroup_ids[0].offset,
-            "remaining_workgroups": tail(state.cursor.workgroup_ids),
-          }.as(r,
-            request(
-              "GET",
-              state.url.trim_suffix("/") + "/Workgroups/" + r.workgroup_id + "/Assets?" + {
-                "limit": [string(state.limit)],
-                "offset": [string(r.offset)],
-              }.format_query()
-            ).with(
+        // Reuse existing session if fresh; otherwise sign out the old one (if any) and sign in.
+        has(state.?cookie_jar.cookies) && (now - timestamp(state.cookie_jar.session_time)) < duration(state.cookie_ttl) ?
+          state.cookie_jar
+        :
+          (has(state.?cookie_jar.cookies) ?
+            request("POST", state.url.trim_suffix("/") + "/Auth/Signout").with(
               {
                 "Header": {
-                  // Include credentials on every request; some API registrations validate them on all calls, not just sign-in.
                   "Authorization": [
                     sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
                     (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
                   ],
                   "Content-Type": ["application/json"],
-                  "Cookie": state.cursor.cookies,
+                  "Cookie": [state.cookie_jar.cookies.map(c, c.split(";")[0]).join("; ")],
+                },
+              }
+            ).do_request()
+          :
+            dyn(null)
+          ).as(_,
+            request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
+              {
+                "Header": {
+                  "Authorization": [
+                    sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
+                    // pwd is required only if the user password is required on the application API registration.
+                    (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
+                  ],
+                  "Content-Type": ["application/json"],
                 },
               }
             ).do_request().as(resp,
               (resp.StatusCode == 200) ?
-                // Success: process JSON response with Data array of asset objects.
-                resp.Body.decode_json().as(body,
-                  (
-                    (size(body.Data) + int(r.offset) < int(body.TotalCount)) ?
-                      ([{"workgroup_id": r.workgroup_id, "offset": int(r.offset) + size(body.Data)}] + r.remaining_workgroups)
-                    :
-                      r.remaining_workgroups
-                  ).as(next_workgroup_ids,
-                    {
-                      "events": body.Data.map(e,
-                        {
-                          "event": {
-                            "original": e.encode_json(),
-                          },
-                        }
-                      ),
-                      "want_more": size(next_workgroup_ids) > 0,
-                      "cursor": {
-                        "cookies": state.cursor.cookies,
-                        "workgroup_ids": next_workgroup_ids,
-                      },
-                      "retries": 0,
-                    }
-                  )
-                )
-              : (resp.StatusCode == 401) ?
-                (
-                  // Authentication failure: clear session and retry once.
-                  (int(state.?retries.orValue(0)) == 0) ?
-                    {
-                      "events": [
-                        // Must produce an event for want_more=true to be honored.
-                        {"cel": true},
+                {"cookies": resp.Header["Set-Cookie"], "session_time": now.format("2006-01-02T15:04:05Z")}
+              :
+                {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": resp.Status,
+                    "message": "Failed to create session: POST " + state.url.trim_suffix("/") + "/Auth/SignAppin: " + (
+                      (size(resp.Body) != 0) ?
+                        string(resp.Body)
+                      :
+                        resp.Status + " (" + string(resp.StatusCode) + ")"
+                    ),
+                  },
+                }
+            )
+          )
+      ).as(auth,
+        has(auth.error) ?
+          {
+            "events": {"error": {"message": "failed to log in: " + auth.error.message}},
+            "want_more": false,
+            "cookie_jar": {},
+          }
+        :
+          (
+            // Use existing authenticated session to fetch assets from workgroups.
+            (size(state.?cursor.workgroup_ids.orValue([])) > 0) ?
+              // We already have workgroup IDs, process assets from them.
+              {
+                "workgroup_id": state.cursor.workgroup_ids[0].workgroup_id,
+                "offset": state.cursor.workgroup_ids[0].offset,
+                "remaining_workgroups": tail(state.cursor.workgroup_ids),
+              }.as(r,
+                request(
+                  "GET",
+                  state.url.trim_suffix("/") + "/Workgroups/" + r.workgroup_id + "/Assets?" + {
+                    "limit": [string(state.limit)],
+                    "offset": [string(r.offset)],
+                  }.format_query()
+                ).with(
+                  {
+                    "Header": {
+                      // Include credentials on every request; some API registrations validate them on all calls, not just sign-in.
+                      "Authorization": [
+                        sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
+                        (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
                       ],
-                      "retries": 1,
-                      "want_more": true,
-                      "cursor": state.?cursor.orValue({}).drop("cookies"),
+                      "Content-Type": ["application/json"],
+                      "Cookie": [auth.cookies.map(c, c.split(";")[0]).join("; ")],
+                    },
+                  }
+                ).do_request().as(resp,
+                  (resp.StatusCode == 200) ?
+                    // Success: process JSON response with Data array of asset objects.
+                    resp.Body.decode_json().as(body,
+                      (
+                        (size(body.Data) + int(r.offset) < int(body.TotalCount)) ?
+                          ([{"workgroup_id": r.workgroup_id, "offset": int(r.offset) + size(body.Data)}] + r.remaining_workgroups)
+                        :
+                          r.remaining_workgroups
+                      ).as(next_workgroup_ids,
+                        (size(next_workgroup_ids) > 0) ?
+                          // More workgroups to process.
+                          {
+                            "events": body.Data.map(e,
+                              {
+                                "event": {
+                                  "original": e.encode_json(),
+                                },
+                              }
+                            ),
+                            "want_more": true,
+                            "cookie_jar": auth,
+                            "cursor": {"workgroup_ids": next_workgroup_ids},
+                          }
+                        :
+                          // All workgroups done; session kept in state for next poll.
+                          {
+                            "events": body.Data.map(e,
+                              {
+                                "event": {
+                                  "original": e.encode_json(),
+                                },
+                              }
+                            ),
+                            "want_more": false,
+                            "cookie_jar": auth,
+                            "cursor": {},
+                          }
+                      )
+                    )
+                  : (resp.StatusCode == 401) ?
+                    {
+                      "events": {
+                        "error": {
+                          "code": string(resp.StatusCode),
+                          "id": resp.Status,
+                          "message": "GET " + state.url.trim_suffix("/") + "/Workgroups/" + r.workgroup_id + "/Assets: " + (
+                            (size(resp.Body) != 0) ?
+                              string(resp.Body)
+                            :
+                              resp.Status + " (" + string(resp.StatusCode) + ")"
+                          ),
+                        },
+                      },
+                      "want_more": false,
+                      "cookie_jar": {},
                     }
                   :
                     {
                       "events": {
                         "error": {
                           "code": string(resp.StatusCode),
-                          "id": string(resp.Status),
-                          "message": "Authentication failed after retry: " + "GET " + state.url.trim_suffix("/") + "/Workgroups/" + r.workgroup_id + "/Assets: " + (
+                          "id": resp.Status,
+                          "message": "GET " + state.url.trim_suffix("/") + "/Workgroups/" + r.workgroup_id + "/Assets: " + (
                             (size(resp.Body) != 0) ?
                               string(resp.Body)
                             :
-                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                              resp.Status + " (" + string(resp.StatusCode) + ")"
                           ),
                         },
                       },
                       "want_more": false,
+                      "cookie_jar": auth,
                     }
                 )
-              :
-                // Handle all other HTTP error responses.
-                {
-                  "events": {
-                    "error": {
-                      "code": string(resp.StatusCode),
-                      "id": string(resp.Status),
-                      "message": "GET " + state.url.trim_suffix("/") + "/Workgroups/" + r.workgroup_id + "/Assets: " + (
-                        (size(resp.Body) != 0) ?
-                          string(resp.Body)
-                        :
-                          string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                      ),
-                    },
-                  },
-                  "want_more": false,
-                }
-            )
-          )
-        :
-          // Fetch workgroup IDs first.
-          request("GET", state.url.trim_suffix("/") + "/Workgroups").with(
-            {
-              "Header": {
-                // Include credentials on every request; some API registrations validate them on all calls, not just sign-in.
-                "Authorization": [
-                  sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
-                  (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
-                ],
-                "Content-Type": ["application/json"],
-                "Cookie": state.cursor.cookies,
-              },
-            }
-          ).do_request().as(resp,
-            (resp.StatusCode == 200) ?
-              // Success: extract workgroup IDs and set up for asset fetching.
-              resp.Body.decode_json().as(workgroups,
-                (size(workgroups) == 0) ?
-                  {
-                    "events": [],
-                    "want_more": false,
-                    "cursor": {
-                      "cookies": state.cursor.cookies,
-                    },
-                  }
-                :
-                  {
-                    "events": [
-                      // Must produce an event for want_more=true to be honored.
-                      {"cel": true},
-                    ],
-                    "want_more": true,
-                    "cursor": {
-                      "cookies": state.cursor.cookies,
-                      "workgroup_ids": workgroups.map(wg, {"workgroup_id": string(wg.ID), "offset": 0}),
-                    },
-                  }
               )
-            : (resp.StatusCode == 401) ?
-              (
-                // Authentication failure: clear session and retry once.
-                (int(state.?retries.orValue(0)) == 0) ?
-                  {
-                    "events": [
-                      // Must produce an event for want_more=true to be honored.
-                      {"cel": true},
+            :
+              // Fetch workgroup IDs first.
+              request("GET", state.url.trim_suffix("/") + "/Workgroups").with(
+                {
+                  "Header": {
+                    // Include credentials on every request; some API registrations validate them on all calls, not just sign-in.
+                    "Authorization": [
+                      sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
+                      (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
                     ],
-                    "retries": 1,
-                    "want_more": true,
-                    "cursor": state.?cursor.orValue({}).drop("cookies"),
+                    "Content-Type": ["application/json"],
+                    "Cookie": [auth.cookies.map(c, c.split(";")[0]).join("; ")],
+                  },
+                }
+              ).do_request().as(resp,
+                (resp.StatusCode == 200) ?
+                  // Success: extract workgroup IDs and set up for asset fetching.
+                  resp.Body.decode_json().as(workgroups,
+                    (size(workgroups) == 0) ?
+                      // No workgroups; session kept in state for next poll.
+                      {
+                        "events": [],
+                        "want_more": false,
+                        "cookie_jar": auth,
+                      }
+                    :
+                      {
+                        "events": [
+                          // Must produce an event for want_more=true to be honored.
+                          {"retry": true},
+                        ],
+                        "want_more": true,
+                        "cookie_jar": auth,
+                        "cursor": {
+                          "workgroup_ids": workgroups.map(wg, {"workgroup_id": string(wg.ID), "offset": 0}),
+                        },
+                      }
+                  )
+                : (resp.StatusCode == 401) ?
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": resp.Status,
+                        "message": "GET " + state.url.trim_suffix("/") + "/Workgroups: " + (
+                          (size(resp.Body) != 0) ?
+                            string(resp.Body)
+                          :
+                            resp.Status + " (" + string(resp.StatusCode) + ")"
+                        ),
+                      },
+                    },
+                    "want_more": false,
+                    "cookie_jar": {},
                   }
                 :
                   {
                     "events": {
                       "error": {
                         "code": string(resp.StatusCode),
-                        "id": string(resp.Status),
-                        "message": "Authentication failed after retry: " + "GET " + state.url.trim_suffix("/") + "/Workgroups: " + (
+                        "id": resp.Status,
+                        "message": "GET " + state.url.trim_suffix("/") + "/Workgroups: " + (
                           (size(resp.Body) != 0) ?
                             string(resp.Body)
                           :
-                            string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                            resp.Status + " (" + string(resp.StatusCode) + ")"
                         ),
                       },
                     },
                     "want_more": false,
+                    "cookie_jar": auth,
                   }
               )
-            :
-              // Handle all other HTTP error responses.
-              {
-                "events": {
-                  "error": {
-                    "code": string(resp.StatusCode),
-                    "id": string(resp.Status),
-                    "message": "GET " + state.url.trim_suffix("/") + "/Workgroups: " + (
-                      (size(resp.Body) != 0) ?
-                        string(resp.Body)
-                      :
-                        string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                    ),
-                  },
-                },
-                "want_more": false,
-              }
           )
       )
-    :
-      // Establish new authenticated session.
-      request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
-        {
-          "Header": {
-            "Authorization": [
-              sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
-              (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
-            ],
-            "Content-Type": ["application/json"],
-          },
-        }
-      ).do_request().as(resp,
-        (resp.StatusCode == 200) ?
-          {
-            "events": [
-              // Must produce an event for want_more=true to be honored.
-              {"cel": true},
-            ],
-            "cursor": state.?cursor.orValue({}).with(
-              {
-                "cookies": resp.Header["Set-Cookie"],
-              }
-            ),
-            "want_more": true,
-          }
-        :
-          {
-            "events": {
-              "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "Failed to create session: " + "POST " + state.url.trim_suffix("/") + "/Auth/SignAppin: " + (
-                  (size(resp.Body) != 0) ?
-                    string(resp.Body)
-                  :
-                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                ),
-              },
-            },
-            "want_more": false,
-          }
-      )
-  ).as(state, (state.want_more == false) ?
-    // Restart fresh on the next periodic execution.
-    state.drop("retries").drop("cursor.workgroup_ids")
-  :
-    state
+    )
   )
 tags:
 {{#if preserve_original_event}}
@@ -308,7 +311,7 @@ publisher_pipeline.disable_host: true
 {{/contains}}
 
 processors:
-- drop_event.when.equals.cel: true
+- drop_event.when.equals.retry: true
 {{#if processors}}
 {{processors}}
 {{/if}}

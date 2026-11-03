@@ -20,7 +20,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
 )
 
-const endpoint = "elastic-agent:4318"
+const endpoint = "elastic-agent:4319"
 
 func main() {
 	log.Println("waiting for SIGHUP...")

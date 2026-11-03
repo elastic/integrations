@@ -1,0 +1,75 @@
+{
+  "id": "gcp_cloudrun_otel-high-request-latency-p95-by-service-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud Run OTel] High request latency p95 by service",
+        "description": "Fast symptom alert: fires when the in-container request latency p95 of a Cloud Run service exceeds 2,000 ms over a 30-minute window with at least 50 measured successful (2xx/3xx) requests. Excludes cold-start time (see the startup latency rule). Complements the latency SLO.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudrun"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "30m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudrun.otel-*\n// Services only: cloud_run_job documents have no service_name\n| WHERE `metrics.run.googleapis.com/request_latencies` IS NOT NULL\n  AND resource.attributes.service_name IS NOT NULL\n  // Successful requests only (same scope as the latency SLO); 5xx/timeouts are covered by the 5xx error rate rule\n  AND attributes.response_code_class IN (\"2xx\", \"3xx\")\n// Exclude streaming / long-lived connection services (SSE, WebSocket, MCP), whose latency equals connection lifetime\n// | WHERE resource.attributes.service_name NOT IN (\"my-streaming-service\")\n// Percentiles must use the ::exponential_histogram cast (never ::tdigest, never PERCENTILE of *_OVER_TIME)\n// COUNT of the histogram = number of measured requests (used as the volume guard)\n| STATS\n    latency_p95_ms = PERCENTILE(`metrics.run.googleapis.com/request_latencies`::exponential_histogram, 95),\n    latency_p50_ms = PERCENTILE(`metrics.run.googleapis.com/request_latencies`::exponential_histogram, 50),\n    measured_requests = COUNT(`metrics.run.googleapis.com/request_latencies`::exponential_histogram)\n  BY resource.attributes.project_id, resource.attributes.location, resource.attributes.service_name",
+        "breach": {
+          "segment": "// Minimum traffic guard: percentiles over a handful of requests are noise\nWHERE measured_requests >= 50\n// Alert threshold in milliseconds: tune to your service's latency objective\n| WHERE latency_p95_ms > 2000\n| EVAL latency_p95_ms = ROUND(latency_p95_ms, 0), latency_p50_ms = ROUND(latency_p50_ms, 0)\n| KEEP resource.attributes.project_id, resource.attributes.location, resource.attributes.service_name,\n    latency_p95_ms, latency_p50_ms, measured_requests\n| SORT latency_p95_ms DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 1
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.location",
+          "resource.attributes.service_name"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudrun_otel-high-request-latency-p95-by-service-v2-overview-dashboard",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudrun_otel-a22d34c2-3c04-47a0-bf52-cf1e20a36f1d"
+          }
+        },
+        {
+          "id": "gcp_cloudrun_otel-high-request-latency-p95-by-service-v2-details-dashboard",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudrun_otel-7d96ccf8-44dc-4987-8835-7ec93a922d04"
+          }
+        },
+        {
+          "id": "gcp_cloudrun_otel-high-request-latency-p95-by-service-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud Run high request latency (p95)\n\nIn-container request latency p95 exceeded 2,000 ms over the last 30 minutes (minimum 50 measured requests). `request_latencies` measures from when a request reaches a running instance and **excludes container startup time**.\n\n### Triage\n1. Compare p95 with p50. If both are high, the whole service is slow. If only p95 is high, the slowness affects a subset of requests (slow dependency calls, heavy payloads).\n2. Check the per-instance concurrency p95 (active instances). Concurrency close to the configured ceiling means requests queue inside instances. Consider more instances or a lower concurrency setting.\n3. Check CPU utilisation p95. Sustained high CPU, or CPU throttling under request-based billing, slows request handling.\n4. Break latency down by `resource.attributes.revision_name` to check for a regression in a new revision.\n5. Check downstream dependencies (databases, APIs) for the same time range.\n\n### Caveats\n- Services that hold long-lived connections (server-sent events, WebSockets, streaming or MCP endpoints) report the connection lifetime as latency and will breach continuously. Add them to the commented `NOT IN` exclusion line.\n- Cold-start latency is not included. Use the startup latency rule for that.\n\n### Tuning\n- Adjust `latency_p95_ms > 2000` to match your service's latency objective.\n- Adjust the `measured_requests >= 50` guard for low-traffic services."
+          }
+        }
+      ]
+    }
+  }
+}

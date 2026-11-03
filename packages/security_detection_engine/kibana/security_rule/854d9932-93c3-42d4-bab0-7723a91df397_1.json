@@ -1,0 +1,149 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 24
+            },
+            "group_by": [
+                "user.email"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects an unusually high number of Claude chat creation events for the same user email within a 24-hour period. Burst chat creation can indicate automated LLM abuse, resource hijacking to burn organizational quotas, or scripted workflows used to stage many parallel conversations for data processing or prompt-injection campaigns.",
+        "false_positives": [
+            "Power users, automation engineers, or evaluation scripts that create many short-lived chats during testing can exceed the threshold without malicious intent."
+        ],
+        "from": "now-24h",
+        "interval": "1h",
+        "investigation_fields": {
+            "field_names": [
+                "user.email",
+                "Esql.event_count",
+                "Esql.event_id_values",
+                "Esql.anthropic_audit_claude_chat_id_values",
+                "Esql.anthropic_audit_claude_project_id_values",
+                "Esql.source_ip_values",
+                "Esql.user_agent_original_values",
+                "Esql.anthropic_audit_actor_type_values",
+                "Esql.user_id_values",
+                "Esql.timestamp_first_seen",
+                "Esql.timestamp_last_seen"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Anthropic Excessive Chat Creation",
+        "note": "## Triage and analysis\n\n### Investigating Anthropic Excessive Chat Creation\n\nOne mailbox created a large burst of Claude chats in 24 hours \u2014 fits automation, quota burn, or scripted parallel\nworkflows.\n\nTrue-positive signals: scripting UA (curl/python/Go-http-client), many distinct project IDs, concurrent file uploads\nor deletions, or follow-on exports. False-positive signals: known eval/load-test accounts, onboarding templates from\none admin with browser UA and no data-access follow-ons.\n\n#### Possible investigation steps\n\n- Prefer alerts with scripting UA and/or many distinct project IDs over browser UA confined to one known project.\n- Correlate with high file uploads, chat deletions, or org data export from the same email in the same window.\n\n### False positive analysis\n\n- Known eval/load-test seats and onboarding template creators with browser UA and no data-access follow-ons are FP.\n\n### Response and remediation\n\n- When TP signals hold: revoke sessions, review project membership, and apply rate limits or policy changes for the\n  actor.\n",
+        "query": "from logs-anthropic.audit-*\n| where\n    data_stream.dataset == \"anthropic.audit\" and\n    event.action == \"claude_chat_created\" and\n    event.outcome == \"success\" and\n    user.email is not null\n| stats\n    Esql.event_count = count(*),\n    Esql.event_id_values = values(event.id),\n    Esql.anthropic_audit_claude_chat_id_values = values(anthropic.audit.claude_chat_id),\n    Esql.anthropic_audit_claude_project_id_values = values(anthropic.audit.claude_project_id),\n    Esql.source_ip_values = values(source.ip),\n    Esql.user_agent_original_values = values(user_agent.original),\n    Esql.anthropic_audit_actor_type_values = values(anthropic.audit.actor.type),\n    Esql.user_id_values = values(user.id),\n    Esql.timestamp_first_seen = min(@timestamp),\n    Esql.timestamp_last_seen = max(@timestamp)\n  by user.email\n| where Esql.event_count >= 20\n| keep user.email, Esql.*\n",
+        "references": [
+            "https://platform.claude.com/docs/en/api/compliance/activities/list"
+        ],
+        "related_integrations": [
+            {
+                "package": "anthropic",
+                "version": ">=1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "anthropic.audit.actor.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "anthropic.audit.claude_chat_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "anthropic.audit.claude_project_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "854d9932-93c3-42d4-bab0-7723a91df397",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: Anthropic",
+            "Data Source: Anthropic Audit Logs",
+            "Use Case: Threat Detection",
+            "Use Case: UEBA",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Impact"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1496",
+                        "name": "Resource Hijacking",
+                        "reference": "https://attack.mitre.org/techniques/T1496/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "854d9932-93c3-42d4-bab0-7723a91df397_1",
+    "type": "security-rule"
+}

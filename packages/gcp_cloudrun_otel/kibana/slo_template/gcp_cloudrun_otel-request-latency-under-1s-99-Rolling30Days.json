@@ -1,0 +1,54 @@
+{
+  "attributes": {
+    "name": "[GCP Cloud Run OTel] Request latency under 1 second 99% rolling 30 days",
+    "description": "Tracks the share of successful (2xx and 3xx) requests to each Google Cloud Run service that complete in under 1000 ms inside the container, from the run.googleapis.com/request_latencies histogram (milliseconds). Good events are histogram observations from 0 to 1000 ms; total events are all observations. 5xx responses are excluded because the availability SLO covers them. 1xx (WebSocket upgrade) and 4xx responses are also excluded. The objective is 99% of requests over a rolling 30-day window, per service in each GCP project and region. Limitations: request_latencies starts when a request reaches a running instance, so it excludes cold-start time (see container/startup_latencies) and time spent pending in the load balancer during scale-out. Services with long-lived streaming responses (server-sent events, gRPC streaming, HTTP/2 streams) record the whole stream duration, so exclude them or raise the threshold. GCP buckets this distribution with a growth factor of 1.1, so the 1000 ms boundary is accurate to about 5%. Tune the threshold to each service's latency budget.",
+    "indicator": {
+      "type": "sli.histogram.custom",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"gcp.cloudrun.otel\" and resource.attributes.service_name: * and attributes.response_code_class: (\"2xx\" or \"3xx\")",
+        "good": {
+          "field": "run.googleapis.com/request_latencies",
+          "aggregation": "range",
+          "from": 0,
+          "to": 1000
+        },
+        "total": {
+          "field": "run.googleapis.com/request_latencies",
+          "aggregation": "value_count"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.99
+    },
+    "tags": [
+      "gcp",
+      "cloudrun",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.project_id",
+      "resource.attributes.location",
+      "resource.attributes.service_name"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "gcp_cloudrun_otel-a22d34c2-3c04-47a0-bf52-cf1e20a36f1d"
+        },
+        {
+          "id": "gcp_cloudrun_otel-7d96ccf8-44dc-4987-8835-7ec93a922d04"
+        }
+      ]
+    }
+  },
+  "id": "gcp_cloudrun_otel-request-latency-under-1s-99-Rolling30Days",
+  "type": "slo_template"
+}

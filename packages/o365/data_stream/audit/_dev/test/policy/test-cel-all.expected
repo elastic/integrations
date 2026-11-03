@@ -87,6 +87,7 @@ inputs:
             ).as(state,
               // Filter stale cursor data before acting on it.
               state.base.content_types.split(",").map(t, t.trim_space()).as(configured_types,
+              state.url.trim_right("/").as(base_url,
                 state.with(
                   {
                     "cursor": state.?cursor.orValue({}).with(
@@ -126,12 +127,48 @@ inputs:
                         ),
                         "todo_content": state.?cursor.todo_content.orValue([]).filter(item,
                           configured_types.exists(ct, ct.to_lower() == item.?contentType.orValue("").to_lower())
+                        ).map(item,
+                          // Rebuild contentUri values that are not on the configured
+                          // host. The API has been seen returning a content URL built on
+                          // a miscomputed base, for example
+                          //   http://localhost/<tenant>/activity/feed/audit/<contentId>
+                          // instead of
+                          //   <url>/api/v1.0/<tenant>/activity/feed/audit/<contentId>
+                          // (elastic/sdh-beats#7627). Without this repair such a URL
+                          // would never be fetchable; were it left in the cursor it
+                          // would stall this data stream entirely: the transport-failure
+                          // branch below would rotate the queue, which would be a no-op
+                          // while the bad item is the only one left, and once the
+                          // failure threshold were reached the single-object error would
+                          // freeze the cursor until contentExpiration, up to two weeks
+                          // later.
+                          //
+                          // The content URL is fully determined by the configured
+                          // resource URL, the tenant and the content ID, so rebuild it
+                          // rather than trying to patch the host, which also restores a
+                          // missing /api/v1.0 segment. Doing this here, above every
+                          // branch that reads the cursor, means a cursor already
+                          // poisoned is repaired on the first evaluation after upgrade.
+                          // Only the repair path rebuilds, so a correct contentUri is
+                          // passed through untouched.
+                          (
+                            item.?contentUri.orValue("").startsWith(base_url + "/") ||
+                            item.?contentId.orValue("") == ""
+                          ) ?
+                            item
+                          :
+                            item.with(
+                              {
+                                "contentUri": base_url + "/api/v1.0/" + state.base.tenant_id +
+                                  "/activity/feed/audit/" + item.contentId,
+                              }
+                            )
                         ),
                       }
                     ),
                   }
                 )
-              )
+              ))
             ).as(state,
 
               (state.todo_types.size() == 0) ?
@@ -313,20 +350,30 @@ inputs:
                       )
                     :
                       // Fetch error - Log it, skip this content and continue
+                      //
+                      // The events value has to be a list rather than a single object:
+                      // the runtime treats a single object as an error condition and
+                      // discards the cursor returned with it, which threw away the
+                      // advance below and left the failing item at the head of the
+                      // queue. Since this branch also sets want_more, the same request
+                      // was then retried immediately, up to max_executions times per
+                      // interval, instead of being skipped as the comment above says.
                       state.with(
                         {
-                          "events": {
-                            "error": {
-                              "code": string(content_resp.StatusCode),
-                              "id": string(content_resp.Status),
-                              "message": "GET " + state.cursor.todo_content[0].contentUri + ": " + (
-                                (size(content_resp.Body) != 0) ?
-                                  string(content_resp.Body)
-                                :
-                                  string(content_resp.Status) + " (" + string(content_resp.StatusCode) + ")"
-                              ),
+                          "events": [
+                            {
+                              "error": {
+                                "code": string(content_resp.StatusCode),
+                                "id": content_resp.Status,
+                                "message": "GET " + state.cursor.todo_content[0].contentUri + ": " + (
+                                  (size(content_resp.Body) != 0) ?
+                                    string(content_resp.Body)
+                                  :
+                                    content_resp.Status + " (" + string(content_resp.StatusCode) + ")"
+                                ),
+                              },
                             },
-                          },
+                          ],
                           "cursor": state.cursor.with({"todo_content": tail(state.cursor.todo_content)}),
                           "want_more": true,
                         }
