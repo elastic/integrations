@@ -8,7 +8,7 @@
   "attributes": {
     "id": "nginx_otel-client-errors-ml",
     "title": "[Nginx OTel] Client error anomalies",
-    "description": "Detect Nginx hosts whose share of authentication failures (401/403), not-found responses (404) or other client errors (4xx) rises above their own baseline, from the Nginx (OpenTelemetry) access logs.",
+    "description": "Detect Nginx hosts whose percentage of authentication failures (401/403), not-found responses (404) or other client errors (4xx) rises above their own baseline, from the Nginx (OpenTelemetry) access logs.",
     "type": "Web server logs",
     "logo": {
       "icon": "logoNginx"
@@ -46,26 +46,26 @@
             "nginx",
             "otel"
           ],
-          "description": "Nginx OTel access logs: per-host share of 401/403, 404 and other 4xx responses above the host's own baseline. Shares are computed in the datafeed every 15 minutes; 15-minute windows with fewer than 20 requests are skipped, and status-page requests are excluded.",
+          "description": "Nginx OTel access logs: per-host percentage of 401/403, 404 and other 4xx responses above the host's own baseline. Percentages are computed in the datafeed every 15 minutes; 15-minute windows with fewer than 20 requests are skipped, and status-page requests are excluded.",
           "analysis_config": {
             "bucket_span": "15m",
             "detectors": [
               {
-                "detector_description": "High share of 401/403 authentication failures per host (computed in the datafeed)",
+                "detector_description": "High percentage of 401/403 authentication failures per host (computed in the datafeed)",
                 "function": "high_mean",
-                "field_name": "auth_error_share",
+                "field_name": "auth_error_pct",
                 "partition_field_name": "host.name"
               },
               {
-                "detector_description": "High share of 404 not-found responses per host (computed in the datafeed)",
+                "detector_description": "High percentage of 404 not-found responses per host (computed in the datafeed)",
                 "function": "high_mean",
-                "field_name": "not_found_share",
+                "field_name": "not_found_pct",
                 "partition_field_name": "host.name"
               },
               {
-                "detector_description": "High share of other 4xx client errors (excluding 401/403/404) per host (computed in the datafeed)",
+                "detector_description": "High percentage of other 4xx client errors (excluding 401/403/404) per host (computed in the datafeed)",
                 "function": "high_mean",
-                "field_name": "other_client_error_share",
+                "field_name": "other_client_error_pct",
                 "partition_field_name": "host.name"
               }
             ],
@@ -194,31 +194,31 @@
                         }
                       }
                     },
-                    "auth_error_share": {
+                    "auth_error_pct": {
                       "bucket_script": {
                         "buckets_path": {
                           "e": "auth_errors>_count",
                           "n": "_count"
                         },
-                        "script": "params.n >= 20 ? params.e / params.n : null"
+                        "script": "params.n >= 20 ? 100.0 * params.e / params.n : null"
                       }
                     },
-                    "not_found_share": {
+                    "not_found_pct": {
                       "bucket_script": {
                         "buckets_path": {
                           "e": "not_found>_count",
                           "n": "_count"
                         },
-                        "script": "params.n >= 20 ? params.e / params.n : null"
+                        "script": "params.n >= 20 ? 100.0 * params.e / params.n : null"
                       }
                     },
-                    "other_client_error_share": {
+                    "other_client_error_pct": {
                       "bucket_script": {
                         "buckets_path": {
                           "e": "other_client_errors>_count",
                           "n": "_count"
                         },
-                        "script": "params.n >= 20 ? params.e / params.n : null"
+                        "script": "params.n >= 20 ? 100.0 * params.e / params.n : null"
                       }
                     }
                   }
