@@ -8,8 +8,9 @@
 # dest_ip, and dest_port are dropped. Counters follow flow.src_ip -> flow.dest_ip,
 # which can differ from the final source.ip/destination.ip when the record is the
 # other packet direction or alert.source/alert.target replaces the 5-tuple with
-# attacker/victim attribution. The pipeline compares source.ip with flow.src_ip and
-# swaps counter targets so source.bytes and source.packets match source.ip.
+# attacker/victim attribution. The pipeline compares the source endpoint with the
+# flow endpoints and swaps counter targets so source.bytes and source.packets match
+# source.ip and source.port, including same-IP connections.
 # tunnel.*, ether.*, packet_info.linktype, pkt_src, in_iface, and app_proto_tc are
 # not mapped.
 description: >-
@@ -237,6 +238,21 @@ processors:
       tag: rename_app_proto_to_network_protocol
       ignore_missing: true
       if: ctx.network?.protocol == null
+  - lowercase:
+      field: network.protocol
+      tag: lowercase_top_level_network_protocol
+      ignore_missing: true
+  - set:
+      field: network.protocol
+      tag: normalize_top_level_ftp_data_protocol
+      value: ftp
+      if: ctx.network?.protocol == 'ftp-data'
+  - remove:
+      field: network.protocol
+      tag: remove_invalid_top_level_network_protocol
+      ignore_missing: true
+      if: ctx.network?.protocol == 'failed' || ctx.network?.protocol == 'template' || ctx.network?.protocol == 'template-rust'
+      description: Suricata parser states are not valid ECS network protocol names.
 
   # `alert.source`/`alert.target` (attacker/victim) take priority over the top-level 5-tuple —
   # only present when the rule uses the Suricata `target` keyword.
@@ -317,25 +333,26 @@ processors:
   # replaced by `alert.source`/`alert.target` attacker/victim attribution). `bytes_toclient`/
   # `pkts_toclient` are the reverse direction (flow `dest_ip` -> flow `src_ip`).
   #
-  # The final `source.ip`/`destination.ip` are NOT guaranteed to align with the flow's own
-  # `src_ip`/`dest_ip` -- compare them directly (never assume `source.ip == flow.src_ip`) to
-  # determine which ECS endpoint actually matches the flow's traffic originator:
-  #   - `source.ip == json.flow.src_ip`      -> source is the flow originator: `toserver` traffic
-  #     (source -> destination) maps to `source.*`, `toclient` (destination -> source) to
-  #     `destination.*` -- this is the "not flipped" case.
-  #   - `source.ip == json.flow.dest_ip` (or any other mismatch with `json.flow.src_ip`) -> source
-  #     is actually the flow's destination endpoint, so the mapping must be swapped: `toserver`
-  #     traffic (still flow `src_ip` -> flow `dest_ip`, i.e. destination -> source in the final
-  #     ECS orientation) maps to `destination.*`, and `toclient` maps to `source.*`.
+  # The final `source`/`destination` endpoints are NOT guaranteed to align with the flow's own
+  # endpoints. Compare IP addresses and, when both flow endpoints use the same IP, ports:
+  #   - source matches flow src endpoint -> `toserver` maps to `source.*` and `toclient` maps to
+  #     `destination.*` (not flipped).
+  #   - source matches flow dest endpoint -> `toserver` maps to `destination.*` and `toclient`
+  #     maps to `source.*` (flipped).
   ###
   - set:
       field: json._flow_orientation_flipped
       value: true
       tag: set_flow_orientation_flipped
-      if: ctx.source?.ip != null && ctx.json?.flow?.src_ip != null && ctx.source.ip != ctx.json.flow.src_ip
+      if: >-
+        ctx.source?.ip != null && ctx.json?.flow?.src_ip != null &&
+        (ctx.source.ip != ctx.json.flow.src_ip ||
+        (ctx.json.flow.dest_ip != null && ctx.source.ip == ctx.json.flow.dest_ip &&
+        ctx.source?.port != null && ctx.json.flow.src_port != null && ctx.json.flow.dest_port != null &&
+        ctx.source.port != ctx.json.flow.src_port && ctx.source.port == ctx.json.flow.dest_port))
       description: >-
-        True when the final `source.ip` does not match the flow's own `src_ip`, meaning the flow
-        byte/packet counters below must be swapped to stay attributed to the correct ECS endpoint.
+        True when the final source endpoint matches the flow's destination endpoint rather than
+        its source endpoint. Ports disambiguate flows whose source and destination IPs are equal.
   - rename:
       field: json.flow.bytes_toserver
       target_field: source.bytes
@@ -465,6 +482,21 @@ processors:
       tag: rename_alert_app_proto_to_network_protocol
       ignore_missing: true
       if: ctx.network?.protocol == null
+  - lowercase:
+      field: network.protocol
+      tag: lowercase_alert_network_protocol
+      ignore_missing: true
+  - set:
+      field: network.protocol
+      tag: normalize_alert_ftp_data_protocol
+      value: ftp
+      if: ctx.network?.protocol == 'ftp-data'
+  - remove:
+      field: network.protocol
+      tag: remove_invalid_alert_network_protocol
+      ignore_missing: true
+      if: ctx.network?.protocol == 'failed' || ctx.network?.protocol == 'template' || ctx.network?.protocol == 'template-rust'
+      description: Suricata parser states are not valid ECS network protocol names.
   - rename:
       field: alert.action
       target_field: event.action
@@ -748,6 +780,12 @@ processors:
       field: json
       tag: remove_json_temp
       ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_handled_error_to_pipeline_error
+      value: pipeline_error
+      if: ctx.error?.message != null
+      description: Parsing and conversion failures must not be classified as normal alerts.
   - append:
       field: tags
       tag: append_preserve_original_event
