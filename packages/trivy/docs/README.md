@@ -74,6 +74,8 @@ jq -c --arg host "$(hostname)" '
 For Kubernetes scans, `trivy k8s --format json` produces one report per workload.
 Add the `--cluster-name` value, the `hostname` of the scanning machine, and the workload metadata from the report to the `scan` and `resource` objects so findings can be attributed to a namespace and deployment.
 
+For full-cluster reports (`trivy k8s cluster --report all --format json`), a helper script that flattens the nested report into this NDJSON format is available in the [integration's source repository](https://github.com/elastic/integrations/blob/main/packages/trivy/_dev/scripts/trivy_cluster_to_ndjson.py).
+
 Rotate or size the NDJSON files as needed. Elastic Agent tracks read offsets per file, so appending to an existing file is safe.
 
 #### Vendor resources
