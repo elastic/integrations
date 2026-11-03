@@ -280,6 +280,64 @@ processors:
       tag: set_log_level_warning
       value: warning
       if: ctx._temp?.subscribe_record != true && ctx.message != null && (ctx.message.startsWith('Warning') || ctx.message.startsWith('Protocol error from') || ctx.message.startsWith('Reused message ID '))
+  - script:
+      tag: set_log_level_from_known_messages
+      lang: painless
+      description: >-
+        Mosquitto 2.0.22 logs these messages at ERR or WARNING level without an "Error"/"Warning" prefix, so the
+        wording rules above miss them. The lists come from the broker and client library sources; continuation
+        lines of multi-line messages keep their leading indentation and are matched with it.
+      if: ctx.log?.level == null && ctx.message != null && ctx._temp?.subscribe_record != true
+      params:
+        error_prefixes:
+          - 'OpenSSL Error'
+          - 'Could not activate OCSP'
+          - 'Failed engine initialisation'
+          - 'OCSP: we did not receive certificates of the server'
+          - 'Load error: '
+          - 'Out of memory'
+          - 'If you are trying to bind to a privileged port'
+          - '    sudo setcap '
+        error_suffixes:
+          - ' already connected, closing old connection.'
+        warning_prefixes:
+          - 'Starting in local only mode.'
+          - 'Create a configuration file which defines a listener'
+          - 'For more details see https://mosquitto.org/documentation/authentication-methods/'
+          - 'Failed to associate persisted user '
+          - 'Unable to accept new connection'
+          - '         If this is a bridge'
+      source: |-
+        String m = ctx.message;
+        String level = null;
+        for (String p : params.error_prefixes) {
+          if (m.startsWith(p)) {
+            level = 'error';
+            break;
+          }
+        }
+        if (level == null) {
+          for (String s : params.error_suffixes) {
+            if (m.endsWith(s)) {
+              level = 'error';
+              break;
+            }
+          }
+        }
+        if (level == null) {
+          for (String p : params.warning_prefixes) {
+            if (m.startsWith(p)) {
+              level = 'warning';
+              break;
+            }
+          }
+        }
+        if (level != null) {
+          if (!(ctx.log instanceof Map)) {
+            ctx.log = new HashMap();
+          }
+          ctx.log.level = level;
+        }
   - set:
       field: log.level
       tag: set_log_level_information
