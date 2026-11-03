@@ -38,6 +38,11 @@ Keep Alive is disabled by default. When enabled, the Audit, Mail and Message
 streams send a ping every 10 seconds by default. If you customise the interval,
 keep it below the 30-second read timeout so the server has time to respond.
 
+Upgrading the integration does not change intervals saved in existing policies.
+If you enabled Keep Alive in version 1.11.0 or earlier, review **Keep Alive Interval**
+in each Audit, Mail and Message stream that uses it. Change saved intervals of
+`30s` or longer to `10s`, or another positive value below `30s`.
+
 ## Logs Reference
 
 ### Audit
