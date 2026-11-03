@@ -31,29 +31,6 @@ processors:
                         ctx.winlog._tmp.scheduled_task.task_content_new instanceof Map
                     )
                 )
-    - rename:
-            field: winlog.event_data._MemberUserName
-            target_field: user.name
-            ignore_failure: true
-            ignore_missing: true
-    - rename:
-            field: winlog.event_data._MemberDomain
-            target_field: user.domain
-            ignore_failure: true
-            ignore_missing: true
-    - append:
-            value: '{{{winlog.event_data._MemberAccountType}}}'
-            field: user.roles
-            ignore_failure: true
-            allow_duplicates: false
-            if: ctx.winlog?.event_data?._MemberAccountType != null
-    - remove:
-            field:
-                - winlog.event_data._MemberUserName
-                - winlog.event_data._MemberDomain
-                - winlog.event_data._MemberAccountType
-            ignore_missing: true
-            ignore_failure: true
     - set:
             field: ecs.version
             value: '8.11.0'
