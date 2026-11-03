@@ -136,25 +136,9 @@
           },
           "aggregations": {
             "buckets": {
-              "composite": {
-                "size": 1000,
-                "sources": [
-                  {
-                    "date": {
-                      "date_histogram": {
-                        "field": "@timestamp",
-                        "fixed_interval": "15m"
-                      }
-                    }
-                  },
-                  {
-                    "host.name": {
-                      "terms": {
-                        "field": "host.name"
-                      }
-                    }
-                  }
-                ]
+              "date_histogram": {
+                "field": "@timestamp",
+                "fixed_interval": "15m"
               },
               "aggregations": {
                 "@timestamp": {
@@ -162,43 +146,51 @@
                     "field": "@timestamp"
                   }
                 },
-                "request_p50": {
-                  "percentiles": {
-                    "field": "http.server.request.duration",
-                    "percents": [
-                      50
-                    ]
-                  }
-                },
-                "upstream_p50": {
-                  "percentiles": {
-                    "field": "upstream_connected_response_duration",
-                    "percents": [
-                      50
-                    ]
-                  }
-                },
-                "upstream_requests": {
-                  "value_count": {
-                    "field": "upstream_connected_response_duration"
-                  }
-                },
-                "request_duration_p50": {
-                  "bucket_script": {
-                    "buckets_path": {
-                      "p": "request_p50[50.0]",
-                      "n": "_count"
+                "host.name": {
+                  "terms": {
+                    "field": "host.name",
+                    "size": 1000
+                  },
+                  "aggregations": {
+                    "request_p50": {
+                      "percentiles": {
+                        "field": "http.server.request.duration",
+                        "percents": [
+                          50
+                        ]
+                      }
                     },
-                    "script": "params.n >= 10 ? params.p : null"
-                  }
-                },
-                "upstream_response_duration_p50": {
-                  "bucket_script": {
-                    "buckets_path": {
-                      "p": "upstream_p50[50.0]",
-                      "n": "upstream_requests"
+                    "upstream_p50": {
+                      "percentiles": {
+                        "field": "upstream_connected_response_duration",
+                        "percents": [
+                          50
+                        ]
+                      }
                     },
-                    "script": "params.n >= 10 ? params.p : null"
+                    "upstream_requests": {
+                      "value_count": {
+                        "field": "upstream_connected_response_duration"
+                      }
+                    },
+                    "request_duration_p50": {
+                      "bucket_script": {
+                        "buckets_path": {
+                          "p": "request_p50[50.0]",
+                          "n": "_count"
+                        },
+                        "script": "params.n >= 10 ? params.p : null"
+                      }
+                    },
+                    "upstream_response_duration_p50": {
+                      "bucket_script": {
+                        "buckets_path": {
+                          "p": "upstream_p50[50.0]",
+                          "n": "upstream_requests"
+                        },
+                        "script": "params.n >= 10 ? params.p : null"
+                      }
+                    }
                   }
                 }
               }

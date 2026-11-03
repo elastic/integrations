@@ -134,25 +134,9 @@
           },
           "aggregations": {
             "buckets": {
-              "composite": {
-                "size": 1000,
-                "sources": [
-                  {
-                    "date": {
-                      "date_histogram": {
-                        "field": "@timestamp",
-                        "fixed_interval": "15m"
-                      }
-                    }
-                  },
-                  {
-                    "host.name": {
-                      "terms": {
-                        "field": "host.name"
-                      }
-                    }
-                  }
-                ]
+              "date_histogram": {
+                "field": "@timestamp",
+                "fixed_interval": "15m"
               },
               "aggregations": {
                 "@timestamp": {
@@ -160,75 +144,83 @@
                     "field": "@timestamp"
                   }
                 },
-                "auth_errors": {
-                  "filter": {
-                    "terms": {
-                      "http.response.status_code": [
-                        401,
-                        403
-                      ]
-                    }
-                  }
-                },
-                "not_found": {
-                  "filter": {
-                    "term": {
-                      "http.response.status_code": 404
-                    }
-                  }
-                },
-                "other_client_errors": {
-                  "filter": {
-                    "bool": {
-                      "filter": [
-                        {
-                          "range": {
-                            "http.response.status_code": {
-                              "gte": 400,
-                              "lt": 500
+                "host.name": {
+                  "terms": {
+                    "field": "host.name",
+                    "size": 1000
+                  },
+                  "aggregations": {
+                    "auth_errors": {
+                      "filter": {
+                        "terms": {
+                          "http.response.status_code": [
+                            401,
+                            403
+                          ]
+                        }
+                      }
+                    },
+                    "not_found": {
+                      "filter": {
+                        "term": {
+                          "http.response.status_code": 404
+                        }
+                      }
+                    },
+                    "other_client_errors": {
+                      "filter": {
+                        "bool": {
+                          "filter": [
+                            {
+                              "range": {
+                                "http.response.status_code": {
+                                  "gte": 400,
+                                  "lt": 500
+                                }
+                              }
                             }
-                          }
+                          ],
+                          "must_not": [
+                            {
+                              "terms": {
+                                "http.response.status_code": [
+                                  401,
+                                  403,
+                                  404
+                                ]
+                              }
+                            }
+                          ]
                         }
-                      ],
-                      "must_not": [
-                        {
-                          "terms": {
-                            "http.response.status_code": [
-                              401,
-                              403,
-                              404
-                            ]
-                          }
-                        }
-                      ]
+                      }
+                    },
+                    "auth_error_share": {
+                      "bucket_script": {
+                        "buckets_path": {
+                          "e": "auth_errors>_count",
+                          "n": "_count"
+                        },
+                        "script": "params.n >= 20 ? params.e / params.n : null"
+                      }
+                    },
+                    "not_found_share": {
+                      "bucket_script": {
+                        "buckets_path": {
+                          "e": "not_found>_count",
+                          "n": "_count"
+                        },
+                        "script": "params.n >= 20 ? params.e / params.n : null"
+                      }
+                    },
+                    "other_client_error_share": {
+                      "bucket_script": {
+                        "buckets_path": {
+                          "e": "other_client_errors>_count",
+                          "n": "_count"
+                        },
+                        "script": "params.n >= 20 ? params.e / params.n : null"
+                      }
                     }
-                  }
-                },
-                "auth_error_share": {
-                  "bucket_script": {
-                    "buckets_path": {
-                      "e": "auth_errors>_count",
-                      "n": "_count"
-                    },
-                    "script": "params.n >= 20 ? params.e / params.n : null"
-                  }
-                },
-                "not_found_share": {
-                  "bucket_script": {
-                    "buckets_path": {
-                      "e": "not_found>_count",
-                      "n": "_count"
-                    },
-                    "script": "params.n >= 20 ? params.e / params.n : null"
-                  }
-                },
-                "other_client_error_share": {
-                  "bucket_script": {
-                    "buckets_path": {
-                      "e": "other_client_errors>_count",
-                      "n": "_count"
-                    },
-                    "script": "params.n >= 20 ? params.e / params.n : null"
                   }
                 }
               }
