@@ -89,9 +89,11 @@ processors:
       ignore_missing: true
       pattern_definitions:
         MOSQ_DIRECTION: '(?:Received|Sending)'
-        # Every packet argument list starts with '(', so a client id that contains
-        # spaces stays intact instead of being split at its first space.
-        MOSQ_PACKET_ARGS: '\(.*\)'
+        # Mosquitto's packet argument lists only ever open with one of these forms:
+        # (d0, q1, ...), (m12...), (Mid: 12...), (rc0...), or bare integers such as
+        # CONNACK's (0, 0) and (0). Matching only those keeps client ids that contain
+        # spaces or parentheses, e.g. "factory (sensor)", intact.
+        MOSQ_PACKET_ARGS: '\((?:(?:d[0-9]+, q|m[0-9]+|Mid: |rc[0-9]+).*|[0-9]+(?:, [0-9]+)?)\)'
         MOSQ_QOS: '[0-2]'
         MOSQ_CONNECT_ARGS: '\(p%{INT:mosquitto.log.protocol_version:long}, c%{INT:_temp.clean_session:long}, k%{INT:mosquitto.log.keepalive:long}(?:, u''%{DATA:user.name}'')?\)'
       patterns:
@@ -114,7 +116,11 @@ processors:
         - '^Client %{DATA:mosquitto.log.client_id} disconnected, %{DATA:mosquitto.log.reason}\.$'
         - '^Client %{DATA:mosquitto.log.client_id} closed its connection\.$'
         - '^Socket error on client %{DATA:mosquitto.log.client_id}, disconnecting\.$'
-        # Packet validation failures, e.g. "Invalid QoS in PUBLISH from <id>, disconnecting."
+        # SUBSCRIBE validation failures log the peer address, not the client id
+        # (src/handle_subscribe.c), so they must come before the generic rule below.
+        - '^(?<mosquitto.log.reason>(?:Empty|Invalid) subscription string|Invalid QoS in subscription command) from %{IP:source.ip}, disconnecting\.$'
+        # PUBLISH and UNSUBSCRIBE validation failures log the client id, e.g.
+        # "Invalid QoS in PUBLISH from <id>, disconnecting."
         - '^%{DATA:mosquitto.log.reason} from %{DATA:mosquitto.log.client_id}, disconnecting\.$'
         - '^Client %{DATA:mosquitto.log.client_id} has exceeded timeout, disconnecting\.$'
         - '^Client %{DATA:mosquitto.log.client_id} already connected, closing old connection\.$'
@@ -286,8 +292,8 @@ processors:
       field: event.action
       tag: set_event_action_connection_refused
       value: connection-refused
-      description: Only for non-packet lines, so a topic such as 'access denied' cannot reclassify a PUBLISH.
-      if: ctx._temp?.packet_type_lower == null && ctx.mosquitto?.log?.topic == null && ctx.message != null && (ctx.message.startsWith('Connection Refused:') || ctx.message.contains(' rejected, ') || ctx.message.contains(' denied'))
+      description: Keyed off the broker's refusal message prefixes only, so a topic, client id or username such as 'access denied' cannot turn another event into a refusal.
+      if: ctx.message != null && (ctx.message.startsWith('Connection Refused:') || (ctx.message.startsWith('Connection from ') && ctx.message.contains(' rejected, ')) || ctx.message.startsWith('Client connection from '))
   - set:
       field: event.action
       tag: set_event_action_subscription_denied
