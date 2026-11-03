@@ -56,6 +56,14 @@ processors:
       field: event.kind
       tag: set_event_kind_to_alert_ab1166ce
       value: alert
+  - append:
+      field: event.category
+      tag: append_event_category_intrusion_detection_a1c4e8b2
+      value: intrusion_detection
+  - append:
+      field: event.type
+      tag: append_event_type_info_b7d2f091
+      value: info
   - set:
       field: observer.vendor
       tag: set_observer_vendor_1e721121
@@ -161,12 +169,41 @@ processors:
       tag: rename_mitreAttackLabels_9f54e46e
       target_field: armis.alert.mitre_attack_labels
       ignore_missing: true
+  - dissect:
+      field: armis.alert.mitre_attack_labels
+      pattern: "%{armis.alert.mitre_technique_id} - %{armis.alert.mitre_technique_name}"
+      tag: dissect_mitre_attack_labels_c3e91a40
+      ignore_missing: true
+      if: ctx.armis?.alert?.mitre_attack_labels instanceof String && ctx.armis.alert.mitre_attack_labels.contains(' - ')
+  - append:
+      field: threat.technique.id
+      tag: append_threat_technique_id_from_mitre_d4f02b18
+      value: '{{{armis.alert.mitre_technique_id}}}'
+      allow_duplicates: false
+      if: ctx.armis?.alert?.mitre_technique_id != null
+  - append:
+      field: threat.technique.name
+      tag: append_threat_technique_name_from_mitre_e5a13c29
+      value: '{{{armis.alert.mitre_technique_name}}}'
+      allow_duplicates: false
+      if: ctx.armis?.alert?.mitre_technique_name != null
   - append:
       field: threat.technique.name
       tag: append_mitre_attack_labels_into_threat_technique_name_59fdd6bf
       value: '{{{armis.alert.mitre_attack_labels}}}'
       allow_duplicates: false
+      if: ctx.armis?.alert?.mitre_attack_labels != null && ctx.armis?.alert?.mitre_technique_id == null
+  - set:
+      field: threat.framework
+      tag: set_threat_framework_mitre_f6b24d3a
+      value: "MITRE ATT&CK"
       if: ctx.armis?.alert?.mitre_attack_labels != null
+  - remove:
+      field:
+        - armis.alert.mitre_technique_id
+        - armis.alert.mitre_technique_name
+      tag: remove_mitre_split_fields_07c35e4b
+      ignore_missing: true
   - convert:
       field: json.policyId
       tag: convert_policyId_to_string_2290a807
