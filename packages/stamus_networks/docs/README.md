@@ -235,7 +235,7 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | alert.metadata.sightings_key | Dotted field path that triggered a Sightings detection, for example, "http.http_user_agent." | keyword |
 | alert.metadata.signature_severity | Free-text, rule-writer-assigned severity label (for example, Informational, Minor, Major, Critical). Can disagree with the numeric `event.severity` (mapped from `alert.severity`). | keyword |
 | alert.metadata.source | Detection source/method tag (for example, "mime-type" on File Identification alerts). | keyword |
-| alert.metadata.stamus_classification | Stamus sub-classification tag, for example, a DoC/DoPV threat classification, "stamus_sightings", or "fileidentification". | keyword |
+| alert.metadata.stamus_classification | Stamus sub-classification tag, for example, a DoC/DoPV threat classification, `stamus_sightings`, or `fileidentification`. | keyword |
 | alert.metadata.stamus_type | Stamus detection family tag, for example, "doc" or "dopv." | keyword |
 | alert.metadata.tag |  | keyword |
 | alert.metadata.tls_state | TLS state observed on the flow (for example, "plaintext"). | keyword |
@@ -280,7 +280,7 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | files.state | File transfer state, for example, "UNKNOWN," "CLOSED," "TRUNCATED." | keyword |
 | files.stored | Whether the file content itself was stored to disk by the sensor. | boolean |
 | files.tx_id | Transaction ID within the parent flow. | long |
-| flow_id | Suricata flow identifier. Primary cross-event correlation/join key for tying an alert back to its underlying flow or to other alerts on the same flow; delivered as a large integer (commonly \>= 2^53, the float64 safe-integer ceiling) but treated as an opaque identifier (keyword), not a metric. The CEL program parses the raw response with decode_json_string_numbers(), which decodes every JSON number in the response (not just flow_id) using its exact original textual form instead of float64, and re-emits it the same way through encode_json(); flow_id therefore round-trips through this integration with no precision loss, even above 2^53. An earlier version of this program instead rewrote flow_id to a quoted JSON string before a plain decode_json() call (using a `regexp:` stream-config block and re_replace_all()), but that mechanism caused Elastic Agent to silently fail to schedule a component for this input (confirmed on Elastic Agent 9.5.5) and was removed; decode_json_string_numbers() requires no stream-config changes, so it does not reintroduce that failure mode. See the package README's Troubleshooting section for historical context. | keyword |
+| flow_id | Suricata flow identifier. This field is the primary cross-event correlation key for tying an alert to its underlying flow or other alerts on the same flow. It is delivered as a large integer (commonly \>= 2^53, the float64 safe-integer ceiling) but treated as an opaque keyword, not a metric. The CEL program parses the raw response with decode_json_string_numbers(). This function preserves the exact textual form of every JSON number before encode_json() re-emits the response. As a result, flow_id round-trips through this integration without precision loss, even above 2^53. An earlier version rewrote flow_id to a quoted JSON string before a plain decode_json() call by using a `regexp:` stream-config block and re_replace_all(). That mechanism caused Elastic Agent 9.5.5 to silently fail to schedule a component for this input, so it was removed. decode_json_string_numbers() requires no stream-config changes and does not reintroduce that failure mode. See the package README's Troubleshooting section for historical context. | keyword |
 | hostname_info.domain | Full domain portion of the hostname. | keyword |
 | hostname_info.domain_without_tld | Domain with the top-level domain removed. | keyword |
 | hostname_info.host | The hostname observed for this event. | keyword |
@@ -290,7 +290,7 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | http.request_headers.name | HTTP request header name. | keyword |
 | http.request_headers.value | HTTP request header value. | keyword |
 | input.type | Type of Elastic Agent input. | keyword |
-| metadata.flowbits | Suricata flowbits set/checked for this event (for example, "stamus.sightings", "stamus.file.identification.") Cross-cutting enrichment tag, not rule metadata. | keyword |
+| metadata.flowbits | Suricata flowbits set or checked for this event (for example, `stamus.sightings` or `stamus.file.identification.`). This is a cross-cutting enrichment tag, not rule metadata. | keyword |
 | net_info.dest | Network/zone label for the destination IP. | keyword |
 | net_info.dest_agg | Aggregated/parent network label for the destination IP. | keyword |
 | net_info.src | Network/zone label for the source IP (for example, a named network segment). | keyword |
@@ -327,7 +327,7 @@ Sightings, Outlier Alert, and File Identification classification tags.
 | stamus.family_name | Threat family name, for example, "Lateral Movement," "Adware." | keyword |
 | stamus.family_type |  | keyword |
 | stamus.incidents_id | Linked incident ID(s); two entries when both asset and offender sides are tracked. | long |
-| stamus.kill_chain | Kill-chain phase: "pre_condition" (DoPV only), or "delivery"/"exploitation"/"installation"/ "command_and_control"/"action_on_objectives" (DoC). Lockheed-Martin-style phase naming, not MITRE ATT&CK — intentionally not mapped into `threat.tactic.\*`. | keyword |
+| stamus.kill_chain | Detection lifecycle phase: `pre_condition` (DoPV only), or `delivery`/`exploitation`/`installation`/`command_and_control`/`action_on_objectives` (DoC). Uses the corresponding Lockheed Martin lifecycle model rather than MITRE ATT&CK, so it is intentionally not mapped to `threat.tactic.\*`. | keyword |
 | stamus.method_id | Identifier of the specific detection method/rule that triggered this event. | long |
 | stamus.offender | The actor/attacker side — IP, hostname, mail, or user, when separately tracked. Also appended to the matching `related.\*` array based on `offender_type`. | keyword |
 | stamus.offender_info.event_id |  | long |
@@ -506,7 +506,7 @@ retries that request. The stream does not skip a protocol phase after an error.
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | dcerpc.call_id | DCERPC call id. | long |
-| dcerpc.interfaces.ack_result | Interface acknowledgement result. | long |
+| dcerpc.interfaces.ack_result | Interface acknowledgment result. | long |
 | dcerpc.interfaces.uuid | Interface UUID. | keyword |
 | dcerpc.interfaces.version | Interface version. | keyword |
 | dcerpc.request | DCERPC request type. | keyword |
@@ -1005,6 +1005,7 @@ TLS/SSH/HTTP client fingerprints observed for the host). This is an entity/inven
 | host_id.username.user | Observed username value. | keyword |
 | input.type | Type of Elastic Agent input. | keyword |
 | ip | The host's IP address. Entity identifier for this data stream (weak key -- IP-only, no MAC/UUID alternative is documented; subject to DHCP reassignment, see research-brief.md open question #10). | ip |
+| log.offset | Log offset. | long |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
