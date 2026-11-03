@@ -47,7 +47,7 @@ For the metrics data streams, Elastic Agent polls the evcc REST API directly ove
 1. In Kibana, go to **Management > Integrations** and add the **evcc** integration.
 2. Set the **evcc URL** to the base URL of your evcc instance, e.g. `http://evcc.local:7070`.
 3. Optionally adjust the polling **Interval** for the site and loadpoint data streams (default: `30s`).
-4. To collect logs, deploy the log data stream's input to an Elastic Agent running directly on the host where evcc's systemd service runs. Adjust **Include Matches** if evcc runs under a different systemd unit name than `evcc.service`. Consider enabling **Drop debug-level logs** if you do not need evcc's high-volume DEBUG telemetry. By default the first collection starts at the end of the journal; set **Cursor Seek Fallback** to `head` if you want evcc's existing journal history backfilled instead.
+4. To collect logs, deploy the log data stream's input to an Elastic Agent running directly on the host where evcc's systemd service runs. Adjust **Include Matches** if evcc runs under a different systemd unit name than `evcc.service`. Consider enabling **Drop debug-level logs** if you do not need evcc's high-volume DEBUG telemetry. By default the first collection starts at the end of the journal; set **Seek** to `head` if you want evcc's existing journal history backfilled instead.
 5. Assign the integration to an Elastic Agent policy and deploy it to an agent with the required network/host access.
 
 ### Validation
@@ -85,7 +85,7 @@ The `site` data stream provides site-level metrics from evcc of the following ty
 | error.message | Error message. | match_only_text |  |  |
 | evcc.site.battery.capacity | Home battery capacity, in kWh. | double |  | gauge |
 | evcc.site.battery.power | Current home battery power, in watts. Positive values indicate discharging, negative values indicate charging. | double |  | gauge |
-| evcc.site.battery.soc | Home battery state of charge, in percent. | double | percent | gauge |
+| evcc.site.battery.soc | Home battery state of charge, as a fraction where 1 means 100%. | double | percent | gauge |
 | evcc.site.currency | Currency used for cost and tariff values. | keyword |  |  |
 | evcc.site.grid.power | Current grid power, in watts. Positive values indicate import from the grid, negative values indicate export. | double |  | gauge |
 | evcc.site.home.power | Current home power consumption, in watts. | double |  | gauge |
@@ -94,19 +94,19 @@ The `site` data stream provides site-level metrics from evcc of the following ty
 | evcc.site.statistics.last_30d.avg_co2 | Average CO2 intensity of energy used over the last 30 days, in g/kWh. | double |  | gauge |
 | evcc.site.statistics.last_30d.avg_price | Average energy price per kWh over the last 30 days, in the configured currency. | double |  | gauge |
 | evcc.site.statistics.last_30d.charged_kwh | Total energy charged over the last 30 days, in kWh. | double |  | gauge |
-| evcc.site.statistics.last_30d.solar_percentage | Share of charged energy sourced from solar over the last 30 days. | double | percent | gauge |
+| evcc.site.statistics.last_30d.solar_percentage | Share of charged energy sourced from solar over the last 30 days, as a fraction where 1 means 100%. | double | percent | gauge |
 | evcc.site.statistics.last_365d.avg_co2 | Average CO2 intensity of energy used over the last 365 days, in g/kWh. | double |  | gauge |
 | evcc.site.statistics.last_365d.avg_price | Average energy price per kWh over the last 365 days, in the configured currency. | double |  | gauge |
 | evcc.site.statistics.last_365d.charged_kwh | Total energy charged over the last 365 days, in kWh. | double |  | gauge |
-| evcc.site.statistics.last_365d.solar_percentage | Share of charged energy sourced from solar over the last 365 days. | double | percent | gauge |
+| evcc.site.statistics.last_365d.solar_percentage | Share of charged energy sourced from solar over the last 365 days, as a fraction where 1 means 100%. | double | percent | gauge |
 | evcc.site.statistics.this_year.avg_co2 | Average CO2 intensity of energy used in the current year, in g/kWh. | double |  | gauge |
 | evcc.site.statistics.this_year.avg_price | Average energy price per kWh in the current year, in the configured currency. | double |  | gauge |
 | evcc.site.statistics.this_year.charged_kwh | Total energy charged in the current year, in kWh. | double |  | gauge |
-| evcc.site.statistics.this_year.solar_percentage | Share of charged energy sourced from solar in the current year. | double | percent | gauge |
+| evcc.site.statistics.this_year.solar_percentage | Share of charged energy sourced from solar in the current year, as a fraction where 1 means 100%. | double | percent | gauge |
 | evcc.site.statistics.total.avg_co2 | Average CO2 intensity of energy used across all recorded history, in g/kWh. | double |  | gauge |
 | evcc.site.statistics.total.avg_price | Average energy price per kWh across all recorded history, in the configured currency. | double |  | gauge |
 | evcc.site.statistics.total.charged_kwh | Total energy charged across all recorded history, in kWh. | double |  | gauge |
-| evcc.site.statistics.total.solar_percentage | Share of charged energy sourced from solar across all recorded history. | double | percent | gauge |
+| evcc.site.statistics.total.solar_percentage | Share of charged energy sourced from solar across all recorded history, as a fraction where 1 means 100%. | double | percent | gauge |
 | evcc.site.title | Configured title of the evcc site. | keyword |  |  |
 | evcc.site.version | evcc software version. | keyword |  |  |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |  |
@@ -123,33 +123,33 @@ An example event for `site` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-08-19T21:45:34.017760136Z",
+    "@timestamp": "2026-11-03T08:50:50.392Z",
     "agent": {
-        "ephemeral_id": "7834a9e3-9456-4c5f-99a5-c4246dc4e5e1",
-        "id": "58ff1645-8122-475a-bf70-b860cc4d00df",
-        "name": "elastic-agent-55025",
+        "ephemeral_id": "1528c1f5-6d6c-4181-b7d1-645b50ccfd78",
+        "id": "0bd86776-6ed9-40e8-afc2-5bfa92a91a8e",
+        "name": "elastic-agent-72946",
         "type": "filebeat",
-        "version": "9.4.3"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "evcc.site",
-        "namespace": "35129",
+        "namespace": "76364",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "58ff1645-8122-475a-bf70-b860cc4d00df",
+        "id": "0bd86776-6ed9-40e8-afc2-5bfa92a91a8e",
         "snapshot": false,
-        "version": "9.4.3"
+        "version": "8.19.0"
     },
     "evcc": {
         "site": {
             "battery": {
                 "capacity": 13.4,
                 "power": 0,
-                "soc": 76
+                "soc": 0.76
             },
             "currency": "EUR",
             "grid": {
@@ -167,25 +167,25 @@ An example event for `site` looks as following:
                     "avg_co2": 62.14859311838828,
                     "avg_price": 0.11162431782896463,
                     "charged_kwh": 221.77069867393018,
-                    "solar_percentage": 83.70583267207702
+                    "solar_percentage": 0.8370583267207702
                 },
                 "last_365d": {
                     "avg_co2": 62.14859311838828,
                     "avg_price": 0.11162431782896463,
                     "charged_kwh": 221.77069867393018,
-                    "solar_percentage": 83.70583267207702
+                    "solar_percentage": 0.8370583267207702
                 },
                 "this_year": {
                     "avg_co2": 62.14859311838828,
                     "avg_price": 0.11162431782896463,
                     "charged_kwh": 221.77069867393018,
-                    "solar_percentage": 83.70583267207702
+                    "solar_percentage": 0.8370583267207702
                 },
                 "total": {
                     "avg_co2": 62.14859311838828,
                     "avg_price": 0.11162431782896463,
                     "charged_kwh": 221.77069867393018,
-                    "solar_percentage": 83.70583267207702
+                    "solar_percentage": 0.8370583267207702
                 }
             },
             "title": "My Home",
@@ -195,7 +195,7 @@ An example event for `site` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "evcc.site",
-        "ingested": "2026-08-19T21:45:34Z",
+        "ingested": "2026-11-03T08:50:53Z",
         "kind": "metric",
         "original": "{\"battery\":{\"capacity\":13.4,\"devices\":[{\"capacity\":13.4,\"controllable\":true,\"name\":\"battery\",\"power\":0,\"soc\":76}],\"power\":0,\"soc\":76},\"currency\":\"EUR\",\"grid_power\":-407.8566601636994,\"home_power\":500,\"pv_energy\":24521.3,\"pv_power\":8307.59154846352,\"site_title\":\"My Home\",\"statistics\":{\"30d\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"365d\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"thisYear\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"total\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702}},\"version\":\"0.312.1\"}"
     },
@@ -234,7 +234,7 @@ The `loadpoint` data stream provides one event per evcc loadpoint (charge point)
 | evcc.loadpoint.charging | Whether the loadpoint is currently charging. | boolean |  |  |
 | evcc.loadpoint.connected | Whether a vehicle is currently connected to the loadpoint. | boolean |  |  |
 | evcc.loadpoint.connected_duration.sec | Duration a vehicle has been connected to the loadpoint, in seconds. | double |  | gauge |
-| evcc.loadpoint.effective.limit_soc | Effective vehicle state-of-charge charging limit for this loadpoint. | double | percent | gauge |
+| evcc.loadpoint.effective.limit_soc | Effective vehicle state-of-charge charging limit for this loadpoint, as a fraction where 1 means 100%. | double | percent | gauge |
 | evcc.loadpoint.effective.max_current | Effective maximum charging current for this loadpoint, in amperes. | double |  | gauge |
 | evcc.loadpoint.effective.min_current | Effective minimum charging current for this loadpoint, in amperes. | double |  | gauge |
 | evcc.loadpoint.enabled | Whether charging is enabled on the loadpoint. | boolean |  |  |
@@ -246,7 +246,7 @@ The `loadpoint` data stream provides one event per evcc loadpoint (charge point)
 | evcc.loadpoint.vehicle.id | Configuration name of the vehicle currently assigned to this loadpoint, as defined in the evcc configuration (evcc's vehicleName, for example `my_car`). | keyword |  |  |
 | evcc.loadpoint.vehicle.name | Display title of the vehicle currently assigned to this loadpoint (evcc's vehicleTitle). | keyword |  |  |
 | evcc.loadpoint.vehicle.range | Estimated remaining range of the vehicle currently assigned to this loadpoint, in km. | double |  | gauge |
-| evcc.loadpoint.vehicle.soc | State of charge of the vehicle currently assigned to this loadpoint. | double | percent | gauge |
+| evcc.loadpoint.vehicle.soc | State of charge of the vehicle currently assigned to this loadpoint, as a fraction where 1 means 100%. | double | percent | gauge |
 | evcc.site.title | Configured title of the evcc site this loadpoint belongs to. | keyword |  |  |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |  |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |  |  |
@@ -262,24 +262,24 @@ An example event for `loadpoint` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-11-03T08:08:15.535060018Z",
+    "@timestamp": "2026-11-03T08:49:12.657Z",
     "agent": {
-        "ephemeral_id": "e7796a16-65be-4e3b-bcd2-bad30deda220",
-        "id": "251ae5a7-8f39-41ec-b7b6-e2cfe4ac1bfc",
-        "name": "elastic-agent-75904",
+        "ephemeral_id": "365be672-b481-44dc-90f6-9c851a2bf69b",
+        "id": "7f8a3fbb-082d-4283-9389-a9a04dc02d49",
+        "name": "elastic-agent-95362",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "evcc.loadpoint",
-        "namespace": "18988",
+        "namespace": "52434",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "251ae5a7-8f39-41ec-b7b6-e2cfe4ac1bfc",
+        "id": "7f8a3fbb-082d-4283-9389-a9a04dc02d49",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -303,7 +303,7 @@ An example event for `loadpoint` looks as following:
                 "sec": 3600
             },
             "effective": {
-                "limit_soc": 95,
+                "limit_soc": 0.95,
                 "max_current": 13,
                 "min_current": 3
             },
@@ -317,7 +317,7 @@ An example event for `loadpoint` looks as following:
                 "id": "my_car",
                 "name": "blue e-Golf",
                 "range": 210,
-                "soc": 63
+                "soc": 0.63
             }
         },
         "site": {
@@ -327,7 +327,7 @@ An example event for `loadpoint` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "evcc.loadpoint",
-        "ingested": "2026-11-03T08:08:15Z",
+        "ingested": "2026-11-03T08:49:15Z",
         "kind": "metric",
         "original": "{\"charge_duration\":91241,\"charge_power\":6900,\"charge_remaining_duration\":41739,\"charge_remaining_energy\":40000,\"charged_energy\":103212.794,\"charger_status_reason\":\"unknown\",\"charging\":true,\"connected\":true,\"connected_duration\":3600,\"effective_limit_soc\":95,\"effective_max_current\":13,\"effective_min_current\":3,\"enabled\":true,\"index\":1,\"last_24h_energy\":88014,\"last_7d_energy\":190432,\"mode\":\"pv\",\"site_title\":\"My Home\",\"title\":\"Garage\",\"vehicle_id\":\"my_car\",\"vehicle_name\":\"blue e-Golf\",\"vehicle_range\":210,\"vehicle_soc\":63}"
     },
@@ -440,24 +440,24 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2026-07-23T11:48:23.601Z",
     "agent": {
-        "ephemeral_id": "b274e443-01f3-489a-b8d8-75da3e23c37f",
-        "id": "ad68b7a2-2ac4-4570-9486-b2f6eec51f50",
-        "name": "elastic-agent-22642",
+        "ephemeral_id": "06bd64c3-1596-4054-98d3-9e37cc82e82a",
+        "id": "a4308516-6fd6-4771-bd3e-1564f48e6e3e",
+        "name": "elastic-agent-26830",
         "type": "filebeat",
-        "version": "9.4.3"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "evcc.log",
-        "namespace": "77948",
+        "namespace": "72217",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "ad68b7a2-2ac4-4570-9486-b2f6eec51f50",
+        "id": "a4308516-6fd6-4771-bd3e-1564f48e6e3e",
         "snapshot": false,
-        "version": "9.4.3"
+        "version": "8.19.0"
     },
     "evcc": {
         "log": {
@@ -466,11 +466,10 @@ An example event for `log` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2026-08-19T21:44:43.498Z",
+        "created": "2026-11-03T08:50:01.547Z",
         "dataset": "evcc.log",
-        "ingested": "2026-08-19T21:44:46Z",
-        "kind": "event",
-        "module": "evcc"
+        "ingested": "2026-11-03T08:50:04Z",
+        "kind": "event"
     },
     "host": {
         "hostname": "test-host",
@@ -483,7 +482,7 @@ An example event for `log` looks as following:
         "custom": {
             "runtime_scope": "system",
             "seqnum": "1",
-            "seqnum_id": "c8375dcadb2f41719a7eb2e07623ded5",
+            "seqnum_id": "3ae09205482841cb90d66dfbe3eabb7e",
             "stream_id": "aa1bb2cc3dd4ee5ff607a8b9c0d1e2f3"
         },
         "gid": 111,

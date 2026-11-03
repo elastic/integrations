@@ -48,7 +48,9 @@ processors:
   - set:
       field: '@timestamp'
       tag: set_timestamp_from_ingest
+      description: Falls back to the ingest time only when the document has no timestamp, so the CEL input's collection time is kept for buffered or replayed events.
       copy_from: _ingest.timestamp
+      override: false
   - rename:
       field: json.index
       target_field: evcc.loadpoint.index
@@ -168,6 +170,19 @@ processors:
       field: event.kind
       tag: set_event_kind
       value: metric
+  - script:
+      tag: scale_percentages_to_fractions
+      lang: painless
+      description: Scales state of charge and SoC limit from evcc's 0-100 range to the fraction (1 means 100%) that percent-unit fields expect.
+      if: ctx.evcc?.loadpoint != null
+      source: |-
+        def lp = ctx.evcc.loadpoint;
+        if (lp.effective instanceof Map && lp.effective.limit_soc instanceof Number) {
+          lp.effective.limit_soc = lp.effective.limit_soc / 100.0;
+        }
+        if (lp.vehicle instanceof Map && lp.vehicle.soc instanceof Number) {
+          lp.vehicle.soc = lp.vehicle.soc / 100.0;
+        }
   - remove:
       field: json
       tag: remove_json

@@ -87,7 +87,9 @@ processors:
   - set:
       field: '@timestamp'
       tag: set_timestamp_from_ingest
+      description: Falls back to the ingest time only when the document has no timestamp, so the CEL input's collection time is kept for buffered or replayed events.
       copy_from: _ingest.timestamp
+      override: false
   - rename:
       field: json.site_title
       target_field: evcc.site.title
@@ -222,6 +224,30 @@ processors:
       field: event.kind
       tag: set_event_kind
       value: metric
+  - script:
+      tag: scale_percentages_to_fractions
+      lang: painless
+      description: Scales state of charge and solar share from evcc's 0-100 range to the fraction (1 means 100%) that percent-unit fields expect.
+      if: ctx.evcc?.site != null
+      params:
+        periods:
+          - last_30d
+          - last_365d
+          - this_year
+          - total
+      source: |-
+        def site = ctx.evcc.site;
+        if (site.battery instanceof Map && site.battery.soc instanceof Number) {
+          site.battery.soc = site.battery.soc / 100.0;
+        }
+        if (site.statistics instanceof Map) {
+          for (def period : params.periods) {
+            def stats = site.statistics[period];
+            if (stats instanceof Map && stats.solar_percentage instanceof Number) {
+              stats.solar_percentage = stats.solar_percentage / 100.0;
+            }
+          }
+        }
   - remove:
       field: json
       tag: remove_json
