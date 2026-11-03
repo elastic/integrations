@@ -61,8 +61,10 @@ processors:
 {{#if drop_debug_logs}}
 - drop_event:
     when:
-      contains:
-        message: "DEBUG "
+      regexp:
+        # Match only the level position of evcc's "[module] LEVEL ..." envelope,
+        # so INFO/WARN/ERROR lines that mention DEBUG in their text are kept.
+        message: '^\[[^\]]*\] DEBUG '
 {{/if}}
 {{#if processors}}
 {{processors}}

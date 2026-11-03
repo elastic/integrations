@@ -114,6 +114,7 @@ The `site` data stream provides site-level metrics from evcc of the following ty
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |  |  |
 | input.type | Type of input that generated the event. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
 
 
@@ -123,24 +124,24 @@ An example event for `site` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-11-03T08:50:50.392Z",
+    "@timestamp": "2026-11-03T09:12:43.103Z",
     "agent": {
-        "ephemeral_id": "1528c1f5-6d6c-4181-b7d1-645b50ccfd78",
-        "id": "0bd86776-6ed9-40e8-afc2-5bfa92a91a8e",
-        "name": "elastic-agent-72946",
+        "ephemeral_id": "9ec72002-833d-46bf-8e70-1a04c148b35e",
+        "id": "c49aac7d-5bc3-4267-bbc3-95f3d7db4579",
+        "name": "elastic-agent-39334",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "evcc.site",
-        "namespace": "76364",
+        "namespace": "59887",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "0bd86776-6ed9-40e8-afc2-5bfa92a91a8e",
+        "id": "c49aac7d-5bc3-4267-bbc3-95f3d7db4579",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -195,12 +196,15 @@ An example event for `site` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "evcc.site",
-        "ingested": "2026-11-03T08:50:53Z",
+        "ingested": "2026-11-03T09:12:46Z",
         "kind": "metric",
-        "original": "{\"battery\":{\"capacity\":13.4,\"devices\":[{\"capacity\":13.4,\"controllable\":true,\"name\":\"battery\",\"power\":0,\"soc\":76}],\"power\":0,\"soc\":76},\"currency\":\"EUR\",\"grid_power\":-407.8566601636994,\"home_power\":500,\"pv_energy\":24521.3,\"pv_power\":8307.59154846352,\"site_title\":\"My Home\",\"statistics\":{\"30d\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"365d\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"thisYear\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"total\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702}},\"version\":\"0.312.1\"}"
+        "original": "{\"battery\":{\"capacity\":13.4,\"devices\":[{\"capacity\":13.4,\"controllable\":true,\"name\":\"battery\",\"power\":0,\"soc\":76}],\"power\":0,\"soc\":76},\"currency\":\"EUR\",\"grid_power\":-407.8566601636994,\"home_power\":500,\"pv_energy\":24521.3,\"pv_power\":8307.59154846352,\"service_address\":\"http://svc-evcc:8080\",\"site_title\":\"My Home\",\"statistics\":{\"30d\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"365d\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"thisYear\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"total\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702}},\"version\":\"0.312.1\"}"
     },
     "input": {
         "type": "cel"
+    },
+    "service": {
+        "address": "http://svc-evcc:8080"
     },
     "tags": [
         "preserve_original_event",
@@ -253,6 +257,7 @@ The `loadpoint` data stream provides one event per evcc loadpoint (charge point)
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |  |  |
 | input.type | Type of input that generated the event. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
 
 
@@ -262,24 +267,24 @@ An example event for `loadpoint` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-11-03T08:49:12.657Z",
+    "@timestamp": "2026-11-03T09:11:05.400Z",
     "agent": {
-        "ephemeral_id": "365be672-b481-44dc-90f6-9c851a2bf69b",
-        "id": "7f8a3fbb-082d-4283-9389-a9a04dc02d49",
-        "name": "elastic-agent-95362",
+        "ephemeral_id": "25386234-4fc6-46bf-accc-15f99d301d39",
+        "id": "06811ca8-dae6-4276-9603-aa15328546be",
+        "name": "elastic-agent-10771",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "evcc.loadpoint",
-        "namespace": "52434",
+        "namespace": "51172",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "7f8a3fbb-082d-4283-9389-a9a04dc02d49",
+        "id": "06811ca8-dae6-4276-9603-aa15328546be",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -327,12 +332,15 @@ An example event for `loadpoint` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "evcc.loadpoint",
-        "ingested": "2026-11-03T08:49:15Z",
+        "ingested": "2026-11-03T09:11:08Z",
         "kind": "metric",
-        "original": "{\"charge_duration\":91241,\"charge_power\":6900,\"charge_remaining_duration\":41739,\"charge_remaining_energy\":40000,\"charged_energy\":103212.794,\"charger_status_reason\":\"unknown\",\"charging\":true,\"connected\":true,\"connected_duration\":3600,\"effective_limit_soc\":95,\"effective_max_current\":13,\"effective_min_current\":3,\"enabled\":true,\"index\":1,\"last_24h_energy\":88014,\"last_7d_energy\":190432,\"mode\":\"pv\",\"site_title\":\"My Home\",\"title\":\"Garage\",\"vehicle_id\":\"my_car\",\"vehicle_name\":\"blue e-Golf\",\"vehicle_range\":210,\"vehicle_soc\":63}"
+        "original": "{\"charge_duration\":91241,\"charge_power\":6900,\"charge_remaining_duration\":41739,\"charge_remaining_energy\":40000,\"charged_energy\":103212.794,\"charger_status_reason\":\"unknown\",\"charging\":true,\"connected\":true,\"connected_duration\":3600,\"effective_limit_soc\":95,\"effective_max_current\":13,\"effective_min_current\":3,\"enabled\":true,\"index\":1,\"last_24h_energy\":88014,\"last_7d_energy\":190432,\"mode\":\"pv\",\"service_address\":\"http://svc-evcc:8080\",\"site_title\":\"My Home\",\"title\":\"Garage\",\"vehicle_id\":\"my_car\",\"vehicle_name\":\"blue e-Golf\",\"vehicle_range\":210,\"vehicle_soc\":63}"
     },
     "input": {
         "type": "cel"
+    },
+    "service": {
+        "address": "http://svc-evcc:8080"
     },
     "tags": [
         "preserve_original_event",
@@ -440,22 +448,22 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2026-07-23T11:48:23.601Z",
     "agent": {
-        "ephemeral_id": "06bd64c3-1596-4054-98d3-9e37cc82e82a",
-        "id": "a4308516-6fd6-4771-bd3e-1564f48e6e3e",
-        "name": "elastic-agent-26830",
+        "ephemeral_id": "9437d1ca-a9e7-4632-b5c4-30350e512c10",
+        "id": "0a170f41-5d11-4a32-ae09-f9a07badc69e",
+        "name": "elastic-agent-51182",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "evcc.log",
-        "namespace": "72217",
+        "namespace": "48110",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "a4308516-6fd6-4771-bd3e-1564f48e6e3e",
+        "id": "0a170f41-5d11-4a32-ae09-f9a07badc69e",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -466,9 +474,9 @@ An example event for `log` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2026-11-03T08:50:01.547Z",
+        "created": "2026-11-03T09:11:53.483Z",
         "dataset": "evcc.log",
-        "ingested": "2026-11-03T08:50:04Z",
+        "ingested": "2026-11-03T09:11:56Z",
         "kind": "event"
     },
     "host": {
@@ -482,7 +490,7 @@ An example event for `log` looks as following:
         "custom": {
             "runtime_scope": "system",
             "seqnum": "1",
-            "seqnum_id": "3ae09205482841cb90d66dfbe3eabb7e",
+            "seqnum_id": "5f1cd4bc63dd4cd9bd55a0b4363414c0",
             "stream_id": "aa1bb2cc3dd4ee5ff607a8b9c0d1e2f3"
         },
         "gid": 111,

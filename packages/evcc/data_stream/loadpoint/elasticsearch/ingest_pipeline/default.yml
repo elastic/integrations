@@ -45,6 +45,11 @@ processors:
       description: Removes null-valued and empty-string fields so per-loadpoint metrics that evcc did not report do not appear in the document. evcc publishes an empty vehicleName and vehicleTitle when no vehicle is assigned.
       source: >-
         ctx.json.entrySet().removeIf(e -> e.getValue() == null || e.getValue() == '');
+  - rename:
+      field: json.service_address
+      target_field: service.address
+      ignore_missing: true
+      tag: rename_service_address
   - set:
       field: '@timestamp'
       tag: set_timestamp_from_ingest

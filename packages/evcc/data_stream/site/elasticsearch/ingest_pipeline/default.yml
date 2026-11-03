@@ -44,14 +44,55 @@ processors:
       if: ctx.json?.battery != null
       description: >-
         evcc varies the shape of the top-level `battery` field between versions: some releases (e.g. 0.211.x)
-        return a list of battery objects, others (e.g. 0.312.x) return a single battery object directly.
-        This normalizes both shapes to the first battery's power/soc/capacity, matching the single-battery fields
-        this data stream exposes.
-      source: >-
-        def batt = ctx.json.battery instanceof List
-          ? (ctx.json.battery.size() > 0 ? ctx.json.battery[0] : null)
-          : ctx.json.battery;
-        if (batt != null) {
+        return a list of per-battery objects, newer ones (e.g. 0.312.x) return one object that already
+        aggregates all batteries. A list is aggregated the way evcc aggregates the object shape: power is
+        summed, capacity is summed when every battery reports a positive capacity, and soc is weighted by
+        capacity in that case and averaged otherwise.
+      source: |-
+        def batt = ctx.json.battery;
+        if (batt instanceof List) {
+          double power = 0;
+          boolean hasPower = false;
+          double socSum = 0;
+          double weightedSoc = 0;
+          double capacity = 0;
+          int socCount = 0;
+          int count = 0;
+          boolean allCapacities = true;
+          for (def b : batt) {
+            if (!(b instanceof Map)) {
+              continue;
+            }
+            count++;
+            if (b.power instanceof Number) {
+              power += b.power;
+              hasPower = true;
+            }
+            if (b.capacity instanceof Number && b.capacity > 0) {
+              capacity += b.capacity;
+            } else {
+              allCapacities = false;
+            }
+            if (b.soc instanceof Number) {
+              socSum += b.soc;
+              socCount++;
+              if (b.capacity instanceof Number) {
+                weightedSoc += b.soc * b.capacity;
+              }
+            }
+          }
+          if (hasPower) {
+            ctx.json.battery_power = power;
+          }
+          if (count > 0 && allCapacities) {
+            ctx.json.battery_capacity = capacity;
+            if (socCount == count) {
+              ctx.json.battery_soc = Math.min(100.0, weightedSoc / capacity);
+            }
+          } else if (socCount > 0) {
+            ctx.json.battery_soc = Math.min(100.0, socSum / socCount);
+          }
+        } else if (batt instanceof Map) {
           if (batt.containsKey('power')) {
             ctx.json.battery_power = batt.power;
           }
@@ -84,6 +125,11 @@ processors:
             }
           }
         }
+  - rename:
+      field: json.service_address
+      target_field: service.address
+      ignore_missing: true
+      tag: rename_service_address
   - set:
       field: '@timestamp'
       tag: set_timestamp_from_ingest
