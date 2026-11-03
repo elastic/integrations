@@ -92,12 +92,15 @@ processors:
         # Every packet argument list starts with '(', so a client id that contains
         # spaces stays intact instead of being split at its first space.
         MOSQ_PACKET_ARGS: '\(.*\)'
+        MOSQ_QOS: '[0-2]'
         MOSQ_CONNECT_ARGS: '\(p%{INT:mosquitto.log.protocol_version:long}, c%{INT:_temp.clean_session:long}, k%{INT:mosquitto.log.keepalive:long}(?:, u''%{DATA:user.name}'')?\)'
       patterns:
         # Every MQTT packet the broker sends or receives shares one shape:
         # "<direction> <PACKET> <from|to> <client id>" with an optional argument
         # list that `grok_packet_args` below decomposes.
         - '^%{MOSQ_DIRECTION:_temp.direction} %{WORD:mosquitto.log.packet_type} (?:from|to) %{DATA:mosquitto.log.client_id}(?: %{MOSQ_PACKET_ARGS:_temp.packet_args})?$'
+        # Bridge connection acknowledgement: "Received CONNACK on connection <id>."
+        - '^%{MOSQ_DIRECTION:_temp.direction} %{WORD:mosquitto.log.packet_type} on connection %{DATA:mosquitto.log.client_id}\.$'
         - '^Dropped too large PUBLISH from %{DATA:mosquitto.log.client_id} %{MOSQ_PACKET_ARGS:_temp.packet_args}$'
         # Connection lifecycle.
         - '^New connection from %{IP:source.ip}:%{POSINT:source.port:long} on port %{POSINT:server.port:long}\.$'
@@ -135,13 +138,14 @@ processors:
         - '^Protocol error from %{DATA:mosquitto.log.client_id}: %{GREEDYDATA:mosquitto.log.reason}$'
         # Subscription detail lines, emitted indented under a SUBSCRIBE packet.
         - '^\t%{DATA:mosquitto.log.topic} \(QoS %{INT:mosquitto.log.qos:long}\)$'
-        - '^\t%{DATA:mosquitto.log.topic} \(denied\)$'
+        - '^\t%{DATA:mosquitto.log.topic} (?<_temp.subscription_denied>\(denied\))$'
         - '^\t%{GREEDYDATA:mosquitto.log.topic}$'
-        # `log_type subscribe` lines: client id, granted QoS, topic filter. The
-        # filter is last and may contain spaces, so it takes the rest of the line.
-        - '^%{NOTSPACE:mosquitto.log.client_id} %{INT:mosquitto.log.qos:long} %{GREEDYDATA:mosquitto.log.topic}$'
+        # `log_type subscribe` lines ("%s %d %s"): client id, granted QoS, topic
+        # filter. Both the id and the filter may contain spaces, so the id ends at
+        # the first standalone QoS digit and the filter takes the rest of the line.
+        - '^%{DATA:mosquitto.log.client_id} %{MOSQ_QOS:mosquitto.log.qos:long} %{GREEDYDATA:mosquitto.log.topic}$'
         # Bridge-side packet logging.
-        - '^Client %{DATA:mosquitto.log.client_id} (?:received|sending) %{WORD:mosquitto.log.packet_type}$'
+        - '^Client %{DATA:mosquitto.log.client_id} (?<_temp.bridge_direction>received|sending) %{WORD:mosquitto.log.packet_type}(?: %{MOSQ_PACKET_ARGS:_temp.packet_args})?$'
         # Anything else is kept verbatim in `message`.
         - '^%{GREEDYDATA}$'
       if: ctx.message != null
@@ -172,14 +176,14 @@ processors:
   # Normalise the direction words used by the packet patterns.
   - set:
       field: network.direction
-      tag: set_network_direction_inbound
-      value: inbound
-      if: ctx._temp?.direction == 'Received'
+      tag: set_network_direction_ingress
+      value: ingress
+      if: ctx._temp?.direction == 'Received' || ctx._temp?.bridge_direction == 'received'
   - set:
       field: network.direction
-      tag: set_network_direction_outbound
-      value: outbound
-      if: ctx._temp?.direction == 'Sending'
+      tag: set_network_direction_egress
+      value: egress
+      if: ctx._temp?.direction == 'Sending' || ctx._temp?.bridge_direction == 'sending'
   - lowercase:
       field: mosquitto.log.packet_type
       tag: lowercase_packet_type
@@ -256,12 +260,12 @@ processors:
       field: event.action
       tag: set_event_action_packet_received
       value: 'mqtt-{{{_temp.packet_type_lower}}}-received'
-      if: ctx._temp?.packet_type_lower != null && ctx.network?.direction == 'inbound'
+      if: ctx._temp?.packet_type_lower != null && ctx.network?.direction == 'ingress'
   - set:
       field: event.action
       tag: set_event_action_packet_sent
       value: 'mqtt-{{{_temp.packet_type_lower}}}-sent'
-      if: ctx._temp?.packet_type_lower != null && ctx.network?.direction == 'outbound'
+      if: ctx._temp?.packet_type_lower != null && ctx.network?.direction == 'egress'
   - set:
       field: event.action
       tag: set_event_action_connection_opened
@@ -288,7 +292,8 @@ processors:
       field: event.action
       tag: set_event_action_subscription_denied
       value: subscription-denied
-      if: ctx.message != null && ctx.message.endsWith('(denied)')
+      description: Keyed off the indented denial line itself, so a granted `log_type subscribe` topic that ends in "(denied)" is not misread.
+      if: ctx._temp?.subscription_denied != null
   - set:
       field: event.action
       tag: set_event_action_protocol_error

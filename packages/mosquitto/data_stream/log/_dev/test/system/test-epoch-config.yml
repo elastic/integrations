@@ -6,3 +6,9 @@ data_stream:
     paths:
       - "{{SERVICE_LOGS_DIR}}/mosquitto-epoch.log"
     preserve_original_event: true
+    # A custom processor checks that user processors and the built-in
+    # add_locale render as one valid YAML list.
+    processors: |-
+      - drop_fields:
+          fields: ["mosquitto_test_nonexistent_field"]
+          ignore_missing: true
