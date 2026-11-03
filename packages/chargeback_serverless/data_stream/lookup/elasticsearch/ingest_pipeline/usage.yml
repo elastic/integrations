@@ -120,30 +120,63 @@ processors:
           }
         }
         if (ctx.last_status instanceof Map) {
+          def vals = new ArrayList();
           def buckets = ctx.last_status.buckets;
-          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
-            ctx.last_status = buckets[0].key;
+          if (buckets instanceof List && buckets.size() > 0) {
+            for (def b : buckets) {
+              if (b.key != null) vals.add(b.key);
+            }
           } else {
-            def keys = new ArrayList(ctx.last_status.keySet());
-            ctx.last_status = keys.size() > 0 ? keys[0] : 'ok';
+            vals.addAll(ctx.last_status.keySet());
+          }
+          if (vals.contains('ok')) {
+            ctx.last_status = 'ok';
+          } else if (vals.contains('empty_or_unauthorized')) {
+            ctx.last_status = 'empty_or_unauthorized';
+          } else if (vals.contains('inactive')) {
+            ctx.last_status = 'inactive';
+          } else {
+            ctx.last_status = vals.size() > 0 ? vals[0] : 'ok';
           }
         }
         if (ctx.api_key_type instanceof Map) {
+          def vals = new ArrayList();
           def buckets = ctx.api_key_type.buckets;
-          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
-            ctx.api_key_type = buckets[0].key;
+          if (buckets instanceof List && buckets.size() > 0) {
+            for (def b : buckets) {
+              if (b.key != null) vals.add(b.key);
+            }
           } else {
-            def keys = new ArrayList(ctx.api_key_type.keySet());
-            ctx.api_key_type = keys.size() > 0 ? keys[0] : 'missing_key';
+            vals.addAll(ctx.api_key_type.keySet());
+          }
+          if (vals.contains('remote_key')) {
+            ctx.api_key_type = 'remote_key';
+          } else if (vals.contains('hub_key')) {
+            ctx.api_key_type = 'hub_key';
+          } else if (vals.contains('cloud_billing_only')) {
+            ctx.api_key_type = 'cloud_billing_only';
+          } else {
+            ctx.api_key_type = vals.size() > 0 ? vals[0] : 'missing_key';
           }
         }
         if (ctx.synthetics_status instanceof Map) {
+          def vals = new ArrayList();
           def buckets = ctx.synthetics_status.buckets;
-          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
-            ctx.synthetics_status = buckets[0].key;
+          if (buckets instanceof List && buckets.size() > 0) {
+            for (def b : buckets) {
+              if (b.key != null) vals.add(b.key);
+            }
           } else {
-            def keys = new ArrayList(ctx.synthetics_status.keySet());
-            ctx.synthetics_status = keys.size() > 0 ? keys[0] : 'ok';
+            vals.addAll(ctx.synthetics_status.keySet());
+          }
+          if (vals.contains('ok')) {
+            ctx.synthetics_status = 'ok';
+          } else if (vals.contains('billing_derived')) {
+            ctx.synthetics_status = 'billing_derived';
+          } else if (vals.contains('unauthorized')) {
+            ctx.synthetics_status = 'unauthorized';
+          } else {
+            ctx.synthetics_status = vals.size() > 0 ? vals[0] : 'ok';
           }
         }
         if (ctx.optimized_for instanceof Map) {
