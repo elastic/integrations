@@ -104,7 +104,7 @@ network, then check **Discover** in Kibana for documents in the
 
 - No data is being collected: Verify the Central Server URL and API token are correct, and that the host running Elastic Agent can reach the CNCS REST API over HTTPS.
 - 401 Unauthorized errors: The API token might have been regenerated or revoked in the CNCS UI. Regenerate the token in CNCS and update the integration configuration. The Stamus API has no automated token-rotation mechanism.
-- Multiple host_insights documents per host: The host_insights data stream performs a full re-read of the host inventory on every poll cycle, since the API does not expose an incremental filter. Change detection is handled upstream, by the CEL program's persisted per-host baseline (`host.ip` -> a comparable snapshot of that host's inventory content, with `hostname[]` kept in full and `first_seen`/`last_seen` stripped from every other sub-object): a host is only emitted into a given poll's events when it is new to the baseline or its comparable content has genuinely changed since the last time that specific host was observed, so an unchanged re-poll produces no document at all. Documents therefore get a normal, Elasticsearch-auto-generated `_id`, exactly like any other log event -- no custom `_id` scheme is used. This means `host_insights` will contain **a new document per host only when it is first observed, or when its profile genuinely changes** by design -- not on every poll, and not a fixed one-document-per-host total. If you need a single current-state-per-host view, build it downstream (for example an Elasticsearch transform aggregating by `entity.id` with `max(@timestamp)`, or ingestion into the Elastic Entity Store); this package does not maintain that view itself. Separately, hosts are keyed only by IP address, which is not a maximally stable identifier (no MAC address or UUID is exposed by the API), so a host that changes IP address via DHCP may appear as a new entity.
+- Multiple host_insights documents per host: The host_insights data stream performs a full re-read of the host inventory on every poll cycle because the API does not expose an incremental filter. The CEL program keeps a persisted per-host baseline keyed by `host.ip`. It emits a host when the profile is new or changed, and periodically emits unchanged hosts after the **Unchanged host refresh interval** (default 12h) so they remain visible in time-filtered dashboards. Observation timestamps are removed from profile comparison. Hostname timestamps affect comparison only when they select a different current `host.name`. Documents get normal, Elasticsearch-generated `_id` values. If you need a single current-state document per host, build it downstream, for example with an Elasticsearch transform aggregating by `entity.id` and `max(@timestamp)`, or with the Elastic Entity Store. Hosts are keyed only by IP address because the API exposes no MAC address or UUID, so a host that changes IP address through DHCP might appear as a new entity.
 - Alert and stamus documents are retrieved from `/rest/rules/es/events_tail/`, and Host Insights from `/rest/appliances/host_id/`. This integration is tested against a full Stamus Clear NDR server, where those endpoints return full alert documents, `event_type: stamus` correlation records, and host inventory. Pagination is a DRF `{count, next, previous, results}` envelope. A full Clear NDR server honors `page`. Community Clear NDR honors `page_number`. The alerts and host_insights collectors send both parameters set to the same value, and continue while `next` is non-null.
 - Host Insights (`/rest/appliances/host_id/`) and Declaration of Compromise / Policy Violation records (`event_type: stamus`) require a Stamus Clear NDR **Tier 3** license. On a full Clear NDR server both are returned. Host Insights timestamps use a colon UTC offset (`+00:00`). Some hosts send `client_service` as a list. REST host records have no probe name, so the collector sets `observer.name` from the host in the configured Central Server URL. A Filebeat document that carries a string `host` copies that probe name onto `observer.name` when the field is empty. If Host Insights returns no data, or stamus events are missing, confirm the license tier. A non-retryable error on the `stamus` phase advances to the next window; only a persistent error on the `alert` phase retries.
 - Beaconing detection fields (`beaconing_report.*`, `beaconing_statistics.*`) are mapped but have not been observed in any sample data used to build this integration. Treat them as unverified end-to-end even though the fields are vendor-documented.
@@ -120,17 +120,17 @@ The `host_insights` data stream performs a full inventory read on every poll cyc
 Stamus REST API does not expose an incremental ("updated since") filter for the host insights
 endpoint. For large host inventories, tune the **Interval** setting conservatively to balance
 freshness against API and ingest load. Change detection happens before ingestion, in the CEL
-program: it keeps a persisted per-host baseline (keyed on `host.ip`) and only emits a host into a
-given poll's events when it is new to the baseline or its comparable content has genuinely
-changed since that host was last observed. Hostname entries are compared in full because the
-pipeline's `resolve_latest_hostname` script can change `host.name` based on their relative
-timestamp ordering. Every other sub-object is compared with its own `first_seen`/`last_seen`
-stripped because those observation-window timestamps advance on nearly every poll regardless of
-whether the host's actual profile changed. A re-poll of a host whose state hasn't actually
-changed produces no document at all, so there is nothing for the ingest pipeline to deduplicate —
-each document that does arrive gets a normal, auto-generated `_id`. Expect roughly one new
-document per host each time it is first observed or its profile changes, not a new document on
-every single poll or a fixed one-document-per-host total — size retention accordingly.
+program. It keeps a persisted per-host baseline keyed on `host.ip` and emits a host when it is
+new, its comparable content changes, or its periodic refresh is due. Hostname entries are
+compared without observation timestamps, while the hostname selected by the pipeline's
+max-`last_seen` rule is compared separately. This catches a change to `host.name` without
+emitting when timestamps advance but the selected hostname stays the same. Other sub-objects
+also have `first_seen` and `last_seen` removed before comparison.
+
+The **Unchanged host refresh interval** defaults to 12h. This bounded refresh keeps active,
+unchanged hosts visible in dashboards using the default 24-hour time range. Each emitted
+document gets a normal, auto-generated `_id`. Size retention for profile changes and periodic
+refresh snapshots, rather than for every API poll.
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 

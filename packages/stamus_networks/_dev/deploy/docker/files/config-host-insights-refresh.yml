@@ -1,0 +1,22 @@
+rules:
+  - path: /rest/appliances/host_id/
+    methods: ['GET']
+    query_params:
+      page_number: '1'
+      page_size: '2'
+    request_headers:
+      Authorization:
+        - 'Token test-token'
+      Content-Type:
+        - 'application/json'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {{ if le .req_num 6 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.20", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "refresh.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}], "username": [], "roles": [], "services": []}}]}
+          {{ else }}
+          {"count": 0, "next": null, "previous": null, "results": []}
+          {{ end }}

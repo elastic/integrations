@@ -37,10 +37,10 @@ rules:
   # host's current name. hostname[] (including its own timestamps) is kept in full in
   # the comparable snapshot specifically so this kind of timestamp-driven resolved-name
   # change is treated as a real, must-emit state transition.
-  # req_num 7 (round 7 / seventh poll): re-returns 198.51.100.10 with byte-identical
-  # hostname/services content to round 6 (only the top-level host_id.last_seen, which is
-  # excluded from the comparable entirely, advances). Steady-state suppression test:
-  # must NOT be emitted.
+  # req_num 7 (round 7 / seventh poll): re-returns the same hostname set and advances
+  # host-a.example.com's last_seen, but host-a-alt.example.com remains the most recent
+  # hostname. The normalized hostname content and resolved hostname are unchanged, so
+  # this timestamp-only update must NOT be emitted.
   # req_num 8 (round 8 / eighth poll): THE INTERRUPTED-SCAN REGRESSION TEST (GitHub
   # Copilot review finding on PR #22143). This page-1 response changes 198.51.100.10's
   # content again (round 6/7's stored baseline "D" + a new tcp/22 service -- call it
@@ -57,7 +57,10 @@ rules:
   # "D" baseline and suppress this document as "unchanged" -- even though the most
   # recently indexed document for this host (round 8's page 1) shows "E". Confirming
   # this IS emitted proves cursor.host_states was correctly checkpointed mid-scan.
-  # req_num >=10 (all subsequent polls within the 1m test window): terminal empty
+  # req_num 10 (round 10 / tenth poll): the same two hostname entries remain, but
+  # host-a.example.com's last_seen advances past host-a-alt.example.com. This changes
+  # the resolved host.name without adding a hostname and must be emitted.
+  # req_num >=11 (all subsequent polls within the 1m test window): terminal empty
   # response -- stops hit_count from growing unboundedly across repeated full reads.
   - path: /rest/appliances/host_id/
     methods: ['GET']
@@ -88,11 +91,13 @@ rules:
           {{ else if eq .req_num 6 }}
           {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-alt.example.com", "first_seen": "2024-01-18T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000"}]}]}}]}
           {{ else if eq .req_num 7 }}
-          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-20T11:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-alt.example.com", "first_seen": "2024-01-18T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000"}]}]}}]}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-20T11:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-19T12:00:00.000000+0000"}, {"host": "host-a-alt.example.com", "first_seen": "2024-01-18T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000"}]}]}}]}
           {{ else if eq .req_num 8 }}
           {"count": 1, "next": "http://{{ hostname }}:{{ env "PORT" }}/rest/appliances/host_id/?page_size=2&page_number=2", "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-21T09:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-alt.example.com", "first_seen": "2024-01-18T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000"}]}, {"proto": "tcp", "port": 22, "overflow": 0, "values": [{"app_proto": "ssh", "first_seen": "2024-01-21T08:30:00.000000+0000", "last_seen": "2024-01-21T09:00:00.000000+0000"}]}]}}]}
           {{ else if eq .req_num 9 }}
           {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-22T10:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T12:00:00.000000+0000"}, {"host": "host-a-alt.example.com", "first_seen": "2024-01-18T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000"}]}]}}]}
+          {{ else if eq .req_num 10 }}
+          {"count": 1, "next": null, "previous": null, "results": [{"ip": "198.51.100.10", "host_id": {"first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-23T10:00:00.000000+0000", "in_home_net": true, "hostname": [{"host": "host-a.example.com", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-23T10:00:00.000000+0000"}, {"host": "host-a-alt.example.com", "first_seen": "2024-01-18T08:00:00.000000+0000", "last_seen": "2024-01-20T09:00:00.000000+0000"}], "username": [], "roles": [], "services": [{"proto": "tcp", "port": 443, "overflow": 0, "values": [{"app_proto": "tls", "first_seen": "2024-01-10T08:00:00.000000+0000", "last_seen": "2024-01-15T18:00:00.000000+0000"}]}]}}]}
           {{ else }}
           {"count": 0, "next": null, "previous": null, "results": []}
           {{ end }}

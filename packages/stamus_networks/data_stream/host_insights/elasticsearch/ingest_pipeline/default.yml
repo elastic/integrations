@@ -2,11 +2,12 @@
 # Kibana rejects an ingest pipeline description longer than 1000 characters, so the
 # inventory notes stay in this comment.
 # The vendor API has no incremental filter. The CEL program re-reads the full
-# inventory and emits a host only when it is new or its content has changed, including
-# a profile that reverts from A to B and back to A. Every document that reaches this
-# pipeline is a real observation, so _id is left to Elasticsearch. entity.id is the
-# host IP. The vendor documents no MAC address or asset UUID, so that key is weak
-# across DHCP reassignment. Current state per host is left to downstream consumers.
+# inventory and emits a host when it is new, its content has changed, or its bounded
+# periodic refresh is due. This includes a profile that reverts from A to B and back
+# to A. Every document that reaches this pipeline is a real observation, so _id is
+# left to Elasticsearch. entity.id is the host IP. The vendor documents no MAC
+# address or asset UUID, so that key is weak across DHCP reassignment. Current state
+# per host is left to downstream consumers.
 # Filebeat's JSON codec can also deliver the same record already parsed, with a
 # string host set to the probe name. That string is the probe, not ECS host.
 description: >-

@@ -8,6 +8,7 @@ data_stream:
   vars:
     interval: 2s
     page_size: 2
+    refresh_interval: 24h
 assert:
   # hit_count math (per-poll, no incremental filter -- every poll re-reads from page 1).
   # Change detection is CEL-side (cursor.host_states, keyed by host.ip) -- see
@@ -34,9 +35,9 @@ assert:
   #     resolve_latest_hostname would pick as the current name -- hostname[] is kept
   #     in full (including timestamps) in the comparable specifically to catch this
   #     -> 1 doc
-  #   round 7 (req_num 7 page 1, terminal): 198.51.100.10 again, byte-identical to
-  #     round 6 (only the excluded top-level host_id.last_seen advances) -> 0 docs
-  #     (suppressed -- steady-state/unchanged test)
+  #   round 7 (req_num 7 page 1, terminal): the same hostname set as round 6.
+  #     A non-winning hostname timestamp advances, but the resolved hostname remains
+  #     host-a-alt.example.com -> 0 docs (timestamp-only update suppressed)
   #   round 8 (req_num 8 page 1 + req_num 8 page 2 -- INTERRUPTED-SCAN REGRESSION TEST,
   #     GitHub Copilot review finding on PR #22143): page 1 changes 198.51.100.10's
   #     content vs. its round 6/7 baseline (adds a tcp/22 service) -> emitted and, per
@@ -50,6 +51,9 @@ assert:
   #     (the pre-fix bug), this round would incorrectly compare against the stale
   #     round-6/7 baseline and see no difference, suppressing a document that should be
   #     emitted -> 1 doc
-  #   round >=10: terminal empty response -> 0 docs
-  #   total: 3 + 1 + 1 + 1 + 0 + 1 + 0 + 2 + 1 = 10
-  hit_count: 10
+  #   round 10 (req_num 10 page 1, terminal): the hostname set is unchanged, but
+  #     host-a.example.com's timestamp advances past host-a-alt.example.com and changes
+  #     the resolved host.name -> 1 doc
+  #   round >=11: terminal empty response -> 0 docs
+  #   total: 3 + 1 + 1 + 1 + 0 + 1 + 0 + 2 + 1 + 1 = 11
+  hit_count: 11
