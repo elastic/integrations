@@ -1,6 +1,14 @@
 # newer versions go on top
-- version: "3.14.0"
+- version: "4.0.0"
   changes:
+    - description: >-
+        The forwarded data stream now converts and maps `winlog.event_data.EventIdx`, `EventCountTotal`, `Options`,
+        `StatusCode` and `StartUSN` as `long`, `RemoteAddress_ip` as `ip` and `ClientCreationTime` as `date`. They were
+        previously mapped as `keyword`. After the data stream rolls over, these fields have conflicting types across
+        backing indices, so queries, dashboards and alerts that filter or aggregate on them can fail or return partial
+        results until older indices age out or are reindexed.
+      type: breaking-change
+      link: https://github.com/elastic/integrations/pull/21236
     - description: >-
         Move the Security winlog normalization pipelines, field definitions and input template used by the forwarded
         data stream to shared files so the System integration can link to them.
