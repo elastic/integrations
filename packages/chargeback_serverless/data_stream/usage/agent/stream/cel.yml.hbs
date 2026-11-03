@@ -63,10 +63,17 @@ program: |-
                       { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
                     ).do_request().as(sec_resp,
                       ((sec_resp.StatusCode == 200) ? bytes(sec_resp.Body).decode_json() : { "items": [] }).as(sec_body,
-                        ((has(es_body.items) && es_body.items != null ? es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : []) +
-                         (has(obs_body.items) && obs_body.items != null ? obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) : []) +
-                         (has(sec_body.items) && sec_body.items != null ? sec_body.items.map(p, dyn(p.with({ "project_type": "security" }))) : [])
-                        ).as(projects,
+                        get_request(
+                          state.cloud_api_base + "/api/v1/serverless/projects/search"
+                        ).with(
+                          { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+                        ).do_request().as(srch_resp,
+                          ((srch_resp.StatusCode == 200) ? bytes(srch_resp.Body).decode_json() : { "items": [] }).as(srch_body,
+                            ((has(es_body.items) && es_body.items != null ? es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : []) +
+                             (has(obs_body.items) && obs_body.items != null ? obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) : []) +
+                             (has(sec_body.items) && sec_body.items != null ? sec_body.items.map(p, dyn(p.with({ "project_type": "security" }))) : []) +
+                             (has(srch_body.items) && srch_body.items != null ? srch_body.items.map(p, dyn(p.with({ "project_type": "search" }))) : [])
+                            ).as(projects,
                           size(projects) > 0 ?
                           {
                             "events": projects.map(p,
@@ -301,3 +308,5 @@ program: |-
       )
     )
   )
+)
+)

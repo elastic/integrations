@@ -43,11 +43,6 @@ program: |-
         { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
       ).do_request().as(resp, (resp.StatusCode == 200) ?
         bytes(resp.Body).decode_json().as(body,
-          ((has(body.instances) && body.instances != null) ?
-            body.instances.filter(instance,
-              instance.type == "elasticsearch" || instance.type == "observability" || instance.type == "security"
-            )
-          : []).as(sls_instances,
             get_request(
               state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch"
             ).with(
@@ -66,15 +61,27 @@ program: |-
                       { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
                     ).do_request().as(sec_resp,
                       ((sec_resp.StatusCode == 200) ? bytes(sec_resp.Body).decode_json() : { "items": [] }).as(sec_body,
-                        ((has(es_body.items) && es_body.items != null ? es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : []) +
-                         (has(obs_body.items) && obs_body.items != null ? obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) : []) +
-                         (has(sec_body.items) && sec_body.items != null ? sec_body.items.map(p, dyn(p.with({ "project_type": "security" }))) : [])
-                        ).as(projects,
+                        get_request(
+                          state.cloud_api_base + "/api/v1/serverless/projects/search"
+                        ).with(
+                          { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+                        ).do_request().as(srch_resp,
+                          ((srch_resp.StatusCode == 200) ? bytes(srch_resp.Body).decode_json() : { "items": [] }).as(srch_body,
+                            ((has(es_body.items) && es_body.items != null ? es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : []) +
+                             (has(obs_body.items) && obs_body.items != null ? obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) : []) +
+                             (has(sec_body.items) && sec_body.items != null ? sec_body.items.map(p, dyn(p.with({ "project_type": "security" }))) : []) +
+                             (has(srch_body.items) && srch_body.items != null ? srch_body.items.map(p, dyn(p.with({ "project_type": "search" }))) : [])
+                            ).as(projects,
+                              ((has(body.instances) && body.instances != null) ?
+                                body.instances.filter(instance,
+                                  instance.type != "kibana" && instance.type != "enterprise_search" && instance.type != "integrations_server" && instance.type != "appsearch" && instance.type != "fleet_server" && instance.type != "apm"
+                                )
+                              : []).as(sls_instances,
                           (
                             sls_instances.map(instance,
                               projects.filter(p, p.id == instance.id).as(matched_projs,
                                 ((size(matched_projs) > 0 && has(matched_projs[0].name) && matched_projs[0].name != null && matched_projs[0].name != "" && matched_projs[0].name != instance.id) ? matched_projs[0].name : ((has(instance.name) && instance.name != null && instance.name != "") ? instance.name : instance.id)).as(resolved_name,
-                                  ((size(matched_projs) > 0 && has(matched_projs[0].project_type) && matched_projs[0].project_type != null && matched_projs[0].project_type != "") ? matched_projs[0].project_type : instance.type).as(resolved_type,
+                                  ((size(matched_projs) > 0 && has(matched_projs[0].project_type) && matched_projs[0].project_type != null && matched_projs[0].project_type != "") ? matched_projs[0].project_type : ((has(instance.type) && instance.type != null && instance.type != "") ? instance.type : "elasticsearch")).as(resolved_type,
                                     (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items) > 0) ?
                                       instance.product_line_items.map(line_item,
                                         {
@@ -143,6 +150,8 @@ program: |-
               )
             )
           )
+        )
+      )
         )
       :
         {
