@@ -112,6 +112,11 @@ processors:
         - '^New connection from %{IP:source.ip}:%{POSINT:source.port:long} on port %{POSINT:server.port:long}\.$'
         - '^New connection from %{IP:source.ip}:%{POSINT:source.port:long}\.$'
         - '^New (?:client|bridge) connected from %{IP:source.ip}:%{POSINT:source.port:long} as %{DATA:mosquitto.log.client_id} %{MOSQ_CONNECT_ARGS}\.$'
+        # Mosquitto 1.6 logs the peer address without a port (context->address).
+        # These come after the 2.0 forms so an IPv6 address there cannot absorb
+        # the port.
+        - '^New connection from %{IP:source.ip} on port %{POSINT:server.port:long}\.$'
+        - '^New (?:client|bridge) connected from %{IP:source.ip} as %{DATA:mosquitto.log.client_id} %{MOSQ_CONNECT_ARGS}\.$'
         - '^Client %{DATA:mosquitto.log.client_id} \[%{IP:source.ip}:%{POSINT:source.port:long}\] disconnected: %{DATA:mosquitto.log.reason}\.?$'
         - '^Client %{DATA:mosquitto.log.client_id} \[%{IP:source.ip}:%{POSINT:source.port:long}\] disconnected\.$'
         - '^Client %{DATA:mosquitto.log.client_id} disconnected: %{DATA:mosquitto.log.reason}\.?$'
@@ -120,6 +125,9 @@ processors:
         - '^Client %{DATA:mosquitto.log.client_id} disconnected, %{DATA:mosquitto.log.reason}\.$'
         - '^Client %{DATA:mosquitto.log.client_id} closed its connection\.$'
         - '^Client %{DATA:mosquitto.log.client_id} been disconnected by %{DATA:mosquitto.log.reason}\.$'
+        # Mosquitto 1.6: "Client <id> sent too large packet <n>, disconnecting." and
+        # "Client <id> sent topic with invalid UTF-8, disconnecting."
+        - '^Client %{DATA:mosquitto.log.client_id} sent (?<mosquitto.log.reason>too large packet [0-9]+|topic with invalid UTF-8), disconnecting\.$'
         - '^Socket error on client %{DATA:mosquitto.log.client_id}, disconnecting\.$'
         # SUBSCRIBE validation failures log the peer address, not the client id
         # (src/handle_subscribe.c), so they must come before the generic rule below.
