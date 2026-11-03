@@ -130,6 +130,10 @@ processors:
         - '^Client connection from %{IP:source.ip} denied: %{DATA:mosquitto.log.reason}\.$'
         - '^Connection from %{IP:source.ip}:%{POSINT:source.port:long} rejected, %{DATA:mosquitto.log.reason}\.$'
         - '^Connection Refused: %{GREEDYDATA:mosquitto.log.reason}$'
+        # Broker messages with a standalone integer that the `log_type subscribe`
+        # fallback would otherwise take (src/handle_publish.c, src/handle_connect.c).
+        - '^Reused message ID %{INT:mosquitto.log.message_id:long} from %{DATA:mosquitto.log.client_id} detected\. Clearing from storage\.$'
+        - '^Invalid protocol version %{INT:mosquitto.log.protocol_version:long} in CONNECT from (?:%{IP:source.ip}|%{DATA:_temp.peer_address})\.$'
         # Will messages.
         - '^Will message specified \(%{INT:mosquitto.log.payload_size:long} bytes\) \(r%{INT:_temp.retain:long}, q%{INT:mosquitto.log.qos:long}\)\.$'
         # Broker lifecycle and configuration.
@@ -158,7 +162,9 @@ processors:
         # The id goes to _temp first so the record can be marked as a subscribe
         # record, which keeps an id such as "Error-logger" or "Opening door" from
         # being read as broker wording by the classifiers further down.
-        - '^%{DATA:_temp.subscribe_client_id} %{MOSQ_QOS:mosquitto.log.qos:long} %{GREEDYDATA:mosquitto.log.topic}$'
+        # Lines opening with the broker's "Error: " / "Warning: " wording are
+        # never subscribe records, even when they contain a standalone 0-2.
+        - '^(?!Error: |Warning: )%{DATA:_temp.subscribe_client_id} %{MOSQ_QOS:mosquitto.log.qos:long} %{GREEDYDATA:mosquitto.log.topic}$'
         # Anything else is kept verbatim in `message`.
         - '^%{GREEDYDATA}$'
       if: ctx.message != null
@@ -263,7 +269,7 @@ processors:
       field: log.level
       tag: set_log_level_warning
       value: warning
-      if: ctx._temp?.subscribe_record != true && ctx.message != null && (ctx.message.startsWith('Warning') || ctx.message.startsWith('Protocol error from'))
+      if: ctx._temp?.subscribe_record != true && ctx.message != null && (ctx.message.startsWith('Warning') || ctx.message.startsWith('Protocol error from') || ctx.message.startsWith('Reused message ID '))
   - set:
       field: log.level
       tag: set_log_level_information
@@ -307,7 +313,7 @@ processors:
       tag: set_event_action_connection_refused
       value: connection-refused
       description: Keyed off the broker's refusal message prefixes only, so a topic, client id or username such as 'access denied' cannot turn another event into a refusal.
-      if: ctx._temp?.subscribe_record != true && ctx.message != null && (ctx.message.startsWith('Connection Refused:') || (ctx.message.startsWith('Connection from ') && ctx.message.contains(' rejected, ')) || ctx.message.startsWith('Client connection from '))
+      if: ctx._temp?.subscribe_record != true && ctx.message != null && (ctx.message.startsWith('Connection Refused:') || (ctx.message.startsWith('Connection from ') && ctx.message.contains(' rejected, ')) || ctx.message.startsWith('Client connection from ') || ctx.message.startsWith('Invalid protocol version '))
   - set:
       field: event.action
       tag: set_event_action_subscription_denied
