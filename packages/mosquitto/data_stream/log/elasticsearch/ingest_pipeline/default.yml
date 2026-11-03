@@ -146,15 +146,32 @@ processors:
         - '^\t%{DATA:mosquitto.log.topic} \(QoS %{INT:mosquitto.log.qos:long}\)$'
         - '^\t%{DATA:mosquitto.log.topic} (?<_temp.subscription_denied>\(denied\))$'
         - '^\t%{GREEDYDATA:mosquitto.log.topic}$'
+        # Bridge-side packet logging from the client library, prefixed "Client" or
+        # "Bridge" (lib/send_subscribe.c, lib/send_unsubscribe.c). These must stay
+        # ahead of the permissive `log_type subscribe` fallback below.
+        - '^(?:Client|Bridge) %{DATA:mosquitto.log.client_id} (?<_temp.bridge_direction>received|sending) %{WORD:mosquitto.log.packet_type}(?: %{MOSQ_PACKET_ARGS:_temp.packet_args})?$'
+        # A bridge subscribing to its local topics (src/bridge.c).
+        - '^Bridge %{DATA:mosquitto.log.client_id} (?<_temp.bridge_local_subscribe>doing local SUBSCRIBE) on topic %{GREEDYDATA:mosquitto.log.topic}$'
         # `log_type subscribe` lines ("%s %d %s"): client id, granted QoS, topic
         # filter. Both the id and the filter may contain spaces, so the id ends at
         # the first standalone QoS digit and the filter takes the rest of the line.
-        - '^%{DATA:mosquitto.log.client_id} %{MOSQ_QOS:mosquitto.log.qos:long} %{GREEDYDATA:mosquitto.log.topic}$'
-        # Bridge-side packet logging.
-        - '^Client %{DATA:mosquitto.log.client_id} (?<_temp.bridge_direction>received|sending) %{WORD:mosquitto.log.packet_type}(?: %{MOSQ_PACKET_ARGS:_temp.packet_args})?$'
+        # The id goes to _temp first so the record can be marked as a subscribe
+        # record, which keeps an id such as "Error-logger" or "Opening door" from
+        # being read as broker wording by the classifiers further down.
+        - '^%{DATA:_temp.subscribe_client_id} %{MOSQ_QOS:mosquitto.log.qos:long} %{GREEDYDATA:mosquitto.log.topic}$'
         # Anything else is kept verbatim in `message`.
         - '^%{GREEDYDATA}$'
       if: ctx.message != null
+  - set:
+      field: _temp.subscribe_record
+      tag: set_subscribe_record_marker
+      value: true
+      if: ctx._temp?.subscribe_client_id != null
+  - rename:
+      field: _temp.subscribe_client_id
+      target_field: mosquitto.log.client_id
+      tag: rename_subscribe_client_id
+      ignore_missing: true
 
   # Decompose the argument list that follows an MQTT packet. The shape depends on
   # the packet type; anything unrecognised is left alone because the full text is
@@ -167,6 +184,8 @@ processors:
         - '^\(d%{INT:_temp.dup:long}, q%{INT:mosquitto.log.qos:long}, r%{INT:_temp.retain:long}, m%{INT:mosquitto.log.message_id:long}, ''%{DATA:mosquitto.log.topic}'', \.\.\. \(%{INT:mosquitto.log.payload_size:long} bytes\)\)$'
         - '^\(m%{INT:mosquitto.log.message_id:long}, rc%{INT:mosquitto.log.reason_code:long}\)$'
         - '^\(m%{INT:mosquitto.log.message_id:long}\)$'
+        - '^\(Mid: %{INT:mosquitto.log.message_id:long}, Topic: %{DATA:mosquitto.log.topic}, QoS: %{INT:mosquitto.log.qos:long}, Options: 0x[0-9a-fA-F]+\)$'
+        - '^\(Mid: %{INT:mosquitto.log.message_id:long}, Topic: %{DATA:mosquitto.log.topic}\)$'
         - '^\(Mid: %{INT:mosquitto.log.message_id:long}, RC:%{INT:mosquitto.log.reason_code:long}\)$'
         - '^\(Mid: %{INT:mosquitto.log.message_id:long}\)$'
         - '^\(rc%{INT:mosquitto.log.reason_code:long}, %{DATA:mosquitto.log.auth_method}\)$'
@@ -239,12 +258,12 @@ processors:
       field: log.level
       tag: set_log_level_error
       value: error
-      if: ctx.message != null && (ctx.message.startsWith('Error') || ctx.message.startsWith('Connection Refused:') || ctx.message.startsWith('Socket error'))
+      if: ctx._temp?.subscribe_record != true && ctx.message != null && (ctx.message.startsWith('Error') || ctx.message.startsWith('Connection Refused:') || ctx.message.startsWith('Socket error'))
   - set:
       field: log.level
       tag: set_log_level_warning
       value: warning
-      if: ctx.message != null && (ctx.message.startsWith('Warning') || ctx.message.startsWith('Protocol error from'))
+      if: ctx._temp?.subscribe_record != true && ctx.message != null && (ctx.message.startsWith('Warning') || ctx.message.startsWith('Protocol error from'))
   - set:
       field: log.level
       tag: set_log_level_information
@@ -271,24 +290,24 @@ processors:
       field: event.action
       tag: set_event_action_connection_opened
       value: connection-opened
-      if: ctx.message != null && ctx.message.startsWith('New connection from')
+      if: ctx._temp?.subscribe_record != true && ctx.message != null && ctx.message.startsWith('New connection from')
   - set:
       field: event.action
       tag: set_event_action_client_connected
       value: client-connected
-      if: ctx.message != null && (ctx.message.startsWith('New client connected from') || ctx.message.startsWith('New bridge connected from'))
+      if: ctx._temp?.subscribe_record != true && ctx.message != null && (ctx.message.startsWith('New client connected from') || ctx.message.startsWith('New bridge connected from'))
   - set:
       field: event.action
       tag: set_event_action_client_disconnected
       value: client-disconnected
       description: Only for non-packet lines, so a topic or payload text such as 'status, disconnecting' cannot reclassify a PUBLISH.
-      if: ctx._temp?.packet_type_lower == null && ctx.mosquitto?.log?.topic == null && ctx.message != null && ((ctx.message.startsWith('Client ') && (ctx.message.contains(' disconnected') || ctx.message.endsWith(' closed its connection.'))) || ctx.message.endsWith(', disconnecting.'))
+      if: ctx._temp?.subscribe_record != true && ctx._temp?.packet_type_lower == null && ctx.mosquitto?.log?.topic == null && ctx.message != null && ((ctx.message.startsWith('Client ') && (ctx.message.contains(' disconnected') || ctx.message.endsWith(' closed its connection.'))) || ctx.message.endsWith(', disconnecting.'))
   - set:
       field: event.action
       tag: set_event_action_connection_refused
       value: connection-refused
       description: Keyed off the broker's refusal message prefixes only, so a topic, client id or username such as 'access denied' cannot turn another event into a refusal.
-      if: ctx.message != null && (ctx.message.startsWith('Connection Refused:') || (ctx.message.startsWith('Connection from ') && ctx.message.contains(' rejected, ')) || ctx.message.startsWith('Client connection from '))
+      if: ctx._temp?.subscribe_record != true && ctx.message != null && (ctx.message.startsWith('Connection Refused:') || (ctx.message.startsWith('Connection from ') && ctx.message.contains(' rejected, ')) || ctx.message.startsWith('Client connection from '))
   - set:
       field: event.action
       tag: set_event_action_subscription_denied
@@ -299,7 +318,7 @@ processors:
       field: event.action
       tag: set_event_action_protocol_error
       value: protocol-error
-      if: ctx.message != null && ctx.message.startsWith('Protocol error from')
+      if: ctx._temp?.subscribe_record != true && ctx.message != null && ctx.message.startsWith('Protocol error from')
   - set:
       field: event.action
       tag: set_event_action_broker_lifecycle
@@ -314,21 +333,26 @@ processors:
       field: event.action
       tag: set_event_action_listener_opened
       value: listener-opened
-      if: ctx.message != null && ctx.message.startsWith('Opening ')
+      if: ctx._temp?.subscribe_record != true && ctx.message != null && ctx.message.startsWith('Opening ')
   - set:
       field: event.action
       tag: set_event_action_publish_dropped
       value: mqtt-publish-dropped
       description: The broker discarded an inbound PUBLISH that exceeded message_size_limit; the line has no packet direction, so it must not fall through to subscription-granted.
-      if: ctx.message != null && ctx.message.startsWith('Dropped too large PUBLISH from ')
+      if: ctx._temp?.subscribe_record != true && ctx.message != null && ctx.message.startsWith('Dropped too large PUBLISH from ')
   - set:
       field: event.action
       tag: set_event_action_subscription_granted
       value: subscription-granted
       description: >-
         A `log_type subscribe` line carries only a client id, the granted QoS and
-        a topic filter, with no other wording to key off.
-      if: ctx.event?.action == null && ctx.mosquitto?.log?.client_id != null && ctx.mosquitto?.log?.topic != null && ctx.mosquitto?.log?.qos != null && ctx.mosquitto?.log?.packet_type == null
+        a topic filter; it is identified by the marker its grok pattern sets.
+      if: ctx._temp?.subscribe_record == true
+  - set:
+      field: event.action
+      tag: set_event_action_bridge_local_subscribe
+      value: bridge-local-subscribe
+      if: ctx._temp?.bridge_local_subscribe != null
 
   - append:
       field: event.category
