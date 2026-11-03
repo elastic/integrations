@@ -351,18 +351,6 @@ func messageDecoding() {
 			APPEND("error.message", "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"),
 		)
 
-	REMOVE(
-		"metadata.host.aid",
-		"metadata.user.UserSid_readable",
-	).
-		TAG("remove_metadata_host_aid_and_user_sid").
-		IGNORE_MISSING(true)
-	RENAME("metadata", "crowdstrike.info").
-		IGNORE_MISSING(true).
-		ON_FAILURE(
-			APPEND("error.message", errorMessage),
-		)
-
 	CONVERT("_temp.utc_timestamp", "crowdstrike.UTCTimestamp", "long").
 		IGNORE_MISSING(true).
 		IGNORE_FAILURE(true)
@@ -697,12 +685,6 @@ func hostFields() {
 		COPY_FROM("host.hostname").
 		IGNORE_EMPTY(true).
 		IGNORE_FAILURE(true)
-	APPEND("related.hosts", `{{{crowdstrike.info.host.ComputerName}}}`).
-		IF(`ctx.crowdstrike?.info?.host?.ComputerName != null`).
-		ALLOW_DUPLICATES(false)
-	RENAME("crowdstrike.info.host.ComputerName", "host.name").
-		IF(`ctx.host?.name == null`).
-		IGNORE_MISSING(true)
 	APPEND("related.hosts", `{{{host.name}}}`).
 		IF(`ctx.host?.name != null`).
 		ALLOW_DUPLICATES(false)
@@ -718,19 +700,6 @@ func hostFields() {
 		RENAME(change.from, change.to).
 			IGNORE_MISSING(true).
 			IGNORE_FAILURE(true)
-	}
-	CONVERT("_temp.aip", "crowdstrike.info.host.aip", "ip").
-		IF(`ctx.crowdstrike?.info?.host?.aip != null && ctx.crowdstrike.info.host.aip != ""`).
-		IGNORE_FAILURE(true)
-	REMOVE("crowdstrike.info.host.aip").
-		IF(`ctx._temp?.aip != null`)
-	for _, dst := range []string{
-		"host.ip",
-		"related.ip",
-	} {
-		APPEND(dst, `{{{_temp.aip}}}`).
-			IF(`ctx._temp?.aip != null`).
-			ALLOW_DUPLICATES(false)
 	}
 }
 
@@ -1305,19 +1274,6 @@ func userFields() {
 
 	RENAME("crowdstrike.UID", "user.id").
 		IGNORE_MISSING(true)
-	RENAME("crowdstrike.info.user.UserName", "user.name").
-		IF(`ctx.crowdstrike?.info?.user?.UserName != null && ctx.user?.name == null`).
-		IGNORE_MISSING(true)
-	SPLIT("_temp.info_user_parts", "crowdstrike.info.user.User", `\\{1,2}`).
-		IF(`ctx.crowdstrike?.info?.user?.User != null`)
-	SET("user.domain").
-		IF(`ctx._temp?.info_user_parts != null && ctx._temp.info_user_parts.size() == 2`).
-		VALUE(`{{{_temp.info_user_parts.0}}}`).
-		IGNORE_EMPTY(true).
-		IGNORE_FAILURE(true)
-	RENAME("crowdstrike.info.user.User", "user.name").
-		IF(`ctx.crowdstrike?.info?.user?.User != null && ctx.user?.name == null`).
-		IGNORE_MISSING(true)
 	RENAME("crowdstrike.GID", "user.group.id").
 		IGNORE_MISSING(true)
 	RENAME("crowdstrike.UserSid", "user.id").
@@ -1443,7 +1399,6 @@ func userFields() {
 		value string
 	}{
 		{value: `{{{user.name}}}`, cond: `ctx.user?.name != null`},
-		{value: `{{{crowdstrike.info.user.User}}}`, cond: `ctx.crowdstrike?.info?.user?.User != null`},
 		{value: `{{{user.full_name}}}`, cond: `ctx.user?.full_name != null`},
 		{value: `{{{user.target.name}}}`, cond: `ctx.user?.target?.name != null`},
 		{value: `{{{user.email}}}`, cond: `ctx.user?.email != null`},
@@ -2302,7 +2257,6 @@ func crowdstrikeFields() {
 	}{
 		{value: `{{{crowdstrike.LogonServer}}}`, cond: `ctx.crowdstrike?.LogonServer != null`},
 		{value: `{{{crowdstrike.ClientComputerName}}}`, cond: `ctx.crowdstrike?.ClientComputerName != null`},
-		{value: `{{{crowdstrike.info.user.LastLoggedOnHost}}}`, cond: `ctx.crowdstrike?.info?.user?.LastLoggedOnHost != null`},
 	} {
 		APPEND("related.hosts", src.value).
 			IF(src.cond).

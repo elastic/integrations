@@ -1,0 +1,65 @@
+data_stream:
+  dataset: {{data_stream.dataset}}
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+topics:
+{{#each topics}}
+  - {{this}}
+{{/each}}
+{{#if client_id}}
+client_id: {{client_id}}
+{{/if}}
+{{#if qos}}
+qos: {{qos}}
+{{/if}}
+{{#if username}}
+username: {{username}}
+{{/if}}
+{{#if password}}
+password: {{password}}
+{{/if}}
+{{#if clean_session}}
+clean_session: {{clean_session}}
+{{/if}}
+{{#if ssl}}
+ssl:
+  {{ssl}}
+{{/if}}
+{{#if pipeline}}
+pipeline: {{pipeline}}
+{{/if}}
+{{#if tags}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{else if preserve_original_event}}
+tags:
+  - preserve_original_event
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{#if preserve_original_event}}
+- copy_fields:
+    fields:
+      - from: message
+        to: event.original
+{{/if}}
+{{processors}}
+{{else if preserve_original_event}}
+processors:
+- copy_fields:
+    fields:
+      - from: message
+        to: event.original
+{{/if}}
+
+{{custom}}
