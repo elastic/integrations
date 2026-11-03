@@ -243,7 +243,7 @@ The `loadpoint` data stream provides one event per evcc loadpoint (charge point)
 | evcc.loadpoint.last_7d_energy | Energy charged at this loadpoint over the last 7 days, in Wh. | double |  | gauge |
 | evcc.loadpoint.mode | Charging mode of the loadpoint, e.g. off, now, minpv, or pv. | keyword |  |  |
 | evcc.loadpoint.title | Configured name of the loadpoint. | keyword |  |  |
-| evcc.loadpoint.vehicle.id | Configuration name of the vehicle currently assigned to this loadpoint, as defined in the evcc configuration (evcc's vehicleName, e.g. `my_car`). | keyword |  |  |
+| evcc.loadpoint.vehicle.id | Configuration name of the vehicle currently assigned to this loadpoint, as defined in the evcc configuration (evcc's vehicleName, for example `my_car`). | keyword |  |  |
 | evcc.loadpoint.vehicle.name | Display title of the vehicle currently assigned to this loadpoint (evcc's vehicleTitle). | keyword |  |  |
 | evcc.loadpoint.vehicle.range | Estimated remaining range of the vehicle currently assigned to this loadpoint, in km. | double |  | gauge |
 | evcc.loadpoint.vehicle.soc | State of charge of the vehicle currently assigned to this loadpoint. | double | percent | gauge |
