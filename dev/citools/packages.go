@@ -10,7 +10,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"slices"
+	"sort"
 )
 
 const ManifestFileName = "manifest.yml"
@@ -73,6 +73,6 @@ func ListPackages(dir string) ([]string, error) {
 	for i, p := range pkgs {
 		paths[i] = p.Path
 	}
-	slices.Sort(paths)
+	sort.Strings(paths)
 	return paths, nil
 }

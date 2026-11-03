@@ -2,12 +2,15 @@
 description: Pipeline for ForgeRock am-core debug logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_observer_vendor_a4252fc1
       field: observer.vendor
       value: ForgeRock Identity Platform
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
@@ -15,21 +18,25 @@ processors:
 
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - rename:
+      tag: rename_json_payload_to_forgerock_12e49639
       field: json.payload
       target_field: forgerock
   - set:
+      tag: set_transaction_id_04cf8970
       field: transaction.id
       copy_from: forgerock.transactionId
       ignore_failure: true
   - date:
+      tag: date_forgerock_timestamp_to_timestamp_26758e33
       field: forgerock.timestamp
       formats:
         - ISO8601
@@ -37,37 +44,45 @@ processors:
       timezone: UTC
       on_failure:
         - append:
+            tag: append_error_message_e1edf820
             field: error.message
             value: '{{{ _ingest.on_failure_message }}}'
   # am-core processing
   - set:
+      tag: set_event_reason_b2a64dc5
       field: event.reason
       copy_from: forgerock.message
       ignore_failure: true
   - set:
+      tag: set_log_level_3c18de8e
       field: log.level
       copy_from: forgerock.level
       ignore_failure: true
   - set:
+      tag: set_log_logger_053ab4be
       field: log.logger
       copy_from: forgerock.logger
       ignore_failure: true
   - set:
+      tag: set_process_name_ce2aa2d0
       field: process.name
       copy_from: forgerock.thread
       ignore_failure: true
   - set:
+      tag: set_error_stack_trace_f1057393
       field: error.stack_trace
       copy_from: forgerock.exception
       ignore_failure: true
   # cleaning up
   - remove:
+      tag: remove_cleaning_up_dc3ac849
       field:
         - json.timestamp
         - json.type
         - forgerock.mdc.transactionId
       ignore_failure: true
   - remove:
+      tag: remove_410de790
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - json
@@ -81,6 +96,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_drops_null_empty_values_recursively_9d6fa8ba
       description: Drops null/empty values recursively
       lang: painless
       ignore_failure: true
@@ -100,12 +116,15 @@ processors:
         drop(ctx);
 on_failure:
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
       value: "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

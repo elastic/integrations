@@ -1,0 +1,94 @@
+{
+    "attributes": {
+        "enabled": false,
+        "author": [
+            "Contrast Security"
+        ],
+        "description": "Correlates a WAF alert with a Contrast ADR confirmed exploit on the same source IP and URL path within 5 minutes. The correlation turns a low-confidence WAF detection (which may be in detection-only mode, or which may have failed to block) into a high-confidence, actionable finding. ADR confirms the application was exploited at the code level despite the WAF; the WAF event provides the gateway perspective. This rule is shipped disabled because the WAF index pattern varies per customer and must be configured before enabling.",
+        "false_positives": [
+            "WAF in detection-only mode against high-volume traffic may produce alert pairs against legitimate scans or penetration tests.",
+            "WAF false positives on legitimate user input that happens to coincide with separately attempted application attacks from the same IP."
+        ],
+        "index": [
+            "logs-contrast_security.attack_event-*",
+            "logs-CUSTOMIZE_WAF_INDEX-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Contrast ADR: Exploited Attack Confirmed by WAF Alert on Same Request",
+        "note": "## Triage and analysis\n\n### Investigating WAF-Confirmed Application Exploit\n\nThis rule fires when Contrast ADR confirms exploitation and a WAF alert exists on the same `source.ip` and `url.path` within 5 minutes. Treat as a confirmed exploit attempt at the gateway level that also succeeded at the application level.\n\n#### Possible investigation steps:\n\n- Review the ADR attack event: `rule.name`, `source.ip`, `url.path`, `http.request.body.content`.\n- Check whether the WAF was in detection-only mode (alerted but did not block) or in blocking mode (alerted but the request bypassed). If blocking mode, investigate how the WAF was bypassed.\n- Follow the `event.url` link on the ADR side to view full attack details in the Contrast Security console.\n- Pivot to the matched WAF event to see the WAF rule that fired and any additional context (geographic, ASN, user-agent).\n- Check for additional exploit attempts from the same `source.ip` across other URLs to scope the campaign.\n\n### Response and remediation:\n\n- Visit the runbook for the specific ADR attack type at https://contrastsecurity.dev/adr-runbooks/runbooks/{rule.name}/\n- If the WAF was bypassed, escalate to the WAF team to tighten the rule. Consider moving the WAF rule from detection to blocking mode for this signature.\n- Enable Contrast ADR Block Mode for the affected rule to prevent future exploitation.\n- Block the source IP at the perimeter.\n- Work with the development team to remediate the underlying vulnerability.",
+        "query": "sequence by source.ip, url.path with maxspan=5m\n  [any where event.dataset == \"contrast_security.attack_event\" and event.outcome == \"success\"]\n  [any where event.kind == \"alert\" and not event.dataset like \"contrast_security.*\"]",
+        "references": [
+            "https://www.contrastsecurity.com/contrast-adr",
+            "https://contrastsecurity.dev/adr-runbooks/",
+            "https://attack.mitre.org/techniques/T1190/"
+        ],
+        "related_integrations": [
+            {
+                "package": "contrast_security",
+                "version": "^0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.kind",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "url.path",
+                "type": "wildcard"
+            }
+        ],
+        "risk_score": 95,
+        "rule_id": "182e3d6b-9547-46e7-8342-6a045de03abb",
+        "setup": "This rule is shipped disabled and requires per-customer configuration before it can be enabled.\n\n1. In the rule's `index` array, replace `logs-CUSTOMIZE_WAF_INDEX-*` with the index pattern for your WAF product. Common values:\n   - AWS WAF: `logs-aws_waf.log-*`\n   - Cloudflare WAF: `logs-cloudflare.firewall-*`\n   - F5 ASM: `logs-f5.firepass-*`\n   - ModSecurity: `logs-modsecurity-*`\n2. Tighten the second EQL pattern if needed to match only your WAF product's alert events.\n3. Confirm `source.ip` and `url.path` are populated consistently across ADR and your WAF product.\n4. Enable the rule.",
+        "severity": "critical",
+        "tags": [
+            "Data Source: Contrast Security",
+            "Use Case: Application Security",
+            "Use Case: Threat Detection",
+            "Use Case: Cross-Tool Correlation",
+            "Tactic: Initial Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "182e3d6b-9547-46e7-8342-6a045de03abb",
+    "type": "security-rule"
+}

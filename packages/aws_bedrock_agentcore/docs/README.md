@@ -31,9 +31,17 @@ Before using any Amazon Bedrock AgentCore integration you will need:
 
 For more details about these requirements, check the [AWS integration documentation](https://docs.elastic.co/integrations/aws#requirements).
 
-* Elastic Agent must be installed. For detailed guidance, follow these [instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-* You can install only one Elastic Agent per host.
-* Elastic Agent is required to collect metrics from CloudWatch and ship the data to Elastic, where the events will then be processed through the integration's ingest pipelines.
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to collect metrics and logs from CloudWatch and ship the data to Elastic, where the events will then be processed through the integration's ingest pipelines.
+
+### Elastic Managed enabled integration
+
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ### How to find the `log_group_arn` (for log-based datasets)
 
@@ -214,67 +222,30 @@ For more information, refer to the [Elastic documentation](https://www.elastic.c
 
 Alert rule templates require Elastic Stack version 9.2.0 or later.
 
-The following alert rule templates are available:
+**The following alert rule templates are available:**
 
-**[AWS Bedrock AgentCore] Agent runtime high latency**
+<details>
+<summary>View the alert rule templates</summary>
 
+| Name | Description |
+|---|---|
+| [AWS Bedrock AgentCore] Agent runtime high latency |  |
+| [AWS Bedrock AgentCore] Agent runtime system errors |  |
+| [AWS Bedrock AgentCore] Agent runtime user errors |  |
+| [AWS Bedrock AgentCore] Browser errors |  |
+| [AWS Bedrock AgentCore] Browser session throttles |  |
+| [AWS Bedrock AgentCore] Code interpreter errors |  |
+| [AWS Bedrock AgentCore] Code interpreter high latency |  |
+| [AWS Bedrock AgentCore] Code interpreter throttles |  |
+| [AWS Bedrock AgentCore] Gateway errors |  |
+| [AWS Bedrock AgentCore] Gateway high latency |  |
+| [AWS Bedrock AgentCore] Gateway throttles |  |
+| [AWS Bedrock AgentCore] Identity throttles |  |
+| [AWS Bedrock AgentCore] Identity token fetch failures |  |
+| [AWS Bedrock AgentCore] Memory errors |  |
+| [AWS Bedrock AgentCore] Memory high latency |  |
 
-
-**[AWS Bedrock AgentCore] Agent runtime system errors**
-
-
-
-**[AWS Bedrock AgentCore] Agent runtime user errors**
-
-
-
-**[AWS Bedrock AgentCore] Browser errors**
-
-
-
-**[AWS Bedrock AgentCore] Browser session throttles**
-
-
-
-**[AWS Bedrock AgentCore] Code interpreter errors**
-
-
-
-**[AWS Bedrock AgentCore] Code interpreter high latency**
-
-
-
-**[AWS Bedrock AgentCore] Code interpreter throttles**
-
-
-
-**[AWS Bedrock AgentCore] Gateway errors**
-
-
-
-**[AWS Bedrock AgentCore] Gateway high latency**
-
-
-
-**[AWS Bedrock AgentCore] Gateway throttles**
-
-
-
-**[AWS Bedrock AgentCore] Identity throttles**
-
-
-
-**[AWS Bedrock AgentCore] Identity token fetch failures**
-
-
-
-**[AWS Bedrock AgentCore] Memory errors**
-
-
-
-**[AWS Bedrock AgentCore] Memory high latency**
-
-
+</details>
 
 
 

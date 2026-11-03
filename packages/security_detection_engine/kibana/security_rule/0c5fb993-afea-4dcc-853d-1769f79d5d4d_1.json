@@ -1,0 +1,84 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the registration of a launch agent or launch daemon whose target executable resides in a temporary or user-writable location, using launch item registration messages collected by the macOS Security Events integration. An adversary may establish persistence with a launch agent or daemon that runs a program staged in a world-writable or temporary directory, which is uncommon for legitimate software.",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Launch Item Registration with Suspicious Executable Path via macOS Security Events",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Launch Item Registration with Suspicious Executable Path via macOS Security Events\n\nOn macOS, launch agents and launch daemons run a program defined in their property list (plist). When a launch item is registered, the BackgroundTaskManagement subsystem logs the plist path and the target executable path to the unified log. Legitimate persistent software almost always runs an executable from a system or application directory. An executable staged in a temporary or world-writable directory (for example `/tmp`, `/private/tmp`, `/var/tmp`, `/Users/Shared`, or `/var/folders`) is a strong indicator of malicious persistence. This rule alerts on launch item registrations whose executable resides in such a location, and reports the plist path, item type, and executable.\n\n### Possible investigation steps\n\n- Review `Esql.executable` and `Esql.plist_path` in the alert to identify the staged program and its launch item.\n- Retrieve and analyze the executable. Determine whether it is signed, what it does, and how it arrived on the host.\n- Determine how and when the plist and executable were created, and by which process, using Elastic Defend telemetry if available.\n- Review other alerts and activity for the host and associated user during the same period.\n\n### False positive analysis\n\n- Developer and build tooling occasionally runs helper executables from temporary or user directories. \n- Verify the executable and its origin; exclude known-good paths or signing identities if the behavior is expected.\n\n### Response and remediation\n\n- If the launch item is not legitimate, unload it with `launchctl bootout`, remove the plist, and remove or quarantine the executable.\n- Investigate the host for the initial access vector and any activity performed by the program.\n- Reset credentials for the affected user and review the host for additional compromise.\n- Escalate to the security operations team if additional hosts show similar patterns.\n",
+        "query": "FROM logs-macos.process_execution_monitoring-* metadata _id, _version, _index\n| WHERE data_stream.dataset == \"macos.process_execution_monitoring\" and\n    macos.event.message.description LIKE \"*effectiveItemDisposition*\" and\n    (macos.event.message.description LIKE \"*url=file://*/Library/LaunchAgents/*\" or\n        macos.event.message.description LIKE \"*url=file://*/Library/LaunchDaemons/*\")\n| GROK macos.event.message.description \"url=file://%{DATA:Esql.plist_path}, config\"\n| GROK macos.event.message.description \"type=%{DATA:Esql.item_type},\"\n| GROK macos.event.message.description \"BTMConfigExecutablePath = \\\"%{DATA:Esql.executable}\\\"\"\n| WHERE Esql.executable RLIKE \"/(private/)?(tmp|var/tmp|var/folders)/.*|/Users/Shared/.*|/Users/[^/]+/(Downloads|Public|Library/Caches)/.*\"\n| KEEP _id, _version, _index, @timestamp, host.name, Esql.executable, Esql.plist_path, Esql.item_type, macos.event.message.description\n",
+        "references": [
+            "https://www.welivesecurity.com/2022/07/19/i-see-what-you-did-there-look-cloudmensis-macos-spyware/",
+            "https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "macos",
+                "version": ">=1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": false,
+                "name": "macos.event.message.description",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "0c5fb993-afea-4dcc-853d-1769f79d5d4d",
+        "setup": "## Setup\n\nThis rule requires data from the macOS Security Events integration.\nIntegration setup instructions: [macOS Security Events](https://www.elastic.co/docs/reference/security/prebuilt-rules/integration/macos/macos_security_events)\n",
+        "severity": "medium",
+        "tags": [
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: macOS Security Events",
+            "Resources: Investigation Guide",
+            "Rule Type: ESQL",
+            "Platform: macOS",
+            "Domain: Endpoint"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/",
+                        "subtechnique": [
+                            {
+                                "id": "T1543.001",
+                                "name": "Launch Agent",
+                                "reference": "https://attack.mitre.org/techniques/T1543/001/"
+                            },
+                            {
+                                "id": "T1543.004",
+                                "name": "Launch Daemon",
+                                "reference": "https://attack.mitre.org/techniques/T1543/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "0c5fb993-afea-4dcc-853d-1769f79d5d4d_1",
+    "type": "security-rule"
+}

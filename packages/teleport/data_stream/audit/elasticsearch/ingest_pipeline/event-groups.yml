@@ -6,124 +6,152 @@ processors:
   # SessionMetadata is a common session event metadata
   # See teleport.audit.session group for field definitions.
   - rename:
+      tag: rename_teleport_audit_sid_to_teleport_audit_session_id_743b6d2a
       field: teleport.audit.sid
       target_field: teleport.audit.session.id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_with_mfa_to_teleport_audit_mfa_device_uuid_853585ca
       field: teleport.audit.with_mfa
       target_field: teleport.audit.mfa_device.uuid
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_private_key_policy_to_teleport_audit_session_private_key_policy_d9c626c2
       field: teleport.audit.private_key_policy
       target_field: teleport.audit.session.private_key_policy
       ignore_missing: true
   # UserMetadata is a common user event metadata
   # See teleport.audit.user group for field definitions.
   - remove:
+      tag: remove_teleport_audit_user_user_346097ac
       description: 'Fix an issue where "user": {"user": message} is present'
       field: teleport.audit.user.user
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_user_to_user_name_f3549d22
       field: teleport.audit.user
       target_field: user.name
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_teleport_audit_login_to_process_user_name_3ba54b17
       field: teleport.audit.login
       target_field: process.user.name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_impersonator_to_teleport_audit_user_impersonator_d981be5d
       field: teleport.audit.impersonator
       target_field: teleport.audit.user.impersonator
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_aws_role_arn_to_teleport_audit_user_aws_role_arn_1e0b68a3
       field: teleport.audit.aws_role_arn
       target_field: teleport.audit.user.aws_role_arn
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_access_requests_to_teleport_audit_user_access_requests_a30cb6d0
       field: teleport.audit.access_requests
       target_field: teleport.audit.user.access_requests
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_azure_identity_to_teleport_audit_user_azure_identity_ef96553a
       field: teleport.audit.azure_identity
       target_field: teleport.audit.user.azure_identity
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_gcp_service_account_to_teleport_audit_user_gcp_service_account_85170e3b
       field: teleport.audit.gcp_service_account
       target_field: teleport.audit.user.gcp_service_account
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_trusted_device_to_teleport_audit_user_trusted_device_09c87de9
       field: teleport.audit.trusted_device
       target_field: teleport.audit.user.trusted_device
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_required_private_key_policy_to_teleport_audit_user_required_private_key_policy_d4256d6f
       field: teleport.audit.required_private_key_policy
       target_field: teleport.audit.user.required_private_key_policy
       ignore_missing: true
   - set:
+      tag: set_teleport_audit_user_kind_c68c6d70
       field: teleport.audit.user.kind
       value: unspecified
       if: ctx.teleport?.audit?.user_kind == 0
   - set:
+      tag: set_teleport_audit_user_kind_32fa857e
       field: teleport.audit.user.kind
       value: human
       if: ctx.teleport?.audit?.user_kind == 1
   - set:
+      tag: set_teleport_audit_user_kind_21a69a19
       field: teleport.audit.user.kind
       value: bot
       if: ctx.teleport?.audit?.user_kind == 2
   - remove:
+      tag: remove_teleport_audit_user_kind_b9850a96
       field: teleport.audit.user_kind
       ignore_missing: true
       if: ctx.teleport?.audit?.user?.kind != null
   # Server is a server metadata
   # See teleport.audit.server group for field definitions.
   - rename:
+      tag: rename_teleport_audit_namespace_to_group_name_5407fd4d
       field: teleport.audit.namespace
       target_field: group.name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_server_id_to_host_id_e8c872f6
       field: teleport.audit.server_id
       target_field: host.id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_server_hostname_to_host_hostname_c40e108d
       field: teleport.audit.server_hostname
       target_field: host.hostname
       ignore_missing: true
   - grok:
+      tag: grok_teleport_audit_server_addr_7c66b81d
       field: teleport.audit.server_addr
       ignore_missing: true
       ignore_failure: true
       patterns:
         - '^(%{IPORHOST:server.address}|\[%{IP:server.ip}\])(:%{POSINT:server.port:long})?$'
   - remove:
+      tag: remove_teleport_audit_server_addr_96017459
       field: teleport.audit.server_addr
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_forwarded_by_to_teleport_audit_server_forwarded_by_8c90e45b
       field: teleport.audit.forwarded_by
       target_field: teleport.audit.server.forwarded_by
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_server_sub_kind_to_teleport_audit_server_sub_kind_750910d2
       field: teleport.audit.server_sub_kind
       target_field: teleport.audit.server.sub_kind
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_server_version_to_teleport_audit_server_version_aef29da2
       field: teleport.audit.server_version
       target_field: teleport.audit.server.version
       ignore_missing: true
   # Stash scalar addr before dot_expander so addr.local/addr.remote can expand.
   - rename:
+      tag: rename_teleport_audit_addr_to__temp_teleport_audit_addr_20fa755f
       field: teleport.audit.addr
       target_field: _temp.teleport_audit_addr
       if: "ctx.teleport?.audit?.addr instanceof String"
       ignore_missing: true
   # Extract data from addr.local field.
   - dot_expander:
+      tag: dot_expander_addr_local_e33bc9fe
       path: teleport.audit
       field: addr.local
   # Connection contains connection info.
   # All of these fields are mapped to ECS fields.
   - grok:
+      tag: grok_teleport_audit_addr_local_14010e90
       field: teleport.audit.addr.local
       ignore_missing: true
       ignore_failure: true
@@ -131,6 +159,7 @@ processors:
         - '^(%{IPORHOST:destination.address}|\[%{IP:destination.ip}\])(:%{POSINT:destination.port:long})?$'
       if: ctx.server?.address != null
   - grok:
+      tag: grok_teleport_audit_addr_local_4fd3f30b
       field: teleport.audit.addr.local
       ignore_missing: true
       ignore_failure: true
@@ -138,102 +167,125 @@ processors:
         - '^(%{IPORHOST:server.address}|\[%{IP:server.ip}\])(:%{POSINT:server.port:long})?$'
       if: ctx.server?.address == null
   - remove:
+      tag: remove_teleport_audit_addr_local_6549e544
       field: teleport.audit.addr.local
       ignore_missing: true
   # Extract data from addr.remote field.
   - dot_expander:
+      tag: dot_expander_addr_remote_78764977
       path: teleport.audit
       field: addr.remote
   - grok:
+      tag: grok_teleport_audit_addr_remote_7ad9f0f3
       field: teleport.audit.addr.remote
       ignore_missing: true
       ignore_failure: true
       patterns:
         - '^(%{IPORHOST:client.address}|\[%{IP:client.ip}\])(:%{POSINT:client.port:long})?$'
   - remove:
+      tag: remove_teleport_audit_addr_remote_19caf95a
       field: teleport.audit.addr.remote
       ignore_missing: true
   # Restore stashed scalar addr value.
   - remove:
+      tag: remove_teleport_audit_addr_fb1f5e0b
       field: teleport.audit.addr
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename__temp_teleport_audit_addr_to_teleport_audit_addr_505e9d40
       field: _temp.teleport_audit_addr
       target_field: teleport.audit.addr
       ignore_missing: true
   # The last field and cleanup.
   - rename:
+      tag: rename_teleport_audit_proto_to_network_protocol_f7228a7a
       field: teleport.audit.proto
       target_field: network.protocol
       ignore_missing: true
   - remove:
+      tag: remove_teleport_connection_7430390e
       field: teleport.connection
       ignore_missing: true
   # ClientMetadata identifies the originating client for an event.
   # All of these fields are mapped to ECS fields.
   - rename:
+      tag: rename_teleport_audit_user_agent_to_user_agent_a245f9bf
       field: teleport.audit.user_agent
       target_field: user_agent
       ignore_missing: true
   - user_agent:
+      tag: user_agent_user_agent_ce6d212f
       field: user_agent
       ignore_missing: true
   # KubernetesClusterMetadata contains common metadata for kubernetes-related events.
   # See teleport.audit.kubernetes group for field definitions.
   - set:
+      tag: set_orchestrator_type_5c7ab120
       field: orchestrator.type
       value: kubernetes
       if: ctx.teleport.audit.kubernetes_cluster != null
   - rename:
+      tag: rename_teleport_audit_kubernetes_cluster_to_orchestrator_cluster_name_8d294759
       field: teleport.audit.kubernetes_cluster
       target_field: orchestrator.cluster.name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_kubernetes_users_to_teleport_audit_kubernetes_users_cc20ae8e
       field: teleport.audit.kubernetes_users
       target_field: teleport.audit.kubernetes.users
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_kubernetes_groups_to_teleport_audit_kubernetes_groups_ffd9a023
       field: teleport.audit.kubernetes_groups
       target_field: teleport.audit.kubernetes.groups
       ignore_missing: true
   # KubernetesPodMetadata contains common metadata for kubernetes pod-related events.
   # See teleport.audit.kubernetes.pod group for field definitions.
   - rename:
+      tag: rename_teleport_audit_kubernetes_pod_name_to_orchestrator_resource_name_b593344c
       field: teleport.audit.kubernetes_pod_name
       target_field: orchestrator.resource.name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_kubernetes_pod_namespace_to_orchestrator_namespace_2bd58ef7
       field: teleport.audit.kubernetes_pod_namespace
       target_field: orchestrator.namespace
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_kubernetes_container_name_to_teleport_audit_kubernetes_pod_container_name_e51634f9
       field: teleport.audit.kubernetes_container_name
       target_field: teleport.audit.kubernetes.pod.container_name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_kubernetes_container_image_to_teleport_audit_kubernetes_pod_container_image_b3ae2cf6
       field: teleport.audit.kubernetes_container_image
       target_field: teleport.audit.kubernetes.pod.container_image
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_kubernetes_node_name_to_teleport_audit_kubernetes_pod_node_name_79745d34
       field: teleport.audit.kubernetes_node_name
       target_field: teleport.audit.kubernetes.pod.node_name
       ignore_missing: true
   # SAMLIdPServiceProviderMetadata contains common metadata for SAML IdP service provider events.
   # See teleport.audit.saml-idp-service-provider group for field definitions.
   - rename:
+      tag: rename_teleport_audit_service_provider_entity_id_to_teleport_audit_saml_idp_service_provider_entity_id_2ba86347
       field: teleport.audit.service_provider_entity_id
       target_field: teleport.audit.saml_idp_service_provider.entity_id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_service_provider_shortcut_to_teleport_audit_saml_idp_service_provider_shortcut_4628d234
       field: teleport.audit.service_provider_shortcut
       target_field: teleport.audit.saml_idp_service_provider.shortcut
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_attribute_mapping_to_teleport_audit_saml_idp_service_provider_attribute_mapping_5f8235d4
       field: teleport.audit.attribute_mapping
       target_field: teleport.audit.saml_idp_service_provider.attribute_mapping
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_session_id_to_teleport_audit_session_id_8c470526
       description: 'Fix an issue where "session_id" is present in this event.'
       field: teleport.audit.session_id
       target_field: teleport.audit.session.id
@@ -242,109 +294,132 @@ processors:
   # Okta related events metadata.
   # See teleport.audit.okta group for field definitions.
   - rename:
+      tag: rename_teleport_audit_added_to_teleport_audit_okta_resources_added_1c209e82
       field: teleport.audit.added
       target_field: teleport.audit.okta.resources.added
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_updated_to_teleport_audit_okta_resources_updated_959b76be
       field: teleport.audit.updated
       target_field: teleport.audit.okta.resources.updated
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_deleted_to_teleport_audit_okta_resources_deleted_e1e493a2
       field: teleport.audit.deleted
       target_field: teleport.audit.okta.resources.deleted
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_source_to_teleport_audit_okta_assignment_source_2ce38485
       field: teleport.audit.source
       target_field: teleport.audit.okta.assignment.source
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_starting_status_to_teleport_audit_okta_assignment_starting_status_4f718b63
       field: teleport.audit.starting_status
       target_field: teleport.audit.okta.assignment.starting_status
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_ending_status_to_teleport_audit_okta_assignment_ending_status_98eba2c6
       field: teleport.audit.ending_status
       target_field: teleport.audit.okta.assignment.ending_status
       ignore_missing: true
   # Access list member metadata
   - rename:
+      tag: rename_teleport_audit_access_list_name_to_teleport_audit_access_list_name_fac23ef2
       field: teleport.audit.access_list_name
       target_field: teleport.audit.access_list.name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_members_to_teleport_audit_access_list_members_fe8fe8d1
       field: teleport.audit.members
       target_field: teleport.audit.access_list.members
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_roles_to_teleport_audit_access_list_membership_requirements_changed_roles_93dfb9db
       field: teleport.audit.roles
       target_field: teleport.audit.access_list.membership_requirements_changed.roles
       ignore_missing: true
       if: ctx.teleport.audit.event?.action == 'access_list.review'
   - rename:
+      tag: rename_teleport_audit_traits_to_teleport_audit_access_list_membership_requirements_changed_traits_423afb04
       field: teleport.audit.traits
       target_field: teleport.audit.access_list.membership_requirements_changed.traits
       ignore_missing: true
       if: ctx.teleport.audit.event?.action == 'access_list.review'
   - rename:
+      tag: rename_teleport_audit_message_to_teleport_audit_access_list_review_message_336a3b9a
       field: teleport.audit.message
       target_field: teleport.audit.access_list.review_message
       ignore_missing: true
       if: ctx.teleport.audit.event?.action == 'access_list.review'
   - rename:
+      tag: rename_teleport_audit_review_id_to_teleport_audit_access_list_review_id_357dd7bc
       field: teleport.audit.review_id
       target_field: teleport.audit.access_list.review_id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_review_frequency_changed_to_teleport_audit_access_list_review_frequency_changed_18dc481b
       field: teleport.audit.review_frequency_changed
       target_field: teleport.audit.access_list.review_frequency_changed
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_review_day_of_month_changed_to_teleport_audit_access_list_review_day_of_month_changed_9e806108
       field: teleport.audit.review_day_of_month_changed
       target_field: teleport.audit.access_list.review_day_of_month_changed
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_removed_members_to_teleport_audit_access_list_removed_members_d81b3e3d
       field: teleport.audit.removed_members
       target_field: teleport.audit.access_list.removed_members
       ignore_missing: true
   # LockMetadata contains common metadata for lock resource events.
   - rename:
       field: teleport.audit.target
-      tag: lock_target_field
+      tag: lock_target_field_cf85b37c
       target_field: teleport.audit.lock.target
       ignore_missing: true
       if: "ctx.event.action.startsWith('lock.')"
   # Session related events metadata.
   # See teleport.audit.session group for field definitions.
   - rename:
+      tag: rename_teleport_audit_size_to_teleport_audit_session_terminal_size_5c1bd0c9
       field: teleport.audit.size
       target_field: teleport.audit.session.terminal_size
       ignore_missing: true
   - grok:
+      tag: grok_teleport_audit_session_terminal_size_e7326f36
       field: teleport.audit.session.terminal_size
       patterns:
         - "%{NUMBER:process.tty.columns:int}:%{NUMBER:process.tty.rows:int}"
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_teleport_audit_initial_command_to_process_command_line_b1e3bd44
       field: teleport.audit.initial_command
       target_field: process.command_line
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_session_recording_to_teleport_audit_session_session_recording_01a16bd8
       field: teleport.audit.session_recording
       target_field: teleport.audit.session.session_recording
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_enhanced_recording_to_teleport_audit_session_enhanced_recording_5a85751e
       field: teleport.audit.enhanced_recording
       target_field: teleport.audit.session.enhanced_recording
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_interactive_to_teleport_audit_session_interactive_d61c475b
       field: teleport.audit.interactive
       target_field: teleport.audit.session.interactive
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_participants_to_teleport_audit_session_participants_e21ff063
       field: teleport.audit.participants
       target_field: teleport.audit.session.participants
       ignore_missing: true
   - date:
+      tag: date_teleport_audit_session_start_to_event_start_41d779de
       field: teleport.audit.session_start
       target_field: event.start
       formats:
@@ -352,10 +427,12 @@ processors:
       if: ctx.teleport?.audit?.session_start != null
       ignore_failure: true
   - remove:
+      tag: remove_teleport_audit_session_start_04c96a6d
       field: teleport.audit.session_start
       ignore_missing: true
       if: ctx.event?.start != null
   - date:
+      tag: date_teleport_audit_session_stop_to_event_end_24281448
       field: teleport.audit.session_stop
       target_field: event.end
       formats:
@@ -363,318 +440,391 @@ processors:
       if: ctx.teleport?.audit?.session_stop != null
       ignore_failure: true
   - remove:
+      tag: remove_teleport_audit_session_stop_d0217c45
       field: teleport.audit.session_stop
       ignore_missing: true
       if: ctx.event?.end != null
   # Desktop events metadata
   # See teleport.audit.desktop group for field definitions.
   - rename:
+      tag: rename_teleport_audit_length_to_client_bytes_148c86c4
       field: teleport.audit.length
       target_field: client.bytes
       if: ctx.event.action == 'desktop.clipboard.send'
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_length_to_server_bytes_d33fe6cc
       field: teleport.audit.length
       target_field: server.bytes
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_directory_name_to_file_directory_8bfc9274
       field: teleport.audit.directory_name
       target_field: file.directory
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_directory_id_to_teleport_audit_desktop_directory_id_eca7126e
       field: teleport.audit.directory_id
       target_field: teleport.audit.desktop.directory_id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_file_path_to_file_path_93c6928c
       field: teleport.audit.file_path
       target_field: file.path
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_ms_to_teleport_audit_desktop_delay_ms_8f7c1f5e
       field: teleport.audit.ms
       target_field: teleport.audit.desktop.delay_ms
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_offset_to_teleport_audit_desktop_offset_b2703a02
       field: teleport.audit.offset
       target_field: teleport.audit.desktop.offset
       ignore_missing: true
   # FileTransferRequestEvent happens when a FileTransferRequest is created, updated, approved, or denied.
   # See teleport.audit.file-transfer-request group for field definitions.
   - rename:
+      tag: rename_teleport_audit_requestID_to_teleport_audit_file_transfer_request_id_acf64d23
       field: teleport.audit.requestID
       target_field: teleport.audit.file_transfer_request.id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_approvers_to_teleport_audit_file_transfer_request_approvers_f6077a12
       field: teleport.audit.approvers
       target_field: teleport.audit.file_transfer_request.approvers
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_requester_to_teleport_audit_file_transfer_request_requester_f263d247
       field: teleport.audit.requester
       target_field: teleport.audit.file_transfer_request.requester
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_location_to_file_path_22813a34
       field: teleport.audit.location
       target_field: file.path
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_download_to_teleport_audit_file_transfer_request_is_download_c477229c
       field: teleport.audit.download
       target_field: teleport.audit.file_transfer_request.is_download
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_filename_to_file_name_9a3dad84
       field: teleport.audit.filename
       target_field: file.name
       ignore_missing: true
   # Process metadata
   # See teleport.audit.process group for field definitions.
   - rename:
+      tag: rename_teleport_audit_pid_to_process_pid_46834517
       field: teleport.audit.pid
       target_field: process.pid
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_cgroup_id_to_process_cgroup_id_98fa59d8
       field: teleport.audit.cgroup_id
       target_field: process.cgroup.id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_program_to_process_name_d057e485
       field: teleport.audit.program
       target_field: process.name
       ignore_missing: true
   - append:
+      tag: append_event_outcome_d362c49a
       field: event.outcome
       value:
         - success
       allow_duplicates: false
       if: ctx.teleport?.audit?.success == true
   - remove:
+      tag: remove_teleport_audit_success_fc1fd2b1
       field: teleport.audit.success
       if: ctx.teleport?.audit?.success == true
   - append:
+      tag: append_event_outcome_27d65d99
       field: event.outcome
       value:
         - failure
       allow_duplicates: false
       if: ctx.teleport?.audit?.success == false
   - remove:
+      tag: remove_teleport_audit_success_906b9cab
       field: teleport.audit.success
       if: ctx.teleport?.audit?.success == false
   - rename:
+      tag: rename_teleport_audit_message_to_message_1be12ee9
       field: teleport.audit.message
       target_field: message
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_ppid_to_process_parent_pid_ba1ad992
       field: teleport.audit.ppid
       target_field: process.parent.pid
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_path_to_process_executable_1b42ebb1
       field: teleport.audit.path
       target_field: process.executable
       if: ctx.event.action.startsWith('session.')
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_argv_to_process_args_13fa012a
       field: teleport.audit.argv
       target_field: process.args
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_return_code_to_process_exit_code_90be0e30
       field: teleport.audit.return_code
       target_field: process.exit_code
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_flags_to_process_flags_42670d8d
       field: teleport.audit.flags
       target_field: process.flags
       ignore_missing: true
   # Network metadata
   # See teleport.audit.network group for field definitions.
   - rename:
+      tag: rename_teleport_audit_src_addr_to_source_address_53b7165b
       field: teleport.audit.src_addr
       target_field: source.address
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_dst_addr_to_destination_address_b6ddae10
       field: teleport.audit.dst_addr
       target_field: destination.address
       ignore_missing: true
   - convert:
+      tag: convert_teleport_audit_dst_port_fdac74fe
       field: teleport.audit.dst_port
       type: long
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_dst_port_to_destination_port_ce3161d4
       field: teleport.audit.dst_port
       target_field: destination.port
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_version_to_teleport_audit_network_tcp_version_3099ec42
       field: teleport.audit.version
       target_field: teleport.audit.network.tcp_version
       ignore_missing: true
   - set:
+      tag: set_network_type_b422f78c
       field: network.type
       value: ipv4
       if: ctx.teleport?.audit?.network?.tcp_version == 4
   - set:
+      tag: set_network_type_7667e57f
       field: network.type
       value: ipv6
       if: ctx.teleport?.audit?.network?.tcp_version == 6
   - remove:
+      tag: remove_teleport_audit_network_tcp_version_ea5e85b4
       field: teleport.audit.network.tcp_version
-      if:  ctx.teleport?.audit?.network?.tcp_version == 4 ||  ctx.teleport?.audit?.network?.tcp_version == 6
+      if: ctx.teleport?.audit?.network?.tcp_version == 4 ||  ctx.teleport?.audit?.network?.tcp_version == 6
   - convert:
+      tag: convert_teleport_audit_network_tcp_version_79409308
       field: teleport.audit.network.tcp_version
       type: string
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_network_tcp_version_to_network_type_bc8c7dee
       field: teleport.audit.network.tcp_version
       target_field: network.type
       ignore_missing: true
   - set:
+      tag: set_teleport_audit_network_operation_93d9f2ec
       field: teleport.audit.network.operation
       value: connect
       if: ctx?.teleport?.audit?.operation == 0
   - set:
+      tag: set_teleport_audit_network_operation_dffc2157
       field: teleport.audit.network.operation
       value: send
       if: ctx?.teleport?.audit?.operation == 1
   - remove:
+      tag: remove_teleport_audit_operation_850f2e6e
       field: teleport.audit.operation
       ignore_missing: true
   - set:
+      tag: set_teleport_audit_network_action_2315f5ff
       field: teleport.audit.network.action
       value: observed
       if: ctx?.audit?.working_directory == null && ctx?.teleport?.audit?.action == 0
   - set:
+      tag: set_teleport_audit_network_action_fad9179f
       field: teleport.audit.network.action
       value: denied
       if: ctx?.audit?.working_directory == null && ctx?.teleport?.audit?.action == 1
   - remove:
+      tag: remove_teleport_audit_action_05109e0a
       field: teleport.audit.action
       if: ctx?.teleport?.audit?.network?.action != null
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_tx_to_source_bytes_33b2d748
       field: teleport.audit.tx
       target_field: source.bytes
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_rx_to_destination_bytes_382edfb3
       field: teleport.audit.rx
       target_field: destination.bytes
       ignore_missing: true
   # Resource metadata
   # See teleport.audit.resource group for field definitions.
   - rename:
+      tag: rename_teleport_audit_expires_to_teleport_audit_resource_expires_e18fd1e2
       field: teleport.audit.expires
       target_field: teleport.audit.resource.expires
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_updated_by_to_teleport_audit_resource_updated_by_8ede700d
       field: teleport.audit.updated_by
       target_field: teleport.audit.resource.updated_by
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_resource_updated_by_to_user_name_5a59fc2a
       field: teleport.audit.resource.updated_by
       target_field: user.name
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_teleport_audit_ttl_to_teleport_audit_resource_ttl_8acfbb42
       field: teleport.audit.ttl
       target_field: teleport.audit.resource.ttl
       ignore_missing: true
   # User login and MFA challenge metadata
   # See teleport.audit.login group for field definitions.
   - rename:
+      tag: rename_teleport_audit_method_to_teleport_audit_login_method_8c7e0d68
       field: teleport.audit.method
       target_field: teleport.audit.login.method
       if: ctx.event.action == 'user.login'
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_attributes_to_teleport_audit_login_identity_attributes_ec4eed0c
       field: teleport.audit.attributes
       target_field: teleport.audit.login.identity_attributes
       if: ctx.event.action == 'user.login'
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_mfa_device_mfa_device_name_to_teleport_audit_mfa_device_name_a9207f07
       field: teleport.audit.mfa_device.mfa_device_name
       target_field: teleport.audit.mfa_device.name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_mfa_device_mfa_device_type_to_teleport_audit_mfa_device_type_cb363f50
       field: teleport.audit.mfa_device.mfa_device_type
       target_field: teleport.audit.mfa_device.type
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_mfa_device_mfa_device_uuid_to_teleport_audit_mfa_device_uuid_b2c95d36
       field: teleport.audit.mfa_device.mfa_device_uuid
       target_field: teleport.audit.mfa_device.uuid
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_applied_login_rules_to_teleport_audit_login_applied_rules_73e7f8eb
       field: teleport.audit.applied_login_rules
       target_field: teleport.audit.login.applied_rules
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_challenge_scope_to_teleport_audit_login_challenge_scope_0f69526f
       field: teleport.audit.challenge_scope
       target_field: teleport.audit.login.challenge_scope
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_challenge_allow_reuse_to_teleport_audit_login_challenge_allow_reuse_2b3aa4ab
       field: teleport.audit.challenge_allow_reuse
       target_field: teleport.audit.login.challenge_allow_reuse
       ignore_missing: true
   # UserCreate is emitted when the user is created or upserted.
   # See teleport.audit.user group for field definitions.
   - rename:
+      tag: rename_teleport_audit_connector_to_teleport_audit_user_connector_3a4e0368
       field: teleport.audit.connector
       target_field: teleport.audit.user.connector
       ignore_missing: true
   # Access request creation and update metadata
   # See teleport.audit.access_request group for field definitions.
   - rename:
+      tag: rename_teleport_audit_roles_to_teleport_audit_access_request_roles_50989f73
       field: teleport.audit.roles
       target_field: teleport.audit.access_request.roles
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_id_to_teleport_audit_access_request_id_1f79c2cc
       field: teleport.audit.id
       target_field: teleport.audit.access_request.id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_state_to_teleport_audit_access_request_state_769286f5
       field: teleport.audit.state
       target_field: teleport.audit.access_request.state
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_delegator_to_teleport_audit_access_request_delegator_150426c8
       field: teleport.audit.delegator
       target_field: teleport.audit.access_request.delegator
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_annotations_to_teleport_audit_access_request_annotations_f860f7f9
       field: teleport.audit.annotations
       target_field: teleport.audit.access_request.annotations
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_reviewer_to_teleport_audit_access_request_reviewer_d52564f2
       field: teleport.audit.reviewer
       target_field: teleport.audit.access_request.reviewer
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_proposed_state_to_teleport_audit_access_request_proposed_state_41c515d2
       field: teleport.audit.proposed_state
       target_field: teleport.audit.access_request.proposed_state
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_resource_ids_to_teleport_audit_access_request_resource_ids_10461271
       field: teleport.audit.resource_ids
       target_field: teleport.audit.access_request.resource_ids
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_max_duration_to_teleport_audit_access_request_max_duration_e23036e3
       field: teleport.audit.max_duration
       target_field: teleport.audit.access_request.max_duration
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_promoted_access_list_name_to_teleport_audit_access_request_promoted_access_list_name_d36949e4
       field: teleport.audit.promoted_access_list_name
       target_field: teleport.audit.access_request.promoted_access_list_name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_assume_start_time_to_teleport_audit_access_request_assume_start_time_aab85c5c
       field: teleport.audit.assume_start_time
       target_field: teleport.audit.access_request.assume_start_time
       ignore_missing: true
   # CommandMetadata specifies common command fields
   # All of these fields are mapped to ECS fields.
   - rename:
+      tag: rename_teleport_audit_command_to_process_command_line_b8b04c22
       field: teleport.audit.command
       target_field: process.command_line
       ignore_missing: true
   - convert:
+      tag: convert_teleport_audit_exitCode_d84556f3
       field: teleport.audit.exitCode
       type: long
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_teleport_audit_exitCode_to_process_exit_code_531dce8e
       field: teleport.audit.exitCode
       target_field: process.exit_code
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_exitError_to_process_io_text_32372148
       field: teleport.audit.exitError
       target_field: process.io.text
       ignore_missing: true
@@ -682,11 +832,13 @@ processors:
   # SCP is emitted when data transfer has occurred between server and client
   # See teleport.audit.scp group for field definitions.
   - rename:
+      tag: rename_teleport_audit_path_to_file_path_a7211a2d
       field: teleport.audit.path
       target_field: file.path
       if: ctx.event.action == 'scp'
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_action_to_teleport_audit_scp_action_6160688b
       field: teleport.audit.action
       target_field: teleport.audit.scp.action
       if: ctx.event.action == 'scp'
@@ -695,112 +847,139 @@ processors:
   # SFTP file operations metadata
   # See teleport.audit.sftp group for field definitions.
   - rename:
+      tag: rename_teleport_audit_working_directory_to_process_working_directory_54662344
       field: teleport.audit.working_directory
       target_field: process.working_directory
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_path_to_file_path_41afde0f
       field: teleport.audit.path
       target_field: file.path
       if: ctx.event.action == 'sftp'
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_target_path_to_teleport_audit_sftp_target_path_e55334cd
       field: teleport.audit.target_path
       target_field: teleport.audit.sftp.target_path
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_attributes_to_teleport_audit_sftp_attributes_b73936b5
       field: teleport.audit.attributes
       target_field: teleport.audit.sftp.attributes
       if: ctx.event.action == 'sftp'
       ignore_missing: true
   - set:
+      tag: set_teleport_audit_sftp_action_fe56ac1a
       field: teleport.audit.sftp.action
       value: ['INVALID']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 0'
   - set:
+      tag: set_teleport_audit_sftp_action_fd57f5d1
       field: teleport.audit.sftp.action
       value: ['OPEN']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 1'
   - set:
+      tag: set_teleport_audit_sftp_action_a0face5f
       field: teleport.audit.sftp.action
       value: ['CLOSE']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 2'
   - set:
+      tag: set_teleport_audit_sftp_action_962ea3b1
       field: teleport.audit.sftp.action
       value: ['READ']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 3'
   - set:
+      tag: set_teleport_audit_sftp_action_63e2e71e
       field: teleport.audit.sftp.action
       value: ['WRITE']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 4'
   - set:
+      tag: set_teleport_audit_sftp_action_6232135d
       field: teleport.audit.sftp.action
       value: ['LSTAT']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 5'
   - set:
+      tag: set_teleport_audit_sftp_action_ff5d27e9
       field: teleport.audit.sftp.action
       value: ['FSTAT']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 6'
   - set:
+      tag: set_teleport_audit_sftp_action_ecd7cc4b
       field: teleport.audit.sftp.action
       value: ['SETSTAT']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 7'
   - set:
+      tag: set_teleport_audit_sftp_action_f2c40597
       field: teleport.audit.sftp.action
       value: ['FSETSTAT']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 8'
   - set:
+      tag: set_teleport_audit_sftp_action_18c561e3
       field: teleport.audit.sftp.action
       value: ['OPENDIR']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 9'
   - set:
+      tag: set_teleport_audit_sftp_action_aa7003bf
       field: teleport.audit.sftp.action
       value: ['READDIR']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 10'
   - set:
+      tag: set_teleport_audit_sftp_action_2e293ca2
       field: teleport.audit.sftp.action
       value: ['REMOVE']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 11'
   - set:
+      tag: set_teleport_audit_sftp_action_81d90d4e
       field: teleport.audit.sftp.action
       value: ['MKDIR']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 12'
   - set:
+      tag: set_teleport_audit_sftp_action_6f0beb77
       field: teleport.audit.sftp.action
       value: ['RMDIR']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 13'
   - set:
+      tag: set_teleport_audit_sftp_action_da9a1ce2
       field: teleport.audit.sftp.action
       value: ['REALPATH']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 14'
   - set:
+      tag: set_teleport_audit_sftp_action_0fc83aa0
       field: teleport.audit.sftp.action
       value: ['STAT']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 15'
   - set:
+      tag: set_teleport_audit_sftp_action_08973b9e
       field: teleport.audit.sftp.action
       value: ['RENAME']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 16'
   - set:
+      tag: set_teleport_audit_sftp_action_e41d444f
       field: teleport.audit.sftp.action
       value: ['READLINK']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 17'
   - set:
+      tag: set_teleport_audit_sftp_action_eecbe408
       field: teleport.audit.sftp.action
       value: ['SYMLINK']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 18'
   - set:
+      tag: set_teleport_audit_sftp_action_14f6eee2
       field: teleport.audit.sftp.action
       value: ['LINK']
       if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 19'
   - remove:
+      tag: remove_teleport_audit_action_503b6f4d
       field: teleport.audit.action
       if: 'ctx.event.action == "sftp" && ctx.event.action == "sftp" && ctx.teleport?.audit?.sftp?.action != null'
   - convert:
+      tag: convert_teleport_audit_action_c9bcd267
       field: teleport.audit.action
       type: string
       ignore_missing: true
       if: 'ctx.event.action == "sftp"'
   - rename:
+      tag: rename_teleport_audit_action_to_teleport_audit_sftp_action_7fb6dc7e
       field: teleport.audit.action
       target_field: teleport.audit.sftp.action
       ignore_missing: true
@@ -808,134 +987,163 @@ processors:
   # ClientDisconnect is emitted when client is disconnected
   # by the server due to inactivity or any other reason
   - rename:
+      tag: rename_teleport_audit_reason_to_event_reason_279c3689
       field: teleport.audit.reason
       target_field: event.reason
       ignore_missing: true
   # Kubernetes API request event metadata
   # See teleport.audit.kubernetes.resource group for field definitions.
   - rename:
+      tag: rename_teleport_audit_request_path_to_url_path_8bbda286
       field: teleport.audit.request_path
       target_field: url.path
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_verb_to_http_request_method_44550c0f
       field: teleport.audit.verb
       target_field: http.request.method
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_resource_api_group_to_orchestrator_api_version_75be8687
       field: teleport.audit.resource_api_group
       target_field: orchestrator.api_version
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_resource_namespace_to_orchestrator_namespace_03a6a50b
       field: teleport.audit.resource_namespace
       target_field: orchestrator.namespace
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_resource_kind_to_orchestrator_resource_type_3896411b
       field: teleport.audit.resource_kind
       target_field: orchestrator.resource.type
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_resource_name_to_orchestrator_resource_name_f2bb7917
       field: teleport.audit.resource_name
       target_field: orchestrator.resource.name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_response_code_to_http_response_status_code_94175f2c
       field: teleport.audit.response_code
       target_field: http.response.status_code
       ignore_missing: true
   # Common application information
   # See teleport.audit.app group for field definitions.
   - rename:
+      tag: rename_teleport_audit_app_uri_to_teleport_audit_app_uri_fc667779
       field: teleport.audit.app_uri
       target_field: teleport.audit.app.uri
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_app_public_addr_to_teleport_audit_app_public_address_4b2a7d47
       field: teleport.audit.app_public_addr
       target_field: teleport.audit.app.public_address
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_public_addr_to_teleport_audit_app_public_address_216bc9c9
       field: teleport.audit.public_addr
       target_field: teleport.audit.app.public_address
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_teleport_audit_app_labels_to_teleport_audit_app_labels_55206bd7
       field: teleport.audit.app_labels
       target_field: teleport.audit.app.labels
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_app_name_to_teleport_audit_app_name_1912a493
       field: teleport.audit.app_name
       target_field: teleport.audit.app.name
       ignore_missing: true
   # App session related metadata
   # See teleport.audit.app group for field definitions.
   - rename:
+      tag: rename_teleport_audit_session_chunk_id_to_teleport_audit_app_session_chunk_id_ac91b78f
       field: teleport.audit.session_chunk_id
       target_field: teleport.audit.app.session.chunk_id
       ignore_missing: true
   # AWS related metadata
   - set:
+      tag: set_cloud_provider_85b1857c
       field: cloud.provider
       value: aws
       if: ctx._conf?.want_provider_cloud == true && ctx.teleport?.audit?.aws_region != null
   - rename:
+      tag: rename_teleport_audit_aws_region_to_cloud_region_8822763d
       field: teleport.audit.aws_region
       target_field: cloud.region
       ignore_missing: true
       if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.region == null
   - remove:
+      tag: remove_teleport_audit_aws_region_c5b69c01
       field: teleport.audit.aws_region
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_aws_service_to_cloud_service_name_efddb2b9
       field: teleport.audit.aws_service
       target_field: cloud.service.name
       ignore_missing: true
       if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.service?.name == null
   - remove:
+      tag: remove_teleport_audit_aws_service_859e19c1
       field: teleport.audit.aws_service
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_aws_host_to_cloud_instance_id_cea3a29a
       field: teleport.audit.aws_host
       target_field: cloud.instance.id
       ignore_missing: true
       if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.instance?.id == null
   - remove:
+      tag: remove_teleport_audit_aws_host_59bacf54
       field: teleport.audit.aws_host
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_aws_assumed_role_to_teleport_audit_app_aws_assumed_role_69e55942
       field: teleport.audit.aws_assumed_role
       target_field: teleport.audit.app.aws.assumed_role
       ignore_missing: true
   # DatabaseMetadata contains common database information
   # See teleport.audit.database group for field definitions.
   - rename:
+      tag: rename_teleport_audit_db_service_to_service_name_f91036dd
       field: teleport.audit.db_service
       target_field: service.name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_db_protocol_to_teleport_audit_database_protocol_99c9ad9c
       field: teleport.audit.db_protocol
       target_field: teleport.audit.database.protocol
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_uri_to_teleport_audit_db_uri_ef0ddc2e
       description: 'Fix an issue where "uri" is present in this event.'
       field: teleport.audit.uri
       target_field: teleport.audit.db_uri
       ignore_missing: true
       if: ctx.event.action.startsWith('db.')
   - rename:
+      tag: rename_teleport_audit_db_uri_to_teleport_audit_database_uri_fc16b1ae
       field: teleport.audit.db_uri
       target_field: teleport.audit.database.uri
       ignore_missing: true
   - grok:
+      tag: grok_teleport_audit_database_uri_d6e21b06
       field: teleport.audit.database.uri
       ignore_missing: true
       ignore_failure: true
       patterns:
         - '^(%{IPORHOST:url.domain})(:%{POSINT:url.port:long})?$'
-      if:  ctx.teleport.audit.database?.uri != null && ctx.url == null
+      if: ctx.teleport.audit.database?.uri != null && ctx.url == null
   - rename:
+      tag: rename_teleport_audit_database_uri_to_url_original_40678320
       field: teleport.audit.database.uri
       target_field: url.original
       ignore_missing: true
       if: ctx.teleport?.audit?.database?.uri != null && ctx.url != null
   - uri_parts:
+      tag: uri_parts_teleport_audit_database_uri_to_url_c032dd16
       field: teleport.audit.database.uri
       target_field: url
       ignore_missing: true
@@ -944,305 +1152,374 @@ processors:
       remove_if_successful: true
       if: ctx.url == null
   - remove:
-      tag: database_uri_remove_on_failure
+      tag: database_uri_remove_on_failure_836adec7
       field: teleport.audit.database.uri
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_db_name_to_teleport_audit_database_name_79a03075
       field: teleport.audit.db_name
       target_field: teleport.audit.database.name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_db_user_to_teleport_audit_database_user_0629a3af
       field: teleport.audit.db_user
       target_field: teleport.audit.database.user
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_db_labels_to_teleport_audit_database_labels_67c1fba5
       field: teleport.audit.db_labels
       target_field: teleport.audit.database.labels
       ignore_missing: true
   - set:
+      tag: set_cloud_provider_85d853aa
       field: cloud.provider
       value: aws
       if: ctx.teleport?.audit?.db_aws_region != null
   - rename:
+      tag: rename_teleport_audit_db_aws_region_to_cloud_region_21a6c0f0
       field: teleport.audit.db_aws_region
       target_field: cloud.region
       ignore_missing: true
       if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.region == null
   - remove:
+      tag: remove_teleport_audit_db_aws_region_a6860ab4
       field: teleport.audit.db_aws_region
       ignore_missing: true
   - set:
+      tag: set_cloud_provider_39ccdf19
       field: cloud.provider
       value: aws
       if: ctx._conf?.want_provider_cloud == true && ctx.teleport?.audit?.redshift_cluster_id != null
   - rename:
+      tag: rename_teleport_audit_db_aws_redshift_cluster_id_to_teleport_audit_database_aws_redshift_cluster_id_55fbf616
       field: teleport.audit.db_aws_redshift_cluster_id
       target_field: teleport.audit.database.aws.redshift_cluster_id
       ignore_missing: true
   - set:
+      tag: set_cloud_provider_4c6926f0
       field: cloud.provider
       value: gcp
       if: ctx._conf?.want_provider_cloud == true && ctx.teleport?.audit?.db_gcp_project_id != null
   - rename:
+      tag: rename_teleport_audit_db_gcp_project_id_to_cloud_project_id_411448e6
       field: teleport.audit.db_gcp_project_id
       target_field: cloud.project.id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_db_gcp_instance_id_to_cloud_instance_id_a6d0905a
       field: teleport.audit.db_gcp_instance_id
       target_field: cloud.instance.id
       ignore_missing: true
       if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.instance?.id == null
   - remove:
+      tag: remove_teleport_audit_db_gcp_instance_id_283e10a9
       field: teleport.audit.db_gcp_instance_id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_db_roles_to_teleport_audit_database_roles_35a0ac14
       field: teleport.audit.db_roles
       target_field: teleport.audit.database.roles
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_db_type_to_service_type_6f7c3477
       field: teleport.audit.db_type
       target_field: service.type
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_db_origin_to_teleport_audit_database_origin_1ec1a2da
       field: teleport.audit.db_origin
       target_field: teleport.audit.database.origin
       ignore_missing: true
   # DatabaseSessionQuery is emitted when a user executes a database query.
   - rename:
+      tag: rename_teleport_audit_db_query_to_teleport_audit_database_query_8b6c32b5
       field: teleport.audit.db_query
       target_field: teleport.audit.database.query
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_db_query_parameters_to_teleport_audit_database_query_parameters_9b25e8a0
       field: teleport.audit.db_query_parameters
       target_field: teleport.audit.database.query_parameters
       ignore_missing: true
   # DatabasePermissionUpdate is emitted when a user database permissions are updated.
   - rename:
+      tag: rename_teleport_audit_permission_summary_to_teleport_audit_database_permission_summary_0f1808c7
       field: teleport.audit.permission_summary
       target_field: teleport.audit.database.permission_summary
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_affected_object_counts_to_teleport_audit_database_affected_object_counts_f919a56d
       field: teleport.audit.affected_object_counts
       target_field: teleport.audit.database.affected_object_counts
       ignore_missing: true
   # DatabaseUserCreate is emitted when a database user is provisioned.
   - rename:
+      tag: rename_teleport_audit_username_to_teleport_audit_database_user_change_username_2caeb67d
       field: teleport.audit.username
       target_field: teleport.audit.database.user_change.username
       ignore_missing: true
   # DatabaseUserDeactivate is emitted when a database user is disabled or deleted.
   - rename:
+      tag: rename_teleport_audit_delete_to_teleport_audit_database_user_change_is_deleted_358eb5bd
       field: teleport.audit.delete
       target_field: teleport.audit.database.user_change.is_deleted
       ignore_missing: true
   # Postgres related metadata
   # See teleport.audit.database group for field definitions.
   - rename:
+      tag: rename_teleport_audit_statement_name_to_teleport_audit_database_postgres_statement_name_da0f1cdf
       field: teleport.audit.statement_name
       target_field: teleport.audit.database.postgres.statement_name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_query_to_teleport_audit_database_query_6e405ffe
       field: teleport.audit.query
       target_field: teleport.audit.database.query
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_portal_name_to_teleport_audit_database_postgres_portal_name_b1b2f7a8
       field: teleport.audit.portal_name
       target_field: teleport.audit.database.postgres.portal_name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_parameters_to_teleport_audit_database_query_parameters_0c4f654b
       field: teleport.audit.parameters
       target_field: teleport.audit.database.query_parameters
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_function_oid_to_teleport_audit_database_postgres_function_oid_e21c319b
       field: teleport.audit.function_oid
       target_field: teleport.audit.database.postgres.function_oid
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_function_args_to_teleport_audit_database_postgres_function_args_5f082904
       field: teleport.audit.function_args
       target_field: teleport.audit.database.postgres.function_args
       ignore_missing: true
   # WindowsDesktopSessionStart is emitted when a user connects to a desktop.
   # See teleport.audit.desktop group for field definitions.
   - rename:
+      tag: rename_teleport_audit_windows_desktop_service_to_teleport_audit_desktop_windows_desktop_service_b4f60f21
       field: teleport.audit.windows_desktop_service
       target_field: teleport.audit.desktop.windows_desktop_service
       ignore_missing: true
   - grok:
+      tag: grok_teleport_audit_desktop_addr_dfa20825
       field: teleport.audit.desktop_addr
       ignore_missing: true
       ignore_failure: true
       patterns:
         - '^(%{IPORHOST:server.address}|\[%{IP:server.ip}\])(:%{POSINT:server.port:long})?$'
   - remove:
+      tag: remove_teleport_audit_desktop_addr_95544233
       field: teleport.audit.desktop_addr
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_windows_domain_to_server_user_domain_9dea2359
       field: teleport.audit.windows_domain
       target_field: server.user.domain
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_windows_user_to_server_user_name_acbc7937
       field: teleport.audit.windows_user
       target_field: server.user.name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_desktop_labels_to_teleport_audit_desktop_labels_6ef319c7
       field: teleport.audit.desktop_labels
       target_field: teleport.audit.desktop.labels
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_desktop_name_to_teleport_audit_desktop_name_9314281b
       field: teleport.audit.desktop_name
       target_field: teleport.audit.desktop.name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_allow_user_creation_to_teleport_audit_desktop_allow_user_creation_d9766d44
       field: teleport.audit.allow_user_creation
       target_field: teleport.audit.desktop.allow_user_creation
       ignore_missing: true
   # MFADeviceMetadata is a common MFA device metadata.
   # See teleport.audit.mfa-device group for field definitions.
   - rename:
+      tag: rename_teleport_audit_mfa_device_uuid_to_teleport_audit_mfa_device_uuid_24a88d7d
       field: teleport.audit.mfa_device_uuid
       target_field: teleport.audit.mfa_device.uuid
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_mfa_device_name_to_teleport_audit_mfa_device_name_5b6bf9e1
       field: teleport.audit.mfa_device_name
       target_field: teleport.audit.mfa_device.name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_mfa_device_type_to_teleport_audit_mfa_device_type_357b7ac7
       field: teleport.audit.mfa_device_type
       target_field: teleport.audit.mfa_device.type
       ignore_missing: true
   # WindowsDesktopSessionEnd is emitted when a user ends a Windows desktop session.
   - rename:
+      tag: rename_teleport_audit_recorded_to_teleport_audit_desktop_is_recorded_ba13a1f6
       field: teleport.audit.recorded
       target_field: teleport.audit.desktop.is_recorded
       ignore_missing: true
   # Certificate issuance metadata
   # See teleport.audit.certificate group for field definitions.
   - rename:
+      tag: rename_teleport_audit_cert_type_to_teleport_audit_certificate_type_083d9078
       field: teleport.audit.cert_type
       target_field: teleport.audit.certificate.type
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_identity_to_teleport_audit_certificate_identity_e1fd8f17
       field: teleport.audit.identity
       target_field: teleport.audit.certificate.identity
       ignore_missing: true
   # Join event metadata
   # See teleport.audit.join group for field definitions.
   - rename:
+      tag: rename_teleport_audit_bot_name_to_teleport_audit_join_bot_name_c64d9a71
       field: teleport.audit.bot_name
       target_field: teleport.audit.join.bot_name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_method_to_teleport_audit_join_method_da511c52
       field: teleport.audit.method
       target_field: teleport.audit.join.method
       ignore_missing: true
       if: 'ctx.event.action?.endsWith(".join")'
   - rename:
+      tag: rename_teleport_audit_token_name_to_teleport_audit_join_token_name_4dab64b3
       field: teleport.audit.token_name
       target_field: teleport.audit.join.token_name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_attributes_to_teleport_audit_join_attributes_104373f6
       field: teleport.audit.attributes
       target_field: teleport.audit.join.attributes
       if: ctx.event.action.endsWith('.join')
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_user_name_to_teleport_audit_join_user_name_0832202f
       field: teleport.audit.user_name
       target_field: teleport.audit.join.user_name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_host_id_to_host_id_0e5ce00e
       field: teleport.audit.host_id
       target_field: host.id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_node_name_to_host_name_b7a15dd1
       field: teleport.audit.node_name
       target_field: host.name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_role_to_teleport_audit_join_role_a3a78cd6
       field: teleport.audit.role
       target_field: teleport.audit.join.role
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_token_expires_to_teleport_audit_join_token_expires_60b109cb
       field: teleport.audit.token_expires
       target_field: teleport.audit.join.token_expires
       ignore_missing: true
   # Unknown is a fallback event used when we don't recognize an event from the backend.
   # See teleport.audit.unknown group for field definitions.
   - rename:
+      tag: rename_teleport_audit_metadata_to_teleport_audit_unknown_metadata_f731e26b
       field: teleport.audit.metadata
       target_field: teleport.audit.unknown.metadata
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_unknown_event_to_teleport_audit_unknown_event_type_afe5a7be
       field: teleport.audit.unknown_event
       target_field: teleport.audit.unknown.event_type
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_unknown_code_to_teleport_audit_unknown_code_5dd0fc05
       field: teleport.audit.unknown_code
       target_field: teleport.audit.unknown.code
       ignore_missing: true
   - json:
+      tag: json_teleport_audit_data_to_teleport_audit_unknown_data_64dbc49b
       field: teleport.audit.data
       target_field: teleport.audit.unknown.data
       ignore_failure: true
   - remove:
+      tag: remove_teleport_audit_data_ed9c9451
       field: teleport.audit.data
       ignore_missing: true
   # DeviceMetadata groups device information for events.
   # See teleport.audit.device group for field definitions.
   - rename:
+      tag: rename_teleport_audit_device_id_to_teleport_audit_device_device_id_81786c08
       field: teleport.audit.device_id
       target_field: teleport.audit.device.device_id
       ignore_missing: true
   - set:
+      tag: set_teleport_audit_device_os_type_c7b07064
       field: teleport.audit.device.os_type
       value: 'UNSPECIFIED'
       if: 'ctx.teleport?.audit?.device?.os_type == 0'
   - set:
+      tag: set_teleport_audit_device_os_type_61ccd356
       field: teleport.audit.device.os_type
       value: 'LINUX'
       if: 'ctx.teleport?.audit?.device?.os_type == 1'
   - set:
+      tag: set_teleport_audit_device_os_type_97355984
       field: teleport.audit.device.os_type
       value: 'MACOS'
       if: 'ctx.teleport?.audit?.device?.os_type == 2'
   - set:
+      tag: set_teleport_audit_device_os_type_b7df3dbf
       field: teleport.audit.device.os_type
       value: 'WINDOWS'
       if: 'ctx.teleport?.audit?.device?.os_type == 3'
   - remove:
+      tag: remove_teleport_audit_os_type_d98428de
       field: teleport.audit.os_type
       ignore_missing: true
       if: 'ctx.teleport?.audit?.device?.os_type != null'
   - convert:
+      tag: convert_teleport_audit_os_type_086239dc
       field: teleport.audit.os_type
       type: string
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_os_type_to_teleport_audit_device_os_type_d9536d92
       field: teleport.audit.os_type
       target_field: teleport.audit.device.os_type
       ignore_missing: true
       if: ctx.teleport?.audit?.device?.os_type == null
   - rename:
+      tag: rename_teleport_audit_asset_tag_to_teleport_audit_device_asset_tag_e964799d
       field: teleport.audit.asset_tag
       target_field: teleport.audit.device.asset_tag
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_credential_id_to_teleport_audit_device_credential_id_806c545a
       field: teleport.audit.credential_id
       target_field: teleport.audit.device.credential_id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_device_origin_to_teleport_audit_device_origin_37ca29ff
       field: teleport.audit.device_origin
       target_field: teleport.audit.device.origin
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_web_authentication_to_teleport_audit_device_web_authentication_e0de5012
       field: teleport.audit.web_authentication
       target_field: teleport.audit.device.web_authentication
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_web_session_id_to_teleport_audit_device_web_session_id_091a0be1
       field: teleport.audit.web_session_id
       target_field: teleport.audit.device.web_session_id
       ignore_missing: true
   # SessionUpload is a session upload
   - uri_parts:
+      tag: uri_parts_teleport_audit_url_to_url_9cc96109
       field: teleport.audit.url
       target_field: url
       ignore_missing: true
@@ -1251,16 +1528,19 @@ processors:
       remove_if_successful: true
       if: ctx.url == null
   - rename:
+      tag: rename_teleport_audit_url_to_url_original_9747411f
       field: teleport.audit.url
       target_field: url.original
       ignore_missing: true
   # Identity is the identity associated with the certificate, as interpreted by Teleport.
   # See teleport.audit.certificate group for field definitions.
   - rename:
+      tag: rename_teleport_audit_certificate_identity_mfa_device_uuid_to_teleport_audit_mfa_device_uuid_a5a48760
       field: teleport.audit.certificate.identity.mfa_device_uuid
       target_field: teleport.audit.mfa_device.uuid
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_certificate_identity_client_ip_to_client_ip_6d0fb5e0
       field: teleport.audit.certificate.identity.client_ip
       target_field: client.ip
       ignore_missing: true
@@ -1268,143 +1548,175 @@ processors:
   # AccessRequestResourceSearch is emitted when a user searches for resources as part of a search-based access request
   # See teleport.audit.access_request.resource_search group for field definitions.
   - rename:
+      tag: rename_teleport_audit_search_as_roles_to_teleport_audit_access_request_resource_search_search_as_roles_b8c26255
       field: teleport.audit.search_as_roles
       target_field: teleport.audit.access_request.resource_search.search_as_roles
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_resource_type_to_teleport_audit_access_request_resource_search_resource_type_275864e5
       field: teleport.audit.resource_type
       target_field: teleport.audit.access_request.resource_search.resource_type
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_labels_to_teleport_audit_access_request_resource_search_labels_e71c0839
       field: teleport.audit.labels
       target_field: teleport.audit.access_request.resource_search.labels
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_predicate_expression_to_teleport_audit_access_request_resource_search_predicate_expression_b6fb9f68
       field: teleport.audit.predicate_expression
       target_field: teleport.audit.access_request.resource_search.predicate_expression
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_search_keywords_to_teleport_audit_access_request_resource_search_search_keywords_6ec86be3
       field: teleport.audit.search_keywords
       target_field: teleport.audit.access_request.resource_search.search_keywords
       ignore_missing: true
   # MySQL related events
   # See teleport.audit.database.mysql group for field definitions.
   - rename:
+      tag: rename_teleport_audit_statement_id_to_teleport_audit_database_mysql_statement_id_7c0c83a5
       field: teleport.audit.statement_id
       target_field: teleport.audit.database.mysql.statement_id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_schema_name_to_teleport_audit_database_mysql_schema_name_ff8555fd
       field: teleport.audit.schema_name
       target_field: teleport.audit.database.mysql.schema_name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_process_id_to_teleport_audit_database_mysql_process_id_1b41e51d
       field: teleport.audit.process_id
       target_field: teleport.audit.database.mysql.process_id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_subcommand_to_teleport_audit_database_mysql_subcommand_c8157422
       field: teleport.audit.subcommand
       target_field: teleport.audit.database.mysql.subcommand
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_parameter_id_to_teleport_audit_database_mysql_parameter_id_7f5be009
       field: teleport.audit.parameter_id
       target_field: teleport.audit.database.mysql.parameter_id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_data_size_to_teleport_audit_database_mysql_data_size_ef91ebdf
       field: teleport.audit.data_size
       target_field: teleport.audit.database.mysql.data_size
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_rows_count_to_teleport_audit_database_mysql_rows_count_c01371fd
       field: teleport.audit.rows_count
       target_field: teleport.audit.database.mysql.rows_count
       ignore_missing: true
   # SQLServerRPCRequest is emitted when a user executes a MSSQL Server RPC command.
   - rename:
+      tag: rename_teleport_audit_proc_name_to_teleport_audit_database_proc_name_d38a2297
       field: teleport.audit.proc_name
       target_field: teleport.audit.database.proc_name
       ignore_missing: true
   # DatabaseSessionMalformedPacket is emitted when a database sends a malformed packet.
   - rename:
+      tag: rename_teleport_audit_payload_to_teleport_audit_database_payload_e9b50a37
       field: teleport.audit.payload
       target_field: teleport.audit.database.payload
       ignore_missing: true
   # Elasticsearch related events
   - rename:
+      tag: rename_teleport_audit_headers_to_http_request_headers_7313c94d
       field: teleport.audit.headers
       target_field: http.request.headers
       ignore_missing: true
   - set:
+      tag: set_teleport_audit_database_elasticsearch_category_0eee6a14
       field: teleport.audit.database.elasticsearch.category
       value: 'GENERAL'
       if: 'ctx.teleport?.audit?.category == 0 && ctx.event.action.contains(".session.elasticsearch")'
   - set:
+      tag: set_teleport_audit_database_elasticsearch_category_8041d800
       field: teleport.audit.database.elasticsearch.category
       value: 'SECURITY'
       if: 'ctx.teleport?.audit?.category == 1 && ctx.event.action.contains(".session.elasticsearch")'
   - set:
+      tag: set_teleport_audit_database_elasticsearch_category_b1f812fc
       field: teleport.audit.database.elasticsearch.category
       value: 'SEARCH'
       if: 'ctx.teleport?.audit?.category == 2 && ctx.event.action.contains(".session.elasticsearch")'
   - set:
+      tag: set_teleport_audit_database_elasticsearch_category_bac0075e
       field: teleport.audit.database.elasticsearch.category
       value: 'SQL'
       if: 'ctx.teleport?.audit?.category == 3 && ctx.event.action.contains(".session.elasticsearch")'
   - remove:
+      tag: remove_teleport_audit_category_13a115dc
       field: teleport.audit.category
       ignore_missing: true
       if: 'ctx.teleport?.audit?.database?.elasticsearch?.category != null && ctx.event.action.contains(".session.elasticsearch")'
   - convert:
+      tag: convert_teleport_audit_category_d143f824
       field: teleport.audit.category
       type: string
       ignore_missing: true
       if: 'ctx.event.action.contains(".session.elasticsearch")'
   - rename:
+      tag: rename_teleport_audit_category_to_teleport_audit_database_elasticsearch_category_1d703e09
       field: teleport.audit.category
       target_field: teleport.audit.database.elasticsearch.category
       if: 'ctx.event.action.contains(".session.elasticsearch")'
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_target_to_teleport_audit_database_elasticsearch_target_2d77e736
       field: teleport.audit.target
       target_field: teleport.audit.database.elasticsearch.target
       ignore_missing: true
       if: 'ctx.event.action.contains(".session.elasticsearch")'
   # OpenSearch related events
   - set:
+      tag: set_teleport_audit_database_opensearch_category_08558407
       field: teleport.audit.database.opensearch.category
       value: 'GENERAL'
       if: 'ctx.teleport?.audit?.category == 0 && ctx.event.action.contains(".session.opensearch")'
   - set:
+      tag: set_teleport_audit_database_opensearch_category_cc2784e1
       field: teleport.audit.database.opensearch.category
       value: 'SECURITY'
       if: 'ctx.teleport?.audit?.category == 1 && ctx.event.action.contains(".session.opensearch")'
   - set:
+      tag: set_teleport_audit_database_opensearch_category_f8e49680
       field: teleport.audit.database.opensearch.category
       value: 'SEARCH'
       if: 'ctx.teleport?.audit?.category == 2 && ctx.event.action.contains(".session.opensearch")'
   - set:
+      tag: set_teleport_audit_database_opensearch_category_decb5ffc
       field: teleport.audit.database.opensearch.category
       value: 'SQL'
       if: 'ctx.teleport?.audit?.category == 3 && ctx.event.action.contains(".session.opensearch")'
   - remove:
+      tag: remove_teleport_audit_category_5043212d
       field: teleport.audit.category
       ignore_missing: true
       if: 'ctx.teleport?.audit?.database?.opensearch?.category != null && ctx.event.action.contains(".session.opensearch")'
   - convert:
+      tag: convert_teleport_audit_category_71e9b01a
       field: teleport.audit.category
       type: string
       ignore_missing: true
       if: 'ctx.event.action.contains(".session.opensearch")'
   - rename:
+      tag: rename_teleport_audit_category_to_teleport_audit_database_opensearch_category_46bc2c75
       field: teleport.audit.category
       target_field: teleport.audit.database.opensearch.category
       if: 'ctx.event.action.contains(".session.opensearch")'
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_target_to_teleport_audit_database_opensearch_target_95cbe141
       field: teleport.audit.target
       target_field: teleport.audit.database.opensearch.target
       ignore_missing: true
       if: 'ctx.event.action.contains(".session.opensearch")'
   # DynamoDB related events
   - rename:
+      tag: rename_teleport_audit_target_to_teleport_audit_database_dynamodb_target_1d44abaf
       field: teleport.audit.target
       target_field: teleport.audit.database.dynamodb.target
       ignore_missing: true
@@ -1412,259 +1724,318 @@ processors:
   # UpgradeWindowStartMetadata contains common upgrade window information.
   # See upgradewindow.yml for field definitions.
   - rename:
+      tag: rename_teleport_audit_upgrade_window_start_to_teleport_audit_upgradewindow_start_7b3a41a9
       field: teleport.audit.upgrade_window_start
       target_field: teleport.audit.upgradewindow.start
       ignore_missing: true
   # SSMRun is emitted after an AWS SSM document completes execution.
   - set:
+      tag: set_cloud_provider_c2442485
       field: cloud.provider
       value: aws
       if: ctx._conf?.want_provider_cloud == true && ctx.teleport?.audit?.command_id != null
   - rename:
+      tag: rename_teleport_audit_command_id_to_teleport_audit_database_aws_ssm_run_command_id_6b2d09b9
       field: teleport.audit.command_id
       target_field: teleport.audit.database.aws.ssm_run.command_id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_instance_id_to_cloud_instance_id_fd26d7ac
       field: teleport.audit.instance_id
       target_field: cloud.instance.id
       ignore_missing: true
       if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.instance?.id == null
   - remove:
+      tag: remove_teleport_audit_instance_id_60fb8e18
       field: teleport.audit.instance_id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_exit_code_to_process_exit_code_8d501318
       field: teleport.audit.exit_code
       target_field: process.exit_code
       ignore_missing: true
   - set:
+      tag: set_event_outcome_da964286
       field: event.outcome
       value: 'success'
       if: 'ctx.teleport.audit.status == "Success"'
   - set:
+      tag: set_event_outcome_a77afe19
       field: event.outcome
       value: 'failure'
       if: 'ctx.teleport.audit.status == "Failure"'
   - remove:
+      tag: remove_teleport_audit_status_cdf26d82
       field: teleport.audit.status
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_account_id_to_cloud_account_id_7cb9759a
       field: teleport.audit.account_id
       target_field: cloud.account.id
       ignore_missing: true
       if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.account?.id == null
   - remove:
+      tag: remove_teleport_audit_account_id_5a5a75f6
       field: teleport.audit.account_id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_region_to_cloud_region_aa73bc40
       field: teleport.audit.region
       target_field: cloud.region
       ignore_missing: true
       ignore_failure: true
       if: ctx._conf?.want_provider_cloud == true && ctx.cloud?.region == null
   - remove:
+      tag: remove_teleport_audit_region_d58ddebe
       field: teleport.audit.region
       ignore_missing: true
   - remove:
+      tag: remove__conf_f834c49b
       field: _conf
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_stdout_to_teleport_audit_database_aws_ssm_run_stdout_c0f1ff68
       field: teleport.audit.stdout
       target_field: teleport.audit.database.aws.ssm_run.stdout
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_stderr_to_teleport_audit_database_aws_ssm_run_stderr_3a6fe6f6
       field: teleport.audit.stderr
       target_field: teleport.audit.database.aws.ssm_run.stderr
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_invocation_url_to_teleport_audit_database_aws_ssm_run_invocation_url_79163d89
       field: teleport.audit.invocation_url
       target_field: teleport.audit.database.aws.ssm_run.invocation_url
       ignore_missing: true
   # CassandraExecute is emitted when a Cassandra client executes a CQL statement.
   - rename:
+      tag: rename_teleport_audit_keyspace_to_teleport_audit_database_cassandra_keyspace_0689fbc1
       field: teleport.audit.keyspace
       target_field: teleport.audit.database.cassandra.keyspace
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_query_id_to_teleport_audit_database_cassandra_query_id_00698f2a
       field: teleport.audit.query_id
       target_field: teleport.audit.database.cassandra.query_id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_consistency_to_teleport_audit_database_cassandra_consistency_d0d280c5
       field: teleport.audit.consistency
       target_field: teleport.audit.database.cassandra.consistency
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_batch_type_to_teleport_audit_database_cassandra_batch_type_b32b1d5e
       field: teleport.audit.batch_type
       target_field: teleport.audit.database.cassandra.batch_type
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_children_to_teleport_audit_database_cassandra_children_183c6476
       field: teleport.audit.children
       target_field: teleport.audit.database.cassandra.children
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_event_types_to_teleport_audit_database_cassandra_event_types_b7940507
       field: teleport.audit.event_types
       target_field: teleport.audit.database.cassandra.event_types
       ignore_missing: true
   # AuditQueryRun is emitted when a user runs an audit query.
   - rename:
+      tag: rename_teleport_audit_name_to_teleport_audit_audit_query_name_90ed8bbd
       field: teleport.audit.name
       target_field: teleport.audit.audit_query.name
       ignore_missing: true
       if: ctx.event.action == 'secreports.audit.query.run'
   - rename:
+      tag: rename_teleport_audit_query_to_teleport_audit_audit_query_query_2f84fa63
       field: teleport.audit.query
       target_field: teleport.audit.audit_query.query
       ignore_missing: true
       if: ctx.event.action == 'secreports.audit.query.run'
   - rename:
+      tag: rename_teleport_audit_days_to_teleport_audit_audit_query_days_ac4fb442
       field: teleport.audit.days
       target_field: teleport.audit.audit_query.days
       ignore_missing: true
       if: ctx.event.action == 'secreports.audit.query.run'
   - rename:
+      tag: rename_teleport_audit_total_execution_time_in_millis_to_teleport_audit_audit_query_total_execution_time_in_millis_d952e96a
       field: teleport.audit.total_execution_time_in_millis
       target_field: teleport.audit.audit_query.total_execution_time_in_millis
       ignore_missing: true
       if: ctx.event.action == 'secreports.audit.query.run'
   - rename:
+      tag: rename_teleport_audit_data_scanned_in_bytes_to_teleport_audit_audit_query_data_scanned_in_bytes_64c27a23
       field: teleport.audit.data_scanned_in_bytes
       target_field: teleport.audit.audit_query.data_scanned_in_bytes
       ignore_missing: true
       if: ctx.event.action == 'secreports.audit.query.run'
   # SecurityReportRun is emitted when a user runs an audit query.
   - rename:
+      tag: rename_teleport_audit_name_to_teleport_audit_sec_report_name_4e1af786
       field: teleport.audit.name
       target_field: teleport.audit.sec_report.name
       ignore_missing: true
       if: ctx.event.action == 'secreports.report.run'
   - rename:
+      tag: rename_teleport_audit_version_to_teleport_audit_sec_report_version_5c23db80
       field: teleport.audit.version
       target_field: teleport.audit.sec_report.version
       ignore_missing: true
       if: ctx.event.action == 'secreports.report.run'
   - rename:
+      tag: rename_teleport_audit_total_execution_time_in_millis_to_teleport_audit_sec_report_total_execution_time_in_millis_9efb6cf1
       field: teleport.audit.total_execution_time_in_millis
       target_field: teleport.audit.sec_report.total_execution_time_in_millis
       ignore_missing: true
       if: ctx.event.action == 'secreports.report.run'
   - rename:
+      tag: rename_teleport_audit_total_data_scanned_in_bytes_to_teleport_audit_sec_report_total_data_scanned_in_bytes_5c194ecf
       field: teleport.audit.total_data_scanned_in_bytes
       target_field: teleport.audit.sec_report.total_data_scanned_in_bytes
       ignore_missing: true
       if: ctx.event.action == 'secreports.report.run'
   - rename:
+      tag: rename_teleport_audit_data_scanned_in_bytes_to_teleport_audit_sec_report_total_data_scanned_in_bytes_45a2acdf
       field: teleport.audit.data_scanned_in_bytes
       target_field: teleport.audit.sec_report.total_data_scanned_in_bytes
       ignore_missing: true
       ignore_failure: true
       if: ctx.event.action == 'secreports.report.run'
   - rename:
+      tag: rename_teleport_audit_sec_report_audit_queries_to_teleport_audit_audit_query_acfb0110
       field: teleport.audit.sec_report.audit_queries
       target_field: teleport.audit.audit_query
       ignore_missing: true
       if: ctx.event.action == 'secreports.report.run'
   # External Audit Storage configuration details.
   - rename:
+      tag: rename_teleport_audit_integration_name_to_teleport_audit_external_audit_storage_integration_name_00acb1b0
       field: teleport.audit.integration_name
       target_field: teleport.audit.external_audit_storage.integration_name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_session_recordings_uri_to_teleport_audit_external_audit_storage_session_recordings_uri_bda020e5
       field: teleport.audit.session_recordings_uri
       target_field: teleport.audit.external_audit_storage.session_recordings_uri
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_athena_workgroup_to_teleport_audit_external_audit_storage_athena_workgroup_5ff8e51f
       field: teleport.audit.athena_workgroup
       target_field: teleport.audit.external_audit_storage.athena_workgroup
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_glue_database_to_teleport_audit_external_audit_storage_glue_database_c38fbc90
       field: teleport.audit.glue_database
       target_field: teleport.audit.external_audit_storage.glue_database
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_glue_table_to_teleport_audit_external_audit_storage_glue_table_d258bfc2
       field: teleport.audit.glue_table
       target_field: teleport.audit.external_audit_storage.glue_table
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_audit_events_long_term_uri_to_teleport_audit_external_audit_storage_audit_events_long_term_uri_228ae0b1
       field: teleport.audit.audit_events_long_term_uri
       target_field: teleport.audit.external_audit_storage.audit_events_long_term_uri
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_athena_results_uri_to_teleport_audit_external_audit_storage_athena_results_uri_2ce4aff9
       field: teleport.audit.athena_results_uri
       target_field: teleport.audit.external_audit_storage.athena_results_uri
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_policy_name_to_teleport_audit_external_audit_storage_policy_name_8f8c84db
       field: teleport.audit.policy_name
       target_field: teleport.audit.external_audit_storage.policy_name
       ignore_missing: true
   # Okta user sync event details.
   - rename:
+      tag: rename_teleport_audit_org_url_to_teleport_audit_okta_org_url_5b008194
       field: teleport.audit.org_url
       target_field: teleport.audit.okta.org_url
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_app_id_to_teleport_audit_okta_app_id_097f2497
       field: teleport.audit.app_id
       target_field: teleport.audit.okta.app_id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_num_users_created_to_teleport_audit_okta_users_created_5502fb00
       field: teleport.audit.num_users_created
       target_field: teleport.audit.okta.users.created
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_num_users_deleted_to_teleport_audit_okta_users_deleted_9c354166
       field: teleport.audit.num_users_deleted
       target_field: teleport.audit.okta.users.deleted
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_num_users_modified_to_teleport_audit_okta_users_modified_133f6745
       field: teleport.audit.num_users_modified
       target_field: teleport.audit.okta.users.modified
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_num_users_total_to_teleport_audit_okta_users_total_8381c3dd
       field: teleport.audit.num_users_total
       target_field: teleport.audit.okta.users.total
       ignore_missing: true
   # SPIFFE SVID issued event details.
   - rename:
+      tag: rename_teleport_audit_spiffe_id_to_teleport_audit_svid_spiffe_id_69ff4179
       field: teleport.audit.spiffe_id
       target_field: teleport.audit.svid.spiffe_id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_dns_sans_to_teleport_audit_svid_dns_sans_28b02f2e
       field: teleport.audit.dns_sans
       target_field: teleport.audit.svid.dns_sans
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_ip_sans_to_teleport_audit_svid_ip_sans_93ed13df
       field: teleport.audit.ip_sans
       target_field: teleport.audit.svid.ip_sans
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_svid_type_to_teleport_audit_svid_type_93636440
       field: teleport.audit.svid_type
       target_field: teleport.audit.svid.type
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_serial_number_to_teleport_audit_svid_serial_number_f9c3c108
       field: teleport.audit.serial_number
       target_field: teleport.audit.svid.serial_number
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_hint_to_teleport_audit_svid_hint_20052546
       field: teleport.audit.hint
       target_field: teleport.audit.svid.hint
       ignore_missing: true
   # Access path change event details.
   - rename:
+      tag: rename_teleport_audit_change_id_to_teleport_audit_access_path_change_id_c7ec693c
       field: teleport.audit.change_id
       target_field: teleport.audit.access_path_change.id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_affected_resource_name_to_teleport_audit_access_path_change_resource_name_3ef9d521
       field: teleport.audit.affected_resource_name
       target_field: teleport.audit.access_path_change.resource.name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_affected_resource_source_to_teleport_audit_access_path_change_resource_source_f0a2b51f
       field: teleport.audit.affected_resource_source
       target_field: teleport.audit.access_path_change.resource.source
       ignore_missing: true
   # Spanner RPC event details.
   # See database_spanner_rpc.yml for field definitions.
   - rename:
+      tag: rename_teleport_audit_procedure_to_teleport_audit_database_spanner_rpc_procedure_5da5579e
       field: teleport.audit.procedure
       target_field: teleport.audit.database.spanner.rpc.procedure
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_args_to_teleport_audit_database_spanner_rpc_args_2a316325
       field: teleport.audit.args
       target_field: teleport.audit.database.spanner.rpc.args
       ignore_missing: true
@@ -1672,8 +2043,15 @@ processors:
 # What to do if the processing fails.
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

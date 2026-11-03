@@ -60,7 +60,40 @@ streams:
     template_path: journald.yml.hbs
     title: System syslog logs (journald)
     description: Collect System syslog logs using journald input
+    required_vars:
+      head_mode:
+        - name: seek
+          value: head
+      tail_mode:
+        - name: seek
+          value: tail
+      since_mode:
+        - name: seek
+          value: since
+        - name: since
     vars:
+      - name: seek
+        type: select
+        title: Seek
+        description: The position to start reading the journal from when no persisted cursor is available.
+        multi: false
+        required: false
+        show_user: true
+        default: head
+        options:
+          - text: Head
+            value: head
+          - text: Tail
+            value: tail
+          - text: Since
+            value: since
+      - name: since
+        type: text
+        title: Since
+        description: A time offset from the current time to start reading from. Applies only when Seek is set to Since (for example, `-24h`).
+        multi: false
+        required: false
+        show_user: true
       - name: preserve_original_event
         required: true
         show_user: true
@@ -86,8 +119,8 @@ streams:
         description: >
           A list of filter expressions used to select the logs to read (e.g. `_SYSTEMD_UNIT=vault.service`). Defaults to all logs. See
           [include_matches](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-journald.html#filebeat-input-journald-include-matches) for details.
-          The logs are already filtered by the following syslog facilities: 0, 1, 2, 3, 5, 6, 7, 8, 9, 11, 12, 15, so any filter added here will be added to this existing
-          filter.
+          The logs are already filtered by syslog facilities 0, 1, 2, 3, 5, 6, 7, 8, 9, 11, 12 and 15 via `SYSLOG_FACILITY` matches. Expressions added here are appended
+          to that filter: matches on the same journal field are ORed, matches on different fields are ANDed (journalctl semantics).
 
       - name: processors
         type: yaml

@@ -2,27 +2,41 @@
 description: Pipeline for Jamf Compliance Reporter aue_pidfortask audit logs.
 processors:
   - convert:
+      tag: convert_json_arguments_pid_to_jamf_compliance_reporter_log_arguments_pid_2d5a7310
       field: json.arguments.pid
       target_field: jamf_compliance_reporter.log.arguments.pid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_7eecdb63
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_arguments_port_to_jamf_compliance_reporter_log_arguments_port_05cb9806
       field: json.arguments.port
       target_field: jamf_compliance_reporter.log.arguments.port
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a6148881
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -2,30 +2,37 @@
 description: Pipeline for ActiveMQ audit logs in AmazonMQ.
 processors:
   - set:
+      tag: set_1
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       ignore_empty_value: true
       ignore_failure: true
   - rename:
+      tag: rename_2
       field: message
       target_field: event.original
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_3
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - set:
+      tag: set_4
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_5
       field: cloud.service.name
       value: amazonmq_activemq
   - set:
+      tag: set_6
       field: cloud.provider
       value: aws
   - grok:
+      tag: grok_7
       field: event.original
       pattern_definitions:
         NOPIPEGREEDYDATA: "(\\n|(?! \\|).)*"
@@ -35,6 +42,7 @@ processors:
       ignore_missing: true
       ignore_failure: false
   - script:
+      tag: script_8
       if: "ctx.log?.level != null"
       lang: painless
       source: >-
@@ -45,6 +53,7 @@ processors:
           ctx.event.type = ["info"];
         }
   - script:
+      tag: script_9
       description: Drops null/empty values recursively
       lang: painless
       ignore_failure: true
@@ -64,11 +73,13 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_on_failure_1
       field: event.kind
       value: pipeline_error
   - set:
+      tag: set_on_failure_2
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}' in pipeline {{{ _ingest.pipeline }}}

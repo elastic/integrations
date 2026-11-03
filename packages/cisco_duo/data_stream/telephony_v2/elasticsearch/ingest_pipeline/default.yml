@@ -2,6 +2,7 @@
 description: Pipeline for parsing cisco_duo telephony v2 logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -11,38 +12,46 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_8d3d7570
       field: event.original
       target_field: json
       on_failure:
         - set:
+            tag: set_event_kind_7b187fb8
             field: event.kind
             value: pipeline_error
         - append:
+            tag: append_error_message_2ecf534a
             field: error.message
             value: |-
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - drop:
+      tag: drop_no_timestamp_invalid_json_5c081c54
       description: Drop if no timestamp (invalid json)
       if: ctx.json?.ts == null
   - fingerprint:
+      tag: fingerprint_to_id_5b225b71
       fields:
         - json.ts
         - json.phone
@@ -51,57 +60,70 @@ processors:
       target_field: _id
       ignore_missing: true
   - date:
+      tag: date_json_ts_cf4fd933
       field: json.ts
       if: ctx.json?.ts != null
       formats:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_0b746d01
             field: error.message
             value: |-
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - rename:
+      tag: rename_json_context_to_cisco_duo_telephony_v2_event_type_3b8c2ef9
       field: json.context
       target_field: cisco_duo.telephony_v2.event_type
       ignore_missing: true
   - rename:
+      tag: rename_json_credits_to_cisco_duo_telephony_v2_credits_20dfc6ff
       field: json.credits
       target_field: cisco_duo.telephony_v2.credits
       ignore_missing: true
   - rename:
+      tag: rename_json_phone_to_cisco_duo_telephony_v2_phone_number_9fdd7229
       field: json.phone
       target_field: cisco_duo.telephony_v2.phone_number
       ignore_missing: true
   - rename:
+      tag: rename_json_type_to_cisco_duo_telephony_v2_type_ff1bb587
       field: json.type
       target_field: cisco_duo.telephony_v2.type
       ignore_missing: true
   - rename:
+      tag: rename_json_telephony_id_to_cisco_duo_telephony_v2_id_1ca85fbc
       field: json.telephony_id
       target_field: cisco_duo.telephony_v2.id
       ignore_missing: true
   - set:
+      tag: set_event_id_4bf1b3d7
       field: event.id
       copy_from: cisco_duo.telephony_v2.id
       ignore_failure: true
   - rename:
+      tag: rename_json_txid_to_cisco_duo_telephony_v2_txid_c4fac531
       field: json.txid
       target_field: cisco_duo.telephony_v2.txid
       ignore_missing: true
 
   ## Clean up
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
       value: |-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

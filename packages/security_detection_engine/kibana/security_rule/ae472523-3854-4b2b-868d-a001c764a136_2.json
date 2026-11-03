@@ -1,0 +1,98 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Organization IP restrictions limit Anthropic administrative access to approved network ranges. Deleting one widens where a compromised admin session or API key can be used. The audit event does not always carry the deleted CIDR or restriction identifier, so treat this as an early signal and pivot to nearby IP restriction create or update events for the same organization.",
+        "false_positives": [
+            "Network or security teams remove IP restrictions during office moves, VPN migrations, or policy redesigns. Validate the actor, and confirm replacement restrictions were applied if the control is still required."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "event.id",
+                "organization.id",
+                "anthropic.audit.actor.type",
+                "user.email",
+                "user.id",
+                "source.ip",
+                "user_agent.original"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Anthropic Organization IP Restriction Deleted",
+        "note": "## Triage and analysis\n\n### Investigating Anthropic Organization IP Restriction Deleted\n\nIP allowlists limit where admin sessions and admin API keys can be used. Deleting a restriction widens that surface.\nThe delete event often lacks the removed CIDR \u2014 recover it from nearby create/update events.\n\nUnauthorized = no network/security change ticket for allowlist work, no replacement `org_ip_restriction_created` /\n`org_ip_restriction_updated` in the same window, or deletion paired with admin key creation / SSO weakening.\n\n#### Possible investigation steps\n\n- Identify actor type. For `user_actor`, check admin identity via `user.email`, `source.ip`, and UA. For\n  `anthropic_actor`, pivot on `organization.id` only.\n- Search the same org for `org_ip_restriction_created` / `org_ip_restriction_updated` before/after the delete to\n  recover ranges and see if this was a replace vs a standalone removal.\n- Correlate \u00b1hours for admin role grants, admin API key creation, SSO changes, or data exports \u2014 common follow-ons\n  after network controls drop.\n- Close as FP when a ticket names the migration and a replacement restriction appears promptly. Escalate when deletion\n  stands alone or admin activity from non-corporate IPs follows.\n\n### False positive analysis\n\n- Office moves and VPN redesigns often remove old ranges before new ones are applied.\n\n### Response and remediation\n\n- On unauthorized deletion: restore required IP restrictions, review admin activity from non-corporate `source.ip`\n  during the open window, and rotate admin credentials / API keys used in that period.\n",
+        "query": "from logs-anthropic.audit-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"anthropic.audit\" and\n    mv_contains(event.category, \"configuration\") and\n    event.action == \"org_ip_restriction_deleted\"\n| keep _id, _version, _index, @timestamp, event.*, organization.*, user.*, source.*, user_agent.*, anthropic.audit.*, data_stream.*\n",
+        "references": [
+            "https://platform.claude.com/docs/en/api/compliance/activities/list"
+        ],
+        "related_integrations": [
+            {
+                "package": "anthropic",
+                "version": ">=1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "ae472523-3854-4b2b-868d-a001c764a136",
+        "severity": "high",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: Anthropic",
+            "Data Source: Anthropic Audit Logs",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Defense Impairment"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0112",
+                    "name": "Defense Impairment",
+                    "reference": "https://attack.mitre.org/tactics/TA0112/"
+                },
+                "technique": [
+                    {
+                        "id": "T1685",
+                        "name": "Disable or Modify Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1685/",
+                        "subtechnique": [
+                            {
+                                "id": "T1686.001",
+                                "name": "Cloud Firewall",
+                                "reference": "https://attack.mitre.org/techniques/T1686/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "ae472523-3854-4b2b-868d-a001c764a136_2",
+    "type": "security-rule"
+}

@@ -1,0 +1,58 @@
+{
+    "id": "supabase_otel-metrics-collection-failing",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when the exporters that produce this data report a scrape failure. This is a monitoring-health rule: while it is active, the absence of every other alert in this package stops being evidence that the project is healthy.",
+        "name": "[Supabase OTel] Metrics collection is failing",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "monitoring-health"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-7c6a2004-c517-4b50-b70a-2682b7a79228"
+                },
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                },
+                {
+                    "id": "supabase_otel-0fedaab5-00a9-45ce-8340-fcf6e510d215"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Metrics Collection Failing\n\nOne of the exporters behind this data is failing to scrape. Every rule and SLO in this package is built on these series, so a collection failure creates a blind spot rather than a service impact.\n\n### Triage Steps\n1. Separate a collection failure from a real outage. If `[Supabase OTel] PostgreSQL is down` is also active, decide which is the cause: the postgres-exporter cannot scrape a database that is genuinely down, and it also cannot scrape a healthy database if it has lost its own connection.\n2. Check whether the connection budget is exhausted. The exporter needs a connection like any other client, and it is often the first thing refused when `max_connections` is reached.\n3. Identify which collector is failing: `TS metrics-supabase.metrics.otel-* | STATS ok = MIN(LAST_OVER_TIME(pg_scrape_collector_success)) BY attributes.collector | WHERE ok == 0`\n4. Check `postgres_exporter_config_last_reload_successful` and `pg_exporter_user_queries_load_error` for a configuration problem introduced by a recent change.\n\n### Interpreting the columns\n`Scrape Up`, `PG Collector OK` and `Node Collector OK` are gauges where 1 is healthy; `PG Scrape Error` is a gauge where any non-zero value indicates a failure.\n\n### Tuning\nEach gauge falls back to a healthy default so that a project which simply does not expose one of them is not treated as failing. Metric families appear and disappear with project configuration, so absence must never be read as a breach."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// Monitoring-health rule. All four are gauges: up / collector_success report 1 when healthy,\n// last_scrape_error reports non-zero when the exporter failed. MIN() across series so one\n// failing scrape target is not masked by a healthy one.\n| STATS\n    `Scrape Up` = MIN(LAST_OVER_TIME(up)),\n    `PG Collector OK` = MIN(LAST_OVER_TIME(pg_scrape_collector_success)),\n    `Node Collector OK` = MIN(LAST_OVER_TIME(node_scrape_collector_success)),\n    `PG Scrape Error` = MAX(LAST_OVER_TIME(pg_exporter_last_scrape_error))\n  BY resource.attributes.supabase_project_ref\n// Absent gauges fall back to healthy defaults, since metric families come and go with\n// project configuration.\n| WHERE CASE(`Scrape Up` IS NULL, 1.0, `Scrape Up`) == 0\n    OR CASE(`PG Collector OK` IS NULL, 1.0, `PG Collector OK`) == 0\n    OR CASE(`Node Collector OK` IS NULL, 1.0, `Node Collector OK`) == 0\n    OR CASE(`PG Scrape Error` IS NULL, 0.0, `PG Scrape Error`) > 0"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.supabase_project_ref",
+            "termSize": 50
+        }
+    }
+}

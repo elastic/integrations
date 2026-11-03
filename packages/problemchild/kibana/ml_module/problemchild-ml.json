@@ -9,8 +9,7 @@
         },
         "query": {
             "bool": {
-                "minimum_should_match": 1,
-                "should": [
+                "filter": [
                     {
                         "exists": {
                             "field": "problemchild.prediction"
@@ -18,7 +17,7 @@
                     },
                     {
                         "exists": {
-                            "field": "blocklist_label"
+                            "field": "problemchild.prediction_probability"
                         }
                     }
                 ],
@@ -60,8 +59,8 @@
                             "event.module",
                             "user.id",
                             "process.command_line",
-                            "process.code_signature.subject_name",
-                            "process.code_signature.trusted"
+                            "process_code_signature_subject_name",
+                            "process_code_signature_trusted"
                         ]
                     },
                     "data_description": {
@@ -96,13 +95,6 @@
                                 "detector_index": 0,
                                 "field_name": "problemchild.prediction_probability",
                                 "function": "high_sum"
-                            },
-                            {
-                                "by_field_name": "host.name",
-                                "detector_description": "high sum of blocklist hits by host",
-                                "detector_index": 0,
-                                "field_name": "blocklist_label",
-                                "function": "high_sum"
                             }
                         ],
                         "influencers": [
@@ -113,9 +105,8 @@
                             "event.module",
                             "user.id",
                             "process.command_line",
-                            "blocklist_label",
-                            "process.code_signature.subject_name",
-                            "process.code_signature.trusted"
+                            "process_code_signature_subject_name",
+                            "process_code_signature_trusted"
                         ]
                     },
                     "data_description": {
@@ -161,8 +152,8 @@
                             "host.name",
                             "host.id",
                             "process.command_line",
-                            "process.code_signature.subject_name",
-                            "process.code_signature.trusted"
+                            "process_code_signature_subject_name",
+                            "process_code_signature_trusted"
                         ]
                     },
                     "data_description": {
@@ -209,8 +200,8 @@
                             "user.name",
                             "event.module",
                             "user.id",
-                            "process.code_signature.subject_name",
-                            "process.code_signature.trusted"
+                            "process_code_signature_subject_name",
+                            "process_code_signature_trusted"
                         ]
                     },
                     "data_description": {
@@ -246,13 +237,6 @@
                                 "detector_index": 0,
                                 "field_name": "problemchild.prediction_probability",
                                 "function": "high_sum"
-                            },
-                            {
-                                "by_field_name": "user.name",
-                                "detector_description": "high sum of blocklist hits by user",
-                                "detector_index": 0,
-                                "field_name": "blocklist_label",
-                                "function": "high_sum"
                             }
                         ],
                         "influencers": [
@@ -263,9 +247,8 @@
                             "host.name",
                             "host.id",
                             "process.command_line",
-                            "blocklist_label",
-                            "process.code_signature.subject_name",
-                            "process.code_signature.trusted"
+                            "process_code_signature_subject_name",
+                            "process_code_signature_trusted"
                         ]
                     },
                     "data_description": {
@@ -301,13 +284,6 @@
                                 "detector_index": 0,
                                 "field_name": "problemchild.prediction_probability",
                                 "function": "high_sum"
-                            },
-                            {
-                                "by_field_name": "process.parent.name",
-                                "detector_description": "high sum of blocklist hits by parent process",
-                                "detector_index": 0,
-                                "field_name": "blocklist_label",
-                                "function": "high_sum"
                             }
                         ],
                         "influencers": [
@@ -319,9 +295,8 @@
                             "user.name",
                             "event.module",
                             "user.id",
-                            "blocklist_label",
-                            "process.code_signature.subject_name",
-                            "process.code_signature.trusted"
+                            "process_code_signature_subject_name",
+                            "process_code_signature_trusted"
                         ]
                     },
                     "data_description": {
@@ -352,16 +327,17 @@
                     "job_id": "problem_child_rare_process_by_host_ea",
                     "query": {
                         "bool": {
-                            "minimum_should_match": 1,
-                            "should": [
+                            "filter": [
                                 {
                                     "match": {
                                         "problemchild.prediction": 1
                                     }
                                 },
                                 {
-                                    "match": {
-                                        "blocklist_label": 1
+                                    "range": {
+                                        "problemchild.prediction_probability": {
+                                            "gte": 0.5
+                                        }
                                     }
                                 }
                             ],
@@ -385,6 +361,20 @@
                                     }
                                 }
                             ]
+                        }
+                    },
+                    "runtime_mappings": {
+                        "process_code_signature_subject_name": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.subject_name') && doc['process.code_signature.subject_name'].size() != 0) { emit(doc['process.code_signature.subject_name'].value); } else { emit('None'); }"
+                            }
+                        },
+                        "process_code_signature_trusted": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.trusted') && doc['process.code_signature.trusted'].size() != 0) { emit(doc['process.code_signature.trusted'].value.toString()); } else if (doc.containsKey('winlog.event_data.SignatureStatus') && doc['winlog.event_data.SignatureStatus'].size() != 0) { emit(doc['winlog.event_data.SignatureStatus'].value); } else { emit('None'); }"
+                            }
                         }
                     }
                 }
@@ -399,16 +389,17 @@
                     "job_id": "problem_child_high_sum_by_host_ea",
                     "query": {
                         "bool": {
-                            "minimum_should_match": 1,
-                            "should": [
+                            "filter": [
                                 {
                                     "match": {
                                         "problemchild.prediction": 1
                                     }
                                 },
                                 {
-                                    "match": {
-                                        "blocklist_label": 1
+                                    "range": {
+                                        "problemchild.prediction_probability": {
+                                            "gte": 0.5
+                                        }
                                     }
                                 }
                             ],
@@ -432,6 +423,20 @@
                                     }
                                 }
                             ]
+                        }
+                    },
+                    "runtime_mappings": {
+                        "process_code_signature_subject_name": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.subject_name') && doc['process.code_signature.subject_name'].size() != 0) { emit(doc['process.code_signature.subject_name'].value); } else { emit('None'); }"
+                            }
+                        },
+                        "process_code_signature_trusted": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.trusted') && doc['process.code_signature.trusted'].size() != 0) { emit(doc['process.code_signature.trusted'].value.toString()); } else if (doc.containsKey('winlog.event_data.SignatureStatus') && doc['winlog.event_data.SignatureStatus'].size() != 0) { emit(doc['winlog.event_data.SignatureStatus'].value); } else { emit('None'); }"
+                            }
                         }
                     }
                 }
@@ -446,16 +451,17 @@
                     "job_id": "problem_child_rare_process_by_user_ea",
                     "query": {
                         "bool": {
-                            "minimum_should_match": 1,
-                            "should": [
+                            "filter": [
                                 {
                                     "match": {
                                         "problemchild.prediction": 1
                                     }
                                 },
                                 {
-                                    "match": {
-                                        "blocklist_label": 1
+                                    "range": {
+                                        "problemchild.prediction_probability": {
+                                            "gte": 0.5
+                                        }
                                     }
                                 }
                             ],
@@ -479,6 +485,20 @@
                                     }
                                 }
                             ]
+                        }
+                    },
+                    "runtime_mappings": {
+                        "process_code_signature_subject_name": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.subject_name') && doc['process.code_signature.subject_name'].size() != 0) { emit(doc['process.code_signature.subject_name'].value); } else { emit('None'); }"
+                            }
+                        },
+                        "process_code_signature_trusted": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.trusted') && doc['process.code_signature.trusted'].size() != 0) { emit(doc['process.code_signature.trusted'].value.toString()); } else if (doc.containsKey('winlog.event_data.SignatureStatus') && doc['winlog.event_data.SignatureStatus'].size() != 0) { emit(doc['winlog.event_data.SignatureStatus'].value); } else { emit('None'); }"
+                            }
                         }
                     }
                 }
@@ -493,16 +513,17 @@
                     "job_id": "problem_child_rare_process_by_parent_ea",
                     "query": {
                         "bool": {
-                            "minimum_should_match": 1,
-                            "should": [
+                            "filter": [
                                 {
                                     "match": {
                                         "problemchild.prediction": 1
                                     }
                                 },
                                 {
-                                    "match": {
-                                        "blocklist_label": 1
+                                    "range": {
+                                        "problemchild.prediction_probability": {
+                                            "gte": 0.5
+                                        }
                                     }
                                 }
                             ],
@@ -526,6 +547,20 @@
                                     }
                                 }
                             ]
+                        }
+                    },
+                    "runtime_mappings": {
+                        "process_code_signature_subject_name": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.subject_name') && doc['process.code_signature.subject_name'].size() != 0) { emit(doc['process.code_signature.subject_name'].value); } else { emit('None'); }"
+                            }
+                        },
+                        "process_code_signature_trusted": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.trusted') && doc['process.code_signature.trusted'].size() != 0) { emit(doc['process.code_signature.trusted'].value.toString()); } else if (doc.containsKey('winlog.event_data.SignatureStatus') && doc['winlog.event_data.SignatureStatus'].size() != 0) { emit(doc['winlog.event_data.SignatureStatus'].value); } else { emit('None'); }"
+                            }
                         }
                     }
                 }
@@ -540,16 +575,17 @@
                     "job_id": "problem_child_high_sum_by_user_ea",
                     "query": {
                         "bool": {
-                            "minimum_should_match": 1,
-                            "should": [
+                            "filter": [
                                 {
                                     "match": {
                                         "problemchild.prediction": 1
                                     }
                                 },
                                 {
-                                    "match": {
-                                        "blocklist_label": 1
+                                    "range": {
+                                        "problemchild.prediction_probability": {
+                                            "gte": 0.5
+                                        }
                                     }
                                 }
                             ],
@@ -574,6 +610,20 @@
                                 }
                             ]
                         }
+                    },
+                    "runtime_mappings": {
+                        "process_code_signature_subject_name": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.subject_name') && doc['process.code_signature.subject_name'].size() != 0) { emit(doc['process.code_signature.subject_name'].value); } else { emit('None'); }"
+                            }
+                        },
+                        "process_code_signature_trusted": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.trusted') && doc['process.code_signature.trusted'].size() != 0) { emit(doc['process.code_signature.trusted'].value.toString()); } else if (doc.containsKey('winlog.event_data.SignatureStatus') && doc['winlog.event_data.SignatureStatus'].size() != 0) { emit(doc['winlog.event_data.SignatureStatus'].value); } else { emit('None'); }"
+                            }
+                        }
                     }
                 }
             },
@@ -587,16 +637,17 @@
                     "job_id": "problem_child_high_sum_by_parent_ea",
                     "query": {
                         "bool": {
-                            "minimum_should_match": 1,
-                            "should": [
+                            "filter": [
                                 {
                                     "match": {
                                         "problemchild.prediction": 1
                                     }
                                 },
                                 {
-                                    "match": {
-                                        "blocklist_label": 1
+                                    "range": {
+                                        "problemchild.prediction_probability": {
+                                            "gte": 0.5
+                                        }
                                     }
                                 }
                             ],
@@ -620,6 +671,20 @@
                                     }
                                 }
                             ]
+                        }
+                    },
+                    "runtime_mappings": {
+                        "process_code_signature_subject_name": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.subject_name') && doc['process.code_signature.subject_name'].size() != 0) { emit(doc['process.code_signature.subject_name'].value); } else { emit('None'); }"
+                            }
+                        },
+                        "process_code_signature_trusted": {
+                            "type": "keyword",
+                            "script": {
+                                "source": "if (doc.containsKey('process.code_signature.trusted') && doc['process.code_signature.trusted'].size() != 0) { emit(doc['process.code_signature.trusted'].value.toString()); } else if (doc.containsKey('winlog.event_data.SignatureStatus') && doc['winlog.event_data.SignatureStatus'].size() != 0) { emit(doc['winlog.event_data.SignatureStatus'].value); } else { emit('None'); }"
+                            }
                         }
                     }
                 }

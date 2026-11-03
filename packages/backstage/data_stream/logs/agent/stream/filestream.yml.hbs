@@ -1,0 +1,51 @@
+paths:
+{{#each paths as |path|}}
+  - {{path}}
+{{/each}}
+{{#if exclude_files}}
+prospector.scanner.exclude_files:
+{{#each exclude_files as |pattern f|}}
+  - {{pattern}}
+{{/each}}
+{{/if}}
+{{#if parsers}}
+parsers:
+{{parsers}}
+{{/if}}
+{{#if custom}}
+{{custom}}
+{{/if}}
+
+{{#if tags.length}}
+tags:
+{{#each tags as |tag|}}
+- {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+- preserve_original_event
+{{/if}}
+{{else}}
+{{#if preserve_original_event}}
+tags:
+- preserve_original_event
+{{/if}}
+{{/if}}
+
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+
+{{#if harvester_limit}}
+harvester_limit: {{harvester_limit}}
+{{/if}}
+
+{{#if close.on_state_change.inactive}}
+close.on_state_change.inactive: {{close.on_state_change.inactive}}
+{{/if}}
+
+prospector.scanner.symlinks: {{follow.symlinked_files}}

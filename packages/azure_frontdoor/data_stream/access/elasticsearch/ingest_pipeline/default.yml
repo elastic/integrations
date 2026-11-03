@@ -2,31 +2,38 @@
 description: Pipeline for processing azure frontdoor access logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: "8.11.0"
   - set:
+      tag: set_event_category_dbab8a4e
       field: event.category
       value: [network]
   - set:
+      tag: set_event_type_8fd37e4e
       field: event.type
       value: [connection]
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
   - set:
+      tag: set_cloud_provider_136a398d
       field: cloud.provider
       value: azure
   - drop:
+      tag: drop_invalid_json_a8ca7062
       description: Drop if invalid json
       if: 'ctx.event?.original != null && ctx.event.original.contains(''"records"'')'
   - json:
+      tag: json_event_original_to_azure_frontdoor_access_a26d917e
       field: event.original
       target_field: azure.frontdoor.access
   - script:
       description: Drops fields with empty or N/A values recursively
-      tag: script_to_drop_invalid_values
+      tag: script_to_drop_invalid_values_fe6ebb18
       lang: painless
       source: |
         void handleMap(Map map) {
@@ -51,54 +58,67 @@ processors:
         }
         handleMap(ctx);
   - rename:
+      tag: rename_azure_frontdoor_access_resourceId_to_azure_frontdoor_resource_id_e20702d3
       field: azure.frontdoor.access.resourceId
       target_field: azure.frontdoor.resource_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_operationName_to_azure_frontdoor_operation_name_1b6649c9
       field: azure.frontdoor.access.operationName
       target_field: azure.frontdoor.operation_name
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_trackingReference_to_azure_frontdoor_tracking_reference_a33262d8
       field: azure.frontdoor.access.properties.trackingReference
       target_field: azure.frontdoor.tracking_reference
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_category_to_azure_frontdoor_category_b9eeefbe
       field: azure.frontdoor.access.category
       target_field: azure.frontdoor.category
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_clientIp_to_client_ip_14d71141
       field: azure.frontdoor.access.properties.clientIp
       target_field: client.ip
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_clientPort_to_client_port_6573e03d
       field: azure.frontdoor.access.properties.clientPort
       target_field: client.port
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_requestBytes_to_http_request_bytes_100f4ea5
       field: azure.frontdoor.access.properties.requestBytes
       target_field: http.request.bytes
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_socketIp_to_client_address_1615f3a4
       field: azure.frontdoor.access.properties.socketIp
       target_field: client.address
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_ErrorInfo_to_azure_frontdoor_access_error_info_7693c54a
       field: azure.frontdoor.access.properties.ErrorInfo
       target_field: azure.frontdoor.access.error_info
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_rulesEngineMatchNames_to_azure_frontdoor_access_rules_engine_match_names_cb268302
       field: azure.frontdoor.access.properties.rulesEngineMatchNames
       target_field: azure.frontdoor.access.rules_engine_match_names
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_cacheStatus_to_azure_frontdoor_access_cache_status_8aa4e14e
       field: azure.frontdoor.access.properties.cacheStatus
       target_field: azure.frontdoor.access.cache_status
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_userAgent_to_user_agent_original_74c7cad7
       field: azure.frontdoor.access.properties.userAgent
       target_field: user_agent.original
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_httpMethod_to_http_request_method_3eda6572
       field: azure.frontdoor.access.properties.httpMethod
       target_field: http.request.method
       ignore_missing: true
@@ -106,20 +126,24 @@ processors:
       field: azure.frontdoor.access.properties.timeToFirstByte
       target_field: azure.frontdoor.access.time_to_first_byte
       type: double
-      tag: convert_properties_time_to_first_byte
+      tag: convert_properties_time_to_first_byte_f233a479
       on_failure:
         - append:
+            tag: append_error_message_88f1b7ab
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_missing: true
   - remove:
+      tag: remove_azure_frontdoor_access_properties_timeToFirstByte_070d9e59
       field: azure.frontdoor.access.properties.timeToFirstByte
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_pop_to_azure_frontdoor_access_pop_69c29103
       field: azure.frontdoor.access.properties.pop
       target_field: azure.frontdoor.access.pop
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_responseBytes_to_http_response_bytes_3358b6b3
       field: azure.frontdoor.access.properties.responseBytes
       target_field: http.response.bytes
       ignore_missing: true
@@ -127,90 +151,109 @@ processors:
       field: azure.frontdoor.access.properties.timeTaken
       target_field: azure.frontdoor.access.time_taken
       type: double
-      tag: convert_properties_time_taken
+      tag: convert_properties_time_taken_cbed6790
       on_failure:
         - append:
+            tag: append_error_message_771fb26b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_missing: true
   - remove:
+      tag: remove_azure_frontdoor_access_properties_timeTaken_f17815fd
       field: azure.frontdoor.access.properties.timeTaken
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_routingRuleName_to_azure_frontdoor_access_routing_rule_name_6d7d1311
       field: azure.frontdoor.access.properties.routingRuleName
       target_field: azure.frontdoor.access.routing_rule_name
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_httpVersion_to_http_version_91a64ff9
       field: azure.frontdoor.access.properties.httpVersion
       target_field: http.version
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_backendHostname_to_azure_frontdoor_access_backend_hostname_cdb5eba8
       field: azure.frontdoor.access.properties.backendHostname
       target_field: azure.frontdoor.access.backend_hostname
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_isReceivedFromClient_to_azure_frontdoor_access_is_received_from_client_cc0265e2
       field: azure.frontdoor.access.properties.isReceivedFromClient
       target_field: azure.frontdoor.access.is_received_from_client
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_requestProtocol_to_network_protocol_f4c4e15c
       field: azure.frontdoor.access.properties.requestProtocol
       target_field: network.protocol
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_httpStatusCode_to_http_response_status_code_ba57e8a1
       field: azure.frontdoor.access.properties.httpStatusCode
       target_field: http.response.status_code
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_properties_requestUri_to_url_original_da02b502
       field: azure.frontdoor.access.properties.requestUri
       target_field: url.original
       ignore_missing: true
   - uri_parts:
+      tag: uri_parts_url_original_3ec04839
       field: url.original
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ed0fc6c3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_url_full_61fd98e5
       field: url.full
       copy_from: url.original
       ignore_empty_value: true
   # handle identity field
   - rename:
+      tag: rename_azure_frontdoor_access_identity_to_azure_frontdoor_access_identity_name_73dfd8d0
       field: azure.frontdoor.access.identity
       if: ctx.azure?.frontdoor?.access?.identity instanceof String
       target_field: azure.frontdoor.access.identity_name
       ignore_missing: true
   - json:
       field: azure.frontdoor.access.identity
-      tag: json_identity
+      tag: json_identity_3f199193
       if: ctx.azure?.frontdoor?.access?.identity instanceof String
       on_failure:
         - append:
+            tag: append_error_message_6cf15af8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_azure_frontdoor_access_identity_authorization_evidence_roleAssignmentScope_to_azure_frontdoor_access_identity_authorization_evidence_role_assignment_scope_67bcb240
       field: azure.frontdoor.access.identity.authorization.evidence.roleAssignmentScope
       target_field: azure.frontdoor.access.identity.authorization.evidence.role_assignment_scope
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_identity_authorization_evidence_roleDefinitionId_to_azure_frontdoor_access_identity_authorization_evidence_role_definition_id_0b1c43fa
       field: azure.frontdoor.access.identity.authorization.evidence.roleDefinitionId
       target_field: azure.frontdoor.access.identity.authorization.evidence.role_definition_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_identity_authorization_evidence_roleAssignmentId_to_azure_frontdoor_access_identity_authorization_evidence_role_assignment_id_969a570e
       field: azure.frontdoor.access.identity.authorization.evidence.roleAssignmentId
       target_field: azure.frontdoor.access.identity.authorization.evidence.role_assignment_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_identity_authorization_evidence_principalId_to_azure_frontdoor_access_identity_authorization_evidence_principal_id_52d5e6cd
       field: azure.frontdoor.access.identity.authorization.evidence.principalId
       target_field: azure.frontdoor.access.identity.authorization.evidence.principal_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_identity_authorization_evidence_principalType_to_azure_frontdoor_access_identity_authorization_evidence_principal_type_a6118a37
       field: azure.frontdoor.access.identity.authorization.evidence.principalType
       target_field: azure.frontdoor.access.identity.authorization.evidence.principal_type
       ignore_missing: true
   - script:
-      tag: script_claims_cleanup
+      tag: script_claims_cleanup_0b0dcefd
       lang: painless
       if: ctx.azure?.frontdoor?.access?.identity?.claims != null
       source: |
@@ -226,11 +269,12 @@ processors:
         ctx.azure.frontdoor.access.identity.claims = convertDotsToUnderscore(ctx.azure.frontdoor.access.identity.claims);
       on_failure:
         - append:
+            tag: append_error_message_bc996808
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: Extract user fields into claims_initiated_by_user object from claims object
-      tag: script_claims_user
+      tag: script_claims_user_c03e6352
       if: ctx.azure?.frontdoor?.access?.identity?.claims instanceof Map
       lang: painless
       params:
@@ -256,9 +300,11 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_ce7bf2ae
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - grok:
+      tag: grok_azure_frontdoor_access_identity_claims_initiated_by_user_name_b3e8efd7
       field: azure.frontdoor.access.identity.claims_initiated_by_user.name
       patterns:
         - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
@@ -266,74 +312,90 @@ processors:
       ignore_failure: true
   # set user.email to the original name if the above grok succeeded.
   - set:
+      tag: set_user_email_e4a5b8d3
       field: user.email
       value: '{{{azure.frontdoor.access.identity.claims_initiated_by_user.name}}}'
       ignore_empty_value: true
       if: 'ctx.user?.name != null'
   # set user.name to the original name if the above grok failed (name format is not an email).
   - set:
+      tag: set_user_name_d9742b42
       field: user.name
       value: '{{{azure.frontdoor.access.identity.claims_initiated_by_user.name}}}'
       ignore_empty_value: true
       if: 'ctx.user?.name == null'
   - rename:
+      tag: rename_azure_frontdoor_access_identity_claims_initiated_by_user_fullname_to_user_full_name_365f4823
       field: azure.frontdoor.access.identity.claims_initiated_by_user.fullname
       target_field: user.full_name
       ignore_missing: true
   - rename:
+      tag: rename_azure_frontdoor_access_identity_claims_initiated_by_user_objectidentifier_to_user_id_b0a0dca5
       field: azure.frontdoor.access.identity.claims_initiated_by_user.objectidentifier
       target_field: user.id
       ignore_missing: true
   - append:
+      tag: append_user_roles_a13c0dc2
       field: user.roles
       value: '{{{azure.frontdoor.access.identity.authorization.evidence.role}}}'
       allow_duplicates: false
       if: ctx.azure?.frontdoor?.access?.identity?.authorization?.evidence?.role != null
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: 'ctx.user?.name != null'
   - append:
+      tag: append_related_user_7021abb5
       field: related.user
       value: '{{{user.full_name}}}'
       allow_duplicates: false
       if: 'ctx.user?.full_name != null'
   - append:
+      tag: append_related_user_7f407fef
       field: related.user
       value: '{{{user.id}}}'
       allow_duplicates: false
       if: 'ctx.user?.id != null'
   - rename:
+      tag: rename_azure_frontdoor_access_identity_claims_initiated_by_user_tenantid_to_cloud_account_id_95b313df
       field: azure.frontdoor.access.identity.claims_initiated_by_user.tenantid
       target_field: cloud.account.id
       ignore_missing: true
   - convert:
+      tag: convert_client_port_997d639f
       field: client.port
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_http_request_bytes_74307b8d
       field: http.request.bytes
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_http_response_bytes_4e4d07d3
       field: http.response.bytes
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_http_response_status_code_3f4ab290
       field: http.response.status_code
       type: long
       ignore_missing: true
   - date:
+      tag: date_azure_frontdoor_access_time_to_timestamp_7865914c
       field: azure.frontdoor.access.time
       target_field: "@timestamp"
       formats:
         - ISO8601
   - dissect:
+      tag: dissect_azure_frontdoor_access_properties_securityProtocol_f821ed43
       field: azure.frontdoor.access.properties.securityProtocol
       pattern: "%{tls.version_protocol} %{tls.version}"
       ignore_missing: true
   - remove:
+      tag: remove_e8bb3f1e
       field:
         - azure.frontdoor.access.properties.securityProtocol
         - azure.frontdoor.access.properties.httpStatusDetails
@@ -341,10 +403,12 @@ processors:
         - azure.frontdoor.access.properties
       ignore_missing: true
   - geoip:
+      tag: geoip_client_ip_to_source_geo_cb29dbcc
       field: client.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_client_ip_to_source_as_156f0c05
       database_file: GeoLite2-ASN.mmdb
       field: client.ip
       target_field: source.as
@@ -353,25 +417,31 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - user_agent:
+      tag: user_agent_user_agent_original_b5325863
       field: user_agent.original
       ignore_missing: true
 
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

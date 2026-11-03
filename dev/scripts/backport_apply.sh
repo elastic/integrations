@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# backport_apply.sh — thin CLI wrapper around `mage ApplyBackport`.
+# backport_apply.sh — thin shell wrapper around `backport apply`.
 #
 # Usage:
 #   dev/scripts/backport_apply.sh --sha <sha> --package <pkg> --target <target> \
@@ -11,15 +11,14 @@
 #   --package    Package name as it appears in manifest.yml.
 #   --target     Version series ("6.14") or full branch name ("backport-aws-6.14").
 #
-# Optional flags passed as mage *bool params:
+# Optional:
 #   --open-pr    Create a GitHub PR after pushing the working branch.
 #   --json       Emit JSON output (success/conflict schemas per issue spec).
 #   --dry-run    Commit locally but skip push and PR creation for local review.
-#
-# Optional strings passed as mage *string params:
 #   --remote       Git remote to fetch from and push to (default: origin).
 #   --repository   GitHub repository (org/repo) used in PR body and links.
 #   --packages-dir Path to packages directory (default: packages).
+#   --origin-pr-number  Number of the source PR on main; used to auto-assign the backport PR (optional).
 
 set -euo pipefail
 
@@ -35,6 +34,7 @@ dry_run="false"
 remote=""
 repository=""
 packages_dir=""
+origin_pr_number=""
 
 usage() {
     grep '^#' "$0" | grep -v '#!/' | sed 's/^# \?//' >&2
@@ -52,6 +52,7 @@ while [[ $# -gt 0 ]]; do
         --remote)        remote="$2";        shift 2 ;;
         --repository)    repository="$2";    shift 2 ;;
         --packages-dir)  packages_dir="$2";  shift 2 ;;
+        --origin-pr-number) origin_pr_number="$2"; shift 2 ;;
         -h|--help)       usage ;;
         *) echo "Unknown option: $1" >&2; usage ;;
     esac
@@ -64,14 +65,23 @@ fi
 
 cd "${REPO_ROOT}"
 
-# *bool params are passed as -flagname; *string params are positional.
-# All optional strings must be passed in declaration order; empty string = nil in mage.
-bool_flags=()
-[[ "$open_pr" == "true" ]] && bool_flags+=("-openPR")
-[[ "$as_json"  == "true" ]] && bool_flags+=("-asJSON")
-[[ "$dry_run"  == "true" ]] && bool_flags+=("-dryRun")
+# Use a pre-built binary when available (set by CI before calling this script).
+# For local development, build into build/backport which is gitignored.
+if [[ -z "${BACKPORT_BIN:-}" ]]; then
+    BACKPORT_BIN="${REPO_ROOT}/build/backport"
+    mkdir -p "${REPO_ROOT}/build"
+    go build -C "${REPO_ROOT}/cmd/backport" -o "${BACKPORT_BIN}" .
+fi
 
-exec mage ApplyBackport \
-    "$sha" "$pkg" "$target" \
-    "${bool_flags[@]+"${bool_flags[@]}"}" \
-    "$remote" "$repository" "$packages_dir"
+flags=()
+[[ "$open_pr"     == "true" ]] && flags+=("--open-pr")
+[[ "$as_json"     == "true" ]] && flags+=("--json")
+[[ "$dry_run"     == "true" ]] && flags+=("--dry-run")
+[[ -n "$remote"       ]] && flags+=("--remote=${remote}")
+[[ -n "$repository"   ]] && flags+=("--repository=${repository}")
+[[ -n "$packages_dir" ]] && flags+=("--packages-dir=${packages_dir}")
+[[ -n "$origin_pr_number" ]] && flags+=("--origin-pr-number=${origin_pr_number}")
+
+exec "${BACKPORT_BIN}" apply \
+    "${flags[@]+"${flags[@]}"}" \
+    "$sha" "$pkg" "$target"

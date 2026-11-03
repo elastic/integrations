@@ -1,0 +1,48 @@
+{
+  "id": "aws_sqs_otel-producer-send-rate-drop",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when a queue's message send rate drops below the configured minimum, indicating producer slowdown or failure. Requires threshold tuning to match your expected baseline send rate.",
+    "name": "[AWS SQS OTel] Producer send rate drop",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_sqs",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Producer Send Rate Drop\n\nA low `NumberOfMessagesSent` count indicates producers are sending fewer messages than expected — due to upstream failures, traffic drops, or producer misconfiguration.\n\n**Important limitation:** AWS does not emit this metric when zero messages are sent in a period. This alert catches low-but-non-zero send rates; complete producer silence may not trigger it. Pair with the `oldest-message-age-high` and `high-backlog` alerts for full coverage — a silent producer will eventually show up as a stale oldest message.\n\n### Triage Steps\n1. Check producer application health — are the services running and able to reach SQS endpoints?\n2. Verify IAM permissions for the sending role have not changed or been revoked.\n3. Compare with `NumberOfMessagesReceived` and `ApproximateNumberOfMessagesVisible` — if the backlog is draining and sends are low, it may be genuine low-traffic rather than a failure.\n4. Check for upstream dependency failures that would prevent producers from generating work.\n5. Review SQS service quotas and check for throttling.\n\n### Customisation\n- The default threshold of `< 1` catches near-zero send rates. For high-volume queues, raise the threshold (e.g., `< 100` messages per 30-minute window) to catch partial producer failures.\n- Only deploy this alert for queues with consistent baseline traffic. Queues with irregular or scheduled batch send patterns will generate false positives."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-aws.sqs.otel-*\n| WHERE Namespace == \"AWS/SQS\"\n    AND MetricName == \"NumberOfMessagesSent\"\n    AND stat == \"Sum\"\n    AND QueueName NOT LIKE \"*dlq*\"\n| STATS total_sent = SUM(SUM_OVER_TIME(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`))\n    BY QueueName, cloud.region\n// Tune to your expected baseline — default catches near-zero send rates\n// AWS does not emit this metric when sends are 0; raise threshold above your minimum expected volume\n| WHERE total_sent < 1\n| EVAL sqs_queue = CONCAT(QueueName, \" (\", cloud.region, \")\")\n| SORT total_sent ASC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 30,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "sqs_queue",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

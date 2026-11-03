@@ -4,6 +4,16 @@ streams:
   - input: cel
     title: Doppel API Poller
     description: Periodically polls the Doppel API for new alerts.
+    required_vars:
+      api_key_auth:
+        - name: api_version
+          value: v1
+        - name: api_key
+      oauth_auth:
+        - name: api_version
+          value: v2
+        - name: client_id
+        - name: client_secret
     vars:
       - name: url
         type: text
@@ -12,25 +22,60 @@ streams:
         required: true
         show_user: true
         default: https://api.doppel.com
+      - name: api_version
+        type: select
+        title: API Version
+        description: >-
+          Doppel API version to poll. V1 authenticates with an API key. V2 uses OAuth 2.0
+          client credentials and takes the organisation from the access token, so the
+          User API Key and Organization Code below do not apply to it.
+        required: false
+        show_user: true
+        default: v1
+        options:
+          - value: v1
+            text: V1 (API Key)
+          - value: v2
+            text: V2 (OAuth 2.0)
       - name: api_key
         type: password
         title: Doppel API Key
-        description: Doppel API Key for authentication.
-        required: true
+        description: Doppel API Key for authentication. Required for API version V1.
+        required: false
         secret: true
       - name: x_user_api_key
         type: password
         title: Doppel User API Key
-        description: Doppel User API Key for authentication.
+        description: Doppel User API Key for authentication. API version V1 only.
         show_user: true
         required: false
         secret: true
       - name: organization_code
         type: text
         title: Organization Code
-        description: Organisation code for authentication if the user is part of multiple organisations.
+        description: Organisation code for authentication if the user is part of multiple organisations. API version V1 only.
         show_user: true
         required: false
+      - name: client_id
+        type: text
+        title: OAuth Client ID
+        description: OAuth 2.0 client ID issued by Doppel. Required for API version V2.
+        show_user: true
+        required: false
+      - name: client_secret
+        type: password
+        title: OAuth Client Secret
+        description: OAuth 2.0 client secret issued by Doppel. Required for API version V2.
+        show_user: true
+        required: false
+        secret: true
+      - name: token_url
+        type: text
+        title: OAuth Token URL
+        description: Endpoint that issues the OAuth 2.0 access token. Change this only if the Doppel API URL was changed. API version V2 only.
+        show_user: false
+        required: false
+        default: https://api.doppel.com/oauth/token
       - name: initial_interval
         type: text
         title: Initial Interval

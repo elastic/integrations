@@ -122,6 +122,20 @@ streams:
         show_user: true
         default: 5
         description: Number of workers that will process the S3/SQS objects listed.
+      - name: start_timestamp
+        type: text
+        title: "[S3] Start Timestamp"
+        multi: false
+        required: false
+        show_user: false
+        description: If set, only read S3 objects with last modified timestamp newer than the given timestamp. Accepts a timestamp in `YYYY-MM-DDTHH:MM:SSZ` format. For example, "2020-10-10T10:30:00Z" (UTC) or "2020-10-10T10:30:00Z+02:30" (with zone offset).
+      - name: ignore_older
+        type: text
+        title: "[S3] Ignore Older Timespan"
+        multi: false
+        required: false
+        show_user: false
+        description: If set, ignore S3 objects whose Last-Modified time is before the ignore older timespan. Timespan is checked from the current time to S3 object's Last-Modified time. Accepts a duration like `48h`, `2h30m`.
       - name: visibility_timeout
         type: text
         title: '[SQS] Visibility Timeout'
@@ -258,6 +272,22 @@ streams:
           #  poll: true
           #  poll_interval: 10s
           #  bucket_timeout: 30s
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: true
+        title: Preserve duplicate custom fields
+        description: Preserve custom fields for all ECS mappings.
+        type: bool
+        multi: false
+        default: false
       - name: processors
         type: yaml
         title: Processors

@@ -3,36 +3,39 @@ description: Pipeline for processing breach_catalog logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_50075a0b
       value: asset
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_a7b1f822
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_facc4822
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_b006b7b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
+      tag: fingerprint_to_id_7242fb19
       fields:
         - json.id
         - json.spycloud_publish_date
@@ -40,2332 +43,2553 @@ processors:
       ignore_missing: true
   - date:
       field: json.acquisition_date
-      tag: date_acquisition_date
+      tag: date_acquisition_date_78051f2c
       target_field: spycloud.breach_catalog.acquisition_date
       formats:
         - ISO8601
       if: ctx.json?.acquisition_date != null && ctx.json.acquisition_date != ''
       on_failure:
         - append:
+            tag: append_error_message_5e506994
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.account_caption
-      tag: convert_assets_account_caption_to_long
+      tag: convert_assets_account_caption_to_long_c182fdde
       target_field: spycloud.breach_catalog.assets.account.caption
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_fb24dec4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.account_image_url
-      tag: convert_assets_account_image_url_to_long
+      tag: convert_assets_account_image_url_to_long_b6588007
       target_field: spycloud.breach_catalog.assets.account.image_url
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d60ca8e9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.keyboard_languages
-      tag: convert_assets_keyboard_languages_to_long
+      tag: convert_assets_keyboard_languages_to_long_1cc1dc48
       target_field: spycloud.breach_catalog.assets.keyboard_languages
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_8bbbddc4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.account_last_activity_time
-      tag: convert_assets_account_last_activity_time_to_long
+      tag: convert_assets_account_last_activity_time_to_long_aff20c36
       target_field: spycloud.breach_catalog.assets.account.last_activity_time
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_dacc79e7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.account_login_time
-      tag: convert_assets_account_login_time_to_long
+      tag: convert_assets_account_login_time_to_long_702010d3
       target_field: spycloud.breach_catalog.assets.account.login_time
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e6b74c58
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.account_modification_time
-      tag: convert_assets_account_modification_time_to_long
+      tag: convert_assets_account_modification_time_to_long_6652cb3f
       target_field: spycloud.breach_catalog.assets.account.modification_time
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_8f9acacd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.account_nickname
-      tag: convert_assets_account_nickname_to_long
+      tag: convert_assets_account_nickname_to_long_7221c4a9
       target_field: spycloud.breach_catalog.assets.account.nickname
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c55fc9af
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.account_notes
-      tag: convert_assets_account_notes_to_long
+      tag: convert_assets_account_notes_to_long_730bddf1
       target_field: spycloud.breach_catalog.assets.account.notes
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e6bab72e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.account_password_date
-      tag: convert_assets_account_password_date_to_long
+      tag: convert_assets_account_password_date_to_long_fee16e44
       target_field: spycloud.breach_catalog.assets.account.password_date
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_855bade0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.account_secret
-      tag: convert_assets_account_secret_to_long
+      tag: convert_assets_account_secret_to_long_b35245b2
       target_field: spycloud.breach_catalog.assets.account.secret.answer
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_7f21fb71
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.account_secret_question
-      tag: convert_assets_account_secret_question_to_long
+      tag: convert_assets_account_secret_question_to_long_b8717696
       target_field: spycloud.breach_catalog.assets.account.secret.question
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_14c17f63
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.account_signup_time
-      tag: convert_assets_account_signup_time_to_long
+      tag: convert_assets_account_signup_time_to_long_562d7ec7
       target_field: spycloud.breach_catalog.assets.account.signup_time
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5a9fcacb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.account_status
-      tag: convert_assets_account_status_to_long
+      tag: convert_assets_account_status_to_long_422c0032
       target_field: spycloud.breach_catalog.assets.account.status
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_dbd3d6b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.account_title
-      tag: convert_assets_account_title_to_long
+      tag: convert_assets_account_title_to_long_61d87c03
       target_field: spycloud.breach_catalog.assets.account.title
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_41d1d7ab
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.account_type
-      tag: convert_assets_account_type_to_long
+      tag: convert_assets_account_type_to_long_31086203
       target_field: spycloud.breach_catalog.assets.account.type
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4633a590
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.active_investor
-      tag: convert_assets_active_investor_to_long
+      tag: convert_assets_active_investor_to_long_a71478f8
       target_field: spycloud.breach_catalog.assets.active_investor
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_87130fa0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.address_1
-      tag: convert_assets_address_1_to_long
+      tag: convert_assets_address_1_to_long_ce8cc942
       target_field: spycloud.breach_catalog.assets.address.value_1
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_458f3c96
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.address_2
-      tag: convert_assets_address_2_to_long
+      tag: convert_assets_address_2_to_long_958635c5
       target_field: spycloud.breach_catalog.assets.address.value_2
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_60971c21
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.age
-      tag: convert_assets_age_to_long
+      tag: convert_assets_age_to_long_d45b3184
       target_field: spycloud.breach_catalog.assets.age
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c60f9421
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.av_softwares
-      tag: convert_assets_av_softwares_to_long
+      tag: convert_assets_av_softwares_to_long_88d16606
       target_field: spycloud.breach_catalog.assets.av_softwares
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1417e6db
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.backup_email_username
-      tag: convert_assets_backup_email_username_to_long
+      tag: convert_assets_backup_email_username_to_long_70843d5e
       target_field: spycloud.breach_catalog.assets.backup.email.username
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4977b288
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.backup_email
-      tag: convert_assets_backup_email_to_long
+      tag: convert_assets_backup_email_to_long_dc8f373e
       target_field: spycloud.breach_catalog.assets.backup.email.value
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_661a9c9d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.bank_number
-      tag: convert_assets_bank_number_to_long
+      tag: convert_assets_bank_number_to_long_88e8ea3c
       target_field: spycloud.breach_catalog.assets.bank_number
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0bbb4480
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.birthplace
-      tag: convert_assets_birthplace_to_long
+      tag: convert_assets_birthplace_to_long_ca903753
       target_field: spycloud.breach_catalog.assets.birthplace
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e5ef8c9d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.buys_online
-      tag: convert_assets_buys_online_to_long
+      tag: convert_assets_buys_online_to_long_97777c70
       target_field: spycloud.breach_catalog.assets.buys_online
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_7b89e769
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.cat_owner
-      tag: convert_assets_cat_owner_to_long
+      tag: convert_assets_cat_owner_to_long_2ccdbdcd
       target_field: spycloud.breach_catalog.assets.cat_owner
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4b230097
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.cc_bin
-      tag: convert_assets_cc_bin_to_long
+      tag: convert_assets_cc_bin_to_long_8044cb84
       target_field: spycloud.breach_catalog.assets.cc.bin
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_455c8ca2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.cc_code
-      tag: convert_assets_cc_code_to_long
+      tag: convert_assets_cc_code_to_long_af829445
       target_field: spycloud.breach_catalog.assets.cc.code
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_95beb41b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.cc_expiration
-      tag: convert_assets_cc_expiration_to_long
+      tag: convert_assets_cc_expiration_to_long_8996fe47
       target_field: spycloud.breach_catalog.assets.cc.expiration
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_34276a6d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.cc_last_four
-      tag: convert_assets_cc_last_four_to_long
+      tag: convert_assets_cc_last_four_to_long_d235c17e
       target_field: spycloud.breach_catalog.assets.cc.last_four
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_91b4bd35
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.cc_number
-      tag: convert_assets_cc_number_to_long
+      tag: convert_assets_cc_number_to_long_2b219c72
       target_field: spycloud.breach_catalog.assets.cc.number
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_42562aa8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.cc_type
-      tag: convert_assets_cc_type_to_long
+      tag: convert_assets_cc_type_to_long_322062c4
       target_field: spycloud.breach_catalog.assets.cc.type
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c1cfd6fe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.christian_family
-      tag: convert_assets_christian_family_to_long
+      tag: convert_assets_christian_family_to_long_2f4f87c9
       target_field: spycloud.breach_catalog.assets.christian_family
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_812f01cc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.city
-      tag: convert_assets_city_to_long
+      tag: convert_assets_city_to_long_9cc41518
       target_field: spycloud.breach_catalog.assets.city
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3750a8e1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.company_name
-      tag: convert_assets_company_name_to_long
+      tag: convert_assets_company_name_to_long_052b36fd
       target_field: spycloud.breach_catalog.assets.company.name
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c491d6aa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.company_revenue
-      tag: convert_assets_company_revenue_to_long
+      tag: convert_assets_company_revenue_to_long_3e4c81c0
       target_field: spycloud.breach_catalog.assets.company.revenue
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3578e81a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.company_website
-      tag: convert_assets_company_website_to_long
+      tag: convert_assets_company_website_to_long_f595f503
       target_field: spycloud.breach_catalog.assets.company.website
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_03675148
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.country_code
-      tag: convert_assets_country_code_to_long
+      tag: convert_assets_country_code_to_long_e23b9dca
       target_field: spycloud.breach_catalog.assets.country.code
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_fe981f47
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.country
-      tag: convert_assets_country_to_long
+      tag: convert_assets_country_to_long_a8e26379
       target_field: spycloud.breach_catalog.assets.country.name
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_074aa73d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.credit_rating
-      tag: convert_assets_credit_rating_to_long
+      tag: convert_assets_credit_rating_to_long_5e82719c
       target_field: spycloud.breach_catalog.assets.credit_rating
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0033cb50
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.crm_contact_created
-      tag: convert_assets_crm_contact_created_to_long
+      tag: convert_assets_crm_contact_created_to_long_02b761c4
       target_field: spycloud.breach_catalog.assets.crm.contact_created
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a8f0f5a0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.crm_last_activity
-      tag: convert_assets_crm_last_activity_to_long
+      tag: convert_assets_crm_last_activity_to_long_8b4d8d28
       target_field: spycloud.breach_catalog.assets.crm.last_activity
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b3b60297
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.date_of_death
-      tag: convert_assets_date_of_death_to_long
+      tag: convert_assets_date_of_death_to_long_cb71eca6
       target_field: spycloud.breach_catalog.assets.date_of_death
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_034443b2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.desc
-      tag: convert_assets_desc_to_long
+      tag: convert_assets_desc_to_long_7d7faefe
       target_field: spycloud.breach_catalog.assets.desc
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3b8dc611
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.device_model
-      tag: convert_assets_device_model_to_long
+      tag: convert_assets_device_model_to_long_46cb29ee
       target_field: spycloud.breach_catalog.assets.device.model
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_57e2b4fc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.device_name
-      tag: convert_assets_device_name_to_long
+      tag: convert_assets_device_name_to_long_207bf5e6
       target_field: spycloud.breach_catalog.assets.device.name
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a94e33d6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.display_resolution
-      tag: convert_assets_display_resolution_to_long
+      tag: convert_assets_display_resolution_to_long_cbe5386f
       target_field: spycloud.breach_catalog.assets.display_resolution
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5c50462e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.dob
-      tag: convert_assets_dob_to_long
+      tag: convert_assets_dob_to_long_a51ac121
       target_field: spycloud.breach_catalog.assets.dob
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_13c62f51
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.document_id
-      tag: convert_assets_document_id_to_long
+      tag: convert_assets_document_id_to_long_d59669aa
       target_field: spycloud.breach_catalog.assets.document_id
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0a69ae67
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.dog_owner
-      tag: convert_assets_dog_owner_to_long
+      tag: convert_assets_dog_owner_to_long_c420a236
       target_field: spycloud.breach_catalog.assets.dog_owner
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5b488995
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.domain
-      tag: convert_assets_domain_to_long
+      tag: convert_assets_domain_to_long_5f49ae7a
       target_field: spycloud.breach_catalog.assets.domain
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c00bd87c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.drivers_license
-      tag: convert_assets_drivers_license_to_long
+      tag: convert_assets_drivers_license_to_long_72bd43ec
       target_field: spycloud.breach_catalog.assets.drivers.license.number
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6c4c9299
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.drivers_license_state_code
-      tag: convert_assets_drivers_license_state_code_to_long
+      tag: convert_assets_drivers_license_state_code_to_long_9661f182
       target_field: spycloud.breach_catalog.assets.drivers.license.state_code
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f27b27d2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.ec_first_name
-      tag: convert_assets_ec_first_name_to_long
+      tag: convert_assets_ec_first_name_to_long_2a51e155
       target_field: spycloud.breach_catalog.assets.ec.first_name
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5557a1d3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.ec_last_name
-      tag: convert_assets_ec_last_name_to_long
+      tag: convert_assets_ec_last_name_to_long_f7f522e0
       target_field: spycloud.breach_catalog.assets.ec.last_name
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9d0b9958
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.ec_phone
-      tag: convert_assets_ec_phone_to_long
+      tag: convert_assets_ec_phone_to_long_97aa9274
       target_field: spycloud.breach_catalog.assets.ec.phone
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_077e7dac
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.ec_postal_code
-      tag: convert_assets_ec_postal_code_to_long
+      tag: convert_assets_ec_postal_code_to_long_08bd28c8
       target_field: spycloud.breach_catalog.assets.ec.postal_code
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ed251329
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.ec_relation
-      tag: convert_assets_ec_relation_to_long
+      tag: convert_assets_ec_relation_to_long_38ccfa58
       target_field: spycloud.breach_catalog.assets.ec.relation
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_550aa25b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.education
-      tag: convert_assets_education_to_long
+      tag: convert_assets_education_to_long_b395de66
       target_field: spycloud.breach_catalog.assets.education
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5fc27956
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.email_domain
-      tag: convert_assets_email_domain_to_long
+      tag: convert_assets_email_domain_to_long_636dd138
       target_field: spycloud.breach_catalog.assets.email.domain
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2cac430a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.email_status
-      tag: convert_assets_email_status_to_long
+      tag: convert_assets_email_status_to_long_792c2cca
       target_field: spycloud.breach_catalog.assets.email.status
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c3c143a8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.email_username
-      tag: convert_assets_email_username_to_long
+      tag: convert_assets_email_username_to_long_5732f0f9
       target_field: spycloud.breach_catalog.assets.email.username
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0fe65f13
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.email
-      tag: convert_assets_email_to_long
+      tag: convert_assets_email_to_long_91e3d55b
       target_field: spycloud.breach_catalog.assets.email.value
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_33b2abc3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.employees
-      tag: convert_assets_employees_to_long
+      tag: convert_assets_employees_to_long_62cde072
       target_field: spycloud.breach_catalog.assets.employees
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6fc9f1d5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.estimated_income
-      tag: convert_assets_estimated_income_to_long
+      tag: convert_assets_estimated_income_to_long_4a369b06
       target_field: spycloud.breach_catalog.assets.estimated_income
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e11f2062
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.ethnic_group
-      tag: convert_assets_ethnic_group_to_long
+      tag: convert_assets_ethnic_group_to_long_6de83cf7
       target_field: spycloud.breach_catalog.assets.ethnic_group
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a4ed9753
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.ethnicity
-      tag: convert_assets_ethnicity_to_long
+      tag: convert_assets_ethnicity_to_long_51ca92e2
       target_field: spycloud.breach_catalog.assets.ethnicity
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d497143f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.fax
-      tag: convert_assets_fax_to_long
+      tag: convert_assets_fax_to_long_9f8bbc52
       target_field: spycloud.breach_catalog.assets.fax
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b1b97fd3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.first_name
-      tag: convert_assets_first_name_to_long
+      tag: convert_assets_first_name_to_long_dd6e652d
       target_field: spycloud.breach_catalog.assets.first_name
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_7343423f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.form_cookies_data
-      tag: convert_assets_form_cookies_data_to_long
+      tag: convert_assets_form_cookies_data_to_long_ddd5f25b
       target_field: spycloud.breach_catalog.assets.form.cookies_data
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ed7c5bb5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.form_post_data
-      tag: convert_assets_form_post_data_to_long
+      tag: convert_assets_form_post_data_to_long_3698c05b
       target_field: spycloud.breach_catalog.assets.form.post_data
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a68e9b90
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.full_name
-      tag: convert_assets_full_name_to_long
+      tag: convert_assets_full_name_to_long_8a1a030f
       target_field: spycloud.breach_catalog.assets.full_name
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ef52f198
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.gender
-      tag: convert_assets_gender_to_long
+      tag: convert_assets_gender_to_long_75817430
       target_field: spycloud.breach_catalog.assets.gender
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a35534ce
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.geolocation
-      tag: convert_assets_geolocation_to_long
+      tag: convert_assets_geolocation_to_long_fcb07217
       target_field: spycloud.breach_catalog.assets.geolocation
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1e77388a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.grandchildren
-      tag: convert_assets_grandchildren_to_long
+      tag: convert_assets_grandchildren_to_long_240437ed
       target_field: spycloud.breach_catalog.assets.grandchildren
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_939f4e99
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.guid
-      tag: convert_assets_guid_to_long
+      tag: convert_assets_guid_to_long_b5a84097
       target_field: spycloud.breach_catalog.assets.guid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_07d8984a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.has_air_conditioning
-      tag: convert_assets_has_air_conditioning_to_long
+      tag: convert_assets_has_air_conditioning_to_long_ce28ccdc
       target_field: spycloud.breach_catalog.assets.has.air_conditioning
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_fa6fa4e1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.has_amex_card
-      tag: convert_assets_has_amex_card_to_long
+      tag: convert_assets_has_amex_card_to_long_bc0398b0
       target_field: spycloud.breach_catalog.assets.has.amex_card
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_88afd7ea
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.has_children
-      tag: convert_assets_has_children_to_long
+      tag: convert_assets_has_children_to_long_393f8b1c
       target_field: spycloud.breach_catalog.assets.has.children
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_8b6aeb50
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.has_credit_cards
-      tag: convert_assets_has_credit_cards_to_long
+      tag: convert_assets_has_credit_cards_to_long_6dc3f51c
       target_field: spycloud.breach_catalog.assets.has.credit_cards
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_bc15847e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.has_discover_card
-      tag: convert_assets_has_discover_card_to_long
+      tag: convert_assets_has_discover_card_to_long_008ed27d
       target_field: spycloud.breach_catalog.assets.has.discover_card
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c4c7fdc8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.has_mastercard
-      tag: convert_assets_has_mastercard_to_long
+      tag: convert_assets_has_mastercard_to_long_658f8b6c
       target_field: spycloud.breach_catalog.assets.has.mastercard
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_cda4e9fe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.has_pets
-      tag: convert_assets_has_pets_to_long
+      tag: convert_assets_has_pets_to_long_ed4165a6
       target_field: spycloud.breach_catalog.assets.has.pets
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_570f9fae
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.has_swimming_pool
-      tag: convert_assets_has_swimming_pool_to_long
+      tag: convert_assets_has_swimming_pool_to_long_a3954407
       target_field: spycloud.breach_catalog.assets.has.swimming_pool
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b2e128bf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.has_visa_card
-      tag: convert_assets_has_visa_card_to_long
+      tag: convert_assets_has_visa_card_to_long_12b4d50e
       target_field: spycloud.breach_catalog.assets.has.visa_card
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f4e2a26c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.health_insurance_id
-      tag: convert_assets_health_insurance_id_to_long
+      tag: convert_assets_health_insurance_id_to_long_61811475
       target_field: spycloud.breach_catalog.assets.health.insurance.id
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b67ba257
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.health_insurance_provider
-      tag: convert_assets_health_insurance_provider_to_long
+      tag: convert_assets_health_insurance_provider_to_long_11b5d986
       target_field: spycloud.breach_catalog.assets.health.insurance.provider
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1b918795
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.hobbies_and_interests
-      tag: convert_assets_hobbies_and_interests_to_long
+      tag: convert_assets_hobbies_and_interests_to_long_6fd2685d
       target_field: spycloud.breach_catalog.assets.hobbies_and_interests
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_daa802aa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.home_build_year
-      tag: convert_assets_home_build_year_to_long
+      tag: convert_assets_home_build_year_to_long_cfd67f90
       target_field: spycloud.breach_catalog.assets.home.build_year
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0139d096
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.home_purchase_date
-      tag: convert_assets_home_purchase_date_to_long
+      tag: convert_assets_home_purchase_date_to_long_a98087bd
       target_field: spycloud.breach_catalog.assets.home.purchase.date
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_daefc9a5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.home_purchase_price
-      tag: convert_assets_home_purchase_price_to_long
+      tag: convert_assets_home_purchase_price_to_long_836b5323
       target_field: spycloud.breach_catalog.assets.home.purchase.price
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_553c7db5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.home_transaction_type
-      tag: convert_assets_home_transaction_type_to_long
+      tag: convert_assets_home_transaction_type_to_long_3c1d4c67
       target_field: spycloud.breach_catalog.assets.home.transaction_type
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_02fb0606
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.home_value
-      tag: convert_assets_home_value_to_long
+      tag: convert_assets_home_value_to_long_7ae9f53c
       target_field: spycloud.breach_catalog.assets.home.value
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_277a0cd9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.homepage
-      tag: convert_assets_homepage_to_long
+      tag: convert_assets_homepage_to_long_e6b455a4
       target_field: spycloud.breach_catalog.assets.homepage
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_7c6f4478
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.industry
-      tag: convert_assets_industry_to_long
+      tag: convert_assets_industry_to_long_8cd1779b
       target_field: spycloud.breach_catalog.assets.industry
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4c55b0af
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.infected_machine_id
-      tag: convert_assets_infected_machine_id_to_long
+      tag: convert_assets_infected_machine_id_to_long_6397f3f2
       target_field: spycloud.breach_catalog.assets.infected.machine_id
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_654eb7f1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.infected_path
-      tag: convert_assets_infected_path_to_long
+      tag: convert_assets_infected_path_to_long_5577f548
       target_field: spycloud.breach_catalog.assets.infected.path
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b64fd020
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.infected_time
-      tag: convert_assets_infected_time_to_long
+      tag: convert_assets_infected_time_to_long_f5c12abc
       target_field: spycloud.breach_catalog.assets.infected.time
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e65bbf4f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.investments_personal
-      tag: convert_assets_investments_personal_to_long
+      tag: convert_assets_investments_personal_to_long_8a898130
       target_field: spycloud.breach_catalog.assets.investments.personal
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2bbec609
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.investments_real_estate
-      tag: convert_assets_investments_real_estate_to_long
+      tag: convert_assets_investments_real_estate_to_long_70d6a75d
       target_field: spycloud.breach_catalog.assets.investments.real_estate
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c01b8d44
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.ip_addresses
-      tag: convert_assets_ip_addresses_to_long
+      tag: convert_assets_ip_addresses_to_long_1f785b9f
       target_field: spycloud.breach_catalog.assets.ip_addresses
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e481d91f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.is_smoker
-      tag: convert_assets_is_smoker_to_long
+      tag: convert_assets_is_smoker_to_long_cb7bb9fd
       target_field: spycloud.breach_catalog.assets.is_smoker
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_8841304d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.isp
-      tag: convert_assets_isp_to_long
+      tag: convert_assets_isp_to_long_9f1f3445
       target_field: spycloud.breach_catalog.assets.isp
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a3a9f987
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.job_level
-      tag: convert_assets_job_level_to_long
+      tag: convert_assets_job_level_to_long_a9af2dca
       target_field: spycloud.breach_catalog.assets.job.level
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_78696294
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.job_start_date
-      tag: convert_assets_job_start_date_to_long
+      tag: convert_assets_job_start_date_to_long_5afcbf32
       target_field: spycloud.breach_catalog.assets.job.start_date
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9c0a032f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.job_title
-      tag: convert_assets_job_title_to_long
+      tag: convert_assets_job_title_to_long_501b42f6
       target_field: spycloud.breach_catalog.assets.job.title
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c8377b15
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.language
-      tag: convert_assets_language_to_long
+      tag: convert_assets_language_to_long_b1feb000
       target_field: spycloud.breach_catalog.assets.language
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9ffc450b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.last_name
-      tag: convert_assets_last_name_to_long
+      tag: convert_assets_last_name_to_long_20a079c0
       target_field: spycloud.breach_catalog.assets.last_name
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_060d99ca
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.linkedin_number_connections
-      tag: convert_assets_linkedin_number_connections_to_long
+      tag: convert_assets_linkedin_number_connections_to_long_9adede25
       target_field: spycloud.breach_catalog.assets.linkedin_number_connections
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6eda3c28
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.log_id
-      tag: convert_assets_log_id_to_long
+      tag: convert_assets_log_id_to_long_91715c7b
       target_field: spycloud.breach_catalog.assets.log_id
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c061ae48
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.logon_server
-      tag: convert_assets_logon_server_to_long
+      tag: convert_assets_logon_server_to_long_46f388b5
       target_field: spycloud.breach_catalog.assets.logon_server
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_50bf52db
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.marital_status
-      tag: convert_assets_marital_status_to_long
+      tag: convert_assets_marital_status_to_long_46669907
       target_field: spycloud.breach_catalog.assets.marital_status
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_31704328
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.middle_name
-      tag: convert_assets_middle_name_to_long
+      tag: convert_assets_middle_name_to_long_3f0cfb8a
       target_field: spycloud.breach_catalog.assets.middle_name
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_02b3c7f3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.mortgage_amount
-      tag: convert_assets_mortgage_amount_to_long
+      tag: convert_assets_mortgage_amount_to_long_fe0d057c
       target_field: spycloud.breach_catalog.assets.mortgage.amount
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_16f3365e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.mortgage_lender_name
-      tag: convert_assets_mortgage_lender_name_to_long
+      tag: convert_assets_mortgage_lender_name_to_long_a44ef37e
       target_field: spycloud.breach_catalog.assets.mortgage.lender_name
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5cf4f71d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.mortgage_loan_type
-      tag: convert_assets_mortgage_loan_type_to_long
+      tag: convert_assets_mortgage_loan_type_to_long_f3ffd004
       target_field: spycloud.breach_catalog.assets.mortgage.loan_type
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0510cb88
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.mortgage_rate
-      tag: convert_assets_mortgage_rate_to_long
+      tag: convert_assets_mortgage_rate_to_long_20f6d499
       target_field: spycloud.breach_catalog.assets.mortgage.rate
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_52ff10f9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.naics_code
-      tag: convert_assets_naics_code_to_long
+      tag: convert_assets_naics_code_to_long_6cf2e8a4
       target_field: spycloud.breach_catalog.assets.naics_code
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1c2e84f2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.name_suffix
-      tag: convert_assets_name_suffix_to_long
+      tag: convert_assets_name_suffix_to_long_1111d950
       target_field: spycloud.breach_catalog.assets.name_suffix
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_331c74fd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.national_id
-      tag: convert_assets_national_id_to_long
+      tag: convert_assets_national_id_to_long_098d8f1e
       target_field: spycloud.breach_catalog.assets.national_id
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_91c71b97
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.net_worth
-      tag: convert_assets_net_worth_to_long
+      tag: convert_assets_net_worth_to_long_149aab00
       target_field: spycloud.breach_catalog.assets.net_worth
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6b520ea7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.num_posts
-      tag: convert_assets_num_posts_to_long
+      tag: convert_assets_num_posts_to_long_ff915fc4
       target_field: spycloud.breach_catalog.assets.num_posts
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6d38e560
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.number_children
-      tag: convert_assets_number_children_to_long
+      tag: convert_assets_number_children_to_long_c6a1903b
       target_field: spycloud.breach_catalog.assets.number_children
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_73e960e6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.passport_country
-      tag: convert_assets_passport_country_to_long
+      tag: convert_assets_passport_country_to_long_747f3a75
       target_field: spycloud.breach_catalog.assets.passport.country
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_41a4eea0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.passport_exp_date
-      tag: convert_assets_passport_exp_date_to_long
+      tag: convert_assets_passport_exp_date_to_long_cdf9ccc7
       target_field: spycloud.breach_catalog.assets.passport.exp_date
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ba636025
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.passport_issue_date
-      tag: convert_assets_passport_issue_date_to_long
+      tag: convert_assets_passport_issue_date_to_long_229a0b98
       target_field: spycloud.breach_catalog.assets.passport.issue_date
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a2b744d0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.passport_number
-      tag: convert_assets_passport_number_to_long
+      tag: convert_assets_passport_number_to_long_2f225901
       target_field: spycloud.breach_catalog.assets.passport.number
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_20735117
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.password_plaintext
-      tag: convert_assets_password_plaintext_to_long
+      tag: convert_assets_password_plaintext_to_long_0020ba68
       target_field: spycloud.breach_catalog.assets.password.plaintext
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f7ae0d9d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.password_type
-      tag: convert_assets_password_type_to_long
+      tag: convert_assets_password_type_to_long_926f1257
       target_field: spycloud.breach_catalog.assets.password.type
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_02ec05e6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.password
-      tag: convert_assets_password_to_long
+      tag: convert_assets_password_to_long_690a5737
       target_field: spycloud.breach_catalog.assets.password.value
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1d5d9eef
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.pastebin_key
-      tag: convert_assets_pastebin_key_to_long
+      tag: convert_assets_pastebin_key_to_long_6991729d
       target_field: spycloud.breach_catalog.assets.pastebin_key
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_498177f2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.payableto
-      tag: convert_assets_payableto_to_long
+      tag: convert_assets_payableto_to_long_da6fb153
       target_field: spycloud.breach_catalog.assets.payableto
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b99e63cb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.phone
-      tag: convert_assets_phone_to_long
+      tag: convert_assets_phone_to_long_78c7f23b
       target_field: spycloud.breach_catalog.assets.phone
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_bd4fc832
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.political_affiliation
-      tag: convert_assets_political_affiliation_to_long
+      tag: convert_assets_political_affiliation_to_long_c50c182b
       target_field: spycloud.breach_catalog.assets.political_affiliation
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9f18a489
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.postal_code
-      tag: convert_assets_postal_code_to_long
+      tag: convert_assets_postal_code_to_long_c8ed3be3
       target_field: spycloud.breach_catalog.assets.postal_code
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e533504a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.record_addition_date
-      tag: convert_assets_record_addition_date_to_long
+      tag: convert_assets_record_addition_date_to_long_10e76f9f
       target_field: spycloud.breach_catalog.assets.record.addition_date
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d8dd61e6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.record_cracked_date
-      tag: convert_assets_record_cracked_date_to_long
+      tag: convert_assets_record_cracked_date_to_long_0f4b7897
       target_field: spycloud.breach_catalog.assets.record.cracked_date
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_73fcd8d1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.record_modification_date
-      tag: convert_assets_record_modification_date_to_long
+      tag: convert_assets_record_modification_date_to_long_aa40e638
       target_field: spycloud.breach_catalog.assets.record.modification_date
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c1f820e2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.religion
-      tag: convert_assets_religion_to_long
+      tag: convert_assets_religion_to_long_5ac6f7f7
       target_field: spycloud.breach_catalog.assets.religion
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_7852fe71
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.residence_length_years
-      tag: convert_assets_residence_length_years_to_long
+      tag: convert_assets_residence_length_years_to_long_16ca0ce7
       target_field: spycloud.breach_catalog.assets.residence_length_years
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_50ff5f9a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.salt
-      tag: convert_assets_salt_to_long
+      tag: convert_assets_salt_to_long_5aeebc88
       target_field: spycloud.breach_catalog.assets.salt
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d38456a0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.service_expiration
-      tag: convert_assets_service_expiration_to_long
+      tag: convert_assets_service_expiration_to_long_982ffdab
       target_field: spycloud.breach_catalog.assets.service.expiration
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3e5e5c76
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.service
-      tag: convert_assets_service_to_long
+      tag: convert_assets_service_to_long_6d7dfa8c
       target_field: spycloud.breach_catalog.assets.service.value
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_acf420c8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.severity
-      tag: convert_assets_severity_to_long
+      tag: convert_assets_severity_to_long_eaac5221
       target_field: spycloud.breach_catalog.assets.severity
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_7fcd3e4c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.sewer_type
-      tag: convert_assets_sewer_type_to_long
+      tag: convert_assets_sewer_type_to_long_8c8c9634
       target_field: spycloud.breach_catalog.assets.sewer_type
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_bcfff3cf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.sic_code
-      tag: convert_assets_sic_code_to_long
+      tag: convert_assets_sic_code_to_long_0b69e958
       target_field: spycloud.breach_catalog.assets.sic_code
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_367a1b3b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.single_parent
-      tag: convert_assets_single_parent_to_long
+      tag: convert_assets_single_parent_to_long_29e30d0b
       target_field: spycloud.breach_catalog.assets.single_parent
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_502d26cd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_aboutme
-      tag: convert_assets_social_aboutme_to_long
+      tag: convert_assets_social_aboutme_to_long_b69c2411
       target_field: spycloud.breach_catalog.assets.social.aboutme
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9494634e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_aim
-      tag: convert_assets_social_aim_to_long
+      tag: convert_assets_social_aim_to_long_a387b3a0
       target_field: spycloud.breach_catalog.assets.social.aim
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1fdbf52b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_angellist
-      tag: convert_assets_social_angellist_to_long
+      tag: convert_assets_social_angellist_to_long_ff24cd9d
       target_field: spycloud.breach_catalog.assets.social.angellist
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_341bb8d4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_behance
-      tag: convert_assets_social_behance_to_long
+      tag: convert_assets_social_behance_to_long_04aa7425
       target_field: spycloud.breach_catalog.assets.social.behance
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4d16a51f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_crunchbase
-      tag: convert_assets_social_crunchbase_to_long
+      tag: convert_assets_social_crunchbase_to_long_3fc85d8e
       target_field: spycloud.breach_catalog.assets.social.crunchbase
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9fdc4f60
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_dribble
-      tag: convert_assets_social_dribble_to_long
+      tag: convert_assets_social_dribble_to_long_b8b1fd0f
       target_field: spycloud.breach_catalog.assets.social.dribble
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_bc54a61a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_facebook
-      tag: convert_assets_social_facebook_to_long
+      tag: convert_assets_social_facebook_to_long_c12b9a9a
       target_field: spycloud.breach_catalog.assets.social.facebook
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ed952b21
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_flickr
-      tag: convert_assets_social_flickr_to_long
+      tag: convert_assets_social_flickr_to_long_08522df7
       target_field: spycloud.breach_catalog.assets.social.flickr
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d262f115
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_foursquare
-      tag: convert_assets_social_foursquare_to_long
+      tag: convert_assets_social_foursquare_to_long_01a96a5c
       target_field: spycloud.breach_catalog.assets.social.foursquare
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e32963a5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_github
-      tag: convert_assets_social_github_to_long
+      tag: convert_assets_social_github_to_long_007f5f5d
       target_field: spycloud.breach_catalog.assets.social.github
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_639fb51b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_gitlab
-      tag: convert_assets_social_gitlab_to_long
+      tag: convert_assets_social_gitlab_to_long_a24cf0e3
       target_field: spycloud.breach_catalog.assets.social.gitlab
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_aeec8984
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_google
-      tag: convert_assets_social_google_to_long
+      tag: convert_assets_social_google_to_long_eee17cda
       target_field: spycloud.breach_catalog.assets.social.google
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6464579f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_gravatar
-      tag: convert_assets_social_gravatar_to_long
+      tag: convert_assets_social_gravatar_to_long_a15c9447
       target_field: spycloud.breach_catalog.assets.social.gravatar
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_16505504
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_icq
-      tag: convert_assets_social_icq_to_long
+      tag: convert_assets_social_icq_to_long_bc709d58
       target_field: spycloud.breach_catalog.assets.social.icq
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_017b015c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_indeed
-      tag: convert_assets_social_indeed_to_long
+      tag: convert_assets_social_indeed_to_long_f498abe1
       target_field: spycloud.breach_catalog.assets.social.indeed
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_10a06628
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_instagram
-      tag: convert_assets_social_instagram_to_long
+      tag: convert_assets_social_instagram_to_long_74ad98fe
       target_field: spycloud.breach_catalog.assets.social.instagram
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_831de973
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_klout
-      tag: convert_assets_social_klout_to_long
+      tag: convert_assets_social_klout_to_long_e7579d4a
       target_field: spycloud.breach_catalog.assets.social.klout
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b2981e8f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_linkedin
-      tag: convert_assets_social_linkedin_to_long
+      tag: convert_assets_social_linkedin_to_long_85f9a0fa
       target_field: spycloud.breach_catalog.assets.social.linkedin
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_53d1ce59
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_medium
-      tag: convert_assets_social_medium_to_long
+      tag: convert_assets_social_medium_to_long_f640d972
       target_field: spycloud.breach_catalog.assets.social.medium
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d6e6ea10
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_meetup
-      tag: convert_assets_social_meetup_to_long
+      tag: convert_assets_social_meetup_to_long_9270cef1
       target_field: spycloud.breach_catalog.assets.social.meetup
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9e8dc64b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_msn
-      tag: convert_assets_social_msn_to_long
+      tag: convert_assets_social_msn_to_long_9a064340
       target_field: spycloud.breach_catalog.assets.social.msn
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_29e0f897
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_myspace
-      tag: convert_assets_social_myspace_to_long
+      tag: convert_assets_social_myspace_to_long_7703d53d
       target_field: spycloud.breach_catalog.assets.social.myspace
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_932ea860
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_other
-      tag: convert_assets_social_other_to_long
+      tag: convert_assets_social_other_to_long_87ac10da
       target_field: spycloud.breach_catalog.assets.social.other
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6ca59a7c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_pinterest
-      tag: convert_assets_social_pinterest_to_long
+      tag: convert_assets_social_pinterest_to_long_7ff9cef4
       target_field: spycloud.breach_catalog.assets.social.pinterest
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d8188159
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_quora
-      tag: convert_assets_social_quora_to_long
+      tag: convert_assets_social_quora_to_long_709cb771
       target_field: spycloud.breach_catalog.assets.social.quora
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_fb55ab87
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_reddit
-      tag: convert_assets_social_reddit_to_long
+      tag: convert_assets_social_reddit_to_long_5245d461
       target_field: spycloud.breach_catalog.assets.social.reddit
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6f4072ba
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_security_number
-      tag: convert_assets_social_security_number_to_long
+      tag: convert_assets_social_security_number_to_long_d7415a90
       target_field: spycloud.breach_catalog.assets.social.security_number
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_24a8ff6e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_skype
-      tag: convert_assets_social_skype_to_long
+      tag: convert_assets_social_skype_to_long_49314c9d
       target_field: spycloud.breach_catalog.assets.social.skype
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5d0b191b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_soundcloud
-      tag: convert_assets_social_soundcloud_to_long
+      tag: convert_assets_social_soundcloud_to_long_53604029
       target_field: spycloud.breach_catalog.assets.social.soundcloud
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a6df2a30
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_stackoverflow
-      tag: convert_assets_social_stackoverflow_to_long
+      tag: convert_assets_social_stackoverflow_to_long_c9f41437
       target_field: spycloud.breach_catalog.assets.social.stackoverflow
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_32addbe3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_steam
-      tag: convert_assets_social_steam_to_long
+      tag: convert_assets_social_steam_to_long_e996cfcc
       target_field: spycloud.breach_catalog.assets.social.steam
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e2d12d2d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_telegram
-      tag: convert_assets_social_telegram_to_long
+      tag: convert_assets_social_telegram_to_long_65a3efe4
       target_field: spycloud.breach_catalog.assets.social.telegram
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_625a7d8c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_twitter
-      tag: convert_assets_social_twitter_to_long
+      tag: convert_assets_social_twitter_to_long_0f0fa813
       target_field: spycloud.breach_catalog.assets.social.twitter
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ff4841a1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_vimeo
-      tag: convert_assets_social_vimeo_to_long
+      tag: convert_assets_social_vimeo_to_long_4f193efd
       target_field: spycloud.breach_catalog.assets.social.vimeo
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_c2cecc88
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_weibo
-      tag: convert_assets_social_weibo_to_long
+      tag: convert_assets_social_weibo_to_long_2cf94293
       target_field: spycloud.breach_catalog.assets.social.weibo
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_bd430aa6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_whatsapp
-      tag: convert_assets_social_whatsapp_to_long
+      tag: convert_assets_social_whatsapp_to_long_b2337ebb
       target_field: spycloud.breach_catalog.assets.social.whatsapp
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_8c0ec40e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_wordpress
-      tag: convert_assets_social_wordpress_to_long
+      tag: convert_assets_social_wordpress_to_long_71fa3880
       target_field: spycloud.breach_catalog.assets.social.wordpress
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2c30a34c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_xing
-      tag: convert_assets_social_xing_to_long
+      tag: convert_assets_social_xing_to_long_1e3bafed
       target_field: spycloud.breach_catalog.assets.social.xing
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6454f9b0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_yahoo
-      tag: convert_assets_social_yahoo_to_long
+      tag: convert_assets_social_yahoo_to_long_1a4b287e
       target_field: spycloud.breach_catalog.assets.social.yahoo
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_8d904d2c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.social_youtube
-      tag: convert_assets_social_youtube_to_long
+      tag: convert_assets_social_youtube_to_long_1ffa2894
       target_field: spycloud.breach_catalog.assets.social.youtube
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f884f83b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.source_file
-      tag: convert_assets_source_file_to_long
+      tag: convert_assets_source_file_to_long_b08f8bd1
       target_field: spycloud.breach_catalog.assets.source.file
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2c2bf135
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.source_id
-      tag: convert_assets_source_id_to_long
+      tag: convert_assets_source_id_to_long_3d18bc0a
       target_field: spycloud.breach_catalog.assets.source.id
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5a5bd274
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.spycloud_publish_date
-      tag: convert_assets_spycloud_publish_date_to_long
+      tag: convert_assets_spycloud_publish_date_to_long_908d9061
       target_field: spycloud.breach_catalog.assets.spycloud_publish_date
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_71c05079
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.ssn_last_four
-      tag: convert_assets_ssn_last_four_to_long
+      tag: convert_assets_ssn_last_four_to_long_4639523a
       target_field: spycloud.breach_catalog.assets.ssn_last_four
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_94471c68
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.state
-      tag: convert_assets_state_to_long
+      tag: convert_assets_state_to_long_42535435
       target_field: spycloud.breach_catalog.assets.state
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_8cabdcee
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.system_install_date
-      tag: convert_assets_system_install_date_to_long
+      tag: convert_assets_system_install_date_to_long_e640dfd7
       target_field: spycloud.breach_catalog.assets.system.install_date
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_27141802
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.system_model
-      tag: convert_assets_system_model_to_long
+      tag: convert_assets_system_model_to_long_e2f3f572
       target_field: spycloud.breach_catalog.assets.system.model
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_168e050c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.target_domain
-      tag: convert_assets_target_domain_to_long
+      tag: convert_assets_target_domain_to_long_8d1a03f3
       target_field: spycloud.breach_catalog.assets.target.domain
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_fc42306d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.target_subdomain
-      tag: convert_assets_target_subdomain_to_long
+      tag: convert_assets_target_subdomain_to_long_3f2ee450
       target_field: spycloud.breach_catalog.assets.target.subdomain
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2f601a67
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.target_url
-      tag: convert_assets_target_url_to_long
+      tag: convert_assets_target_url_to_long_1e71b866
       target_field: spycloud.breach_catalog.assets.target.url
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f3b4ab41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.taxid
-      tag: convert_assets_taxid_to_long
+      tag: convert_assets_taxid_to_long_fe52b93c
       target_field: spycloud.breach_catalog.assets.taxid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_658b09b2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.timezone
-      tag: convert_assets_timezone_to_long
+      tag: convert_assets_timezone_to_long_f7bca9af
       target_field: spycloud.breach_catalog.assets.timezone
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_20bb587f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.title
-      tag: convert_assets_title_to_long
+      tag: convert_assets_title_to_long_0e39ee7d
       target_field: spycloud.breach_catalog.assets.title
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_de2f6a3b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.user_agent
-      tag: convert_assets_user_agent_to_long
+      tag: convert_assets_user_agent_to_long_fbc5a5ca
       target_field: spycloud.breach_catalog.assets.user.agent
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_812d0101
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.user_browser
-      tag: convert_assets_user_browser_to_long
+      tag: convert_assets_user_browser_to_long_879e06fa
       target_field: spycloud.breach_catalog.assets.user.browser
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_db889d9d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.user_hostname
-      tag: convert_assets_user_hostname_to_long
+      tag: convert_assets_user_hostname_to_long_7b906f50
       target_field: spycloud.breach_catalog.assets.user.hostname
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_46c5f9ed
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.username
-      tag: convert_assets_username_to_long
+      tag: convert_assets_username_to_long_68f4693f
       target_field: spycloud.breach_catalog.assets.user.name
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_20991372
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.user_os
-      tag: convert_assets_user_os_to_long
+      tag: convert_assets_user_os_to_long_c8bfae6f
       target_field: spycloud.breach_catalog.assets.user.os
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_80de8671
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.user_sys_domain
-      tag: convert_assets_user_sys_domain_to_long
+      tag: convert_assets_user_sys_domain_to_long_330635db
       target_field: spycloud.breach_catalog.assets.user.sys.domain
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b256380c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.user_sys_registered_organization
-      tag: convert_assets_user_sys_registered_organization_to_long
+      tag: convert_assets_user_sys_registered_organization_to_long_f5b9cc28
       target_field: spycloud.breach_catalog.assets.user.sys.registered.organization
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b600583c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.user_sys_registered_owner
-      tag: convert_assets_user_sys_registered_owner_to_long
+      tag: convert_assets_user_sys_registered_owner_to_long_e686b17e
       target_field: spycloud.breach_catalog.assets.user.sys.registered.owner
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4b41cb2a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.vehicle_identification_number
-      tag: convert_assets_vehicle_identification_number_to_long
+      tag: convert_assets_vehicle_identification_number_to_long_960f85fe
       target_field: spycloud.breach_catalog.assets.vehicle.identification_number
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3964f2cf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.vehicle_make
-      tag: convert_assets_vehicle_make_to_long
+      tag: convert_assets_vehicle_make_to_long_d468fec7
       target_field: spycloud.breach_catalog.assets.vehicle.make
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_55de3677
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.vehicle_model
-      tag: convert_assets_vehicle_model_to_long
+      tag: convert_assets_vehicle_model_to_long_4af4e53e
       target_field: spycloud.breach_catalog.assets.vehicle.model
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_95598a8e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.voter_id
-      tag: convert_assets_voter_id_to_long
+      tag: convert_assets_voter_id_to_long_d39f6893
       target_field: spycloud.breach_catalog.assets.voter.id
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6608a32f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.voter_registration_date
-      tag: convert_assets_voter_registration_date_to_long
+      tag: convert_assets_voter_registration_date_to_long_95a00bca
       target_field: spycloud.breach_catalog.assets.voter.registration_date
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_033d2e5a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assets.water_type
-      tag: convert_assets_water_type_to_long
+      tag: convert_assets_water_type_to_long_053401b4
       target_field: spycloud.breach_catalog.assets.water_type
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e63b56fa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.breached_companies
-      tag: rename_breached_companies
+      tag: rename_breached_companies_1e995630
       target_field: spycloud.breach_catalog.breached_companies
       ignore_missing: true
   - rename:
       field: json.breach_category
-      tag: rename_breach_category
+      tag: rename_breach_category_017a84c0
       target_field: spycloud.breach_catalog.category
       ignore_missing: true
   - set:
       field: spycloud.breach_catalog.combo_list_flag
-      tag: set_spycloud_breach_catalog_combo_list_flag_true
+      tag: set_spycloud_breach_catalog_combo_list_flag_true_a30ee95d
       value: true
       if: ctx.json?.combo_list_flag != null && ctx.json.combo_list_flag.toLowerCase().contains('yes')
   - set:
       field: spycloud.breach_catalog.combo_list_flag
-      tag: set_spycloud_breach_catalog_combo_list_flag_false
+      tag: set_spycloud_breach_catalog_combo_list_flag_false_9271aef0
       value: false
       if: ctx.json?.combo_list_flag != null && ctx.json.combo_list_flag.toLowerCase().contains('no')
   - convert:
       field: json.confidence
-      tag: convert_confidence_to_long
+      tag: convert_confidence_to_long_0c156fb6
       target_field: spycloud.breach_catalog.confidence
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_42c94926
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.consumer_category
-      tag: rename_consumer_category
+      tag: rename_consumer_category_666f56f2
       target_field: spycloud.breach_catalog.consumer_category
       ignore_missing: true
   - date:
       field: json.breach_date
-      tag: date_breach_date
+      tag: date_breach_date_128a3777
       target_field: spycloud.breach_catalog.date
       formats:
         - ISO8601
       if: ctx.json?.breach_date != null && ctx.json.breach_date != ''
       on_failure:
         - append:
+            tag: append_error_message_fc316c46
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
-      tag: set_event_start_from_breach_catalog_date
+      tag: set_event_start_from_breach_catalog_date_16b64c38
       copy_from: spycloud.breach_catalog.date
       ignore_empty_value: true
   - rename:
       field: json.description
-      tag: rename_description
+      tag: rename_description_b8bab9d0
       target_field: spycloud.breach_catalog.description
       ignore_missing: true
   - set:
       field: message
-      tag: set_message_from_breach_catalog_description
+      tag: set_message_from_breach_catalog_description_36b38d26
       copy_from: spycloud.breach_catalog.description
       ignore_empty_value: true
   - convert:
       field: json.id
-      tag: convert_id_to_string
+      tag: convert_id_to_string_349a52d2
       target_field: spycloud.breach_catalog.id
       type: string
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_breach_catalog_id
+      tag: set_event_id_from_breach_catalog_id_bce3ab96
       copy_from: spycloud.breach_catalog.id
       ignore_empty_value: true
   - rename:
       field: json.breach_main_category
-      tag: rename_breach_main_category
+      tag: rename_breach_main_category_67ee61e4
       target_field: spycloud.breach_catalog.main_category
       ignore_missing: true
   - rename:
       field: json.media_urls
-      tag: rename_media_urls
+      tag: rename_media_urls_735341ea
       target_field: spycloud.breach_catalog.media_urls
       ignore_missing: true
   - convert:
       field: json.num_records
-      tag: convert_num_records_to_long
+      tag: convert_num_records_to_long_255d10b0
       target_field: spycloud.breach_catalog.num_records
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6b06258e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: spycloud.breach_catalog.premium_flag
-      tag: set_spycloud_breach_catalog_premium_flag_true
+      tag: set_spycloud_breach_catalog_premium_flag_true_3c6b30a3
       value: true
       if: ctx.json?.premium_flag != null && ctx.json.premium_flag.toLowerCase().contains('yes')
   - set:
       field: spycloud.breach_catalog.premium_flag
-      tag: set_spycloud_breach_catalog_premium_flag_false
+      tag: set_spycloud_breach_catalog_premium_flag_false_d010ff29
       value: false
       if: ctx.json?.premium_flag != null && ctx.json.premium_flag.toLowerCase().contains('no')
   - date:
       field: json.public_date
-      tag: date_public_date
+      tag: date_public_date_45bbc5ff
       target_field: spycloud.breach_catalog.public_date
       formats:
         - ISO8601
       if: ctx.json?.public_date != null && ctx.json.public_date != ''
       on_failure:
         - append:
+            tag: append_error_message_7ceeb95a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.sensitive_source
-      tag: convert_sensitive_source_to_boolean
+      tag: convert_sensitive_source_to_boolean_e20a4e62
       target_field: spycloud.breach_catalog.sensitive_source
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_a910678c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.short_title
-      tag: rename_short_title
+      tag: rename_short_title_c4ce49c9
       target_field: spycloud.breach_catalog.short_title
       ignore_missing: true
   - rename:
       field: json.site_description
-      tag: rename_site_description
+      tag: rename_site_description_c24f4897
       target_field: spycloud.breach_catalog.site.description
       ignore_missing: true
   - rename:
       field: json.site
-      tag: rename_site
+      tag: rename_site_a563dee4
       target_field: spycloud.breach_catalog.site.value
       ignore_missing: true
   - set:
       field: event.reference
-      tag: set_event_reference_from_breach_catalog_site_value
+      tag: set_event_reference_from_breach_catalog_site_value_73789ae7
       copy_from: spycloud.breach_catalog.site.value
       ignore_empty_value: true
   - date:
       field: json.spycloud_publish_date
-      tag: date_spycloud_publish_date
+      tag: date_spycloud_publish_date_14634baf
       target_field: spycloud.breach_catalog.spycloud_publish_date
       formats:
         - ISO8601
       if: ctx.json?.spycloud_publish_date != null && ctx.json.spycloud_publish_date != ''
       on_failure:
         - append:
+            tag: append_error_message_4edf1be5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_breach_catalog_spycloud_publish_date
+      tag: set_@timestamp_from_breach_catalog_spycloud_publish_date_6bf4e976
       copy_from: spycloud.breach_catalog.spycloud_publish_date
       ignore_empty_value: true
   - rename:
       field: json.title
-      tag: rename_title
+      tag: rename_title_197779cf
       target_field: spycloud.breach_catalog.title
       ignore_missing: true
   - rename:
       field: json.tlp
-      tag: rename_tlp
+      tag: rename_tlp_0104ac48
       target_field: spycloud.breach_catalog.tlp
       ignore_missing: true
   - rename:
       field: json.type
-      tag: rename_type
+      tag: rename_type_3bff532a
       target_field: spycloud.breach_catalog.type
       ignore_missing: true
   - rename:
       field: json.uuid
-      tag: rename_uuid
+      tag: rename_uuid_cf06197d
       target_field: spycloud.breach_catalog.uuid
       ignore_missing: true
   - remove:
@@ -2375,16 +2599,16 @@ processors:
         - spycloud.breach_catalog.id
         - spycloud.breach_catalog.site.value
         - spycloud.breach_catalog.spycloud_publish_date
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_d8b9ab5b
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
       field:
         - json
-      tag: remove_json
+      tag: remove_json_f3d169b2
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_44aeee7c
       lang: painless
       source: |-
         boolean drop(Object o) {
@@ -2403,24 +2627,27 @@ processors:
       description: Drops null/empty values recursively.
   - append:
       field: event.kind
-      tag: append_pipeline_error_into_event_kind
+      tag: append_pipeline_error_into_event_kind_acc297e3
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -1,0 +1,17 @@
+services:
+  azure-eh:
+    image: golang:1.22-alpine
+    environment:
+      GOTOOLCHAIN: local
+    volumes:
+      - .:/app:ro
+    working_dir: /app
+    command: sh -c "go build -o /tmp/server . && /tmp/server"
+    ports:
+      - "5672"
+      - "10000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:10000/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 30

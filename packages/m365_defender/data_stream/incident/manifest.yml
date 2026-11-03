@@ -33,11 +33,15 @@ streams:
       - name: batch_size
         type: integer
         title: Batch Size
-        description: Batch size for the response of the Incident Security Graph API V2. The maximum supported batch size value is 50.
+        description: Number of incidents to request per page ($top) from the Incident Security Graph API V2. The API caps $top at 1000; larger values are silently clamped. A conservative default is used because each incident expands its alerts, which increases per-page memory.
         default: 50
         multi: false
         required: true
         show_user: false
+        # Deliberately left visible in agentless mode. Per-page memory is batch_size times the
+        # number of alerts nested in each incident, and that second factor is set by the tenant's
+        # data, not by any setting here or any API cap. Lowering batch_size is the only lever an
+        # operator has when incidents carry more alerts than the memory request was sized for.
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout

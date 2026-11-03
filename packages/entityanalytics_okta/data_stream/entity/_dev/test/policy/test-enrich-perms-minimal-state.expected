@@ -1,0 +1,54 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            agentVersion: ^9.5.0
+            name: entityanalytics_okta
+      name: test-enrich-perms-minimal-state-entityanalytics_okta
+      streams:
+        - data_stream:
+            dataset: entityanalytics_okta.entity
+          dataset: users
+          enrich_with:
+            - groups
+            - roles
+            - permissions
+          okta_domain: trial-xxxxxxx-admin.okta.com
+          okta_token: ${SECRET_0}
+          processors:
+            - add_fields:
+                fields:
+                    okta_domain: trial-xxxxxxx-admin.okta.com
+                target: ""
+          provider: okta
+          publisher_pipeline.disable_host: true
+          request.ssl: null
+          request.timeout: 30s
+          sync_interval: 24h
+          tags:
+            - forwarded
+            - entityanalytics_okta-entity
+          tracer.enabled: false
+          tracer.filename: ../../logs/okta/http-request-trace-*.ndjson
+          tracer.maxbackups: 5
+          update_interval: 15m
+          use_minimal_state: true
+      type: entity-analytics
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

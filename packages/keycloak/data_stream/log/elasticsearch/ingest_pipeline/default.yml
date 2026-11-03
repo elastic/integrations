@@ -2,6 +2,7 @@
 description: Pipeline for parsing keycloak logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
@@ -9,26 +10,30 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
-      tag: rename_event_original
+      tag: rename_event_original_a7b1f822
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - dot_expander:
+      tag: dot_expander_*_add55d98
       field: "*"
       path: json
       if: ctx.json != null
   - rename:
+      tag: rename_event_original_to_json_event_original_a7fe9915
       field: event.original
       target_field: json.event.original
       ignore_missing: true
       if: ctx.json != null
   - remove:
+      tag: remove__tmp_tz_offset_705bc198
       field: _tmp.tz_offset
       if: ctx.json != null
   - grok:
       field: event.original
-      tag: grok_event_original_to_remove_braces
+      tag: grok_event_original_to_remove_braces_db7c8a95
       patterns:
         - "^\\[%{GREEDYDATA:event.original}\\]$"
       if: ctx.event?.original != null && ctx.event?.original.startsWith('[')
@@ -36,13 +41,13 @@ processors:
       field: event.original
       patterns:
         - "%{TIMESTAMP_ISO8601:_tmp.timestamp} %{LOGLEVEL:log.level}%{SPACE}\\[%{JAVACLASS:log.logger}\\] \\(%{DATA:process.thread.name}\\) (?<message>(.|\r|\n)*)"
-      tag: grok_event_original
+      tag: grok_event_original_002444d4
       if: ctx.json == null
   - set:
       field: event.timezone
       value: "{{{_tmp.tz_offset}}}"
       if: ctx._tmp?.tz_offset != null && ctx._tmp?.tz_offset != 'local'
-      tag: set_event_timezone
+      tag: set_event_timezone_7f67d588
   - date:
       field: _tmp.timestamp
       target_field: '@timestamp'
@@ -51,7 +56,7 @@ processors:
         - yyyy-MM-dd HH:mm:ss,SSS
         - ISO8601
       if: ctx.event?.timezone != null && ctx.json == null
-      tag: date_timestamp_timezone
+      tag: date_timestamp_timezone_a3273bbf
   - date:
       field: _tmp.timestamp
       target_field: '@timestamp'
@@ -59,9 +64,9 @@ processors:
         - yyyy-MM-dd HH:mm:ss,SSS
         - ISO8601
       if: ctx.event?.timezone == null && ctx.json == null
-      tag: date_timestamp_no_timezone
+      tag: date_timestamp_no_timezone_262fae9b
   - script:
-      tag: blat_json_to_ctx
+      tag: blat_json_to_ctx_05382fe1
       if: ctx.json instanceof Map
       source: |-
 
@@ -96,20 +101,20 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "events" }}'
       if: "ctx.log?.logger == 'org.keycloak.events'"
-      tag: pipeline_events
+      tag: pipeline_events_1a4ccd37
   - drop:
       if: ctx._tmp?.only_user_events == true && ctx.log?.logger != 'org.keycloak.events'
-      tag: drop_user_events
+      tag: drop_user_events_f1bf7af2
   - remove:
       field:
         - _tmp
         - json
       ignore_missing: true
-      tag: remove_tmp
+      tag: remove_tmp_78f6d7e6
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
-      tag: painless_remove_null
+      tag: painless_remove_null_a0a1a21a
       source: |
         void handleMap(Map map) {
           for (def x : map.values()) {
@@ -134,13 +139,18 @@ processors:
         handleMap(ctx);
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

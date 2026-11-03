@@ -1,0 +1,62 @@
+{
+  "attributes": {
+    "name": "[Supabase OTel] REST API requests free of connection pool timeouts 99.5% rolling 30 days",
+    "description": "Tracks whether the PostgREST data API is able to serve requests without exhausting its database connection pool. Every increment of pgrst_db_pool_timeouts_total is an API request that waited longer than db-pool-acquisition-timeout for a connection and was aborted with HTTP 504, so it is a directly user-visible failure. A 5-minute timeslice is good when no new pool timeout occurred; the SLO requires 99.5% of timeslices to be good over a rolling 30 days. The counter is a cumulative Sum, so the per-timeslice increment is taken as max()-min(). Timeslices in which PostgREST reports no data at all are treated as no data rather than as breaches, so projects that do not expose the REST API do not consume budget. Known limitation: a PostgREST restart resets the counter to zero, so max()-min() inside the restart timeslice returns the whole pre-restart total and marks that one timeslice bad even though no request timed out. The available SLO indicator types cannot express a reset-aware delta, so this cannot be filtered out. The cost is bounded and small — a 30-day rolling window holds 8640 five-minute timeslices and 99.5% allows 43 bad ones, so each restart spends about 2.3% of the error budget and roughly 43 restarts in one window would exhaust it on deploys alone. Projects that deploy more often than that should either lengthen the timeslice window or track this rule-side instead, where the ES|QL INCREASE() function handles resets correctly.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"supabase.metrics.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "pgrst_db_pool_timeouts_total",
+              "filter": ""
+            },
+            {
+              "name": "B",
+              "aggregation": "min",
+              "field": "pgrst_db_pool_timeouts_total",
+              "filter": ""
+            }
+          ],
+          "equation": "A-B",
+          "comparator": "LT",
+          "threshold": 1
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "5m"
+    },
+    "tags": [
+      "supabase",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.supabase_project_ref"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "supabase_otel-0fedaab5-00a9-45ce-8340-fcf6e510d215"
+        },
+        {
+          "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+        }
+      ]
+    }
+  },
+  "id": "supabase_otel-rest-api-pool-timeout-free-99.5-Rolling30Days",
+  "type": "slo_template"
+}

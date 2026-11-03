@@ -1,0 +1,75 @@
+{
+  "id": "gcp_cloudrun_otel-slow-container-startup-by-service-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud Run OTel] Slow container startup (cold start) by service",
+        "description": "Fires when the p95 container startup latency of a Cloud Run service exceeds 10 seconds across at least 3 instance starts in a 60-minute window. Slow cold starts add directly to user-visible latency (not captured by request_latencies), and requests pending longer than max(10 s, 3.5x average startup time) are rejected with HTTP 429.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudrun"
+        ]
+      },
+      "schedule": {
+        "every": "15m",
+        "lookback": "60m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudrun.otel-*\n// Services only: cloud_run_job documents have no service_name\n| WHERE `metrics.run.googleapis.com/container/startup_latencies` IS NOT NULL\n  AND resource.attributes.service_name IS NOT NULL\n// Sparse metric: only populated in minutes where a new instance started\n// COUNT of the histogram = number of instance starts in the window\n| STATS\n    startup_p95_ms = PERCENTILE(`metrics.run.googleapis.com/container/startup_latencies`::exponential_histogram, 95),\n    startup_max_ms = MAX(`metrics.run.googleapis.com/container/startup_latencies`::exponential_histogram),\n    instance_starts = COUNT(`metrics.run.googleapis.com/container/startup_latencies`::exponential_histogram)\n  BY resource.attributes.project_id, resource.attributes.location, resource.attributes.service_name",
+        "breach": {
+          "segment": "// Minimum number of instance starts so a single outlier does not alert\nWHERE instance_starts >= 3\n// Alert threshold in milliseconds\n| WHERE startup_p95_ms > 10000\n| EVAL startup_p95_ms = ROUND(startup_p95_ms, 0), startup_max_ms = ROUND(startup_max_ms, 0)\n| KEEP resource.attributes.project_id, resource.attributes.location, resource.attributes.service_name,\n    startup_p95_ms, startup_max_ms, instance_starts\n| SORT startup_p95_ms DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.location",
+          "resource.attributes.service_name"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudrun_otel-slow-container-startup-by-service-v2-overview-dashboard",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudrun_otel-a22d34c2-3c04-47a0-bf52-cf1e20a36f1d"
+          }
+        },
+        {
+          "id": "gcp_cloudrun_otel-slow-container-startup-by-service-v2-details-dashboard",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudrun_otel-7d96ccf8-44dc-4987-8835-7ec93a922d04"
+          }
+        },
+        {
+          "id": "gcp_cloudrun_otel-slow-container-startup-by-service-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud Run slow container startup (cold start)\n\nThe p95 container startup latency exceeded 10 seconds across at least 3 instance starts in the last 60 minutes. Startup time is **not** included in `request_latencies`. Users whose request triggers a cold start wait this long on top of normal request latency. During scale-up, requests that pend longer than max(10 s, 3.5 x average startup time) are rejected with HTTP 429. Those rejections are not visible in `request_count`.\n\n### Triage\n1. Check whether startup latency increased after a deployment (`resource.attributes.revision_name`). Common causes are a larger image, new initialisation work, or slow dependency connections at boot.\n2. Check how many instances are starting (`instance_starts` in the alert row) and the active/idle instance counts. Frequent cold starts mean the service keeps scaling from zero or churning instances.\n3. Check the 5xx rate. Startup failures surface as 500/503 responses.\n4. Remediate by setting min instances to at least 1 for latency-sensitive services, enabling startup CPU boost, slimming the container image, or deferring initialisation work. gen1 often has faster cold starts than gen2.\n\n### Caveats\n- The metric is sparse (BETA in GCP) and is only populated when an instance starts. If no instance started in the window, no row is returned and the rule does not fire.\n- Instances must listen for requests within 4 minutes of starting, or the startup fails.\n\n### Tuning\n- Adjust `startup_p95_ms > 10000` (milliseconds). Some runtimes, such as JVM apps, start slowly but still within budget.\n- Adjust `instance_starts >= 3`. Lengthen the 60-minute window for services that rarely scale."
+          }
+        }
+      ]
+    }
+  }
+}

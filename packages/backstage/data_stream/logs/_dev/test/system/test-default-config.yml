@@ -1,0 +1,15 @@
+wait_for_data_timeout: 1m
+input: filestream
+service: backstage-audit
+numeric_keyword_fields:
+  - backstage.log.status
+  - backstage.log.contentLength
+assert:
+  hit_count: 11
+data_stream:
+  vars:
+    preserve_original_event: true
+    paths:
+      - "{{SERVICE_LOGS_DIR}}/*.log"
+    custom: |
+      prospector.scanner.fingerprint.enabled: false

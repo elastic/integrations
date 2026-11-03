@@ -2,10 +2,12 @@
 description: Pipeline for processing Mimecast cloud_integrated_logs.
 processors:
   - drop:
+      tag: drop_ignore_want_more_placeholder_message_d6785451
       description: Ignore want_more placeholder message.
       if: ctx.message == "want_more"
 
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -15,34 +17,38 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_mimecast_d72eb09c
       description: Parse 'message' JSON contents into a 'mimecast' object.
       field: event.original
       target_field: mimecast
   - drop:
+      tag: drop_6459310c
       if: ctx?.mimecast?.datetime == null && ctx?.mimecast?.timestamp == null
   - set:
+      tag: set_event_category_4861796c
       field: event.category
       value: [email]
 
   - date:
+      tag: date_mimecast_timestamp_2f9b8186
       description: Use 'mimecast.timestamp' as the '@timestamp'
       field: mimecast.timestamp
       if: ctx.mimecast?.timestamp != null
@@ -50,16 +56,19 @@ processors:
       formats:
         - UNIX_MS
   - set:
+      tag: set_event_created_3b69f632
       field: event.created
       copy_from: '@timestamp'
       if: ctx['@timestamp'] != null
   - set:
+      tag: set_event_kind_6ef68e78
       field: event.kind
       value: alert
       if: ctx.mimecast?.tags instanceof List && ctx.mimecast.tags.length != 0
 
   ### NOTE LOG TYPE
   - rename:
+      tag: rename_mimecast_type_to_mimecast_log_type_8751ca79
       field: mimecast.type
       target_field: mimecast.log_type
       ignore_missing: true
@@ -67,11 +76,12 @@ processors:
   - set:
       field: original
       copy_from: mimecast
-      tag: preserve_custom_duplicate_fields
+      tag: preserve_custom_duplicate_fields_f2d88bc6
       ignore_empty_value: true
       if: ctx.tags?.contains('preserve_duplicate_custom_fields') == true
 
   - fingerprint:
+      tag: fingerprint_to_id_5cae5d9e
       fields:
         - mimecast.messageId
         - mimecast.processingId
@@ -86,14 +96,17 @@ processors:
 
   ### Common
   - foreach:
+      tag: foreach_mimecast_recipients_9bfe67b6
       if: ctx.mimecast?.recipients instanceof List
       field: mimecast.recipients
       processor:
         append:
+          tag: append_email_to_address_bc3400d0
           field: email.to.address
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
+      tag: append_email_to_address_0cfb7a4a
       field: email.to.address
       value: '{{{mimecast.recipients}}}'
       allow_duplicates: false
@@ -101,39 +114,48 @@ processors:
 
   ### ENTITIES
   - rename:
+      tag: rename_mimecast_senderIp_to_source_ip_e17dfbc5
       field: mimecast.senderIp
       target_field: source.ip
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_messageId_to_email_message_id_a8ab0b64
       field: mimecast.messageId
       target_field: email.message_id
       ignore_missing: true
   - append:
+      tag: append_email_from_address_0cbef6e5
       field: email.from.address
       value: '{{{mimecast.senderHeader}}}'
       allow_duplicates: false
       if: ctx.mimecast?.senderHeader != null
   - append:
+      tag: append_email_from_address_3477ed67
       field: email.from.address
       value: '{{{mimecast.senderEnvelope}}}'
       allow_duplicates: false
       if: ctx.mimecast?.senderEnvelope != null
   - rename:
+      tag: rename_mimecast_subject_to_email_subject_3c7206f3
       field: mimecast.subject
       target_field: email.subject
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_direction_to_email_direction_624c8c4d
       field: mimecast.direction
       target_field: email.direction
       ignore_missing: true
   - lowercase:
+      tag: lowercase_email_direction_569c0270
       field: email.direction
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_attachments_to_email_attachments_file_name_e8d63fdc
       field: mimecast.attachments
       target_field: email.attachments.file.name
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_action_to_mimecast_threatState_99481815
       field: mimecast.action
       target_field: mimecast.threatState
       ignore_missing: true
@@ -143,33 +165,40 @@ processors:
 
   ### URL LOGS
   - rename:
+      tag: rename_mimecast_action_to_event_action_75b859cd
       field: mimecast.action
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_mimecast_sourceIp_to_source_ip_a8821cb9
       field: mimecast.sourceIp
       target_field: source.ip
       ignore_missing: true
 
   - convert:
+      tag: convert_source_ip_51566224
       field: source.ip
       type: ip
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_35cc2af9
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
         - remove:
+            tag: remove_source_ip_07943d1d
             field: source.ip
             ignore_failure: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -178,59 +207,64 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
 
   - foreach:
+      tag: foreach_email_from_address_bd2fca99
       field: email.from.address
       if: ctx.email?.from?.address instanceof List
       ignore_failure: true
       processor:
         append:
           field: related.user
-          tag: append_email_from_address_list_to_related_user
+          tag: append_email_from_address_list_to_related_user_15ea0751
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_email_to_address_5d15e64f
       field: email.to.address
       if: ctx.email?.to?.address instanceof List
       ignore_failure: true
       processor:
         append:
           field: related.user
-          tag: append_email_from_address_list_to_related_user
+          tag: append_email_from_address_list_to_related_user_c199fc88
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
       if: ctx.email?.from?.address != null && !(ctx.email.from.address instanceof List) && ctx.email.from.address != ''
       field: related.user
-      tag: append_email_from_address_to_related_user
+      tag: append_email_from_address_to_related_user_0e1a5b0a
       value: '{{{email.from.address}}}'
       allow_duplicates: false
   - append:
       if: ctx.source?.ip != null
       field: related.ip
-      tag: append_source_ip_to_related_ip
+      tag: append_source_ip_to_related_ip_a2ab3b40
       value: '{{{source.ip}}}'
       allow_duplicates: false
 
   # Handle attachment details.
   - foreach:
-      tag: collect_attachment_file_hashes
+      tag: collect_attachment_file_hashes_6da8fdb3
       if: ctx.email?.attachments?.file?.hash instanceof Map
       field: email.attachments.file.hash
       processor:
         append:
+          tag: append_related_hash_e5d8e808
           field: related.hash
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - script:
-      tag: promote_email_attachments_to_array
+      tag: promote_email_attachments_to_array_c5ef3b2b
       if: ctx.email?.attachments != null
       lang: painless
       source: |
@@ -239,7 +273,7 @@ processors:
         ctx.email.attachments = attachments;
 
   - remove:
-      tag: remove_duplicate_custom_fields
+      tag: remove_duplicate_custom_fields_ecb18176
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
       field:
         - mimecast.recipients
@@ -248,11 +282,13 @@ processors:
 
   # Cleanup
   - rename:
+      tag: rename_original_to_mimecast_5b6791aa
       field: original
       target_field: mimecast
       override: true
       ignore_missing: true
   - remove:
+      tag: remove_cleanup_repeated_unwanted_temporary_fields_0a5321eb
       description: Cleanup of repeated/unwanted/temporary fields.
       field:
         - mimecast._offset
@@ -261,7 +297,7 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_ef08549b
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
         void handleMap(Map map) {
@@ -288,13 +324,16 @@ processors:
 
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

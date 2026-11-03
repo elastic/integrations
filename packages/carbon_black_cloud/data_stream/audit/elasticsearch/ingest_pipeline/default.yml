@@ -2,6 +2,7 @@
 description: Pipeline for parsing Carbon Black Cloud audit logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -11,131 +12,159 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - date:
+      tag: date_json_eventTime_e66ab762
       field: json.eventTime
       if: ctx.json?.eventTime != null && ctx.json.eventTime != ''
       formats:
         - UNIX_MS
       on_failure:
         - remove:
+            tag: remove_json_eventTime_a1644a75
             field: json.eventTime
         - append:
+            tag: append_error_message_08b4c571
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_outcome_1af271cd
       field: event.outcome
       value: success
   - convert:
+      tag: convert_json_flagged_to_carbon_black_cloud_audit_flagged_deda28d6
       field: json.flagged
       target_field: carbon_black_cloud.audit.flagged
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_flagged_86c87e2c
             field: json.flagged
         - append:
+            tag: append_error_message_22edb7a7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_outcome_693c33cd
       field: event.outcome
       value: failure
       if: ctx.json?.flagged == true
   - rename:
+      tag: rename_json_description_to_event_reason_df14b53c
       field: json.description
       target_field: event.reason
       ignore_missing: true
   - convert:
+      tag: convert_json_clientIp_to_client_ip_aafb22e1
       field: json.clientIp
       target_field: client.ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_clientIp_e1f9b331
             field: json.clientIp
         - append:
+            tag: append_error_message_0c391210
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_c5270880
       field: related.ip
       value: '{{{client.ip}}}'
       if: ctx.client?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_loginName_to_client_user_id_63dd6f43
       field: json.loginName
       target_field: client.user.id
       ignore_missing: true
   - set:
       field: client.user.email
       copy_from: client.user.id
-      tag: copy_client_user_email
+      tag: copy_client_user_email_2d852384
       if: ctx.client?.user?.id != null && ctx.client.user.id.indexOf("@") > 0
   - dissect:
       field: client.user.email
       pattern: '%{client.user.name}@%{client.user.domain}'
-      tag: dissect_client_user_email
+      tag: dissect_client_user_email_6dcd6b88
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_related_user_318d2323
       field: related.user
       value: '{{{client.user.id}}}'
       if: ctx.client?.user?.id != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_2353f6bb
       field: related.user
       value: '{{{client.user.name}}}'
       if: ctx.client?.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_eventId_to_event_id_5c510152
       field: json.eventId
       target_field: event.id
       ignore_missing: true
   - rename:
+      tag: rename_json_orgName_to_organization_name_c94a3829
       field: json.orgName
       target_field: organization.name
       ignore_missing: true
   - urldecode:
+      tag: urldecode_json_requestUrl_to_url_original_459d1e97
       field: json.requestUrl
       target_field: url.original
       ignore_missing: true
   - convert:
+      tag: convert_json_verbose_to_carbon_black_cloud_audit_verbose_51cf89e6
       field: json.verbose
       target_field: carbon_black_cloud.audit.verbose
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_verbose_c1f060c0
             field: json.verbose
         - append:
+            tag: append_error_message_516d6c3b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
   - script:
+      tag: script_drops_null_empty_values_recursively_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -154,12 +183,15 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_1dc99c45
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

@@ -3,10 +3,10 @@ description: Pipeline for processing event logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_8efb762c
       value: 9.3.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - remove:
@@ -14,48 +14,48 @@ processors:
         - organization
         - division
         - team
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_0bec60b2
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
       ignore_missing: true
       description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_f9dd6b88
       if: ctx.event?.original == null
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message.
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_e7d2c492
       if: ctx.event?.original != null
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_c1ae4d4c
       target_field: beyondtrust_epm.event
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_333a3a1b
       value: BeyondTrust
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_4ca43b73
       value: Endpoint Privilege Management
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - append:
       field: event.type
-      tag: append_event_type_info
+      tag: append_event_type_info_700bb417
       value: info
       allow_duplicates: false
       description: BeyondTrust EPM events are informational; set the ECS event.type companion required alongside event.category.
   - pipeline:
       name: '{{ IngestPipeline "pipeline-network-transport" }}'
-      tag: route_network_transport
+      tag: route_network_transport_8abd5524
       if: >-
         ctx.beyondtrust_epm?.event != null
         && (ctx.beyondtrust_epm.event.client != null
@@ -69,7 +69,7 @@ processors:
         || ctx.beyondtrust_epm.event.url != null)
   - pipeline:
       name: '{{ IngestPipeline "pipeline-threat-security" }}'
-      tag: route_threat_security
+      tag: route_threat_security_d37061e0
       if: >-
         ctx.beyondtrust_epm?.event != null
         && (ctx.beyondtrust_epm.event.threat != null
@@ -78,7 +78,7 @@ processors:
         || ctx.beyondtrust_epm.event.vulnerability != null)
   - pipeline:
       name: '{{ IngestPipeline "pipeline-file-endpoint" }}'
-      tag: route_file_endpoint
+      tag: route_file_endpoint_4dac3f14
       if: >-
         ctx.beyondtrust_epm?.event != null
         && (ctx.beyondtrust_epm.event.file != null
@@ -88,14 +88,14 @@ processors:
         || ctx.beyondtrust_epm.event.registry != null)
   - pipeline:
       name: '{{ IngestPipeline "pipeline-process" }}'
-      tag: route_process
+      tag: route_process_fad3cc00
       if: >-
         ctx.beyondtrust_epm?.event != null
         && (ctx.beyondtrust_epm.event.process != null
         || ctx.beyondtrust_epm.event.EPMWinMac != null)
   - pipeline:
       name: '{{ IngestPipeline "pipeline-host-infrastructure" }}'
-      tag: route_host_infrastructure
+      tag: route_host_infrastructure_a3dff7ac
       if: >-
         ctx.beyondtrust_epm?.event != null
         && (ctx.beyondtrust_epm.event.EPMWinMac != null
@@ -108,7 +108,7 @@ processors:
         || ctx.beyondtrust_epm.event.client != null)
   - pipeline:
       name: '{{ IngestPipeline "pipeline-identity-user" }}'
-      tag: route_identity_user
+      tag: route_identity_user_d5a927e4
       if: >-
         ctx.beyondtrust_epm?.event != null
         && (ctx.beyondtrust_epm.event.EPMWinMac != null
@@ -119,7 +119,7 @@ processors:
         || ctx.beyondtrust_epm.event.client != null)
   - pipeline:
       name: '{{ IngestPipeline "pipeline-service-application" }}'
-      tag: route_service_application
+      tag: route_service_application_46e94571
       if: >-
         ctx.beyondtrust_epm?.event != null
         && (ctx.beyondtrust_epm.event.EPMWinMac != null
@@ -129,7 +129,7 @@ processors:
         || ctx.beyondtrust_epm.event.service != null)
   - pipeline:
       name: '{{ IngestPipeline "pipeline-metadata-observability" }}'
-      tag: route_metadata_observability
+      tag: route_metadata_observability_8d6b8ca1
       if: >-
         ctx.beyondtrust_epm?.event != null
         && (ctx.beyondtrust_epm.event['@timestamp'] != null
@@ -144,7 +144,7 @@ processors:
         || ctx.beyondtrust_epm.event.transaction != null)
   # rename all fields name to snake case
   - script:
-      tag: script_convert_camelcase_to_snake_case
+      tag: script_convert_camelcase_to_snake_case_3ab3cb66
       lang: painless
       description: Convert camelCase to snake_case.
       source: |
@@ -198,27 +198,27 @@ processors:
   # rename fields to more readable format for better clarity
   - rename:
       field: beyondtrust_epm.event.epmwin_mac
-      tag: rename_epmwin_mac_to_epm_win_mac
+      tag: rename_epmwin_mac_to_epm_win_mac_90a92979
       target_field: beyondtrust_epm.event.epm_win_mac
       ignore_missing: true
   - rename:
       field: beyondtrust_epm.event.epm_win_mac.session.jitadmin
-      tag: rename_epm_win_mac_session_jitadmin_to_jit_admin
+      tag: rename_epm_win_mac_session_jitadmin_to_jit_admin_34f082fc
       target_field: beyondtrust_epm.event.epm_win_mac.session.jit_admin
       ignore_missing: true
   - rename:
       field: beyondtrust_epm.event.host.default_uilanguage
-      tag: rename_host_default_uilanguage_to_default_ui_language
+      tag: rename_host_default_uilanguage_to_default_ui_language_abde2a3c
       target_field: beyondtrust_epm.event.host.default_ui_language
       ignore_missing: true
   - rename:
       field: beyondtrust_epm.event.epm_win_mac.session.uilanguage
-      tag: rename_epmwin_mac_session_default_uilanguage_to_ui_language
+      tag: rename_epmwin_mac_session_default_uilanguage_to_ui_language_3b2ab128
       target_field: beyondtrust_epm.event.epm_win_mac.session.ui_language
       ignore_missing: true
 
   - script:
-      tag: remove_null_values
+      tag: remove_null_values_809aa3ae
       lang: painless
       description: Remove null or empty values from the document.
       source: |-
@@ -245,17 +245,18 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_09c07ce0
       if: ctx.error?.message != null
       value: pipeline_error
   - append:
       field: tags
-      tag: append_tags
+      tag: append_tags_cd765405
       if: ctx.error?.message != null
       value: preserve_original_event
       allow_duplicates: false
 on_failure:
   - append:
+      tag: append_error_message_8c2b45ed
       field: error.message
       value: |-
         Processor '{{{_ingest.on_failure_processor_type}}}'
@@ -263,10 +264,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
       field: tags
-      tag: append_tags
+      tag: append_tags_279d5a5c
       value: preserve_original_event
       allow_duplicates: false
