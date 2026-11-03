@@ -28,7 +28,7 @@ program: |-
     "phase": state.?cursor.phase.orValue("users"),
     "page_cursor": state.?cursor.page_cursor.orValue(""),
     "workspace_ids": state.?cursor.workspace_ids.orValue([]),
-    "groups": state.?cursor.groups.orValue([]),
+    "groups_by_user": state.?cursor.groups_by_user.orValue({}),
     "users": state.?cursor.users.orValue([]),
   }.as(ctx,
     state.with(
@@ -57,6 +57,13 @@ program: |-
                 },
               },
               "want_more": false,
+              "cursor": {
+                "phase": "users",
+                "page_cursor": "",
+                "workspace_ids": [],
+                "groups_by_user": {},
+                "users": [],
+              },
             }
           :
             resp.Body.decode_json().as(body,
@@ -70,19 +77,47 @@ program: |-
                     },
                   },
                   "want_more": false,
-                }
-              :
-                {
-                  "events": [{"message": "retry"}],
-                  "want_more": true,
                   "cursor": {
-                    "phase": (size(tail(ctx.workspace_ids)) > 0) ? "groups" : "emit",
+                    "phase": "users",
                     "page_cursor": "",
-                    "workspace_ids": tail(ctx.workspace_ids),
-                    "groups": ctx.groups + body.?usergroups.orValue([]),
-                    "users": ctx.users,
+                    "workspace_ids": [],
+                    "groups_by_user": {},
+                    "users": [],
                   },
                 }
+              :
+                ctx.groups_by_user.as(existing,
+                  body.?usergroups.orValue([]).map(g,
+                    g.drop(["users"]).as(meta,
+                      zip(
+                        g.?users.orValue([]).map(id, string(id)),
+                        g.?users.orValue([]).map(id, [meta])
+                      )
+                    )
+                  ).as(per_group,
+                    ([existing] + per_group).as(maps,
+                      zip(
+                        maps.map(m, m.keys()).flatten(),
+                        maps.map(m, m.keys()).flatten()
+                      ).keys().as(uniq,
+                        {
+                          "events": [{"message": "retry"}],
+                          "want_more": true,
+                          "cursor": {
+                            "phase": (size(tail(ctx.workspace_ids)) > 0) ? "groups" : "emit",
+                            "page_cursor": "",
+                            "workspace_ids": tail(ctx.workspace_ids),
+                            "groups_by_user": zip(
+                              uniq,
+                              uniq.map(k, maps.map(m, m[?k].orValue([])).flatten())
+                            ),
+                            "users": ctx.users,
+                          },
+                        }
+                      )
+                    )
+                  )
+                )
             )
         )
       : (ctx.phase == "emit") ?
@@ -93,7 +128,7 @@ program: |-
                 {
                   "message": u.with(
                     {
-                      "groups": ctx.groups.map(g, g.?users.orValue([]).exists(id, id == u.id), g.drop(["users"])),
+                      "groups": ctx.groups_by_user[?u.id].orValue([]),
                     }
                   ).encode_json(),
                 }
@@ -106,7 +141,7 @@ program: |-
             "phase": "users",
             "page_cursor": "",
             "workspace_ids": [],
-            "groups": [],
+            "groups_by_user": {},
             "users": [],
           },
         }
@@ -136,6 +171,13 @@ program: |-
                 },
               },
               "want_more": false,
+              "cursor": {
+                "phase": "users",
+                "page_cursor": "",
+                "workspace_ids": [],
+                "groups_by_user": {},
+                "users": [],
+              },
             }
           :
             resp.Body.decode_json().as(body,
@@ -149,6 +191,13 @@ program: |-
                     },
                   },
                   "want_more": false,
+                  "cursor": {
+                    "phase": "users",
+                    "page_cursor": "",
+                    "workspace_ids": [],
+                    "groups_by_user": {},
+                    "users": [],
+                  },
                 }
               :
                 (
@@ -176,7 +225,7 @@ program: |-
                         "phase": (next_cursor != "") ? "users" : ((page.workspace_ids.size() > 0) ? "groups" : "emit"),
                         "page_cursor": next_cursor,
                         "workspace_ids": page.workspace_ids,
-                        "groups": ctx.groups,
+                        "groups_by_user": ctx.groups_by_user,
                         "users": page.users,
                       },
                     }

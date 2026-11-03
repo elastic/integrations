@@ -266,6 +266,7 @@ The token must be an org-level user token (`xoxp-`) with the `admin.users:read` 
 | slack.user.groups.id | Slack user group ID. | keyword |
 | slack.user.groups.is_external | Whether the user group is external. | boolean |
 | slack.user.groups.is_usergroup | Whether this object is a Slack user group. | boolean |
+| slack.user.groups.label | Combined group name, handle, and workspace ID, used so dashboards keep those attributes paired. | keyword |
 | slack.user.groups.name | User group name. | keyword |
 | slack.user.groups.prefs.channels | Default public channel IDs for the user group. | keyword |
 | slack.user.groups.prefs.groups | Default private channel IDs for the user group. | keyword |
@@ -358,19 +359,17 @@ An example event for `user` looks as following:
     "slack": {
         "user": {
             "date_created": "2019-08-27T16:08:10.000Z",
-            "deactivated_ts": 0,
-            "expiration_ts": 0,
             "groups": [
                 {
                     "created_by": "W0123ABC001",
-                    "date_create": 1446598059,
-                    "date_delete": 0,
-                    "date_update": 1446670362,
+                    "date_create": "2015-11-04T00:47:39Z",
+                    "date_update": "2015-11-04T20:52:42Z",
                     "description": "Engineering team for the Elastic workspace.",
                     "handle": "engineering",
                     "id": "S0614TZR7",
                     "is_external": false,
                     "is_usergroup": true,
+                    "label": "Engineering (@engineering) · T0123ABC456",
                     "name": "Engineering",
                     "team_id": "T0123ABC456",
                     "updated_by": "W0123ABC001",
@@ -379,14 +378,14 @@ An example event for `user` looks as following:
                 {
                     "auto_type": "admin",
                     "created_by": "USLACKBOT",
-                    "date_create": 1446678371,
-                    "date_delete": 0,
-                    "date_update": 1446678371,
+                    "date_create": "2015-11-04T23:06:11Z",
+                    "date_update": "2015-11-04T23:06:11Z",
                     "description": "Security reviewers.",
                     "handle": "security",
                     "id": "S06158AV7",
                     "is_external": false,
                     "is_usergroup": true,
+                    "label": "Security (@security) · T0123ABC456",
                     "name": "Security",
                     "team_id": "T0123ABC456",
                     "updated_by": "USLACKBOT",
