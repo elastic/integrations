@@ -108,6 +108,7 @@ class PaginationTest(unittest.TestCase):
                     self.response = error
                     failed = self.evaluate(stream, first)
                     self.assertIn("error", failed["events"])
+                    self.assertEqual(failed["events"]["error"]["code"], str(error[0]))
                     self.assertEqual(failed["next"], {})
                     self.assertFalse(failed["want_more"])
                     self.assertEqual(failed["cursor"], first["cursor"])
