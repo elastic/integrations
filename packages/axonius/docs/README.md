@@ -111,6 +111,8 @@ This integration brings Axonius asset and security data into Elastic so teams ca
 
 Bundled dashboards summarize these data streams for day-to-day monitoring, risk and backlog sizing, access hygiene checks, and incident investigation with correlated operational, identity, asset, and event context.
 
+**Entity Store** support: user assets from the `identity` data stream and Axonius console accounts from the `user` data stream populate ECS entity fields, so they appear as user entities in the Elastic Security Entity Store. A user is identified by `user.email` when any of its adapters reports an email address, and otherwise by `user.id`, which is the Axonius `internal_axon_id` for identity assets. Axonius notes that `internal_axon_id` may change in the future, for example when assets are re-correlated; if it changes, a user without an email address appears as a new entity. A console account whose email address matches an inventoried user is merged into the same entity.
+
 ## What do I need to use this integration?
 
 ### From Elastic
@@ -376,19 +378,20 @@ The `user` data stream provides user events from axonius.
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Indicates whether a user is in the raw source data stream, or in the latest destination index. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
+| user.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
 
 
 An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-06-03T08:32:50.343Z",
+    "@timestamp": "2026-11-03T15:59:19.087Z",
     "agent": {
-        "ephemeral_id": "a1c19a6d-3aa1-47d3-a3bb-a16a21544746",
-        "id": "e51be873-4470-4ac9-b544-f8d1cd55df45",
-        "name": "elastic-agent-19686",
+        "ephemeral_id": "516a4819-1ede-4432-9abb-94f637ec59f9",
+        "id": "426653e3-0d3e-4f55-8868-723152acccf1",
+        "name": "elastic-agent-99477",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "9.5.0"
     },
     "axonius": {
         "user": {
@@ -411,26 +414,40 @@ An example event for `user` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.user",
-        "namespace": "57839",
+        "namespace": "48333",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "e51be873-4470-4ac9-b544-f8d1cd55df45",
+        "id": "426653e3-0d3e-4f55-8868-723152acccf1",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "9.5.0"
     },
     "event": {
         "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
         "dataset": "axonius.user",
-        "ingested": "2026-06-03T08:32:53Z",
-        "kind": "event",
-        "original": "{\"allowed_scopes_impersonation\":[\"63622d93d27cvdsfa4d9489db6a1cf\",\"63622d93d2dvfwe74d9489db6a1cc\"],\"data_scope_id\":\"fgreg63622d93d274d9489db6a1cf\",\"data_scope_name\":\"test data scope\",\"department\":\"test\",\"email\":\"alias.doe@example.com\",\"first_name\":\"alias\",\"last_login\":\"Sun, 09 Mar 2025 18:53:09 GMT\",\"last_name\":\"doe\",\"last_updated\":\"Sun, 11 Mar 2025 18:53:09 GMT\",\"role_id\":\"63622vfed93d274d9489dbbgresdcv6a1cf\",\"role_name\":\"test role\",\"source\":\"test source\",\"title\":\"Security Analyst\",\"user_name\":\"alias.doe\",\"uuid\":\"63622d93d274ihvbngvbhd9489db6a1cf\"}"
+        "ingested": "2026-11-03T15:59:23Z",
+        "kind": "asset",
+        "module": "axonius",
+        "original": "{\"allowed_scopes_impersonation\":[\"63622d93d27cvdsfa4d9489db6a1cf\",\"63622d93d2dvfwe74d9489db6a1cc\"],\"data_scope_id\":\"fgreg63622d93d274d9489db6a1cf\",\"data_scope_name\":\"test data scope\",\"department\":\"test\",\"email\":\"alias.doe@example.com\",\"first_name\":\"alias\",\"last_login\":\"Sun, 09 Mar 2025 18:53:09 GMT\",\"last_name\":\"doe\",\"last_updated\":\"Sun, 11 Mar 2025 18:53:09 GMT\",\"role_id\":\"63622vfed93d274d9489dbbgresdcv6a1cf\",\"role_name\":\"test role\",\"source\":\"test source\",\"title\":\"Security Analyst\",\"user_name\":\"alias.doe\",\"uuid\":\"63622d93d274ihvbngvbhd9489db6a1cf\"}",
+        "type": [
+            "info",
+            "user"
+        ]
     },
     "input": {
         "type": "cel"
+    },
+    "labels": {
+        "is_transform_source": "true"
+    },
+    "observer": {
+        "vendor": "Axonius"
     },
     "related": {
         "user": [
@@ -448,6 +465,14 @@ An example event for `user` looks as following:
     "user": {
         "domain": "example.com",
         "email": "alias.doe@example.com",
+        "entity": {
+            "lifecycle": {
+                "last_activity": "2025-03-09T18:53:09.000Z"
+            },
+            "type": [
+                "user"
+            ]
+        },
         "full_name": "alias doe",
         "id": "63622d93d274ihvbngvbhd9489db6a1cf",
         "name": "alias.doe",
@@ -2090,6 +2115,7 @@ The `identity` data stream provides identity asset logs from axonius.
 | axonius.identity.application_id | Unique identifier of the application. | keyword |
 | axonius.identity.application_name | Name of the application associated with this identity. | keyword |
 | axonius.identity.asset_entity_info | Information about the asset entity and its properties. | keyword |
+| axonius.identity.asset_mail | First email address, in lexical order, reported by any adapter for this user asset. Used to give every adapter record of the asset the same user.email. | keyword |
 | axonius.identity.asset_type | The type of asset. | keyword |
 | axonius.identity.associated_devices.device_associated_saas_apps_names | Names of SaaS applications associated with the device. | keyword |
 | axonius.identity.associated_devices.device_caption | Caption or display name of the associated device. | keyword |
@@ -2496,6 +2522,8 @@ The `identity` data stream provides identity asset logs from axonius.
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
+| user.entity.attributes.mfa_enabled | Indicates whether multi-factor authentication is enabled for this entity. Typically applicable to User entities. | boolean |
+| user.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
 
 
 An example event for `identity` looks as following:
@@ -2504,11 +2532,11 @@ An example event for `identity` looks as following:
 {
     "@timestamp": "2025-12-09T12:02:11.000Z",
     "agent": {
-        "ephemeral_id": "9bf5d9aa-5fef-4f19-a5fe-5780fcd649a2",
-        "id": "57760dc1-591b-4a34-ba06-c4f7604fdb10",
-        "name": "elastic-agent-81971",
+        "ephemeral_id": "8823c103-919a-484f-9264-917d2bf029e0",
+        "id": "95176b3c-9937-4f1f-b9d2-3b423f3d37f0",
+        "name": "elastic-agent-74343",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "9.5.0"
     },
     "axonius": {
         "identity": {
@@ -2521,12 +2549,11 @@ An example event for `identity` looks as following:
             ],
             "application_and_account_name": "microsoft/azure_ad-demo",
             "asset_type": "users",
-            "associated_groups": [
-                {
-                    "display_name": "developers-group",
-                    "remote_id": "a3e70162"
-                }
-            ],
+            "associated_groups": {
+                "display_name": "developers-group",
+                "remote_id": "a3e70162"
+            },
+            "azure_account_id": "c8103abe-eda9-472b-894a-6260bb2ba8cc",
             "email_activity": {
                 "is_deleted": false,
                 "product_license": "MICROSOFT FABRIC (FREE)+MICROSOFT TEAMS PHONE STANDARD+MICROSOFT DEFENDER FOR OFFICE365 (PLAN 2)+MICROSOFT 365 AUDIO CONFERENCING+ENTERPRISE MOBILITY + SECURITY E3+OFFICE365 E3+MICROSOFT 365 E3 EXTRA FEATURES",
@@ -2568,69 +2595,56 @@ An example event for `identity` looks as following:
             "last_fetch_connection_label": "azure_ad-demo",
             "last_logon": "2025-11-30T18:50:39.000Z",
             "last_seen": "2025-11-10T22:18:25.000Z",
-            "nested_applications": [
-                {
-                    "app_display_name": "Calendly",
-                    "assignment_type": "Direct",
-                    "extension_type": "User Consent",
-                    "is_managed": false,
-                    "is_unmanaged_extension": true,
-                    "name": "Calendly",
-                    "permissions": [
-                        {
-                            "name": "openid"
-                        }
-                    ],
-                    "relation_extension_name": "Calendly",
-                    "source_application": "Microsoft",
-                    "value": "2E2a2e7c9f758BDcC0E2",
-                    "vendor_category": "Productivity"
-                }
-            ],
+            "nested_applications": {
+                "app_display_name": "Calendly",
+                "assignment_type": "Direct",
+                "extension_type": "User Consent",
+                "is_managed": false,
+                "is_unmanaged_extension": true,
+                "name": "Calendly",
+                "permissions": {
+                    "name": "openid"
+                },
+                "relation_extension_name": "Calendly",
+                "source_application": "Microsoft",
+                "value": "2E2a2e7c9f758BDcC0E2",
+                "vendor_category": "Productivity"
+            },
             "nested_grants_last_updated": "2025-12-09T12:10:06.000Z",
             "nested_grants_managers_last_updated": "2025-12-09T12:10:10.000Z",
-            "nested_groups": [
-                {
-                    "assignment_type": "Direct",
-                    "name": "Office365 Users",
-                    "value": "d8e66837"
-                }
-            ],
+            "nested_groups": {
+                "assignment_type": "Direct",
+                "name": "Office365 Users",
+                "value": "d8e66837"
+            },
             "not_fetched_count": 0,
             "sm_entity_type": "saas_user",
             "source_application": "Microsoft",
-            "tenant_number": [
-                2
-            ],
-            "transform_unique_id": "N8G3qDAOmSElCdviQ3d6FpD76pE=",
-            "user_permissions": [
-                {
-                    "is_admin": false,
-                    "name": "OnlineMeetings.ReadWrite"
-                }
-            ],
+            "tenant_number": 2,
+            "transform_unique_id": "09Q/WYs96pJRgipkiF/gFbvKBho=",
+            "user_permissions": {
+                "is_admin": false,
+                "name": "OnlineMeetings.ReadWrite"
+            },
             "user_remote_id": "63d52bb0-7ce0-4467-9004-2b19c06b86ae",
             "user_type": "Member"
         }
     },
     "cloud": {
-        "account": {
-            "id": "c8103abe-eda9-472b-894a-6260bb2ba8cc"
-        },
         "provider": "Azure"
     },
     "data_stream": {
         "dataset": "axonius.identity",
-        "namespace": "52896",
+        "namespace": "38075",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "57760dc1-591b-4a34-ba06-c4f7604fdb10",
+        "id": "95176b3c-9937-4f1f-b9d2-3b423f3d37f0",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "9.5.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -2639,18 +2653,25 @@ An example event for `identity` looks as following:
         ],
         "created": "2024-06-28T08:49:28.000Z",
         "dataset": "axonius.identity",
-        "ingested": "2026-06-03T07:48:12Z",
-        "kind": "event",
+        "ingested": "2026-10-07T14:07:01Z",
+        "kind": "asset",
+        "module": "axonius",
         "type": [
-            "info"
+            "info",
+            "user"
         ]
     },
     "input": {
         "type": "cel"
     },
+    "labels": {
+        "is_transform_source": "true"
+    },
+    "observer": {
+        "vendor": "Axonius"
+    },
     "related": {
         "user": [
-            "developers-group",
             "helen.jordan@demo.local"
         ]
     },
@@ -2661,6 +2682,30 @@ An example event for `identity` looks as following:
     "user": {
         "domain": "demo.local",
         "email": "helen.jordan@demo.local",
+        "entity": {
+            "attributes": {
+                "permissions": [
+                    "OnlineMeetings.ReadWrite"
+                ]
+            },
+            "lifecycle": {
+                "last_activity": "2025-11-30T18:50:39.000Z"
+            },
+            "type": [
+                "user"
+            ]
+        },
+        "group": {
+            "id": [
+                "a3e70162",
+                "d8e66837"
+            ],
+            "name": [
+                "developers-group",
+                "Office365 Users"
+            ]
+        },
+        "id": "bc11b2989fc0f69708b6865d172a49fe",
         "name": "helen.jordan@demo.local"
     }
 }

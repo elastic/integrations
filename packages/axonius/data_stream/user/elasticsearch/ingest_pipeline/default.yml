@@ -42,9 +42,25 @@ processors:
 
   # Set event.* fields
   - set:
-      tag: set_event_kind_to_event_de80643c
+      tag: set_event_kind_to_asset_de80643c
       field: event.kind
-      value: event
+      value: asset
+  - append:
+      tag: append_event_category_iam_1f7c3a52
+      field: event.category
+      value: iam
+  - append:
+      tag: append_event_type_user_8b2e6d04
+      field: event.type
+      value:
+        - info
+        - user
+      allow_duplicates: false
+  - append:
+      tag: append_user_entity_type_user_4d9a7e31
+      field: user.entity.type
+      value: user
+      allow_duplicates: false
 
   # Date processors
   - date:
@@ -81,6 +97,11 @@ processors:
             tag: append_error_message_88d433ff
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_user_entity_lifecycle_last_activity_from_axonius_user_last_login_6c1f4b87
+      field: user.entity.lifecycle.last_activity
+      copy_from: axonius.user.last_login
+      ignore_empty_value: true
 
   # Map custom fields to corresponding ECS and related fields.
   - set:
