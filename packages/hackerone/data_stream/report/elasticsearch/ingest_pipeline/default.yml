@@ -101,11 +101,30 @@ processors:
   # ---------------------------------------------------------------------------
   # Vulnerability description and primary CVE
   # ---------------------------------------------------------------------------
-  - rename:
-      field: hackerone.report.attributes.vulnerability_information
-      target_field: vulnerability.description
-      ignore_missing: true
-      tag: rename_vulnerability_description
+  - set:
+      field: vulnerability.description
+      copy_from: hackerone.report.attributes.vulnerability_information
+      ignore_empty_value: true
+      tag: set_vulnerability_description
+      description: >-
+        Copies the report body into `vulnerability.description`; the full body is kept in
+        `hackerone.report.attributes.vulnerability_information` for full-text search.
+  - script:
+      lang: painless
+      tag: truncate_vulnerability_description
+      description: >-
+        Truncates `vulnerability.description` to the ECS keyword `ignore_above` limit (1024)
+        so that long report bodies are still indexed.
+      if: ctx.vulnerability?.description instanceof String && ((String) ctx.vulnerability.description).length() > 1024
+      params:
+        max_length: 1024
+      source: |-
+        String d = ctx.vulnerability.description;
+        int end = params.max_length;
+        if (Character.isHighSurrogate(d.charAt(end - 1))) {
+          end--;
+        }
+        ctx.vulnerability.description = d.substring(0, end);
   - set:
       field: vulnerability.id
       value: '{{{hackerone.report.attributes.cve_ids.0}}}'

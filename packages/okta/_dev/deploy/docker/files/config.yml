@@ -24,11 +24,10 @@ rules:
     responses:
       - status_code: 200
         headers:
+          # X-Rate-Limit-Remaining intentionally omitted to verify the input handles a missing rate-limit header (issue #21027).
           Link:
             - '<http://{{ .request.host }}/api/v1/logs?after=4&limit={{ .request.vars.limit }}>; rel="self"'
             - '<http://{{ .request.host }}/api/v1/logs?since={{ .request.vars.since }}&limit={{ .request.vars.limit }}>; rel="self"'
-          X-Rate-Limit-Remaining:
-            - 56
         body: '[]'
   # Request 3.
   - path: /api/v1/logs
@@ -150,11 +149,10 @@ rules:
     responses:
       - status_code: 200
         headers:
+          # X-Rate-Limit-Remaining intentionally omitted to verify the input handles a missing rate-limit header (issue #21027).
           Link:
             - '<http://{{ .request.host }}/api/v1/logs?after=3&limit={{ .request.vars.limit }}>; rel="next"'
             - '<http://{{ .request.host }}/api/v1/logs?after={{ .request.vars.after }}&limit={{ .request.vars.limit }}>; rel="self"'
-          X-Rate-Limit-Remaining:
-            - 58
         body: |-
           [
               {

@@ -577,28 +577,21 @@ elastic-package test [pipeline|static|asset|policy|system] -v -g
     The package version with such condition as above will be only available in Kibana version >=8.7.0
     ::::
 
-6. If a package relies on features available only in a specific Elastic Agent version, use an agent version condition. There are two approaches depending on your needs:
-
-    **Package-level** — restricts all inputs; requires Kibana 9.4 or later:
-
-    ```yaml
-    conditions:
-      kibana
-        version: '^9.4.0'
-      agent:
-        version: '^9.3.0'
-    ```
-
-    **Input template-level** — conditionally renders a configuration block for agents that satisfy the version constraint (in a `.hbs` stream template):
+6. If a package relies on features available only in a specific Elastic Agent version, gate the configuration in the input template (`.hbs` stream template) with the `semverSatisfies` helper, and provide a fallback so a single package version keeps working on all supported agents:
 
     ```handlebars
     {{#semverSatisfies _meta.agent.version "^9.3.0"}}
     program: |
       ...
+    {{else}}
+    program: |
+      ...
     {{/semverSatisfies}}
     ```
 
-    Use the package-level approach when all inputs require the newer agent. Use the template-level approach when only part of the configuration uses newer agent capabilities and you want the package to remain usable with older agents.
+    ::::{warning}
+    Do not use the package-level `conditions.agent.version` field in `manifest.yml`. It is deprecated: Fleet removes the whole integration from agents that do not satisfy the range, which causes data gaps in policies with mixed agent versions, for example during rolling upgrades. To restrict the Kibana versions a package can be installed on, use `conditions.kibana.version` instead.
+    ::::
 
     See [Agent version conditions](agent-version-conditions.md) for full details.
 

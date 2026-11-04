@@ -1,0 +1,175 @@
+config_version: "2"
+interval: {{interval}}
+run_as_cel: true
+request.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+auth.oauth2.provider: google
+auth.oauth2.google.jwt_file: {{jwt_file}}
+auth.oauth2.google.jwt_json: {{jwt_json}}
+auth.oauth2.google.delegated_account: {{delegated_account}}
+auth.oauth2.scopes:
+  - https://www.googleapis.com/auth/admin.reports.audit.readonly
+# This URL must not change between releases. The CEL input migrates the
+# cursor saved by the httpjson input using a key derived from it.
+request.url: {{api_host}}/admin/reports/v1/activity/users/{{user_key}}/applications/{{application_name_for_url}}
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+cel.state:
+  initial_interval: {{initial_interval}}
+  lag_time: {{lag_time}}
+{{#if chunk_duration}}
+  chunk_duration: "{{chunk_duration}}"
+{{/if}}
+cel.redact:
+  fields: ~
+cel.program: |-
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      // A new interval. Drop anything left over from an interrupted one.
+      // A page token is only valid within the interval that issued it.
+      state.drop("first_time").with(
+        // The cursor keys and their string-valued booleans are those saved by
+        // the httpjson input. Keeping them lets an upgraded policy continue
+        // from the httpjson cursor.
+        (
+          state.?cursor.pagination_finished.optMap(v, string(v) == "true").orValue(false) ?
+            state.?cursor.next_start_date
+          :
+            state.?cursor.last_response_date
+        ).orValue(
+          (now - duration(state.initial_interval) - duration(state.lag_time)).format(time_layout.RFC3339)
+        ).as(start,
+          (now - duration(state.lag_time)).as(cap,
+            // An unparsable chunk_duration disables chunking, as it does for httpjson.
+            state.?chunk_duration.optMap(c, duration(string(c)).as(d, !is_error(d) ? d : duration("0s"))).orValue(duration("0s")).as(chunk,
+              {
+                "start_time": start,
+                // With chunking, the window is bounded to chunk_duration and
+                // never runs ahead of now-lag_time.
+                "end_time": (
+                  chunk > duration("0s") && timestamp(start) + chunk < cap ?
+                    timestamp(start) + chunk
+                  :
+                    cap
+                ).format(time_layout.RFC3339),
+                // As in the httpjson template, setting chunk_duration at all,
+                // even to a value that disables chunking, starts the next
+                // interval at the end of this one.
+                "chunked": has(state.chunk_duration),
+                "next": {},
+              }
+            )
+          )
+        )
+      )
+  ).as(state,
+    timestamp(state.start_time) >= timestamp(state.end_time) ?
+      // Nothing to collect yet.
+      state.with({
+        "events": [],
+        "want_more": false,
+      })
+    :
+      state.with(
+        request(
+          "GET",
+          state.url + "?" + {
+            "startTime": [state.start_time],
+            "endTime": [state.end_time],
+            ?"pageToken": state.?next.page_token.optMap(v, [v]),
+          }.format_query()
+        ).with({
+          // The httpjson input sends this header by default.
+          "Header": {
+            "Accept": ["application/json"],
+          },
+        }).do_request().as(resp, resp.StatusCode == 200 ?
+          resp.Body.decode_json().as(body,
+            // The API returns records sorted from newest to oldest. Remember
+            // the time of the newest event, from the first page, for use as
+            // the start of the next interval. Unlike the other CEL data
+            // streams in this package, which start the next interval at the
+            // end of the previous one, this matches the behaviour of the
+            // httpjson input that this program replaces. It may be changed
+            // to match them in future.
+            state.?first_time.or(body.?items[0].id.time).as(first,
+              {
+                "events": body.?items.orValue([]).map(item,
+                  item.?events.orValue([]).map(event,
+                    item.drop("events").with({"events": event}).as(root,
+                      {
+                        // The httpjson input sets this on each event.
+                        "event": {"created": now()},
+                        "message": root.encode_json(),
+                      }
+                    )
+                  )
+                ).flatten(),
+                "cursor": {
+                  "pagination_finished": string(!has(body.nextPageToken)),
+                  "last_response_date": state.start_time,
+                  "next_start_date": (
+                    state.chunked ?
+                      state.end_time
+                    :
+                      first.optMap(t,
+                        timestamp(t).as(ts, !is_error(ts) ? t : state.end_time)
+                      ).orValue(state.end_time)
+                  ),
+                },
+                ?"first_time": first,
+                "want_more": has(body.nextPageToken),
+                "next": {
+                  ?"page_token": body.?nextPageToken,
+                },
+              }
+            )
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": resp.Status,
+                "message": "GET " + state.url + ": " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+        )
+      )
+  )
+tags:
+  - run_as_cel
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

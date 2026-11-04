@@ -1,0 +1,94 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects ChatGPT Enterprise audit events where a workspace compliance log file is deleted (`delete_workspace_log_file`). Adversaries with privileged access may delete exported audit or conversation log archives to remove evidence from compliance workflows and hinder investigation.",
+        "false_positives": [
+            "Administrators deleting expired workspace log archives under an approved retention policy."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.id",
+                "user.email",
+                "openai_chatgpt_enterprise.audit_log.action_data.event_type",
+                "openai_chatgpt_enterprise.audit_log.action_data.log_file_id",
+                "openai_chatgpt_enterprise.audit_log.action_privilege",
+                "openai_chatgpt_enterprise.audit_log.actor.type",
+                "source.ip"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Workspace Log File Deleted",
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Workspace Log File Deleted\n\nA workspace compliance log archive was deleted. That can remove investigator access to authentication, conversation, or\nCodex exports and may be used to cover tracks after misuse.\n\nEscalate when the actor is unexpected, deletions follow downloads or privileged changes, or there is no retention-policy\nticket. Close as a false positive for documented retention cleanup by approved admins.\n\n#### Possible investigation steps\n\n- Identify the actor (`user.id`, `user.email`) and source IP.\n- Note `openai_chatgpt_enterprise.audit_log.action_data.log_file_id` and related event type fields.\n- Correlate with nearby `list_workspace_log_files` or `download_workspace_log_file` activity from the same actor.\n- Confirm whether the deletion matches an approved retention or purge job.\n- Review other privileged audit activity by the same actor, such as role changes, invites, or feature toggles.\n\n### False positive analysis\n\n- Retention policies may delete aged workspace log archives on a schedule using approved admin accounts.\n\n### Response and remediation\n\n- Preserve remaining exports, review the actor's recent privileged activity, and tighten who can delete workspace logs.\n- If the deletion appears unauthorized, inventory other exports or deletions by the same actor and revoke sessions or\n  admin access as appropriate.\n",
+        "query": "from logs-openai_chatgpt_enterprise.audit_log-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"openai_chatgpt_enterprise.audit_log\" and\n    event.action == \"delete_workspace_log_file\" and\n    openai_chatgpt_enterprise.audit_log.actor.type == \"ACCOUNT_USER\"\n| keep\n    _id, _version, _index, @timestamp, event.action, user.id, user.email, source.ip,\n    openai_chatgpt_enterprise.audit_log.action_data.event_type,\n    openai_chatgpt_enterprise.audit_log.action_data.log_file_id,\n    openai_chatgpt_enterprise.audit_log.action_privilege,\n    openai_chatgpt_enterprise.audit_log.actor.type, data_stream.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": ">=0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "openai_chatgpt_enterprise.audit_log.actor.type",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "f27c9302-a727-4e8e-b330-32f7e28da013",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect compliance logs into Elasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Mitre Atlas: AML.T0092",
+            "Tactic: Stealth"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Stealth",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1070",
+                        "name": "Indicator Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1070/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "f27c9302-a727-4e8e-b330-32f7e28da013_2",
+    "type": "security-rule"
+}
