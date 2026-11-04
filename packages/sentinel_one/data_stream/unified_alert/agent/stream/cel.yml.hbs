@@ -19,6 +19,7 @@ state:
   collect_alert_updation: false
   api_token: {{api_token}}
   initial_interval: {{initial_interval}}
+  delay: {{delay}}
   batch_size: {{batch_size}}
   query: |
     query GetAllUnifiedAlerts(
@@ -265,11 +266,24 @@ program: |-
     state.?want_more.orValue(false) ?
       state
     :
-      state.with({
-        "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).as(t, int(t)*1000 + t.getMilliseconds())),
-        "end_time": now.as(t, int(t)*1000 + t.getMilliseconds()),
-      })
-  ).as(state, state.with(
+      // Alerts can become searchable some time after their detectedAt or updatedAt,
+      // so each window ends a delay before the time it is queried.
+      now.as(t, int(t)*1000 + t.getMilliseconds()).as(queried_at, state.with({
+        // Start at the end of the previous window, or earlier if part of it was less
+        // than the delay old when queried. Cursors from versions without the delay
+        // have no queried_at, because their windows ended when they were queried.
+        "start_time": state.?cursor.last_timestamp.optMap(t, int(t)).optMap(last,
+          (int(state.?cursor.queried_at.orValue(last)) - duration(state.delay).getMilliseconds()).as(start,
+            start < last ? start : last
+          )
+        ).orValue(queried_at - duration(state.delay).getMilliseconds() - duration(state.initial_interval).getMilliseconds()),
+        "end_time": queried_at - duration(state.delay).getMilliseconds(),
+        "queried_at": queried_at,
+      }))
+  ).as(state, state.start_time >= state.end_time ?
+    // The window is only empty if the clock has gone back. Wait for it to catch up.
+    state.with({"events": [], "want_more": false})
+  : state.with(
     post_request(
       state.url.trim_right("/") + "/web/api/v2.1/unifiedalerts/graphql",
       "application/json",
@@ -282,7 +296,7 @@ program: |-
             "fieldId": state.collect_alert_updation ? "updatedAt" : "detectedAt",
             "dateTimeRange": {
               "start": state.start_time,
-              "startInclusive": false,
+              "startInclusive": true,
               "end": state.end_time
             }
           }],
@@ -320,12 +334,10 @@ program: |-
           :
             !state.collect_alert_updation
         ),
-        "cursor": {
-          ?"last_timestamp": body.?data.alerts.pageInfo.hasNextPage.orValue(false) || !state.collect_alert_updation ?
-            state.?cursor.last_timestamp
-          :
-            optional.of(state.end_time)
-        }
+        "cursor": body.?data.alerts.pageInfo.hasNextPage.orValue(false) || !state.collect_alert_updation ?
+          state.?cursor.orValue({})
+        :
+          {"last_timestamp": state.end_time, "queried_at": state.queried_at},
       })
     :
       {
