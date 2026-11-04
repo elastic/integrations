@@ -1,6 +1,10 @@
 ---
 description: Pipeline for Amazon Bedrock runtime metrics
 processors:
+  - set:
+      tag: set_ecs_version_c1935abf
+      field: ecs.version
+      value: '9.5.0'
   - dot_expander:
       tag: dot_expander_c2762c23
       field: "*"
@@ -47,6 +51,16 @@ processors:
       target_field: aws_bedrock.runtime.input_token_count
       ignore_missing: true
   - rename:
+      tag: rename_aws_bedrock_runtime_CacheReadInputTokenCount_sum_to_aws_bedrock_runtime_cache_read_input_token_count_a72e8f68
+      field: aws_bedrock.runtime.CacheReadInputTokenCount.sum
+      target_field: aws_bedrock.runtime.cache_read_input_token_count
+      ignore_missing: true
+  - rename:
+      tag: rename_aws_bedrock_runtime_CacheWriteInputTokenCount_sum_to_aws_bedrock_runtime_cache_write_input_token_count_08f0a0d7
+      field: aws_bedrock.runtime.CacheWriteInputTokenCount.sum
+      target_field: aws_bedrock.runtime.cache_write_input_token_count
+      ignore_missing: true
+  - rename:
       tag: rename_aws_bedrock_runtime_LegacyModelInvocations_sum_to_aws_bedrock_runtime_legacymodel_invocations_fba619e6
       field: aws_bedrock.runtime.LegacyModelInvocations.sum
       target_field: aws_bedrock.runtime.legacymodel_invocations
@@ -81,6 +95,10 @@ processors:
       field: aws.dimensions.BucketedStepSize
       target_field: aws_bedrock.runtime.bucketed_step_size
       ignore_missing: true
+  - pipeline:
+      tag: pipeline_genai_fee08891
+      description: Map the ECS gen_ai fields.
+      name: '{{ IngestPipeline "genai" }}'
 on_failure:
   - set:
       tag: set_event_kind_72b1902f

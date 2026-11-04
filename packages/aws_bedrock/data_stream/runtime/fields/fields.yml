@@ -29,6 +29,14 @@
           type: long
           metric_type: gauge
           description: The number of text input tokens.
+        - name: cache_read_input_token_count
+          type: long
+          metric_type: gauge
+          description: The number of input tokens read from the prompt cache. Not included in `input_token_count`.
+        - name: cache_write_input_token_count
+          type: long
+          metric_type: gauge
+          description: The number of input tokens written to the prompt cache. Not included in `input_token_count`.
         - name: legacymodel_invocations
           type: long
           metric_type: gauge
@@ -59,6 +67,9 @@
     - name: cloudwatch.namespace
       type: keyword
       description: The namespace specified when query cloudwatch api.
+    - name: dimensions.ContextWindow
+      type: keyword
+      description: The raw CloudWatch `ContextWindow` dimension. Rows that carry it are a subset of the per-model totals and get no `gen_ai.request.model` or `gen_ai.usage.*`.
     - name: metrics_names_fingerprint
       type: keyword
       description: |
