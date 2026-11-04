@@ -7,12 +7,16 @@ source:
       doc_type: "datastream"
 dest:
   index: serverless_datastream_contribution_lookup
-  pipeline: logs-chargeback_serverless.lookup-0.3.14-usage
+  pipeline: logs-chargeback_serverless.lookup-0.3.15-usage
 frequency: 5m
 sync:
   time:
     field: event.ingested
     delay: 60s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 365d
 pivot:
   group_by:
     "@timestamp":
@@ -60,4 +64,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.3.14
+  fleet_transform_version: 0.3.15

@@ -9,7 +9,8 @@ This package is designed for **Serverless-only** organizations. For Hosted monit
 - **Billing classification pipeline** (`chargeback-serverless-billing`): classifies Serverless SKUs into `allocation_driver` (`indexing`, `query`, `storage`, or `none`) and `cost_category` (`data_tier`, `platform`, `transfer`, `snapshot`, `support`, or `other`).
 - **Dashboards**: five linked dashboards for organization billing reconciliation, workload & data stream cost attribution, AI & Machine Learning FinOps, Synthetics FinOps, and policy/registry configuration.
 - **Local currency normalization**: spend visuals convert chargeable units (ECU) to your configured currency using policy rates stamped into billing data (`conf_chargeable_unit_rate` × `conf_chargeable_unit_rate_unit`).
-- **Alert rule templates**: prebuilt ES|QL rule templates for unallocated cost, stale usage harvest, and billed projects missing from the project registry.
+- **Alert rule templates**: prebuilt ES|QL rule templates for FinOps spend budgets, workload/project/namespace/model/monitor spend thresholds, 7-day project spend spikes, and consolidated Data Trust & Harvest Health.
+- **Automated Serverless data retention (`365d`)**: built-in Data Stream Lifecycle (`data_retention: "365d"`) on `metrics-chargeback_serverless.billing-*` and `metrics-chargeback_serverless.usage-*`, paired with transform `retention_policy` (`time.field: "@timestamp"`, `max_age: 365d`) across all 7 `serverless_*_lookup` destination indices.
 
 ![Billing Components Overview](../img/chargeback-serverless-billing-overview.png)
 

@@ -4,12 +4,16 @@ source:
     - metrics-chargeback_serverless.billing-*
 dest:
   index: serverless_billing_cost_lookup
-  pipeline: logs-chargeback_serverless.lookup-0.3.14-billing
+  pipeline: logs-chargeback_serverless.lookup-0.3.15-billing
 frequency: 5m
 sync:
   time:
     field: event.ingested
     delay: 60s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 365d
 pivot:
   group_by:
     "@timestamp":
@@ -54,4 +58,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.3.14
+  fleet_transform_version: 0.3.15

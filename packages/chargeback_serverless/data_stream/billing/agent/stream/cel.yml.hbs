@@ -38,11 +38,21 @@ program: |-
         state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/instances?" + {
           "from": [req.from.format(time_layout.RFC3339)],
           "to": [req.to.format(time_layout.RFC3339)],
+          "include_names": ["true"],
         }.format_query()
       ).with(
         { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
       ).do_request().as(resp, (resp.StatusCode == 200) ?
         bytes(resp.Body).decode_json().as(body,
+          get_request(
+            state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/items?" + {
+              "from": [req.from.format(time_layout.RFC3339)],
+              "to": [req.to.format(time_layout.RFC3339)],
+            }.format_query()
+          ).with(
+            { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+          ).do_request().as(items_resp,
+            ((items_resp.StatusCode == 200) ? bytes(items_resp.Body).decode_json() : { "products": [] }).as(items_body,
             get_request(
               state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch"
             ).with(
@@ -74,85 +84,119 @@ program: |-
                             ).as(projects,
                               ((has(body.instances) && body.instances != null) ?
                                 body.instances.filter(instance,
+                                  (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items) > 0) ||
+                                  (has(instance.total_ecu) && instance.total_ecu != null && double(instance.total_ecu) > 0.0) ||
                                   (!has(instance.type) || instance.type == null || (
                                     instance.type != "kibana" && instance.type != "enterprise_search" && instance.type != "integrations_server" && instance.type != "appsearch" && instance.type != "fleet_server" && instance.type != "apm"
                                   ))
                                 )
                               : []).as(sls_instances,
-                          (
-                            sls_instances.map(instance,
-                              projects.filter(p, p.id == instance.id).as(matched_projs,
-                                ((size(matched_projs) > 0 && has(matched_projs[0].name) && matched_projs[0].name != null && matched_projs[0].name != "" && matched_projs[0].name != instance.id) ? matched_projs[0].name : ((has(instance.name) && instance.name != null && instance.name != "") ? instance.name : instance.id)).as(resolved_name,
-                                  ((size(matched_projs) > 0 && has(matched_projs[0].project_type) && matched_projs[0].project_type != null && matched_projs[0].project_type != "") ? matched_projs[0].project_type : (
-                                    (has(instance.type) && instance.type != null && instance.type != "" && instance.type != "serverless" && instance.type != "deployment") ? instance.type : (
-                                      (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items.filter(li, has(li.sku) && li.sku.startsWith("observability."))) > 0) ? "observability" : (
-                                        (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items.filter(li, has(li.sku) && li.sku.startsWith("security."))) > 0) ? "security" : (
-                                          (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items.filter(li, has(li.sku) && li.sku.startsWith("search."))) > 0) ? "search" : (
-                                            (has(instance.type) && instance.type != null && instance.type != "") ? instance.type : "elasticsearch"
+                                sls_instances.map(instance,
+                                  projects.filter(p, has(instance.id) && instance.id != null && p.id == instance.id).as(matched_projs,
+                                    ((size(matched_projs) > 0 && has(matched_projs[0].project_type) && matched_projs[0].project_type != null && matched_projs[0].project_type != "") ? matched_projs[0].project_type : (
+                                      (has(instance.type) && instance.type != null && instance.type != "" && instance.type != "serverless" && instance.type != "deployment") ? instance.type : (
+                                        (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items.filter(li, has(li.sku) && li.sku.startsWith("observability."))) > 0) ? "observability" : (
+                                          (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items.filter(li, has(li.sku) && li.sku.startsWith("security."))) > 0) ? "security" : (
+                                            (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items.filter(li, has(li.sku) && li.sku.startsWith("search."))) > 0) ? "search" : (
+                                              (has(instance.type) && instance.type != null && instance.type != "") ? instance.type : "elasticsearch"
+                                            )
                                           )
                                         )
                                       )
-                                    )
-                                  )).as(resolved_type,
-                                    (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items) > 0) ?
-                                      instance.product_line_items.map(line_item,
-                                        {
-                                          "@timestamp": req.from.format(time_layout.RFC3339),
-                                          "period_start": req.from.format(time_layout.RFC3339),
-                                          "project_id": instance.id,
-                                          "project_name": resolved_name,
-                                          "project_type": resolved_type,
-                                          "sku": line_item.sku,
-                                          "total_ecu": double(line_item.total_ecu),
-                                          "quantity_value": (has(line_item.quantity) && line_item.quantity != null && has(line_item.quantity.value) && line_item.quantity.value != null) ? double(line_item.quantity.value) : 0.0,
-                                          "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                          "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                          "conf_currency_symbol": state.conf_currency_symbol,
-                                        }
+                                    )).as(resolved_type,
+                                      ((has(instance.id) && instance.id != null && string(instance.id) != "") ? string(instance.id) : ("unassociated_" + resolved_type)).as(inst_id,
+                                        ((size(matched_projs) > 0 && has(matched_projs[0].name) && matched_projs[0].name != null && matched_projs[0].name != "" && matched_projs[0].name != inst_id) ? matched_projs[0].name : ((has(instance.name) && instance.name != null && instance.name != "") ? instance.name : ((has(instance.id) && instance.id != null && string(instance.id) != "") ? inst_id : ("Unassociated (" + resolved_type + ")")))).as(resolved_name,
+                                          (has(instance.product_line_items) && instance.product_line_items != null && size(instance.product_line_items) > 0) ?
+                                            instance.product_line_items.map(line_item,
+                                              {
+                                                "@timestamp": req.from.format(time_layout.RFC3339),
+                                                "period_start": req.from.format(time_layout.RFC3339),
+                                                "project_id": inst_id,
+                                                "project_name": resolved_name,
+                                                "project_type": resolved_type,
+                                                "sku": line_item.sku,
+                                                "total_ecu": double(line_item.total_ecu),
+                                                "quantity_value": (has(line_item.quantity) && line_item.quantity != null && has(line_item.quantity.value) && line_item.quantity.value != null) ? double(line_item.quantity.value) : 0.0,
+                                                "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                "conf_currency_symbol": state.conf_currency_symbol,
+                                              }
+                                            )
+                                          :
+                                            [
+                                              {
+                                                "@timestamp": req.from.format(time_layout.RFC3339),
+                                                "period_start": req.from.format(time_layout.RFC3339),
+                                                "project_id": inst_id,
+                                                "project_name": resolved_name,
+                                                "project_type": resolved_type,
+                                                "sku": "none",
+                                                "total_ecu": 0.0,
+                                                "quantity_value": 0.0,
+                                                "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                "conf_currency_symbol": state.conf_currency_symbol,
+                                              }
+                                            ]
+                                        )
                                       )
-                                    :
-                                      [
-                                        {
-                                          "@timestamp": req.from.format(time_layout.RFC3339),
-                                          "period_start": req.from.format(time_layout.RFC3339),
-                                          "project_id": instance.id,
-                                          "project_name": resolved_name,
-                                          "project_type": resolved_type,
-                                          "sku": "none",
-                                          "total_ecu": 0.0,
-                                          "quantity_value": 0.0,
-                                          "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                          "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                          "conf_currency_symbol": state.conf_currency_symbol,
-                                        }
-                                      ]
+                                    )
+                                  )
+                                ).flatten().as(instance_evts,
+                                  (
+                                    instance_evts +
+                                    ((has(items_body.products) && items_body.products != null) ?
+                                      items_body.products.map(prod,
+                                        ((has(prod.type) && prod.type != null && string(prod.type) != "" && string(prod.type) != "serverless" && string(prod.type) != "deployment") ? string(prod.type) : "elasticsearch").as(prod_type,
+                                          (has(prod.product_line_items) && prod.product_line_items != null) ?
+                                            prod.product_line_items.filter(li,
+                                              has(li.sku) && li.sku != null && size(instance_evts.filter(e, e.sku == li.sku)) == 0
+                                            ).map(li,
+                                              {
+                                                "@timestamp": req.from.format(time_layout.RFC3339),
+                                                "period_start": req.from.format(time_layout.RFC3339),
+                                                "project_id": "deleted_or_unassociated_" + prod_type,
+                                                "project_name": "Deleted / Unassociated (" + prod_type + ")",
+                                                "project_type": prod_type,
+                                                "sku": li.sku,
+                                                "total_ecu": (has(li.total_ecu) && li.total_ecu != null) ? double(li.total_ecu) : 0.0,
+                                                "quantity_value": (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0,
+                                                "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                                "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                                "conf_currency_symbol": state.conf_currency_symbol,
+                                              }
+                                            )
+                                          : []
+                                        )
+                                      ).flatten()
+                                    : []) +
+                                    projects.filter(p,
+                                      size(sls_instances.filter(inst, has(inst.id) && inst.id == p.id)) == 0
+                                    ).map(p,
+                                      {
+                                        "@timestamp": req.from.format(time_layout.RFC3339),
+                                        "period_start": req.from.format(time_layout.RFC3339),
+                                        "project_id": p.id,
+                                        "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+                                        "project_type": (has(p.project_type) && p.project_type != null && p.project_type != "") ? p.project_type : "elasticsearch",
+                                        "sku": "none",
+                                        "total_ecu": 0.0,
+                                        "quantity_value": 0.0,
+                                        "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                        "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                        "conf_currency_symbol": state.conf_currency_symbol,
+                                      }
+                                    )
+                                  ).as(evts,
+                                    {
+                                      "events": size(evts) > 0 ? evts : [ { "fake": true } ],
+                                      "cursor": { "last_to": req.to.format(time_layout.RFC3339) },
+                                      "want_more": req.to + duration("26h") <= now,
+                                    }
                                   )
                                 )
                               )
-                            ).flatten() +
-                            projects.filter(p,
-                              size(sls_instances.filter(inst, inst.id == p.id)) == 0
-                            ).map(p,
-                              {
-                                "@timestamp": req.from.format(time_layout.RFC3339),
-                                "period_start": req.from.format(time_layout.RFC3339),
-                                "project_id": p.id,
-                                "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                                "project_type": (has(p.project_type) && p.project_type != null && p.project_type != "") ? p.project_type : "elasticsearch",
-                                "sku": "none",
-                                "total_ecu": 0.0,
-                                "quantity_value": 0.0,
-                                "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                "conf_currency_symbol": state.conf_currency_symbol,
-                              }
                             )
-                          ).as(evts,
-                            {
-                              "events": size(evts) > 0 ? evts : [ { "fake": true } ],
-                              "cursor": { "last_to": req.to.format(time_layout.RFC3339) },
-                              "want_more": req.to + duration("26h") <= now,
-                            }
                           )
                         )
                       )
@@ -161,9 +205,8 @@ program: |-
                 )
               )
             )
+            )
           )
-        )
-      )
         )
       :
         {
