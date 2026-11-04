@@ -144,6 +144,34 @@ class PaginationTest(unittest.TestCase):
                 self.assertFalse(result["want_more"])
                 self.assertEqual(json.loads(result["events"][0]["message"]), {"id": "event1"})
 
+    def test_success_response_extensions(self):
+        for stream, logs in STREAMS.items():
+            for code in (None, 0, "0", 200, 300):
+                for token in (None, "", "page2"):
+                    with self.subTest(stream=stream, code=code, token=token):
+                        record = {"id": "event1", "extra_field": "retained"}
+                        body = {logs: [record], "message": "Success", "new_metadata": {"v": 1}}
+                        if code is not None:
+                            body["code"] = code
+                        if token is not None:
+                            body["next_page_token"] = token
+                        self.response = (200, "application/json", json.dumps(body))
+                        result = self.evaluate(stream, self.state())
+                        self.assertEqual(json.loads(result["events"][0]["message"]), record)
+                        self.assertEqual(result["want_more"], bool(token))
+                        self.assertEqual(result["cursor"]["poll_start"], "2026-10-28" if token else "2026-10-29")
+                        self.assertEqual(result["next"].get("page_token"), token if token else None)
+
+    def test_zero_code_empty_success_without_report_field(self):
+        for stream in STREAMS:
+            for code in (0, "0"):
+                with self.subTest(stream=stream, code=code):
+                    self.response = (200, "application/json", json.dumps({"code": code, "message": "Success"}))
+                    result = self.evaluate(stream, self.state())
+                    self.assertEqual(result["events"], [{"retry": True}])
+                    self.assertEqual(result["cursor"], {"poll_start": "2026-10-29"})
+                    self.assertFalse(result["want_more"])
+
     def test_restart_replays_incomplete_window(self):
         for stream, logs in STREAMS.items():
             with self.subTest(stream=stream):

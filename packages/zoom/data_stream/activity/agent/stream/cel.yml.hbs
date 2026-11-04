@@ -111,7 +111,11 @@ program: |-
             ).with({"Header": {"Accept": ["application/json"]}}).do_request().as(resp,
               // Zoom can return API errors as JSON or XML with HTTP 200.
               try(resp.Body.decode_json()).as(body,
-                (resp.StatusCode == 200 && type(body) == map && !has(body.code)) ?
+                (resp.StatusCode == 200 && type(body) == map && !(
+                  // Report data takes precedence over additional response metadata.
+                  !has(body.activity_logs) && has(body.code) && has(body.message) &&
+                  body.code != 0 && body.code != "0"
+                )) ?
                   body.?activity_logs.orValue([]).as(logs,
                     body.?next_page_token.orValue("").as(next_token,
                       {
