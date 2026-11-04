@@ -69,14 +69,23 @@ program: |-
                           { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
                         ).do_request().as(srch_resp,
                           ((srch_resp.StatusCode == 200) ? bytes(srch_resp.Body).decode_json() : { "items": [] }).as(srch_body,
+                            get_request(
+                              state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/instances?" + {
+                                "from": [day_start.format(time_layout.RFC3339)],
+                                "to": [day_end.format(time_layout.RFC3339)],
+                                "include_names": ["true"],
+                              }.format_query()
+                            ).with(
+                              { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
+                            ).do_request().as(bill_resp,
+                              ((bill_resp.StatusCode == 200) ? bytes(bill_resp.Body).decode_json() : { "instances": [] }).as(bill_body,
                             ((has(es_body.items) && es_body.items != null ? es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : []) +
                              (has(obs_body.items) && obs_body.items != null ? obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) : []) +
                              (has(sec_body.items) && sec_body.items != null ? sec_body.items.map(p, dyn(p.with({ "project_type": "security" }))) : []) +
                              (has(srch_body.items) && srch_body.items != null ? srch_body.items.map(p, dyn(p.with({ "project_type": "search" }))) : [])
                             ).as(projects,
-                          size(projects) > 0 ?
-                          {
-                            "events": projects.map(p,
+                          (
+                            projects.map(p,
                               all_pkeys.filter(k,
                                 k.startsWith(p.id + ":") || (has(p.name) && p.name != null && p.name != "" && k.startsWith(p.name + ":"))
                               ).as(pkeys,
@@ -90,7 +99,7 @@ program: |-
                                   ) : (
                                     state.hub_es_api_key != "" ? state.hub_es_api_key : state.api_key
                                   )).as(primary_key,
-                                    (dyn(p.endpoints).elasticsearch + "/_cat/indices?h=index,dataset.size,indexing.index_time,search.query_time&format=json&bytes=b&time=ms&expand_wildcards=open,hidden").as(cat_url,
+                                    (string(dyn(p.endpoints).elasticsearch).trimRight("/") + "/_cat/indices?h=index,dataset.size,indexing.index_time,search.query_time&format=json&bytes=b&time=ms&expand_wildcards=open,hidden").as(cat_url,
                                       get_request(cat_url).with({ "Header": { "Authorization": ["ApiKey " + primary_key] } }).do_request().as(resp0,
                                         (resp0.StatusCode == 200) ?
                                           { "resp": resp0, "key": primary_key, "ktype": size(pkeys) > 0 ? "remote_key" : "hub_key" }
@@ -126,14 +135,14 @@ program: |-
                                               (cat_resp.StatusCode == 200) ?
                                                 bytes(cat_resp.Body).decode_json().as(rows,
                                                   get_request(
-                                                    dyn(p.endpoints).elasticsearch + "/_ml/trained_models/_stats"
+                                                    string(dyn(p.endpoints).elasticsearch).trimRight("/") + "/_ml/trained_models/_stats"
                                                   ).with(
                                                     { "Header": { "Authorization": ["ApiKey " + target_key] } }
                                                   ).do_request().as(ml_resp,
                                                     (ml_resp.StatusCode == 200) ? bytes(ml_resp.Body).decode_json() : { "trained_model_stats": [] }
                                                   ).as(ml_body,
                                                     get_request(
-                                                      dyn(p.endpoints).elasticsearch + "/synthetics-*/_search?" + {
+                                                      string(dyn(p.endpoints).elasticsearch).trimRight("/") + "/synthetics-*/_search?" + {
                                                         "ignore_unavailable": ["true"],
                                                         "size": ["0"],
                                                         "source_content_type": ["application/json"],
@@ -240,7 +249,7 @@ program: |-
                                                           "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
                                                           "project_type": p.project_type,
                                                           "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
-                                                          "es_url": dyn(p.endpoints).elasticsearch,
+                                                          "es_url": string(dyn(p.endpoints).elasticsearch).trimRight("/"),
                                                           "last_status": "ok",
                                                           "api_key_type": resolved_ktype,
                                                           "synthetics_status": "ok",
@@ -267,7 +276,7 @@ program: |-
                                                     "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
                                                     "project_type": p.project_type,
                                                     "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
-                                                    "es_url": dyn(p.endpoints).elasticsearch,
+                                                    "es_url": string(dyn(p.endpoints).elasticsearch).trimRight("/"),
                                                     "last_status": "empty_or_unauthorized",
                                                     "api_key_type": "missing_key",
                                                     "synthetics_status": "unauthorized",
@@ -289,13 +298,48 @@ program: |-
                                   )
                                 )
                               )
-                            ).flatten(),
-                            "cursor": { "last_day": cursor_key },
-                            "want_more": false,
-                          }
-                          :
-                          { "events": [], "want_more": false }
+                            ).flatten() +
+                            ((has(bill_body.instances) && bill_body.instances != null) ?
+                              bill_body.instances.filter(inst,
+                                has(inst.id) && inst.id != null && string(inst.id) != "" &&
+                                size(projects.filter(p, p.id == inst.id)) == 0
+                              ).map(inst,
+                                {
+                                  "@timestamp": day_ts,
+                                  "period_start": day_ts,
+                                  "doc_type": "project_status",
+                                  "project_id": string(inst.id),
+                                  "project_name": (has(inst.name) && inst.name != null && string(inst.name) != "") ? string(inst.name) : string(inst.id),
+                                  "project_type": (has(inst.type) && inst.type != null && string(inst.type) != "" && string(inst.type) != "serverless" && string(inst.type) != "deployment") ? string(inst.type) : "elasticsearch",
+                                  "optimized_for": "decommissioned",
+                                  "es_url": "",
+                                  "last_status": "inactive",
+                                  "api_key_type": "cloud_billing_only",
+                                  "synthetics_status": "inactive",
+                                  "index_count": 0,
+                                  "datastream_count": 0,
+                                  "ai_model_count": 0,
+                                  "synthetics_monitor_count": 0,
+                                  "updated_at": now.format(time_layout.RFC3339),
+                                  "conf_chargeable_unit_rate": double(state.conf_unit_rate),
+                                  "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+                                  "conf_currency_symbol": state.conf_currency_symbol,
+                                }
+                              )
+                            : [])
+                          ).as(usage_evts,
+                            size(usage_evts) > 0 ?
+                            {
+                              "events": usage_evts,
+                              "cursor": { "last_day": cursor_key },
+                              "want_more": false,
+                            }
+                            :
+                            { "events": [], "want_more": false }
+                          )
                         )
+                            )
+                          )
                       )
                     )
                   )
