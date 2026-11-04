@@ -3,45 +3,24 @@
 
 ## Overview
 
-The AWS CloudWatch OpenTelemetry Input collects Amazon CloudWatch metrics for selected AWS services using the [AWS CloudWatch receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/awscloudwatchreceiver) from the OpenTelemetry Collector.
+The AWS CloudWatch OpenTelemetry Input collects Amazon CloudWatch metrics using the [AWS CloudWatch receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/awscloudwatchreceiver) from the OpenTelemetry Collector.
 
-Instead of listing individual metrics, the integration automatically discovers the metrics published in each service's CloudWatch namespace, so newly available metrics are picked up without any configuration changes. This makes it a low-maintenance way to bring AWS infrastructure metrics into Elastic for dashboards, alerting, and analysis.
+This is a generic input package. It configures the `awscloudwatch` receiver and the `awscredentialsprovider` extension. It does not select a CloudWatch namespace, and it does not add processors. An integration data stream supplies metric discovery, poll settings, and any processors.
 
 ## How it works
 
-This integration configures the AWS CloudWatch receiver in the EDOT (Elastic Distribution of OpenTelemetry) Collector, which:
+This input configures the AWS CloudWatch receiver in the EDOT (Elastic Distribution of OpenTelemetry) Collector, which:
 
-1. Authenticates to AWS using the credentials you provide.
-2. Discovers the metrics available in the selected service's CloudWatch namespace.
-3. Polls CloudWatch on a regular interval and retrieves the configured statistics (such as Average, Sum, and Maximum) for each metric.
-4. Forwards the metrics to Elastic Agent, which ships them to Elasticsearch for indexing and visualization.
-
-You add the integration once for each AWS service you want to monitor.
+1. Authenticates to AWS with the credentials you provide, through the `awscredentialsprovider` extension.
+2. Queries CloudWatch in the AWS region you set.
+3. Forwards the metrics to Elastic Agent, which ships them to Elasticsearch for indexing and visualization.
 
 ## Deployment modes
 
-This integration can be deployed in two ways:
+This input can be deployed in two ways:
 
-- **Elastic Managed** (default): Elastic manages the collector for you, with no infrastructure to run. This is the recommended option for most users.
+- **Elastic Managed** (default): Elastic manages the collector for you, with no infrastructure to run.
 - **Elastic Agent**: Run the collector on your own Elastic Agent.
-
-## Supported services
-
-Each AWS service is available as a separate option when you add the integration.
-
-| Service | CloudWatch namespace |
-|---|---|
-| AWS EC2 | `AWS/EC2` |
-| AWS Lambda | `AWS/Lambda` |
-| AWS RDS | `AWS/RDS` |
-| AWS SQS | `AWS/SQS` |
-| AWS Application ELB | `AWS/ApplicationELB` |
-| AWS Classic ELB | `AWS/ELB` |
-| AWS Network ELB | `AWS/NetworkELB` |
-| AWS Gateway ELB | `AWS/GatewayELB` |
-| AWS ECS / Fargate | `AWS/ECS` |
-
-Each service collects a set of statistics chosen to suit that service's metrics (for example, averages for utilization metrics and sums for counters). These defaults work well out of the box and require no configuration.
 
 ## Requirements
 
@@ -57,49 +36,21 @@ Each service collects a set of statistics chosen to suit that service's metrics 
 
 | Setting | Description |
 |---|---|
-| AWS Region | The AWS region to collect metrics from (for example, `us-east-1`). |
-| AWS Access Key ID | The access key used to authenticate to AWS. |
-| AWS Secret Access Key | The secret key paired with the access key. |
-| AWS Session Token | Required only when using temporary (STS) credentials. |
+| AWS Region | The AWS region to query CloudWatch metrics from (for example, `us-east-1`). |
+| AWS Access Key ID | The access key used to authenticate to AWS. Mapped to `AWS_ACCESS_KEY_ID`. |
+| AWS Secret Access Key | The secret key paired with the access key. Mapped to `AWS_SECRET_ACCESS_KEY`. |
+| AWS Session Token | Required only when using temporary (STS) credentials. Mapped to `AWS_SESSION_TOKEN`. |
 
-### Collection settings
-
-Each service template exposes two settings that control how metrics are polled from CloudWatch:
+### Advanced settings
 
 | Setting | Description |
 |---|---|
-| **Collection Interval** | How often the integration polls CloudWatch (one `GetMetricData` cycle). Shorter intervals give fresher data but increase the number of API calls. |
-| **Period** | The CloudWatch aggregation window for each data point. It must match the resolution at which the AWS service publishes the metric, otherwise you may see gaps or repeated values. |
-
-Guidance:
-
-- Set **Period** to the metric's native publishing resolution — typically **5 minutes** for services on 5-minute resolution (for example, EC2 basic monitoring) and **1 minute** for services that publish at 1-minute resolution (for example, RDS and Application ELB).
-- Set **Collection Interval** to **Period**, or to a multiple of it. Each poll returns every data point in the elapsed window, so polling less often reduces cost proportionally without losing data — it only delays how soon the data arrives. Polling more often than Period re-reads the same data point and multiplies cost for no benefit.
-- The defaults below are pre-tuned per service, so you typically don't need to change them.
-
-| Service             | Collection Interval | Period |
-|---------------------|---------------------|--------|
-| AWS EC2             | 5m                  | 5m     |
-| AWS Lambda          | 5m                  | 1m     |
-| AWS RDS             | 5m                  | 1m     |
-| AWS SQS             | 5m                  | 1m     |
-| AWS Application ELB | 5m                  | 1m     |
-| AWS Classic ELB     | 5m                  | 1m     |
-| AWS Network ELB     | 5m                  | 1m     |
-| AWS Gateway ELB     | 5m                  | 1m     |
-| AWS ECS             | 5m                  | 1m     |
-
-### Autodiscover Limit and impact on cost
-
-This integration automatically discovers and collects CloudWatch metrics published for the configured namespaces. The CloudWatch API bills per metric requested, so the more resources that exist in your account, the more metrics are discovered and the higher the collection cost.
-
-To avoid unexpectedly large bills, the number of metrics collected is capped by the **Autodiscover Limit**, which defaults to 10,000, high enough to capture all metrics in a typical deployment. The limit applies to each namespace separately. It is a ceiling, not a fixed value - you are billed only for the metrics that actually exist, so smaller accounts cost proportionally less. With the 10,000 limit, the maximum cost per namespace is ~$2,600 per month at the default 5-minute collection interval.
-
-If you need to reduce cost, you can lower the **Autodiscover Limit** in the integration's advanced settings. Reducing the limit below the number of metrics in your account means some metrics will not be collected, and which ones are dropped is not predictable. We recommend changing this value only if you understand the metric volume in your AWS account, and lowering it gradually while verifying that the metrics you rely on are still present.
+| AWS Role ARN | Role to assume. Mapped to `AWS_ROLE_ARN`. |
+| AWS External ID | External ID for the assumed role. Mapped to `AWS_ROLE_EXTERNAL_ID`. |
 
 ## Authentication
 
-The integration supports the following ways to authenticate to AWS:
+The input supports the following ways to authenticate to AWS:
 
 - **Access keys**: Provide an access key ID and secret access key.
 - **Temporary credentials**: Provide an access key ID, secret access key, and session token.
@@ -118,7 +69,8 @@ For the complete list of metrics available in each namespace, see the [Amazon Cl
 1. Confirm the AWS Region matches where your resources are running.
 2. Verify the credentials are valid and not expired (temporary credentials require a session token).
 3. Ensure the credentials have `cloudwatch:ListMetrics` and `cloudwatch:GetMetricData` permissions.
-4. Allow time for the first collection cycle to complete, and remember that CloudWatch publishes metrics with a short delay.
+4. Confirm the integration data stream sets a CloudWatch namespace. This input does not discover metrics on its own.
+5. Allow time for the first collection cycle to complete. CloudWatch publishes metrics with a short delay.
 
 ### Authentication errors
 
