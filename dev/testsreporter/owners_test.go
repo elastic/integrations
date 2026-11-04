@@ -116,9 +116,9 @@ func TestOwnersResolverLookup(t *testing.T) {
 			expected:    packageDetails{path: "packages/sql_input", owners: []string{"@elastic/sql-team"}},
 		},
 		{
-			title:       "folder name, as reported by previous versions of elastic-package",
-			packageName: "sql_input",
-			expected:    packageDetails{path: "packages/sql_input", owners: []string{"@elastic/sql-team"}},
+			title:         "folder name is not supported",
+			packageName:   "sql_input",
+			expectedError: "no package found",
 		},
 		{
 			title:       "nested package",
@@ -129,7 +129,7 @@ func TestOwnersResolverLookup(t *testing.T) {
 			},
 		},
 		{
-			title:       "other nested package with the same folder name",
+			title:       "other nested package with the same folder name, found by its manifest name",
 			packageName: "other_input_otel",
 			expected:    packageDetails{path: "packages/other/input_otel", owners: []string{"@elastic/other-team"}},
 		},
@@ -140,9 +140,9 @@ func TestOwnersResolverLookup(t *testing.T) {
 			expectedError: "no owner found",
 		},
 		{
-			title:         "folder name of nested packages is ambiguous",
+			title:         "folder name of nested packages is not supported",
 			packageName:   "input_otel",
-			expectedError: "ambiguous",
+			expectedError: "no package found",
 		},
 		{
 			title:         "unknown package",
