@@ -48,8 +48,7 @@ state:
       }
     }
 {{#if filters}}
-state.filters:
-{{filters}}
+state.filters: {{filters}}
 {{/if}}
 redact:
   fields:
@@ -70,7 +69,10 @@ program: |
           "variables": {
             "accountIDs": state.account_ids,
             ?"marker": state.?cursor.marker,
-            ?"filters": state.?filters,
+            ?"filters": (state.?filters.orValue(null) == null) ?
+              optional.none()
+            :
+              optional.of((type(state.filters) == list) ? state.filters : [state.filters]),
           },
         }.encode_json(),
       }
