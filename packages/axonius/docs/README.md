@@ -315,7 +315,7 @@ An example event for `adapter` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "14821fc1-2179-4137-b70d-b1273d706291",
@@ -415,7 +415,7 @@ An example event for `user` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "e51be873-4470-4ac9-b544-f8d1cd55df45",
@@ -530,7 +530,7 @@ An example event for `gateway` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "48b8f756-211b-4384-876b-8344e3695645",
@@ -781,7 +781,7 @@ An example event for `exposure` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "c984995b-1d3f-4883-bb15-c9434aca184b",
@@ -908,7 +908,7 @@ An example event for `alert_finding` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "a06a56bf-4d9f-43fe-b5de-7e0a8ef420a7",
@@ -1078,7 +1078,7 @@ An example event for `incident` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "4a19befd-dfeb-490a-ae01-9c5af81e6225",
@@ -1224,7 +1224,7 @@ An example event for `storage` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "309c48b0-7459-46eb-a2f8-dcde33d565ba",
@@ -1385,7 +1385,7 @@ An example event for `ticket` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "adf692ff-579e-49bd-88bc-fa14bf027e3b",
@@ -2016,7 +2016,7 @@ An example event for `network` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "10b8b948-620f-4a69-ac44-12197b5c5a65",
@@ -2625,7 +2625,7 @@ An example event for `identity` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "57760dc1-591b-4a34-ba06-c4f7604fdb10",
@@ -3210,7 +3210,7 @@ An example event for `compute` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "80bc8918-8f12-4faf-b69f-14eae4d5990a",
@@ -3768,7 +3768,7 @@ An example event for `application` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
         "id": "7d8c1499-c3fc-4215-a47f-e1b1d1497a8b",
