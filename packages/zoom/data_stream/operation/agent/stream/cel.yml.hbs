@@ -108,14 +108,11 @@ program: |-
                   (v != "") ? optional.of([v]) : optional.none()
                 ),
               }.format_query()
-            ).with({"Header": {"Accept": ["application/json"]}}).do_request().as(resp,
-              // Zoom can return API errors as JSON or XML with HTTP 200.
+            ).do_request().as(resp,
+              // Zoom can answer HTTP 200 with a body that is not JSON; treat that
+              // like any other API error instead of failing the evaluation.
               try(resp.Body.decode_json()).as(body,
-                (resp.StatusCode == 200 && type(body) == map && !(
-                  // Report data takes precedence over additional response metadata.
-                  !has(body.operation_logs) && has(body.code) && has(body.message) &&
-                  body.code != 0 && body.code != "0"
-                )) ?
+                (resp.StatusCode == 200 && type(body) == map) ?
                   body.?operation_logs.orValue([]).as(logs,
                     body.?next_page_token.orValue("").as(next_token,
                       {
@@ -149,8 +146,9 @@ program: |-
                     )
                   )
                 :
-                  // Report API and decoding errors without advancing the
-                  // cursor (object error form => the agent retries the same window).
+                  // Non-200 or non-JSON response: report the error and stop this cycle
+                  // without advancing the cursor (object error form => the agent retries
+                  // the same window).
                   // Clear the in-flight page token so the retry restarts the window
                   // from its first page rather than reusing a stale (possibly expired)
                   // token.
