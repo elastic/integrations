@@ -187,12 +187,18 @@ An example event for `alert` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
+        "category": [
+            "intrusion_detection"
+        ],
         "dataset": "armis.alert",
         "id": "61",
         "ingested": "2025-05-23T09:34:03Z",
         "kind": "alert",
         "original": "{\"activityUUIDs\":[\"6f3d6d3a-6732-44cc-9d63-10a38277fb15\"],\"affectedDevicesCount\":1,\"alertId\":61,\"classification\":\"Security - Other\",\"connectionIds\":[],\"description\":\"The Armis security platform has detected a violation of a policy and generated an alert.\",\"destinationEndpoints\":[],\"deviceIds\":[854],\"lastAlertUpdateTime\":null,\"mitreAttackLabels\":null,\"policyId\":null,\"policyLabels\":null,\"policyTitle\":null,\"severity\":\"Critical\",\"sourceEndpoints\":[],\"status\":\"Unhandled\",\"statusChangeTime\":\"2025-03-29T00:12:57.306928+00:00\",\"time\":\"2025-03-29T00:12:57.306928+00:00\",\"title\":\"[Risk] Device Susceptible to Ransomware\",\"type\":\"System Policy Violation\"}",
-        "severity": 99
+        "severity": 99,
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "id": [
@@ -593,6 +599,9 @@ An example event for `vulnerability` looks as following:
         "id": "CVE-2024-44148",
         "scanner": {
             "vendor": "Armis"
+        },
+        "score": {
+            "base": 10
         },
         "severity": "Critical"
     }
