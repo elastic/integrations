@@ -86,7 +86,8 @@ rules:
             }
           }
           ` }}
-  # Round 1, page 3 — terminal page: returns Eve (1 event) with no next cursor.
+  # Round 1, page 3 — terminal page: returns a Confluence API event whose container
+  # attribute keys contain NUL characters, then Eve (2 events), with no next cursor.
   # The CEL program sets last_timestamp = Eve's processedAt
   # (2026-05-19T10:10:01.000Z → 1779185401000 ms) because size(items) > 0.
   # want_more = false because meta.next is null, ending the pagination loop.
@@ -109,6 +110,45 @@ rules:
           {{ minify_json `
           {
             "data": [
+              {
+                "type": "events",
+                "id": "a1000006-0000-4000-8000-000000000006",
+                "attributes": {
+                  "time": "2026-05-19T10:09:00.000Z",
+                  "processedAt": "2026-05-19T10:09:01.000Z",
+                  "action": "confluence_accessed_api",
+                  "actor": {
+                    "id": "712020:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                    "name": "Alex Rivera",
+                    "email": "alex.rivera@example.com",
+                    "auth": {
+                      "authType": "api-token",
+                      "tokenId": "token-00000002"
+                    }
+                  },
+                  "container": [
+                    {
+                      "id": "11111111-1111-1111-1111-111111111111",
+                      "type": "sites",
+                      "attributes": {
+                        "siteName": "example-corp",
+                        "httpMethod": "PUT",
+                        "body:value.folders.300001\u0000Parent": "400001",
+                        "body:value.folders.300001\u0000Parent\u0000Child": "400002"
+                      }
+                    }
+                  ],
+                  "location": {
+                    "ip": "203.0.113.40",
+                    "countryName": "Example Country",
+                    "city": "Example City"
+                  }
+                },
+                "message": {
+                  "content": "Made request PUT /wiki/api/v2/pages/100001/properties/200001",
+                  "format": "simple"
+                }
+              },
               {
                 "type": "events",
                 "id": "a1000005-0000-4000-8000-000000000005",
@@ -147,8 +187,8 @@ rules:
               "current": null,
               "page_size": 200,
               "start_index": 1,
-              "end_index": 1,
-              "total": 1
+              "end_index": 2,
+              "total": 2
             }
           }
           ` }}

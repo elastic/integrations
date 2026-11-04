@@ -13,6 +13,10 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "sysmon_operational" }}'
       if: ctx.winlog?.channel instanceof String && ctx.winlog.channel.toLowerCase() == "microsoft-windows-sysmon/operational"
+  - pipeline:
+      name: '{{ IngestPipeline "system_channel" }}'
+      tag: pipeline_system_channel
+      if: ctx.winlog?.channel instanceof String && ctx.winlog.channel.toLowerCase() == "system"
 
   - set:
       field: host.os.type

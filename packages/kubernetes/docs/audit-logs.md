@@ -175,6 +175,7 @@ An example event for `audit` looks as following:
 | kubernetes.audit.operation.producer |  | keyword |
 | kubernetes.audit.protoPayload.@type |  | keyword |
 | kubernetes.audit.protoPayload.authenticationInfo.principalEmail |  | keyword |
+| kubernetes.audit.protoPayload.authenticationInfo.principalSubject |  | keyword |
 | kubernetes.audit.protoPayload.authorizationInfo.granted |  | boolean |
 | kubernetes.audit.protoPayload.authorizationInfo.permission |  | keyword |
 | kubernetes.audit.protoPayload.authorizationInfo.resource |  | keyword |
@@ -257,6 +258,7 @@ An example event for `audit` looks as following:
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
+| user.email | User email address. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |

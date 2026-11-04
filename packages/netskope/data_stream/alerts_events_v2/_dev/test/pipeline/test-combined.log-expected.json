@@ -947,7 +947,7 @@
                 "action": "block",
                 "id": "a1b2c3d4e5f6a7b8c9d0e1f2",
                 "kind": "event",
-                "original": "{\"_id\": \"a1b2c3d4e5f6a7b8c9d0e1f2\", \"access_method\": \"API Connector\", \"action\": \"block\", \"alert\": \"no\", \"app\": \"Google Drive\", \"appcategory\": \"Cloud Storage\", \"cci\": 82, \"ccl\": \"excellent\", \"device\": \"Windows Device\", \"device_classification\": \"managed\", \"dlp_file\": \"sensitive_report.docx\", \"dlp_incident_id\": 4815162342108100, \"dlp_is_unique_count\": \"true\", \"dlp_match_info\": [{\"dlp_policy_name\": \"PII_Detection_Policy\", \"dlp_profile_name\": \"PII_Profile\", \"dlp_rule_name\": \"Social_Security_Number\", \"dlp_rule_score\": 100, \"violation_count\": 7}], \"dlp_parent_id\": 4815162342108200, \"dlp_profile\": \"PII_Profile\", \"dlp_rule\": \"Social_Security_Number\", \"dlp_rule_count\": 7, \"dlp_rule_severity\": \"Critical\", \"dlp_unique_count\": 4, \"hostname\": \"DESKTOP-EXAMPLE\", \"inline_dlp_match_info\": [{\"dlp_policy_name\": \"Inline_PII_Policy\", \"dlp_profile_name\": \"PII_Inline\", \"dlp_rule_name\": \"Credit_Card_Number\", \"violation_count\": 3}], \"org\": \"example.com\", \"record_type\": \"incident\", \"srcip\": \"192.168.10.50\", \"timestamp\": 1708989085, \"traffic_type\": \"CloudApp\", \"type\": \"policy\", \"ur_normalized\": \"jdoe@example.com\", \"user\": \"jdoe@example.com\", \"userip\": \"192.168.10.50\", \"userkey\": \"jdoe@example.com\"}",
+                "original": "{\"_id\": \"a1b2c3d4e5f6a7b8c9d0e1f2\", \"access_method\": \"API Connector\", \"action\": \"block\", \"alert\": \"no\", \"app\": \"Google Drive\", \"appcategory\": \"Cloud Storage\", \"cci\": 82, \"ccl\": \"excellent\", \"device\": \"Windows Device\", \"device_classification\": \"managed\", \"dlp_file\": \"sensitive_report.docx\", \"dlp_incident_id\": 4815162342108100, \"dlp_is_unique_count\": \"true\", \"dlp_match_info\": [{\"action_threshold_met\": true, \"dlp_action\": \"block\", \"dlp_forensic_id\": 1234567890123, \"dlp_policy\": \"Example_DLP_Policy\", \"dlp_profile_name\": \"Example_PII_Profile\", \"dlp_scan_type\": \"Real-time\", \"dlp_rules\": [{\"dlp_rule_name\": \"Example_SSN_Rule\", \"dlp_rule_score\": 87.5, \"dlp_rule_severity\": \"Critical\", \"dlp_match_type\": \"regex\", \"dlp_unique_count\": 4, \"dlp_incident_rule_count\": 7, \"is_unique_count\": true, \"dlp_matches_skipped\": false, \"sensitivity_level\": \"high\", \"dlp_data_identifiers\": [{\"entity_name\": \"SSN\", \"entity_sensitivity_level\": \"high\", \"match\": \"***-**-1234\", \"prefix\": \"SSN:\", \"suffix\": \"\", \"type\": \"regex\", \"unique_count_id\": \"uc-0001\"}, {\"Example_Identifier_A\": 3, \"Example_Identifier_B\": 1}], \"entity_categories\": {\"numbers/social_security_numbers/us\": \"pii\"}, \"entity_data_types\": {\"numbers/social_security_numbers/us\": \"ssn\"}, \"entity_sensitivity_levels\": {\"Example_Identifier_A\": \"high\"}}]}], \"dlp_parent_id\": 4815162342108200, \"dlp_profile\": \"PII_Profile\", \"dlp_rule\": \"Social_Security_Number\", \"dlp_rule_count\": 7, \"dlp_rule_severity\": \"Critical\", \"dlp_unique_count\": 4, \"hostname\": \"DESKTOP-EXAMPLE\", \"inline_dlp_match_info\": [{\"dlp_policy_name\": \"Inline_PII_Policy\", \"dlp_profile_name\": \"PII_Inline\", \"dlp_rule_name\": \"Credit_Card_Number\", \"violation_count\": 3}], \"org\": \"example.com\", \"record_type\": \"incident\", \"srcip\": \"192.168.10.50\", \"timestamp\": 1708989085, \"traffic_type\": \"CloudApp\", \"type\": \"policy\", \"ur_normalized\": \"jdoe@example.com\", \"user\": \"jdoe@example.com\", \"userip\": \"192.168.10.50\", \"userkey\": \"jdoe@example.com\"}",
                 "outcome": "unknown",
                 "type": [
                     "info"
@@ -971,13 +971,50 @@
                     "dlp_file": "sensitive_report.docx",
                     "dlp_incident_id": "4815162342108100",
                     "dlp_is_unique_count": true,
-                    "dlp_match_info_object": [
+                    "dlp_match_info": [
                         {
-                            "dlp_policy_name": "PII_Detection_Policy",
-                            "dlp_profile_name": "PII_Profile",
-                            "dlp_rule_name": "Social_Security_Number",
-                            "dlp_rule_score": 100,
-                            "violation_count": 7
+                            "action_threshold_met": true,
+                            "dlp_action": "block",
+                            "dlp_forensic_id": 1234567890123,
+                            "dlp_policy": "Example_DLP_Policy",
+                            "dlp_profile_name": "Example_PII_Profile",
+                            "dlp_rules": [
+                                {
+                                    "dlp_data_identifiers": [
+                                        {
+                                            "entity_name": "SSN",
+                                            "entity_sensitivity_level": "high",
+                                            "match": "***-**-1234",
+                                            "prefix": "SSN:",
+                                            "type": "regex",
+                                            "unique_count_id": "uc-0001"
+                                        },
+                                        {
+                                            "Example_Identifier_A": 3,
+                                            "Example_Identifier_B": 1
+                                        }
+                                    ],
+                                    "dlp_incident_rule_count": 7,
+                                    "dlp_match_type": "regex",
+                                    "dlp_matches_skipped": false,
+                                    "dlp_rule_name": "Example_SSN_Rule",
+                                    "dlp_rule_score": 87.5,
+                                    "dlp_rule_severity": "Critical",
+                                    "dlp_unique_count": 4,
+                                    "entity_categories": {
+                                        "numbers/social_security_numbers/us": "pii"
+                                    },
+                                    "entity_data_types": {
+                                        "numbers/social_security_numbers/us": "ssn"
+                                    },
+                                    "entity_sensitivity_levels": {
+                                        "Example_Identifier_A": "high"
+                                    },
+                                    "is_unique_count": true,
+                                    "sensitivity_level": "high"
+                                }
+                            ],
+                            "dlp_scan_type": "Real-time"
                         }
                     ],
                     "dlp_parent_id": "4815162342108200",
