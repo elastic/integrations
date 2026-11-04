@@ -1,0 +1,428 @@
+---
+description: Detect encoded strings and hashes in input and output messages.
+processors:
+  - remove:
+      tag: ml-prompt-detect-init
+      description: >-
+        Clear temporary fields before resolving the input
+      field:
+        - _ml_prompt_parsed
+        - ml_prompt_text
+        - ml_completion_text
+        - ml_b64_candidate_inputs
+        - ml_b64_scores
+        - ml_b64_one_result
+        - ml_b64_strings
+        - _ml_candidate_features
+        - f
+      ignore_missing: true
+
+  - script:
+      tag: ml-prompt-detect-resolve-text
+      description: >-
+        Clip the prompt and completion text resolved by the entry pipeline
+      lang: painless
+      source: |-
+        String clip(def s) {
+          if (s == null) { return null; }
+          return s.length() <= 4096 ? s : s.substring(0, 4096);
+        }
+
+        if (ctx['_ml_prompt_text'] instanceof String) {
+          ctx['ml_prompt_text'] = clip(ctx['_ml_prompt_text']);
+        }
+        if (ctx['_ml_completion_text'] instanceof String) {
+          ctx['ml_completion_text'] = clip(ctx['_ml_completion_text']);
+        }
+  - gsub:
+      tag: ml-prompt-detect-strip-uuid-prompt
+      field: ml_prompt_text
+      pattern: "(?i)\\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\b"
+      replacement: " "
+      ignore_missing: true
+
+  - gsub:
+      tag: ml-prompt-detect-strip-non-b64-prompt
+      field: ml_prompt_text
+      pattern: "[^A-Za-z0-9+/= ]"
+      replacement: ""
+      ignore_missing: true
+
+  - gsub:
+      tag: ml-prompt-detect-strip-uuid-completion
+      field: ml_completion_text
+      pattern: "(?i)\\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\b"
+      replacement: " "
+      ignore_missing: true
+
+  - gsub:
+      tag: ml-prompt-detect-strip-non-b64-completion
+      field: ml_completion_text
+      pattern: "[^A-Za-z0-9+/= ]"
+      replacement: " "
+      ignore_missing: true
+
+  - script:
+      tag: ml-prompt-detect-featurize
+      description: >-
+        Build encoding features for prompt and completion candidates
+      lang: painless
+      if: ctx.ml_prompt_text != null || ctx.ml_completion_text != null
+      params:
+        alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+        radix: 65
+        max_length: 64
+        min_token_length: 14
+        stats_max_length: 256
+        tail_length: 64
+        length_buckets: [16, 24, 36, 56, 96, 192, 512]
+        hex_alphabet: "0123456789abcdefABCDEF"
+        vowels: "aeiouAEIOU"
+      source: |-
+        int codeOf(String alphabet, int radix, String gram) {
+          int code = 0;
+          for (int i = 0; i < gram.length(); i++) {
+            int idx = alphabet.indexOf(gram.substring(i, i + 1));
+            if (idx < 0) { idx = 0; }
+            code = code * radix + idx;
+          }
+          return code;
+        }
+
+        List sourceNames = new ArrayList();
+        List sourceTexts = new ArrayList();
+        if (ctx['ml_prompt_text'] instanceof String && !((String) ctx['ml_prompt_text']).isEmpty()) {
+          sourceNames.add('input_messages');
+          sourceTexts.add((String) ctx['ml_prompt_text']);
+        }
+        if (ctx['ml_completion_text'] instanceof String && !((String) ctx['ml_completion_text']).isEmpty()) {
+          sourceNames.add('output_messages');
+          sourceTexts.add((String) ctx['ml_completion_text']);
+        }
+
+        String[] prefixes = new String[] {"u", "b", "t"};
+        List candidateInputs = new ArrayList();
+        double log2 = Math.log(2.0);
+
+        for (int si = 0; si < sourceTexts.size(); si++) {
+          String src = (String) sourceNames.get(si);
+          String fullText = (String) sourceTexts.get(si);
+          String[] tokens = fullText.splitOnToken(' ');
+          List allCandidates = new ArrayList();
+          StringBuilder collapsed = new StringBuilder();
+
+          for (int i = 0; i < tokens.length; i++) {
+            String token = tokens[i];
+            collapsed.append(token);
+            if (token.length() >= params.min_token_length) {
+              allCandidates.add(token);
+            }
+          }
+
+          if (allCandidates.isEmpty()) {
+            String c = collapsed.toString();
+            if (c.length() == 0) { continue; }
+            allCandidates.add(c);
+          }
+
+          for (String cand : allCandidates) {
+            String c = cand.length() > params.max_length ? cand.substring(0, params.max_length) : cand;
+
+            boolean allHex = cand.length() > 0;
+            for (int hi = 0; hi < cand.length() && allHex; hi++) {
+              if (params.hex_alphabet.indexOf(cand.substring(hi, hi + 1)) < 0) {
+                allHex = false;
+              }
+            }
+            String candType = allHex ? "hash_string" : "encoding";
+
+            Map features = new HashMap();
+
+            for (int n = 1; n <= 3; n++) {
+              String prefix = prefixes[n - 1];
+              for (int i = 0; i + n <= c.length(); i++) {
+                features[prefix + Integer.toString(i)] = codeOf(params.alphabet, params.radix, c.substring(i, i + n));
+              }
+            }
+
+            String sw = cand.length() > params.stats_max_length
+                ? cand.substring(0, params.stats_max_length)
+                : cand;
+            int swLen = sw.length();
+
+            int lenb = 0;
+            List lengthBuckets = params.length_buckets;
+            for (int bi = 0; bi < lengthBuckets.size(); bi++) {
+              if (cand.length() >= ((Number) lengthBuckets.get(bi)).intValue()) {
+                lenb++;
+              }
+            }
+            features['lenb'] = lenb;
+
+            if (swLen == 0) {
+              Map entry = new HashMap();
+              entry['s'] = cand; entry['t'] = candType; entry['src'] = src; entry['f'] = features;
+              candidateInputs.add(entry);
+              continue;
+            }
+
+            Map charCounts = new HashMap();
+            double[] modSums = new double[]{0.0, 0.0, 0.0, 0.0};
+            int[] modCnts  = new int[]{0, 0, 0, 0};
+            int up = 0, lo = 0, di = 0, sp = 0, hx = 0, vw = 0, cxr = 0;
+            int prevIsUpper = -1;
+
+            for (int sj = 0; sj < swLen; sj++) {
+              String ch = sw.substring(sj, sj + 1);
+              charCounts.merge(ch, 1, (a, b) -> ((Integer)a).intValue() + ((Integer)b).intValue());
+
+              int raw = params.alphabet.indexOf(ch);
+              int r = sj % 4;
+              int idx = raw < 0 ? 0 : raw;
+              modSums[r] += idx;
+              modCnts[r]++;
+
+              int curIsUpper = -1;
+              if (raw >= 0 && raw <= 25)       { up++; curIsUpper = 1; }
+              else if (raw >= 26 && raw <= 51)  { lo++; curIsUpper = 0; }
+              else if (raw >= 52 && raw <= 61)  { di++; }
+              else if (raw == 62 || raw == 63)  { sp++; }
+
+              if (params.hex_alphabet.indexOf(ch) >= 0) { hx++; }
+              if (params.vowels.indexOf(ch) >= 0)        { vw++; }
+
+              if (curIsUpper >= 0) {
+                if (prevIsUpper >= 0 && prevIsUpper != curIsUpper) { cxr++; }
+                prevIsUpper = curIsUpper;
+              } else {
+                prevIsUpper = -1;
+              }
+            }
+
+            double ent = 0.0;
+            if (swLen >= 2) {
+              for (def e : charCounts.entrySet()) {
+                double p = ((double) ((Number) e.getValue()).intValue()) / (double) swLen;
+                ent -= p * Math.log(p) / log2;
+              }
+            }
+            features['ent'] = ent;
+
+            double normDenom = Math.log((double) Math.min(Math.max(swLen, 2), params.stats_max_length)) / log2;
+            features['entn'] = ent / normDenom;
+
+            String tail = cand.length() > params.tail_length
+                ? cand.substring(cand.length() - params.tail_length)
+                : cand;
+            double tent = 0.0;
+            if (tail.length() >= 2) {
+              Map tailCounts = new HashMap();
+              for (int ti = 0; ti < tail.length(); ti++) {
+                String tch = tail.substring(ti, ti + 1);
+                tailCounts.merge(tch, 1, (a, b) -> ((Integer)a).intValue() + ((Integer)b).intValue());
+              }
+              for (def e : tailCounts.entrySet()) {
+                double p = ((double) ((Number) e.getValue()).intValue()) / (double) tail.length();
+                tent -= p * Math.log(p) / log2;
+              }
+            }
+            features['tent'] = tent;
+
+            if (modCnts[0] > 0 && modCnts[1] > 0 && modCnts[2] > 0 && modCnts[3] > 0) {
+              double[] means = new double[]{
+                modSums[0] / (double) modCnts[0],
+                modSums[1] / (double) modCnts[1],
+                modSums[2] / (double) modCnts[2],
+                modSums[3] / (double) modCnts[3]
+              };
+              for (int a = 1; a < 4; a++) {
+                double key = means[a]; int b = a - 1;
+                while (b >= 0 && means[b] > key) { means[b + 1] = means[b]; b--; }
+                means[b + 1] = key;
+              }
+              features['ms0'] = means[0];
+              features['ms1'] = means[1];
+              features['ms2'] = means[2];
+              features['ms3'] = means[3];
+              features['msd'] = means[3] - means[0];
+            }
+
+            double swLenD = (double) swLen;
+            features['fup'] = (double) up  / swLenD;
+            features['flo'] = (double) lo  / swLenD;
+            features['fdi'] = (double) di  / swLenD;
+            features['fsp'] = (double) sp  / swLenD;
+            features['fhx'] = (double) hx  / swLenD;
+            features['fvw'] = (double) vw  / swLenD;
+            features['cxr'] = swLen > 1 ? (double) cxr / (double)(swLen - 1) : 0.0;
+            features['dcv'] = (double) charCounts.size() / (double) Math.min(swLen, 64);
+
+            Map entry = new HashMap();
+            entry['s'] = cand;
+            entry['t'] = candType;
+            entry['src'] = src;
+            entry['f'] = features;
+            candidateInputs.add(entry);
+          }
+        }
+
+        ctx['ml_b64_candidate_inputs'] = candidateInputs;
+        ctx['ml_b64_scores'] = new ArrayList();
+
+  - foreach:
+      tag: ml-prompt-detect-score-foreach
+      description: Score each encoding candidate
+      if: ctx.ml_b64_candidate_inputs != null && ctx.ml_b64_candidate_inputs.size() > 0
+      field: ml_b64_candidate_inputs
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "security_ai_score_candidate_pipeline" }}'
+
+  - script:
+      tag: ml-prompt-detect-promote-score
+      description: >-
+        Group positive detections by encoding type and source, with best-effort decoding
+      lang: painless
+      if: ctx.ml_b64_scores != null && ctx.ml_b64_scores.size() > 0
+      source: |-
+        boolean isBase32(String s) {
+          if (s.length() == 0 || s.length() % 8 != 0) { return false; }
+          String alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567=";
+          for (int i = 0; i < s.length(); i++) {
+            if (alpha.indexOf(s.substring(i, i + 1)) < 0) { return false; }
+          }
+          return true;
+        }
+
+        String trimAfterPadding(String s) {
+          int eq = s.indexOf("=");
+          if (eq < 0) { return s; }
+          int end = eq;
+          while (end < s.length() && s.substring(end, end + 1).equals("=")) { end++; }
+          return s.substring(0, end);
+        }
+
+        String bytesToString(byte[] b) {
+          StringBuilder sb = new StringBuilder();
+          for (int i = 0; i < b.length; i++) { sb.append((char)(b[i] & 0xFF)); }
+          return sb.toString();
+        }
+
+        String decodeBase32(String s) {
+          String alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+          int dataLen = s.length();
+          while (dataLen > 0 && s.substring(dataLen - 1, dataLen).equals("=")) { dataLen--; }
+          int outLen = (dataLen * 5) / 8;
+          byte[] out = new byte[outLen];
+          int buffer = 0, bitsLeft = 0, outIdx = 0;
+          for (int i = 0; i < dataLen; i++) {
+            int val = alpha.indexOf(s.substring(i, i + 1));
+            if (val < 0) { return null; }
+            buffer = (buffer << 5) | val;
+            bitsLeft += 5;
+            if (bitsLeft >= 8) {
+              bitsLeft -= 8;
+              out[outIdx++] = (byte)((buffer >> bitsLeft) & 0xFF);
+            }
+          }
+          return bytesToString(out);
+        }
+
+        String tryDecode(String s, String type) {
+          if (type.equals("hash_string")) { return null; }
+          s = trimAfterPadding(s);
+          if (s.length() == 0 || s.startsWith("=")) { return null; }
+          if (isBase32(s)) {
+            try {
+              String b32 = decodeBase32(s);
+              if (b32 != null) { return b32; }
+            } catch (Exception e) {}
+          }
+          try {
+            byte[] decoded = Base64.getDecoder().decode(s);
+            return bytesToString(decoded);
+          } catch (Exception e) {
+            return null;
+          }
+        }
+
+        Map byType = new HashMap();
+
+        for (def r : ctx['ml_b64_scores']) {
+          if (r == null || !(r['string'] instanceof String)) { continue; }
+          String type = (r['type'] instanceof String) ? (String) r['type'] : "encoding";
+          String src  = (r['src']  instanceof String) ? (String) r['src']  : "input_messages";
+          if (src != 'input_messages' && src != 'output_messages') { src = 'input_messages'; }
+          String s = (String) r['string'];
+
+          def bySrc = byType[type];
+          if (bySrc == null) {
+            bySrc = new HashMap();
+            byType[type] = bySrc;
+          }
+          def bucket = bySrc[src];
+          if (bucket == null) {
+            bucket = new HashMap();
+            bucket['strings']       = new ArrayList();
+            bucket['probabilities'] = new ArrayList();
+            bucket['decoded']       = new ArrayList();
+            bySrc[src] = bucket;
+          }
+          if (!bucket['strings'].contains(s)) {
+            bucket['strings'].add(s);
+            double p = r['probability'] != null ? ((Number) r['probability']).doubleValue() : 0.0;
+            bucket['probabilities'].add(p);
+            bucket['decoded'].add(tryDecode(s, type));
+          }
+        }
+
+        if (byType.isEmpty()) { return; }
+
+        if (ctx['security_ai'] == null) { ctx['security_ai'] = new HashMap(); }
+
+        for (def typeEntry : byType.entrySet()) {
+          String typeName = (String) typeEntry.getKey();
+          Map bySrc = (Map) typeEntry.getValue();
+          Map typeOut = new HashMap();
+          for (def srcEntry : bySrc.entrySet()) {
+            String srcName = (String) srcEntry.getKey();
+            def bucket = srcEntry.getValue();
+            Map side = new HashMap();
+            side['strings']       = bucket['strings'];
+            side['probabilities'] = bucket['probabilities'];
+            side['decoded']       = bucket['decoded'];
+            typeOut[srcName] = side;
+          }
+          typeOut['model_version'] = ctx['_ml_model_version'] instanceof String ? (String) ctx['_ml_model_version'] : '0.0.1';
+          ctx['security_ai'][typeName] = typeOut;
+        }
+
+  - remove:
+      tag: ml-prompt-detect-cleanup
+      field:
+        - ml_b64_candidate_inputs
+        - ml_b64_scores
+        - ml_prompt_text
+        - ml_completion_text
+      ignore_missing: true
+
+on_failure:
+  - remove:
+      field:
+        - ml_b64_candidate_inputs
+        - ml_b64_scores
+        - ml_b64_one_result
+        - _ml_candidate_features
+        - f
+        - ml_prompt_text
+        - ml_completion_text
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        {{{ _ingest.on_failure_message }}} [pipeline: {{{ _ingest.pipeline }}},
+        processor_type: {{{ _ingest.on_failure_processor_type }}},
+        processor_tag: {{{ _ingest.on_failure_processor_tag }}}]

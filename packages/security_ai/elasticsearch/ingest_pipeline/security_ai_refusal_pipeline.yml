@@ -1,0 +1,591 @@
+---
+description: Detect whether the assistant response is a refusal.
+processors:
+  - script:
+      tag: ml-prompt-detect-refusal-v-resolve-text
+      description: Clip the completion text resolved by the entry pipeline
+      lang: painless
+      if: ctx._ml_completion_text instanceof String
+      source: |-
+        String text = (String) ctx['_ml_completion_text'];
+        ctx['ml_response_text'] = text.length() > 8000 ? text.substring(0, 8000) : text;
+  - script:
+      tag: ml-prompt-detect-refusal-v-featurize
+      description: Build fixed-vocabulary word n-gram features from response text
+      lang: painless
+      if: ctx.ml_response_text != null
+      params:
+        negation_keywords:
+          - cannot
+          - cant
+          - wont
+          - unable
+          - decline
+          - refuse
+          - must not
+          - am not
+          - never
+          - prohibited
+          - forbidden
+          - sorry
+          - apologize
+          - apologise
+          - regret
+          - inappropriate
+          - harmful
+          - illegal
+          - will not
+          - not able
+        multilingual_stop_words:
+          - la
+          - le
+          - les
+          - de
+          - du
+          - des
+          - un
+          - une
+          - se
+          - es
+          - en
+          - el
+          - los
+          - las
+          - da
+          - na
+          - di
+          - il
+          - lo
+          - gli
+          - zu
+          - im
+          - um
+          - ou
+          - ll
+        vocab: 'ability|able|about|about the|above|above the|absence|absolute|absolutely|abstract|abuse|academic|accents|accept|acceptable|access|accessibility|accessible|according|accordingly|account|accountability|accounts|accuracy|accurate|achieve|achieved|acid|across|across the|act|action|actionable|actions|active|actively|activities|activity|acts|actual|actually|adapt|add|add the|added|adding|addition|additional|additionally|address|addresses|addressing|adds|adjust|adopt|adult|advanced|advantage|advantages|adventure|advice|aesthetic|affect|afraid|afraid cant|after|after the|afternoon|again|against|against the|age|agency|agent|agents|aggressive|ago|agriculture|ahead|aim|air|algorithm|algorithms|alien|align|align with|aligned|alignment|aligns|aligns with|alive|all|all the|allow|allowed|allowing|allows|almost|alone|along|along the|along with|alongside|already|also|alternative|alternatively|alternatives|always|amazon|amber|ambient|america|american|among|amount|analysis|analytical|analytics|analyze|analyzing|ancient|and|and are|and can|and community|and cultural|and data|and deep|and digital|and emotional|and environmental|and ethical|and even|and for|and have|and high|and his|and how|and ill|and industrial|and international|and its|and more|and not|and often|and other|and quiet|and safety|and social|and soft|and support|and that|and the|and their|and then|and use|and well|and what|and white|and why|and will|and you|and your|angle|angle shot|animal|animals|anime|annual|another|answer|answer boxed|answer the|answers|anti|anxiety|any|any other|anyone|anything|api|apis|app|appear|appearance|appears|append|apple|applicable|application|applications|applied|applies|apply|applying|appreciate|approach|approaches|appropriate|approved|approx|approximately|apps|architecture|are|are given|are more|are not|are often|are several|are some|are the|are you|area|areas|arent|args|argument|arguments|arm|armor|arms|around|around the|array|art|article|artificial|artistic|artwork|asia|ask|asked|asking|asks|aspect|aspects|assess|assessment|asset|assets|assign|assist|assist with|assist with that|assistance|associated|associated with|assume|assuming|assumptions|atmosphere|atmospheric|attack|attacks|attempt|attempts|attention|audience|audio|audit|authentic|authenticity|authority|authorized|auto|automated|automatically|automation|aux|availability|available|avec|average|avoid|avoiding|avoids|aware|awareness|away|away from|awe|axis|baby|back|back the|background|bad|balance|balanced|ball|bamboo|bank|bar|barely|barriers|base|based|based the|based your|bash|basic|basis|batch|battle|beams|beat|beautiful|beauty|became|because|because the|become|becomes|becoming|bed|been|before|before the|before you|began|begin|beginning|begins|behavior|behind|behind the|being|belief|believe|below|beneath|beneath the|benefit|benefits|beside|best|best for|best practices|better|between|between and|between the|beyond|beyond the|bias|bien|big|bin|binary|biological|bioluminescent|birth|bit|black|blend|blending|blends|block|blocks|blood|blooming|blossoms|blue|blur|blurred|board|bodies|body|bokeh|bold|bond|bonus|book|books|bool|boost|border|born|both|both the|bottom|bottom line|bound|boundaries|box|boxed|boy|brain|brand|break|break down|breakdown|breaking|breaks|breath|breathe|breathing|breeze|bridge|brief|bright|bring|broad|broader|broken|brown|browser|brushstrokes|budget|build|building|buildings|builds|built|business|businesses|bustling|but|but also|but can|but can help|but cannot|but cant|but cant help|but for|but its|but not|but the|but they|but this|but with|but wont|but you|button|buy|bypass|cada|calculate|calculate the|calculation|call|called|calling|calls|calm|came|camera|camera lens|campaign|can|can also|can assist|can assist with|can create|can help|can help create|can help with|can help write|can help you|can however|can however help|can instead|can instead help|can lead|can make|can offer|can provide|can still|can use|can write|can you|cannot|cannot assist|cannot fulfill|cannot provide|canon|canon eos|canon eos camera|canon eos lens|cant|cant assist|cant assist with|cant create|cant help|cant help with|cant help you|cant provide|cant write|canvas|capabilities|capable|capacity|capital|capture|captured|captured with|captured with canon|captures|capturing|car|carbon|card|care|career|careful|carefully|carries|carry|carrying|carved|case|cases|cast|casting|casting long|casual|cat|catalyst|catch|catching|categories|category|caught|cause|caused|causes|causing|cdot|ceiling|celestial|cell|cells|center|centered|centered composition|centered the|centers|central|centric|century|certain|certainly|chain|chains|chair|challenge|challenges|challenging|chance|change|change the|changed|changes|changing|channel|channels|chaos|chaotic|chapter|character|characteristics|characters|charge|charged|charm|chat|check|check for|check the|checking|checklist|checks|chemical|chemical industry|chemicals|chemistry|cherry|chest|child|childhood|children|china|chinese|choice|choices|choose|choose the|choosing|chosen|chrome|chronic|cinematic|cinematic lighting|circle|circular|cities|city|claim|claims|clarify|clarity|claro|class|classes|classic|classical|classification|classified|clean|clear|clearly|click|client|clients|climate|clinical|close|closed|closer|closing|cloud|clouds|club|coat|code|code python|codes|coding|coffee|cognitive|cold|collaboration|collaborative|collapse|collect|collection|collective|color|colored|colorful|colors|column|columns|com|combat|combination|combine|combined|combines|combining|come|comes|comes from|comfort|comfortable|coming|command|commands|comme|comment|comments|commercial|commitment|committed|common|commonly|communicate|communication|communities|community|como|companies|company|companys|compare|compared|comparison|compatibility|compelling|competition|competitive|compile|complete|completed|completely|complex|complexity|compliance|compliant|comply|comply with|component|components|composition|composition centered|composition centered the|composition uses|composition using|composition with|compound|compounds|comprehensive|compromise|compute|compute the|computer|con|concentration|concept|concepts|concern|concerns|concise|conclusion|conclusion the|concrete|condition|conditions|conduct|confidence|confident|confidential|configuration|confirm|confirmed|conflict|conflicts|confusion|connect|connected|connecting|connection|connections|conscious|consent|consequences|consider|considerations|considered|consistency|consistent|consistently|console|const|constant|constraints|construction|constructive|consult|consumer|consumption|contact|contain|contained|container|containing|contains|contemplative|contemporary|content|content that|context|contexts|continue|continued|continues|continuous|contrast|contribute|contributing|control|control and|controlled|controls|conversation|conversations|conversion|convert|cool|copy|core|corner|corporate|correct|corrected|correctly|cosmic|cost|costs|could|could you|couldnt|count|counter|countries|country|counts|courage|course|court|cover|covered|covering|covers|cozy|cracked|craft|create|create the|created|creates|creating|creation|creative|creativity|credentials|credible|credit|crime|crimson|crisis|crisp|criteria|critical|critical for|critique|cross|crowd|crucial|crucial for|crystal|crystalline|cultural|culture|cultures|cup|curiosity|curious|current|currently|curve|custom|customer|customers|cut|cuts|cutting|cutting edge|cyberpunk|cycle|cycles|daily|damage|dance|dancing|danger|dangerous|dans|dark|darkness|das|data|data and|data from|database|databases|datasets|date|dates|dawn|day|days|dead|dealing|dear|death|debate|decades|decide|decision|decision making|decisions|decline|decline provide|decline the|decline this|decline this request|dedicated|deep|deeper|deeply|def|default|defense|defensive|define|defined|definition|del|delete|deliberate|delicate|deliver|delivering|delivery|demand|demands|demonstrates|dense|department|dependencies|depending|depends|depth|depth field|depth field focusing|der|derived|describe|described|description|descriptions|design|designed|designed for|desire|desired|desk|desperate|despite|detail|detailed|details|detect|detection|determine|determine the|determined|develop|developed|developers|developing|development|development and|device|devices|diagonal|dialogue|dictionary|did|did you|didnt|die|difference|differences|different|difficult|digital|digital artwork|digital illustration|digital painting|dignity|dim|dimensions|direct|direction|directly|directory|disclose|discovery|discrimination|discuss|discussion|discussions|disease|display|displays|distance|distant|distinct|distribution|div|dive|diverse|diversity|divide|divine|division|document|documentation|documented|documents|does|does not|doesnt|dog|doing|domain|domestic|dominant|done|dont|dont have|dont know|dont need|door|dos|double|down|down the|download|draft|dragon|drama|dramatic|dramatically|draw|drawing|drawn|dream|dreamlike|dreams|dreamy|dress|drifting|drive|driven|driver|drives|driving|drop|drops|drug|drugs|dry|dual|due|due its|due the|duration|during|during the|dust|duty|dynamic|dynamics|each|each other|earlier|early|ears|earth|easier|easily|east|easy|eat|eating|echo|echoes|eco|economic|economy|ecosystem|edge|edges|education|educational|effect|effective|effectively|effectiveness|effects|efficiency|efficient|efficiently|effort|efforts|either|ejemplo|electric|electronic|electronics|elegance|elegant|element|elements|else|email|embedded|emerged|emergency|emerging|emotion|emotional|emotionally|emotions|empathy|emphasis|emphasize|emphasizes|emphasizing|emphasizing the|employee|employees|empty|enable|enabled|enables|enabling|encourage|end|end the|ending|ends|energetic|energy|energy and|enforcement|engage|engagement|engaging|engine|engineering|engineers|english|enhance|enhanced|enhances|enhancing|enjoy|enough|ensure|ensure the|ensures|ensuring|enter|enterprise|entire|entirely|entity|entre|entry|environment|environmental|environments|eos|eos camera|eos camera lens|eos lens|equal|equation|equipment|equipped|equity|equivalent|era|error|error handling|errors|escape|especially|especially for|essence|essential|essential for|est|establish|established|este|etc|ethereal|ethical|ethics|europe|european|evaluate|evaluation|even|even the|even when|evening|event|events|ever|every|everyday|everyone|everything|evidence|evidence based|evoking|evolution|evolving|exact|exactly|examine|example|example the|example usage|examples|excellence|excellent|except|exception|exchange|execute|execution|exercise|exist|existence|existing|exists|exit|expand|expansion|expect|expectations|expected|expensive|experience|experienced|experiences|expert|expertise|experts|explain|explanation|explicit|explicitly|exploration|explore|exploring|export|expose|exposed|exposure|express|expression|expressions|expressive|extend|extended|extension|external|extra|extract|extreme|extremely|eye|eyes|eyes and|eyes wide|fabric|face|faces|facilitate|facilities|facing|fact|factor|factors|facts|factual|fade|faded|fail|failed|fails|failure|failures|faint|faintly|fair|fake|fall|falling|falls|false|familiar|families|family|famous|fan|fans|fantasy|far|fascinating|fashion|fast|faster|favorite|fear|feature|features|featuring|feedback|feel|feel free|feeling|feelings|feels|feels like|feet|felt|female|few|fewer|fiction|fictional|field|field focusing|fields|fight|fighting|figure|figures|file|files|fill|filled|filled with|film|filter|filtering|filtering through|filters|final|final answer|final answer boxed|finally|finance|financial|find|find the|finding|findings|finds|fine|fingers|finish|finished|fire|firm|first|first time|fish|fit|fits|five|fix|fixed|fixes|flag|flags|flat|flexibility|flexible|flicker|flickering|flight|float|floating|floor|flow|flowers|flowing|fluid|flying|focus|focus the|focused|focuses|focusing|focusing the|fog|follow|follow the|followed|following|follows|font|food|foot|for|for all|for any|for both|for each|for every|for example|for high|for its|for large|for more|for most|for range|for real|for specific|for that|for the|for their|for this|for you|for your|force|forced|forces|foreground|foreign|forest|forget|forgotten|form|form the|forma|formal|formally|formally decline|format|formation|formed|former|forming|forms|formula|forward|foster|fostering|found|foundation|foundational|four|frac|frac frac|frac text|fragile|frame|framed|framework|frameworks|framing|fraud|free|freedom|french|frequency|frequently|fresh|friend|friendly|friends|from|from her|from his|from its|from the|from your|front|frozen|fuel|fulfill|fulfill this|fulfill this request|full|fully|fun|function|function that|functional|functionality|functions|fundamental|fundamentally|further|fusion|future|futuristic|gain|game|games|gap|gaps|garden|gas|gave|gaze|gender|general|generally|generate|generated|generates|generating|generation|generic|genetic|gentle|gently|genuine|genuinely|geometric|get|get the|gets|getting|ghost|giant|girl|github|give|give you|given|given the|gives|giving|glad|glad help|glass|global|globally|glow|glowing|glows|goal|goals|god|goes|goes against|going|gold|golden|golden hour|gone|good|google|got|governance|government|grace|grade|gradients|grand|graphic|gravity|gray|great|great for|greater|greatest|green|grid|ground|grounded|group|groups|grow|growing|grows|growth|guidance|guide|guided|guidelines|guiding|had|hair|half|hall|hand|handle|handles|handling|hands|hanging|happen|happened|happens|happy|happy help|hard|harder|hardware|harm|harmful|harmless|harmony|has|has been|has no|has the|hat|hate|have|have been|have decline|have the|having|head|healing|health|health and|healthcare|healthy|hear|heard|heart|heat|heavily|heavy|height|held|hello|help|help create|help design|help develop|help draft|help make|help with|help with that|help write|help you|helper|helpful|helping|helps|hence|her|her eyes|her face|her voice|here|here are|here are some|here are the|here the|heres|heres breakdown|heres how|heres the|heres why|heritage|herself|hes|hey|hidden|hide|high|high contrast|high level|high performance|high quality|higher|highest|highlight|highlighting|highlights|highly|him|himself|his|his eyes|his face|his own|historical|historically|history|hit|hits|hold|holding|holds|holographic|home|honest|hope|horizon|horror|host|hot|hour|hours|house|housing|how|how can|how many|how the|how use|how works|how you|however|however help|however the|html|http|https|https www|hub|huge|hum|human|humanity|humans|humor|hybrid|hyper|hypothetical|ice|iconic|idea|ideal|ideal for|ideas|identical|identified|identify|identify the|identifying|identity|ignore|ignoring|iii|ill|illegal|illuminated|illustration|illustration style|image|images|imagine|imagine prompt|immediate|immediately|immense|impact|impacts|implement|implementation|implications|implies|import|importance|important|impossible|improve|improved|improvement|improvements|improves|improving|incident|include|included|includes|including|including the|inclusive|income|incorrect|increase|increased|increases|increasing|increasingly|incredibly|independent|index|individual|individuals|industrial|industries|industry|infinite|influence|info|information|information about|informed|infrastructure|ingredients|inherently|initial|initialize|initially|initiatives|ink|inner|innovation|innovation and|innovative|input|inputs|insert|inside|inside the|insight|insights|inspired|inspiring|instagram|install|installation|installed|instance|instant|instantly|instead|instead help|institutions|instruction|instructions|instructions for|int|integer|integers|integrate|integrated|integration|integrity|intellectual|intelligence|intelligent|intended|intense|intensity|intent|interact|interaction|interactions|interactive|interest|interested|interests|interface|interior|intermediate|intermediates|internal|international|internet|interpret|interpretation|intervention|intimate|into|into the|intricate|introduce|introduction|introspective|invalid|investment|invisible|involve|involved|involves|involving|iron|isnt|isnt just|iso|isolated|isolation|issue|issues|item|items|iterate|its|its about|its important|its not|its own|its the|itself|ive|japanese|java|javascript|job|jobs|john|join|joke|journal|journey|joy|joyful|json|judgment|just|just the|justice|keep|keep the|keeping|keeps|kept|key|key features|keys|kids|kind|kindness|king|kitchen|knew|know|know how|know the|know what|know you|know you want|know youd|know youd like|know your|knowing|knowledge|known|known for|knows|lab|label|labeled|labels|labor|lack|land|landscape|language|languages|lanterns|large|large scale|larger|largest|last|late|later|latest|laugh|laughing|laughter|launch|lavender|law|lawful|laws|layer|layered|layers|layout|lead|leader|leaders|leadership|leading|leading lines|leading lines from|leading the|leads|leaf|leaning|learn|learned|learning|least|leather|leave|leaves|leaving|led|left|left right|legacy|legal|legitimate|legs|len|length|lens|lens shallow|lens shallow depth|less|less than|let|let know|let know you|let know youd|let the|lets|lets break|lets break down|letter|letters|level|levels|leverage|leverages|leveraging|libraries|library|lies|life|light|light and|light the|lighting|lighting and|lights|like|like can|like the|like this|likely|limit|limitations|limited|limits|line|linear|lined|lines|lines from|lines from the|link|linked|links|linux|lips|liquid|list|listed|listen|listening|lists|lit|literal|literature|little|live|lived|lives|living|load|loading|local|locate|located|location|locations|lock|locked|log|logic|logical|logistics|logo|logs|long|long term|longer|look|look for|looked|looking|looking for|looks|looks like|loop|loops|loose|lose|loss|lost|lot|loud|love|low|low angle|low angle shot|lower|luminous|luxury|machine|machine learning|machines|made|magic|magical|main|maintain|maintaining|maintains|maintenance|mais|major|make|make sure|make the|makes|makes the|making|making the|man|manage|managed|management|manager|managing|mandatory|manipulation|manual|manually|manufacturing|many|map|mapping|maps|marble|mark|marked|market|marketing|markets|mask|mass|massive|master|match|matches|matching|material|materials|math|matrix|matter|matters|max|maximum|may|may have|may not|maybe|mean|meaning|meaningful|means|meant|measure|measures|mechanical|mechanics|mechanism|mechanisms|media|medical|meditative|medium|meet|meet the|meeting|meets|member|members|memory|men|mental|mental health|mention|mentioned|merely|message|messages|messy|met|meta|metal|metallic|method|methods|metrics|micro|microsoft|mid|middle|might|military|million|millions|min|mind|minimal|minimalist|minimize|minimum|minor|minute|minutes|mirror|mirrors|misleading|miss|missing|mission|mist|misty|mit|mix|mixed|mobile|mode|model|modeling|models|moderate|modern|modified|modify|module|molecular|molecules|moment|moments|money|monitor|monitoring|month|monthly|months|mood|moon|moral|more|more than|morning|moss|most|most common|most important|mother|motion|mountain|mountains|mouth|move|moved|movement|movements|moves|movie|moving|much|multi|multiple|multiply|music|must|must decline|must decline the|must decline this|must formally|must formally decline|must respectfully|must respectfully decline|mutual|mysterious|mystery|mystical|name|name the|named|names|narrative|narratives|narrow|national|nations|native|natural|naturally|nature|navigate|near|near the|nearby|nearly|necessary|need|need for|need the|needed|needs|negative|neon|nervous|nestled|net|network|networks|neural|neutral|never|new|news|next|nice|niche|night|niji|niji imagine|niji imagine prompt|no|no cant|no cant help|no longer|no one|no wont|node|noise|non|none|normal|north|nose|nostalgic|not|not able|not for|not found|not just|not only|not something|not something can|not the|note|note the|notes|nothing|notice|novel|now|now the|nuanced|null|number|numbers|numpy|object|objective|objects|observation|obtain|occur|occurs|ocean|off|off center|off the|offer|offering|offers|office|official|often|oil|oil painting|okay|old|older|once|one|one that|one the|one the most|ones|ongoing|online|only|only one|only the|onto|onto the|open|open the|opening|opens|operate|operates|operating|operation|operational|operations|opportunities|opportunity|opposite|optimal|optimization|optimize|optimized|option|optional|options|orange|order|org|organic|organization|organizations|organized|oriented|origin|original|other|others|otherwise|our|out|out the|outcome|outcomes|outline|output|outputs|outside|outside the|over|over the|over time|overall|overhead|override|overview|overwhelming|own|ownership|package|page|pages|paid|pain|paint|painted|painting|painting style|painting with|pair|pairs|pale|palette|pandas|panels|panic|paper|par|para|parameter|parameters|parent|parents|park|part|part the|participants|participate|participation|particles|particular|particularly|partner|partners|partnerships|parts|party|pas|pass|passage|passed|passing|passion|passive|password|past|paste|pastel|path|paths|pathways|patient|patients|pattern|patterns|pause|pay|payment|pdf|peace|peaceful|peak|peer|people|per|perceived|perception|perfect|perfect for|perfectly|perform|performance|perhaps|period|permanent|permission|pero|persistent|person|persona|personal|personality|personalized|persons|perspective|perspectives|petals|pharmaceutical|pharmaceuticals|phase|philosophical|philosophy|phone|photo|photographic|photographic style|photography|photography captured|photography captured with|photography style|photos|phrase|phrases|physical|physics|pick|picture|piece|pink|pip|pip install|place|placed|placeholder|places|placing|plain|plan|planet|planning|plans|plant|plants|platform|platforms|play|player|players|playful|playing|plays|please|please provide|plot|plus|poetic|point|point the|points|policies|policy|polished|political|pool|poor|pop|popular|population|por|port|portfolio|portray|pose|position|positioned|positions|positive|possible|possibly|posso|post|posture|potential|potentially|pour|power|power and|powered|powerful|powers|practical|practice|practices|pre|precise|precision|predict|prefer|preferred|premise|premium|prepare|presence|present|presents|preserve|preserving|press|pressure|prevent|preventing|prevention|prevents|previous|price|prices|pricing|pride|primarily|primary|prime|principal|principle|principles|print|prints|prior|prioritize|priority|privacy|private|pro|pro tip|probably|problem|problem solving|problems|procedures|proceed|proceed with|process|processed|processes|processing|produce|produced|producing|product|production|products|professional|professionals|profile|profit|profound|program|programming|programs|progress|project|projects|prominent|promise|promote|promotes|promoting|prompt|prompts|proof|proper|properly|properties|property|proposed|protect|protected|protecting|protection|protective|protocol|protocols|prove|proven|provide|provide instructions|provide the|provided|provider|provides|providing|psychological|public|publicly|pull|pulled|pulls|pulse|pulsing|pure|purity|purple|purpose|purposes|push|put|python|python def|python from|python import|qquad|quad|qualified|quality|quality and|quality control|quantum|que|query|question|questions|qui|quick|quickly|quiet|quietly|race|radiating|rain|raise|raised|raises|random|range|rapid|rapidly|rare|rarely|rate|rates|rather|rather than|ratio|raw|reach|reached|reaches|reaching|react|reaction|reactions|read|readable|reading|reads|ready|real|real time|real world|realism|realistic|realistic photographic|realistic photographic style|realistic photography|reality|really|reason|reasoning|reasons|receive|received|recent|recognition|recognize|recognized|recommend|recommendation|recommendations|recommended|record|records|recovery|red|reduce|reduced|reduces|reducing|reduction|refer|reference|references|referring|refers|refine|reflect|reflecting|reflecting the|reflection|reflections|reflective|reflects|regarding|regardless|region|regional|regions|regret|regular|regulation|regulations|regulatory|related|relationship|relationships|relative|release|released|relevance|relevant|reliability|reliable|relief|religious|rely|remain|remaining|remains|remember|remote|remove|removed|removes|render|rendered|rendering|repeat|repeated|replace|replace the|replaced|report|reported|reporting|reports|represent|representation|represents|reputation|request|request for|requested|requests|require|required|requirement|requirements|requires|requiring|research|research and|reset|resilience|resilient|resistance|resolution|resolve|resource|resources|respect|respectful|respectfully|respectfully decline|respond|response|responses|responsibility|responsible|responsive|rest|resting|restricted|restrictions|result|resulting|results|return|return the|returned|returns|returns the|reveal|revealing|reveals|revenue|reverse|review|reviews|rewrite|rhythm|rich|right|right now|rights|rigorous|ring|rise|rising|risk|risks|river|road|robust|rock|role|roles|roll|rolling|romantic|room|root|rooted|roots|rose|round|route|routes|routine|row|rows|rule|rule thirds|rule thirds with|rules|run|run the|running|runs|sacred|safe|safe and|safeguards|safely|safer|safety|safety and|said|sales|salt|same|sample|sand|sans|satisfaction|save|saved|saving|saw|say|saying|says|scalability|scalable|scale|scales|scan|scanning|scattered|scenario|scenarios|scene|scenes|scent|schedule|school|schools|sci|science|scientific|scientists|scope|score|screen|script|scripts|sea|seamless|search|search for|season|second|secondary|seconds|secret|secrets|section|sector|sectors|secure|security|see|see the|seeing|seek|seeking|seem|seems|seen|sees|segment|select|selection|self|sell|selling|send|sending|sense|sensitive|sensitivity|sent|sentence|sentiment|separate|sequence|ser|serene|serene and|series|serious|serve|server|serves|service|services|serving|session|sessions|set|set the|sets|setting|settings|setup|several|severe|sexual|shadow|shadows|shallow|shallow depth|shallow depth field|shape|shaped|shapes|share|share the|shared|sharing|sharp|shattered|she|she was|sheer|sheet|shell|shes|shift|shifting|shifts|shimmering|shirt|shock|shop|short|shot|should|shoulder|shoulders|show|showing|shown|shows|side|sides|sign|signal|signals|signature|significance|significant|significantly|signs|silence|silent|silhouette|silk|silver|similar|simple|simplicity|simplified|simply|simulate|simulation|simultaneously|sin|since|since the|single|sit|site|sites|sits|sitting|situation|six|size|skill|skills|skin|skip|sky|sleek|sleep|slight|slightly|slow|slowly|small|smaller|smallest|smart|smile|smiling|smoke|smooth|snow|sobre|social|social media|societal|society|soft|softly|software|soil|solar|solely|solid|solitude|solo|solution|solutions|solve|solving|some|someone|someones|something|something can|something else|sometimes|son|song|sony|soon|sophisticated|sorry|sorry but|sorry but cant|sorry cant|sort|sorted|soul|sound|sounds|source|sources|south|space|spaces|spark|speak|speaking|special|specialized|specialty|species|specific|specifically|specified|specify|speech|speed|spent|spirit|spiritual|split|sports|spot|spread|spring|sql|sqrt|square|stability|stable|stack|staff|stage|stakes|stand|standard|standards|standing|stands|star|stark|stars|start|start with|started|starting|starts|state|state the|stated|statement|statements|states|static|status|stay|stays|steady|steam|steel|step|step step|steps|stereotypes|stick|still|stillness|stock|stone|stood|stop|stops|storage|store|stored|stores|stories|storm|story|storytelling|str|straight|strange|strategic|strategically|strategies|strategy|stream|streaming|streams|street|streets|strength|strengths|stress|stretching|strict|strictly|string|stringent|strings|strip|strong|stronger|strongly|structural|structure|structure and|structured|structures|struggle|stuck|student|students|studies|studio|study|style|style with|styles|stylized|sub|subject|substitute|subtle|subtly|success|successful|successfully|such|sudden|suddenly|suggest|suggesting|suggests|suit|suitable|suitable for|sum|summarize|summary|summary the|summer|sun|sunlight|sunset|super|supply|supply chain|support|support for|supported|supporting|supports|sur|sure|surface|surfaces|surreal|surrounded|surrounding|survival|suspended|sustainability|sustainable|sweet|swirling|switch|symbol|symbolic|symbols|symmetrical|symmetry|symptoms|syntax|synthesis|synthetic|system|systemic|systems|systems and|table|tables|tactics|tag|tail|tailor|tailored|take|take the|taken|takes|taking|talk|talking|tall|target|targeted|targeting|targets|task|tasks|taste|tax|tea|teach|teaching|team|teams|tears|tech|technical|technique|techniques|technological|technologies|technology|tell|tells|temperature|template|temple|temporary|ten|tense|tension|term|terminal|terms|test|testing|tests|text|texture|textured|textures|textures and|than|than the|thank|thank you|thank you for|thanks|that|that are|that can|that could|that has|that have|that information|that kind|that makes|that may|that might|that request|that the|that was|that would|that you|thats|thats not|thats the|the|the actual|the air|the algorithm|the and|the answer|the art|the atmosphere|the background|the base|the best|the center|the central|the character|the characters|the chemical|the chemical industry|the city|the classic|the code|the company|the context|the core|the correct|the current|the dark|the data|the day|the development|the distance|the door|the edge|the end|the entire|the environment|the exact|the eye|the file|the final|the first|the floor|the following|the foundation|the full|the function|the future|the game|the given|the global|the goal|the ground|the heart|the highest|the horizon|the human|the idea|the input|the key|the largest|the last|the left|the light|the line|the list|the loop|the main|the middle|the model|the moment|the mood|the most|the most common|the name|the need|the new|the next|the number|the old|the one|the only|the original|the other|the output|the past|the path|the potential|the power|the presence|the primary|the problem|the process|the product|the provided|the question|the quiet|the real|the remaining|the request|the requested|the required|the rest|the result|the right|the role|the room|the rule|the same|the scene|the script|the second|the sky|the solution|the sound|the source|the specific|the standard|the story|the string|the style|the sum|the sun|the surface|the system|the table|the target|the term|the text|the three|the time|the top|the total|the two|the ultimate|the united|the use|the user|the value|the vast|the very|the water|the way|the weight|the whole|the wind|the window|the word|the world|their|their own|them|them the|theme|themes|themselves|then|then the|theoretical|theory|therapy|there|there are|there no|therefore|therefore the|theres|thermal|these|these are|they|they are|they can|they have|they were|theyre|thick|thick with|thin|thing|things|think|thinking|third|third party|thirds|thirds with|this|this approach|this can|this isnt|this means|this method|this not|this request|this the|this the most|this time|this version|this was|this works|those|those who|though|though can|thought|thoughtful|thoughts|thousands|thread|threat|threats|three|through|through the|throughout|thus|thus the|tied|tight|time|time and|time complexity|time the|timeless|timeline|times|timing|tiny|tip|tips|tips for|title|today|together|told|tone|tones|too|took|tool|tools|tools like|top|topic|topics|total|total number|touch|toward|toward the|towards|towering|town|toxic|trace|track|tracking|trade|tradition|traditional|traffic|train|trained|training|tranquil|transfer|transform|transformation|transformed|transition|translate|translation|translucent|transparency|transparent|transport|transportation|trauma|travel|treat|treated|treatment|treats|tree|trees|trembling|trends|tried|tries|trigger|triggers|trip|true|truly|trust|trust and|trusted|truth|try|trying|turn|turned|turning|turns|twice|twilight|twist|two|type|types|typical|typically|typing|ultimate|ultimately|ultra|uma|una|unable|unable assist|unable assist with|unable fulfill|unable help|unable provide|unauthorized|und|under|under the|underlying|understand|understand the|understanding|understanding the|understood|unexpected|unfortunately|uniform|union|unique|unit|united|united states|units|unity|universal|universe|university|unknown|unless|unlike|until|until the|update|updated|updates|upon|upper|upward|urban|urgency|urgent|url|usa|usage|use|use case|use the|use this|used|used for|used the|useful|user|users|uses|uses the|using|using the|usual|usually|utility|utterly|valid|validate|validation|valuable|value|value the|values|variable|variables|variations|various|vary|vast|vector|verification|verified|verify|version|version the|versions|vertical|very|via|vibe|vibrant|video|videos|view|views|village|vintage|violates|violence|violent|virtual|visible|vision|visit|visual|vital|voice|voices|voici|void|volume|vulnerability|vulnerable|wait|waiting|walk|walking|walks|wall|walls|want|wanted|wants|war|warm|warmth|warning|was|was not|was the|wash|wasnt|waste|watch|watching|water|watercolor|wave|waves|way|way that|ways|weak|weapon|wear|wearing|weather|weathered|web|website|week|weekly|weeks|weight|welcome|well|well being|went|were|west|western|wet|weve|what|what can|what does|what the|what you|what youre|whats|when|when the|when you|where|where the|where you|whether|which|which are|which can|which the|while|while the|whimsical|whisper|whispered|whispering|whispers|white|who|whole|whose|why|why its|why matters|why the|why this|why this works|why works|wide|wide angle|widely|width|wild|will|will not|win|wind|window|windows|wins|wisdom|with|with canon|with canon eos|with glowing|with her|with high|with its|with no|with one|with soft|with strong|with subtle|with that|with that request|with the|with their|with this|with you|with your|within|within the|without|without the|woman|women|wonder|wont|wood|wooden|word|words|work|work with|workers|workflow|working|workplace|works|works for|world|worlds|worldwide|worn|worth|would|would you|would you like|wouldnt|woven|wrapped|write|write the|writing|written|wrong|www|yeah|year|year old|years|yellow|yes|yet|yield|yields|you|you and|you are|you can|you can use|you cant|you could|you dont|you feel|you for|you get|you have|you just|you know|you like|you may|you might|you must|you need|you see|you should|you the|you think|you through|you want|you were|you will|you with|youd|youd like|youll|young|your|your name|your own|your request|youre|youre asking|youre not|yourself|youtube|youve|zero|zone|zones'
+      source: |-
+        String[] vocabArr = params.vocab.splitOnToken("|");
+        Map vocabMap = new HashMap();
+        for (int vi = 0; vi < vocabArr.length; vi++) {
+          vocabMap.put(vocabArr[vi], vi);
+        }
+        ctx['_ml_vocab_map'] = vocabMap;
+        Set negSet  = new HashSet(params.negation_keywords);
+        Set stopSet = new HashSet(params.multilingual_stop_words);
+        String text = ((String) ctx['ml_response_text']).toLowerCase();
+        StringBuilder _apos = new StringBuilder();
+        int _ai = 0;
+        while (_ai < text.length()) {
+          int _cp = text.codePointAt(_ai);
+          _ai += Character.charCount(_cp);
+          if (_cp != 39 && _cp != 96 && _cp != 8216 && _cp != 8217 && _cp != 700) {
+            _apos.appendCodePoint(_cp);
+          }
+        }
+        text = _apos.toString();
+        List azRuns = new ArrayList();
+        StringBuilder run = new StringBuilder();
+        boolean runIsPureAz = true;
+        int ci = 0;
+        while (ci < text.length()) {
+          int cp = text.codePointAt(ci);
+          ci += Character.charCount(cp);
+          boolean isWordChar = Character.isLetterOrDigit(cp) || cp == 95;
+          if (isWordChar) {
+            if (run.length() == 0) {
+              runIsPureAz = true;
+            }
+            if (!(cp >= 97 && cp <= 122)) {
+              runIsPureAz = false;
+            }
+            run.appendCodePoint(cp);
+          } else if (run.length() > 0) {
+            if (runIsPureAz) {
+              azRuns.add(run.toString());
+            }
+            run = new StringBuilder();
+          }
+        }
+        if (run.length() > 0 && runIsPureAz) {
+          azRuns.add(run.toString());
+        }
+        StringBuilder paddedSb = new StringBuilder(" ");
+        for (Object o : azRuns) {
+          paddedSb.append((String) o).append(' ');
+        }
+        String padded = paddedSb.toString();
+        boolean hasNeg = false;
+        for (def kw : params.negation_keywords) {
+          if (padded.contains(" " + (String) kw + " ")) {
+            hasNeg = true;
+            break;
+          }
+        }
+        List filtered = new ArrayList();
+        for (Object o : azRuns) {
+          String t = (String) o;
+          if ((t.length() > 2 || (t.length() == 2 && t.equals("no"))) && !stopSet.contains(t)) {
+            filtered.add(t);
+          }
+        }
+        int nToks = filtered.size();
+        if (nToks > 1000) nToks = 1000;
+        List fired = new ArrayList();
+        Set seen = new HashSet();
+
+        for (int n = 1; n <= 3; n++) {
+          for (int i = 0; i <= nToks - n; i++) {
+            StringBuilder gram = new StringBuilder();
+            for (int j = i; j < i + n; j++) {
+              if (j > i) gram.append(' ');
+              gram.append((String) filtered.get(j));
+            }
+            String gramStr = gram.toString();
+            if (!seen.contains(gramStr)) {
+              seen.add(gramStr);
+              Integer idx = (Integer) vocabMap.get(gramStr);
+              if (idx != null) {
+                String fkey = "f" + Integer.toString(idx);
+                ctx[fkey] = 1;
+                fired.add(fkey);
+              }
+            }
+          }
+        }
+
+        if (hasNeg) {
+          ctx['has_negation'] = 1;
+          fired.add("has_negation");
+        }
+
+        ctx['_ml_refusal_fired'] = fired;
+        ctx['_ml_refusal_token_count'] = nToks;
+
+  - inference:
+      tag: ml-prompt-detect-refusal-v-inference
+      if: "ctx.ml_response_text != null && ctx._ml_refusal_token_count instanceof Integer && ctx._ml_refusal_token_count >= 3"
+      field_map: {}
+      inference_config:
+        classification:
+          num_top_classes: 2
+      model_id: security_ai_refusal_detection_classifier_0.1
+      target_field: ml_refusal_result
+  - script:
+      tag: ml-prompt-detect-refusal-v-promote
+      description: Write refusal probability and flag; clean up all feature and temp fields
+      lang: painless
+      params:
+        threshold: 0.8095
+      source: |-
+        def result = ctx['ml_refusal_result'];
+        boolean hasResult = result != null && result['top_classes'] != null;
+        double probability = 0.0;
+        if (hasResult) {
+          for (def item : result['top_classes']) {
+            if (item['class_name'] == "1") {
+              probability = ((Number) item['class_probability']).doubleValue();
+            }
+          }
+        }
+        if (hasResult) {
+          if (ctx['security_ai'] == null) {
+            ctx['security_ai'] = new HashMap();
+          }
+          Map score = new HashMap();
+          score['blob_probability'] = probability;
+          score['probability'] = probability;
+          score['is_refusal'] = probability >= params.threshold;
+          Map refusal = new HashMap();
+          refusal['output_messages'] = score;
+          refusal['model_version'] = ctx['_ml_model_version'] instanceof String ? (String) ctx['_ml_model_version'] : '0.0.1';
+          ctx['security_ai']['refusal'] = refusal;
+        }
+        def fired = ctx['_ml_refusal_fired'];
+        if (fired != null) {
+          for (def key : fired) {
+            ctx.remove((String) key);
+          }
+        }
+        ctx.remove('_ml_refusal_fired');
+        ctx.remove('ml_refusal_result');
+  - script:
+      tag: ml-prompt-detect-refusal-v-safeguards-flag
+      description: Detect Anthropic safeguards-flag phrases and extract the containing sentence
+      lang: painless
+      if: ctx.ml_response_text instanceof String
+      source: |-
+        String text = (String) ctx['ml_response_text'];
+        String lower = text.toLowerCase();
+        int matchPos = -1;
+        int idx1 = lower.indexOf("safeguards flag");
+        int idx2 = lower.indexOf("safeguard flag");
+        if (idx1 >= 0 && (idx2 < 0 || idx1 <= idx2)) {
+          matchPos = idx1;
+        } else if (idx2 >= 0) {
+          matchPos = idx2;
+        }
+        if (matchPos < 0) return;
+        int sentStart = matchPos;
+        while (sentStart > 0) {
+          int cp = text.codePointAt(sentStart - 1);
+          if (cp == 46 || cp == 33 || cp == 63 || cp == 10 || cp == 13) break;
+          sentStart--;
+        }
+        int sentEnd = matchPos;
+        while (sentEnd < text.length()) {
+          int cp = text.codePointAt(sentEnd);
+          sentEnd++;
+          if (cp == 46 || cp == 33 || cp == 63 || cp == 10 || cp == 13) break;
+        }
+        String sentence = text.substring(sentStart, sentEnd).trim();
+        if (ctx['security_ai'] == null) ctx['security_ai'] = new HashMap();
+        if (ctx['security_ai']['refusal'] == null) ctx['security_ai']['refusal'] = new HashMap();
+        Map refusal = (Map) ctx['security_ai']['refusal'];
+        if (refusal['output_messages'] == null) refusal['output_messages'] = new HashMap();
+        if (!(refusal['model_version'] instanceof String)) {
+          refusal['model_version'] = ctx['_ml_model_version'] instanceof String ? (String) ctx['_ml_model_version'] : '0.0.1';
+        }
+        ((Map) refusal['output_messages']).put('safeguards_flag_sentence', sentence);
+  - script:
+      tag: ml-prompt-detect-refusal-v-content-filter-flag
+      description: Detect Amazon model content-filter block phrases and extract the containing sentence
+      lang: painless
+      if: ctx.ml_response_text instanceof String
+      source: |-
+        String text = (String) ctx['ml_response_text'];
+        String lower = text.toLowerCase();
+        boolean hasBlocked = lower.indexOf("blocked") >= 0;
+        int cfIdx = lower.indexOf("content filters");
+        if (cfIdx < 0) cfIdx = lower.indexOf("content filter");
+        if (!hasBlocked || cfIdx < 0) return;
+        int matchPos = cfIdx;
+        int sentStart = matchPos;
+        while (sentStart > 0) {
+          int cp = text.codePointAt(sentStart - 1);
+          if (cp == 46 || cp == 33 || cp == 63 || cp == 10 || cp == 13) break;
+          sentStart--;
+        }
+        int sentEnd = matchPos;
+        while (sentEnd < text.length()) {
+          int cp = text.codePointAt(sentEnd);
+          sentEnd++;
+          if (cp == 46 || cp == 33 || cp == 63 || cp == 10 || cp == 13) break;
+        }
+        String sentence = text.substring(sentStart, sentEnd).trim();
+        if (ctx['security_ai'] == null) ctx['security_ai'] = new HashMap();
+        if (ctx['security_ai']['refusal'] == null) ctx['security_ai']['refusal'] = new HashMap();
+        Map refusal = (Map) ctx['security_ai']['refusal'];
+        if (refusal['output_messages'] == null) refusal['output_messages'] = new HashMap();
+        if (!(refusal['model_version'] instanceof String)) {
+          refusal['model_version'] = ctx['_ml_model_version'] instanceof String ? (String) ctx['_ml_model_version'] : '0.0.1';
+        }
+        ((Map) refusal['output_messages']).put('safeguards_flag_sentence', sentence);
+  - script:
+      tag: ml-prompt-detect-refusal-v-sentence-split
+      if: >-
+        ctx.ml_response_text instanceof String &&
+        (ctx?.security_ai?.refusal?.output_messages?.is_refusal == true ||
+         ctx.ml_response_text.length() > 1024)
+      lang: painless
+      params:
+        long_text_chars: 1024
+        max_sentences: 20
+        min_sentence_chars: 8
+        min_tokens: 3
+        window_chars: 512
+        stride_chars: 256
+        negation_keywords:
+          - cannot
+          - cant
+          - wont
+          - unable
+          - decline
+          - refuse
+          - must not
+          - am not
+          - never
+          - prohibited
+          - forbidden
+          - sorry
+          - apologize
+          - apologise
+          - regret
+          - inappropriate
+          - harmful
+          - illegal
+          - will not
+          - not able
+        multilingual_stop_words:
+          - la
+          - le
+          - les
+          - de
+          - du
+          - des
+          - un
+          - une
+          - se
+          - es
+          - en
+          - el
+          - los
+          - las
+          - da
+          - na
+          - di
+          - il
+          - lo
+          - gli
+          - zu
+          - im
+          - um
+          - ou
+          - ll
+      source: |-
+        Map featurizeSentence(String rawText, Map vocabMap, Set negSet, Set stopSet, int minTokens) {
+          Map sentObj = new HashMap();
+          sentObj.put('text', rawText);
+          String sent = rawText.toLowerCase();
+          StringBuilder apos = new StringBuilder();
+          int ai = 0;
+          while (ai < sent.length()) {
+            int cp2 = sent.codePointAt(ai);
+            ai += Character.charCount(cp2);
+            if (cp2 != 39 && cp2 != 96 && cp2 != 8216 && cp2 != 8217 && cp2 != 700) {
+              apos.appendCodePoint(cp2);
+            }
+          }
+          sent = apos.toString();
+          List azRuns = new ArrayList();
+          StringBuilder run2 = new StringBuilder();
+          boolean runIsPureAz2 = true;
+          int ci2 = 0;
+          while (ci2 < sent.length()) {
+            int cp3 = sent.codePointAt(ci2);
+            ci2 += Character.charCount(cp3);
+            boolean isWordChar = Character.isLetterOrDigit(cp3) || cp3 == 95;
+            if (isWordChar) {
+              if (run2.length() == 0) {
+                runIsPureAz2 = true;
+              }
+              if (!(cp3 >= 97 && cp3 <= 122)) {
+                runIsPureAz2 = false;
+              }
+              run2.appendCodePoint(cp3);
+            } else if (run2.length() > 0) {
+              if (runIsPureAz2) {
+                azRuns.add(run2.toString());
+              }
+              run2 = new StringBuilder();
+            }
+          }
+          if (run2.length() > 0 && runIsPureAz2) {
+            azRuns.add(run2.toString());
+          }
+          StringBuilder paddedSb2 = new StringBuilder(" ");
+          for (Object o : azRuns) {
+            paddedSb2.append((String) o).append(' ');
+          }
+          String padded2 = paddedSb2.toString();
+          boolean hasNeg = false;
+          for (def kw : negSet) {
+            if (padded2.contains(" " + (String) kw + " ")) { hasNeg = true; break; }
+          }
+
+          List filtered = new ArrayList();
+          for (Object o : azRuns) {
+            String t = (String) o;
+            if ((t.length() > 2 || (t.length() == 2 && t.equals("no"))) && !stopSet.contains(t)) {
+              filtered.add(t);
+            }
+          }
+          int nToks = filtered.size();
+          if (nToks > 1000) nToks = 1000;
+          Set seen = new HashSet();
+          int vocabHits = 0;
+          for (int n = 1; n <= 3; n++) {
+            for (int i = 0; i <= nToks - n; i++) {
+              StringBuilder gram = new StringBuilder();
+              for (int j = i; j < i + n; j++) {
+                if (j > i) gram.append(' ');
+                gram.append((String) filtered.get(j));
+              }
+              String gramStr = gram.toString();
+              if (!seen.contains(gramStr)) {
+                seen.add(gramStr);
+                Object idxObj = vocabMap.get(gramStr);
+                if (idxObj != null) {
+                  sentObj.put('f' + Integer.toString(((Number) idxObj).intValue()), 1);
+                  vocabHits++;
+                }
+              }
+            }
+          }
+          if (vocabHits < minTokens) return null;
+          if (hasNeg) sentObj.put('has_negation', 1);
+          return sentObj;
+        }
+
+        Map vocabMap = (Map) ctx['_ml_vocab_map'];
+        Set negSet  = new HashSet(params.negation_keywords);
+        Set stopSet = new HashSet(params.multilingual_stop_words);
+
+        int minChars    = ((Number) params.min_sentence_chars).intValue();
+        int minTokens   = ((Number) params.min_tokens).intValue();
+        int maxSents    = ((Number) params.max_sentences).intValue();
+        int windowChars = ((Number) params.window_chars).intValue();
+        int strideChars = ((Number) params.stride_chars).intValue();
+        String fullText = (String) ctx['ml_response_text'];
+        List rawSentences = new ArrayList();
+        int start = 0;
+        for (int i = 0; i < fullText.length(); i++) {
+          int cp = fullText.codePointAt(i);
+          if (cp == 46 || cp == 33 || cp == 63) {
+            boolean atBoundary = (i + 1 >= fullText.length()) || (fullText.codePointAt(i + 1) == 32);
+            if (atBoundary) {
+              String s = fullText.substring(start, i + 1).trim();
+              if (s.length() >= minChars) rawSentences.add(s);
+              start = i + 2;
+              i++;
+            }
+          }
+        }
+        if (start < fullText.length()) {
+          String s = fullText.substring(start).trim();
+          if (s.length() >= minChars) rawSentences.add(s);
+        }
+
+        int nSents = rawSentences.size();
+        if (nSents == 0) return;
+
+        List result = new ArrayList();
+        int added = 0;
+        for (int si = 0; si < nSents && added < maxSents; si++) {
+          String sentRaw = (String) rawSentences.get(si);
+
+          if (sentRaw.length() > windowChars) {
+            int wStart = 0;
+            Set emittedEnds = new HashSet();
+            while (added < maxSents) {
+              int wEnd = wStart + windowChars;
+              if (wEnd > sentRaw.length()) wEnd = sentRaw.length();
+              String chunk = sentRaw.substring(wStart, wEnd);
+              if (chunk.length() >= minChars && !emittedEnds.contains(wEnd)) {
+                Map w = featurizeSentence(chunk, vocabMap, negSet, stopSet, minTokens);
+                if (w != null) { w.put('kind', 'window'); result.add(w); added++; }
+                emittedEnds.add(wEnd);
+              }
+              if (wEnd >= sentRaw.length()) break;
+              wStart += strideChars;
+              if (wStart + windowChars > sentRaw.length()) {
+                int tailStart = sentRaw.length() - windowChars;
+                wStart = tailStart > 0 ? tailStart : 0;
+              }
+            }
+          } else {
+            Map s = featurizeSentence(sentRaw, vocabMap, negSet, stopSet, minTokens);
+            if (s != null) { s.put('kind', 'sentence'); result.add(s); added++; }
+          }
+        }
+        if (!result.isEmpty()) ctx['_ml_sentences'] = result;
+  - foreach:
+      tag: ml-prompt-detect-refusal-v-sentence-infer
+      if: "ctx._ml_sentences instanceof List && !ctx._ml_sentences.isEmpty()"
+      field: _ml_sentences
+      ignore_missing: true
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "security_ai_refusal_sentence_scorer" }}'
+  - script:
+      tag: ml-prompt-detect-refusal-v-sentence-top
+      description: >-
+        Write top_snippet and apply the calibrated long-message window threshold
+      if: "ctx._ml_top_text instanceof String && ctx._ml_sentences instanceof List"
+      lang: painless
+      params:
+        window_threshold: 0.9988392509458093
+      source: |-
+        int count = ((List) ctx['_ml_sentences']).size();
+        double topProb = ((Number) ctx['_ml_top_score']).doubleValue();
+        Map topSnippet = new HashMap();
+        topSnippet.put('text',              (String) ctx['_ml_top_text']);
+        topSnippet.put('probability',       topProb);
+        topSnippet.put('kind',              ctx['_ml_top_kind'] instanceof String ? (String) ctx['_ml_top_kind'] : 'sentence');
+        topSnippet.put('candidates_scored', count);
+        if (ctx['security_ai'] == null) {
+          ctx['security_ai'] = new HashMap();
+        }
+        if (((Map) ctx['security_ai']).get('refusal') == null) {
+          ((Map) ctx['security_ai']).put('refusal', new HashMap());
+        }
+        Map refusal = (Map) ((Map) ctx['security_ai']).get('refusal');
+        if (refusal.get('output_messages') == null) {
+          refusal.put('output_messages', new HashMap());
+        }
+        if (!(refusal.get('model_version') instanceof String)) {
+          refusal.put('model_version', ctx['_ml_model_version'] instanceof String ? (String) ctx['_ml_model_version'] : '0.0.1');
+        }
+        Map score = (Map) refusal.get('output_messages');
+        score.put('top_snippet', topSnippet);
+
+        def blobProbObj = score.get('blob_probability');
+        double blobProb = blobProbObj instanceof Number ? ((Number) blobProbObj).doubleValue() : 0.0;
+        score.put('probability', blobProb);
+        boolean windowRefusal = ctx.ml_response_text.length() > 1024
+            && topProb >= params.window_threshold;
+        score.put('is_refusal', score.get('is_refusal') == true || windowRefusal);
+
+        ctx.remove('_ml_sentences');
+        ctx.remove('_ml_top_score');
+        ctx.remove('_ml_top_text');
+        ctx.remove('_ml_top_kind');
+
+  - remove:
+      tag: ml-prompt-detect-refusal-v-cleanup
+      field:
+        - ml_response_text
+        - _ml_vocab_map
+        - _ml_refusal_token_count
+        - _ml_sentences
+        - _ml_top_score
+        - _ml_top_text
+        - _ml_top_kind
+      ignore_missing: true
+
+on_failure:
+  - script:
+      tag: ml-prompt-detect-refusal-v-failure-cleanup
+      description: Best-effort removal of all feature fields on pipeline failure
+      lang: painless
+      source: |-
+        def fired = ctx['_ml_refusal_fired'];
+        if (fired != null) {
+          for (def key : fired) {
+            ctx.remove((String) key);
+          }
+        }
+        ctx.remove('_ml_refusal_fired');
+      ignore_failure: true
+  - remove:
+      field:
+        - ml_response_text
+        - ml_refusal_result
+        - _ml_vocab_map
+        - _ml_sentences
+        - _ml_top_score
+        - _ml_top_text
+        - _ml_top_kind
+        - _ml_refusal_token_count
+        - _ml_sent
+        - _ml_sent_fired
+        - ml_sentence_result
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        {{{ _ingest.on_failure_message }}} [pipeline: {{{ _ingest.pipeline }}},
+        processor_type: {{{ _ingest.on_failure_processor_type }}},
+        processor_tag: {{{ _ingest.on_failure_processor_tag }}}]

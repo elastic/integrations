@@ -1,0 +1,1094 @@
+---
+description: Detect disguised words in input and output messages.
+processors:
+  - remove:
+      tag: ml-prompt-detect-word-init
+      description: Clear temporary fields before resolving the input
+      field:
+        - ml_word_prompt_text
+        - ml_word_completion_text
+        - ml_word_candidate_inputs
+        - ml_word_scores
+        - ml_word_one_result
+        - _ml_word_candidate_features
+        - f
+      ignore_missing: true
+
+  - set:
+      tag: ml-prompt-detect-word-resolve-prompt
+      description: Use the prompt text resolved by the entry pipeline
+      field: ml_word_prompt_text
+      copy_from: _ml_prompt_text
+      if: ctx._ml_prompt_text instanceof String
+
+  - set:
+      tag: ml-prompt-detect-word-resolve-completion
+      description: Use the completion text resolved by the entry pipeline
+      field: ml_word_completion_text
+      copy_from: _ml_completion_text
+      if: ctx._ml_completion_text instanceof String
+
+  - script:
+      tag: ml-prompt-detect-word-featurize
+      lang: painless
+      if: >-
+        (ctx.ml_word_prompt_text instanceof String && !ctx.ml_word_prompt_text.isEmpty()) ||
+        (ctx.ml_word_completion_text instanceof String && !ctx.ml_word_completion_text.isEmpty())
+      params:
+        min_token_length: 2
+        min_letter_run: 3
+        blob_min_length: 14
+        max_ngram_length: 100
+        cp_radix: 1114112.0
+        hex_alphabet: "0123456789abcdefABCDEF"
+        b64_alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+        vowels: "aeiouAEIOU"
+        seps: "._-[]"
+        morse: ".-"
+        triggers:
+          - hack
+          - exploit
+          - bypass
+          - crack
+          - break
+          - attack
+          - penetrate
+          - inject
+          - manipulate
+          - override
+          - disable
+          - circumvent
+          - evade
+          - malware
+          - virus
+          - trojan
+          - payload
+          - shellcode
+          - rootkit
+          - keylogger
+          - backdoor
+          - vulnerability
+          - weapon
+          - bomb
+          - explosive
+          - poison
+          - drug
+          - synthesize
+          - jailbreak
+          - unlock
+          - root
+          - sudo
+          - admin
+          - privilege
+          - phishing
+          - scam
+          - impersonate
+          - deceive
+          - fraud
+          - nsfw
+          - explicit
+          - uncensored
+          - unfiltered
+          - unrestricted
+          - ignore
+          - disregard
+          - forget
+          - pretend
+          - roleplay
+        latin_folds:
+          "ª": "a"
+          "º": "o"
+          "ſ": "s"
+          "ʰ": "h"
+          "ʲ": "j"
+          "ʳ": "r"
+          "ʷ": "w"
+          "ʸ": "y"
+          "ˡ": "l"
+          "ˢ": "s"
+          "ˣ": "x"
+          "ᴬ": "a"
+          "ᴮ": "b"
+          "ᴰ": "d"
+          "ᴱ": "e"
+          "ᴳ": "g"
+          "ᴴ": "h"
+          "ᴵ": "i"
+          "ᴶ": "j"
+          "ᴷ": "k"
+          "ᴸ": "l"
+          "ᴹ": "m"
+          "ᴺ": "n"
+          "ᴼ": "o"
+          "ᴾ": "p"
+          "ᴿ": "r"
+          "ᵀ": "t"
+          "ᵁ": "u"
+          "ᵂ": "w"
+          "ᵃ": "a"
+          "ᵇ": "b"
+          "ᵈ": "d"
+          "ᵉ": "e"
+          "ᵍ": "g"
+          "ᵏ": "k"
+          "ᵐ": "m"
+          "ᵒ": "o"
+          "ᵖ": "p"
+          "ᵗ": "t"
+          "ᵘ": "u"
+          "ᵛ": "v"
+          "ᵢ": "i"
+          "ᵣ": "r"
+          "ᵤ": "u"
+          "ᵥ": "v"
+          "ᶜ": "c"
+          "ᶠ": "f"
+          "ᶻ": "z"
+          "ⁱ": "i"
+          "ⁿ": "n"
+          "ₐ": "a"
+          "ₑ": "e"
+          "ₒ": "o"
+          "ₓ": "x"
+          "ₕ": "h"
+          "ₖ": "k"
+          "ₗ": "l"
+          "ₘ": "m"
+          "ₙ": "n"
+          "ₚ": "p"
+          "ₛ": "s"
+          "ₜ": "t"
+          "ℂ": "c"
+          "ℊ": "g"
+          "ℋ": "h"
+          "ℌ": "h"
+          "ℍ": "h"
+          "ℎ": "h"
+          "ℐ": "i"
+          "ℑ": "i"
+          "ℒ": "l"
+          "ℓ": "l"
+          "ℕ": "n"
+          "ℙ": "p"
+          "ℚ": "q"
+          "ℛ": "r"
+          "ℜ": "r"
+          "ℝ": "r"
+          "ℤ": "z"
+          "ℨ": "z"
+          "K": "k"
+          "ℬ": "b"
+          "ℭ": "c"
+          "ℯ": "e"
+          "ℰ": "e"
+          "ℱ": "f"
+          "ℳ": "m"
+          "ℴ": "o"
+          "ℹ": "i"
+          "ⅅ": "d"
+          "ⅆ": "d"
+          "ⅇ": "e"
+          "ⅈ": "i"
+          "ⅉ": "j"
+          "ⱼ": "j"
+          "ⱽ": "v"
+          "ꟲ": "c"
+          "ꟳ": "f"
+          "ꟴ": "q"
+          "𐞥": "q"
+      source: |-
+        boolean containsCp(String alphabet, int cp) {
+          if (cp >= 128) {
+            return false;
+          }
+          for (int i = 0; i < alphabet.length(); i++) {
+            if (alphabet.codePointAt(i) == cp) {
+              return true;
+            }
+          }
+          return false;
+        }
+
+        String latinLower(int cp) {
+          if (cp < 97 || cp > 122) {
+            return null;
+          }
+          return "abcdefghijklmnopqrstuvwxyz".substring(cp - 97, cp - 96);
+        }
+
+        boolean isHexCp(int cp, String hexAlphabet) {
+          return containsCp(hexAlphabet, cp);
+        }
+
+        boolean isB64Cp(int cp, String b64Alphabet) {
+          return containsCp(b64Alphabet, cp);
+        }
+
+        boolean isLetterLikeBlock(int cp) {
+          return (cp >= 0x24B6 && cp <= 0x24E9)
+            || (cp >= 0xFF01 && cp <= 0xFF5E)
+            || (cp >= 0x2800 && cp <= 0x28FF)
+            || (cp >= 0x1D400 && cp <= 0x1D7FF)
+            || (cp >= 0x2070 && cp <= 0x209F)
+            || (cp >= 0x02B0 && cp <= 0x02FF)
+            || (cp >= 0x1D2C && cp <= 0x1D6A)
+            || (cp >= 0x1D00 && cp <= 0x1DBF);
+        }
+
+        boolean isSingleLetter(String token) {
+          if (token == null || token.codePointCount(0, token.length()) != 1) {
+            return false;
+          }
+          int cp = token.codePointAt(0);
+          return Character.isLetter(cp) || isLetterLikeBlock(cp);
+        }
+
+        boolean isMorseMark(String token, String morseAlphabet) {
+          if (token == null) {
+            return false;
+          }
+          int n = token.codePointCount(0, token.length());
+          if (n < 1 || n > 4) {
+            return false;
+          }
+          int i = 0;
+          while (i < token.length()) {
+            int cp = token.codePointAt(i);
+            if (!containsCp(morseAlphabet, cp)) {
+              return false;
+            }
+            i += Character.charCount(cp);
+          }
+          return true;
+        }
+
+        boolean isHexByte(String token, String hexAlphabet) {
+          if (token == null) {
+            return false;
+          }
+          int n = token.length();
+          if ((n != 3 && n != 4) || token.codePointCount(0, n) != n) {
+            return false;
+          }
+          if (!token.substring(0, 2).toLowerCase().equals("0x")) {
+            return false;
+          }
+          for (int i = 2; i < n; i++) {
+            if (!isHexCp(token.codePointAt(i), hexAlphabet)) {
+              return false;
+            }
+          }
+          return true;
+        }
+
+        String codeRunKind(String token, String morseAlphabet, String hexAlphabet) {
+          if (isMorseMark(token, morseAlphabet)) {
+            return "morse";
+          }
+          if (isHexByte(token, hexAlphabet)) {
+            return "hex";
+          }
+          return null;
+        }
+
+        boolean isEnglishSingle(String token) {
+          return token.equals("a") || token.equals("i") || token.equals("A") || token.equals("I");
+        }
+
+        String mathLatin(int cp) {
+          if (cp < 0x1D400 || cp > 0x1D6A3) {
+            return null;
+          }
+          int[] lo = new int[] {
+            0x1D400, 0x1D41A, 0x1D434, 0x1D44E, 0x1D456, 0x1D468, 0x1D482,
+            0x1D49C, 0x1D49E, 0x1D4A2, 0x1D4A5, 0x1D4A9, 0x1D4AE, 0x1D4B6,
+            0x1D4BB, 0x1D4BD, 0x1D4C5, 0x1D4D0, 0x1D4EA, 0x1D504, 0x1D507,
+            0x1D50D, 0x1D516, 0x1D51E, 0x1D538, 0x1D53B, 0x1D540, 0x1D546,
+            0x1D54A, 0x1D552, 0x1D56C, 0x1D586, 0x1D5A0, 0x1D5BA, 0x1D5D4,
+            0x1D5EE, 0x1D608, 0x1D622, 0x1D63C, 0x1D656, 0x1D670, 0x1D68A
+          };
+          int[] hi = new int[] {
+            0x1D419, 0x1D433, 0x1D44D, 0x1D454, 0x1D467, 0x1D481, 0x1D49B,
+            0x1D49C, 0x1D49F, 0x1D4A2, 0x1D4A6, 0x1D4AC, 0x1D4B5, 0x1D4B9,
+            0x1D4BB, 0x1D4C3, 0x1D4CF, 0x1D4E9, 0x1D503, 0x1D505, 0x1D50A,
+            0x1D514, 0x1D51C, 0x1D537, 0x1D539, 0x1D53E, 0x1D544, 0x1D546,
+            0x1D550, 0x1D56B, 0x1D585, 0x1D59F, 0x1D5B9, 0x1D5D3, 0x1D5ED,
+            0x1D607, 0x1D621, 0x1D63B, 0x1D655, 0x1D66F, 0x1D689, 0x1D6A3
+          };
+          String first = "aaaaiaaacgjnsafhpaaadjsaadiosaaaaaaaaaaaaa";
+          for (int i = 0; i < lo.length; i++) {
+            if (cp >= lo[i] && cp <= hi[i]) {
+              return latinLower(first.charAt(i) + (cp - lo[i]));
+            }
+          }
+          return null;
+        }
+
+        String latinLetter(String token, Map folds) {
+          if (token == null || token.codePointCount(0, token.length()) != 1) {
+            return null;
+          }
+          int cp = token.codePointAt(0);
+          if (cp < 128 && Character.isLetter(cp)) {
+            return latinLower(cp >= 65 && cp <= 90 ? cp + 32 : cp);
+          }
+          if (cp >= 0x24D0 && cp <= 0x24E9) {
+            return latinLower(97 + (cp - 0x24D0));
+          }
+          if (cp >= 0x24B6 && cp <= 0x24CF) {
+            return latinLower(97 + (cp - 0x24B6));
+          }
+          if (cp >= 0xFF21 && cp <= 0xFF3A) {
+            return latinLower(97 + (cp - 0xFF21));
+          }
+          if (cp >= 0xFF41 && cp <= 0xFF5A) {
+            return latinLower(97 + (cp - 0xFF41));
+          }
+          if (folds != null && folds.containsKey(token)) {
+            def folded = folds.get(token);
+            return folded == null ? null : folded.toString();
+          }
+          return mathLatin(cp);
+        }
+
+        String collapsedLetters(List run, Map folds) {
+          StringBuilder sb = new StringBuilder();
+          for (def tok : run) {
+            String ch = latinLetter((String) tok, folds);
+            if (ch != null) {
+              sb.append(ch);
+            }
+          }
+          return sb.toString();
+        }
+
+        boolean isSequential(String letters) {
+          if (letters.length() < 3) {
+            return false;
+          }
+          for (int i = 0; i < letters.length() - 1; i++) {
+            if (letters.codePointAt(i + 1) != letters.codePointAt(i) + 1) {
+              return false;
+            }
+          }
+          return true;
+        }
+
+        boolean keepRejoined(List run, int minLetterRun, def triggers, Map folds) {
+          if (run.size() < minLetterRun) {
+            return false;
+          }
+          String letters = collapsedLetters(run, folds);
+          return !isSequential(letters) && (run.size() > 3 || triggers.contains(letters));
+        }
+
+        List trimEnglish(List run) {
+          int start = 0;
+          int end = run.size();
+          while (start < end && isEnglishSingle((String) run.get(start))) {
+            start += 1;
+          }
+          while (end > start && isEnglishSingle((String) run.get(end - 1))) {
+            end -= 1;
+          }
+          List out = new ArrayList();
+          for (int k = start; k < end; k++) {
+            out.add(run.get(k));
+          }
+          return out;
+        }
+
+        boolean isShortDigit(String token) {
+          int n = token.length();
+          if (n < 2 || n > 4) {
+            return false;
+          }
+          for (int i = 0; i < n; ) {
+            int cp = token.codePointAt(i);
+            if (!Character.isDigit(cp)) {
+              return false;
+            }
+            i += Character.charCount(cp);
+          }
+          return true;
+        }
+
+        boolean isShortCescape(String token, String hexAlphabet) {
+          int n = token.length();
+          if (n == 0) {
+            return false;
+          }
+          int i = 0;
+          int groups = 0;
+          while (i < n) {
+            if (i + 4 > n) {
+              return false;
+            }
+            int bs = token.codePointAt(i);
+            int x = token.codePointAt(i + 1);
+            int h1 = token.codePointAt(i + 2);
+            int h2 = token.codePointAt(i + 3);
+            if (bs != 92 || (x != 120 && x != 88) || !isHexCp(h1, hexAlphabet) || !isHexCp(h2, hexAlphabet)) {
+              return false;
+            }
+            groups += 1;
+            i += 4;
+          }
+          return groups < 3;
+        }
+
+        boolean isBlob(String token, String hexAlphabet, String b64Alphabet, int blobMin) {
+          int n = token.length();
+          if (n == 32 || n == 40 || n == 64 || n == 128) {
+            boolean allHex = true;
+            for (int i = 0; i < n && allHex; i++) {
+              if (!isHexCp(token.codePointAt(i), hexAlphabet)) {
+                allHex = false;
+              }
+            }
+            if (allHex) {
+              return true;
+            }
+          }
+          if (n < blobMin) {
+            return false;
+          }
+          boolean any = false;
+          boolean allLetters = true;
+          boolean allB64 = true;
+          for (int i = 0; i < n; ) {
+            int cp = token.codePointAt(i);
+            any = true;
+            if (!Character.isLetter(cp)) {
+              allLetters = false;
+            }
+            if (!isB64Cp(cp, b64Alphabet)) {
+              allB64 = false;
+            }
+            i += Character.charCount(cp);
+          }
+          return any && !allLetters && allB64;
+        }
+
+        boolean keepScored(String token, int minLen, String hexAlphabet, String b64Alphabet, int blobMin) {
+          return token.length() >= minLen
+            && !isBlob(token, hexAlphabet, b64Alphabet, blobMin)
+            && !isShortDigit(token)
+            && !isShortCescape(token, hexAlphabet);
+        }
+
+        List splitTokens(String text, List starts, List ends) {
+          List tokens = new ArrayList();
+          int n = text.length();
+          int i = 0;
+          while (i < n) {
+            int cp = text.codePointAt(i);
+            int w = Character.charCount(cp);
+            if (Character.isWhitespace(cp)) {
+              i += w;
+              continue;
+            }
+            int start = i;
+            i += w;
+            while (i < n) {
+              int cp2 = text.codePointAt(i);
+              if (Character.isWhitespace(cp2)) {
+                break;
+              }
+              i += Character.charCount(cp2);
+            }
+            tokens.add(text.substring(start, i));
+            def startObj = start;
+            def endObj = i;
+            starts.add(startObj);
+            ends.add(endObj);
+          }
+          return tokens;
+        }
+
+        List addSpan(List candidates, String s, int start, int end) {
+          Map span = new HashMap();
+          span['s'] = s;
+          def startObj = start;
+          def endObj = end;
+          span['start'] = startObj;
+          span['end'] = endObj;
+          candidates.add(span);
+          return candidates;
+        }
+
+        boolean isPunctType(int type) {
+          return type >= 20 && type <= 30;
+        }
+
+        String scriptOf(int cp) {
+          if ((cp >= 0x0041 && cp <= 0x005A) || (cp >= 0x0061 && cp <= 0x007A) || (cp >= 0x00C0 && cp <= 0x024F)) {
+            return "latin";
+          }
+          if (cp >= 0x0400 && cp <= 0x052F) {
+            return "cyrillic";
+          }
+          if (cp >= 0x0370 && cp <= 0x03FF) {
+            return "greek";
+          }
+          if (cp >= 0x2800 && cp <= 0x28FF) {
+            return "braille";
+          }
+          if (cp >= 0x1D400 && cp <= 0x1D7FF) {
+            return "math";
+          }
+          if (cp >= 0xFF01 && cp <= 0xFF5E) {
+            return "fullwidth";
+          }
+          if (cp >= 0x24B6 && cp <= 0x24E9) {
+            return "circled";
+          }
+          if (cp >= 0x1D00 && cp <= 0x1DBF) {
+            return "smallcaps";
+          }
+          if (cp > 127 && Character.isLetter(cp)) {
+            return "other";
+          }
+          return null;
+        }
+
+        boolean blockHit(int cp, String name) {
+          if (name.equals("circled")) {
+            return cp >= 0x24B6 && cp <= 0x24E9;
+          }
+          if (name.equals("fullwidth")) {
+            return cp >= 0xFF01 && cp <= 0xFF5E;
+          }
+          if (name.equals("super")) {
+            return (cp >= 0x2070 && cp <= 0x209F) || (cp >= 0x02B0 && cp <= 0x02FF) || (cp >= 0x1D2C && cp <= 0x1D6A);
+          }
+          if (name.equals("smallcaps")) {
+            return cp >= 0x1D00 && cp <= 0x1DBF;
+          }
+          if (name.equals("math")) {
+            return cp >= 0x1D400 && cp <= 0x1D7FF;
+          }
+          if (name.equals("braille")) {
+            return cp >= 0x2800 && cp <= 0x28FF;
+          }
+          if (name.equals("cyrillic")) {
+            return cp >= 0x0400 && cp <= 0x052F;
+          }
+          return false;
+        }
+
+        boolean isZw(int cp) {
+          return cp == 0x200B || cp == 0x200C || cp == 0x200D || cp == 0x2060 || cp == 0xFEFF;
+        }
+
+        Map tokenFeatures(String token, String hexAlphabet, String vowels, String seps, String morse) {
+          Map values = new HashMap();
+          values['length'] = 0.0;
+          values['digit_ratio'] = 0.0;
+          values['letter_ratio'] = 0.0;
+          values['punct_ratio'] = 0.0;
+          values['space_ratio'] = 0.0;
+          values['upper_ratio'] = 0.0;
+          values['case_flips'] = 0.0;
+          values['unique_ratio'] = 0.0;
+          values['entropy'] = 0.0;
+          values['letter_digit_flips'] = 0.0;
+          values['sep_between_letters'] = 0.0;
+          values['starts_0x'] = 0.0;
+          values['hex_ratio'] = 0.0;
+          values['morse_ratio'] = 0.0;
+          values['non_ascii_ratio'] = 0.0;
+          values['script_count'] = 0.0;
+          values['block_circled'] = 0.0;
+          values['block_fullwidth'] = 0.0;
+          values['block_super'] = 0.0;
+          values['block_smallcaps'] = 0.0;
+          values['block_math'] = 0.0;
+          values['block_braille'] = 0.0;
+          values['block_cyrillic'] = 0.0;
+          values['zw_count'] = 0.0;
+          values['combining_count'] = 0.0;
+          values['vowel_ratio'] = 0.0;
+          if (token == null || token.length() == 0) {
+            return values;
+          }
+
+          List cps = new ArrayList();
+          for (int i = 0; i < token.length(); ) {
+            int cp = token.codePointAt(i);
+            cps.add(cp);
+            i += Character.charCount(cp);
+          }
+          int n = cps.size();
+          if (n == 0) {
+            return values;
+          }
+
+          int nDigit = 0;
+          int nLetter = 0;
+          int nPunct = 0;
+          int nSpace = 0;
+          int nUpper = 0;
+          int nHex = 0;
+          int nMorse = 0;
+          int nNonAscii = 0;
+          int nVowel = 0;
+          int nAsciiLetter = 0;
+          int nZw = 0;
+          int nCombining = 0;
+          int nSepBetween = 0;
+          int caseFlips = 0;
+          int letterDigitFlips = 0;
+          def scripts = new HashSet();
+          int nCircled = 0;
+          int nFullwidth = 0;
+          int nSuper = 0;
+          int nSmallcaps = 0;
+          int nMath = 0;
+          int nBraille = 0;
+          int nCyrillic = 0;
+          boolean prevLetter = false;
+          boolean prevDigit = false;
+          int prevAlphaCase = -1;
+          Map counts = new HashMap();
+
+          for (int i = 0; i < n; i++) {
+            int cp = ((Number) cps.get(i)).intValue();
+            boolean isDigit = Character.isDigit(cp);
+            boolean isLetter = Character.isLetter(cp);
+            boolean isSpace = Character.isWhitespace(cp);
+            int type = Character.getType(cp);
+            if (isDigit) {
+              nDigit += 1;
+            }
+            if (isLetter) {
+              nLetter += 1;
+              if (Character.isUpperCase(cp)) {
+                nUpper += 1;
+              }
+              if (containsCp(vowels, cp)) {
+                nVowel += 1;
+              }
+              if (cp < 128) {
+                nAsciiLetter += 1;
+              }
+            }
+            if (isSpace) {
+              nSpace += 1;
+            } else if (isPunctType(type)) {
+              nPunct += 1;
+            }
+            if (isHexCp(cp, hexAlphabet)) {
+              nHex += 1;
+            }
+            if (containsCp(morse, cp)) {
+              nMorse += 1;
+            }
+            if (cp > 127) {
+              nNonAscii += 1;
+            }
+            if (isZw(cp)) {
+              nZw += 1;
+            }
+            if (type == 6) {
+              nCombining += 1;
+            }
+            String script = scriptOf(cp);
+            if (script != null) {
+              scripts.add(script);
+            }
+            if (blockHit(cp, "circled")) { nCircled += 1; }
+            if (blockHit(cp, "fullwidth")) { nFullwidth += 1; }
+            if (blockHit(cp, "super")) { nSuper += 1; }
+            if (blockHit(cp, "smallcaps")) { nSmallcaps += 1; }
+            if (blockHit(cp, "math")) { nMath += 1; }
+            if (blockHit(cp, "braille")) { nBraille += 1; }
+            if (blockHit(cp, "cyrillic")) { nCyrillic += 1; }
+            if (containsCp(seps, cp) && i > 0 && i + 1 < n
+                && Character.isLetter(((Number) cps.get(i - 1)).intValue())
+                && Character.isLetter(((Number) cps.get(i + 1)).intValue())) {
+              nSepBetween += 1;
+            }
+            if (i > 0) {
+              if ((isLetter && prevDigit) || (isDigit && prevLetter)) {
+                letterDigitFlips += 1;
+              }
+              if (isLetter && prevAlphaCase >= 0) {
+                int nowUpper = Character.isUpperCase(cp) ? 1 : 0;
+                if (nowUpper != prevAlphaCase) {
+                  caseFlips += 1;
+                }
+              }
+            }
+            prevLetter = isLetter;
+            prevDigit = isDigit;
+            prevAlphaCase = isLetter ? (Character.isUpperCase(cp) ? 1 : 0) : -1;
+            def seen = counts[cp];
+            counts[cp] = (seen == null ? 0 : ((Number) seen).intValue()) + 1;
+          }
+
+          double entropy = 0.0;
+          for (def c : counts.values()) {
+            double p = ((Number) c).doubleValue() / n;
+            entropy -= p * Math.log(p) / Math.log(2);
+          }
+
+          double starts0x = 0.0;
+          if (n >= 3) {
+            int c0 = ((Number) cps.get(0)).intValue();
+            int c1 = ((Number) cps.get(1)).intValue();
+            boolean prefix = (c0 == 48) && (c1 == 120 || c1 == 88);
+            boolean tailHex = true;
+            for (int hi = 2; hi < n && tailHex; hi++) {
+              if (!isHexCp(((Number) cps.get(hi)).intValue(), hexAlphabet)) {
+                tailHex = false;
+              }
+            }
+            if (prefix && tailHex) {
+              starts0x = 1.0;
+            }
+          }
+
+          values['length'] = (double) n;
+          values['digit_ratio'] = (double) nDigit / n;
+          values['letter_ratio'] = (double) nLetter / n;
+          values['punct_ratio'] = (double) nPunct / n;
+          values['space_ratio'] = (double) nSpace / n;
+          values['upper_ratio'] = nLetter > 0 ? (double) nUpper / nLetter : 0.0;
+          values['case_flips'] = (double) caseFlips;
+          values['unique_ratio'] = (double) counts.size() / n;
+          values['entropy'] = entropy;
+          values['letter_digit_flips'] = (double) letterDigitFlips;
+          values['sep_between_letters'] = (double) nSepBetween;
+          values['starts_0x'] = starts0x;
+          values['hex_ratio'] = (double) nHex / n;
+          values['morse_ratio'] = (double) nMorse / n;
+          values['non_ascii_ratio'] = (double) nNonAscii / n;
+          values['script_count'] = (double) scripts.size();
+          values['block_circled'] = (double) nCircled;
+          values['block_fullwidth'] = (double) nFullwidth;
+          values['block_super'] = (double) nSuper;
+          values['block_smallcaps'] = (double) nSmallcaps;
+          values['block_math'] = (double) nMath;
+          values['block_braille'] = (double) nBraille;
+          values['block_cyrillic'] = (double) nCyrillic;
+          values['zw_count'] = (double) nZw;
+          values['combining_count'] = (double) nCombining;
+          values['vowel_ratio'] = nAsciiLetter > 0 ? (double) nVowel / nAsciiLetter : 0.0;
+          return values;
+        }
+
+        def addNgrams(Map features, String token, int maxLength, double radix) {
+          List cps = new ArrayList();
+          for (int i = 0; i < token.length() && cps.size() < maxLength; ) {
+            int cp = token.codePointAt(i);
+            cps.add(cp);
+            i += Character.charCount(cp);
+          }
+          String[] prefixes = new String[] {'u', 'b', 't'};
+          for (int size = 1; size <= 3; size++) {
+            String prefix = prefixes[size - 1];
+            for (int offset = 0; offset + size <= cps.size(); offset++) {
+              double code = 0.0;
+              for (int k = 0; k < size; k++) {
+                code = code * radix + ((Number) cps.get(offset + k)).doubleValue();
+              }
+              features[prefix + Integer.toString(offset)] = code;
+            }
+          }
+          return features;
+        }
+
+        def triggers = new HashSet();
+        for (def t : params.triggers) {
+          triggers.add(t);
+        }
+        int minLetterRun = ((Number) params.min_letter_run).intValue();
+        int minTokenLength = ((Number) params.min_token_length).intValue();
+        int blobMinLength = ((Number) params.blob_min_length).intValue();
+        int maxNgramLength = ((Number) params.max_ngram_length).intValue();
+        double cpRadix = ((Number) params.cp_radix).doubleValue();
+        Map latinFolds = params.latin_folds instanceof Map ? (Map) params.latin_folds : new HashMap();
+
+        List sourceTexts = new ArrayList();
+        List sourceNames = new ArrayList();
+        if (ctx['ml_word_prompt_text'] instanceof String && !((String) ctx['ml_word_prompt_text']).isEmpty()) {
+          sourceTexts.add(ctx['ml_word_prompt_text']);
+          sourceNames.add('input_messages');
+        }
+        if (ctx['ml_word_completion_text'] instanceof String && !((String) ctx['ml_word_completion_text']).isEmpty()) {
+          sourceTexts.add(ctx['ml_word_completion_text']);
+          sourceNames.add('output_messages');
+        }
+
+        List candidateInputs = new ArrayList();
+        for (int si = 0; si < sourceTexts.size(); si++) {
+          String fullText = (String) sourceTexts.get(si);
+          String src = (String) sourceNames.get(si);
+          List tokenStarts = new ArrayList();
+          List tokenEnds = new ArrayList();
+          List tokens = splitTokens(fullText, tokenStarts, tokenEnds);
+          List candidates = new ArrayList();
+          String morseAlphabet = (String) params.morse;
+          String hexAlphabet = (String) params.hex_alphabet;
+          int i = 0;
+          while (i < tokens.size()) {
+            String tok = (String) tokens.get(i);
+            String kind = codeRunKind(tok, morseAlphabet, hexAlphabet);
+            if (kind != null) {
+              int j = i + 1;
+              while (j < tokens.size() && kind.equals(codeRunKind((String) tokens.get(j), morseAlphabet, hexAlphabet))) {
+                j += 1;
+              }
+              if (j - i >= minLetterRun) {
+                StringBuilder joined = new StringBuilder();
+                for (int k = i; k < j; k++) {
+                  if (k > i) {
+                    joined.append(" ");
+                  }
+                  joined.append(tokens.get(k));
+                }
+                addSpan(
+                  candidates,
+                  joined.toString(),
+                  ((Number) tokenStarts.get(i)).intValue(),
+                  ((Number) tokenEnds.get(j - 1)).intValue()
+                );
+                i = j;
+                continue;
+              }
+            }
+            if (isSingleLetter(tok)) {
+              int j = i + 1;
+              while (j < tokens.size() && isSingleLetter((String) tokens.get(j))) {
+                j += 1;
+              }
+              int a = i;
+              int b = j;
+              while (a < b && isEnglishSingle((String) tokens.get(a))) {
+                a += 1;
+              }
+              while (b > a && isEnglishSingle((String) tokens.get(b - 1))) {
+                b -= 1;
+              }
+              List run = new ArrayList();
+              for (int k = a; k < b; k++) {
+                run.add(tokens.get(k));
+              }
+              run = trimEnglish(run);
+              if (keepRejoined(run, minLetterRun, triggers, latinFolds)) {
+                StringBuilder joined = new StringBuilder();
+                for (int k = 0; k < run.size(); k++) {
+                  if (k > 0) {
+                    joined.append(" ");
+                  }
+                  joined.append(run.get(k));
+                }
+                addSpan(
+                  candidates,
+                  joined.toString(),
+                  ((Number) tokenStarts.get(a)).intValue(),
+                  ((Number) tokenEnds.get(b - 1)).intValue()
+                );
+              }
+              i = j;
+              continue;
+            }
+            if (keepScored(tok, minTokenLength, params.hex_alphabet, params.b64_alphabet, blobMinLength)) {
+              addSpan(
+                candidates,
+                tok,
+                ((Number) tokenStarts.get(i)).intValue(),
+                ((Number) tokenEnds.get(i)).intValue()
+              );
+            }
+            i += 1;
+          }
+
+          for (def candObj : candidates) {
+            Map candMap = (Map) candObj;
+            String cand = (String) candMap['s'];
+            Map features = tokenFeatures(cand, params.hex_alphabet, params.vowels, params.seps, params.morse);
+            addNgrams(features, cand, maxNgramLength, cpRadix);
+            Map entry = new HashMap();
+            entry['s'] = cand;
+            entry['t'] = "word_obfuscation";
+            entry['src'] = src;
+            entry['start'] = candMap['start'];
+            entry['end'] = candMap['end'];
+            entry['f'] = features;
+            candidateInputs.add(entry);
+          }
+        }
+
+        ctx['ml_word_candidate_inputs'] = candidateInputs;
+        ctx['ml_word_scores'] = new ArrayList();
+
+  - foreach:
+      tag: ml-prompt-detect-word-score-foreach
+      if: ctx.ml_word_candidate_inputs != null && ctx.ml_word_candidate_inputs.size() > 0
+      field: ml_word_candidate_inputs
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "security_ai_word_score_candidate_pipeline" }}'
+
+  - script:
+      tag: ml-prompt-detect-word-promote-score
+      description: >
+        Write kept strings and probabilities. Store the sentence around a hit
+        in contexts only when its probability is above params.min_context_probability.
+        Context is clipped to params.max_context_chars and is not prefixed.
+      lang: painless
+      if: ctx.ml_word_scores != null && ctx.ml_word_scores.size() > 0
+      params:
+        max_context_chars: 512
+        min_context_probability: 0.98
+      source: |-
+        String sentenceContext(String text, int start, int end, int maxChars) {
+          if (!(text instanceof String) || text.length() == 0) {
+            return "";
+          }
+          if (start < 0) {
+            start = 0;
+          }
+          if (end > text.length()) {
+            end = text.length();
+          }
+          if (start > end) {
+            start = end;
+          }
+          int from = start;
+          while (from > 0) {
+            int cp = text.charAt(from - 1);
+            if (cp == 10 || cp == 13 || cp == 46 || cp == 33 || cp == 63) {
+              break;
+            }
+            from--;
+          }
+          while (from < start && from < text.length()) {
+            int cp = text.charAt(from);
+            if (cp == 10 || cp == 13 || cp == 32 || cp == 9) {
+              from++;
+            } else {
+              break;
+            }
+          }
+          int to = end;
+          while (to < text.length()) {
+            int cp = text.charAt(to);
+            if (cp == 10 || cp == 13) {
+              break;
+            }
+            if (cp == 46 || cp == 33 || cp == 63) {
+              to++;
+              break;
+            }
+            to++;
+          }
+          if (to - from > maxChars) {
+            if (start - from >= maxChars) {
+              from = start;
+            }
+            int cap = from + maxChars;
+            if (cap < to) {
+              to = cap;
+            }
+            if (to > text.length()) {
+              to = text.length();
+            }
+          }
+          return text.substring(from, to).trim();
+        }
+
+        String promptText = ctx['ml_word_prompt_text'] instanceof String ? (String) ctx['ml_word_prompt_text'] : "";
+        String completionText = ctx['ml_word_completion_text'] instanceof String ? (String) ctx['ml_word_completion_text'] : "";
+        int maxChars = params.max_context_chars instanceof Number ? ((Number) params.max_context_chars).intValue() : 512;
+        double minContextP = params.min_context_probability instanceof Number ? ((Number) params.min_context_probability).doubleValue() : 0.98;
+        Map stringsBySrc = new HashMap();
+        Map probsBySrc = new HashMap();
+        Map contextsBySrc = new HashMap();
+        stringsBySrc['input_messages'] = new ArrayList();
+        stringsBySrc['output_messages'] = new ArrayList();
+        probsBySrc['input_messages'] = new ArrayList();
+        probsBySrc['output_messages'] = new ArrayList();
+        contextsBySrc['input_messages'] = new ArrayList();
+        contextsBySrc['output_messages'] = new ArrayList();
+        for (def r : ctx['ml_word_scores']) {
+          if (r == null || !(r['string'] instanceof String)) {
+            continue;
+          }
+          String src = (r['src'] instanceof String) ? (String) r['src'] : 'input_messages';
+          if (src != 'input_messages' && src != 'output_messages') {
+            src = 'input_messages';
+          }
+          List strings = (List) stringsBySrc[src];
+          String s = (String) r['string'];
+          if (!strings.contains(s)) {
+            strings.add(s);
+            double p = r['probability'] != null ? ((Number) r['probability']).doubleValue() : 0.0;
+            ((List) probsBySrc[src]).add(p);
+            if (p > minContextP) {
+              String text = src == 'output_messages' ? completionText : promptText;
+              int start = r['start'] instanceof Number ? ((Number) r['start']).intValue() : 0;
+              int end = r['end'] instanceof Number ? ((Number) r['end']).intValue() : start;
+              String context = sentenceContext(text, start, end, maxChars);
+              List contexts = (List) contextsBySrc[src];
+              if (context.length() > 0 && !contexts.contains(context)) {
+                contexts.add(context);
+              }
+            }
+          }
+        }
+        Map word = new HashMap();
+        for (def srcName : new String[] {'input_messages', 'output_messages'}) {
+          List strings = (List) stringsBySrc[srcName];
+          if (strings.isEmpty()) {
+            continue;
+          }
+          Map side = new HashMap();
+          side['strings'] = strings;
+          side['probabilities'] = probsBySrc[srcName];
+          List contexts = (List) contextsBySrc[srcName];
+          if (!contexts.isEmpty()) {
+            side['contexts'] = contexts;
+          }
+          word[srcName] = side;
+        }
+        if (word.isEmpty()) {
+          return;
+        }
+        word['model_version'] = ctx['_ml_model_version'] instanceof String ? (String) ctx['_ml_model_version'] : '0.0.1';
+        if (ctx['security_ai'] == null) {
+          ctx['security_ai'] = new HashMap();
+        }
+        ctx['security_ai']['word_obfuscation'] = word;
+
+  - remove:
+      tag: ml-prompt-detect-word-cleanup
+      field:
+        - ml_word_candidate_inputs
+        - ml_word_scores
+        - ml_word_prompt_text
+        - ml_word_completion_text
+      ignore_missing: true
+
+on_failure:
+  - remove:
+      field:
+        - ml_word_candidate_inputs
+        - ml_word_scores
+        - ml_word_one_result
+        - _ml_word_candidate_features
+        - f
+        - ml_word_prompt_text
+        - ml_word_completion_text
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        {{{ _ingest.on_failure_message }}} [pipeline: {{{ _ingest.pipeline }}},
+        processor_type: {{{ _ingest.on_failure_processor_type }}},
+        processor_tag: {{{ _ingest.on_failure_processor_tag }}}]

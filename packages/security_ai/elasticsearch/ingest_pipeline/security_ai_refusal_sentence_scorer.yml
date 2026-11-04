@@ -1,0 +1,78 @@
+---
+description: Score one refusal fragment and keep the strongest snippet.
+processors:
+  - set:
+      tag: ml-prompt-detect-refusal-sentence-copy
+      field: _ml_sent
+      copy_from: "_ingest._value"
+
+  - script:
+      tag: ml-prompt-detect-refusal-sentence-features
+      lang: painless
+      source: |-
+        Map sent = (Map) ctx['_ml_sent'];
+        List fired = new ArrayList();
+        for (def entry : sent.entrySet()) {
+          String k = (String) entry.getKey();
+          if (!k.equals('text')) {
+            ctx[k] = entry.getValue();
+            fired.add(k);
+          }
+        }
+        ctx['_ml_sent_fired'] = fired;
+
+  - inference:
+      tag: ml-prompt-detect-refusal-sentence-infer
+      field_map: {}
+      inference_config:
+        classification:
+          num_top_classes: 2
+      model_id: security_ai_refusal_detection_classifier_0.1
+      target_field: ml_sentence_result
+
+  - script:
+      tag: ml-prompt-detect-refusal-sentence-score
+      lang: painless
+      source: |-
+        double prob = 0.0;
+        def result = ctx['ml_sentence_result'];
+        if (result instanceof Map && ((Map) result).get('top_classes') instanceof List) {
+          for (def item : (List) ((Map) result).get('top_classes')) {
+            if (((Map) item).get('class_name') == '1') {
+              prob = ((Number) ((Map) item).get('class_probability')).doubleValue();
+              break;
+            }
+          }
+        }
+        def cur = ctx['_ml_top_score'];
+        double topScore = (cur instanceof Number) ? ((Number) cur).doubleValue() : -1.0;
+        if (prob > topScore) {
+          ctx['_ml_top_score'] = prob;
+          ctx['_ml_top_text']  = (String) ((Map) ctx['_ml_sent']).get('text');
+          def k = ((Map) ctx['_ml_sent']).get('kind');
+          ctx['_ml_top_kind']  = k instanceof String ? (String) k : 'sentence';
+        }
+        for (def k : (List) ctx['_ml_sent_fired']) {
+          ctx.remove((String) k);
+        }
+        ctx.remove('_ml_sent_fired');
+        ctx.remove('ml_sentence_result');
+        ctx.remove('_ml_sent');
+
+on_failure:
+  - remove:
+      field:
+        - _ml_sent
+        - _ml_sent_fired
+        - ml_sentence_result
+        - _ml_top_kind
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        {{{ _ingest.on_failure_message }}} [pipeline: {{{ _ingest.pipeline }}},
+        processor_type: {{{ _ingest.on_failure_processor_type }}},
+        processor_tag: {{{ _ingest.on_failure_processor_tag }}}]

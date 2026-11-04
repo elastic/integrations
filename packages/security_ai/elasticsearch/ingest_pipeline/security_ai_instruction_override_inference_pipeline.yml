@@ -1,0 +1,332 @@
+---
+description: Detect instruction-override attempts in the latest user message.
+processors:
+  - remove:
+      tag: ml-instruction-override-init
+      description: Clear scratch fields from earlier processing
+      field:
+        - ml_instruction_override_text
+        - ml_instruction_override_scores
+        - ml_instruction_override_inputs
+        - _ml_jb_alert
+        - _ml_jb_result
+        - _ml_jb_candidate
+        - _ml_jb_skip
+      ignore_missing: true
+  - script:
+      description: Clip the latest user text resolved by the entry pipeline; it is the first text to score
+      lang: painless
+      source: |-
+        String clip(String s) {
+          if (s.length() <= 4096) {
+            return s;
+          }
+          int end = 4096;
+          int before = (int) s.charAt(end - 1);
+          int after = (int) s.charAt(end);
+          if (before >= 0xd800 && before <= 0xdbff && after >= 0xdc00 && after <= 0xdfff) {
+            end--;
+          }
+          return s.substring(0, end);
+        }
+
+        if (ctx['_ml_prompt_text'] instanceof String) {
+          ctx['ml_instruction_override_text'] = clip((String) ctx['_ml_prompt_text']);
+          Map full = new HashMap();
+          full.put('s', ctx['ml_instruction_override_text']);
+          full.put('k', 'full');
+          ctx['ml_instruction_override_inputs'] = [full];
+        }
+      tag: ml-instruction-override-resolve-text
+  - script:
+      description: Build structural and overlapping-window excerpts for long inputs; the scorer only uses them when the full text alerts
+      if: >-
+        ctx.ml_instruction_override_text instanceof String &&
+        ctx.ml_instruction_override_text.codePointCount(0, ctx.ml_instruction_override_text.length()) >= 280
+      lang: painless
+      params:
+        max_candidates: 12
+        min_candidate_chars: 32
+        overlap_max_structural: 1
+        stride_chars: 256
+        window_chars: 512
+      source: |-
+        boolean isTextSpace(char c) {
+          return Character.isWhitespace(c) || Character.isSpaceChar(c) || c == (char)133;
+        }
+
+        String trimText(String value) {
+          int start = 0;
+          int end = value.length();
+          while (start < end && isTextSpace(value.charAt(start))) {
+            start++;
+          }
+          while (end > start && isTextSpace(value.charAt(end - 1))) {
+            end--;
+          }
+          return value.substring(start, end);
+        }
+
+        int textChars(String value) {
+          return value.codePointCount(0, value.length());
+        }
+
+        String text = (String) ctx.ml_instruction_override_text;
+        int minChars = ((Number) params.min_candidate_chars).intValue();
+        int maxCand = ((Number) params.max_candidates).intValue();
+        int windowChars = ((Number) params.window_chars).intValue();
+        int strideChars = ((Number) params.stride_chars).intValue();
+        int overlapMaxStructural = ((Number) params.overlap_max_structural).intValue();
+        if (maxCand <= 0) { return; }
+        List raw = new ArrayList();
+        String nl = "" + (char)10;
+
+        List paras = new ArrayList();
+        int start = 0;
+        int pos = 0;
+        while (pos < text.length()) {
+          if (text.charAt(pos) != (char)10) {
+            pos++;
+            continue;
+          }
+          int scan = pos + 1;
+          int lastNewline = -1;
+          while (scan < text.length() && isTextSpace(text.charAt(scan))) {
+            if (text.charAt(scan) == (char)10) {
+              lastNewline = scan;
+            }
+            scan++;
+          }
+          if (lastNewline >= 0) {
+            String body = trimText(text.substring(start, pos));
+            if (!body.isEmpty()) {
+              paras.add(body);
+            }
+            start = lastNewline + 1;
+          }
+          pos = scan;
+        }
+        String tail = trimText(text.substring(start));
+        if (!tail.isEmpty()) {
+          paras.add(tail);
+        }
+        if (paras.isEmpty()) {
+          String body = trimText(text);
+          if (textChars(body) >= minChars) {
+            Map e = new HashMap();
+            e.put("s", body);
+            e.put("k", "paragraph");
+            raw.add(e);
+          }
+        } else {
+          for (def p : paras) {
+            String body = (String) p;
+            if (textChars(body) >= minChars) {
+              Map e = new HashMap();
+              e.put("s", body);
+              e.put("k", "paragraph");
+              raw.add(e);
+            }
+          }
+        }
+
+        int from = 0;
+        while (from < text.length()) {
+          int open = text.indexOf("<!--", from);
+          if (open < 0) {
+            break;
+          }
+          int close = text.indexOf("-->", open + 4);
+          if (close < 0) {
+            break;
+          }
+          String body = trimText(text.substring(open + 4, close));
+          if (textChars(body) >= minChars) {
+            Map e = new HashMap();
+            e.put("s", body);
+            e.put("k", "html_comment");
+            raw.add(e);
+          }
+          from = close + 3;
+        }
+
+        if (text.contains("```")) {
+          String[] parts = text.splitOnToken("```");
+          for (int i = 1; i < parts.length; i += 2) {
+            String body = parts[i];
+            int nlAt = body.indexOf(nl);
+            if (nlAt >= 0) {
+              body = body.substring(nlAt + 1);
+            }
+            body = trimText(body);
+            if (textChars(body) >= minChars) {
+              Map e = new HashMap();
+              e.put("s", body);
+              e.put("k", "fence_body");
+              raw.add(e);
+            }
+          }
+        }
+
+        Set seen = new HashSet();
+        List filtered = new ArrayList();
+        String fullTrim = trimText(text);
+        for (def c : raw) {
+          String s = (String) c['s'];
+          if (seen.contains(s)) {
+            continue;
+          }
+          seen.add(s);
+          filtered.add(c);
+        }
+        if (filtered.size() == 1 && ((String) filtered.get(0)['s']).equals(fullTrim)) {
+          filtered.clear();
+          seen.remove(fullTrim);
+        }
+        filtered.sort((a, b) -> textChars((String) b['s']) - textChars((String) a['s']));
+        if (filtered.size() > maxCand) {
+          filtered = new ArrayList(filtered.subList(0, maxCand));
+        }
+
+        boolean needOverlap = filtered.size() <= overlapMaxStructural
+            && (filtered.isEmpty() || textChars(text) >= windowChars);
+        if (needOverlap && windowChars > 0 && strideChars > 0) {
+          int n = textChars(text);
+          List starts = new ArrayList();
+          if (n <= windowChars) {
+            starts.add(0);
+          } else {
+            int lastStart = n - windowChars;
+            int lastAdded = -1;
+            for (int wStart = 0; wStart <= lastStart; wStart += strideChars) {
+              starts.add(wStart);
+              lastAdded = wStart;
+              if (strideChars > lastStart - wStart) { break; }
+            }
+            if (lastAdded != lastStart) { starts.add(lastStart); }
+          }
+          List fresh = new ArrayList();
+          for (def offset : starts) {
+            int wStart = ((Number) offset).intValue();
+            int wEnd = wStart + windowChars > n ? n : wStart + windowChars;
+            String chunk = text.substring(text.offsetByCodePoints(0, wStart), text.offsetByCodePoints(0, wEnd));
+            if (textChars(chunk) < minChars || seen.contains(chunk)) { continue; }
+            seen.add(chunk);
+            Map w = new HashMap();
+            w.put("s", chunk);
+            w.put("k", "window");
+            fresh.add(w);
+          }
+          if (fresh.size() == 1 && ((String) fresh.get(0)['s']).equals(fullTrim)) {
+            fresh.clear();
+          }
+          int slots = maxCand - filtered.size();
+          if (slots > 0 && fresh.size() > slots) {
+            if (slots == 1) {
+              filtered.add(fresh.get(0));
+            } else {
+              for (int i = 0; i < slots; i++) {
+                int index = i * (fresh.size() - 1) / (slots - 1);
+                filtered.add(fresh.get(index));
+              }
+            }
+          } else if (slots > 0) {
+            filtered.addAll(fresh);
+          }
+        }
+
+        if (!filtered.isEmpty()) {
+          ctx['ml_instruction_override_inputs'].addAll(filtered);
+        }
+      tag: ml-instruction-override-build-snippet-candidates
+  - foreach:
+      tag: ml-instruction-override-score-foreach
+      description: Score the full text, then the excerpts if the full text alerted
+      field: ml_instruction_override_inputs
+      if: ctx.ml_instruction_override_inputs instanceof List && !ctx.ml_instruction_override_inputs.isEmpty()
+      processor:
+        pipeline:
+          tag: ml-instruction-override-score-text
+          name: '{{ IngestPipeline "security_ai_instruction_override_score_pipeline" }}'
+  - script:
+      tag: ml-instruction-override-result
+      description: Build the instruction-override result from the full-text score, with the best excerpt when it alerted
+      if: ctx.ml_instruction_override_scores instanceof List && !ctx.ml_instruction_override_scores.isEmpty()
+      lang: painless
+      source: |-
+        List scores = ctx['ml_instruction_override_scores'];
+        Map full = (Map) scores.get(0);
+        double probability = ((Number) full.get('probability')).doubleValue();
+        String prediction = ctx['_ml_jb_alert'] == true ? '1' : '0';
+        Map result = new HashMap();
+        result.put('probability', probability);
+        result.put('prediction', prediction);
+        if (ctx['_ml_jb_alert'] == true && scores.size() > 1) {
+          def best = null;
+          double bestProbability = -1.0;
+          for (int i = 1; i < scores.size(); i++) {
+            def score = scores.get(i);
+            double p = ((Number) score.get('probability')).doubleValue();
+            if (p > bestProbability) { best = score; bestProbability = p; }
+          }
+          String text = best.get('text');
+          if (text.codePointCount(0, text.length()) > 512) {
+            text = text.substring(0, text.offsetByCodePoints(0, 512));
+          }
+          Map top = new HashMap();
+          top.put('text', text);
+          top.put('kind', best.get('kind'));
+          top.put('probability', bestProbability);
+          top.put('candidates_scored', scores.size() - 1);
+          result.put('top_snippet', top);
+        }
+        Map published = new HashMap();
+        published.put('input_messages', result);
+        published.put(
+          'model_version',
+          ctx['_ml_model_version'] instanceof String ? (String) ctx['_ml_model_version'] : '0.0.1'
+        );
+        ctx['_ml_jb_result'] = published;
+  - set:
+      tag: ml-instruction-override-publish
+      description: Replace the instruction-override result only when scoring succeeded
+      field: security_ai.instruction_override
+      copy_from: _ml_jb_result
+      if: ctx._ml_jb_result != null
+  - remove:
+      tag: ml-instruction-override-cleanup
+      field:
+        - ml_instruction_override_text
+        - ml_instruction_override_scores
+        - ml_instruction_override_inputs
+        - _ml_jb_alert
+        - _ml_jb_result
+        - _ml_jb_candidate
+        - _ml_jb_skip
+      ignore_missing: true
+on_failure:
+  - set:
+      tag: ml-instruction-override-failure-kind
+      field: event.kind
+      value: pipeline_error
+  - set:
+      tag: ml-instruction-override-failure-message
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        ({{{ _ingest.on_failure_processor_tag }}}) in {{{ _ingest.pipeline }}}
+        failed: {{{ _ingest.on_failure_message }}}
+  - remove:
+      tag: ml-instruction-override-failure-cleanup
+      field:
+        - ml_instruction_override_text
+        - ml_instruction_override_scores
+        - ml_instruction_override_inputs
+        - _ml_jb_alert
+        - _ml_jb_result
+        - _ml_jb_candidate
+        - _ml_jb_skip
+      ignore_missing: true
+  - fail:
+      tag: ml-instruction-override-failed
+      message: Instruction-override scoring failed closed
