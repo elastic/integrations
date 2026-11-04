@@ -1,0 +1,284 @@
+---
+description: >
+  Ingest pipeline for Jamf Pro Log Stream access and change management events
+  received via AWS S3. CHANGEMANAGEMENT events are rerouted to
+  jamf_pro.change_management by routing_rules.yml; this pipeline handles the
+  shared envelope and the ACCESS-specific key-value fields.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version_a1b2c3d4
+      value: '9.4.0'
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor_e5f6a7b8
+      value: Jamf
+  - set:
+      field: observer.product
+      tag: set_observer_product_c9d0e1f2
+      value: Jamf Pro
+  - set:
+      field: event.kind
+      tag: set_event_kind_a3b4c5d6
+      value: event
+  - rename:
+      field: message
+      tag: rename_message_to_original_e7f8a9b0
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message_after_rename_c2d3e4f5
+      ignore_missing: true
+      if: ctx.event?.original != null
+  - fingerprint:
+      fields:
+        - event.original
+      tag: fingerprint_dedup_b3c4d5e6
+      target_field: _id
+      method: SHA-256
+      ignore_missing: true
+  - json:
+      field: event.original
+      tag: json_parse_envelope_c1d2e3f4
+      target_field: _tmp.envelope
+  - date:
+      field: _tmp.envelope.time
+      tag: date_envelope_time_e9f0a1b2
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      if: ctx._tmp?.envelope?.time != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_date_error_c3d4e5f6
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_fallback_a7b8c9d0
+      value: '{{{_ingest.timestamp}}}'
+      if: ctx['@timestamp'] == null
+  - rename:
+      field: _tmp.envelope.message
+      tag: rename_envelope_message_e1f2a3b4
+      target_field: _tmp.raw_message
+      ignore_missing: true
+  - set:
+      field: _tmp.log_type
+      tag: classify_log_type_c5d6e7f8
+      value: unknown
+  - set:
+      field: _tmp.log_type
+      tag: classify_access_a9b0c1d2
+      value: access
+      if: ctx._tmp?.raw_message != null && ctx._tmp.raw_message.startsWith('[JSSACCESSLOG]')
+  - set:
+      field: _tmp.log_type
+      tag: classify_change_management_e3f4a5b6
+      value: change_management
+      if: ctx._tmp?.raw_message != null && ctx._tmp.raw_message.startsWith('[CHANGEMANAGEMENT]')
+  # ACCESS log format after prefix+timestamp: username=<v>, status=<v>, ipAddress=<v>, entryPoint=<v>
+  - dissect:
+      field: _tmp.raw_message
+      tag: dissect_access_header_c7d8e9f0
+      pattern: "[JSSACCESSLOG] %{_tmp.access_timestamp} - %{_tmp.access_kv}"
+      if: ctx._tmp?.log_type == 'access'
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_dissect_access_error_a1b2c3d4
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - kv:
+      field: _tmp.access_kv
+      tag: kv_access_fields_e5f6a7b8
+      target_field: _tmp.access
+      field_split: ", "
+      value_split: "="
+      trim_key: " "
+      trim_value: " "
+      if: ctx._tmp?.access_kv != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_kv_access_error_c9d0e1f2
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: jamf_pro.access.username
+      tag: set_access_username_a3b4c5d6
+      copy_from: _tmp.access.username
+      ignore_empty_value: true
+      if: ctx._tmp?.access?.username != null
+  - set:
+      field: jamf_pro.access.status
+      tag: set_access_status_e7f8a9b0
+      copy_from: _tmp.access.status
+      ignore_empty_value: true
+      if: ctx._tmp?.access?.status != null
+  - set:
+      field: jamf_pro.access.ip_address
+      tag: set_access_ip_address_c1d2e3f4
+      copy_from: _tmp.access.ipAddress
+      ignore_empty_value: true
+      if: ctx._tmp?.access?.ipAddress != null
+  - set:
+      field: jamf_pro.access.entry_point
+      tag: set_access_entry_point_a5b6c7d8
+      copy_from: _tmp.access.entryPoint
+      ignore_empty_value: true
+      if: ctx._tmp?.access?.entryPoint != null
+  - set:
+      field: user.name
+      tag: set_user_name_e9f0a1b2
+      copy_from: _tmp.access.username
+      ignore_empty_value: true
+      if: ctx._tmp?.access?.username != null && ctx._tmp.access.username != 'Unknown' && ctx._tmp.access.username != ''
+  - set:
+      field: event.action
+      tag: set_event_action_c3d4e5f6
+      copy_from: _tmp.access.status
+      ignore_empty_value: true
+      if: ctx._tmp?.access?.status != null
+  - convert:
+      field: _tmp.access.ipAddress
+      tag: convert_source_ip_a7b8c9d0
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      if: ctx._tmp?.access?.ipAddress != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_convert_ip_error_e1f2a3b4
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.category
+      tag: set_event_category_access_c5d6e7f8
+      value:
+        - authentication
+      if: ctx._tmp?.log_type == 'access'
+  - script:
+      lang: painless
+      tag: derive_event_type_access_a9b0c1d2
+      description: Derive event.type and event.outcome from ACCESS status.
+      if: ctx._tmp?.log_type == 'access' && ctx._tmp?.access?.status != null
+      source: |-
+        def status = ctx._tmp.access.status.toLowerCase();
+        ArrayList types = new ArrayList();
+        if (status.contains('login')) {
+          types.add('start');
+        } else if (status.contains('logout')) {
+          types.add('end');
+        } else if (status.contains('token creation')) {
+          types.add('start');
+        } else {
+          types.add('info');
+        }
+        ctx.event.type = types;
+        if (status.startsWith('successful')) {
+          ctx.event.outcome = 'success';
+        } else if (status.startsWith('failed')) {
+          ctx.event.outcome = 'failure';
+        } else {
+          ctx.event.outcome = 'unknown';
+        }
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_derive_event_type_error_e3f4a5b6
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - geoip:
+      field: source.ip
+      tag: geoip_source_ip_c7d8e9f0
+      target_field: source.geo
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.source?.geo == null && ctx.source?.ip != null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      tag: geoip_source_asn_a1b2c3d5
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.source?.ip != null
+  - rename:
+      field: source.as.asn
+      tag: rename_source_as_number_e5f6a7b9
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      tag: rename_source_as_org_c9d0e1f3
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_related_ip_a3b4c5d7
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.user
+      tag: append_related_user_e7f8a9b1
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - remove:
+      field:
+        - _tmp
+      tag: remove_tmp_fields_e9f0a1b3
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error_a7b8c9d1
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind_e1f2a3b5
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - set:
+      field: event.kind
+      tag: set_event_kind_pipeline_error_c5d6e7f9
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_failure_a9b0c1d3
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      tag: append_pipeline_failure_message_e3f4a5b7
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'

@@ -21,7 +21,8 @@ Configure individual fields like targets, scrape interval, and TLS settings thro
 | Scrape Targets | List of targets in `host:port` format | `localhost:9090` |
 | Scrape Interval | How frequently to scrape targets | `60s` |
 | Scrape Timeout | Timeout for scraping | `10s` |
-| Metrics Path | HTTP path to fetch metrics | `/metrics` |
+| Metrics Path | HTTP resource path to fetch metrics. **Path only** — do not append query parameters here; use Query Parameters instead. | `/metrics` |
+| Query Parameters | Prometheus scrape query parameters as a YAML map of parameter name to list of values. These are appended to the scrape URL as a proper query string. | — |
 | Scheme | Protocol scheme (HTTP/HTTPS) | `http` |
 | Honor Labels | Honor labels from scraped metrics | `false` |
 | Honor Timestamps | Honor timestamps from scraped metrics | `true` |
@@ -51,6 +52,21 @@ Set **Bearer Token** for endpoints that require `Authorization: Bearer <token>` 
 #### Mutual exclusivity
 
 If both Username and Bearer Token are set, the package configures **basic authentication only** and ignores the Bearer Token. Clear Username (and Password) when you intend to use Bearer authentication.
+
+### Query Parameters
+
+Some Prometheus-compatible endpoints accept query parameters to filter or scope the metrics they return (for example, Temporal Cloud's `namespaces` and `labels` parameters). Use the **Query Parameters** field — do **not** append them to Metrics Path.
+
+The Prometheus receiver places `metrics_path` verbatim into `url.URL.Path`, and Go's `net/url` percent-encodes `?` in path context (`%3F`), producing a request the server does not recognise. The `params` map is placed into `url.RawQuery` instead, which preserves the `?` delimiter.
+
+**Example:**
+
+```yaml
+namespaces:
+  - my-namespace.account
+labels:
+  - temporal_activity_type
+```
 
 ## Configuration Reference
 

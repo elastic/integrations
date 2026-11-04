@@ -43,6 +43,7 @@ data_stream:
   vars:
     interval: 30s
     initial_interval: 1h
+    lookback: 5m
     batch_size: 2
     preserve_original_event: true
     enable_request_tracer: false
@@ -64,12 +65,12 @@ services:
       - --config=/config.yml
 -- nozomi-mock/config.yml --
 rules:
-  # Second poll: the query embeds the first record's cursor timestamp.
+  # Second poll: the query embeds the first record's cursor timestamp minus lookback (5m).
   # Respond with "error" as an empty string plus a second record.
   - path: /api/open/query/do
     methods: [GET]
     query_params:
-      query: '{query:node_cves \| where record_created_at > 1742300286108 \| sort record_created_at asc}'
+      query: '{query:node_cves \| where time > 1742299986262 \| sort time asc}'
     request_headers:
       Authorization:
         - "Basic dXNlcm5hbWU6cGFzc3dvcmQ="

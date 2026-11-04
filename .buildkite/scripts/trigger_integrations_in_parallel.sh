@@ -10,14 +10,36 @@ with_yq
 with_mage
 
 PIPELINE_FILE="packages_pipeline.yml"
-touch packages_pipeline.yml
 
-cat <<EOF > ${PIPELINE_FILE}
+# Buildkite rejects pipeline uploads with more than 500 jobs (organization limit),
+# so steps are uploaded in batches. Keep some margin below the limit (the group also counts as a job).
+MAX_STEPS_PER_UPLOAD="${MAX_STEPS_PER_UPLOAD:-400}"
+if ! [[ "${MAX_STEPS_PER_UPLOAD}" =~ ^[1-9][0-9]*$ ]]; then
+    echo "MAX_STEPS_PER_UPLOAD must be a positive integer, got: '${MAX_STEPS_PER_UPLOAD}'"
+    exit 1
+fi
+steps_in_batch=0
+
+start_batch() {
+    local batch_number=$1
+    # ">" truncates the file, so each batch starts from a clean pipeline file
+    cat <<EOF > ${PIPELINE_FILE}
 steps:
-  - group: ":terminal: Test integrations"
-    key: "integration-tests"
+  - group: ":terminal: Test integrations (batch ${batch_number})"
+    key: "integration-tests-${batch_number}"
     steps:
 EOF
+}
+
+upload_batch() {
+    local batch_number=$1
+    local steps_in_batch=$2
+    echo "--- Upload Buildkite pipeline (batch ${batch_number}, ${steps_in_batch} steps)"
+    buildkite-agent pipeline upload < ${PIPELINE_FILE}
+}
+
+batch_number=1
+start_batch "${batch_number}"
 
 # Get from and to changesets to avoid repeating the same queries for each package
 # setting range of changesets to check differences
@@ -49,6 +71,8 @@ echo "--- Compute affected packages from git diff"
 COMMIT_MERGE=$(git merge-base "${from}" "${to}")
 export COMMIT_MERGE
 changed_files=$(git diff --name-only "${COMMIT_MERGE}" "${to}")
+echo "Commit merge: ${COMMIT_MERGE}"
+echo "Commit to: ${to}"
 
 if [[ "${FORCE_CHECK_ALL}" == "true" ]] || echo "${changed_files}" | pr_has_package_related_files; then
     echo "Non-package files changed or FORCE_CHECK_ALL set: scanning all packages"
@@ -62,10 +86,14 @@ else
             # which has no manifest.yml). mage listPackages discovers valid package roots at any
             # depth via WalkDir, so we cross-reference its output against the changed files.
             all_pkgs=$(list_all_directories)
+            # Avoid using "grep -q" in these pipes. With "set -o pipefail", grep -q exits on the
+            # first match while "echo" may still be writing (changed_files can exceed the pipe
+            # buffer on large PRs), so "echo" fails with SIGPIPE (141) and the match is lost.
+            # Example: https://buildkite.com/elastic/integrations/builds/50152
             while IFS= read -r pkg_path; do
-                if echo "${changed_files}" | grep -q "^${pkg_path}/"; then
+                if echo "${changed_files}" | grep "^${pkg_path}/" > /dev/null; then
                     echo "${pkg_path}"
-                elif echo "${changed_files}" | grep -q "^\.buildkite/scripts/${pkg_path}\.sh$"; then
+                elif echo "${changed_files}" | grep "^\.buildkite/scripts/${pkg_path}\.sh$" > /dev/null; then
                     echo "${pkg_path}"
                 fi
             done <<< "${all_pkgs}"
@@ -88,7 +116,15 @@ for package_path in ${PACKAGE_LIST}; do
     package_name=$(package_name_manifest)
     popd > /dev/null
 
+    if [ ${steps_in_batch} -ge "${MAX_STEPS_PER_UPLOAD}" ]; then
+        upload_batch "${batch_number}" "${steps_in_batch}"
+        batch_number=$((batch_number+1))
+        steps_in_batch=0
+        start_batch "${batch_number}"
+    fi
+
     packages_to_test=$((packages_to_test+1))
+    steps_in_batch=$((steps_in_batch+1))
     cat << EOF >> ${PIPELINE_FILE}
     - label: "Check integrations ${package_name}"
       key: "test-integrations-${package_name}"
@@ -128,5 +164,4 @@ if [ ${packages_to_test} -eq 0 ]; then
     exit 0
 fi
 
-echo "--- Upload Buildkite pipeline"
-cat ${PIPELINE_FILE} | buildkite-agent pipeline upload
+upload_batch "${batch_number}" "${steps_in_batch}"

@@ -328,7 +328,6 @@
                     "id": "0"
                 },
                 "id": "1000",
-                "name": "charlie",
                 "target": {
                     "name": "charlie"
                 },
@@ -1262,11 +1261,66 @@
                     "id": "0"
                 },
                 "id": "1005",
-                "name": "example_target_user",
                 "target": {
                     "name": "example_target_user"
                 },
                 "terminal": "pts/12"
+            }
+        },
+        {
+            "@timestamp": "2027-01-15T08:00:00.000Z",
+            "auditd": {
+                "log": {
+                    "hostname": "test-host",
+                    "op": "PAM:chauthtok",
+                    "record_type": "USER_CHAUTHTOK",
+                    "sequence": 9999,
+                    "ses": "20",
+                    "uid": "0"
+                }
+            },
+            "ecs": {
+                "version": "8.17.0"
+            },
+            "event": {
+                "action": [
+                    "changed-password"
+                ],
+                "category": [
+                    "iam"
+                ],
+                "kind": "event",
+                "original": "type=USER_CHAUTHTOK msg=audit(1800000000.000:9999): pid=12345 uid=0 auid=1001 ses=20 msg='op=PAM:chauthtok acct=\"targetaccount\" exe=\"/usr/bin/passwd\" hostname=test-host addr=? terminal=pts/3 res=success'",
+                "outcome": "success",
+                "type": [
+                    "user",
+                    "change"
+                ]
+            },
+            "process": {
+                "executable": "/usr/bin/passwd",
+                "pid": 12345
+            },
+            "related": {
+                "user": [
+                    "targetaccount"
+                ]
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "user": {
+                "audit": {
+                    "id": "1001"
+                },
+                "effective": {
+                    "id": "0"
+                },
+                "id": "1001",
+                "target": {
+                    "name": "targetaccount"
+                },
+                "terminal": "pts/3"
             }
         }
     ]

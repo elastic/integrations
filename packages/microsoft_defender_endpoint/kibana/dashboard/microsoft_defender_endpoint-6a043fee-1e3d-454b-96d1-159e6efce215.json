@@ -13,6 +13,8 @@
                 "2bd619cc-478b-4f78-a4cf-e42c23cb2558": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
                         "fieldName": "event.action",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
@@ -30,6 +32,8 @@
                 "dd6a586f-ff92-4736-8a20-aef4905fa3c2": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
                         "fieldName": "microsoft_defender_endpoint.machine_action.status",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
@@ -72,6 +76,28 @@
                                 "labels.is_transform_source": "false"
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "microsoft_defender_endpoint.machine_action"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "microsoft_defender_endpoint.machine_action"
+                            }
+                        }
                     }
                 ],
                 "query": {
@@ -88,47 +114,6 @@
             "useMargins": true
         },
         "panelsJSON": [
-            {
-                "embeddableConfig": {
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "id": "",
-                        "params": {
-                            "fontSize": 12,
-                            "markdown": "**Navigation**\n\n**Microsoft Defender for Endpoint**\n\n- [Overview](#/dashboard/microsoft_defender_endpoint-65402c30-ca6a-11ea-9d4d-9737a63aaa55)\n- [Machine Overview](#/dashboard/microsoft_defender_endpoint-c89734ca-ab7f-419d-b665-50076cceee60)\n- **Machine Action Overview**\n- [Vulnerability Overview](#/dashboard/microsoft_defender_endpoint-afb93ff7-9903-4d91-9028-9fe9c5a434f8)\n\n**Overview**\n\n\nThis dashboard provides a comprehensive view of machine actions logs from Microsoft Defender for Endpoint integration. It showcases trends in actions over time, distribution by status, type, and network isolation scope. It showcases the top 10 machines and requestors who performed the action.\n\n[Integration Page](/app/integrations/detail/microsoft_defender_endpoint/overview)",
-                            "openLinksInNewTab": false
-                        },
-                        "title": "",
-                        "type": "markdown",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 29,
-                    "i": "7e71ce31-e773-4c68-84c7-0119158052a7",
-                    "w": 12,
-                    "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "7e71ce31-e773-4c68-84c7-0119158052a7",
-                "title": "Table of Contents",
-                "type": "visualization"
-            },
             {
                 "embeddableConfig": {
                     "attributes": {
@@ -289,7 +274,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Machine Actions over Time by Type [Logs Microsoft Defender Endpoint]"
                 },
                 "gridData": {
                     "h": 15,
@@ -299,7 +285,159 @@
                     "y": 0
                 },
                 "panelIndex": "1fe71f4e-e415-432f-8113-8b287407de97",
-                "title": "Machine Actions over Time by Type [Logs Microsoft Defender Endpoint]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-5a363280-a29a-43ba-a4f5-841ef7c28e23",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "5a363280-a29a-43ba-a4f5-841ef7c28e23": {
+                                            "columnOrder": [
+                                                "f04a7758-315b-401e-b993-092b68c77199",
+                                                "f5edb3ed-5274-4aa1-a31c-15963e375bdd"
+                                            ],
+                                            "columns": {
+                                                "f04a7758-315b-401e-b993-092b68c77199": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Action Status",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "f5edb3ed-5274-4aa1-a31c-15963e375bdd",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "microsoft_defender_endpoint.machine_action.status"
+                                                },
+                                                "f5edb3ed-5274-4aa1-a31c-15963e375bdd": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "5a363280-a29a-43ba-a4f5-841ef7c28e23",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "f5edb3ed-5274-4aa1-a31c-15963e375bdd"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "f04a7758-315b-401e-b993-092b68c77199"
+                                        ],
+                                        "truncateLegend": false
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Machine Actions by Status [Logs Microsoft Defender Endpoint]"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "f8422ae5-caa8-483f-a3e5-2b3f7de0254c",
+                    "w": 18,
+                    "x": 12,
+                    "y": 15
+                },
+                "panelIndex": "f8422ae5-caa8-483f-a3e5-2b3f7de0254c",
                 "type": "lens"
             },
             {
@@ -487,7 +625,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Machine Network isolation by Scope [Logs Microsoft Defender Endpoint]"
                 },
                 "gridData": {
                     "h": 14,
@@ -497,160 +636,6 @@
                     "y": 15
                 },
                 "panelIndex": "2769afb3-47ca-4927-a2d6-f1b8dd67cd26",
-                "title": "Machine Network isolation by Scope [Logs Microsoft Defender Endpoint]",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-5a363280-a29a-43ba-a4f5-841ef7c28e23",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "5a363280-a29a-43ba-a4f5-841ef7c28e23": {
-                                            "columnOrder": [
-                                                "f04a7758-315b-401e-b993-092b68c77199",
-                                                "f5edb3ed-5274-4aa1-a31c-15963e375bdd"
-                                            ],
-                                            "columns": {
-                                                "f04a7758-315b-401e-b993-092b68c77199": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Action Status",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "f5edb3ed-5274-4aa1-a31c-15963e375bdd",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "microsoft_defender_endpoint.machine_action.status"
-                                                },
-                                                "f5edb3ed-5274-4aa1-a31c-15963e375bdd": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "5a363280-a29a-43ba-a4f5-841ef7c28e23",
-                                        "layerType": "data",
-                                        "legendDisplay": "show",
-                                        "metrics": [
-                                            "f5edb3ed-5274-4aa1-a31c-15963e375bdd"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "f04a7758-315b-401e-b993-092b68c77199"
-                                        ],
-                                        "truncateLegend": false
-                                    }
-                                ],
-                                "shape": "pie"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
-                },
-                "gridData": {
-                    "h": 14,
-                    "i": "f8422ae5-caa8-483f-a3e5-2b3f7de0254c",
-                    "w": 18,
-                    "x": 12,
-                    "y": 15
-                },
-                "panelIndex": "f8422ae5-caa8-483f-a3e5-2b3f7de0254c",
-                "title": "Machine Actions by Status [Logs Microsoft Defender Endpoint]",
                 "type": "lens"
             },
             {
@@ -802,7 +787,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Machine Actions by Type [Logs Microsoft Defender Endpoint]"
                 },
                 "gridData": {
                     "h": 15,
@@ -812,7 +798,6 @@
                     "y": 29
                 },
                 "panelIndex": "e06d5a62-1dd0-464c-a37c-f4648cd16a17",
-                "title": "Machine Actions by Type [Logs Microsoft Defender Endpoint]",
                 "type": "lens"
             },
             {
@@ -933,7 +918,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Top 10 Machines [Logs Microsoft Defender Endpoint]"
                 },
                 "gridData": {
                     "h": 15,
@@ -943,7 +929,6 @@
                     "y": 44
                 },
                 "panelIndex": "05a3d381-322a-4214-8511-c5e14ede05e3",
-                "title": "Top 10 Machines [Logs Microsoft Defender Endpoint]",
                 "type": "lens"
             },
             {
@@ -1065,7 +1050,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Top 10 Requestors [Logs Microsoft Defender Endpoint]"
                 },
                 "gridData": {
                     "h": 15,
@@ -1075,8 +1061,150 @@
                     "y": 44
                 },
                 "panelIndex": "0870fe09-53ef-49f3-a1a5-60ed0b4fdccb",
-                "title": "Top 10 Requestors [Logs Microsoft Defender Endpoint]",
                 "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "This dashboard provides a comprehensive view of machine actions logs from Microsoft Defender for Endpoint integration. It showcases trends in actions over time, distribution by status, type, and network isolation scope. It showcases the top 10 machines and requestors who performed the action.\n\n[Integration Page](/app/integrations/detail/microsoft_defender_endpoint/overview)",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    },
+                    "title": "Overview"
+                },
+                "gridData": {
+                    "h": 17,
+                    "i": "7e71ce31-e773-4c68-84c7-0119158052a7",
+                    "w": 12,
+                    "x": 0,
+                    "y": 11
+                },
+                "panelIndex": "7e71ce31-e773-4c68-84c7-0119158052a7",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "layout": "vertical",
+                        "links": [
+                            {
+                                "destinationRefName": "link_4f8cde76-8e8c-4842-8f09-8e21210a0ee9_dashboard",
+                                "id": "4f8cde76-8e8c-4842-8f09-8e21210a0ee9",
+                                "label": "Baseline",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 0,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_9d682373-64c4-46ea-8bb7-70340f1d9293_dashboard",
+                                "id": "9d682373-64c4-46ea-8bb7-70340f1d9293",
+                                "label": "Configuration",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 1,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_31b8b457-03ec-4814-b9f4-263fb4a80d77_dashboard",
+                                "id": "31b8b457-03ec-4814-b9f4-263fb4a80d77",
+                                "label": "Information Gathering",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 2,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_0615c72c-6f0f-41f7-8a0f-56a2fd044f5c_dashboard",
+                                "id": "0615c72c-6f0f-41f7-8a0f-56a2fd044f5c",
+                                "label": "Machine",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 3,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_5711c7bf-e741-4fa0-9b86-05376717cf6a_dashboard",
+                                "id": "5711c7bf-e741-4fa0-9b86-05376717cf6a",
+                                "label": "Machine Action",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 4,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_caa6962d-68a6-4d5b-ac97-9252072488ee_dashboard",
+                                "id": "caa6962d-68a6-4d5b-ac97-9252072488ee",
+                                "label": "Overview",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 5,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_b85cc2d7-9f40-430f-8c83-2c849d7a0dd0_dashboard",
+                                "id": "b85cc2d7-9f40-430f-8c83-2c849d7a0dd0",
+                                "label": "Vulnerability",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 6,
+                                "type": "dashboardLink"
+                            }
+                        ]
+                    },
+                    "title": "Navigation"
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "4339b66a-489c-455c-a18e-3dc341ab573e",
+                    "w": 12,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "4339b66a-489c-455c-a18e-3dc341ab573e",
+                "type": "links"
             }
         ],
         "timeRestore": false,
@@ -1084,13 +1212,17 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-05-08T09:47:40.717Z",
+    "created_at": "2026-09-28T09:22:08.677Z",
     "id": "microsoft_defender_endpoint-6a043fee-1e3d-454b-96d1-159e6efce215",
-    "managed": false,
     "references": [
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         },
         {
@@ -1100,12 +1232,12 @@
         },
         {
             "id": "logs-*",
-            "name": "2769afb3-47ca-4927-a2d6-f1b8dd67cd26:indexpattern-datasource-layer-f2c71f93-69f6-4c6b-b5f3-6dc40e1eb4ee",
+            "name": "f8422ae5-caa8-483f-a3e5-2b3f7de0254c:indexpattern-datasource-layer-5a363280-a29a-43ba-a4f5-841ef7c28e23",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "f8422ae5-caa8-483f-a3e5-2b3f7de0254c:indexpattern-datasource-layer-5a363280-a29a-43ba-a4f5-841ef7c28e23",
+            "name": "2769afb3-47ca-4927-a2d6-f1b8dd67cd26:indexpattern-datasource-layer-f2c71f93-69f6-4c6b-b5f3-6dc40e1eb4ee",
             "type": "index-pattern"
         },
         {
@@ -1124,6 +1256,41 @@
             "type": "index-pattern"
         },
         {
+            "id": "microsoft_defender_endpoint-c2846ac8-bdbb-42aa-b35b-2edc3342cf43",
+            "name": "4339b66a-489c-455c-a18e-3dc341ab573e:link_4f8cde76-8e8c-4842-8f09-8e21210a0ee9_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "microsoft_defender_endpoint-f306ae11-0b08-4b3b-ba14-2c1188d6cbc9",
+            "name": "4339b66a-489c-455c-a18e-3dc341ab573e:link_9d682373-64c4-46ea-8bb7-70340f1d9293_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "microsoft_defender_endpoint-a7f3d2e1-6c4b-4a89-9e1f-2d8b5c6a4e70",
+            "name": "4339b66a-489c-455c-a18e-3dc341ab573e:link_31b8b457-03ec-4814-b9f4-263fb4a80d77_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "microsoft_defender_endpoint-c89734ca-ab7f-419d-b665-50076cceee60",
+            "name": "4339b66a-489c-455c-a18e-3dc341ab573e:link_0615c72c-6f0f-41f7-8a0f-56a2fd044f5c_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "microsoft_defender_endpoint-6a043fee-1e3d-454b-96d1-159e6efce215",
+            "name": "4339b66a-489c-455c-a18e-3dc341ab573e:link_5711c7bf-e741-4fa0-9b86-05376717cf6a_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "microsoft_defender_endpoint-65402c30-ca6a-11ea-9d4d-9737a63aaa55",
+            "name": "4339b66a-489c-455c-a18e-3dc341ab573e:link_caa6962d-68a6-4d5b-ac97-9252072488ee_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "microsoft_defender_endpoint-afb93ff7-9903-4d91-9028-9fe9c5a434f8",
+            "name": "4339b66a-489c-455c-a18e-3dc341ab573e:link_b85cc2d7-9f40-430f-8c83-2c849d7a0dd0_dashboard",
+            "type": "dashboard"
+        },
+        {
             "id": "logs-*",
             "name": "controlGroup_2bd619cc-478b-4f78-a4cf-e42c23cb2558:optionsListDataView",
             "type": "index-pattern"
@@ -1137,9 +1304,14 @@
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.2.0",
+    "typeMigrationVersion": "10.3.0",
     "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }

@@ -18,6 +18,7 @@
 #   --remote       Git remote to fetch from and push to (default: origin).
 #   --repository   GitHub repository (org/repo) used in PR body and links.
 #   --packages-dir Path to packages directory (default: packages).
+#   --origin-pr-number  Number of the source PR on main; used to auto-assign the backport PR (optional).
 
 set -euo pipefail
 
@@ -33,6 +34,7 @@ dry_run="false"
 remote=""
 repository=""
 packages_dir=""
+origin_pr_number=""
 
 usage() {
     grep '^#' "$0" | grep -v '#!/' | sed 's/^# \?//' >&2
@@ -50,6 +52,7 @@ while [[ $# -gt 0 ]]; do
         --remote)        remote="$2";        shift 2 ;;
         --repository)    repository="$2";    shift 2 ;;
         --packages-dir)  packages_dir="$2";  shift 2 ;;
+        --origin-pr-number) origin_pr_number="$2"; shift 2 ;;
         -h|--help)       usage ;;
         *) echo "Unknown option: $1" >&2; usage ;;
     esac
@@ -77,6 +80,7 @@ flags=()
 [[ -n "$remote"       ]] && flags+=("--remote=${remote}")
 [[ -n "$repository"   ]] && flags+=("--repository=${repository}")
 [[ -n "$packages_dir" ]] && flags+=("--packages-dir=${packages_dir}")
+[[ -n "$origin_pr_number" ]] && flags+=("--origin-pr-number=${origin_pr_number}")
 
 exec "${BACKPORT_BIN}" apply \
     "${flags[@]+"${flags[@]}"}" \

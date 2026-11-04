@@ -19,16 +19,16 @@ add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
 cp stdout got_docs.json
 
-exec jq '([.hits.hits[]._source | select(.abusech.yaraify != null)] | length) >= 2' got_docs.json
+exec jq '([.hits.hits[]._source | select((.abusech.yaraify != null) or any(keys_unsorted[]; startswith("abusech.yaraify.")))] | length) >= 2' got_docs.json
 stdout '^true$'
 
-exec jq '[.hits.hits[]._source | select(.error != null)] | length' got_docs.json
+exec jq '[.hits.hits[]._source | select((.error != null) or any(keys_unsorted[]; startswith("error.")))] | length' got_docs.json
 stdout '^0$'
 
-exec jq '([.hits.hits[]._source.threat.indicator.name] | unique | length) >= 2' got_docs.json
+exec jq '([.hits.hits[]._source | if has("threat.indicator.name") then .["threat.indicator.name"] else .threat.indicator.name end] | unique | length) >= 2' got_docs.json
 stdout '^true$'
 
-exec jq -c '[.hits.hits[]._source.threat.indicator.name] | unique | sort' got_docs.json
+exec jq -c '[.hits.hits[]._source | if has("threat.indicator.name") then .["threat.indicator.name"] else .threat.indicator.name end] | unique | sort' got_docs.json
 stdout '^\["win_after_refresh","win_before_refresh"\]$'
 
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}

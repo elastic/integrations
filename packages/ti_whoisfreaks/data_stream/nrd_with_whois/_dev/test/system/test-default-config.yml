@@ -1,0 +1,17 @@
+wait_for_data_timeout: 1m
+input: cel
+service: ti_whoisfreaks
+vars:
+  api_key: test_api_key
+data_stream:
+  vars:
+    url: "http://{{Hostname}}:{{Port}}/v3.3/stream/domainer"
+    status_url: "http://{{Hostname}}:{{Port}}/v3.4/status"
+    # The mock serves 3 gTLD rows (2 pages) and 1 ccTLD row (1 page).
+    page_limit: 2
+    # Long interval: every hit must arrive in the first polling cycle.
+    interval: 1h
+    enable_request_tracer: true
+    preserve_original_event: true
+assert:
+  hit_count: 4

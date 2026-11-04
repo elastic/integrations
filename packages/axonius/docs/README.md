@@ -137,7 +137,7 @@ To generate or reset an API key, your role must be **Admin**, and you must have 
 
 ## How do I deploy this integration?
 
-This integration supports both Elastic Managed-based and Agent-based installations.
+This integration supports both Elastic Managed and Agent-based installations.
 
 ### Agent-based deployment
 
@@ -145,11 +145,11 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
-### Elastic Managed deployment
+### Elastic Managed enabled integration
 
-Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. Elastic Managed deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using an Elastic Managed deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
 
-For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html)
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ### Configure
 
@@ -3896,6 +3896,30 @@ These APIs are used with this integration:
     * application_resources (endpoint: `/api/v2/assets/application_resources`)
     * secrets (endpoint: `/api/v2/assets/secrets`)
 
-### ILM Policy
+### Data retention
 
-To facilitate adapter, user, gateway and assets data including exposures, alert findings, incidents, storage and ticket, network and identity source data stream-backed indices `.ds-logs-axonius.adapter-*`, `.ds-logs-axonius.user-*`, `.ds-logs-axonius.gateway-*`, `.ds-logs-axonius.exposure-*`, `.ds-logs-axonius.alert_finding-*`, `.ds-logs-axonius.incident-*`, `.ds-logs-axonius.storage-*`, `.ds-logs-axonius.ticket-*`, `.ds-logs-axonius.network-*`, `.ds-logs-axonius.identity-*`, `.ds-logs-axonius.compute-*` and `.ds-logs-axonius.application-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy`, `logs-axonius.user-default_policy`, `logs-axonius.gateway-default_policy`, `logs-axonius.exposure-default_policy`,  `logs-axonius.alert_finding-default_policy`, `logs-axonius.incident-default_policy`, `logs-axonius.storage-default_policy`, `logs-axonius.ticket-default_policy`, `logs-axonius.network-default_policy`, `logs-axonius.identity-default_policy`, `logs-axonius.compute-default_policy`and `logs-axonius.application-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+The data streams below collect a full snapshot of Axonius assets, users, adapters, and gateways on every polling interval, so their backing indices hold one copy of each record per interval. The latest transforms maintain the current view of each entity.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-axonius.adapter-*` | `logs-axonius.adapter-default_policy`: roll over after 2d, delete 30d after rollover | delete 30d after rollover |
+| `logs-axonius.alert_finding-*` | `logs-axonius.alert_finding-default_policy`: roll over after 2d, delete 30d after rollover | delete 30d after rollover |
+| `logs-axonius.application-*` | `logs-axonius.application-default_policy`: roll over after 2d, delete 30d after rollover | delete 30d after rollover |
+| `logs-axonius.compute-*` | `logs-axonius.compute-default_policy`: roll over after 2d, delete 30d after rollover | delete 30d after rollover |
+| `logs-axonius.exposure-*` | `logs-axonius.exposure-default_policy`: roll over after 2d, delete 30d after rollover | delete 30d after rollover |
+| `logs-axonius.gateway-*` | `logs-axonius.gateway-default_policy`: roll over after 30d, delete 30d after rollover | delete 30d after rollover |
+| `logs-axonius.identity-*` | `logs-axonius.identity-default_policy`: roll over after 2d, delete 30d after rollover | delete 30d after rollover |
+| `logs-axonius.incident-*` | `logs-axonius.incident-default_policy`: roll over after 2d, delete 30d after rollover | delete 30d after rollover |
+| `logs-axonius.network-*` | `logs-axonius.network-default_policy`: roll over after 2d, delete 30d after rollover | delete 30d after rollover |
+| `logs-axonius.storage-*` | `logs-axonius.storage-default_policy`: roll over after 2d, delete 30d after rollover | delete 30d after rollover |
+| `logs-axonius.ticket-*` | `logs-axonius.ticket-default_policy`: roll over after 2d, delete 30d after rollover | delete 30d after rollover |
+| `logs-axonius.user-*` | `logs-axonius.user-default_policy`: roll over after 30d, delete 30d after rollover | delete 30d after rollover |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead. It also works per backing index: Elasticsearch [rolls the write index over automatically](https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/data-stream-lifecycle-settings#cluster-lifecycle-default-rollover) on age, size, or document count, and [deletes a backing index once the retention has passed since it rolled over](https://www.elastic.co/docs/manage-data/lifecycle/data-stream#data-streams-lifecycle-how-it-works). A document therefore stays for the retention plus up to one rollover interval. The rollover age is derived from the retention and is an implementation detail that Elasticsearch may change. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-axonius.adapter-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.

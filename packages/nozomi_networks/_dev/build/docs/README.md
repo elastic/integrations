@@ -4,7 +4,7 @@
 
 [Nozomi Networks](https://www.nozominetworks.com/) is a global leader in OT and IoT cybersecurity, delivering unmatched visibility, real-time threat detection, and AI-powered analysis to safeguard critical infrastructure. Trusted across industries, Nozomi helps organizations protect mission-critical environments by combining deep network and endpoint visibility with rapid, intelligent incident response—ensuring security, compliance, and operational resilience.
 
-For this integration, data should be collected from Nozomi’s Vantage platform via REST APIs.
+For this integration, data can be collected from Nozomi **Vantage** or **CMC (Central Management Console)** via REST APIs.
 
 ## Data streams
 
@@ -28,17 +28,18 @@ The Nozomi Networks integration collects logs for eight types of events.
 
 ## Requirements
 
-### Agentless-enabled integration
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+### Elastic Managed enabled integration
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ### Agent-based installation
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ## Compatibility
 
-For Rest API, this module has been tested against the **N2OS 25.1.0** version.
+For the REST API, this module has been tested against Nozomi Vantage and against CMC running **N2OS 26.5.0**.
 
 ## Setup
 
@@ -73,6 +74,14 @@ For more details, see [Nozomi Vantage API Key](https://technicaldocs.nozominetwo
 3. Select the **Nozomi Networks** integration and add it.
 4. Add all the required integration configuration parameters: URL, Username and Password.
 5. Save the integration.
+
+### CMC (Central Management Console)
+
+When collecting from a CMC endpoint, use the CMC URL and credentials that support **HTTP Basic** authentication (N2OS local user or equivalent). Use a CMC **All-in-One** deployment for Node collection; Multicontext CMC does not expose merged nodes.
+
+CMC and Vantage replicate Guardian events after they occur. Each data stream applies a configurable **Lookback** (default `5m`) to the previous cursor so late-replicated records are still collected. Re-fetched unchanged records are deduplicated by document fingerprint.
+
+Vantage API keys (Key Name and Key Token) continue to work for Vantage deployments as described above.
 
 ## Logs reference
 

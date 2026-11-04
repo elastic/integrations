@@ -19,6 +19,12 @@ This integration periodically queries the OpenAI Compliance Logs Platform API to
 
 On the first run, logs are pulled back as far as the configured initial interval. From the second collection onward, each run resumes from the `last_end_time` cursor returned by the previous request, so events are collected without gaps or duplication.
 
+By default, each data stream polls every **1 minute**, matching updated OpenAI guidance for Compliance Logs. Increase the Interval to reduce API calls if you don't need the freshest data.
+
+Keep Batch Size at its default of 100 to limit list requests, which OpenAI caps at 200 per minute across all event types.
+
+HTTP 429 (rate limit) errors: The integration retries with backoff and honors `Retry-After` when OpenAI returns it, so occasional 429s are expected and need no action. If they persist, increase the Interval.
+
 > Note: OpenAI retains compliance logs for a limited window (up to 30 days). Configure the initial interval accordingly when first enabling the integration.
 
 ## What data does this integration collect?
@@ -78,17 +84,17 @@ See [Compliance API for enterprise customers](https://help.openai.com/en/article
 
 ## How do I deploy this integration?
 
-This integration supports both Elastic Agentless-based and Agent-based installations.
+This integration supports both Elastic Managed and Agent-based installations.
+
+### Elastic Managed enabled integration
+
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ### Agent-based deployment
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
-
-### Agentless deployment
-
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. Agentless deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using an agentless deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
-
-For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
 ### Configure
 

@@ -18,18 +18,18 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-processors:
-- rename:
-    fields:
-      - {from: "message", to: "event.original"}
-- decode_cef:
-    field: event.original
 {{#if tz_offset}}
 fields_under_root: true
 fields:
   _conf:
     tz_offset: {{tz_offset}}
 {{/if}}
+processors:
+- rename:
+    fields:
+      - {from: "message", to: "event.original"}
+- decode_cef:
+    field: event.original
 {{#if processors}}
 {{processors}}
 {{/if}}

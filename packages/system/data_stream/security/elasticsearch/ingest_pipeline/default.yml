@@ -15,6 +15,16 @@ processors:
       name: '{{ IngestPipeline "standard" }}'
       if: 'ctx.winlog?.provider_name != null && ["Microsoft-Windows-Eventlog", "Microsoft-Windows-Security-Auditing"].contains(ctx.winlog.provider_name)'
   - pipeline:
+      name: '{{ IngestPipeline "adcs" }}'
+      if: >-
+        ctx.winlog != null &&
+        ctx.winlog.provider_name == 'Microsoft-Windows-Security-Auditing' &&
+        ctx.winlog.channel instanceof String &&
+        ctx.winlog.channel.toLowerCase() == 'security' &&
+        ctx.event != null &&
+        ctx.event.code != null &&
+        ['4868', '4869', '4873', '4874', '4886', '4887', '4888', '4889'].contains(ctx.event.code)
+  - pipeline:
       name: '{{ IngestPipeline "scheduled_task" }}'
       if: >-
         ctx.winlog != null &&

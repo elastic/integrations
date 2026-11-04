@@ -32,6 +32,7 @@ processors:
         - sailpoint_identity_sc.events.id
       tag: fingerprinting_1245e94c
       target_field: "_id"
+      ignore_missing: true
       on_failure:
         - append:
             tag: append_error_message_e87bbabd
@@ -123,7 +124,7 @@ processors:
   - set:
       tag: set_event_id_dcd98e5a
       field: event.id
-      copy_from: ctx.sailpoint_identity_sc.events.id
+      copy_from: sailpoint_identity_sc.events.id
       ignore_empty_value: true
 
   - append:
@@ -138,14 +139,14 @@ processors:
       field: related.user
       value: "{{{sailpoint_identity_sc.events.actor.name}}}"
       allow_duplicates: false
-      if: ctx.sailpoint_identity_sc.events?.actor.name != null && ctx.sailpoint_identity_sc.events.actor.name != ''
+      if: ctx.sailpoint_identity_sc?.events?.actor?.name != null && ctx.sailpoint_identity_sc.events.actor.name != ''
 
   - append:
       tag: append_related_hosts_bfe467e9
       field: related.hosts
       value: "{{{sailpoint_identity_sc.events.attributes.host_name}}}"
       allow_duplicates: false
-      if: ctx.sailpoint_identity_sc.events?.host_name != null && ctx.sailpoint_identity_sc.events.host_name != ''
+      if: ctx.sailpoint_identity_sc?.events?.attributes?.host_name != null && ctx.sailpoint_identity_sc.events.attributes.host_name != ''
 
   #################### Override host.ip ######################
   - convert:
