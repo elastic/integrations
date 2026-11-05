@@ -196,7 +196,7 @@ In addition to the GTI detection rules described above, Elastic ships built-in *
 - Use the **built-in Indicator Match rules** if you want a single rule set that covers all of your installed Threat Intelligence integrations, not just GTI, or need the broader hash coverage for `process` and `dll` fields.
 - If you enable both, expect duplicate alerts for File, IP, and URL matches against GTI indicators. To avoid this, turn off the overlapping built-in rules, add a rule exception, or duplicate the built-in rule and add `and not event.module: ti_google_threat_intelligence` to its threat query so it excludes GTI indicators.
 
-The built-in Threat Intel rules exclude documents with `labels.is_ioc_transform_source: true`. This package currently marks transform source documents with `labels.is_transform_source`, so deployments can see additional built-in rule matches against GTI source documents until that label handling is updated.
+The built-in Threat Intel rules exclude documents with `labels.is_ioc_transform_source: "true"`. This package sets that label on its raw source data streams alongside the deprecated `labels.is_transform_source` field so the built-in rules only match the GTI latest transform destination indices. Source backing indices created before the upgrade to this version are not relabeled and can keep matching the built-in rules until their documents age out of the rules' 30-day window.
 
 **Note:** The following three transforms are available to filter relevant data from alerts.
 
