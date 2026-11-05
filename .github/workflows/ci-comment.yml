@@ -30,11 +30,16 @@ jobs:
         github-token: ${{ steps.fetch-token.outputs.token }}
 
     - name: debug
+      env:
+        IS_ELASTIC_MEMBER: ${{ steps.is_elastic_member.outputs.result }}
+        USER_TYPE: ${{ steps.user_type.outputs.result }}
+        ACTOR: ${{ github.actor }}
+        EVENT_NAME: ${{ github.event_name }}
       run: |
-        echo "::notice:: is_elastic_member=${{ steps.is_elastic_member.outputs.result }}"
-        echo "::notice:: user_type=${{ steps.user_type.outputs.result }}"
-        echo "::notice:: github.actor=${{ github.actor }}"
-        echo "::notice:: github.event_name=${{ github.event_name }}"
+        echo "::notice:: is_elastic_member=${IS_ELASTIC_MEMBER}"
+        echo "::notice:: user_type=${USER_TYPE}"
+        echo "::notice:: github.actor=${ACTOR}"
+        echo "::notice:: github.event_name=${EVENT_NAME}"
 
     - name: Comment (or update)
       if: steps.is_elastic_member.outputs.result == 'false' && steps.user_type.outputs.result == 'user'
