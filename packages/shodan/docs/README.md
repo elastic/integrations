@@ -266,6 +266,7 @@ The `domain` data stream provides certificate transparency records for a configu
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 
 
 ##### domain sample event
@@ -333,6 +334,9 @@ An example event for `domain` looks as following:
     "input": {
         "type": "cel"
     },
+    "labels": {
+        "is_transform_source": "true"
+    },
     "observer": {
         "product": "Certificate Transparency",
         "vendor": "Shodan"
@@ -390,6 +394,47 @@ The raw `host` data stream is append-only, so re-detecting the same `ip:port` do
 `domain` has no equivalent transform — certificates are already deduplicated by hash, so there's no "latest state" to roll up to.
 
 ### Transforms used
+
+#### domain
+* Description: Latest state of each Shodan certificate transparency indicator, unique by indicator reference (the certificate's crt.sh URL, keyed on its SHA-256 hash) and namespace. Namespace keeps policies in different Fleet namespaces from overwriting each other's observations. Keeps only the most recently seen document per certificate, and drops indicators not re-confirmed within the retention window, so this index reflects current exposure rather than accumulating unbounded history.
+* Source Index: logs-shodan.domain\*
+* Destination Index: logs-shodan_latest.domain-1
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. Not constant_keyword: the source pattern spans every namespace, and documents from a second namespace would otherwise be rejected once the destination index locked onto the first value seen. | keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
+| event.dataset | Event dataset. | constant_keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Event module. | constant_keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
+| observer.product | The product name of the observer. | keyword |
+| observer.vendor | Vendor name of the observer. | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| threat.feed.description | Description of the threat feed in a UI friendly format. | keyword |
+| threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
+| threat.feed.reference | Reference information for the threat feed in a UI friendly format. | keyword |
+| threat.indicator.description | Describes the type of action conducted by the threat. | keyword |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.provider | The name of the indicator's provider. | keyword |
+| threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
+| threat.indicator.x509.alternative_names | List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses. | keyword |
+| threat.indicator.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
+| threat.indicator.x509.not_after | Time at which the certificate is no longer considered valid. | date |
+| threat.indicator.x509.not_before | Time at which the certificate is first considered valid. | date |
+| threat.indicator.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 
 #### host
 * Description: Latest state of each Shodan host indicator, unique by IP, port, transport and namespace. Transport keeps a TCP and UDP banner on the same port from collapsing into one record; namespace keeps policies in different Fleet namespaces from overwriting each other's observations. Keeps only the most recently seen document per indicator, and drops indicators not re-confirmed within the retention window, so this index reflects current exposure rather than accumulating unbounded history.
