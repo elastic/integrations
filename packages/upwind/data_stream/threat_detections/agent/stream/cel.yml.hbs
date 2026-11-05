@@ -1,0 +1,112 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}
+  endpoint_params:
+    audience:
+      - {{url}}
+resource.url: {{url}}/v1/organizations/{{organization_id}}/threat-detections
+resource.headers:
+  Accept:
+    - application/json
+state:
+  initial_interval: {{initial_interval}}
+redact:
+  fields: ~
+program: |-
+  // The list-threat-detections operation returns a single JSON array with no
+  // page token (and no Link rel=next header), so each poll is one request and
+  // want_more is always false. Incremental collection is a time bookmark:
+  // min-last-seen-time is the previous max(last_seen_time) minus a 1 minute
+  // overlap, and the cursor only ever moves forward.
+  state.with(
+    request(
+      "GET",
+      state.url.trim_right("/") + "?" + {
+        "min-last-seen-time": [
+          state.?cursor.last_seen_time.orValue(
+            (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+          ),
+        ],
+      }.format_query()
+    ).do_request().as(resp,
+      (resp.StatusCode == 200) ?
+        try(resp.Body.decode_json()).as(decoded,
+          (!is_error(decoded) && type(decoded) == type([])) ?
+            decoded.map(e, string(e.?last_seen_time.orValue(""))).filter(t, t != "").as(seen,
+              (
+                (size(seen) == 0) ?
+                  ""
+                :
+                  (seen.max().parse_time(time_layout.RFC3339) - duration("1m")).format(time_layout.RFC3339)
+              ).as(candidate,
+                {
+                  "events": decoded.map(e, {"message": e.encode_json()}),
+                  "want_more": false,
+                  "cursor": (candidate == "") ?
+                    state.?cursor.orValue({})
+                  :
+                    {
+                      "last_seen_time": (
+                        state.?cursor.last_seen_time.orValue("") != "" && state.?cursor.last_seen_time.orValue("") > candidate
+                      ) ?
+                        state.?cursor.last_seen_time.orValue("")
+                      :
+                        candidate,
+                    },
+                }
+              )
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": resp.Status,
+                  "message": "GET " + state.url.trim_right("/") + ": response was not a JSON array",
+                },
+              },
+              "want_more": false,
+            }
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": resp.Status,
+              "message": "GET " + state.url.trim_right("/") + ": " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
+            },
+          },
+          "want_more": false,
+        }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

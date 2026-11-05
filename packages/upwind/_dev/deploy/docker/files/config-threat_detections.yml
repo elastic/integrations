@@ -1,0 +1,217 @@
+# Upwind threat-detections mock.
+#
+# The published list operation returns one JSON array and has no page token.
+# Incremental collection is a time bookmark: min-last-seen-time is the previous
+# max(last_seen_time) minus a 1 minute overlap.
+#
+# Rules, first match wins:
+#   1. OAuth client-credentials token (audience is the API base URL).
+#   2. Caught-up bookmark 2026-03-17T12:09:00Z → empty array (terminal window).
+#   3. Resume bookmark 2026-03-17T11:57:50Z → one newer detection.
+#   4. Any other min-last-seen-time:
+#        first hit → two detections (initial lookback window)
+#        later hits → three extra detections (cursor regression guard)
+#   5. List with no time filter (research test-api.py without --lookback).
+rules:
+  - path: /oauth/token
+    methods: ['POST']
+    query_params:
+      grant_type: client_credentials
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          {"access_token":"test-token","token_type":"Bearer","expires_in":86400}
+  # Terminal window: cursor has reached the newest fixture timestamp.
+  - path: /v1/organizations/org-example-0001/threat-detections
+    methods: ['GET']
+    query_params:
+      min-last-seen-time: "2026-03-17T12:09:00Z"
+    request_headers:
+      Authorization:
+        - Bearer test-token
+      Accept:
+        - application/json
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: '[]'
+  # Cursor resume: min-last-seen-time is max(last_seen_time) from the initial
+  # window (2026-03-17T11:58:50Z) minus the 1 minute overlap.
+  - path: /v1/organizations/org-example-0001/threat-detections
+    methods: ['GET']
+    query_params:
+      min-last-seen-time: "2026-03-17T11:57:50Z"
+    request_headers:
+      Authorization:
+        - Bearer test-token
+      Accept:
+        - application/json
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          [
+            {
+              "id": "uwd-33333333333333cc",
+              "type": "aws_cloudtrail_console_login",
+              "category": "NETWORK",
+              "severity": "HIGH",
+              "status": "OPEN",
+              "title": "Console login from an unexpected network",
+              "description": "A console sign-in was observed from a documentation-range address.",
+              "first_seen_time": "2026-03-17T12:10:00Z",
+              "last_seen_time": "2026-03-17T12:10:00Z",
+              "occurrence_count": 1,
+              "resource": {
+                "cloud_provider": "AWS",
+                "cloud_account_id": "111111111111",
+                "id": "i-00000000000000001",
+                "name": "host-1.example.com",
+                "type": "AWS_EC2_INSTANCE",
+                "region": "us-east-1"
+              }
+            }
+          ]
+  # Initial lookback (any other min-last-seen-time) and regression guard.
+  - path: /v1/organizations/org-example-0001/threat-detections
+    methods: ['GET']
+    query_params:
+      min-last-seen-time: "{minLastSeen:.*}"
+    request_headers:
+      Authorization:
+        - Bearer test-token
+      Accept:
+        - application/json
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          {{ if eq .req_num 1 }}
+          [
+            {
+              "id": "uwd-11111111111111aa",
+              "type": "aws_cloudtrail_security_group_allow_traffic_to_all_ports",
+              "category": "CLOUD_TRAIL",
+              "severity": "MEDIUM",
+              "status": "OPEN",
+              "title": "A security group inbound rule was modified by assumed role to allow unrestricted traffic (0.0.0.0/0) for all ports",
+              "description": "Allowing unrestricted inbound access (0.0.0.0/0) to all ports exposes the cloud environment to the entire internet, creating a critical security vulnerability.",
+              "resource": {
+                "id": "i-00000000000000000",
+                "name": "host-1.example.com",
+                "type": "AWS_SECURITY_GROUP",
+                "cloud_provider": "AWS",
+                "cloud_account_id": "111111111111"
+              },
+              "first_seen_time": "2026-03-17T11:58:50Z",
+              "last_seen_time": "2026-03-17T11:58:50Z",
+              "occurrence_count": 1,
+              "mitre_attacks": [
+                {
+                  "tactic_id": "TA0005",
+                  "tactic_name": "Defense Evasion",
+                  "technique_id": "T1578",
+                  "technique_name": "Modify Cloud Compute Infrastructure"
+                }
+              ]
+            },
+            {
+              "id": "uwd-22222222222222bb",
+              "type": "custom_api_security",
+              "category": "API_SECURITY",
+              "severity": "CRITICAL",
+              "status": "OPEN",
+              "title": "OWASP API10:2023 XML External Entity (XXE) Injection Detected",
+              "description": "An XML input containing external entity references was detected.",
+              "resource": {
+                "id": "i-00000000000000000",
+                "name": "host-2.example.com",
+                "type": "KUBERNETES_DEPLOYMENT",
+                "region": "ap-southeast-1",
+                "namespace": "app-stage",
+                "cloud_provider": "AWS",
+                "cluster_id": "00000000-0000-0000-0000-000000000001",
+                "cloud_account_id": "222222222222"
+              },
+              "first_seen_time": "2026-01-31T03:03:11Z",
+              "last_seen_time": "2026-02-16T09:06:02Z",
+              "occurrence_count": 33
+            }
+          ]
+          {{ else }}
+          [
+            {
+              "id": "uwd-regress00000001",
+              "type": "cursor_regression_guard",
+              "category": "CLOUD_LOGS",
+              "severity": "LOW",
+              "status": "OPEN",
+              "title": "Cursor regression guard event 1",
+              "first_seen_time": "2026-03-17T11:58:50Z",
+              "last_seen_time": "2026-03-17T11:58:50Z",
+              "occurrence_count": 1,
+              "resource": {"cloud_provider": "AWS", "cloud_account_id": "111111111111", "id": "i-regress00000000001", "name": "host-regress.example.com", "type": "AWS_EC2_INSTANCE"}
+            },
+            {
+              "id": "uwd-regress00000002",
+              "type": "cursor_regression_guard",
+              "category": "CLOUD_LOGS",
+              "severity": "LOW",
+              "status": "OPEN",
+              "title": "Cursor regression guard event 2",
+              "first_seen_time": "2026-03-17T11:58:50Z",
+              "last_seen_time": "2026-03-17T11:58:50Z",
+              "occurrence_count": 1,
+              "resource": {"cloud_provider": "AWS", "cloud_account_id": "111111111111", "id": "i-regress00000000002", "name": "host-regress.example.com", "type": "AWS_EC2_INSTANCE"}
+            },
+            {
+              "id": "uwd-regress00000003",
+              "type": "cursor_regression_guard",
+              "category": "CLOUD_LOGS",
+              "severity": "LOW",
+              "status": "OPEN",
+              "title": "Cursor regression guard event 3",
+              "first_seen_time": "2026-03-17T11:58:50Z",
+              "last_seen_time": "2026-03-17T11:58:50Z",
+              "occurrence_count": 1,
+              "resource": {"cloud_provider": "AWS", "cloud_account_id": "111111111111", "id": "i-regress00000000003", "name": "host-regress.example.com", "type": "AWS_EC2_INSTANCE"}
+            }
+          ]
+          {{ end }}
+  # Unfiltered list used by test-api.py when --lookback is omitted.
+  - path: /v1/organizations/org-example-0001/threat-detections
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - Bearer test-token
+      Accept:
+        - application/json
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          [
+            {
+              "id": "uwd-11111111111111aa",
+              "type": "aws_cloudtrail_security_group_allow_traffic_to_all_ports",
+              "category": "CLOUD_TRAIL",
+              "severity": "MEDIUM",
+              "status": "OPEN",
+              "title": "A security group inbound rule was modified by assumed role to allow unrestricted traffic (0.0.0.0/0) for all ports",
+              "first_seen_time": "2026-03-17T11:58:50Z",
+              "last_seen_time": "2026-03-17T11:58:50Z",
+              "occurrence_count": 1,
+              "resource": {"cloud_provider": "AWS", "cloud_account_id": "111111111111", "id": "i-00000000000000000", "name": "host-1.example.com", "type": "AWS_SECURITY_GROUP"}
+            }
+          ]
