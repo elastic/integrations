@@ -63,16 +63,14 @@ processors:
     value: WHITE
     if: ctx.shodan?.ip_str != null
 - set:
-    tag: set_indicator_first_seen
-    field: threat.indicator.first_seen
-    copy_from: shodan.timestamp
-    if: ctx.shodan?.timestamp != null
-- set:
     tag: set_indicator_last_seen
     field: threat.indicator.last_seen
-    copy_from: '@timestamp'
-    ignore_empty_value: true
-    if: ctx.shodan?.ip_str != null
+    copy_from: shodan.timestamp
+    if: ctx.shodan?.timestamp != null
+    description: >-
+      shodan.timestamp is when Shodan's crawler last observed this banner,
+      not a first-observed time, so it maps to last_seen. Host Search gives
+      no genuine first-observed value, so first_seen is intentionally unset.
 - set:
     tag: set_indicator_port
     field: threat.indicator.port
