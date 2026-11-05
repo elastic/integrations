@@ -1,0 +1,1263 @@
+---
+description: >-
+  Map Amazon Bedrock model invocation records to the ECS gen_ai fields (ECS 9.5.0) and to
+  vendor fields that have no ECS equivalent. Called by the default pipeline after the legacy
+  gen_ai fields are set and before the massive input and output bodies are removed, so it sees
+  every body. It only adds fields: a value that the default pipeline already set is never
+  overwritten. Scratch values live under _temp.genai and are removed at the end.
+processors:
+  - set:
+      tag: set_gen_ai_provider_name_2df7ec77
+      description: Bedrock is the provider whatever the model vendor (OTel aws.bedrock).
+      field: gen_ai.provider.name
+      value: aws.bedrock
+  - script:
+      tag: script_genai_select_bodies_and_classify_8ceb1ac1
+      description: >-
+        Select the request and response bodies and classify the record. Envelope records
+        (ModelInvocationLog) carry the bodies in input.input_body_json and
+        output.output_body_json. A record with neither schema_type nor operation (event.action)
+        has no envelope (record type E): it is an S3 data-prefix body object
+        (<requestId>_input.json.gz or _output.json.gz) whose keys sit directly under
+        aws_bedrock.invocation, or a bare SSE chunk list that
+        normalize_streaming_invocation_list_b4e9a12c turned into output.output_body_json.
+        E records are flagged in _temp.genai.e so that token counts and
+        gen_ai.operation.name are not set on them, because the matching envelope record
+        already carries them. gen_ai.operation.name comes from the operation and the model
+        family (modelId without its ARN and Region prefixes), or from the body shape when the
+        modelId does not reveal the family (application inference profile, provisioned and
+        custom model ARNs), and for OpenAI-compatible bodies logged under an undocumented
+        operation. Image and video models, rerank models (and rerank bodies: documents and
+        query without messages) and unknown operations leave it unset; OTel has no value for
+        them. gen_ai.output.type comes
+        from the requested output format, or is image for image models.
+      lang: painless
+      params:
+        chat_operations:
+          - Converse
+          - ConverseStream
+        invoke_operations:
+          - InvokeModel
+          - InvokeModelWithResponseStream
+        region_prefixes:
+          - us
+          - eu
+          - apac
+          - global
+          - us-gov
+          - ca
+          - jp
+          - au
+        providers:
+          - ai21
+          - amazon
+          - anthropic
+          - cohere
+          - deepseek
+          - google
+          - luma
+          - meta
+          - minimax
+          - mistral
+          - moonshot
+          - moonshotai
+          - nvidia
+          - openai
+          - qwen
+          - stability
+          - twelvelabs
+          - writer
+        image_models:
+          - titan-image-
+          - nova-canvas-
+          - nova-reel-
+          - stability.
+        unmapped_models:
+          - rerank-
+        embedding_models:
+          - titan-embed-
+          - cohere.embed-
+          - multimodal-embeddings
+          - marengo-embed
+        image_request_keys:
+          - task_type
+          - textToImageParams
+          - image_variation_params
+          - image_generation_config
+          - inPaintingParams
+          - outPaintingParams
+          - colorGuidedGenerationParams
+          - backgroundRemovalParams
+          - text_prompts
+        image_response_keys:
+          - images
+          - artifacts
+        embedding_request_keys:
+          - embeddingTypes
+          - embedding_types
+          - texts
+          - input_type
+          - dimensions
+          - normalize
+        embedding_response_keys:
+          - embedding
+          - embeddings
+          - embeddingsByType
+        chat_request_keys:
+          - messages
+          - system
+          - prompt
+          - inputText
+          - message
+          - input
+          - instructions
+          - anthropic_version
+          - inferenceConfig
+          - toolConfig
+        chat_response_keys:
+          - content
+          - choices
+          - output
+          - results
+          - outputs
+          - generation
+          - text
+          - completion
+          - response_id
+          - stop_reason
+          - finish_reason
+        openai_objects:
+          - chat.completion
+          - chat.completion.chunk
+          - response
+        operation_names:
+          chat: chat
+          embeddings: embeddings
+        output_types:
+          json_schema: json
+          json_object: json
+          json: json
+          text: text
+      source: |
+        boolean hasAny(def m, List keys) {
+          if (!(m instanceof Map)) {
+            return false;
+          }
+          for (def k : keys) {
+            if (m.containsKey(k)) {
+              return true;
+            }
+          }
+          return false;
+        }
+        def dig(def o, List keys) {
+          def cur = o;
+          for (def k : keys) {
+            if (!(cur instanceof Map)) {
+              return null;
+            }
+            cur = cur.get(k);
+          }
+          return cur;
+        }
+        String idKind(def id, Map p) {
+          if (!(id instanceof String) || id.isEmpty()) {
+            return null;
+          }
+          String s = id;
+          if (s.startsWith('arn:')) {
+            s = s.substring(s.lastIndexOf('/') + 1);
+          }
+          String[] parts = s.splitOnToken('.');
+          if (parts.length > 2 && p.region_prefixes.contains(parts[0])) {
+            s = s.substring(parts[0].length() + 1);
+            parts = s.splitOnToken('.');
+          }
+          if (parts.length < 2 || !p.providers.contains(parts[0])) {
+            return null;
+          }
+          for (def x : p.unmapped_models) {
+            if (s.contains(x)) {
+              return 'unmapped';
+            }
+          }
+          for (def x : p.image_models) {
+            if (s.contains(x)) {
+              return 'image';
+            }
+          }
+          for (def x : p.embedding_models) {
+            if (s.contains(x)) {
+              return 'embeddings';
+            }
+          }
+          return 'chat';
+        }
+        String bodyKind(def req, def resp, Map p) {
+          if (req instanceof Map && req.containsKey('documents') && req.containsKey('query') && !req.containsKey('messages') && !req.containsKey('message')) {
+            return 'unmapped';
+          }
+          if (hasAny(req, p.image_request_keys) || hasAny(resp, p.image_response_keys)) {
+            return 'image';
+          }
+          if (hasAny(req, p.embedding_request_keys) || hasAny(resp, p.embedding_response_keys)) {
+            return 'embeddings';
+          }
+          if (resp instanceof List || hasAny(req, p.chat_request_keys) || hasAny(resp, p.chat_response_keys)) {
+            return 'chat';
+          }
+          return null;
+        }
+        boolean isOpenAI(def req, def resp, Map p) {
+          if (resp instanceof Map && p.openai_objects.contains(resp.object)) {
+            return true;
+          }
+          if (resp instanceof List) {
+            for (def c : resp) {
+              if (c instanceof Map && p.openai_objects.contains(c.object)) {
+                return true;
+              }
+            }
+          }
+          return req instanceof Map && req.model instanceof String && (req.messages instanceof List || req.input != null);
+        }
+
+        if (ctx.aws_bedrock == null || !(ctx.aws_bedrock.invocation instanceof Map)) {
+          return;
+        }
+        Map inv = ctx.aws_bedrock.invocation;
+        String action = null;
+        if (ctx.event != null && ctx.event.action instanceof String) {
+          action = ctx.event.action;
+        }
+        boolean isE = inv.schema_type == null && action == null;
+        def req = inv.input instanceof Map ? inv.input.input_body_json : null;
+        def resp = inv.output instanceof Map ? inv.output.output_body_json : null;
+        if (isE && req == null && resp == null) {
+          if (hasAny(inv, params.chat_response_keys) || hasAny(inv, params.image_response_keys) || hasAny(inv, params.embedding_response_keys)) {
+            resp = inv;
+          } else {
+            req = inv;
+          }
+        }
+
+        String kind = null;
+        if (isE) {
+          kind = bodyKind(req, resp, params);
+        } else if (action != null && params.chat_operations.contains(action)) {
+          kind = 'chat';
+        } else if (action != null && params.invoke_operations.contains(action)) {
+          kind = idKind(inv.model_id, params);
+          if (kind == null) {
+            kind = bodyKind(req, resp, params);
+          }
+        } else if (isOpenAI(req, resp, params)) {
+          kind = 'chat';
+        }
+
+        String outputType = null;
+        if (req instanceof Map) {
+          def v = dig(req, ['outputConfig', 'textFormat', 'type']);
+          if (v == null) {
+            def f = dig(req, ['output_config', 'format']);
+            if (f == null) {
+              f = dig(req, ['additionalModelRequestFields', 'output_config', 'format']);
+            }
+            if (f instanceof Map) {
+              v = f.type;
+            } else if (f instanceof String) {
+              v = f;
+            }
+          }
+          if (v == null) {
+            v = dig(req, ['response_format', 'type']);
+          }
+          if (v == null) {
+            v = dig(req, ['text', 'format', 'type']);
+          }
+          if (v instanceof String) {
+            outputType = params.output_types.get(v);
+          }
+        }
+        if (outputType == null && kind == 'image') {
+          outputType = 'image';
+        }
+
+        Map t = new HashMap();
+        t.e = isE;
+        t.req = req;
+        t.resp = resp;
+        t.kind = kind;
+        if (!(ctx._temp instanceof Map)) {
+          ctx._temp = new HashMap();
+        }
+        ctx._temp.genai = t;
+
+        String op = (kind == null || isE) ? null : params.operation_names.get(kind);
+        if (op != null || outputType != null) {
+          if (!(ctx.gen_ai instanceof Map)) {
+            ctx.gen_ai = new HashMap();
+          }
+          if (op != null) {
+            ctx.gen_ai.operation = ['name': op];
+          }
+          if (outputType != null) {
+            ctx.gen_ai.output = ctx.gen_ai.output instanceof Map ? ctx.gen_ai.output : new HashMap();
+            ctx.gen_ai.output.type = outputType;
+          }
+        }
+  - script:
+      tag: script_genai_request_parameters_9f9e2ba5
+      description: >-
+        Fill the gen_ai.request parameters from every request body format that carries them
+        (Converse and Nova inferenceConfig and additionalModelRequestFields, Anthropic Messages,
+        Titan textGenerationConfig, Llama, Mistral, DeepSeek, Cohere Command R p/k, OpenAI and
+        AI21 Jamba Chat Completions, OpenAI Responses, Titan and Cohere embeddings, Titan and
+        Nova Canvas imageGenerationConfig, Stability). The first path that holds a value wins,
+        and a parameter that the default pipeline already set is kept as it is. Also copies the
+        reasoning settings, the Converse service tier and the latency mode to the vendor
+        namespace, because ECS has no field for them.
+      lang: painless
+      if: ctx._temp?.genai != null
+      params:
+        long_params:
+          max_tokens:
+            - [max_tokens]
+            - [inferenceConfig, maxTokens]
+            - [max_gen_len]
+            - [textGenerationConfig, maxTokenCount]
+            - [max_completion_tokens]
+            - [max_output_tokens]
+          seed:
+            - [seed]
+            - [additionalModelRequestFields, seed]
+            - [image_generation_config, seed]
+          choice.count:
+            - [n]
+        double_params:
+          temperature:
+            - [temperature]
+            - [inferenceConfig, temperature]
+            - [textGenerationConfig, temperature]
+          top_p:
+            - [top_p]
+            - [inferenceConfig, topP]
+            - [textGenerationConfig, topP]
+            - [p]
+          top_k:
+            - [top_k]
+            - [additionalModelRequestFields, top_k]
+            - [inferenceConfig, topK]
+            - [k]
+          frequency_penalty:
+            - [frequency_penalty]
+            - [additionalModelRequestFields, frequency_penalty]
+          presence_penalty:
+            - [presence_penalty]
+            - [additionalModelRequestFields, presence_penalty]
+        list_params:
+          stop_sequences:
+            - [stop_sequences]
+            - [inferenceConfig, stopSequences]
+            - [textGenerationConfig, stopSequences]
+            - [stop]
+          encoding_formats:
+            - [embeddingTypes]
+            - [embedding_types]
+        vendor_keyword_params:
+          request.reasoning_type:
+            - [thinking, type]
+            - [additionalModelRequestFields, thinking, type]
+            - [reasoningConfig, type]
+            - [additionalModelRequestFields, reasoningConfig, type]
+          request.reasoning_display:
+            - [thinking, display]
+            - [additionalModelRequestFields, thinking, display]
+          request.reasoning_effort:
+            - [output_config, effort]
+            - [additionalModelRequestFields, output_config, effort]
+            - [reasoningConfig, maxReasoningEffort]
+            - [additionalModelRequestFields, reasoningConfig, maxReasoningEffort]
+            - [reasoning_effort]
+            - [additionalModelRequestFields, reasoning_effort]
+            - [reasoning, effort]
+          service_tier:
+            - [serviceTier, type]
+          performance_config.latency:
+            - [performanceConfig, latency]
+        vendor_long_params:
+          request.reasoning_budget_tokens:
+            - [thinking, budget_tokens]
+            - [additionalModelRequestFields, thinking, budget_tokens]
+      source: |
+        def dig(def o, List keys) {
+          def cur = o;
+          for (def k : keys) {
+            if (!(cur instanceof Map)) {
+              return null;
+            }
+            cur = cur.get(k);
+          }
+          return cur;
+        }
+        def getIn(Map m, String dotted) {
+          def cur = m;
+          for (def k : dotted.splitOnToken('.')) {
+            if (!(cur instanceof Map)) {
+              return null;
+            }
+            cur = cur.get(k);
+          }
+          return cur;
+        }
+        void putIn(Map m, String dotted, def v) {
+          String[] ks = dotted.splitOnToken('.');
+          Map cur = m;
+          for (int i = 0; i < ks.length - 1; i++) {
+            if (!(cur.get(ks[i]) instanceof Map)) {
+              cur.put(ks[i], new HashMap());
+            }
+            cur = cur.get(ks[i]);
+          }
+          cur.put(ks[ks.length - 1], v);
+        }
+
+        def req = ctx._temp.genai.req;
+        def resp = ctx._temp.genai.resp;
+        if (!(req instanceof Map)) {
+          return;
+        }
+        if (!(ctx.gen_ai instanceof Map)) {
+          ctx.gen_ai = new HashMap();
+        }
+        Map r = ctx.gen_ai.request instanceof Map ? ctx.gen_ai.request : new HashMap();
+
+        for (def e : params.long_params.entrySet()) {
+          if (getIn(r, e.getKey()) != null) {
+            continue;
+          }
+          for (def p : e.getValue()) {
+            def v = dig(req, p);
+            if (v instanceof Number) {
+              putIn(r, e.getKey(), ((Number) v).longValue());
+              break;
+            }
+          }
+        }
+        for (def e : params.double_params.entrySet()) {
+          if (getIn(r, e.getKey()) != null) {
+            continue;
+          }
+          for (def p : e.getValue()) {
+            def v = dig(req, p);
+            if (v instanceof Number) {
+              putIn(r, e.getKey(), ((Number) v).doubleValue());
+              break;
+            }
+          }
+        }
+        for (def e : params.list_params.entrySet()) {
+          if (getIn(r, e.getKey()) != null) {
+            continue;
+          }
+          for (def p : e.getValue()) {
+            def v = dig(req, p);
+            List out = new ArrayList();
+            if (v instanceof String) {
+              if (!v.isEmpty()) {
+                out.add(v);
+              }
+            } else if (v instanceof List) {
+              for (def x : v) {
+                if (x != null && !x.toString().isEmpty()) {
+                  out.add(x.toString());
+                }
+              }
+            }
+            if (!out.isEmpty()) {
+              putIn(r, e.getKey(), out);
+              break;
+            }
+          }
+        }
+        if (!r.isEmpty()) {
+          ctx.gen_ai.request = r;
+        }
+
+        Map inv = ctx.aws_bedrock.invocation;
+        List sources = [req];
+        if (resp instanceof Map) {
+          sources.add(resp);
+        }
+        for (def e : params.vendor_keyword_params.entrySet()) {
+          if (getIn(inv, e.getKey()) != null) {
+            continue;
+          }
+          boolean found = false;
+          for (def src : sources) {
+            for (def p : e.getValue()) {
+              def v = dig(src, p);
+              if (v instanceof String && !v.isEmpty()) {
+                putIn(inv, e.getKey(), v);
+                found = true;
+                break;
+              }
+            }
+            if (found) {
+              break;
+            }
+          }
+        }
+        for (def e : params.vendor_long_params.entrySet()) {
+          if (getIn(inv, e.getKey()) != null) {
+            continue;
+          }
+          for (def p : e.getValue()) {
+            def v = dig(req, p);
+            if (v instanceof Number) {
+              putIn(inv, e.getKey(), ((Number) v).longValue());
+              break;
+            }
+          }
+        }
+  - script:
+      tag: script_genai_system_instructions_and_tool_definitions_3a1ddd86
+      description: >-
+        Build gen_ai.system_instructions from the separate system prompt of the request:
+        Anthropic system (a string or text blocks), Converse and Nova system[] ({text} and
+        guardContent blocks; cachePoint blocks are skipped), Cohere preamble and OpenAI
+        Responses instructions. A string becomes one text part, so that no scalar reaches the
+        flattened field. On E input objects a string system was already turned into a
+        {type, text} object by script_promote_system_to_object_70e74401, which is read as one
+        text part. System and developer messages of Chat Completions bodies stay in the
+        messages. Build gen_ai.tool.definitions from Anthropic, OpenAI, AI21 Jamba and Cohere
+        tools[] and from Converse and Nova toolConfig.tools[].toolSpec. A flattened field
+        rejects the whole document when an object is nested more than 20 levels deep, so a
+        tool parameter schema subtree deeper than max_depth levels is stored as a JSON string.
+        System instruction parts are always flat {type, content} objects and need no cap.
+      lang: painless
+      if: ctx._temp?.genai?.req instanceof Map
+      params:
+        max_depth: 18
+      source: |
+        def cap(def v, int depth, int maxDepth) {
+          if (v instanceof Map) {
+            if (depth >= maxDepth) {
+              return Json.dump(v);
+            }
+            Map out = new HashMap();
+            for (def e : v.entrySet()) {
+              out.put(e.getKey(), cap(e.getValue(), depth + 1, maxDepth));
+            }
+            return out;
+          }
+          if (v instanceof List) {
+            List out = new ArrayList();
+            for (def x : v) {
+              out.add(cap(x, depth, maxDepth));
+            }
+            return out;
+          }
+          return v;
+        }
+        void addPart(List out, def b) {
+          if (b instanceof String) {
+            if (!b.isEmpty()) {
+              out.add(['type': 'text', 'content': b]);
+            }
+            return;
+          }
+          if (!(b instanceof Map)) {
+            return;
+          }
+          if (b.text instanceof String) {
+            out.add(['type': 'text', 'content': b.text]);
+          } else if (b.guardContent instanceof Map && b.guardContent.text instanceof Map && b.guardContent.text.text instanceof String) {
+            out.add(['type': 'text', 'content': b.guardContent.text.text]);
+          } else if (b.containsKey('cachePoint')) {
+            return;
+          } else if (b.type instanceof String && !b.type.isEmpty()) {
+            out.add(['type': b.type]);
+          }
+        }
+        List parts(def s) {
+          List out = new ArrayList();
+          if (s instanceof List) {
+            for (def b : s) {
+              addPart(out, b);
+            }
+          } else {
+            addPart(out, s);
+          }
+          return out;
+        }
+
+        Map req = ctx._temp.genai.req;
+        if (!(ctx.gen_ai instanceof Map)) {
+          ctx.gen_ai = new HashMap();
+        }
+        List sys = parts(req.system);
+        if (sys.isEmpty()) {
+          sys = parts(req.preamble);
+        }
+        if (sys.isEmpty()) {
+          sys = parts(req.instructions);
+        }
+        if (!sys.isEmpty()) {
+          ctx.gen_ai.system_instructions = sys;
+        }
+
+        List defs = new ArrayList();
+        if (req.tools instanceof List) {
+          for (def t : req.tools) {
+            if (!(t instanceof Map)) {
+              continue;
+            }
+            Map fn = t.function instanceof Map ? t.function : t;
+            Map d = new HashMap();
+            d.type = t.type instanceof String ? t.type : 'function';
+            if (fn.name != null) {
+              d.name = fn.name;
+            }
+            if (fn.description != null) {
+              d.description = fn.description;
+            }
+            def p = fn.parameters;
+            if (p == null) {
+              p = fn.input_schema;
+            }
+            if (p == null) {
+              p = fn.parameter_definitions;
+            }
+            if (p == null && fn.inputSchema instanceof Map) {
+              p = fn.inputSchema.json;
+            }
+            if (p != null) {
+              d.parameters = cap(p, 0, params.max_depth);
+            }
+            defs.add(d);
+          }
+        }
+        if (req.toolConfig instanceof Map && req.toolConfig.tools instanceof List) {
+          for (def t : req.toolConfig.tools) {
+            if (!(t instanceof Map) || t.containsKey('cachePoint')) {
+              continue;
+            }
+            if (t.toolSpec instanceof Map) {
+              Map spec = t.toolSpec;
+              Map d = ['type': 'function'];
+              if (spec.name != null) {
+                d.name = spec.name;
+              }
+              if (spec.description != null) {
+                d.description = spec.description;
+              }
+              if (spec.inputSchema instanceof Map && spec.inputSchema.json != null) {
+                d.parameters = cap(spec.inputSchema.json, 0, params.max_depth);
+              }
+              defs.add(d);
+            } else {
+              def it = t.entrySet().iterator();
+              if (it.hasNext()) {
+                def e = it.next();
+                Map d = ['type': e.getKey()];
+                if (e.getValue() instanceof Map && e.getValue().name != null) {
+                  d.name = e.getValue().name;
+                }
+                defs.add(d);
+              }
+            }
+          }
+        }
+        if (!defs.isEmpty()) {
+          ctx.gen_ai.tool = ctx.gen_ai.tool instanceof Map ? ctx.gen_ai.tool : new HashMap();
+          ctx.gen_ai.tool.definitions = defs;
+        }
+  - script:
+      tag: script_genai_response_fields_b604577d
+      description: >-
+        Read the response body (an object, or a list of stream chunks) for
+        gen_ai.response.model (Anthropic and OpenAI model, Anthropic stream message_start,
+        Converse prompt router trace.promptRouter.invokedModelId; never the requested modelId),
+        gen_ai.response.id (OpenAI, AI21 Jamba and E response id, Cohere response_id; Converse
+        has none), gen_ai.response.finish_reasons (verbatim provider values: Anthropic stream
+        message_delta, Titan completionReason, Mistral outputs, DeepSeek, OpenAI and Jamba
+        choices, Cohere finish_reason), the order-aligned gen_ai.tool.name and
+        gen_ai.tool.call.id arrays of the tool calls in the response, event.duration from the
+        Converse latency or the stream invocationLatency (ms to ns), and the vendor
+        first_byte_latency and stop_details.category. Fields the default pipeline already set
+        are kept as they are.
+      lang: painless
+      if: ctx._temp?.genai?.resp != null
+      source: |
+        def dig(def o, List keys) {
+          def cur = o;
+          for (def k : keys) {
+            if (!(cur instanceof Map)) {
+              return null;
+            }
+            cur = cur.get(k);
+          }
+          return cur;
+        }
+        void addReason(List out, def v) {
+          if (v instanceof String && !v.isEmpty()) {
+            out.add(v);
+          }
+        }
+
+        def resp = ctx._temp.genai.resp;
+        List objs = new ArrayList();
+        if (resp instanceof List) {
+          for (def c : resp) {
+            if (c instanceof Map) {
+              objs.add(c);
+            }
+          }
+        } else if (resp instanceof Map) {
+          objs.add(resp);
+        }
+        if (objs.isEmpty()) {
+          return;
+        }
+        if (!(ctx.gen_ai instanceof Map)) {
+          ctx.gen_ai = new HashMap();
+        }
+        Map g = ctx.gen_ai;
+        Map gr = g.response instanceof Map ? g.response : new HashMap();
+
+        String model = null;
+        String id = null;
+        List reasons = new ArrayList();
+        List toolNames = new ArrayList();
+        List toolIds = new ArrayList();
+        def latencyMs = null;
+        def firstByte = null;
+        def stopCategory = null;
+        for (def o : objs) {
+          boolean isStart = o.type == 'message_start' && o.message instanceof Map;
+          if (model == null) {
+            if (isStart && o.message.model instanceof String) {
+              model = o.message.model;
+            } else if (o.model instanceof String) {
+              model = o.model;
+            } else if (o.message instanceof Map && o.message.model instanceof String) {
+              model = o.message.model;
+            } else if (dig(o, ['trace', 'promptRouter', 'invokedModelId']) instanceof String) {
+              model = dig(o, ['trace', 'promptRouter', 'invokedModelId']);
+            }
+          }
+          if (id == null) {
+            if (isStart && o.message.id instanceof String) {
+              id = o.message.id;
+            } else if (o.id instanceof String) {
+              id = o.id;
+            } else if (o.response_id instanceof String) {
+              id = o.response_id;
+            }
+          }
+
+          if (o.type == 'message_delta' && o.delta instanceof Map) {
+            addReason(reasons, o.delta.stop_reason);
+            if (dig(o, ['delta', 'stop_details', 'category']) != null) {
+              stopCategory = dig(o, ['delta', 'stop_details', 'category']);
+            }
+          } else if (!isStart) {
+            if (o.results instanceof List) {
+              for (def x : o.results) {
+                if (x instanceof Map) {
+                  addReason(reasons, x.completionReason);
+                }
+              }
+            }
+            if (o.outputs instanceof List) {
+              for (def x : o.outputs) {
+                if (x instanceof Map) {
+                  addReason(reasons, x.stop_reason);
+                }
+              }
+            }
+            if (o.choices instanceof List) {
+              for (def x : o.choices) {
+                if (x instanceof Map) {
+                  addReason(reasons, x.finish_reason != null ? x.finish_reason : x.stop_reason);
+                }
+              }
+            }
+            addReason(reasons, o.finish_reason);
+            addReason(reasons, o.stop_reason);
+            addReason(reasons, o.completionReason);
+          }
+          if (dig(o, ['stop_details', 'category']) != null) {
+            stopCategory = dig(o, ['stop_details', 'category']);
+          }
+
+          def blocks = dig(o, ['output', 'message', 'content']);
+          if (blocks instanceof List) {
+            for (def b : blocks) {
+              if (b instanceof Map && b.toolUse instanceof Map) {
+                if (b.toolUse.name != null) {
+                  toolNames.add(b.toolUse.name);
+                }
+                if (b.toolUse.toolUseId != null) {
+                  toolIds.add(b.toolUse.toolUseId);
+                }
+              }
+            }
+          }
+          if (o.content instanceof List) {
+            for (def b : o.content) {
+              if (b instanceof Map && b.type == 'tool_use') {
+                if (b.name != null) {
+                  toolNames.add(b.name);
+                }
+                if (b.id != null) {
+                  toolIds.add(b.id);
+                }
+              }
+            }
+          }
+          if (o.type == 'content_block_start' && o.content_block instanceof Map && o.content_block.type == 'tool_use') {
+            if (o.content_block.name != null) {
+              toolNames.add(o.content_block.name);
+            }
+            if (o.content_block.id != null) {
+              toolIds.add(o.content_block.id);
+            }
+          }
+          if (o.choices instanceof List) {
+            for (def ch : o.choices) {
+              if (!(ch instanceof Map)) {
+                continue;
+              }
+              def calls = dig(ch, ['message', 'tool_calls']);
+              if (calls == null) {
+                calls = dig(ch, ['delta', 'tool_calls']);
+              }
+              if (!(calls instanceof List)) {
+                continue;
+              }
+              for (def tc : calls) {
+                if (!(tc instanceof Map) || dig(tc, ['function', 'name']) == null) {
+                  continue;
+                }
+                toolNames.add(tc.function.name);
+                if (tc.id != null) {
+                  toolIds.add(tc.id);
+                }
+              }
+            }
+          }
+          if (o.output instanceof List) {
+            for (def item : o.output) {
+              if (item instanceof Map && item.type == 'function_call' && item.name != null) {
+                toolNames.add(item.name);
+                if (item.call_id != null) {
+                  toolIds.add(item.call_id);
+                }
+              }
+            }
+          }
+          if (o.tool_calls instanceof List) {
+            for (def tc : o.tool_calls) {
+              if (tc instanceof Map && tc.name != null) {
+                toolNames.add(tc.name);
+                if (tc.id != null) {
+                  toolIds.add(tc.id);
+                }
+              }
+            }
+          }
+
+          if (dig(o, ['metrics', 'latency_ms']) instanceof Number) {
+            latencyMs = dig(o, ['metrics', 'latency_ms']);
+          }
+          if (o.amazon_bedrock_invocation_metrics instanceof Map) {
+            if (o.amazon_bedrock_invocation_metrics.invocation_latency instanceof Number) {
+              latencyMs = o.amazon_bedrock_invocation_metrics.invocation_latency;
+            }
+            if (o.amazon_bedrock_invocation_metrics.first_byte_latency instanceof Number) {
+              firstByte = o.amazon_bedrock_invocation_metrics.first_byte_latency;
+            }
+          }
+        }
+
+        if (model != null && gr.model == null) {
+          gr.model = model;
+        }
+        if (id != null && gr.id == null) {
+          gr.id = id;
+        }
+        if (!reasons.isEmpty() && gr.finish_reasons == null) {
+          gr.finish_reasons = reasons;
+        }
+        if (!gr.isEmpty()) {
+          g.response = gr;
+        }
+        if (!toolNames.isEmpty() && (g.tool == null || g.tool.name == null)) {
+          g.tool = g.tool instanceof Map ? g.tool : new HashMap();
+          g.tool.name = toolNames;
+          if (!toolIds.isEmpty()) {
+            g.tool.call = ['id': toolIds];
+          }
+        }
+        if (latencyMs != null) {
+          if (!(ctx.event instanceof Map)) {
+            ctx.event = new HashMap();
+          }
+          if (ctx.event.duration == null) {
+            ctx.event.duration = ((Number) latencyMs).longValue() * 1000000L;
+          }
+        }
+        Map inv = ctx.aws_bedrock.invocation;
+        if (firstByte != null && inv.first_byte_latency == null) {
+          inv.first_byte_latency = ((Number) firstByte).longValue();
+        }
+        if (stopCategory instanceof String) {
+          inv.output = inv.output instanceof Map ? inv.output : new HashMap();
+          if (!(inv.output.stop_details instanceof Map)) {
+            inv.output.stop_details = new HashMap();
+          }
+          if (inv.output.stop_details.category == null) {
+            inv.output.stop_details.category = stopCategory;
+          }
+        }
+  - script:
+      tag: script_genai_usage_94d1c457
+      description: >-
+        Set gen_ai.usage.input_tokens and gen_ai.usage.output_tokens, and copy the cache and
+        reasoning token counts to the vendor namespace. Input tokens include cached tokens
+        (OTel): Converse and Nova inputTokens plus the cache read and write counts, Anthropic
+        input_tokens plus cache_read_input_tokens and cache_creation_input_tokens (streams:
+        message_start usage), OpenAI prompt_tokens or Responses input_tokens as they are. The
+        envelope input_token_count and output_token_count are only used when the body has no
+        usage breakdown; the envelope count is assumed to exclude cached tokens like the other
+        Bedrock counters. Not set on E records: their counts duplicate the matching envelope
+        record.
+      lang: painless
+      if: ctx._temp?.genai != null && ctx._temp.genai.e != true
+      source: |
+        def dig(def o, List keys) {
+          def cur = o;
+          for (def k : keys) {
+            if (!(cur instanceof Map)) {
+              return null;
+            }
+            cur = cur.get(k);
+          }
+          return cur;
+        }
+        def firstNum(def a, def b) {
+          if (a instanceof Number) {
+            return a;
+          }
+          if (b instanceof Number) {
+            return b;
+          }
+          return null;
+        }
+        long n(def v) {
+          return v instanceof Number ? ((Number) v).longValue() : 0L;
+        }
+
+        def resp = ctx._temp.genai.resp;
+        List objs = new ArrayList();
+        if (resp instanceof List) {
+          for (def c : resp) {
+            if (c instanceof Map) {
+              objs.add(c);
+            }
+          }
+        } else if (resp instanceof Map) {
+          objs.add(resp);
+        }
+
+        def inputTokens = null;
+        def outputTokens = null;
+        def cacheRead = null;
+        def cacheWrite = null;
+        def reasoning = null;
+        for (def o : objs) {
+          def u = o.usage;
+          if (!(u instanceof Map) && o.type == 'message_start' && o.message instanceof Map) {
+            u = o.message.usage;
+          }
+          if (!(u instanceof Map)) {
+            continue;
+          }
+          if (u.inputTokens instanceof Number) {
+            def cr = firstNum(u.cacheReadInputTokens, u.cacheReadInputTokenCount);
+            def cw = firstNum(u.cacheWriteInputTokens, u.cacheWriteInputTokenCount);
+            inputTokens = n(u.inputTokens) + n(cr) + n(cw);
+            if (cr != null) {
+              cacheRead = cr;
+            }
+            if (cw != null) {
+              cacheWrite = cw;
+            }
+          } else if (u.prompt_tokens instanceof Number) {
+            inputTokens = n(u.prompt_tokens);
+            def cr = dig(u, ['prompt_tokens_details', 'cached_tokens']);
+            def cw = firstNum(u.cache_write_tokens, dig(u, ['prompt_tokens_details', 'cache_write_tokens']));
+            if (cr instanceof Number) {
+              cacheRead = cr;
+            }
+            if (cw != null) {
+              cacheWrite = cw;
+            }
+          } else if (u.input_tokens instanceof Number) {
+            inputTokens = n(u.input_tokens) + n(u.cache_read_input_tokens) + n(u.cache_creation_input_tokens);
+            def cr = firstNum(u.cache_read_input_tokens, dig(u, ['input_tokens_details', 'cached_tokens']));
+            if (cr != null) {
+              cacheRead = cr;
+            }
+            if (u.cache_creation_input_tokens instanceof Number) {
+              cacheWrite = u.cache_creation_input_tokens;
+            }
+          }
+          def out = u.outputTokens;
+          if (!(out instanceof Number)) {
+            out = u.completion_tokens;
+          }
+          if (!(out instanceof Number)) {
+            out = u.output_tokens;
+          }
+          if (out instanceof Number) {
+            outputTokens = n(out);
+          }
+          def rt = firstNum(dig(u, ['completion_tokens_details', 'reasoning_tokens']), dig(u, ['output_tokens_details', 'reasoning_tokens']));
+          if (rt != null) {
+            reasoning = rt;
+          }
+        }
+
+        Map inv = ctx.aws_bedrock.invocation;
+        if (inputTokens == null && dig(inv, ['input', 'input_token_count']) instanceof Number) {
+          inputTokens = n(dig(inv, ['input', 'input_token_count']));
+        }
+        if (outputTokens == null && dig(inv, ['output', 'output_token_count']) instanceof Number) {
+          outputTokens = n(dig(inv, ['output', 'output_token_count']));
+        }
+        if (inputTokens != null || outputTokens != null) {
+          if (!(ctx.gen_ai instanceof Map)) {
+            ctx.gen_ai = new HashMap();
+          }
+          ctx.gen_ai.usage = ctx.gen_ai.usage instanceof Map ? ctx.gen_ai.usage : new HashMap();
+          if (inputTokens != null) {
+            ctx.gen_ai.usage.input_tokens = inputTokens;
+          }
+          if (outputTokens != null) {
+            ctx.gen_ai.usage.output_tokens = outputTokens;
+          }
+        }
+        if (cacheRead != null || cacheWrite != null || reasoning != null) {
+          inv.usage = inv.usage instanceof Map ? inv.usage : new HashMap();
+          if (cacheRead != null) {
+            inv.usage.cache_read_input_tokens = n(cacheRead);
+          }
+          if (cacheWrite != null) {
+            inv.usage.cache_write_input_tokens = n(cacheWrite);
+          }
+          if (reasoning != null) {
+            inv.usage.reasoning_tokens = n(reasoning);
+          }
+        }
+  - set:
+      tag: set_error_code_from_aws_bedrock_invocation_error_code_4df279fa
+      description: Copy the envelope errorCode. aws_bedrock.invocation.error_code and gen_ai.response.error_code are kept.
+      field: error.code
+      copy_from: aws_bedrock.invocation.error_code
+      if: ctx.aws_bedrock?.invocation?.error_code != null
+  - set:
+      tag: set_aws_bedrock_invocation_request_metadata_1bce4904
+      description: >-
+        Copy the caller request tags (envelope requestMetadata) to a flattened field.
+        aws_bedrock.invocation.requestMetadata, where they arrived before this version, is kept.
+      field: aws_bedrock.invocation.request_metadata
+      copy_from: aws_bedrock.invocation.requestMetadata
+      if: ctx.aws_bedrock?.invocation?.requestMetadata instanceof Map
+  # Guardrail results in the vendor namespace. Same subtree and same values as the legacy
+  # gen_ai.guardrail_id, gen_ai.policy.* and gen_ai.compliance.* fields, which are kept.
+  - set:
+      tag: set_aws_bedrock_invocation_guardrail_id_12beac19
+      field: aws_bedrock.invocation.guardrail.id
+      copy_from: gen_ai.guardrail_id
+      if: ctx.gen_ai?.guardrail_id != null
+  - set:
+      tag: set_aws_bedrock_invocation_guardrail_policy_name_a2a31274
+      field: aws_bedrock.invocation.guardrail.policy.name
+      copy_from: gen_ai.policy.name
+      if: ctx.gen_ai?.policy?.name != null
+  - set:
+      tag: set_aws_bedrock_invocation_guardrail_policy_action_ed7fcc8b
+      field: aws_bedrock.invocation.guardrail.policy.action
+      copy_from: gen_ai.policy.action
+      if: ctx.gen_ai?.policy?.action != null
+  - set:
+      tag: set_aws_bedrock_invocation_guardrail_policy_confidence_502ea4fe
+      field: aws_bedrock.invocation.guardrail.policy.confidence
+      copy_from: gen_ai.policy.confidence
+      if: ctx.gen_ai?.policy?.confidence != null
+  - set:
+      tag: set_aws_bedrock_invocation_guardrail_policy_match_detail_e34bde6b
+      field: aws_bedrock.invocation.guardrail.policy.match_detail
+      copy_from: gen_ai.policy.match_detail
+      if: ctx.gen_ai?.policy?.match_detail != null
+  - set:
+      tag: set_aws_bedrock_invocation_guardrail_compliance_violation_code_a2d33928
+      field: aws_bedrock.invocation.guardrail.compliance.violation_code
+      copy_from: gen_ai.compliance.violation_code
+      if: ctx.gen_ai?.compliance?.violation_code != null
+  - set:
+      tag: set_aws_bedrock_invocation_guardrail_compliance_violation_detected_c81cc236
+      field: aws_bedrock.invocation.guardrail.compliance.violation_detected
+      copy_from: gen_ai.compliance.violation_detected
+      if: ctx.gen_ai?.compliance?.violation_detected != null
+  - script:
+      tag: script_aws_bedrock_invocation_guardrail_details_a16a5805
+      description: >-
+        Add the guardrail version and ARN from the Converse request guardrailConfig
+        (guardrailIdentifier counts as the ARN only when it is one) and from the
+        appliedGuardrailDetails of the guardrail trace assessments (Converse trace.guardrail,
+        InvokeModel amazon-bedrock-trace.guardrail). A guardrailId from appliedGuardrailDetails
+        that is not yet in aws_bedrock.invocation.guardrail.id is added; values are deduplicated
+        and sorted.
+      lang: painless
+      if: ctx._temp?.genai != null
+      source: |
+        def dig(def o, List keys) {
+          def cur = o;
+          for (def k : keys) {
+            if (!(cur instanceof Map)) {
+              return null;
+            }
+            cur = cur.get(k);
+          }
+          return cur;
+        }
+        void addAssessment(def a, Set ids, Set versions, Set arns) {
+          if (a instanceof List) {
+            for (def x : a) {
+              addAssessment(x, ids, versions, arns);
+            }
+            return;
+          }
+          if (!(a instanceof Map) || !(a.appliedGuardrailDetails instanceof Map)) {
+            return;
+          }
+          Map d = a.appliedGuardrailDetails;
+          if (d.guardrailId != null) {
+            ids.add(d.guardrailId.toString());
+          }
+          if (d.guardrailVersion != null) {
+            versions.add(d.guardrailVersion.toString());
+          }
+          if (d.guardrailArn != null) {
+            arns.add(d.guardrailArn.toString());
+          }
+        }
+        void addById(def m, Set ids, Set versions, Set arns) {
+          if (m instanceof List) {
+            for (def x : m) {
+              addById(x, ids, versions, arns);
+            }
+            return;
+          }
+          if (!(m instanceof Map)) {
+            return;
+          }
+          for (def v : m.values()) {
+            addAssessment(v, ids, versions, arns);
+          }
+        }
+
+        Set ids = new TreeSet();
+        Set versions = new TreeSet();
+        Set arns = new TreeSet();
+        def req = ctx._temp.genai.req;
+        def identifier = dig(req, ['guardrailConfig', 'guardrailIdentifier']);
+        if (identifier instanceof String && identifier.startsWith('arn:')) {
+          arns.add(identifier);
+        }
+        def version = dig(req, ['guardrailConfig', 'guardrailVersion']);
+        if (version != null) {
+          versions.add(version.toString());
+        }
+        def resp = ctx._temp.genai.resp;
+        List objs = resp instanceof List ? resp : [resp];
+        for (def o : objs) {
+          if (!(o instanceof Map)) {
+            continue;
+          }
+          for (def g : [dig(o, ['trace', 'guardrail']), dig(o, ['amazon_bedrock_trace', 'guardrail'])]) {
+            if (!(g instanceof Map)) {
+              continue;
+            }
+            addById(g.inputAssessment, ids, versions, arns);
+            addById(g.outputAssessments, ids, versions, arns);
+            addById(g.input, ids, versions, arns);
+            addById(g.outputs, ids, versions, arns);
+          }
+        }
+        if (ids.isEmpty() && versions.isEmpty() && arns.isEmpty()) {
+          return;
+        }
+        Map inv = ctx.aws_bedrock.invocation;
+        inv.guardrail = inv.guardrail instanceof Map ? inv.guardrail : new HashMap();
+        if (!ids.isEmpty()) {
+          Set merged = new TreeSet();
+          def existing = inv.guardrail.id;
+          if (existing instanceof List) {
+            merged.addAll(existing);
+          } else if (existing != null) {
+            merged.add(existing);
+          }
+          if (!merged.containsAll(ids)) {
+            merged.addAll(ids);
+            inv.guardrail.id = new ArrayList(merged);
+          }
+        }
+        if (!versions.isEmpty()) {
+          inv.guardrail.version = new ArrayList(versions);
+        }
+        if (!arns.isEmpty()) {
+          inv.guardrail.arn = new ArrayList(arns);
+        }
+  - grok:
+      tag: grok_request_id_from_s3_object_key_8b712780
+      description: >-
+        E records have no envelope and so no requestId. Take it from the S3 data-prefix object
+        key (.../data/<requestId>_input.json.gz or _output.json.gz) to correlate the body with
+        its envelope record.
+      field: aws.s3.object.key
+      patterns:
+        - '^(?:.*/)?data/%{BEDROCK_REQUEST_ID:aws_bedrock.invocation.request_id}_(?:input|output)\.json(?:\.gz)?$'
+      pattern_definitions:
+        BEDROCK_REQUEST_ID: '[^/_]+'
+      if: ctx._temp?.genai?.e == true && ctx.aws_bedrock?.invocation?.request_id == null && ctx.aws?.s3?.object?.key instanceof String
+      ignore_failure: true
+  - remove:
+      tag: remove_temp_genai_781d9f33
+      field: _temp
+      ignore_missing: true
+on_failure:
+  - append:
+      tag: append_error_message_genai_695bad96
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind_genai_7240029d
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_preserve_original_event_genai_bc774883
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - remove:
+      tag: remove_temp_genai_on_failure_ea7ed019
+      field: _temp
+      ignore_missing: true

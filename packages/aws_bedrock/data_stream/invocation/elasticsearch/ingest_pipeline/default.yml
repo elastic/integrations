@@ -110,6 +110,62 @@ processors:
       field: aws_bedrock.invocation.identity.arn
       target_field: user.id
       ignore_missing: true
+  # Parse the caller ARN the way the aws.cloudtrail pipeline does: user.name is the IAM user
+  # name (without its path), the federated user name, or the role name of an assumed role.
+  # The session name of an assumed role is an actor label: it goes to related.user, and to
+  # user.email when it is an email address (with its local part also in related.user).
+  # Root and other principals leave user.name unset. user.id keeps the full ARN.
+  - grok:
+      tag: grok_user_name_from_identity_arn_eb0f5887
+      field: user.id
+      patterns:
+        - '^arn:[^:]+:iam::[^:]*:user/(?:[^/]+/)*%{NOT_SLASH:user.name}$'
+        - '^arn:[^:]+:sts::[^:]*:assumed-role/%{NOT_SLASH:user.name}/%{NOT_SLASH:_temp.user.session_name}$'
+        - '^arn:[^:]+:sts::[^:]*:federated-user/%{NOT_SLASH:user.name}$'
+      pattern_definitions:
+        NOT_SLASH: '[^/]+'
+      if: >-
+        ctx.user?.id instanceof String && ctx.user.id.startsWith('arn:') &&
+        (ctx.user.id.contains(':user/') || ctx.user.id.contains(':assumed-role/') || ctx.user.id.contains(':federated-user/'))
+      ignore_failure: true
+  - dissect:
+      tag: dissect_session_name_email_prefix_9b4326ff
+      field: _temp.user.session_name
+      pattern: '%{_temp.user.session_name_prefix}@%{}'
+      if: ctx._temp?.user?.session_name instanceof String && ctx._temp.user.session_name.contains('@')
+      ignore_failure: true
+  - set:
+      tag: set_user_email_from_session_name_b2030161
+      field: user.email
+      copy_from: _temp.user.session_name
+      if: ctx.user?.email == null && ctx._temp?.user?.session_name_prefix != null
+  - set:
+      tag: set_user_email_from_user_name_d4c792c9
+      field: user.email
+      copy_from: user.name
+      if: ctx.user?.email == null && ctx.user?.name instanceof String && ctx.user.name.indexOf('@') > 0
+  - append:
+      tag: append_related_user_user_name_0997b8d3
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      tag: append_related_user_session_name_d5ec7bdc
+      field: related.user
+      value: '{{{_temp.user.session_name}}}'
+      allow_duplicates: false
+      if: ctx._temp?.user?.session_name != null
+  - append:
+      tag: append_related_user_session_name_prefix_2830735b
+      field: related.user
+      value: '{{{_temp.user.session_name_prefix}}}'
+      allow_duplicates: false
+      if: ctx._temp?.user?.session_name_prefix != null
+  - remove:
+      tag: remove_temp_user_9a09e4ec
+      field: _temp
+      ignore_missing: true
   - rename:
       tag: rename_aws_bedrock_invocation_accountId_to_cloud_account_id_fa2d7c2d
       field: aws_bedrock.invocation.accountId
@@ -577,7 +633,7 @@ processors:
       ignore_empty_value: true
   - script:
       tag: set_gen_ai_output_messages_from_output_message_8e1b6a3f
-      if: '!(ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List) && ctx.aws_bedrock?.invocation?.output?.output_body_json?.output?.message != null'
+      if: '!(ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List) && ctx.aws_bedrock?.invocation?.output?.output_body_json?.output instanceof Map && ctx.aws_bedrock.invocation.output.output_body_json.output.message != null'
       lang: painless
       source: |
         ctx.gen_ai = ctx.gen_ai ?: [:];
@@ -660,7 +716,7 @@ processors:
         }
   - set:
       tag: get_response_role_from_object_85b4884b
-      if: '!(ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List) && ctx.aws_bedrock?.invocation?.output?.output_body_json?.output?.message?.role != null'
+      if: '!(ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List) && ctx.aws_bedrock?.invocation?.output?.output_body_json?.output instanceof Map && ctx.aws_bedrock.invocation.output.output_body_json.output.message?.role != null'
       field: gen_ai.request.model.role
       copy_from: aws_bedrock.invocation.output.output_body_json.output.message.role
   - set:
@@ -795,6 +851,12 @@ processors:
       field: event.outcome
       value: success
       override: false
+  - pipeline:
+      tag: pipeline_genai_8e5a7b73
+      description: >-
+        Map the ECS gen_ai fields and the vendor fields without an ECS equivalent. Runs before
+        the massive input and output bodies are removed, so it reads bodies of any size.
+      name: '{{ IngestPipeline "genai" }}'
 
   # Remove massive fields only after the fields have been used.
   - script:

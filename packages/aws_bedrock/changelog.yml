@@ -1,4 +1,18 @@
 # newer versions go on top
+- version: "2.4.0"
+  changes:
+    - description: Add ECS GenAI fields to the `invocation` data stream for every model family, including S3 large-body objects. Existing fields are unchanged.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/22284
+    - description: Add `aws_bedrock.invocation.guardrail.*`, `error.code`, `event.duration`, `user.name` and `aws_bedrock.invocation.first_byte_latency` to the `invocation` data stream, as replacements for the non-ECS `gen_ai.guardrail_id`, `gen_ai.policy.*`, `gen_ai.compliance.*`, `gen_ai.response.error_code` and `gen_ai.performance.*` fields. Those older fields are still written and are deprecated.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/22284
+    - description: Collect the `CacheReadInputTokenCount` and `CacheWriteInputTokenCount` metrics in the `runtime` data stream, and add `gen_ai.provider.name`, `gen_ai.request.model` and `gen_ai.usage.input_tokens` and `gen_ai.usage.output_tokens` to its per-model rows.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/22284
+    - description: Fix the `invocation` ingest pipeline failing on OpenAI Responses API records, whose response `output` is a list, so that these records get the new GenAI fields.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22284
 - version: "2.3.0"
   changes:
     - description: Make Elastic Managed the default deployment mode for the Amazon Bedrock policy template, and move the period and regions settings of the metrics data streams to advanced options to simplify onboarding. The optional start position, tags and preserve original event settings of the logs data streams move to advanced options as well, while the log group ARN, name and name prefix stay visible because one of them is required, and the region name is now shown because the log group name and name prefix require it.
