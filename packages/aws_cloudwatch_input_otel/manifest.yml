@@ -4,7 +4,7 @@ title: "AWS CloudWatch (OpenTelemetry)"
 version: 1.0.0
 source:
   license: "Elastic-2.0"
-description: "Generic OpenTelemetry input that configures the awscloudwatch receiver and the awscredentialsprovider extension. Metric discovery and processors are supplied by the integration data stream."
+description: "Generic OpenTelemetry input that configures the awscloudwatch receiver, the awscredentialsprovider extension, and the shared dimension-flattening transform. Metric discovery is supplied by the integration data stream."
 type: input
 categories:
   - aws
@@ -22,51 +22,6 @@ icons:
     size: 32x32
     type: image/svg+xml
 
-# --- Package-level (shared) variables ---
-# Defined once here and inherited by every policy template below — credentials,
-# region, and receiver tunables are not duplicated per service.
-vars:
-  - name: region
-    type: text
-    title: AWS Region
-    description: AWS region to query CloudWatch metrics from (for example, `us-east-1`).
-    required: true
-    show_user: true
-  # --- Inline AWS credentials (rendered into env vars on the collector process) ---
-  - name: access_key_id
-    type: password
-    title: AWS Access Key ID
-    description: Mapped to `AWS_ACCESS_KEY_ID` on the collector process when an IAM role is not available.
-    required: false
-    show_user: true
-    secret: true
-  - name: secret_access_key
-    type: password
-    title: AWS Secret Access Key
-    description: Mapped to `AWS_SECRET_ACCESS_KEY`.
-    required: false
-    show_user: true
-    secret: true
-  - name: session_token
-    type: password
-    title: AWS Session Token
-    description: Mapped to `AWS_SESSION_TOKEN` for temporary STS credentials.
-    required: false
-    show_user: true
-    secret: true
-  - name: role_arn
-    type: text
-    title: AWS Role ARN
-    description: Mapped to `AWS_ROLE_ARN`.
-    required: false
-    show_user: false
-  - name: external_id
-    type: password
-    title: AWS External ID
-    description: Mapped to `AWS_ROLE_EXTERNAL_ID`.
-    required: false
-    show_user: false
-    secret: true
 policy_templates:
   - name: awscloudwatch
     type: metrics
@@ -74,6 +29,47 @@ policy_templates:
     description: Collect CloudWatch metrics with the OpenTelemetry awscloudwatch receiver.
     input: otelcol
     template_path: input.yml.hbs
+    vars:
+      - name: region
+        type: text
+        title: AWS Region
+        description: AWS region to query CloudWatch metrics from (for example, `us-east-1`).
+        required: true
+        show_user: true
+      - name: access_key_id
+        type: password
+        title: AWS Access Key ID
+        description: Mapped to `AWS_ACCESS_KEY_ID` on the collector process when an IAM role is not available.
+        required: false
+        show_user: true
+        secret: true
+      - name: secret_access_key
+        type: password
+        title: AWS Secret Access Key
+        description: Mapped to `AWS_SECRET_ACCESS_KEY`.
+        required: false
+        show_user: true
+        secret: true
+      - name: session_token
+        type: password
+        title: AWS Session Token
+        description: Mapped to `AWS_SESSION_TOKEN` for temporary STS credentials.
+        required: false
+        show_user: true
+        secret: true
+      - name: role_arn
+        type: text
+        title: AWS Role ARN
+        description: Mapped to `AWS_ROLE_ARN`.
+        required: false
+        show_user: false
+      - name: external_id
+        type: password
+        title: AWS External ID
+        description: Mapped to `AWS_ROLE_EXTERNAL_ID`.
+        required: false
+        show_user: false
+        secret: true
     deployment_modes:
       default:
         enabled: true
