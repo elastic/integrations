@@ -1,0 +1,132 @@
+title: Event logs
+type: logs
+streams:
+  - input: tcp
+    title: Collect Veeam events via TCP
+    description: Collect Veeam Backup & Replication Event Forwarding syslog over TCP.
+    template_path: tcp.yml.hbs
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: Bind address for the syslog listener. Use `0.0.0.0` so a remote Veeam Backup & Replication server can connect. `localhost` blocks remote VBR.
+        multi: false
+        required: true
+        show_user: true
+        default: 0.0.0.0
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: TCP port the agent listens on. Match the port configured in Veeam Event Forwarding. Veeam defaults to 514 (TCP) or 6514 (TLS). The integration default is 9604 to avoid a privileged bind.
+        multi: false
+        required: true
+        show_user: true
+        default: 9604
+      - name: tcp_options
+        type: yaml
+        title: Custom TCP Options
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #max_message_size: 50KiB
+          #timeout: 300s
+        description: Specify custom configuration options for the TCP input.
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: |-
+          TLS server certificate and key when Veeam Event Forwarding transport is TLS. Veeam is the TLS client. Do not require client certificates; Veeam does not document mTLS. See [SSL documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config).
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #certificate: |
+          #    -----BEGIN CERTIFICATE-----
+          #    ...
+          #    -----END CERTIFICATE-----
+          #key: |
+          #    -----BEGIN PRIVATE KEY-----
+          #    ...
+          #    -----END PRIVATE KEY-----
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - veeam-event
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        multi: false
+        required: false
+        show_user: false
+  - input: udp
+    title: Collect Veeam events via UDP
+    description: Collect Veeam Backup & Replication Event Forwarding syslog over UDP.
+    template_path: udp.yml.hbs
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: The bind address to listen for UDP connections. Set to `0.0.0.0` to bind to all available interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: 0.0.0.0
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: UDP port the agent listens on.
+        multi: false
+        required: true
+        show_user: true
+        default: 9605
+      - name: udp_options
+        type: yaml
+        title: Custom UDP Options
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #max_message_size: 50KiB
+          #timeout: 300s
+        description: Specify custom configuration options for the UDP input.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - veeam-event
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        multi: false
+        required: false
+        show_user: false

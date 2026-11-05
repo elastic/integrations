@@ -53,13 +53,13 @@ To collect data through the Cato Networks API, you need to provide an **API Key*
 
 ## How do I deploy this integration?
 
-This integration supports both Elastic Agentless-based and Agent-based installations.
+This integration supports both Elastic Managed and Agent-based installations.
 
-### Agentless-based installation
+### Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ### Agent-based installation
 
@@ -101,6 +101,22 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 - The Cato Networks AuditFeed API enforces rate limiting of **5 requests per minute** (approximately 0.083 requests per second). For detailed information, refer to the [official documentation](https://support.catonetworks.com/hc/en-us/articles/5119033786653-Understanding-Cato-API-Rate-Limiting).
 
 - If you encounter rate limiting errors, consider decreasing the `Resource Rate Limit` parameter or increasing the `Interval` value.
+
+- **`Maximum Pages Per Cycle` (`max_executions`) and rate limiting**: this setting does not change how fast requests are sent, so raising it does not increase the request rate. The request rate stays bounded by the API response time (about 43 requests per minute at 1.4 seconds per request) and by `Resource Rate Limit` (default 1.6 requests per second, below the 100 requests per minute limit). However, Cato Networks applies this limit per query to the whole account, shared across all of its API keys, as described in [Understanding Cato API Rate Limiting](https://knowledge.catonetworks.com/docs/understanding-cato-api-rate-limiting). Every other consumer of the EventsFeed API on the same account (other Elastic Agents or integration instances, other SIEM connectors, scripts) draws from the same budget. If more than one consumer queries the account, lower `Resource Rate Limit` on each so that the total stays under 100 requests per minute. Any API error, including rate limiting, makes the input report an error and retry at the next `Interval`.
+
+### Throughput and ingestion delay
+
+The `event` data stream collects events sequentially: each request returns at most **3000 events** (a limit of the Cato Networks API that automatically enables pagination when more than 3000 events are present in the API server queue, see [Cato API - EventsFeed](https://knowledge.catonetworks.com/docs/cato-api-eventsfeed-large-scale-event-monitoring#understanding-fetched-events)), and the next request needs the marker from the previous response, so requests cannot be issued in parallel. The maximum sustained collection rate is therefore bounded by:
+
+`3000 events / (API response time + processing time)`
+
+For example, at about 1.4 seconds per request the integration can collect roughly 2,100 events per second. If your Cato Networks account produces events faster than that, the integration falls behind and the difference between `@timestamp` and `event.ingested` keeps growing, without any errors in Fleet or Elasticsearch. Slower API response times, for example during busy periods, lower this ceiling.
+
+- **`Maximum Pages Per Cycle` (`max_executions`)**: limits how many pages the integration requests back to back in one cycle (default `1000`, up to 3,000,000 events). When the limit is reached, the Elastic Agent logs a warning containing `maximum number of CEL executions`, and the next cycle starts at the next `Interval` tick, which is immediately if the cycle took longer than the `Interval`. A full-`Interval` pause therefore only happens on the first cycle after the input starts or restarts (for example after a policy change or an Elastic Agent restart), or when cycles are shorter than the `Interval`. Raising this value does not raise the throughput ceiling described above.
+- **Processors such as `drop_event`** run after events have been fetched. They reduce the volume indexed in Elasticsearch, but not the number of events fetched per second, so they do not reduce the delay.
+- **Elasticsearch and Elastic Agent output tuning** does not help when the bottleneck is retrieval from the Cato Networks API.
+
+A delay that keeps growing should be addressed promptly: the marker expires after 3 days (see [Limitation](#limitation)), after which events that were not yet collected are permanently lost.
 
 ## Limitation:
 

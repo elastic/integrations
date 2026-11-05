@@ -1,0 +1,88 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects `vim-cmd vmsvc/power.off` on an ESXi host. Powering a virtual machine off releases the lock the hypervisor holds on its virtual disks. With the guest stopped, those disks can be rewritten or encrypted while the machine is down.",
+        "false_positives": [
+            "Administrators power off virtual machines for patching, decommissioning, and hardware maintenance. Review the account and whether the command targeted one VM id or every id returned by `getallvms`."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-vsphere.log-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "message",
+                "event.original",
+                "host.hostname",
+                "log.file.path"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "ESXi Virtual Machine Powered Off",
+        "note": "## Triage and analysis\n\n### Investigating ESXi Virtual Machine Powered Off\n\nvim-cmd vmsvc/power.off is the guest-aware shutdown path ransomware uses when esxcli vm process kill is not enough. A for loop over getallvms powers off every guest on the host.\n\n#### Possible investigation steps\n\n- Read message for a single VM id versus a loop over vim-cmd vmsvc/getallvms.\n- Correlate with snapshot removal, vm process kill, and find commands for *.vmdk on the same host.\n- Ask the VM owner whether that power-off was scheduled.\n\n### False positive analysis\n\nOne VM powered off by a known administrator during a change window is commonly benign. Powering off every VM in one shell loop is the ransomware pattern.\n\n### Response and remediation\n\n- If the power-off was not approved, isolate the host and do not reboot it.\n- Power guests back on only after confirming their disks were not encrypted, or restore them from backup.\n- Preserve shell and hostd logs for the session that issued power.off.\n",
+        "query": "data_stream.dataset: \"vsphere.log\" and (\n  message: \"vmsvc/power.off\"\n)\n",
+        "references": [
+            "https://lolesxi-project.github.io/LOLESXi/#",
+            "https://blogs.vmware.com/security/2022/10/esxi-targeting-ransomware-tactics-and-techniques-part-2.html",
+            "https://detect.fyi/vmware-esxi-logging-detection-opportunities-4fb56411ec21"
+        ],
+        "related_integrations": [
+            {
+                "package": "vsphere",
+                "version": ">=1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "eefac402-2845-5498-90ff-e2e6eda987db",
+        "setup": "## Setup\n\nThis rule requires ESXi host logs collected by the Elastic vSphere integration: https://www.elastic.co/docs/reference/integrations/vsphere\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "Data Source: VMware vSphere",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Resources: Investigation Guide",
+            "Rule Type: Custom Query (KQL)",
+            "Platform: VMware ESXi",
+            "Threat: Ransomware"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1529",
+                        "name": "System Shutdown/Reboot",
+                        "reference": "https://attack.mitre.org/techniques/T1529/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "eefac402-2845-5498-90ff-e2e6eda987db_1",
+    "type": "security-rule"
+}

@@ -30,6 +30,7 @@ state:
   password: {{escape_string password}}
 {{/contains}}
   initial_interval: {{initial_interval}}
+  lookback: {{lookback}}
   session_timeout: {{session_timeout}}
   limit: {{page_size}}
   offset: 0
@@ -147,10 +148,16 @@ program: |
             }.format_query(),
             "application/json",
             {
-              "start_time": state.?cursor.last_timestamp.orValue((timestamp(token.current_time) - duration(state.initial_interval)).format(time_layout.RFC3339)),
+              // Filter by arrival time, not event time: CyberArk agents upload events in batches,
+              // so events may reach EPM long after they occurred. The lookback overlaps
+              // consecutive windows; overlapping events are deduplicated by the pipeline fingerprint.
+              "start_time": state.?cursor.last_timestamp.hasValue() ?
+                (timestamp(state.cursor.last_timestamp) - duration(state.lookback)).format(time_layout.RFC3339)
+              :
+                (timestamp(token.current_time) - duration(state.initial_interval)).format(time_layout.RFC3339),
               "end_time": token.current_time
             }.as(filter, {
-              "filter": "eventDate GE " + filter.start_time + " AND eventDate LE " + filter.end_time
+              "filter": "arrivalTime GE " + filter.start_time + " AND arrivalTime LE " + filter.end_time
             }.encode_json())
           ).with({
             "Header": {

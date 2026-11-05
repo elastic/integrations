@@ -1,0 +1,18 @@
+wait_for_data_timeout: 1m
+input: cel
+service: ti_whoisfreaks
+vars:
+  api_key: test_api_key
+data_stream:
+  vars:
+    url: "http://{{Hostname}}:{{Port}}/v3.3/stream/domainer"
+    status_url: "http://{{Hostname}}:{{Port}}/v3.4/status"
+    # Before the status available_from of both gTLD and ccTLD: one error event
+    # naming both ranges, no request for that date, then the input follows the
+    # latest files (3 gTLD rows and 1 ccTLD row).
+    file_date: "2026-01-01"
+    page_limit: 2
+    interval: 1h
+    enable_request_tracer: true
+assert:
+  hit_count: 5

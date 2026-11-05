@@ -788,3 +788,58 @@ rules:
             "success": true
           }
           `}}
+  # length 2 is the null-results system test. Default tests send length 1.
+  - path: /api/v1/search/
+    methods: ['GET']
+    query_params:
+      aql: "{aql:in:alerts.*}"
+      length: 2
+    request_headers:
+      Authorization:
+        - "XXXX"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data":{"count":0,"next":null,"prev":null,"results":null,"total":1},"success":true}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data":{"count":1,"next":null,"prev":null,"results":[{"activityUUIDs":["f63f0d20-5642-4631-a8a6-d8f8be63b1d4"],"affectedDevicesCount":1,"alertId":70,"classification":"Security - Other","connectionIds":[],"description":"Mitre Tactic: Command and Control. Compromised systems will attempt to establish communication with their C2 systems.","destinationEndpoints":[],"deviceIds":[534],"lastAlertUpdateTime":null,"mitreAttackLabels":null,"policyId":null,"policyLabels":null,"policyTitle":null,"severity":"Critical","sourceEndpoints":[],"status":"Unhandled","statusChangeTime":"2025-03-29T02:50:06.124100+00:00","time":"2025-03-29T02:50:06.124100+00:00","title":"Communication to a suspicious host","type":"System Policy Violation"}],"total":1},"success":true}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data":{"count":0,"next":null,"prev":null,"results":[],"total":1},"success":true}
+  - path: /api/v1/search/
+    methods: ['GET']
+    query_params:
+      aql: "{aql:in:devices.*}"
+      length: 2
+    request_headers:
+      Authorization:
+        - "XXXX"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data":{"count":0,"next":null,"prev":null,"results":null,"total":1},"success":true}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data":{"count":1,"next":null,"prev":null,"results":[{"accessSwitch":null,"boundaries":"Corporate","businessImpact":"Unassigned","category":"Imaging","customProperties":{},"dataSources":[],"displayTitle":"display_title_Test","firstSeen":"2025-03-13T17:31:02.861100+00:00","id":1177,"ipAddress":"81.2.69.142","ipv6":[],"lastSeen":"2025-03-29T22:50:06.124100+00:00","macAddress":"17:1C:1B:9B:D2:AA","manufacturer":"Test Manufacturer","model":"Test Model","name":"test-accc8ec36cf9","names":"test-accc8ec36cf9","operatingSystem":"Linux","operatingSystemVersion":"4.4.27","protections":[],"purdueLevel":4,"riskLevel":100,"sensor":{"name":"Test Enterprise","type":"Test Controller"},"site":{"location":"Geneva","name":"Geneva Enterprise"},"tags":["Privileged"],"type":"IP Cameras","typeEnum":"IP_CAMERA","userIds":[],"visibility":"Full"}],"total":1},"success":true}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data":{"count":0,"next":null,"prev":null,"results":[],"total":1},"success":true}
